@@ -98,6 +98,7 @@ import { Route as ApiPublicHooksSupportAutoCloseRouteImport } from './routes/api
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
+import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
@@ -582,6 +583,12 @@ const AuthenticatedProfessionalDashboardVerificationRoute =
     path: '/dashboard/verification',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalDashboardSupportRoute =
+  AuthenticatedProfessionalDashboardSupportRouteImport.update({
+    id: '/dashboard_/support',
+    path: '/dashboard/support',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardShopFrontRoute =
   AuthenticatedProfessionalDashboardShopFrontRouteImport.update({
     id: '/dashboard_/shop-front',
@@ -638,9 +645,9 @@ const AuthenticatedProfessionalCheckoutCreditsRoute =
   } as any)
 const AuthenticatedProfessionalDashboardSupportIndexRoute =
   AuthenticatedProfessionalDashboardSupportIndexRouteImport.update({
-    id: '/dashboard_/support/',
-    path: '/dashboard/support/',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProfessionalDashboardSupportRoute,
   } as any)
 const ApiPublicEmailInboundMailgunRoute =
   ApiPublicEmailInboundMailgunRouteImport.update({
@@ -650,15 +657,15 @@ const ApiPublicEmailInboundMailgunRoute =
   } as any)
 const AuthenticatedProfessionalDashboardSupportNewRoute =
   AuthenticatedProfessionalDashboardSupportNewRouteImport.update({
-    id: '/dashboard_/support/new',
-    path: '/dashboard/support/new',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedProfessionalDashboardSupportRoute,
   } as any)
 const AuthenticatedProfessionalDashboardSupportIdRoute =
   AuthenticatedProfessionalDashboardSupportIdRouteImport.update({
-    id: '/dashboard_/support/$id',
-    path: '/dashboard/support/$id',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedProfessionalDashboardSupportRoute,
   } as any)
 const AuthenticatedProfessionalProDashboardReportsRoute =
   AuthenticatedProfessionalProDashboardReportsRouteImport.update({
@@ -832,6 +839,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
+  '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1065,6 +1073,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
+  '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1182,6 +1191,7 @@ export interface FileRouteTypes {
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
+    | '/dashboard/support'
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -1414,6 +1424,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/services'
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/shop-front'
+    | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -2153,6 +2164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardVerificationRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/dashboard_/support': {
+      id: '/_authenticated/_professional/dashboard_/support'
+      path: '/dashboard/support'
+      fullPath: '/dashboard/support'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardSupportRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/dashboard_/shop-front': {
       id: '/_authenticated/_professional/dashboard_/shop-front'
       path: '/dashboard/shop-front'
@@ -2218,10 +2236,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/_professional/dashboard_/support/': {
       id: '/_authenticated/_professional/dashboard_/support/'
-      path: '/dashboard/support'
+      path: '/'
       fullPath: '/dashboard/support/'
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSupportIndexRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalDashboardSupportRoute
     }
     '/api/public/email/inbound/mailgun': {
       id: '/api/public/email/inbound/mailgun'
@@ -2232,17 +2250,17 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/_professional/dashboard_/support/new': {
       id: '/_authenticated/_professional/dashboard_/support/new'
-      path: '/dashboard/support/new'
+      path: '/new'
       fullPath: '/dashboard/support/new'
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSupportNewRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalDashboardSupportRoute
     }
     '/_authenticated/_professional/dashboard_/support/$id': {
       id: '/_authenticated/_professional/dashboard_/support/$id'
-      path: '/dashboard/support/$id'
+      path: '/$id'
       fullPath: '/dashboard/support/$id'
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSupportIdRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+      parentRoute: typeof AuthenticatedProfessionalDashboardSupportRoute
     }
     '/_authenticated/_professional/_pro/dashboard_/reports': {
       id: '/_authenticated/_professional/_pro/dashboard_/reports'
@@ -2426,6 +2444,27 @@ const AuthenticatedProfessionalDashboardRouteWithChildren =
     AuthenticatedProfessionalDashboardRouteChildren,
   )
 
+interface AuthenticatedProfessionalDashboardSupportRouteChildren {
+  AuthenticatedProfessionalDashboardSupportIdRoute: typeof AuthenticatedProfessionalDashboardSupportIdRoute
+  AuthenticatedProfessionalDashboardSupportNewRoute: typeof AuthenticatedProfessionalDashboardSupportNewRoute
+  AuthenticatedProfessionalDashboardSupportIndexRoute: typeof AuthenticatedProfessionalDashboardSupportIndexRoute
+}
+
+const AuthenticatedProfessionalDashboardSupportRouteChildren: AuthenticatedProfessionalDashboardSupportRouteChildren =
+  {
+    AuthenticatedProfessionalDashboardSupportIdRoute:
+      AuthenticatedProfessionalDashboardSupportIdRoute,
+    AuthenticatedProfessionalDashboardSupportNewRoute:
+      AuthenticatedProfessionalDashboardSupportNewRoute,
+    AuthenticatedProfessionalDashboardSupportIndexRoute:
+      AuthenticatedProfessionalDashboardSupportIndexRoute,
+  }
+
+const AuthenticatedProfessionalDashboardSupportRouteWithChildren =
+  AuthenticatedProfessionalDashboardSupportRoute._addFileChildren(
+    AuthenticatedProfessionalDashboardSupportRouteChildren,
+  )
+
 interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalProRouteRoute: typeof AuthenticatedProfessionalProRouteRouteWithChildren
   AuthenticatedProfessionalDashboardRoute: typeof AuthenticatedProfessionalDashboardRouteWithChildren
@@ -2437,10 +2476,8 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
   AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
+  AuthenticatedProfessionalDashboardSupportRoute: typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
-  AuthenticatedProfessionalDashboardSupportIdRoute: typeof AuthenticatedProfessionalDashboardSupportIdRoute
-  AuthenticatedProfessionalDashboardSupportNewRoute: typeof AuthenticatedProfessionalDashboardSupportNewRoute
-  AuthenticatedProfessionalDashboardSupportIndexRoute: typeof AuthenticatedProfessionalDashboardSupportIndexRoute
 }
 
 const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRouteRouteChildren =
@@ -2465,14 +2502,10 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardSettingsRoute,
     AuthenticatedProfessionalDashboardShopFrontRoute:
       AuthenticatedProfessionalDashboardShopFrontRoute,
+    AuthenticatedProfessionalDashboardSupportRoute:
+      AuthenticatedProfessionalDashboardSupportRouteWithChildren,
     AuthenticatedProfessionalDashboardVerificationRoute:
       AuthenticatedProfessionalDashboardVerificationRoute,
-    AuthenticatedProfessionalDashboardSupportIdRoute:
-      AuthenticatedProfessionalDashboardSupportIdRoute,
-    AuthenticatedProfessionalDashboardSupportNewRoute:
-      AuthenticatedProfessionalDashboardSupportNewRoute,
-    AuthenticatedProfessionalDashboardSupportIndexRoute:
-      AuthenticatedProfessionalDashboardSupportIndexRoute,
   }
 
 const AuthenticatedProfessionalRouteRouteWithChildren =
