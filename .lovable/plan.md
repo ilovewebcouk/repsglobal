@@ -1,88 +1,52 @@
-## Support v1.1 — scope
 
-Four parallel tracks. All admin-side work hooks into the existing `/admin/support` triage already built.
+## Goal
 
-### 1. Form polish — match Public Profile / app inputs
+Trainers can write/edit/delete a reply to each of their reviews from `/dashboard/reviews`. Admins see the reply (read-only) on `/admin/reviews`. Public pages (`/pro/$slug`, etc.) stay untouched — the reply is held in the DB but never rendered publicly.
 
-Symptom: the New-ticket and reply forms use raw `div.space-y-2 + Label + Input/Textarea` instead of the shadcn `FieldGroup` / `Field` pattern used everywhere else (Public Profile, Verification, Services). That's the "messy / one-or-two pixel lines" look — wrong wrapper, not wrong tokens.
+The backend (columns, RPCs, `replyToReview`/`clearReviewReply`, email template) is already in place from the previous turn. This plan only adds DTO fields + UI.
 
-Apply across `dashboard_.support.new.tsx`, `dashboard_.support.$id.tsx` (reply box), `admin_.support.tsx` reply box:
-- Wrap form bodies in `FieldGroup`.
-- Each control becomes `<Field><FieldLabel/><Input/Select/Textarea/><FieldDescription/></Field>`.
-- Validation: `data-invalid` on Field + `aria-invalid` on control (subject < 3 chars, body < 10 chars).
-- Remove ad-hoc `space-y-*`; use FieldGroup's gap.
-- Keep `PCard` wrapper + `rounded-[18px]` per profile cards.
-- Reply composer on `$id` page becomes a `Field` inside `PCard`, matching the messaging composer style.
+## 1. Extend DTOs in `src/lib/reviews/reviews.functions.ts`
 
-### 2. Attachments
+- `ReviewDTO`: add `response: string | null`, `responded_at: string | null`, `response_edited_at: string | null`, `response_notified_at: string | null`, `moderation_status: string`.
+- `listMyReviews` select: add `response, responded_at, response_edited_at, response_notified_at, moderation_status`.
+- `AdminReviewRow`: add the same four `response*` fields.
+- `adminListReviews` select + row mapping: add the four fields.
+- `listPublicReviewsBySlug`: **leave untouched** — public surface stays reply-free.
 
-- Bucket: new private `support-attachments` (via storage tool).
-- RLS on `storage.objects`:
-  - Ticket owner can read/write objects keyed under `tickets/{ticket_id}/...` where they own the ticket.
-  - Admin (`has_role(uid,'admin')`) full read/write.
-- Existing `support_attachments` table already has the shape — just wire it.
-- UI: shadcn `InputGroup` with paperclip `InputGroupAddon` inside the message composer and new-ticket form. Multi-file, max 5 per message, 10 MB each, types: images / pdf / common docs.
-- Render attachments on each message bubble (admin + trainer view) as a row of file chips with download.
-- Server fn: `addAttachmentsToMessage({ messageId, files: [{path,name,mime,size}] })` (called after direct-to-Storage upload).
+## 2. Trainer dashboard reply composer (`src/routes/_authenticated/_professional/dashboard_.reviews.tsx`)
 
-### 3. Email notifications
+For each review in the list, render a new "Your reply" block under the existing review body:
 
-Mailgun already wired (`mailgun-send.server.ts`). Two new transactional templates + send points:
+- If `response` exists: show the reply text in an orange-bordered card with timestamp ("Replied {date}" + "edited {date}" when applicable), plus **Edit** and **Delete** buttons.
+- If no reply: show an inline "Reply to this review" button that expands a textarea (1–1000 chars, char counter) with **Send reply** / **Cancel**.
+- Reply controls are only enabled when `moderation_status === 'approved'` (RPC enforces this anyway — UI just disables and shows a small "Reply available once approved" hint otherwise).
+- Mutations:
+  - `replyMutation` → `replyToReview({ data: { review_id, response } })`, invalidate `["my-reviews"]`, toast.
+  - `clearMutation` → `clearReviewReply({ data: { review_id } })`, invalidate, toast.
+- Small note under the composer: "Your client will get a one-off email when you publish your first reply."
 
-a. **New ticket → admin inbox** (`support@repsuk.org`)
-   - Triggered inside `createMyTicket` handler after insert.
-   - Subject: `[REPS Support #{ticket_number}] {subject}`
-   - Body: requester name/email, tier, category, full message, link to `/admin/support?ticket={id}`.
+No changes to KPIs panel, sent-requests panel, or "How reviews work" copy.
 
-b. **Admin reply → ticket owner**
-   - Triggered when an `outbound` message is inserted by an admin in `tickets.functions.ts` (`replyToTicket`).
-   - Subject: `Re: [#{ticket_number}] {subject}`
-   - Body: message body, link to `/dashboard/support/{id}`, unsubscribe footer respects `notification_preferences`.
+## 3. Admin moderation visibility (`src/routes/admin_.reviews.tsx`)
 
-Both go through existing `enqueue_email` → mailgun worker pattern (no synchronous Mailgun call in the request path).
+For each row, when `response` is set, render a read-only reply card beneath the review body:
 
-Out of scope: end-user reply → admin email (admin uses in-app inbox).
+- Label: "Trainer reply"
+- Body: `response` (whitespace-preserved)
+- Meta line: "Replied {responded_at}" · "Edited {response_edited_at}" (if set) · "Client notified {response_notified_at}" (if set)
+- Styling: muted panel, no edit affordance. Admin does NOT moderate replies in this pass.
 
-### 4. Unread / notification surfacing
+## 4. Out of scope (explicit)
 
-DB:
-- Add column `support_messages.read_by_recipient_at timestamptz` (already have `is_unread` on ticket; need per-side).
-- Two RPCs (SECURITY DEFINER):
-  - `count_unread_support_for_user(uid)` → tickets with new admin messages for the trainer.
-  - `count_unread_support_for_admin()` → tickets with new inbound messages or `status='open'` unread by admin.
+- `src/routes/pro.$slug.index.tsx` — public profile, untouched.
+- `src/routes/reviews.tsx`, city pages, homepage rating tiles — untouched.
+- `listPublicReviewsBySlug` — does not return `response`.
+- No reply-moderation flow for admin (can add later if needed).
+- No tier-gating on replies (every trainer with approved reviews can reply — matches old behaviour).
 
-Sidebar badge (`nav-data.ts` + `DashboardSidebar.tsx`):
-- Support nav item accepts an optional `badge?: number`.
-- Trainer sidebar: query `count_unread_support_for_user` (TanStack Query, 30s refetch + realtime channel on `support_messages` filtered by ticket owner).
-- Admin sidebar (`/admin/support` link): same pattern with the admin RPC.
-- Render small destructive pill next to label when > 0.
+## Technical notes
 
-NotificationsBell (`src/components/dashboard/NotificationsBell.tsx`):
-- Add a "Support" section feeding from the same unread query.
-- Each row links to `/dashboard/support/$id` (or `/admin/support?ticket=...` for admin).
-- Mark-as-read on click → call `markTicketRead({ ticket_id })` which stamps `read_by_recipient_at` on all messages newer than last read for the current side (owner vs admin).
-
-### Files
-
-Migrations
-- `support-attachments` bucket + storage policies.
-- `ALTER TABLE support_messages ADD read_by_recipient_at`, plus 2 new RPCs.
-
-Server fns
-- `src/lib/support/my-tickets.functions.ts` — extend `createMyTicket` to enqueue admin email; add `addAttachmentsToMessage`, `markTicketRead`, `countUnreadForMe`.
-- `src/lib/support/tickets.functions.ts` — extend `replyToTicket` to enqueue owner email; add `countUnreadForAdmin`, attachments path.
-- `src/lib/support/mailgun-templates.server.ts` — two new templates.
-
-UI
-- Rebuild forms with `FieldGroup`/`Field` in 3 files (trainer new, trainer detail, admin detail).
-- `DashboardSidebar.tsx` — render `badge` on nav items.
-- `nav-data.ts` — `badge` field type.
-- `NotificationsBell.tsx` — support section.
-- New `SupportAttachments.tsx` component (chip list + upload button via `InputGroup`).
-
-### Out of scope (flag if you want included)
-- Satisfaction rating on close.
-- Trainer-side push/email digest beyond per-reply email.
-- Inline image preview (we'll show as chips that open in new tab).
-
-Want me to ship all four tracks, or pick a subset?
+- `replyToReview` already handles first-publish email (idempotent via `response_notified_at`) and edit-vs-create branching via the `upsert_pro_review_response` RPC.
+- `clearReviewReply` clears all four columns including `response_notified_at`, so a later re-publish will re-send the notification email — acceptable for now.
+- All new DTO fields are nullable; existing consumers that don't read them are unaffected.
+- Total diff: ~3 files, ~150 LOC.
