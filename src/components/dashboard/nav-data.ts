@@ -44,8 +44,6 @@ export const VERIFIED_NAV = [
     title: "Account",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-      { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
-      { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
@@ -55,6 +53,8 @@ export const VERIFIED_NAV = [
     title: "Deliver",
     items: [
       { icon: Tag, label: "Services", to: "/dashboard/services" },
+      { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
+      { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
     ],
   },
   {
@@ -76,7 +76,6 @@ export const PRO_NAV = [
     title: "Work",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-      { icon: Target, label: "Leads", to: "/dashboard/leads" },
       { icon: Users, label: "Clients", to: "/dashboard/clients" },
       { icon: CalendarIcon, label: "Calendar", to: "/dashboard/calendar" },
       { icon: CreditCard, label: "Bookings", to: "/dashboard/bookings" },
@@ -91,6 +90,7 @@ export const PRO_NAV = [
       { icon: Dumbbell, label: "Programs", to: "/dashboard/programs" },
       { icon: Apple, label: "Nutrition", to: "/dashboard/nutrition" },
       { icon: ClipboardList, label: "Check-Ins", to: "/dashboard/check-ins" },
+      { icon: Target, label: "Leads", to: "/dashboard/leads" },
       { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
     ],
   },
@@ -101,7 +101,6 @@ export const PRO_NAV = [
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
-      
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
     ],
