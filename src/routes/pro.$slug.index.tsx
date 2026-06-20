@@ -88,6 +88,7 @@ type Pro = {
     issued: string;
     verified?: boolean;
   }[];
+  gyms?: { label: string; branch: string }[];
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
