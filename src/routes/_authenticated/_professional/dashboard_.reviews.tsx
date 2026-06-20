@@ -178,8 +178,6 @@ function ReviewsPage() {
     approved: approved.length,
     pending: pending.length,
     removed: removed.length,
-    five: approved.filter((r) => r.rating === 5).length,
-    four: approved.filter((r) => r.rating === 4).length,
   };
 
   const tabRows = React.useMemo<ReviewDTO[]>(() => {
