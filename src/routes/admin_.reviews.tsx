@@ -29,17 +29,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import {
   adminListReviews,
@@ -48,6 +37,7 @@ import {
   type AdminReviewRow,
   type AiFlags,
 } from "@/lib/reviews/reviews.functions";
+import { RemoveReviewDialog } from "@/components/admin/RemoveReviewDialog";
 
 export const Route = createFileRoute("/admin_/reviews")({
   ssr: false,
@@ -160,8 +150,14 @@ function AdminReviewsPage() {
   });
 
   const moderate = useMutation({
-    mutationFn: (vars: { id: string; action: "approve" | "remove" }) =>
-      adminModerateReview({ data: vars }),
+    mutationFn: (vars: {
+      id: string;
+      action: "approve" | "remove";
+      note?: string;
+      category?: string;
+      internal_note?: string;
+      notify?: boolean;
+    }) => adminModerateReview({ data: vars }),
     onSuccess: (_d, vars) => {
       toast.success(vars.action === "approve" ? "Review approved" : "Review removed");
       qc.invalidateQueries({ queryKey: ["admin", "reviews"] });
