@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
+import { useMySupportUnread } from "@/hooks/useMySupportUnread";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
+import { useSessionUser } from "@/hooks/use-session-user";
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -20,10 +22,19 @@ function timeAgo(iso: string) {
 
 type FeedItem =
   | {
-      kind: "support";
+      kind: "support-admin";
       key: string;
       title: string;
       preview: string;
+      ticketNumber: string | null;
+      createdAt: string;
+    }
+  | {
+      kind: "support-mine";
+      key: string;
+      title: string;
+      preview: string;
+      ticketId: string;
       ticketNumber: string | null;
       createdAt: string;
     }
@@ -37,16 +48,27 @@ type FeedItem =
     };
 
 export function NotificationsBell() {
-  const support = useSupportUnread();
-  const reviews = useReviewsUnread();
+  const { user, isAdmin } = useSessionUser();
+  const adminSupport = useSupportUnread({ enabled: isAdmin });
+  const mySupport = useMySupportUnread({ enabled: !!user });
+  const reviews = useReviewsUnread({ enabled: !!user });
   const [open, setOpen] = React.useState(false);
 
   const combined = React.useMemo<FeedItem[]>(() => {
-    const supportItems: FeedItem[] = support.items.map((i) => ({
-      kind: "support",
+    const adminSupportItems: FeedItem[] = adminSupport.items.map((i) => ({
+      kind: "support-admin",
       key: i.key,
       title: i.title,
       preview: i.preview,
+      ticketNumber: i.ticketNumber,
+      createdAt: i.createdAt,
+    }));
+    const mySupportItems: FeedItem[] = mySupport.items.map((i) => ({
+      kind: "support-mine",
+      key: i.key,
+      title: `Reply on ${i.title}`,
+      preview: i.preview,
+      ticketId: i.ticketId,
       ticketNumber: i.ticketNumber,
       createdAt: i.createdAt,
     }));
@@ -58,15 +80,16 @@ export function NotificationsBell() {
       createdAt: i.createdAt,
       rating: i.rating,
     }));
-    return [...reviewItems, ...supportItems].sort(
+    return [...reviewItems, ...adminSupportItems, ...mySupportItems].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
-  }, [support.items, reviews.items]);
+  }, [adminSupport.items, mySupport.items, reviews.items]);
 
   const unread = combined.length;
   const [snapshot, setSnapshot] = React.useState<FeedItem[] | null>(null);
   const visible = open && snapshot ? snapshot : combined;
-  const isLoading = support.isLoading || reviews.isLoading;
+  const isLoading =
+    adminSupport.isLoading || mySupport.isLoading || reviews.isLoading;
 
   const handleOpenChange = (next: boolean) => {
     if (next) setSnapshot(combined);
@@ -75,7 +98,11 @@ export function NotificationsBell() {
   };
 
   const markAll = async () => {
-    await Promise.all([support.markAllRead(), reviews.markAllRead()]);
+    await Promise.all([
+      adminSupport.markAllRead(),
+      mySupport.markAllRead(),
+      reviews.markAllRead(),
+    ]);
     setSnapshot([]);
   };
 
@@ -107,7 +134,9 @@ export function NotificationsBell() {
         <div className="flex items-center justify-between gap-2 px-4 py-3">
           <div>
             <p className="text-[13px] font-semibold text-white">Notifications</p>
-            <p className="text-[11px] text-white/55">Reviews, support tickets, and inbound emails</p>
+            <p className="text-[11px] text-white/55">
+              Reviews, support tickets, and inbound emails
+            </p>
           </div>
           {visible.length > 0 ? (
             <Button
@@ -130,51 +159,62 @@ export function NotificationsBell() {
             </div>
           ) : (
             <ul className="divide-y divide-reps-border">
-              {visible.map((item) => (
-                <li key={item.key}>
-                  <Link
-                    to={item.kind === "review" ? "/admin/reviews" : "/admin/support"}
-                    onClick={() => setOpen(false)}
-                    className="flex gap-3 px-4 py-3 transition-colors hover:bg-reps-panel-soft"
-                  >
-                    <div
-                      className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] ${
-                        item.kind === "review"
-                          ? "bg-amber-500/15 text-amber-300"
-                          : "bg-reps-orange/15 text-reps-orange"
-                      }`}
+              {visible.map((item) => {
+                const href =
+                  item.kind === "review"
+                    ? "/admin/reviews"
+                    : item.kind === "support-admin"
+                      ? "/admin/support"
+                      : "/dashboard/support";
+                const showTicket =
+                  (item.kind === "support-admin" || item.kind === "support-mine") &&
+                  item.ticketNumber;
+                return (
+                  <li key={item.key}>
+                    <Link
+                      to={href}
+                      onClick={() => setOpen(false)}
+                      className="flex gap-3 px-4 py-3 transition-colors hover:bg-reps-panel-soft"
                     >
-                      {item.kind === "review" ? (
-                        <Star className="h-3.5 w-3.5" />
-                      ) : (
-                        <Mail className="h-3.5 w-3.5" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <p className="truncate text-[13px] font-medium text-white">
-                          {item.title}
-                        </p>
-                        <span className="shrink-0 text-[10px] text-white/45">
-                          {timeAgo(item.createdAt)}
-                        </span>
+                      <div
+                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] ${
+                          item.kind === "review"
+                            ? "bg-amber-500/15 text-amber-300"
+                            : "bg-reps-orange/15 text-reps-orange"
+                        }`}
+                      >
+                        {item.kind === "review" ? (
+                          <Star className="h-3.5 w-3.5" />
+                        ) : (
+                          <Mail className="h-3.5 w-3.5" />
+                        )}
                       </div>
-                      <p className="mt-0.5 truncate text-[11.5px] text-white/55">
-                        {item.preview}
-                      </p>
-                      {item.kind === "support" && item.ticketNumber ? (
-                        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-white/40">
-                          {item.ticketNumber}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <p className="truncate text-[13px] font-medium text-white">
+                            {item.title}
+                          </p>
+                          <span className="shrink-0 text-[10px] text-white/45">
+                            {timeAgo(item.createdAt)}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 truncate text-[11.5px] text-white/55">
+                          {item.preview}
                         </p>
-                      ) : null}
-                    </div>
-                    <span
-                      aria-hidden
-                      className="mt-2 size-1.5 shrink-0 rounded-full bg-reps-orange"
-                    />
-                  </Link>
-                </li>
-              ))}
+                        {showTicket ? (
+                          <p className="mt-0.5 text-[10px] uppercase tracking-wide text-white/40">
+                            {item.ticketNumber}
+                          </p>
+                        ) : null}
+                      </div>
+                      <span
+                        aria-hidden
+                        className="mt-2 size-1.5 shrink-0 rounded-full bg-reps-orange"
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -182,18 +222,18 @@ export function NotificationsBell() {
         <Separator className="bg-reps-border" />
         <div className="grid grid-cols-2 gap-1 px-4 py-2">
           <Link
-            to="/admin/reviews"
+            to={isAdmin ? "/admin/reviews" : "/dashboard/reviews"}
             onClick={() => setOpen(false)}
             className="block rounded-[8px] py-1.5 text-center text-[12px] font-medium text-white/80 transition-colors hover:bg-reps-panel-soft hover:text-white"
           >
-            Reviews queue
+            Reviews
           </Link>
           <Link
-            to="/admin/support"
+            to={isAdmin ? "/admin/support" : "/dashboard/support"}
             onClick={() => setOpen(false)}
             className="block rounded-[8px] py-1.5 text-center text-[12px] font-medium text-white/80 transition-colors hover:bg-reps-panel-soft hover:text-white"
           >
-            Support queue
+            Support
           </Link>
         </div>
       </PopoverContent>
