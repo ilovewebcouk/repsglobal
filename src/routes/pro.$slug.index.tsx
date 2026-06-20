@@ -550,8 +550,16 @@ function ProProfilePage() {
                 />
                 <TrustItem
                   icon={Award}
-                  title="Qualifications Checked"
-                  sub="Up to date"
+                  title={hasQuals ? "Qualifications Checked" : "No qualifications"}
+                  sub={
+                    !hasQuals
+                      ? "Not yet qualified"
+                      : pro.qualifications.some(
+                          (q) => q.expires && q.expires < new Date().toISOString().slice(0, 10),
+                        )
+                        ? "Renewal required"
+                        : "Up to date"
+                  }
                 />
                 <TrustItem
                   icon={Umbrella}
