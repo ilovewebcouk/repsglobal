@@ -311,8 +311,20 @@ function AdminReviewsPage() {
                         >
                           Approve
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                        <RemoveReviewDialog
+                          reviewId={r.id}
+                          isPending={moderate.isPending}
+                          onConfirm={(vars) =>
+                            moderate.mutate({
+                              id: r.id,
+                              action: "remove",
+                              note: vars.note,
+                              category: vars.category,
+                              internal_note: vars.internalNote,
+                              notify: vars.notify,
+                            })
+                          }
+                          trigger={
                             <Button
                               size="sm"
                               variant="outline"
@@ -320,24 +332,8 @@ function AdminReviewsPage() {
                             >
                               Remove
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Remove this review?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                It won't be shown on the public profile and the pro will see it as removed.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => moderate.mutate({ id: r.id, action: "remove" })}
-                              >
-                                Remove review
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          }
+                        />
                       </div>
                     ) : null}
                   </div>
