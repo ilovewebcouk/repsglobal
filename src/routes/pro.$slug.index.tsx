@@ -314,6 +314,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       issued: formatIssued(q.issue_date, q.year),
       verified: !!q.regulator_verified,
     })),
+    gyms: row.gyms ?? [],
     faqs: [],
   };
 }
