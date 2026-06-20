@@ -10,7 +10,7 @@ import {
   FileCheck,
   FileText,
   GraduationCap,
-  Images,
+  
   Inbox,
   LayoutDashboard,
   LifeBuoy,
