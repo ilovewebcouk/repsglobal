@@ -745,7 +745,7 @@ function ProProfilePage() {
                   What Clients Say
                 </h2>
                 <a className="text-[12px] font-medium text-reps-orange hover:underline" href="#reviews">
-                  See all {pro.reviews} reviews
+                  See all {reviewSummary.count} reviews
                 </a>
               </div>
 
@@ -753,26 +753,26 @@ function ProProfilePage() {
                 <div>
                   <div className="flex items-center gap-3">
                     <div className="font-display text-[42px] font-bold leading-none text-reps-charcoal">
-                      {pro.rating.toFixed(1)}
+                      {reviewSummary.rating.toFixed(1)}
                     </div>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-reps-orange text-reps-orange" />
+                        <Star key={i} className={`h-4 w-4 ${i < Math.round(reviewSummary.rating) ? "fill-reps-orange text-reps-orange" : "text-reps-stone"}`} />
                       ))}
                     </div>
                   </div>
                   <div className="mt-2 text-[12px] text-reps-muted-light">
-                    Based on {pro.reviews} reviews
+                    Based on {reviewSummary.count} {reviewSummary.count === 1 ? "review" : "reviews"}
                   </div>
                   <div className="mt-4 space-y-2">
-                    {RATING_DIST.map((d) => (
+                    {reviewSummary.dist.map((d) => (
                       <div key={d.stars} className="grid grid-cols-[18px_12px_1fr_28px] items-center gap-2 text-[11px] text-reps-muted-light">
                         <span>{d.stars}</span>
                         <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
                         <div className="h-1.5 overflow-hidden rounded-full bg-reps-stone">
                           <div
                             className="h-full rounded-full bg-reps-orange"
-                            style={{ width: `${Math.min(100, (d.count / 128) * 100)}%` }}
+                            style={{ width: `${Math.min(100, (d.count / reviewSummary.maxCount) * 100)}%` }}
                           />
                         </div>
                         <span className="text-right text-reps-charcoal">{d.count}</span>
