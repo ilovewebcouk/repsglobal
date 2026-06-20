@@ -555,9 +555,7 @@ function ProProfilePage() {
                   sub={
                     !hasQuals
                       ? "Not yet qualified"
-                      : pro.qualifications.some(
-                          (q) => q.expires && q.expires < new Date().toISOString().slice(0, 10),
-                        )
+                      : pro.qualifications.some((q) => q.expires && q.expires < today)
                         ? "Renewal required"
                         : "Up to date"
                   }
