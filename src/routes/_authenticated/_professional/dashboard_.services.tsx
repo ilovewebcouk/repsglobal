@@ -38,11 +38,11 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/s
 });
 
 function ServicesPage() {
-  const blocked = useProGuard("Services & pricing");
   const tier = useTrainerTier();
   const qc = useQueryClient();
   const fetchProfile = useServerFn(getMyDashboardProfile);
   const saveProfile = useServerFn(updateMyDashboardProfile);
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-dashboard-profile"],
