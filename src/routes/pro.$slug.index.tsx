@@ -317,6 +317,8 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       verified: !!q.regulator_verified,
     })),
     gyms: row.gyms ?? [],
+    lat: row.location?.latitude ?? null,
+    lng: row.location?.longitude ?? null,
     faqs: [],
   };
 }
