@@ -695,6 +695,57 @@ export const listMyReviewNotifications = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<{ items: ReviewNotificationItem[] }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError) throw roleError;
+
+    // Admin review notifications are an action queue: keep them visible until
+    // the review is approved or removed, even if the admin has opened Reviews.
+    if (isAdmin) {
+      const { data: rows, error: pendingError } = await supabaseAdmin
+        .from("reviews")
+        .select("id, professional_id, client_name, rating, body, created_at")
+        .eq("moderation_status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (pendingError) throw pendingError;
+
+      const list = (rows ?? []) as Array<{
+        id: string;
+        professional_id: string;
+        client_name: string;
+        rating: number;
+        body: string | null;
+        created_at: string;
+      }>;
+      if (list.length === 0) return { items: [] };
+
+      const proIds = Array.from(new Set(list.map((r) => r.professional_id)));
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, display_name")
+        .in("id", proIds);
+      const nameById = new Map(
+        (profs ?? []).map((p: any) => [p.id, p.display_name || p.full_name || null]),
+      );
+
+      return {
+        items: list.map((r) => ({
+          key: `review-pending:${r.id}`,
+          notificationId: r.id,
+          reviewId: r.id,
+          professionalName: nameById.get(r.professional_id) ?? null,
+          clientName: r.client_name,
+          rating: r.rating,
+          preview: (r.body ?? "").slice(0, 120),
+          createdAt: r.created_at,
+        })),
+      };
+    }
+
     const { data: notifs, error } = await supabaseAdmin
       .from("review_notifications")
       .select("id, review_id, created_at")
