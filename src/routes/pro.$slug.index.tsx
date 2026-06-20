@@ -454,11 +454,20 @@ function ProProfilePage() {
                   <MapPin className="h-4 w-4 text-reps-muted-light" />
                   {pro.location}
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
-                  <span className="font-semibold text-reps-charcoal">{pro.rating.toFixed(1)}</span>
-                  <span className="text-reps-muted-light">({pro.reviews} reviews)</span>
-                </span>
+                {reviewSummary.count > 0 ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
+                    <span className="font-semibold text-reps-charcoal">{reviewSummary.rating.toFixed(1)}</span>
+                    <span className="text-reps-muted-light">
+                      ({reviewSummary.count} {reviewSummary.count === 1 ? "review" : "reviews"})
+                    </span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-reps-muted-light">
+                    <Star className="h-4 w-4 text-reps-stone" />
+                    No reviews yet
+                  </span>
+                )}
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
