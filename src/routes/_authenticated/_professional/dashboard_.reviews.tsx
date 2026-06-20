@@ -5,9 +5,12 @@ import { toast } from "sonner";
 import {
   ArrowUpRight,
   Flag,
+  MessageSquare,
+  Pencil,
   Search,
   Star,
   ThumbsUp,
+  Trash2,
   Mail,
   CheckCircle2,
   Clock,
