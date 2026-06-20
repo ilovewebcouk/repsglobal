@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  ShieldAlert,
 } from "lucide-react";
 
 
@@ -23,6 +24,7 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -92,6 +94,24 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
+type ReviewTab = "all" | "approved" | "pending" | "removed" | "5" | "4";
+type RequestTab = "all" | "sent" | "opened" | "submitted" | "expired";
+
+function TabCount({ n, active }: { n: number; active: boolean }) {
+  if (n <= 0) return null;
+  return (
+    <span
+      className={`ml-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums ${
+        active
+          ? "bg-reps-orange/20 text-reps-orange"
+          : "bg-white/10 text-white/65"
+      }`}
+    >
+      {n}
+    </span>
+  );
+}
+
 function ReviewsPage() {
   const qc = useQueryClient();
   const tier = useTrainerTier();
@@ -116,7 +136,8 @@ function ReviewsPage() {
     staleTime: 30_000,
   });
 
-  const [filter, setFilter] = React.useState<"all" | "5" | "4">("all");
+  const [tab, setTab] = React.useState<ReviewTab>("all");
+  const [requestTab, setRequestTab] = React.useState<RequestTab>("all");
   const [search, setSearch] = React.useState("");
 
   const thank = useMutation({
@@ -138,33 +159,75 @@ function ReviewsPage() {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't flag"),
   });
 
+  // ── derived buckets ────────────────────────────────────────────────────
+  const approved = React.useMemo(
+    () => reviews.filter((r) => (r.moderation_status ?? "approved") === "approved"),
+    [reviews],
+  );
+  const pending = React.useMemo(
+    () => reviews.filter((r) => (r.moderation_status ?? "approved") === "pending"),
+    [reviews],
+  );
   const removed = React.useMemo(
-    () =>
-      reviews.filter(
-        (r) => (r.moderation_status ?? "approved") === "removed",
-      ),
+    () => reviews.filter((r) => (r.moderation_status ?? "approved") === "removed"),
     [reviews],
   );
 
+  const counts = {
+    all: approved.length + pending.length,
+    approved: approved.length,
+    pending: pending.length,
+    removed: removed.length,
+    five: approved.filter((r) => r.rating === 5).length,
+    four: approved.filter((r) => r.rating === 4).length,
+  };
+
+  const tabRows = React.useMemo<ReviewDTO[]>(() => {
+    switch (tab) {
+      case "approved":
+        return approved;
+      case "pending":
+        return pending;
+      case "removed":
+        return removed;
+      case "5":
+        return approved.filter((r) => r.rating === 5);
+      case "4":
+        return approved.filter((r) => r.rating === 4);
+      case "all":
+      default:
+        return [...approved, ...pending].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+    }
+  }, [tab, approved, pending, removed]);
 
   const filtered = React.useMemo(() => {
-    // Hide reviews admin has removed — trainer shouldn't see them in their feed.
-    let rows: ReviewDTO[] = reviews.filter(
-      (r) => (r.moderation_status ?? "approved") !== "removed",
+    if (!search.trim()) return tabRows;
+    const q = search.toLowerCase();
+    return tabRows.filter(
+      (r) =>
+        r.client_name.toLowerCase().includes(q) ||
+        (r.title ?? "").toLowerCase().includes(q) ||
+        r.body.toLowerCase().includes(q),
     );
-    if (filter === "5") rows = rows.filter((r) => r.rating === 5);
-    else if (filter === "4") rows = rows.filter((r) => r.rating === 4);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      rows = rows.filter(
-        (r) =>
-          r.client_name.toLowerCase().includes(q) ||
-          (r.title ?? "").toLowerCase().includes(q) ||
-          r.body.toLowerCase().includes(q),
-      );
+  }, [tabRows, search]);
+
+  // ── request status filtering ───────────────────────────────────────────
+  const requestCounts = React.useMemo(() => {
+    const c = { all: requests.length, sent: 0, opened: 0, submitted: 0, expired: 0 };
+    for (const r of requests) {
+      if (r.status === "sent") c.sent++;
+      else if (r.status === "opened") c.opened++;
+      else if (r.status === "submitted") c.submitted++;
+      else if (r.status === "expired") c.expired++;
     }
-    return rows;
-  }, [reviews, filter, search]);
+    return c;
+  }, [requests]);
+  const filteredRequests = React.useMemo(() => {
+    if (requestTab === "all") return requests;
+    return requests.filter((r) => r.status === requestTab);
+  }, [requests, requestTab]);
 
   const kpiTiles = [
     {
@@ -180,12 +243,51 @@ function ReviewsPage() {
       tone: kpis && kpis.last_30d_count > 0 ? ("up" as const) : ("neutral" as const),
     },
     {
-      label: "Flagged",
-      value: kpis ? String(kpis.flagged) : "—",
-      delta: kpis && kpis.flagged > 0 ? "In admin queue" : "None",
-      tone: kpis && kpis.flagged > 0 ? ("down" as const) : ("neutral" as const),
+      label: "Pending",
+      value: String(counts.pending),
+      delta: counts.pending > 0 ? "With REPS" : "None",
+      tone: "neutral" as const,
+    },
+    {
+      label: "Removed",
+      value: String(counts.removed),
+      delta: counts.removed > 0 ? "Hidden from profile" : "None",
+      tone: "neutral" as const,
     },
   ];
+
+  const tabsConfig: { value: ReviewTab; label: string; count: number }[] = [
+    { value: "all", label: "All", count: counts.all },
+    { value: "approved", label: "Approved", count: counts.approved },
+    { value: "pending", label: "Pending", count: counts.pending },
+    { value: "removed", label: "Removed", count: counts.removed },
+    { value: "5", label: "5★", count: counts.five },
+    { value: "4", label: "4★", count: counts.four },
+  ];
+
+  const emptyCopy: Record<ReviewTab, { title: string; sub: string }> = {
+    all: {
+      title: "No reviews yet",
+      sub: "Use \"Request a review\" to email a past client a one-click link.",
+    },
+    approved: {
+      title: "No approved reviews yet",
+      sub:
+        counts.pending > 0
+          ? `${counts.pending} waiting on REPS approval.`
+          : "Once a client submits a review and REPS approves it, you'll see it here.",
+    },
+    pending: {
+      title: "Nothing waiting on REPS approval",
+      sub: "New reviews appear here while we run our checks. Usually within a few hours.",
+    },
+    removed: {
+      title: "No removed reviews",
+      sub: "Your feed is clean.",
+    },
+    "5": { title: "No 5★ reviews yet", sub: "5★ reviews show here once approved." },
+    "4": { title: "No 4★ reviews yet", sub: "4★ reviews show here once approved." },
+  };
 
   return (
     <DashboardShell
@@ -196,9 +298,8 @@ function ReviewsPage() {
       subtitle="Your public reviews, rating breakdown and review requests."
       actions={<HeaderActions />}
     >
-
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {kpiTiles.map((k) => (
           <PCard key={k.label} className="!p-4">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">{k.label}</div>
@@ -212,7 +313,6 @@ function ReviewsPage() {
                     : "text-white/55"
               }`}
             >
-
               {k.delta}
             </div>
           </PCard>
@@ -222,187 +322,177 @@ function ReviewsPage() {
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
         {/* LEFT — reviews feed */}
         <div className="space-y-6 xl:col-span-8">
-          {removed.length > 0 && (
-            <PPanel>
-              <div className="flex items-start justify-between gap-3 border-b border-reps-border px-5 py-4">
-                <div>
-                  <h3 className="text-[14px] font-semibold text-white">
-                    Removed by REPS · {removed.length}
-                  </h3>
-                  <p className="mt-0.5 text-[12px] text-white/55">
-                    These reviews are hidden from your public profile. Here's why.
-                  </p>
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10.5px] font-semibold text-red-300">
-                  <XCircle className="h-3 w-3" /> Moderation
-                </span>
-              </div>
-              <ul className="divide-y divide-reps-border/60">
-                {removed.map((r) => (
-                  <li key={r.id} className="px-5 py-4">
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5 text-[11px] font-semibold text-white/45">
-                        {initials(r.client_name)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[13px] font-semibold text-white/75 line-through">
-                            {r.client_name}
-                          </span>
-                          <Stars n={r.rating} />
-                          <span className="text-[11px] text-white/45">
-                            · removed {r.moderated_at ? formatDate(r.moderated_at) : ""}
-                          </span>
-                        </div>
-                        <p className="mt-1.5 line-clamp-2 text-[12.5px] italic leading-relaxed text-white/55">
-                          "{r.body}"
-                        </p>
-                        <div className="mt-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft/40 px-3 py-2">
-                          <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
-                            <MessageSquare className="h-3 w-3" /> Reason from REPS
-                            {r.removal_category ? ` · ${r.removal_category}` : ""}
-                          </div>
-                          <p className="mt-1 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/90">
-                            {r.removal_reason?.trim()
-                              ? r.removal_reason
-                              : "This review was removed by REPS moderation. No detailed reason was recorded at the time."}
-                          </p>
-                          <p className="mt-1 text-[10.5px] text-white/45">
-                            Reply to the REPS email if you'd like us to take another look.
-                          </p>
-                        </div>
-
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </PPanel>
-          )}
           <PPanel>
-            <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
-              <h3 className="text-[14px] font-semibold text-white">All reviews</h3>
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/55">
-                  <Search className="h-3.5 w-3.5" />
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search…"
-                    className="w-[160px] bg-transparent text-white placeholder:text-white/40 focus:outline-none"
-                  />
-                </div>
-                {(
-                  [
-                    { k: "all" as const, label: "All" },
-                    { k: "5" as const, label: "5★" },
-                    { k: "4" as const, label: "4★" },
-                  ]
-                ).map((c) => (
-
-                  <button
-                    key={c.k}
-                    type="button"
-                    onClick={() => setFilter(c.k)}
-                    className={`h-9 rounded-full border px-3 text-[12px] font-semibold ${
-                      filter === c.k
-                        ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
-                        : "border-reps-border bg-reps-panel-soft text-white/65 hover:text-white"
-                    }`}
-                  >
-                    {c.label}
-                  </button>
-                ))}
+            {/* Header: title + search */}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-reps-border px-5 py-4 sm:flex sm:flex-wrap sm:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-[14px] font-semibold text-white">Reviews</h3>
+                <p className="mt-0.5 text-[12px] text-white/55">
+                  {counts.approved} live on profile · {counts.pending} pending · {counts.removed} removed
+                </p>
+              </div>
+              <div className="flex h-9 shrink-0 items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/55">
+                <Search className="h-3.5 w-3.5" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search…"
+                  className="w-[140px] bg-transparent text-white placeholder:text-white/40 focus:outline-none sm:w-[180px]"
+                />
               </div>
             </div>
 
-            {filtered.length === 0 ? (
-              <div className="px-5 py-12 text-center">
-                <p className="text-[14px] font-semibold text-white">No reviews yet</p>
-                <p className="mt-1 text-[12px] text-white/55">
-                  Use "Request a review" to email a past client a one-click link.
-                </p>
+            {/* Tabs */}
+            <Tabs value={tab} onValueChange={(v) => setTab(v as ReviewTab)}>
+              <div className="border-b border-reps-border px-3 py-2.5 sm:px-5">
+                <div className="-mx-1 overflow-x-auto">
+                  <TabsList className="mx-1 inline-flex h-9 w-auto bg-reps-ink/60 p-1">
+                    {tabsConfig.map((t) => (
+                      <TabsTrigger
+                        key={t.value}
+                        value={t.value}
+                        className="h-7 rounded-[8px] px-2.5 text-[12px] font-semibold text-white/65 data-[state=active]:bg-reps-panel data-[state=active]:text-white data-[state=active]:shadow-none"
+                      >
+                        {t.label}
+                        <TabCount n={t.count} active={tab === t.value} />
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
               </div>
-            ) : (
-              <ul className="divide-y divide-reps-border/60">
-                {filtered.map((r) => (
-                  <li key={r.id} className="px-5 py-5">
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-reps-orange-soft text-[12px] font-semibold text-reps-orange">
-                        {initials(r.client_name)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[13px] font-semibold text-white">{r.client_name}</span>
-                          <span className="text-[11px] text-white/45">· {formatDate(r.created_at)}</span>
-                        </div>
-                        <div className="mt-1.5">
-                          <Stars n={r.rating} />
-                        </div>
-                        {r.title && <p className="mt-2 text-[13px] font-semibold text-white">{r.title}</p>}
-                        <p className="mt-2 text-[13px] leading-relaxed text-white/80">{r.body}</p>
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => thank.mutate(r.id)}
-                            disabled={thank.isPending}
-                            className="flex h-8 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 shadow-none hover:text-white disabled:opacity-50"
-                          >
-                            <ThumbsUp className="h-3.5 w-3.5" /> Thank
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirm("Flag this review for admin moderation?")) flag.mutate(r.id);
-                            }}
-                            disabled={flag.isPending}
-                            className="flex h-8 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/60 shadow-none hover:text-white disabled:opacity-50"
-                          >
-                            <Flag className="h-3.5 w-3.5" /> Flag
-                          </button>
-                        </div>
 
-                        <ReplyBlock review={r} />
-
-                      </div>
+              {tabsConfig.map((t) => (
+                <TabsContent key={t.value} value={t.value} className="mt-0">
+                  {t.value === "pending" && counts.pending > 0 && (
+                    <div className="flex items-start gap-2 border-b border-reps-border bg-reps-panel-soft/40 px-5 py-3 text-[12px] text-white/70">
+                      <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/55" />
+                      <p>
+                        Waiting on REPS approval. Replies unlock once approved.
+                        Usually within a few hours.
+                      </p>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                  )}
+                  {t.value === "removed" && counts.removed > 0 && (
+                    <div className="flex items-start gap-2 border-b border-reps-border bg-reps-panel-soft/40 px-5 py-3 text-[12px] text-white/70">
+                      <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/55" />
+                      <p>
+                        Removed reviews are hidden from your public profile. Reply to the REPS email
+                        if you'd like us to take another look.
+                      </p>
+                    </div>
+                  )}
+
+                  {filtered.length === 0 ? (
+                    <div className="px-5 py-12 text-center">
+                      <p className="text-[14px] font-semibold text-white">
+                        {search.trim() ? "No matches" : emptyCopy[t.value].title}
+                      </p>
+                      <p className="mt-1 text-[12px] text-white/55">
+                        {search.trim()
+                          ? `No reviews in this tab match "${search.trim()}".`
+                          : emptyCopy[t.value].sub}
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="divide-y divide-reps-border/60">
+                      {filtered.map((r) => {
+                        const status = (r.moderation_status ?? "approved") as
+                          | "approved"
+                          | "pending"
+                          | "removed";
+                        return (
+                          <li key={r.id} className="px-5 py-5">
+                            {status === "removed" ? (
+                              <RemovedRow review={r} />
+                            ) : (
+                              <ApprovedOrPendingRow
+                                review={r}
+                                status={status}
+                                onThank={(id) => thank.mutate(id)}
+                                onFlag={(id) => flag.mutate(id)}
+                                thankPending={thank.isPending}
+                                flagPending={flag.isPending}
+                              />
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
           </PPanel>
 
           {/* Sent requests */}
           <PPanel>
-            <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
-              <div>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-reps-border px-5 py-4 sm:flex sm:flex-wrap sm:justify-between">
+              <div className="min-w-0">
                 <h3 className="text-[14px] font-semibold text-white">Sent requests</h3>
                 <p className="mt-0.5 text-[12px] text-white/55">
-                  Review links you've emailed in the last 90 days.
+                  {requestCounts.all} sent · {requestCounts.submitted} submitted
+                  {requestCounts.expired > 0 ? ` · ${requestCounts.expired} expired` : ""}
                 </p>
               </div>
               <RequestReviewDialog
                 trigger={
                   <button
                     type="button"
-                    className="flex h-8 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 hover:text-white"
+                    className="flex h-8 shrink-0 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 hover:text-white"
                   >
                     <Mail className="h-3.5 w-3.5" /> Send another
                   </button>
                 }
               />
             </div>
-            {requests.length === 0 ? (
+
+            {requestCounts.all > 0 && (
+              <Tabs value={requestTab} onValueChange={(v) => setRequestTab(v as RequestTab)}>
+                <div className="border-b border-reps-border px-3 py-2.5 sm:px-5">
+                  <div className="-mx-1 overflow-x-auto">
+                    <TabsList className="mx-1 inline-flex h-9 w-auto bg-reps-ink/60 p-1">
+                      {([
+                        { v: "all" as const, label: "All", n: requestCounts.all },
+                        { v: "sent" as const, label: "Sent", n: requestCounts.sent },
+                        { v: "opened" as const, label: "Opened", n: requestCounts.opened },
+                        { v: "submitted" as const, label: "Submitted", n: requestCounts.submitted },
+                        { v: "expired" as const, label: "Expired", n: requestCounts.expired },
+                      ]).map((t) => (
+                        <TabsTrigger
+                          key={t.v}
+                          value={t.v}
+                          className="h-7 rounded-[8px] px-2.5 text-[12px] font-semibold text-white/65 data-[state=active]:bg-reps-panel data-[state=active]:text-white data-[state=active]:shadow-none"
+                        >
+                          {t.label}
+                          <TabCount n={t.n} active={requestTab === t.v} />
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
+                </div>
+              </Tabs>
+            )}
+
+            {requestCounts.all === 0 ? (
               <div className="px-5 py-10 text-center">
                 <p className="text-[13px] font-semibold text-white">No requests sent yet</p>
                 <p className="mt-1 text-[12px] text-white/55">
                   Use "Request a review" to email a client a one-click link.
                 </p>
               </div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="px-5 py-10 text-center">
+                <p className="text-[13px] font-semibold text-white">No {requestTab} requests</p>
+                <p className="mt-1 text-[12px] text-white/55">Try a different filter.</p>
+              </div>
             ) : (
-              <ul className="divide-y divide-reps-border/60">
-                {requests.map((r: ReviewRequestRow) => (
-                  <li key={r.id} className="flex items-center justify-between px-5 py-3">
+              <ul
+                className={`divide-y divide-reps-border/60 ${
+                  filteredRequests.length > 8 ? "max-h-[420px] overflow-y-auto" : ""
+                }`}
+              >
+                {filteredRequests.map((r: ReviewRequestRow) => (
+                  <li key={r.id} className="flex items-center justify-between gap-3 px-5 py-3">
                     <div className="min-w-0">
                       <p className="truncate text-[13px] font-semibold text-white">
                         {r.client_name || r.client_email}
@@ -464,6 +554,105 @@ function ReviewsPage() {
         </div>
       </div>
     </DashboardShell>
+  );
+}
+
+function ApprovedOrPendingRow({
+  review: r,
+  status,
+  onThank,
+  onFlag,
+  thankPending,
+  flagPending,
+}: {
+  review: ReviewDTO;
+  status: "approved" | "pending";
+  onThank: (id: string) => void;
+  onFlag: (id: string) => void;
+  thankPending: boolean;
+  flagPending: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-reps-orange-soft text-[12px] font-semibold text-reps-orange">
+        {initials(r.client_name)}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[13px] font-semibold text-white">{r.client_name}</span>
+          {status === "pending" && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-500/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300">
+              <Clock className="h-2.5 w-2.5" /> Pending
+            </span>
+          )}
+          <span className="text-[11px] text-white/45">· {formatDate(r.created_at)}</span>
+        </div>
+        <div className="mt-1.5">
+          <Stars n={r.rating} />
+        </div>
+        {r.title && <p className="mt-2 text-[13px] font-semibold text-white">{r.title}</p>}
+        <p className="mt-2 text-[13px] leading-relaxed text-white/80">{r.body}</p>
+        {status === "approved" && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onThank(r.id)}
+              disabled={thankPending}
+              className="flex h-8 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 shadow-none hover:text-white disabled:opacity-50"
+            >
+              <ThumbsUp className="h-3.5 w-3.5" /> Thank
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Flag this review for admin moderation?")) onFlag(r.id);
+              }}
+              disabled={flagPending}
+              className="flex h-8 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/60 shadow-none hover:text-white disabled:opacity-50"
+            >
+              <Flag className="h-3.5 w-3.5" /> Flag
+            </button>
+          </div>
+        )}
+        <ReplyBlock review={r} />
+      </div>
+    </div>
+  );
+}
+
+function RemovedRow({ review: r }: { review: ReviewDTO }) {
+  return (
+    <div className="flex items-start gap-3 opacity-90">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/5 text-[12px] font-semibold text-white/45">
+        {initials(r.client_name)}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[13px] font-semibold text-white/75 line-through">{r.client_name}</span>
+          <Stars n={r.rating} />
+          <span className="text-[11px] text-white/45">
+            · removed {r.moderated_at ? formatDate(r.moderated_at) : ""}
+          </span>
+        </div>
+        <p className="mt-1.5 line-clamp-2 text-[12.5px] italic leading-relaxed text-white/55">
+          "{r.body}"
+        </p>
+        <div className="mt-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft/40 px-3 py-2">
+          <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
+            <MessageSquare className="h-3 w-3" /> Reason from REPS
+            {r.removal_category ? ` · ${r.removal_category}` : ""}
+          </div>
+          <p className="mt-1 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/90">
+            {r.removal_reason?.trim()
+              ? r.removal_reason
+              : "This review was removed by REPS moderation. No detailed reason was recorded at the time."}
+          </p>
+          <p className="mt-1 text-[10.5px] text-white/45">
+            Reply to the REPS email if you'd like us to take another look.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
