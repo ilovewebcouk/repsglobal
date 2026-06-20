@@ -534,6 +534,7 @@ function ProProfilePage() {
             const isVerified = !!pro.trust?.verified;
             const hasQuals = (pro.qualifications?.length ?? 0) > 0;
             const hasInsurance = !!pro.trust?.insuranceExpiry;
+            const today = new Date().toISOString().slice(0, 10);
             const verifiedSub = isVerified
               ? hasInsurance
                 ? "Qualified & insured"
