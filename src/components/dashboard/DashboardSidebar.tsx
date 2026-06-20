@@ -258,7 +258,14 @@ export function DashboardSidebar({
 }) {
   const account = useAccountMenu();
   const id = useEffectiveIdentity();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const groups: readonly NavGroup[] = role === "admin" ? ADMIN_NAV : trainerNav(tier);
+  const scrollableGroups = groups.filter(
+    (g) => g.title !== "Help" && g.title !== "System",
+  );
+  const preFooterItems = groups
+    .filter((g) => g.title === "Help" || g.title === "System")
+    .flatMap((g) => g.items);
 
   const homeHref = role === "admin" ? "/admin" : "/dashboard";
 
@@ -289,12 +296,42 @@ export function DashboardSidebar({
           "[&::-webkit-scrollbar-button]:hidden",
         )}
       >
-        {groups.map((g) => (
+        {scrollableGroups.map((g) => (
           <NavSectionGroup key={g.title} group={g} active={active} />
         ))}
       </SidebarContent>
 
       <SidebarFooter className="gap-2 px-3 pb-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
+        {preFooterItems.length > 0 ? (
+          <SidebarMenu className="gap-1">
+            {preFooterItems.map((item) => {
+              const isActive = pathname === item.to || item.label === active;
+              const Icon = item.icon;
+              return (
+                <SidebarMenuItem key={`footer:${item.label}`}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.label}
+                    className={cn(
+                      "h-10 rounded-[10px] text-[13px] font-medium text-white/70 hover:bg-reps-panel hover:text-white",
+                      "data-[active=true]:bg-reps-orange-soft data-[active=true]:text-reps-orange data-[active=true]:hover:bg-reps-orange/25 data-[active=true]:hover:text-reps-orange",
+                    )}
+                  >
+                    <Link
+                      to={item.to}
+                      aria-label={item.label}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      <Icon className="h-[18px] w-[18px]" />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        ) : null}
         <MemberRow member={member} />
         {role === "trainer" && account.isAdmin && !id.isImpersonating ? (
           <>
