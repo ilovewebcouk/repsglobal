@@ -12,6 +12,8 @@ const SearchSchema = z.object({
   in_person: z.boolean().optional(),
   verified: z.boolean().optional(),
   featured: z.boolean().optional(),
+  /** Minimum published review average (1–5). 0 / undefined = no filter. */
+  min_rating: z.number().int().min(0).max(5).optional(),
   limit: z.number().int().min(1).max(100).optional(),
   offset: z.number().int().min(0).max(10000).optional(),
   page: z.number().int().min(1).max(1000).optional(),
