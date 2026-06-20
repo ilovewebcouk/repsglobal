@@ -2495,6 +2495,10 @@ export type Database = {
           professional_id: string
           published_at: string | null
           rating: number
+          responded_at: string | null
+          response: string | null
+          response_edited_at: string | null
+          response_notified_at: string | null
           service_label: string | null
           source: string
           status: string
@@ -2526,6 +2530,10 @@ export type Database = {
           professional_id: string
           published_at?: string | null
           rating: number
+          responded_at?: string | null
+          response?: string | null
+          response_edited_at?: string | null
+          response_notified_at?: string | null
           service_label?: string | null
           source?: string
           status?: string
@@ -2557,6 +2565,10 @@ export type Database = {
           professional_id?: string
           published_at?: string | null
           rating?: number
+          responded_at?: string | null
+          response?: string | null
+          response_edited_at?: string | null
+          response_notified_at?: string | null
           service_label?: string | null
           source?: string
           status?: string
@@ -3368,6 +3380,10 @@ export type Database = {
         }[]
       }
       admin_seed_demo_pros: { Args: never; Returns: number }
+      clear_pro_review_response: {
+        Args: { _review_id: string }
+        Returns: undefined
+      }
       compute_pro_quality_score: { Args: { _pro_id: string }; Returns: number }
       convert_lead_to_client: { Args: { _enquiry_id: string }; Returns: string }
       count_confirmed_pro_signups: {
@@ -3574,6 +3590,10 @@ export type Database = {
           auto_closed: number
           hard_purged: number
         }[]
+      }
+      upsert_pro_review_response: {
+        Args: { _response: string; _review_id: string }
+        Returns: undefined
       }
     }
     Enums: {

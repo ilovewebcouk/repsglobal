@@ -753,3 +753,95 @@ export const adminListFlagged = createServerFn({ method: "GET" })
     const rows = await adminListReviews({ data: { tab: "pending" } });
     return rows.map((r) => ({ ...r, flag_reason: null, flagged_at: null }));
   });
+
+// =====================================================================
+// Pro reply to a review — backend wiring only (no public UI yet)
+// =====================================================================
+
+const ReplySchema = z.object({
+  review_id: z.string().uuid(),
+  response: z.string().trim().min(1).max(1000),
+});
+
+export const replyToReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => ReplySchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Snapshot prior state so we know whether this is the first publish.
+    const { data: before } = await supabaseAdmin
+      .from("reviews")
+      .select(
+        "response, response_notified_at, professional_id, client_user_id, client_email, rating",
+      )
+      .eq("id", data.review_id)
+      .maybeSingle();
+    if (!before) throw new Error("review not found");
+    const wasUnreplied = before.response === null;
+
+    const { error } = await context.supabase.rpc("upsert_pro_review_response", {
+      _review_id: data.review_id,
+      _response: data.response,
+    } as never);
+    if (error) throw error;
+
+    // First-publish email notification to the reviewer (idempotent via flag).
+    if (wasUnreplied && !before.response_notified_at) {
+      try {
+        // Resolve recipient email + pro display info.
+        let recipientEmail: string | null = (before.client_email as unknown as string) ?? null;
+        if (!recipientEmail && before.client_user_id) {
+          const { data: u } = await supabaseAdmin.auth.admin.getUserById(
+            before.client_user_id as string,
+          );
+          recipientEmail = u?.user?.email ?? null;
+        }
+        if (recipientEmail) {
+          const { data: pro } = await supabaseAdmin
+            .from("professionals")
+            .select("slug")
+            .eq("id", before.professional_id)
+            .maybeSingle();
+          const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("full_name, display_name")
+            .eq("id", before.professional_id)
+            .maybeSingle();
+          const proName =
+            profile?.display_name || profile?.full_name || "Your trainer";
+
+          const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+          await sendTransactionalEmailServer({
+            templateName: "review-reply",
+            recipientEmail,
+            idempotencyKey: `review-reply:${data.review_id}`,
+            templateData: {
+              proName,
+              proSlug: pro?.slug ?? "",
+              reviewRating: before.rating,
+              replyText: data.response,
+            },
+          });
+          await supabaseAdmin
+            .from("reviews")
+            .update({ response_notified_at: new Date().toISOString() })
+            .eq("id", data.review_id);
+        }
+      } catch (e) {
+        console.error("[replyToReview] notify email failed", e);
+      }
+    }
+    return { ok: true };
+  });
+
+export const clearReviewReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => z.object({ review_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("clear_pro_review_response", {
+      _review_id: data.review_id,
+    } as never);
+    if (error) throw error;
+    return { ok: true };
+  });
