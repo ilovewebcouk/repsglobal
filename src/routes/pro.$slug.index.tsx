@@ -86,6 +86,7 @@ type Pro = {
     issuer: string;
     id: string;
     issued: string;
+    verified?: boolean;
   }[];
   faqs: { q: string; a: string; open?: boolean }[];
 };
