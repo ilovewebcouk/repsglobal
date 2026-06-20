@@ -37,6 +37,7 @@ import {
   getProfessionSlugFromLabel,
 } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
+import { LocationMap } from "@/components/pro/LocationMap";
 
 function formatReviewWhen(iso: string): string {
   const then = new Date(iso).getTime();
