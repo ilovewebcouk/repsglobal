@@ -686,9 +686,6 @@ function ProProfilePage() {
                 <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                   Trains at
                 </h2>
-                <p className="mt-1 text-[12px] text-reps-muted-light">
-                  Independent — not affiliated with the gyms shown.
-                </p>
                 {(() => {
                   const gyms =
                     pro.gyms ??
