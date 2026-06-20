@@ -97,6 +97,16 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     ]);
     const loc = locMap.get(r.id) ?? null;
 
+    const { data: qualRows } = await supabaseAdmin
+      .from("verification_submissions")
+      .select(
+        "id, awarding_body, awarding_body_slug, qualification, qualification_number, issue_date, year, expiry_date, regulator_verified",
+      )
+      .eq("professional_id", r.id)
+      .eq("status", "approved")
+      .order("issue_date", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false });
+
     return {
       ...r,
       primary_profession: r.primary_profession ?? null,
@@ -104,6 +114,17 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       full_name: prof?.full_name ?? null,
       avatar_url: prof?.avatar_url ?? null,
       location: loc,
+      qualifications: (qualRows ?? []) as Array<{
+        id: string;
+        awarding_body: string | null;
+        awarding_body_slug: string | null;
+        qualification: string | null;
+        qualification_number: string | null;
+        issue_date: string | null;
+        year: number | null;
+        expiry_date: string | null;
+        regulator_verified: boolean | null;
+      }>,
     };
   });
 

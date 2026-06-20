@@ -1,53 +1,50 @@
-## Honest answer first
+# Wire the Qualifications & Credentials section
 
-No — it's not 10/10 yet. It's about 8/10. Here's what's actually still wrong, ranked by severity. I haven't fixed anything yet — this is the plan.
+Right now the panel is hard-coded to `pro.qualifications` from the fixture map. For DB‑backed pros (like `katie-gibbs`), `proFromDb` sets `qualifications: []`, so the panel renders blank with a misleading "View all qualifications (3)" link.
 
-### 🔴 Real bugs still in the shipped code
+## What to change
 
-1. **Footer "ring" you liked is gone.** I flattened `MemberRow` to a borderless row to fix "card-inside-a-card", but you preferred the framed look. Revert: bring back the `border border-reps-border rounded-[14px] p-2.5 bg-reps-panel-soft/40` wrapper in expanded mode, and keep it borderless only in `group-data-[collapsible=icon]` mode.
-2. **Type safety on `TrainerActive` still not derived from nav arrays.** Same class of bug that hid Services/Shop-front from us could happen again on the next label change. Derive `TrainerActive` / `AdminActive` from `(typeof PRO_NAV)[number]["items"][number]["label"]` so typecheck catches it.
-3. **`defaultOpen` reads the cookie client-side only.** On SSR the first paint is `true`, then hydrates to the cookie value — one-frame expand→collapse flash for users on the icon rail. Either read the cookie from the request in the loader and pass it down, or accept the flash and document it. (I claimed this was fixed; it's only half-fixed.)
-4. **Collapsed-mode counter badges are invisible.** `SidebarMenuBadge` is hidden in icon mode by shadcn default. A coach on the icon rail won't see "3 new enquiries" or unread reviews. Add an absolute-positioned dot indicator (orange 6px) on the icon when `badge && collapsed`.
-5. **Admin nav has a "Settings" item and trainer nav has a "Settings" item — both with different `to`.** Active match by `pathname === item.to` handles it, but the `active` fallback (label-based) would mismatch if the wrong `active` prop is passed in admin context. Low risk, worth tightening: drop the `||  item.label === active` fallback entirely now that every route passes a correct `to`.
+### 1. Server: surface approved qualifications
 
-### 🟠 Polish I'd still call out at 10/10 bar
+Edit `src/lib/profile/public-profile.functions.ts` (`getPublicProfileBySlug` only):
 
-6. **Mobile wordmark in TopBar isn't actually wired** — I claimed it but need to verify in `DashboardShell.tsx`. If it's missing, add `<RepsWordmark className="h-4 lg:hidden" />` next to the trigger.
-7. **Footer button stack jitters on collapse.** Expanded "Upgrade to Pro" is full-width `justify-between`; collapsed is `size-9 icon`. The transition between modes pops. Wrap both in a single `<div className="flex flex-col gap-2 group-data-[collapsible=icon]:items-center">` and make the icon-only variant the same `size-9` as Admin console so they align.
-8. **`SidebarRail` has no visible hover affordance against `bg-reps-panel`.** It works but users won't discover it. Tiny: add `hover:bg-reps-orange/10` via the rail's `after:` pseudo.
-9. **Active hover delta (`hover:bg-reps-orange/20`) is too close to base (`bg-reps-orange-soft` ≈ orange/15).** Bump to `/25` or add a 1px inner ring on hover.
-10. **`SidebarGroupLabel` uppercase tracking at `0.08em` reads heavy at icon-mode width 0** — it's hidden anyway via shadcn, but verify no layout jump.
+- After fetching the pro row, also query `verification_submissions` for that `professional_id` where `status = 'approved'`, ordered by `issue_date desc nulls last, created_at desc`.
+- Select: `id, awarding_body, awarding_body_slug, qualification, qualification_number, issue_date, year, expiry_date, regulator_verified`.
+- Return a new `qualifications` array on the response shape.
 
-### ✅ Genuinely good
+(No change to `listPublishedProfessionals` — list cards don't need this.)
 
-Architecture, tokens, keyboard shortcut, mobile Sheet, tier-aware split, `aria-current`, pathname-first active match, footer CTAs reachable in icon mode.
+### 2. Route: map DB rows into the existing `Qualification` shape
 
----
+In `src/routes/pro.$slug.index.tsx`, inside `proFromDb`, build `qualifications` from `db.qualifications` using the existing shape `{ id, title, issuer, badge, issued }`:
 
-## What I'll do once you approve
+- `title` → `qualification` (Title-cased; the row stores it ALL CAPS like "NCFE LEVEL 3 CERTIFICATE…", convert to sentence/Title case so it matches the design).
+- `issuer` → `awarding_body`.
+- `badge` → 3–4 char code derived from `awarding_body_slug` (uppercased) or initials of `awarding_body` (e.g. "NCFE", "YMCA").
+- `id` → `qualification_number` if present, otherwise the short submission id (`first 8 chars`).
+- `issued` → formatted `issue_date` ("Dec 2017") or fallback to `year` as string.
 
-**Phase 1 — code fixes (≈10 min)**
-- Restore footer ring on `MemberRow` (expanded only) — bug #1
-- Derive `TrainerActive` / `AdminActive` from nav arrays — bug #2
-- Add collapsed-mode dot indicator for items with a badge — bug #4
-- Drop label-based `active` fallback — bug #5
-- Verify + wire mobile wordmark in `DashboardShell.tsx` — polish #6
-- Align footer button widths in icon mode — polish #7
-- Bump active hover delta to `/25` — polish #9
-- (Skip #3 SSR cookie + #8 rail hover for this pass — flag as follow-ups)
+### 3. UI: honour the real count + handle empty state
 
-**Phase 2 — breakpoint sweep**
-Log in as the admin (`cruz.pt@icloud.com`) and as `demo-verified@repsuk.org`, then screenshot at **1920 / 1440 / 1280 / 1024 / 768 / 414**, expanded + icon-collapsed, on:
-- `/admin` (admin nav, Settings active)
-- `/dashboard` (Pro nav, no badges)
-- `/dashboard/verification` (Verified nav, count chip)
-- `/dashboard/enquiries` (unread pill + collapsed dot)
-- `/dashboard/clients/$slug` (long subtitle, action cluster overflow)
-- Mobile Sheet open at 414px
+In the same file, around the existing block (lines 661–696):
 
-**Phase 3 — written verdict**
-Tick-list per breakpoint: overflow? footer reachable? active correct? mobile sheet smooth? focus ring on trigger? Final honest score.
+- Replace the hard-coded `View all qualifications (3)` with `View all qualifications ({pro.qualifications.length})`, and hide the link entirely when the count is 0.
+- When `pro.qualifications.length === 0`, render a quiet empty state inside the card:
+  - Muted line: "Verified qualifications will appear here once added." (text-[13px] text-reps-muted-light).
+  - Keeps the card height reasonable so the right‑hand Trust panel still aligns.
+- Keep the existing "Verified" green tick only when the row has `regulator_verified = true`; otherwise show a neutral "Approved" label so we don't overstate Ofqual cross‑checks.
 
-**Out of scope:** no nav re-org, no new routes, no copy/token edits, no SSR cookie plumbing (flagged as a separate task).
+## Out of scope
 
-Approve and I'll switch to build mode and start with Phase 1.
+- Fixtures (`james-carter`, etc.) keep their current static qualifications.
+- No new tables, no migration, no schema changes.
+- Insurance / CPD points are not part of this wire-up (Trust panel stays as-is for now).
+- No change to the dashboard or admin moderation flows.
+
+## Verification
+
+After the build, visit `/pro/katie-gibbs#qualifications`:
+- Shows one row: "NCFE Level 3 Certificate in Personal Training", issuer "NCFE", badge "NCFE", Issued "Dec 2017", "Approved" label (not "Verified" — `regulator_verified=false`).
+- Footer reads "View all qualifications (1)".
+
+Visit `/pro/james-carter#qualifications` — unchanged (fixture path).

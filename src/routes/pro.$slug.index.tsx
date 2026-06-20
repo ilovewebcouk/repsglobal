@@ -86,6 +86,7 @@ type Pro = {
     issuer: string;
     id: string;
     issued: string;
+    verified?: boolean;
   }[];
   faqs: { q: string; a: string; open?: boolean }[];
 };
@@ -225,6 +226,47 @@ const RATING_DIST = [
 
 type DbPro = Awaited<ReturnType<typeof getPublicProfileBySlug>>;
 
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function formatIssued(issueDate: string | null, year: number | null): string {
+  if (issueDate) {
+    const d = new Date(issueDate);
+    if (!Number.isNaN(d.getTime())) {
+      return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+    }
+  }
+  return year ? String(year) : "—";
+}
+function titleCaseQual(s: string): string {
+  // Only Title-Case if the string is mostly uppercase, otherwise leave as authored.
+  const letters = s.replace(/[^A-Za-z]/g, "");
+  if (!letters.length) return s;
+  const upperRatio = (s.match(/[A-Z]/g)?.length ?? 0) / letters.length;
+  if (upperRatio < 0.7) return s;
+  const small = new Set(["a", "an", "and", "the", "of", "in", "for", "to", "on", "or"]);
+  return s
+    .toLowerCase()
+    .split(/(\s+|-)/)
+    .map((tok, i) => {
+      if (!tok.trim() || tok === "-") return tok;
+      if (i > 0 && small.has(tok)) return tok;
+      return tok.charAt(0).toUpperCase() + tok.slice(1);
+    })
+    .join("");
+}
+function badgeFor(awardingBody: string | null, slug: string | null): string {
+  if (slug) {
+    const s = slug.replace(/[^a-z0-9]/gi, "").toUpperCase();
+    if (s.length) return s.slice(0, 4);
+  }
+  const body = (awardingBody ?? "").trim();
+  if (!body) return "QUAL";
+  const parts = body.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return parts.map((p) => p[0]!.toUpperCase()).join("").slice(0, 4);
+  }
+  return body.replace(/[^a-z0-9]/gi, "").slice(0, 4).toUpperCase() || "QUAL";
+}
+
 function proFromDb(row: NonNullable<DbPro>): Pro {
   const template = PROS["james-carter"];
   const professionLabel =
@@ -263,7 +305,14 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
           },
         ]
       : template.services,
-    qualifications: [],
+    qualifications: (row.qualifications ?? []).map((q) => ({
+      badge: badgeFor(q.awarding_body, q.awarding_body_slug),
+      title: titleCaseQual(q.qualification ?? "Qualification"),
+      issuer: q.awarding_body ?? "Awarding body",
+      id: q.qualification_number?.trim() || q.id.slice(0, 8),
+      issued: formatIssued(q.issue_date, q.year),
+      verified: !!q.regulator_verified,
+    })),
     faqs: [],
   };
 }
@@ -666,33 +715,43 @@ function ProProfilePage() {
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 Qualifications &amp; Credentials
               </h2>
-              <div className="mt-5 space-y-5">
-                {pro.qualifications.map((q) => (
-                  <div
-                    key={q.id}
-                    className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border-b border-reps-stone/70 pb-5 last:border-0 last:pb-0"
-                  >
-                    <div className="flex h-12 w-16 items-center justify-center rounded-[10px] bg-reps-ivory text-[11px] font-bold text-reps-charcoal">
-                      {q.badge}
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-semibold text-reps-charcoal">{q.title}</div>
-                      <div className="text-[12px] text-reps-muted-light">{q.issuer}</div>
-                      <div className="mt-0.5 text-[11px] text-reps-muted-light">ID: {q.id}</div>
-                    </div>
-                    <div className="text-right text-[12px] text-reps-muted-light">
-                      <div>Issued: {q.issued}</div>
-                      <div className="mt-1 text-[11px] font-medium text-reps-green">Verified</div>
-                    </div>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-reps-green text-white">
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                    </span>
+              {pro.qualifications.length === 0 ? (
+                <p className="mt-5 text-[13px] text-reps-muted-light">
+                  Verified qualifications will appear here once added.
+                </p>
+              ) : (
+                <>
+                  <div className="mt-5 space-y-5">
+                    {pro.qualifications.map((q) => (
+                      <div
+                        key={q.id}
+                        className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border-b border-reps-stone/70 pb-5 last:border-0 last:pb-0"
+                      >
+                        <div className="flex h-12 w-16 items-center justify-center rounded-[10px] bg-reps-ivory text-[11px] font-bold text-reps-charcoal">
+                          {q.badge}
+                        </div>
+                        <div>
+                          <div className="text-[14px] font-semibold text-reps-charcoal">{q.title}</div>
+                          <div className="text-[12px] text-reps-muted-light">{q.issuer}</div>
+                          <div className="mt-0.5 text-[11px] text-reps-muted-light">ID: {q.id}</div>
+                        </div>
+                        <div className="text-right text-[12px] text-reps-muted-light">
+                          <div>Issued: {q.issued}</div>
+                          <div className="mt-1 text-[11px] font-medium text-reps-green">
+                            {q.verified === false ? "Approved" : "Verified"}
+                          </div>
+                        </div>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-reps-green text-white">
+                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <a className="mt-5 inline-block text-[13px] font-semibold text-reps-orange hover:underline" href="#qualifications">
-                View all qualifications (3)
-              </a>
+                  <a className="mt-5 inline-block text-[13px] font-semibold text-reps-orange hover:underline" href="#qualifications">
+                    View all qualifications ({pro.qualifications.length})
+                  </a>
+                </>
+              )}
             </div>
 
             <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
