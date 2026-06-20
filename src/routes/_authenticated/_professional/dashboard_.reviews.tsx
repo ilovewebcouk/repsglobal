@@ -138,6 +138,16 @@ function ReviewsPage() {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't flag"),
   });
 
+  const removed = React.useMemo(
+    () =>
+      reviews.filter(
+        (r) =>
+          (r.moderation_status ?? "approved") === "removed" &&
+          (r.removal_reason ?? "").trim().length > 0,
+      ),
+    [reviews],
+  );
+
   const filtered = React.useMemo(() => {
     // Hide reviews admin has removed — trainer shouldn't see them in their feed.
     let rows: ReviewDTO[] = reviews.filter(
