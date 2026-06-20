@@ -107,6 +107,23 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       .order("issue_date", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false });
 
+    const { data: gymRows } = await supabaseAdmin
+      .from("professional_gyms")
+      .select("position, gyms ( name, chain_name, area, city )")
+      .eq("professional_id", r.id)
+      .order("position", { ascending: true });
+
+    const gyms = (gymRows ?? [])
+      .map((row) => {
+        const g = (row as { gyms: { name: string | null; chain_name: string | null; area: string | null; city: string | null } | null }).gyms;
+        if (!g) return null;
+        return {
+          label: g.chain_name?.trim() || g.name?.trim() || "Gym",
+          branch: g.area?.trim() || g.city?.trim() || "",
+        };
+      })
+      .filter((g): g is { label: string; branch: string } => g !== null);
+
     return {
       ...r,
       primary_profession: r.primary_profession ?? null,
@@ -125,6 +142,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
         expiry_date: string | null;
         regulator_verified: boolean | null;
       }>,
+      gyms,
     };
   });
 

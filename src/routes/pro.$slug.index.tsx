@@ -88,6 +88,7 @@ type Pro = {
     issued: string;
     verified?: boolean;
   }[];
+  gyms?: { label: string; branch: string }[];
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
@@ -313,6 +314,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       issued: formatIssued(q.issue_date, q.year),
       verified: !!q.regulator_verified,
     })),
+    gyms: row.gyms ?? [],
     faqs: [],
   };
 }
@@ -687,20 +689,35 @@ function ProProfilePage() {
                 <p className="mt-1 text-[12px] text-reps-muted-light">
                   Independent — not affiliated with the gyms shown.
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {[
-                    { label: "Virgin Active", branch: "Barbican" },
-                    { label: "PureGym", branch: "Old Street" },
-                    { label: "Third Space", branch: "City" },
-                  ].map((v) => (
-                    <span
-                      key={`${v.label}-${v.branch}`}
-                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
-                    >
-                      {v.label} · {v.branch}
-                    </span>
-                  ))}
-                </div>
+                {(() => {
+                  const gyms =
+                    pro.gyms ??
+                    [
+                      { label: "Virgin Active", branch: "Barbican" },
+                      { label: "PureGym", branch: "Old Street" },
+                      { label: "Third Space", branch: "City" },
+                    ];
+                  if (gyms.length === 0) {
+                    return (
+                      <p className="mt-3 text-[13px] text-reps-muted-light">
+                        No gyms listed yet.
+                      </p>
+                    );
+                  }
+                  return (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {gyms.map((v) => (
+                        <span
+                          key={`${v.label}-${v.branch}`}
+                          className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
+                        >
+                          {v.label}
+                          {v.branch ? ` · ${v.branch}` : ""}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
