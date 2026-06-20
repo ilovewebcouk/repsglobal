@@ -74,7 +74,7 @@ function TopBar({
 
   return (
     <header className="flex items-center justify-between gap-3 px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
         <SidebarTrigger
           aria-label="Toggle navigation"
           className={cn(
@@ -84,20 +84,20 @@ function TopBar({
         <Link
           to={role === "admin" ? "/admin" : "/dashboard"}
           aria-label="REPS dashboard home"
-          className="shrink-0 lg:hidden"
+          className="shrink-0 sm:hidden"
         >
-          <RepsWordmark className="h-[16px] text-white" />
+          <RepsWordmark className="h-3 text-white" />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-display text-[20px] font-bold leading-tight text-white sm:text-[22px]">
+          <h1 className="truncate font-display text-[17px] font-bold leading-tight text-white sm:text-[20px] md:text-[22px]">
             {title}
           </h1>
-          <p className="mt-0.5 truncate text-[13px] text-white/55">{subtitle}</p>
+          <p className="mt-0.5 hidden truncate text-[13px] text-white/55 sm:block">{subtitle}</p>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {search ? (
-          <div className="relative hidden md:block">
+          <div className="relative hidden lg:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
             <input
               ref={inputRef}
@@ -112,7 +112,7 @@ function TopBar({
             </kbd>
           </div>
         ) : (
-          <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 md:flex">
+          <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 lg:flex">
             <Search className="h-4 w-4" />
             <span className="flex-1">{searchPlaceholder}</span>
             <kbd className="rounded-[6px] border border-reps-border bg-reps-ink px-1.5 py-0.5 text-[10px] font-semibold text-white/60">
@@ -177,18 +177,9 @@ export function DashboardShell({
   const searchPlaceholder =
     role === "admin" ? "Search professionals, members, leads…" : "Search…";
 
-  // Read the persisted sidebar state from cookie so the very first paint
-  // matches the user's last choice (avoids an expanded→collapsed flash).
-  const defaultOpen = React.useMemo(() => {
-    if (typeof document === "undefined") return true;
-    const match = document.cookie.match(/(?:^|; )sidebar_state=([^;]+)/);
-    return match ? match[1] !== "false" : true;
-  }, []);
-
   return (
     <div className="h-screen bg-reps-ink text-reps-text">
       <SidebarProvider
-        defaultOpen={defaultOpen}
         style={
           {
             "--sidebar-width": "232px",
