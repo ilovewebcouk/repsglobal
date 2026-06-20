@@ -277,8 +277,6 @@ function ReviewsPage() {
       title: "No removed reviews",
       sub: "Your feed is clean.",
     },
-    "5": { title: "No 5★ reviews yet", sub: "5★ reviews show here once approved." },
-    "4": { title: "No 4★ reviews yet", sub: "4★ reviews show here once approved." },
   };
 
   return (
