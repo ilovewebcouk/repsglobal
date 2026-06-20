@@ -157,6 +157,8 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         online_available: !!pro.online_available,
         member_since: pro.member_since ?? null,
         coaching_since_year: coachingSinceYear,
+        tier,
+
       },
       services: (services ?? []) as ServiceDTO[],
     };
