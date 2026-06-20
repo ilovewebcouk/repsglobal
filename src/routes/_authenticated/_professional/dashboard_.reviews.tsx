@@ -141,12 +141,11 @@ function ReviewsPage() {
   const removed = React.useMemo(
     () =>
       reviews.filter(
-        (r) =>
-          (r.moderation_status ?? "approved") === "removed" &&
-          (r.removal_reason ?? "").trim().length > 0,
+        (r) => (r.moderation_status ?? "approved") === "removed",
       ),
     [reviews],
   );
+
 
   const filtered = React.useMemo(() => {
     // Hide reviews admin has removed — trainer shouldn't see them in their feed.
