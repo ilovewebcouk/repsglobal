@@ -528,29 +528,43 @@ function ProProfilePage() {
           </div>
 
           {/* Trust strip */}
-          <div className="mt-6 grid grid-cols-2 gap-4 rounded-[16px] border border-reps-stone bg-reps-warm-white p-4 sm:grid-cols-4 lg:p-5">
-            <TrustItem
-              icon={ShieldCheck}
-              title="REPS Verified"
-              sub="Qualified & insured"
-            />
-            <TrustItem
-              icon={Award}
-              title="Qualifications Checked"
-              sub="Up to date"
-            />
-            <TrustItem
-              icon={Umbrella}
-              title="Professional Indemnity"
-              sub="Active until 12 Dec 2025"
-            />
-            <TrustItem
-              icon={GraduationCap}
-              title="CPD Compliant"
-              sub="18 / 20 pts this cycle"
-              info
-            />
-          </div>
+          {(() => {
+            const isVerified = !!pro.trust?.verified;
+            const hasQuals = (pro.qualifications?.length ?? 0) > 0;
+            const hasInsurance = !!pro.trust?.insuranceExpiry;
+            const verifiedSub = isVerified
+              ? hasInsurance
+                ? "Qualified & insured"
+                : "Qualified"
+              : hasQuals
+                ? "Qualifications pending review"
+                : "Not yet qualified";
+            return (
+              <div className="mt-6 grid grid-cols-2 gap-4 rounded-[16px] border border-reps-stone bg-reps-warm-white p-4 sm:grid-cols-4 lg:p-5">
+                <TrustItem
+                  icon={ShieldCheck}
+                  title={isVerified ? "REPS Verified" : "Not REPS Verified"}
+                  sub={verifiedSub}
+                />
+                <TrustItem
+                  icon={Award}
+                  title="Qualifications Checked"
+                  sub="Up to date"
+                />
+                <TrustItem
+                  icon={Umbrella}
+                  title="Professional Indemnity"
+                  sub="Active until 12 Dec 2025"
+                />
+                <TrustItem
+                  icon={GraduationCap}
+                  title="CPD Compliant"
+                  sub="18 / 20 pts this cycle"
+                  info
+                />
+              </div>
+            );
+          })()}
         </div>
       </section>
 
