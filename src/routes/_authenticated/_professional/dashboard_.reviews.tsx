@@ -255,8 +255,6 @@ function ReviewsPage() {
     { value: "approved", label: "Approved", count: counts.approved },
     { value: "pending", label: "Pending", count: counts.pending },
     { value: "removed", label: "Removed", count: counts.removed },
-    { value: "5", label: "5★", count: counts.five },
-    { value: "4", label: "4★", count: counts.four },
   ];
 
   const emptyCopy: Record<ReviewTab, { title: string; sub: string }> = {
