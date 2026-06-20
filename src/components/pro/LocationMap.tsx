@@ -5,11 +5,11 @@ type Props = { lat: number; lng: number; label?: string };
 
 declare global {
   interface Window {
-    google?: any;
     __repsMapInit?: () => void;
     __repsMapLoading?: Promise<void>;
   }
 }
+
 
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as
   | string
