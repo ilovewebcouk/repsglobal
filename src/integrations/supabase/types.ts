@@ -3410,6 +3410,10 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      fan_out_review_notifications: {
+        Args: { _professional_id: string; _review_id: string }
+        Returns: undefined
+      }
       get_confirmed_professional_ids: {
         Args: { _ids: string[] }
         Returns: string[]
