@@ -280,6 +280,13 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
   const template = PROS["james-carter"];
   const professionLabel =
     getProfessionLabel(row.primary_profession) ?? "REPS Verified Professional";
+  const memberSince = row.member_since ? new Date(row.member_since) : null;
+  const years = memberSince
+    ? Math.max(
+        0,
+        Math.floor((Date.now() - memberSince.getTime()) / (365.25 * 24 * 60 * 60 * 1000)),
+      )
+    : 0;
   return {
     slug: row.slug ?? "",
     name: row.full_name ?? "REPS Professional",
@@ -296,7 +303,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     ] as Pro["modes"],
     blurb: row.headline ?? "",
     image: row.avatar_url || proJames,
-    years: 0,
+    years,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
     specialisms: (row.specialisms ?? [])
