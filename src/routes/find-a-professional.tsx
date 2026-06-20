@@ -237,7 +237,7 @@ function DirectoryPage() {
     queryKey: [
       "directory",
       "search",
-      { city, profession, specialism, q, page, mode, verified, featured, useNearestServer,
+      { city, profession, specialism, q, page, mode, verified, featured, min_rating, useNearestServer,
         vlat: useNearestServer ? viewerOriginEarly?.latitude : null,
         vlng: useNearestServer ? viewerOriginEarly?.longitude : null },
     ],
@@ -254,6 +254,7 @@ function DirectoryPage() {
           in_person: serverFilters.in_person,
           verified,
           featured,
+          min_rating: min_rating > 0 ? min_rating : undefined,
           sort_by_nearest: useNearestServer,
           viewer_lat: useNearestServer ? viewerOriginEarly!.latitude : undefined,
           viewer_lng: useNearestServer ? viewerOriginEarly!.longitude : undefined,
