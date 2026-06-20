@@ -6,7 +6,7 @@ import {
   BadgeCheck,
   Bookmark,
   Calendar,
-  Camera,
+  
   Check,
   ChevronDown,
   ChevronRight,
