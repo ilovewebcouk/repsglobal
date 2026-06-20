@@ -172,30 +172,36 @@ export const getMyShopFront = createServerFn({ method: "GET" })
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: pro }, { data: prof }, { data: sf }, { data: services }] = await Promise.all([
-      supabaseAdmin
-        .from("professionals")
-        .select(
-          "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
-        )
-        .eq("id", userId)
-        .maybeSingle(),
-      supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
-      supabaseAdmin
-        .from("shop_fronts")
-        .select(
-          "professional_id, tagline, about, hero_image_url, accent_hex, layout_variant, is_published, published_at",
-        )
-        .eq("professional_id", userId)
-        .maybeSingle(),
-      supabaseAdmin
-        .from("services")
-        .select(
-          "id, professional_id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_published, is_featured",
-        )
-        .eq("professional_id", userId)
-        .order("sort_order", { ascending: true }),
-    ]);
+    const [{ data: pro }, { data: prof }, { data: sf }, { data: services }, { data: subRow }] =
+      await Promise.all([
+        supabaseAdmin
+          .from("professionals")
+          .select(
+            "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
+          )
+          .eq("id", userId)
+          .maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
+        supabaseAdmin
+          .from("shop_fronts")
+          .select(
+            "professional_id, tagline, about, hero_image_url, accent_hex, layout_variant, is_published, published_at",
+          )
+          .eq("professional_id", userId)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("services")
+          .select(
+            "id, professional_id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_published, is_featured",
+          )
+          .eq("professional_id", userId)
+          .order("sort_order", { ascending: true }),
+        supabaseAdmin
+          .from("subscriptions")
+          .select("tier, status")
+          .eq("user_id", userId)
+          .maybeSingle(),
+      ]);
 
     if (!pro) return { shopFront: null, services: [] };
 
@@ -204,6 +210,11 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       userId,
       pro.primary_title_slug ?? null,
     );
+
+    const tier =
+      subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
+        ? (subRow.tier as "verified" | "pro" | "studio")
+        : null;
 
     const shopFront: ShopFrontDTO | null = sf
       ? {
@@ -226,10 +237,12 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
+          tier,
         }
       : null;
 
     return { shopFront, services: (services ?? []) as ServiceDTO[] };
+
   });
 
 export const upsertMyShopFront = createServerFn({ method: "POST" })
