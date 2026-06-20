@@ -340,6 +340,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       insuranceExpiry: row.trust?.insurance_expiry ?? null,
       cpd: null,
     },
+    gallery: (row as { gallery?: { id: string; url: string }[] }).gallery ?? [],
     faqs: [],
   };
 }
