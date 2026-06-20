@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Bell, Search } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import {
