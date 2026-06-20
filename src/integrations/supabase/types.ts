@@ -2870,6 +2870,7 @@ export type Database = {
           reopened_from_ticket_id: string | null
           requester_email: string
           requester_name: string | null
+          requester_unread: boolean
           requester_user_id: string | null
           sla_due_at: string | null
           snoozed_until: string | null
@@ -2900,6 +2901,7 @@ export type Database = {
           reopened_from_ticket_id?: string | null
           requester_email: string
           requester_name?: string | null
+          requester_unread?: boolean
           requester_user_id?: string | null
           sla_due_at?: string | null
           snoozed_until?: string | null
@@ -2930,6 +2932,7 @@ export type Database = {
           reopened_from_ticket_id?: string | null
           requester_email?: string
           requester_name?: string | null
+          requester_unread?: boolean
           requester_user_id?: string | null
           sla_due_at?: string | null
           snoozed_until?: string | null
@@ -3475,6 +3478,16 @@ export type Database = {
         Args: { _client_id: string; _pro_id: string }
         Returns: boolean
       }
+      list_my_unread_support_tickets: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          last_message_at: string
+          subject: string
+          ticket_number: string
+        }[]
+      }
       log_admin_action: {
         Args: {
           _action: string
@@ -3488,6 +3501,11 @@ export type Database = {
           _user_agent?: string
         }
         Returns: string
+      }
+      mark_all_my_support_read: { Args: never; Returns: undefined }
+      mark_my_support_ticket_read: {
+        Args: { _ticket_id: string }
+        Returns: undefined
       }
       mark_review_request_opened: {
         Args: { _token: string }
