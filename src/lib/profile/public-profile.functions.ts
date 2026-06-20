@@ -141,6 +141,20 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       .eq("id", r.id)
       .maybeSingle();
 
+    const { data: photoRows } = await supabaseAdmin
+      .from("professional_photos")
+      .select("id, storage_path, sort_order, width, height")
+      .eq("professional_id", r.id)
+      .order("sort_order", { ascending: true });
+
+    const supabaseUrl =
+      process.env.SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL;
+    const gallery = (photoRows ?? []).map((p) => ({
+      id: p.id as string,
+      url: `${supabaseUrl}/storage/v1/object/public/pro-photos/${p.storage_path}`,
+      width: p.width as number | null,
+      height: p.height as number | null,
+    }));
 
     return {
       ...r,
@@ -161,6 +175,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
         regulator_verified: boolean | null;
       }>,
       gyms,
+      gallery,
       trust: {
         verified:
           (proExtra?.verification ?? r.verification_status) === "verified" &&
