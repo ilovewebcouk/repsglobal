@@ -569,6 +569,10 @@ export type AdminReviewRow = {
   responded_at: string | null;
   response_edited_at: string | null;
   response_notified_at: string | null;
+  removal_reason: string | null;
+  removal_category: string | null;
+  removal_internal_note: string | null;
+  removal_notified_at: string | null;
 };
 
 const TabSchema = z
@@ -585,7 +589,7 @@ export const adminListReviews = createServerFn({ method: "POST" })
     let q = supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_name, client_email, submitter_ip, rating, title, body, moderation_status, ai_verdict, ai_flags, ai_checked_at, created_at, moderated_at, response, responded_at, response_edited_at, response_notified_at",
+        "id, professional_id, client_name, client_email, submitter_ip, rating, title, body, moderation_status, ai_verdict, ai_flags, ai_checked_at, created_at, moderated_at, response, responded_at, response_edited_at, response_notified_at, removal_reason, removal_category, removal_internal_note, removal_notified_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -628,6 +632,10 @@ export const adminListReviews = createServerFn({ method: "POST" })
       responded_at: r.responded_at ?? null,
       response_edited_at: r.response_edited_at ?? null,
       response_notified_at: r.response_notified_at ?? null,
+      removal_reason: r.removal_reason ?? null,
+      removal_category: r.removal_category ?? null,
+      removal_internal_note: r.removal_internal_note ?? null,
+      removal_notified_at: r.removal_notified_at ?? null,
     }));
   });
 
