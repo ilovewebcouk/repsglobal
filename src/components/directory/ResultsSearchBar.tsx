@@ -173,7 +173,6 @@ export function ResultsSearchBar({
   const activeFilterCount =
     (state.mode !== "any" ? 1 : 0) +
     (state.verified ? 1 : 0) +
-    (state.featured ? 1 : 0) +
     (state.min_rating > 0 ? 1 : 0) +
     (state.radius_mi > 0 ? 1 : 0) +
     (state.venue ? 1 : 0);
