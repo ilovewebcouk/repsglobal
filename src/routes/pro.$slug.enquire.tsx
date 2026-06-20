@@ -152,46 +152,31 @@ function EnquirePage() {
 
   const serviceOptions: ServiceOption[] = useMemo(() => {
     const live = liveQuery.data;
-    if (live && live.services.length) {
-      return live.services.map((s) => ({
-        id: `svc:${s.id}`,
-        serviceUuid: s.id,
-        label: s.title,
-        desc: s.description ?? "",
-        price: s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "Enquire"),
-      }));
-    }
-    // Verified-tier fallback: no paid service packages, derive coaching
-    // options from the pro's specialisms (the same chips on their card).
-    const specialisms = live?.shopFront.specialisms ?? [];
-    if (specialisms.length) {
-      const opts: ServiceOption[] = specialisms.map((slug) => {
-        const label = getSpecialismLabel(slug) ?? slug;
-        return {
-          id: `spec:${slug}`,
-          serviceUuid: null,
-          label: `${label} coaching`,
-          desc: `Tailored 1-to-1 coaching focused on ${label.toLowerCase()}.`,
-          price: "Enquire",
-        };
-      });
-      opts.push({
-        id: "discovery",
-        serviceUuid: null,
-        label: "Discovery call",
-        desc: "Free 15-min call to discuss goals — no commitment.",
-        price: "Free",
-      });
-      return opts;
-    }
-    return fallbackPro.services.map((s) => ({
-      id: `fallback:${s.id}`,
+    const fromLive: ServiceOption[] =
+      live && live.services.length
+        ? live.services.slice(0, 3).map((s) => ({
+            id: `svc:${s.id}`,
+            serviceUuid: s.id,
+            label: s.title,
+            desc: s.description ?? "",
+            price:
+              s.price_label?.trim() ||
+              (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "Enquire"),
+          }))
+        : [];
+
+    // Discovery Consultation is always available, never editable by the pro.
+    const discovery: ServiceOption = {
+      id: "discovery",
       serviceUuid: null,
-      label: s.label,
-      desc: s.desc,
-      price: s.price,
-    }));
-  }, [liveQuery.data, fallbackPro.services]);
+      label: "Discovery Consultation",
+      desc: "30-min call to discuss goals — free, no commitment.",
+      price: "Free",
+    };
+
+    return [...fromLive, discovery];
+  }, [liveQuery.data]);
+
 
   const [service, setService] = useState<string>(serviceOptions[0]?.id ?? "");
   const [goals, setGoals] = useState<string[]>([GOALS[0], GOALS[1]]);
