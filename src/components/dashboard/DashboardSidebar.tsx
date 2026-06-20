@@ -27,6 +27,7 @@ import { useEffectiveIdentity } from "@/hooks/use-effective-identity";
 import { useSessionUser } from "@/hooks/use-session-user";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
+import { useMySupportUnread } from "@/hooks/useMySupportUnread";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getTrustState } from "@/lib/verification/trust.functions";
@@ -97,7 +98,15 @@ function EnquiriesUnreadBadge() {
 }
 
 function SupportUnreadBadge() {
-  const { unread } = useSupportUnread();
+  const { isAdmin } = useSessionUser();
+  const { unread } = useSupportUnread({ enabled: isAdmin });
+  if (!unread) return null;
+  return <CountPill>{unread > 99 ? "99+" : unread}</CountPill>;
+}
+
+function MySupportUnreadBadge() {
+  const { user } = useSessionUser();
+  const { unread } = useMySupportUnread({ enabled: !!user });
   if (!unread) return null;
   return <CountPill>{unread > 99 ? "99+" : unread}</CountPill>;
 }
@@ -118,6 +127,9 @@ function ItemBadge({ item }: { item: NavItem }) {
   }
   if (item.label === "Support" && item.to === "/admin/support") {
     return <SupportUnreadBadge />;
+  }
+  if (item.label === "Support" && item.to === "/dashboard/support") {
+    return <MySupportUnreadBadge />;
   }
   if (
     item.label === "Reviews" &&
@@ -202,6 +214,7 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
               item.label === "Enquiries" ||
               item.label === "Support" ||
               item.label === "Reviews";
+            void hasBadge;
             return (
               <SidebarMenuItem key={`${group.title}:${item.label}`}>
                 <SidebarMenuButton
