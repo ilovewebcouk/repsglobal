@@ -47,10 +47,15 @@ export const VERIFIED_NAV = [
       { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
       { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
-      { icon: Tag, label: "Services", to: "/dashboard/services" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
+    ],
+  },
+  {
+    title: "Deliver",
+    items: [
+      { icon: Tag, label: "Services", to: "/dashboard/services" },
     ],
   },
 ] as const satisfies readonly NavGroup[];
