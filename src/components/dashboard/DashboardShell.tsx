@@ -84,7 +84,7 @@ function TopBar({
         <Link
           to={role === "admin" ? "/admin" : "/dashboard"}
           aria-label="REPS dashboard home"
-          className="shrink-0 lg:hidden"
+          className="shrink-0 sm:hidden"
         >
           <RepsWordmark className="h-[16px] text-white" />
         </Link>
