@@ -682,7 +682,7 @@ function ProProfilePage() {
                     </div>
                     {pro.lat != null && pro.lng != null ? (
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${pro.lat},${pro.lng}`}
+                        href={`https://www.google.com/maps?q=${pro.lat},${pro.lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
