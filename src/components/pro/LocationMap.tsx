@@ -48,8 +48,9 @@ export function LocationMap({ lat, lng, label }: Props) {
     let cancelled = false;
     loadMapsApi()
       .then(() => {
-        if (cancelled || !ref.current || !window.google?.maps) return;
-        const map = new window.google.maps.Map(ref.current, {
+        const g = (window as any).google;
+        if (cancelled || !ref.current || !g?.maps) return;
+        const map = new g.maps.Map(ref.current, {
           center: { lat, lng },
           zoom: 13,
           disableDefaultUI: true,
@@ -65,11 +66,7 @@ export function LocationMap({ lat, lng, label }: Props) {
             { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9d8d6" }] },
           ],
         });
-        new window.google.maps.Marker({
-          position: { lat, lng },
-          map,
-          title: label,
-        });
+        new g.maps.Marker({ position: { lat, lng }, map, title: label });
       })
       .catch(() => !cancelled && setFailed(true));
     return () => {
