@@ -98,11 +98,13 @@ export function NotificationsBell() {
   };
 
   const markAll = async () => {
-    await Promise.all([
-      adminSupport.markAllRead(),
-      mySupport.markAllRead(),
-      reviews.markAllRead(),
-    ]);
+    const tasks: Array<Promise<unknown>> = [];
+    if (isAdmin) tasks.push(adminSupport.markAllRead());
+    if (user) {
+      tasks.push(mySupport.markAllRead());
+      tasks.push(reviews.markAllRead());
+    }
+    await Promise.all(tasks);
     setSnapshot([]);
   };
 
