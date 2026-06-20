@@ -139,7 +139,10 @@ function ReviewsPage() {
   });
 
   const filtered = React.useMemo(() => {
-    let rows: ReviewDTO[] = reviews;
+    // Hide reviews admin has removed — trainer shouldn't see them in their feed.
+    let rows: ReviewDTO[] = reviews.filter(
+      (r) => (r.moderation_status ?? "approved") !== "removed",
+    );
     if (filter === "5") rows = rows.filter((r) => r.rating === 5);
     else if (filter === "4") rows = rows.filter((r) => r.rating === 4);
     if (search.trim()) {
