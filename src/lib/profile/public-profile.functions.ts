@@ -160,6 +160,13 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
         regulator_verified: boolean | null;
       }>,
       gyms,
+      trust: {
+        verified:
+          (proExtra?.verification ?? r.verification_status) === "verified" &&
+          proExtra?.identity_status === "approved",
+        insurance_expiry:
+          insuranceRow?.expiry_date ?? proExtra?.insurance_valid_until ?? null,
+      },
     };
   });
 
