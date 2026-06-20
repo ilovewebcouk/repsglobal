@@ -20,6 +20,10 @@ export type ReviewDTO = {
   responded_at?: string | null;
   response_edited_at?: string | null;
   response_notified_at?: string | null;
+  removal_reason?: string | null;
+  removal_category?: string | null;
+  removal_notified_at?: string | null;
+  moderated_at?: string | null;
 };
 
 
@@ -122,7 +126,7 @@ export const listMyReviews = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at, moderation_status, response, responded_at, response_edited_at, response_notified_at",
+        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at, moderation_status, response, responded_at, response_edited_at, response_notified_at, removal_reason, removal_category, removal_notified_at, moderated_at",
       )
       .eq("professional_id", context.userId)
       .order("created_at", { ascending: false })
