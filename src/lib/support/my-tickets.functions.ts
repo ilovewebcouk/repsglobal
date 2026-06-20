@@ -183,21 +183,35 @@ export const createMyTicket = createServerFn({ method: "POST" })
       .single();
     if (mErr) throw new Error(mErr.message);
 
-    // Fire-and-forget: notify the support team by email.
-    // Failures must NEVER block ticket creation — the in-app inbox is the
+    // Await both emails (admin notify + requester confirmation). On Cloudflare
+    // Workers, fire-and-forget promises are killed when the response returns,
+    // which silently dropped these in production. We still swallow errors so
+    // email failures never block ticket creation — the in-app inbox is the
     // canonical channel; email is a nudge.
-    void notifyAdminOfNewTicket({
-      ticketId: ticketRow.id,
-      ticketNumber: ticketRow.ticket_number,
-      subject: data.subject,
-      body: data.body,
-      category: data.category,
-      requesterEmail: email.toLowerCase(),
-      requesterName: fullName,
-    }).catch((e: unknown) => {
+    try {
+      await Promise.allSettled([
+        notifyAdminOfNewTicket({
+          ticketId: ticketRow.id,
+          ticketNumber: ticketRow.ticket_number,
+          subject: data.subject,
+          body: data.body,
+          category: data.category,
+          requesterEmail: email.toLowerCase(),
+          requesterName: fullName,
+        }),
+        sendRequesterConfirmation({
+          ticketId: ticketRow.id,
+          ticketNumber: ticketRow.ticket_number,
+          subject: data.subject,
+          body: data.body,
+          requesterEmail: email.toLowerCase(),
+          requesterName: fullName,
+        }),
+      ]);
+    } catch (e: unknown) {
       // eslint-disable-next-line no-console
-      console.error("[support] admin notify failed", e);
-    });
+      console.error("[support] ticket emails failed", e);
+    }
 
     return {
       id: ticketRow.id,
@@ -254,6 +268,58 @@ async function notifyAdminOfNewTicket(args: {
     html,
     messageId,
     replyTo: args.requesterEmail,
+  });
+}
+
+async function sendRequesterConfirmation(args: {
+  ticketId: string;
+  ticketNumber: string;
+  subject: string;
+  body: string;
+  requesterEmail: string;
+  requesterName: string | null;
+}) {
+  const {
+    sendViaMailgun,
+    buildMessageId,
+    SUPPORT_FROM_EMAIL,
+    SUPPORT_FROM_NAME,
+  } = await import("./mailgun-send.server");
+
+  const messageId = buildMessageId(args.ticketId, "ack");
+  const greeting = args.requesterName?.split(" ")[0] || "there";
+  const ticketUrl = `https://repsuk.org/dashboard/support/${args.ticketId}`;
+  const subjectLine = `We've got your message — ${args.subject} [#${args.ticketNumber}]`;
+  const text =
+    `Hi ${greeting},\n\n` +
+    `Thanks for getting in touch — we've received your support ticket and a member of the REPS team will reply soon.\n\n` +
+    `Reference: ${args.ticketNumber}\n` +
+    `Subject: ${args.subject}\n\n` +
+    `Your message:\n${args.body}\n\n` +
+    `You can view this ticket and reply at:\n${ticketUrl}\n\n` +
+    `— REPS Support\n`;
+  const safe = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#111;background:#ffffff;padding:20px;">
+<h2 style="margin:0 0 8px 0;">Thanks — we've got your message</h2>
+<p style="margin:0 0 12px 0;">Hi ${safe(greeting)}, a member of the REPS team will reply soon.</p>
+<p style="margin:0 0 4px 0;"><strong>Reference:</strong> ${safe(args.ticketNumber)}</p>
+<p style="margin:0 0 12px 0;"><strong>Subject:</strong> ${safe(args.subject)}</p>
+<div style="border-left:3px solid #f15a29;padding:12px 16px;background:#fafafa;white-space:pre-wrap;font-size:14px;line-height:1.5;">${safe(args.body)}</div>
+<p style="margin:16px 0 0 0;"><a href="${ticketUrl}" style="background:#f15a29;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;">View ticket</a></p>
+<p style="margin:16px 0 0 0;color:#666;font-size:12px;">— REPS Support</p>
+</body></html>`;
+
+  await sendViaMailgun({
+    from: `${SUPPORT_FROM_NAME} <${SUPPORT_FROM_EMAIL}>`,
+    to: args.requesterName
+      ? `${args.requesterName} <${args.requesterEmail}>`
+      : args.requesterEmail,
+    subject: subjectLine,
+    text,
+    html,
+    messageId,
+    replyTo: SUPPORT_FROM_EMAIL,
   });
 }
 
