@@ -68,6 +68,33 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
 
         if (!sender) return new Response("Missing sender", { status: 400 });
 
+        // Loop guard: drop anything we sent ourselves. Our outbound mail uses
+        // Message-Ids shaped like `<ticket-<uuid>.<tag>@repsuk.org>` and is
+        // sent from one of our own support mailboxes. Without this, an admin
+        // notification email sent from support@ → support@ gets picked up by
+        // the inbound route and spawns a duplicate ticket (see TKT-4937).
+        const OWN_MAILBOXES = new Set([
+          "support@repsuk.org",
+          "pros@repsuk.org",
+          "partners@repsuk.org",
+          "press@repsuk.org",
+          "no-reply@repsuk.org",
+          "noreply@repsuk.org",
+        ]);
+        const senderEmailRaw = (
+          sender.match(/<([^>]+)>/)?.[1] ?? sender
+        ).toLowerCase().trim();
+        const isOwnMessageId = /^<ticket-[0-9a-f-]{36}\.[^@>]+@[^>]+>$/i.test(
+          messageId.trim(),
+        );
+        if (OWN_MAILBOXES.has(senderEmailRaw) || isOwnMessageId) {
+          console.log("[support.inbound] dropped self-originating email", {
+            sender: senderEmailRaw,
+            messageId,
+          });
+          return Response.json({ ok: true, dropped: "self-loop" });
+        }
+
         // Try to extract sender display name from "Name <email>"
         const nameMatch = fromHeader.match(/^\s*"?([^"<]+?)"?\s*</);
         const senderName = nameMatch ? nameMatch[1].trim() : null;
