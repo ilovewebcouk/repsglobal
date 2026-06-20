@@ -177,18 +177,9 @@ export function DashboardShell({
   const searchPlaceholder =
     role === "admin" ? "Search professionals, members, leads…" : "Search…";
 
-  // Read the persisted sidebar state from cookie so the very first paint
-  // matches the user's last choice (avoids an expanded→collapsed flash).
-  const defaultOpen = React.useMemo(() => {
-    if (typeof document === "undefined") return true;
-    const match = document.cookie.match(/(?:^|; )sidebar_state=([^;]+)/);
-    return match ? match[1] !== "false" : true;
-  }, []);
-
   return (
     <div className="h-screen bg-reps-ink text-reps-text">
       <SidebarProvider
-        defaultOpen={defaultOpen}
         style={
           {
             "--sidebar-width": "232px",
