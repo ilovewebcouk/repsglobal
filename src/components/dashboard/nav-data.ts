@@ -49,13 +49,18 @@ export const VERIFIED_NAV = [
       { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
-      { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
   },
   {
     title: "Deliver",
     items: [
       { icon: Tag, label: "Services", to: "/dashboard/services" },
+    ],
+  },
+  {
+    title: "System",
+    items: [
+      { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
   },
 ] as const satisfies readonly NavGroup[];
