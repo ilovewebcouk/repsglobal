@@ -98,6 +98,7 @@ type Pro = {
     insuranceExpiry: string | null;
     cpd?: { done: number; total: number } | null;
   };
+  gallery?: { id: string; url: string }[];
   faqs: { q: string; a: string; open?: boolean }[];
 };
 
