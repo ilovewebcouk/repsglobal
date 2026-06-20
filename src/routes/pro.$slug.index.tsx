@@ -88,6 +88,7 @@ type Pro = {
     id: string;
     issued: string;
     verified?: boolean;
+    expires?: string | null;
   }[];
   gyms?: { label: string; branch: string }[];
   lat?: number | null;
