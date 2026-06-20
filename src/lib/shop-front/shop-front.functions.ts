@@ -38,7 +38,10 @@ export type ShopFrontDTO = {
   online_available: boolean;
   member_since: string | null;
   coaching_since_year: number | null;
+  // Subscription tier of the pro (so callers can gate Pro-only surfaces).
+  tier: "verified" | "pro" | "studio" | null;
 };
+
 
 // Helper: earliest year from approved verification submissions whose
 // derived_title_slug matches the pro's primary_title_slug.
