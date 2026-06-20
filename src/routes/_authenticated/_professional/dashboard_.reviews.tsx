@@ -94,7 +94,7 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-type ReviewTab = "all" | "approved" | "pending" | "removed" | "5" | "4";
+type ReviewTab = "all" | "approved" | "pending" | "removed";
 type RequestTab = "all" | "sent" | "opened" | "submitted" | "expired";
 
 function TabCount({ n, active }: { n: number; active: boolean }) {
@@ -178,8 +178,6 @@ function ReviewsPage() {
     approved: approved.length,
     pending: pending.length,
     removed: removed.length,
-    five: approved.filter((r) => r.rating === 5).length,
-    four: approved.filter((r) => r.rating === 4).length,
   };
 
   const tabRows = React.useMemo<ReviewDTO[]>(() => {
@@ -190,10 +188,6 @@ function ReviewsPage() {
         return pending;
       case "removed":
         return removed;
-      case "5":
-        return approved.filter((r) => r.rating === 5);
-      case "4":
-        return approved.filter((r) => r.rating === 4);
       case "all":
       default:
         return [...approved, ...pending].sort(
@@ -261,8 +255,6 @@ function ReviewsPage() {
     { value: "approved", label: "Approved", count: counts.approved },
     { value: "pending", label: "Pending", count: counts.pending },
     { value: "removed", label: "Removed", count: counts.removed },
-    { value: "5", label: "5★", count: counts.five },
-    { value: "4", label: "4★", count: counts.four },
   ];
 
   const emptyCopy: Record<ReviewTab, { title: string; sub: string }> = {
@@ -285,8 +277,6 @@ function ReviewsPage() {
       title: "No removed reviews",
       sub: "Your feed is clean.",
     },
-    "5": { title: "No 5★ reviews yet", sub: "5★ reviews show here once approved." },
-    "4": { title: "No 4★ reviews yet", sub: "4★ reviews show here once approved." },
   };
 
   return (
