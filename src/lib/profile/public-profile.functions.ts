@@ -37,7 +37,7 @@ async function fetchPrimaryLocations(
 }
 
 const PRO_PUBLIC_COLUMNS =
-  "id, slug, headline, primary_profession, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published";
+  "id, slug, headline, primary_profession, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published, member_since";
 
 const PRO_LIST_COLUMNS =
   "id, slug, headline, primary_profession, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available";
