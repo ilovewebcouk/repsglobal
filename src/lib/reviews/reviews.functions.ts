@@ -561,6 +561,10 @@ export type AdminReviewRow = {
   ai_checked_at: string | null;
   created_at: string;
   moderated_at: string | null;
+  response: string | null;
+  responded_at: string | null;
+  response_edited_at: string | null;
+  response_notified_at: string | null;
 };
 
 const TabSchema = z
