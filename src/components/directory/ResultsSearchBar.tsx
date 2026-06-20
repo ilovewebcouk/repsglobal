@@ -1293,13 +1293,6 @@ function ActiveChipsRow({
       clear: { verified: false },
     });
   }
-  if (state.featured) {
-    chips.push({
-      key: "featured",
-      label: "Featured only",
-      clear: { featured: false },
-    });
-  }
   if (state.min_rating > 0) {
     chips.push({
       key: "rating",
