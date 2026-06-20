@@ -15,6 +15,11 @@ export type ReviewDTO = {
   status: "pending" | "published" | "hidden" | "flagged";
   published_at: string | null;
   created_at: string;
+  moderation_status?: "pending" | "approved" | "removed" | string;
+  response?: string | null;
+  responded_at?: string | null;
+  response_edited_at?: string | null;
+  response_notified_at?: string | null;
 };
 
 
@@ -117,7 +122,7 @@ export const listMyReviews = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at",
+        "id, professional_id, client_user_id, client_name, rating, title, body, status, published_at, created_at, moderation_status, response, responded_at, response_edited_at, response_notified_at",
       )
       .eq("professional_id", context.userId)
       .order("created_at", { ascending: false })
@@ -556,6 +561,10 @@ export type AdminReviewRow = {
   ai_checked_at: string | null;
   created_at: string;
   moderated_at: string | null;
+  response: string | null;
+  responded_at: string | null;
+  response_edited_at: string | null;
+  response_notified_at: string | null;
 };
 
 const TabSchema = z
@@ -572,7 +581,7 @@ export const adminListReviews = createServerFn({ method: "POST" })
     let q = supabaseAdmin
       .from("reviews")
       .select(
-        "id, professional_id, client_name, client_email, submitter_ip, rating, title, body, moderation_status, ai_verdict, ai_flags, ai_checked_at, created_at, moderated_at",
+        "id, professional_id, client_name, client_email, submitter_ip, rating, title, body, moderation_status, ai_verdict, ai_flags, ai_checked_at, created_at, moderated_at, response, responded_at, response_edited_at, response_notified_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -611,6 +620,10 @@ export const adminListReviews = createServerFn({ method: "POST" })
       ai_checked_at: r.ai_checked_at,
       created_at: r.created_at,
       moderated_at: r.moderated_at,
+      response: r.response ?? null,
+      responded_at: r.responded_at ?? null,
+      response_edited_at: r.response_edited_at ?? null,
+      response_notified_at: r.response_notified_at ?? null,
     }));
   });
 

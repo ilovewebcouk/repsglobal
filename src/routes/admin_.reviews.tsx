@@ -274,6 +274,21 @@ function AdminReviewsPage() {
                         <p className="mt-1 text-[13px] font-semibold text-white/90">{r.title}</p>
                       )}
                       <p className="mt-1 text-[13px] text-white/75">"{r.body}"</p>
+                      {r.response && (
+                        <div className="mt-2 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft/30 px-3 py-2">
+                          <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
+                            <MessageSquare className="h-3 w-3" /> Trainer reply
+                          </div>
+                          <p className="mt-1 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/85">
+                            {r.response}
+                          </p>
+                          <p className="mt-1 text-[10.5px] text-white/45">
+                            Replied {timeAgo(r.responded_at)}
+                            {r.response_edited_at ? ` · edited ${timeAgo(r.response_edited_at)}` : ""}
+                            {r.response_notified_at ? " · client notified" : " · client not notified"}
+                          </p>
+                        </div>
+                      )}
                       {r.ai_flags && r.ai_verdict !== "clean" && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {Object.entries(r.ai_flags)

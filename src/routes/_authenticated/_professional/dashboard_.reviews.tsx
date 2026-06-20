@@ -5,9 +5,12 @@ import { toast } from "sonner";
 import {
   ArrowUpRight,
   Flag,
+  MessageSquare,
+  Pencil,
   Search,
   Star,
   ThumbsUp,
+  Trash2,
   Mail,
   CheckCircle2,
   Clock,
@@ -31,11 +34,13 @@ import {
 } from "@/components/ui/dialog";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
+  clearReviewReply,
   createReviewRequest,
   flagReview,
   getMyReviewKpis,
   listMyReviewRequests,
   listMyReviews,
+  replyToReview,
   thankReview,
   type ReviewDTO,
   type ReviewRequestRow,
@@ -287,6 +292,8 @@ function ReviewsPage() {
                             <Flag className="h-3.5 w-3.5" /> Flag
                           </button>
                         </div>
+
+                        <ReplyBlock review={r} />
 
                       </div>
                     </div>
@@ -540,5 +547,161 @@ function StatusPill({ status }: { status: string }) {
       <m.Icon className="h-3 w-3" />
       {m.label}
     </span>
+  );
+}
+
+function fmtDateTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+function ReplyBlock({ review }: { review: ReviewDTO }) {
+  const qc = useQueryClient();
+  const existing = review.response ?? null;
+  const isApproved = (review.moderation_status ?? "approved") === "approved";
+  const [editing, setEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState(existing ?? "");
+
+  React.useEffect(() => {
+    setDraft(existing ?? "");
+  }, [existing]);
+
+  const save = useMutation({
+    mutationFn: (text: string) =>
+      replyToReview({ data: { review_id: review.id, response: text } }),
+    onSuccess: () => {
+      toast.success(existing ? "Reply updated" : "Reply sent");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["my-reviews"] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't save reply"),
+  });
+
+  const clear = useMutation({
+    mutationFn: () => clearReviewReply({ data: { review_id: review.id } }),
+    onSuccess: () => {
+      toast.success("Reply removed");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["my-reviews"] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't remove reply"),
+  });
+
+  if (!isApproved && !existing) {
+    return (
+      <p className="mt-3 text-[11px] text-white/40">
+        Reply available once this review is approved by REPS.
+      </p>
+    );
+  }
+
+  // Show stored reply (read mode)
+  if (existing && !editing) {
+    return (
+      <div className="mt-3 rounded-[12px] border border-reps-orange-border bg-reps-orange-soft/40 px-3.5 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10.5px] font-semibold uppercase tracking-wider text-reps-orange">
+            Your reply
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="flex h-7 items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel-soft px-2 text-[11px] font-semibold text-white/80 hover:text-white"
+            >
+              <Pencil className="h-3 w-3" /> Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Delete your reply?")) clear.mutate();
+              }}
+              disabled={clear.isPending}
+              className="flex h-7 items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel-soft px-2 text-[11px] font-semibold text-white/60 hover:text-white disabled:opacity-50"
+            >
+              <Trash2 className="h-3 w-3" /> Delete
+            </button>
+          </div>
+        </div>
+        <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-white/85">
+          {existing}
+        </p>
+        <p className="mt-2 text-[11px] text-white/45">
+          Replied {fmtDateTime(review.responded_at)}
+          {review.response_edited_at ? ` · edited ${fmtDateTime(review.response_edited_at)}` : ""}
+          {review.response_notified_at ? " · client notified" : ""}
+        </p>
+      </div>
+    );
+  }
+
+  // Composer (new reply or edit)
+  if (editing || (!existing && (draft || false))) {
+    const len = draft.length;
+    const tooShort = len < 1;
+    const tooLong = len > 1000;
+    return (
+      <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/60 px-3.5 py-3">
+        <Label className="text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          {existing ? "Edit your reply" : "Reply to this review"}
+        </Label>
+        <textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value.slice(0, 1100))}
+          rows={4}
+          placeholder="Thanks for the kind words…"
+          className="mt-2 w-full rounded-[10px] border border-reps-border bg-reps-ink px-3 py-2 text-[13px] leading-relaxed text-white placeholder:text-white/35 focus:border-reps-orange focus:outline-none"
+        />
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <p className={`text-[11px] ${tooLong ? "text-rose-300" : "text-white/45"}`}>
+            {len} / 1000
+            {!existing && (
+              <span className="ml-2 text-white/40">
+                · We'll email your client a one-off notification.
+              </span>
+            )}
+          </p>
+          <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setEditing(false);
+                setDraft(existing ?? "");
+              }}
+              className="h-8 rounded-[10px] border-reps-border bg-transparent px-3 text-[12px] font-semibold text-white/70 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => save.mutate(draft.trim())}
+              disabled={save.isPending || tooShort || tooLong}
+              className="h-8 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
+            >
+              {existing ? "Save changes" : "Send reply"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No reply yet — collapsed trigger
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="flex h-8 items-center gap-1.5 rounded-[10px] border border-reps-orange-border bg-reps-orange-soft px-3 text-[12px] font-semibold text-reps-orange hover:bg-reps-orange-soft/80"
+      >
+        <MessageSquare className="h-3.5 w-3.5" /> Reply to this review
+      </button>
+    </div>
   );
 }
