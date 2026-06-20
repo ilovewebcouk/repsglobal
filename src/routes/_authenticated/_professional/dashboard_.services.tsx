@@ -182,6 +182,12 @@ function ServicesPage() {
             </div>
           </PPanel>
 
+          {/* 03 — Service cards (Verified + Pro). Up to 3 cards shown on your
+              public profile and in the enquire form. */}
+          <ServiceCardsEditor tier={tier} />
+
+
+
           {/* 03 — Pro upsell: Shop-front */}
           {tier === "verified" ? (
             <PPanel className="p-6">
