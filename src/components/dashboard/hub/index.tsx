@@ -550,7 +550,7 @@ export function VerificationStatusCard({
                   : "border-reps-border bg-reps-panel-soft/40 text-white/45",
               )}
             >
-              {r.done ? <CheckCircle2 className="size-3.5" /> : <span className="size-2 rounded-full bg-current/40" />}
+              {r.done ? <CheckCircle2 className="size-3.5" /> : <span className="size-2 rounded-full bg-white/30" />}
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-medium text-white">{r.label}</p>
