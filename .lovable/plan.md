@@ -1,74 +1,75 @@
-# Passwordless SMS sign-in
+# Wire services into Verified + Pro surfaces
 
-Replace (or sit alongside) email/password with a phone-number + one-time SMS code flow, available to every user — pros, clients, and admin.
+The `services` table, `upsertMyService` / `deleteMyService` / `getMyShopFront` server fns, and the editor UI already exist — but the editor is hidden from Verified by `useProGuard`, and the three public surfaces read services inconsistently. This plan unblocks Verified, normalises the public reads, and locks in a max of 3 user-defined services per pro (Discovery Consultation stays auto on `/enquire`).
 
-## How hard is it?
+## Outcome by tier
 
-Genuinely easy. Supabase has native Phone Auth built in — we don't write any auth backend ourselves. The work is roughly:
-- ~1 hour: wire an SMS provider (Twilio) so Supabase can actually send codes
-- ~2–3 hours: build the 2-step UI (enter phone → enter 6-digit code)
-- ~30 mins: tidy account settings so existing email users can add a phone
+| Surface | Verified | Pro |
+|---|---|---|
+| `/dashboard/services` (new) — manage up to 3 service cards | ✅ | ✅ |
+| `/dashboard/shop-front` (existing, branding + services) | ❌ (blocked) | ✅ |
+| `/c/$slug` — full shop-front, 3 tier cards w/ bullets | ❌ (404 / not gated yet) | ✅ |
+| `/pro/$slug` — "Services & Pricing" horizontal cards (×3) | ✅ DB-driven | ✅ DB-driven |
+| `/pro/$slug/enquire` — 4 tiles (3 services + auto Discovery) | ✅ DB-driven | ✅ DB-driven |
 
-The hard parts are operational, not technical: **SMS costs real money** (~£0.04 per UK SMS, more for some countries) and SMS is the #1 target for "SMS pumping" fraud (bots hammering send-code to rack up your bill). We mitigate both below.
+No visual redesigns. Existing components stay — we only swap the data source and add a slim Verified editor.
 
-## Scope decision needed before build
+## Step 1 — Verified-accessible service editor
 
-Two viable shapes — pick one:
+New route: `src/routes/_authenticated/_professional/dashboard_.services.tsx` already exists for specialisms. Add a second section in that page (or split into a dedicated `dashboard_.service-cards.tsx`, TBD on routing collision) that lets **Verified + Pro** CRUD up to 3 rows in `services`:
 
-1. **SMS as the only login** — remove email/password entirely. Cleanest UX, but every sign-in costs an SMS and locked-out-of-phone = locked-out-of-account.
-2. **SMS + email/password side by side** — user picks on `/auth`. Safer, slightly more UI. Recommended.
+- Reuses `upsertMyService` / `deleteMyService` / `getMyShopFront` (no new server fns).
+- Hard cap at 3 published services in the UI; "Add service" disables at 3.
+- Fields shown: `title`, `description` (short, 1–2 lines), `price_label` (free text, e.g. "From £60 / session"), `mode`, `is_featured` (only enforced on Pro — see Step 3).
+- No `useProGuard` on this page.
 
-I've planned (2) below because it's reversible and protects existing accounts. Say the word if you want (1).
+Pro's existing shop-front editor (`dashboard_.shop-front.tsx`) keeps its full `ServicesEditor` — same `services` rows, same DTO, no migration. The new Verified editor is a slimmer view of the same data, so a pro upgrading from Verified → Pro keeps their 3 cards and just gains bullets / branding.
 
-## What gets built
+## Step 2 — `/pro/$slug` "Services & Pricing" reads from `services`
 
-### 1. Provider setup (Twilio via Lovable connector)
-- Connect Twilio through the standard connector (you'll authorise it once).
-- Enable **Phone provider** in Lovable Cloud auth settings, pointed at Twilio.
-- Enable **SMS Pumping Protection** and restrict **Geo Permissions** to the countries REPs actually serves (UK + whichever others you name). This is the single most important anti-fraud step.
+In `src/routes/pro.$slug.index.tsx` (~lines 316–327, 652–692):
 
-### 2. `/auth` route — add a "Continue with phone" path
-Two-step flow inside the existing card:
-- **Step 1:** phone input (with country selector, defaults to +44). Button: "Send code". Calls `supabase.auth.signInWithOtp({ phone })`.
-- **Step 2:** 6-digit code input + "Resend in 30s" timer. Calls `supabase.auth.verifyOtp({ phone, token, type: 'sms' })`. On success, runs the same `redirectAfterAuth` we already use for password sign-in (so checkout-redirect, dashboard routing all keep working).
-- Toggle at the top: "Use email & password instead" — keeps the existing form available.
+- Replace the `hourly_rate_pence`-derived single tile + static fallback with a query of the pro's published services (top 3 by `sort_order`).
+- Render the existing horizontal card markup unchanged — just map DB rows into the same `{title, desc, price, unit}` shape. `price` = `price_label` if set, else formatted `price_pence`; `unit` derived from `mode` / duration.
+- If the pro has 0 published services, hide the section (don't fall back to fixtures).
+- "View all services →" link: keep pointing at `/pro/$slug/services` for Pro; on Verified hide the link (Verified has no overflow page).
 
-### 3. `/signup` route — same two-step phone option
-Mirror the flow. First-time phone sign-in via OTP creates the auth user automatically; no separate "sign up" call needed for the phone path.
+Server-side: extend `getPublicProfileBySlug` to include `services` in its return DTO (single query, no extra round-trip from the route).
 
-### 4. Profile setup after phone-only signup
-A phone-first user has no email on file. Add a one-time "Complete your profile" step after first verify that captures email + name (writes to `profiles`). Skippable for clients, required for pros (matches existing pro-onboarding gate).
+## Step 3 — `/c/$slug` stays Pro-only
 
-### 5. Dashboard → Settings → Security
-- Show current sign-in method(s).
-- "Add a phone number" / "Add a password" — lets users link the other method so they're not locked to one channel.
-- "Remove phone" with confirmation.
+In `src/routes/c.$slug.tsx`:
 
-### 6. Anti-abuse guardrails (server-side)
-A small `createServerFn` wrapper around `signInWithOtp` that enforces:
-- Max 3 codes per phone per hour
-- Max 10 codes per IP per hour
-- Block disposable/VOIP ranges (basic E.164 validation + optional Twilio Lookup later)
+- Add a tier check in the loader (resolve from `subscriptions` for the looked-up pro). If tier ≠ pro/studio → `throw notFound()` so Verified pros don't accidentally expose a half-built shop-front.
+- Existing `mergeLiveIntoCoach` + 3-tier card layout untouched. `is_featured` continues to drive "Most popular".
+- The Verified editor in Step 1 will not surface the `is_featured` toggle (no shop-front to feature on).
 
-This sits in front of Supabase so a botnet can't just hammer the client SDK directly.
+## Step 4 — `/pro/$slug/enquire` reads same 3 services + auto Discovery
 
-### 7. Admin visibility
-Add "Phone verified" column to `/admin/professionals` and the user detail view (reads `auth.users.phone_confirmed_at` via the existing SECURITY DEFINER pattern).
+In `src/routes/pro.$slug.enquire.tsx` (~lines 153–194):
 
-## Out of scope (call out separately if wanted)
-- WhatsApp OTP (Twilio supports it but needs business verification)
-- TOTP / authenticator-app 2FA
-- Backup recovery codes
-- Step-up auth (re-prompt SMS for sensitive actions like changing payout details)
+- Collapse the two branches (Pro-from-services / Verified-from-specialisms) into one: always read top 3 published `services` rows for both tiers.
+- Always append a synthetic, non-editable 4th tile: **Discovery Consultation — Free — 30-min call to discuss goals**. Not stored in DB; rendered as the last `ToggleGroup` item with a stable id like `discovery`.
+- If a pro has 0 services yet (brand new account) → show only the Discovery tile.
+- Enquiry submission: the selected `serviceId` is either a real `services.id` or the literal string `discovery` — `enquiries.service_id` stays nullable for the latter.
 
-## Cost & risk summary (so you can decide)
-- **Cost:** ~£0.04 per UK SMS × every login + every failed attempt. For ~1,000 active users logging in twice a week, that's ~£300/month at full passwordless. Mixed mode (option 2) cuts that significantly because power users will use password.
-- **Fraud:** without geo-restriction + pumping protection, a single bad actor can burn hundreds of £ overnight. The guardrails above are mandatory, not optional.
-- **Lock-out:** users who change phone numbers and have no email/password fallback will need admin recovery. Option 2 avoids this.
+## Step 5 — UI polish + guardrails (small)
 
-## What I need from you before I build
-1. **Confirm option 2** (SMS alongside email/password) or switch to option 1 (SMS only).
-2. **Country list** for Twilio Geo Permissions (default: UK only — confirm or add others).
-3. **Twilio account** — I'll trigger the connector flow; you'll paste an API key when prompted. If you don't have a Twilio account yet, ~10 min to sign up at twilio.com and buy one UK number (~£1/month).
+- `dashboard_.shop-front.tsx`: keep `useProGuard` (Pro-only) — branding/hero/bullets stay Pro. But its `ServicesEditor` section should now show a banner: "Manage your 3 service cards from /dashboard/services" with a link, so we don't have two editors for the same rows. (Alt: leave both — Pro power-users get both surfaces. Decide in build.)
+- Document Verified Lite = "3 service cards + directory listing + email-only enquiries" in `docs/09_phase2_verified.md`.
 
-Once those are confirmed I'll execute in this order: connector → auth config → server guardrails → `/auth` UI → `/signup` UI → settings → admin column.
+## Technical notes
+
+- **No schema changes.** All columns already exist on `services`.
+- **No new server fns.** Reuse `getMyShopFront`, `upsertMyService`, `deleteMyService`, extend `getPublicProfileBySlug` and `getShopFrontBySlug` selects.
+- **RLS:** existing policies on `services` already scope CRUD to `professional_id = auth.uid()` via the existing fns — no GRANT changes needed.
+- **Tier gating happens server-side** in the `/c/$slug` loader (notFound for Verified) — don't rely on client-only checks.
+- **Hard cap of 3** enforced in the editor UI; not in DB (allows future expansion without a migration).
+- **Locked screens:** `/c/$slug`, `/pro/$slug`, `/pro/$slug/enquire`, and the dashboard shell are visually frozen — only the data source changes. No new components, no new section orders.
+
+## Out of scope
+
+- Stripe wiring for booking these services (still REPs-doesn't-take-bookings rule).
+- Service photos (current cards on `/pro/$slug` show stock trainer thumbnails — keep existing image strategy).
+- Reordering UI beyond `sort_order` (drag-and-drop later).
+- `/pro/$slug/services` overflow page for Pro with >3 services (not needed while cap is 3).

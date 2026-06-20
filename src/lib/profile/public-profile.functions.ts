@@ -147,6 +147,16 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       .eq("professional_id", r.id)
       .order("sort_order", { ascending: true });
 
+    const { data: serviceRows } = await supabaseAdmin
+      .from("services")
+      .select(
+        "id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_featured",
+      )
+      .eq("professional_id", r.id)
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true })
+      .limit(3);
+
     const supabaseUrl =
       process.env.SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL;
     const gallery = (photoRows ?? []).map((p) => ({
@@ -155,6 +165,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       width: p.width as number | null,
       height: p.height as number | null,
     }));
+
 
     return {
       ...r,
@@ -176,6 +187,17 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       }>,
       gyms,
       gallery,
+      services: (serviceRows ?? []) as Array<{
+        id: string;
+        title: string;
+        description: string | null;
+        price_pence: number | null;
+        price_label: string | null;
+        duration_minutes: number | null;
+        mode: string;
+        sort_order: number;
+        is_featured: boolean;
+      }>,
       trust: {
         verified:
           (proExtra?.verification ?? r.verification_status) === "verified" &&
@@ -185,6 +207,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       },
     };
   });
+
 
 export const listPublishedProfessionals = createServerFn({ method: "GET" }).handler(
   async () => {
