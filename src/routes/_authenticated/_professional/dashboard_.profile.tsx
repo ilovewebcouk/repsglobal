@@ -1223,7 +1223,7 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Identity"
-                subtitle="Your legal name (matches your ID + certificates) and the name clients see on your profile."
+                subtitle="Your legal name — must match your government ID and your regulated qualification certificates."
                 step="02"
               />
               <div className="flex flex-col gap-4">
@@ -1241,18 +1241,6 @@ function ProfileEditorPage() {
                       value={form.full_name}
                       onChange={(v) => set("full_name", v)}
                       disabled={profile.legal_name_locked}
-                    />
-                  </Field>
-                </div>
-                <div data-field="display_name">
-                  <Field
-                    label="Display name"
-                    hint="Shown publicly on your REPs profile and shop-front. Defaults to your legal name."
-                  >
-                    <TextInput
-                      value={form.display_name}
-                      onChange={(v) => set("display_name", v)}
-                      placeholder={form.full_name || "How clients see your name"}
                     />
                   </Field>
                 </div>
