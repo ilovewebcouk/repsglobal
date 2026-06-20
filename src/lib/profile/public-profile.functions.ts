@@ -187,6 +187,17 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       }>,
       gyms,
       gallery,
+      services: (serviceRows ?? []) as Array<{
+        id: string;
+        title: string;
+        description: string | null;
+        price_pence: number | null;
+        price_label: string | null;
+        duration_minutes: number | null;
+        mode: string;
+        sort_order: number;
+        is_featured: boolean;
+      }>,
       trust: {
         verified:
           (proExtra?.verification ?? r.verification_status) === "verified" &&
@@ -196,6 +207,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       },
     };
   });
+
 
 export const listPublishedProfessionals = createServerFn({ method: "GET" }).handler(
   async () => {
