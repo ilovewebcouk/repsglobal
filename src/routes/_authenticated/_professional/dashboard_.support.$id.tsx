@@ -12,7 +12,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import {
+  SupportAttachmentsField,
+  uploadPendingFiles,
+  type PendingFile,
+} from "@/components/dashboard/SupportAttachmentsField";
+import { SupportAttachmentList } from "@/components/dashboard/SupportAttachmentList";
+import {
+  attachToMyMessage,
   getMyTicket,
+  markMyTicketRead,
   replyToMyTicket,
   type MyTicketRow,
 } from "@/lib/support/my-tickets.functions";
@@ -66,18 +80,47 @@ function TicketThreadPage() {
   const qc = useQueryClient();
   const getFn = useServerFn(getMyTicket);
   const replyFn = useServerFn(replyToMyTicket);
+  const attachFn = useServerFn(attachToMyMessage);
+  const markReadFn = useServerFn(markMyTicketRead);
 
   const [reply, setReply] = React.useState("");
+  const [files, setFiles] = React.useState<PendingFile[]>([]);
+  const [uploading, setUploading] = React.useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["my-support-ticket", id],
     queryFn: () => getFn({ data: { id } }),
   });
 
+  // Auto-mark read whenever the user opens an unread ticket.
+  React.useEffect(() => {
+    if (!data?.ticket?.requester_unread) return;
+    void markReadFn({ data: { ticketId: id } }).then(() => {
+      qc.invalidateQueries({ queryKey: ["my-support", "unread"] });
+      qc.invalidateQueries({ queryKey: ["my-support-tickets"] });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.ticket?.requester_unread, id]);
+
   const sendReply = useMutation({
-    mutationFn: (body: string) => replyFn({ data: { ticketId: id, body } }),
+    mutationFn: async (body: string) => {
+      const res = await replyFn({ data: { ticketId: id, body } });
+      if (files.length > 0) {
+        setUploading(true);
+        try {
+          const uploaded = await uploadPendingFiles({ ticketId: id, files });
+          await attachFn({
+            data: { messageId: res.message_id, files: uploaded },
+          });
+        } finally {
+          setUploading(false);
+        }
+      }
+      return res;
+    },
     onSuccess: () => {
       setReply("");
+      setFiles([]);
       toast.success("Reply sent");
       qc.invalidateQueries({ queryKey: ["my-support-ticket", id] });
       qc.invalidateQueries({ queryKey: ["my-support-tickets"] });
@@ -179,6 +222,7 @@ function TicketThreadPage() {
                         <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-white/85">
                           {m.body_text ?? ""}
                         </p>
+                        <SupportAttachmentList attachments={m.attachments} />
                       </PCard>
                     </li>
                   );
@@ -189,7 +233,6 @@ function TicketThreadPage() {
             {ticket.status !== "spam" && ticket.status !== "trash" && (
               <PCard className="mt-4 p-5">
                 <form
-                  className="flex flex-col gap-3"
                   onSubmit={(e) => {
                     e.preventDefault();
                     const body = reply.trim();
@@ -197,25 +240,43 @@ function TicketThreadPage() {
                     sendReply.mutate(body);
                   }}
                 >
-                  <Textarea
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder="Reply to the REPS team…"
-                    rows={5}
-                    maxLength={10000}
-                    className="rounded-[12px]"
-                  />
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11.5px] text-white/40">
-                      {(ticket.status === "solved" || ticket.status === "closed") &&
-                        "Replying will re-open this ticket."}
-                    </p>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel htmlFor="reply">Your reply</FieldLabel>
+                      <Textarea
+                        id="reply"
+                        value={reply}
+                        onChange={(e) => setReply(e.target.value)}
+                        placeholder="Reply to the REPS team…"
+                        rows={5}
+                        maxLength={10000}
+                        className="rounded-[12px]"
+                      />
+                      {(ticket.status === "solved" || ticket.status === "closed") && (
+                        <FieldDescription>
+                          Replying will re-open this ticket.
+                        </FieldDescription>
+                      )}
+                    </Field>
+
+                    <Field>
+                      <FieldLabel>Attachments</FieldLabel>
+                      <SupportAttachmentsField
+                        files={files}
+                        onChange={setFiles}
+                        uploading={uploading}
+                        onError={(msg) => toast.error(msg)}
+                      />
+                    </Field>
+                  </FieldGroup>
+
+                  <div className="mt-4 flex items-center justify-end">
                     <Button
                       type="submit"
-                      disabled={reply.trim().length === 0 || sendReply.isPending}
+                      disabled={reply.trim().length === 0 || sendReply.isPending || uploading}
                       className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90"
                     >
-                      {sendReply.isPending ? (
+                      {sendReply.isPending || uploading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" data-icon />
                       ) : (
                         <Send className="mr-2 h-4 w-4" data-icon />

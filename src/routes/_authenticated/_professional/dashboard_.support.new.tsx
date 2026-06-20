@@ -10,8 +10,14 @@ import { PCard } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -19,7 +25,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createMyTicket } from "@/lib/support/my-tickets.functions";
+import {
+  SupportAttachmentsField,
+  uploadPendingFiles,
+  type PendingFile,
+} from "@/components/dashboard/SupportAttachmentsField";
+import {
+  attachToMyMessage,
+  createMyTicket,
+} from "@/lib/support/my-tickets.functions";
 
 export const Route = createFileRoute(
   "/_authenticated/_professional/dashboard_/support/new",
@@ -47,14 +61,40 @@ function NewTicketPage() {
   const tier = useTrainerTier();
   const navigate = useNavigate();
   const createFn = useServerFn(createMyTicket);
+  const attachFn = useServerFn(attachToMyMessage);
 
   const [category, setCategory] = React.useState<string>("account");
   const [subject, setSubject] = React.useState("");
   const [body, setBody] = React.useState("");
+  const [files, setFiles] = React.useState<PendingFile[]>([]);
+  const [touched, setTouched] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+
+  const subjectInvalid = touched && subject.trim().length < 3;
+  const bodyInvalid = touched && body.trim().length < 10;
 
   const create = useMutation({
-    mutationFn: (input: { subject: string; body: string; category: string }) =>
-      createFn({ data: input }),
+    mutationFn: async (input: { subject: string; body: string; category: string }) => {
+      const res = await createFn({ data: input });
+      if (files.length > 0) {
+        setUploading(true);
+        try {
+          const uploaded = await uploadPendingFiles({
+            ticketId: res.id,
+            files,
+          });
+          await attachFn({
+            data: {
+              messageId: res.message_id,
+              files: uploaded,
+            },
+          });
+        } finally {
+          setUploading(false);
+        }
+      }
+      return res;
+    },
     onSuccess: (res) => {
       toast.success(`Ticket ${res.ticket_number} created`);
       navigate({ to: "/dashboard/support/$id", params: { id: res.id } });
@@ -64,7 +104,10 @@ function NewTicketPage() {
   });
 
   const canSubmit =
-    subject.trim().length >= 3 && body.trim().length >= 10 && !create.isPending;
+    subject.trim().length >= 3 &&
+    body.trim().length >= 10 &&
+    !create.isPending &&
+    !uploading;
 
   return (
     <DashboardShell
@@ -90,58 +133,93 @@ function NewTicketPage() {
 
         <PCard className="p-6">
           <form
-            className="flex flex-col gap-5"
             onSubmit={(e) => {
               e.preventDefault();
+              setTouched(true);
               if (!canSubmit) return;
-              create.mutate({ subject: subject.trim(), body: body.trim(), category });
+              create.mutate({
+                subject: subject.trim(),
+                body: body.trim(),
+                category,
+              });
             }}
           >
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category" className="rounded-[12px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="category">Category</FieldLabel>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category" className="rounded-[12px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldDescription>
+                  Helps us route your ticket to the right person.
+                </FieldDescription>
+              </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input
-                id="subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Short summary"
-                maxLength={200}
-                className="rounded-[12px]"
-              />
-            </div>
+              <Field data-invalid={subjectInvalid || undefined}>
+                <FieldLabel htmlFor="subject">Subject</FieldLabel>
+                <Input
+                  id="subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  onBlur={() => setTouched(true)}
+                  placeholder="Short summary"
+                  maxLength={200}
+                  aria-invalid={subjectInvalid || undefined}
+                  className="rounded-[12px]"
+                />
+                {subjectInvalid ? (
+                  <FieldError>Subject needs at least 3 characters.</FieldError>
+                ) : (
+                  <FieldDescription>One-line summary of the issue.</FieldDescription>
+                )}
+              </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="body">Details</Label>
-              <Textarea
-                id="body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="Include any relevant details — URLs, what you tried, what you expected."
-                rows={10}
-                maxLength={10000}
-                className="rounded-[12px]"
-              />
-              <p className="text-[11.5px] text-white/40">
-                {body.trim().length} / 10,000 characters
-              </p>
-            </div>
+              <Field data-invalid={bodyInvalid || undefined}>
+                <FieldLabel htmlFor="body">Details</FieldLabel>
+                <Textarea
+                  id="body"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  onBlur={() => setTouched(true)}
+                  placeholder="Include any relevant details — URLs, what you tried, what you expected."
+                  rows={10}
+                  maxLength={10000}
+                  aria-invalid={bodyInvalid || undefined}
+                  className="rounded-[12px]"
+                />
+                {bodyInvalid ? (
+                  <FieldError>Tell us a bit more — at least 10 characters.</FieldError>
+                ) : (
+                  <FieldDescription>
+                    {body.trim().length} / 10,000 characters
+                  </FieldDescription>
+                )}
+              </Field>
 
-            <div className="flex items-center justify-end gap-2">
+              <Field>
+                <FieldLabel>Attachments</FieldLabel>
+                <SupportAttachmentsField
+                  files={files}
+                  onChange={setFiles}
+                  uploading={uploading}
+                  onError={(msg) => toast.error(msg)}
+                />
+                <FieldDescription>
+                  Screenshots, PDFs and documents. Optional.
+                </FieldDescription>
+              </Field>
+            </FieldGroup>
+
+            <div className="mt-6 flex items-center justify-end gap-2">
               <Button
                 asChild
                 type="button"
@@ -155,7 +233,7 @@ function NewTicketPage() {
                 disabled={!canSubmit}
                 className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90"
               >
-                {create.isPending ? (
+                {create.isPending || uploading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" data-icon />
                 ) : (
                   <Send className="mr-2 h-4 w-4" data-icon />
