@@ -356,6 +356,26 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
 
 
 export const Route = createFileRoute("/c/$slug")({
+  loader: async ({ params }) => {
+    // Fixture coaches (mock-up slugs) always render — no gating.
+    if (COACHES[params.slug]) return { gated: false as const };
+    // For DB-backed pros, the Pro shop-front (/c/...) is Pro+Studio only.
+    // Verified pros have no /c/<slug> page — they appear via /pro/<slug>.
+    const live = await getShopFrontBySlug({ data: { slug: params.slug } });
+    if (!live) throw notFound();
+    if (live.shopFront.tier !== "pro" && live.shopFront.tier !== "studio") {
+      throw notFound();
+    }
+    return { gated: false as const };
+  },
+  notFoundComponent: () => (
+    <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
+      <div>
+        <h1 className="font-display text-2xl font-bold text-white">Page not found</h1>
+        <p className="mt-2 text-sm">This shop-front is not available.</p>
+      </div>
+    </div>
+  ),
   head: ({ params }) => {
     const coach = COACHES[params.slug] ?? COACHES["james-wilson"];
     const title = `${coach.name} — ${coach.role} | REPS`;
@@ -372,6 +392,7 @@ export const Route = createFileRoute("/c/$slug")({
   },
   component: CoachShopFrontPage,
 });
+
 
 const NAV_ITEMS = [
   { id: "services", label: "Services" },
