@@ -35,10 +35,7 @@ export function PhotoLightbox({ images, open, onOpenChange, initialIndex = 0 }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-[95vw] gap-0 border-0 bg-black/95 p-0 sm:max-w-[1200px] [&>button]:hidden"
-        showCloseButton={false}
-      >
+      <DialogContent className="max-w-[95vw] gap-0 border-0 bg-black/95 p-0 text-white sm:max-w-[1200px] [&>button]:text-white [&>button]:opacity-90 [&>button]:hover:opacity-100">
         <DialogTitle className="sr-only">Photo gallery</DialogTitle>
 
         <div className="relative flex h-[80vh] items-center justify-center">
@@ -70,15 +67,6 @@ export function PhotoLightbox({ images, open, onOpenChange, initialIndex = 0 }: 
               </button>
             </>
           )}
-
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="absolute right-3 top-3 rounded-full bg-white/10 p-2 text-white backdrop-blur transition hover:bg-white/20"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
 
           <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-[12px] font-medium text-white">
             {index + 1} / {images.length}
