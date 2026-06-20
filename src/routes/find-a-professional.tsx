@@ -337,10 +337,9 @@ function DirectoryPage() {
   );
 
   // Client-side filter: rating + radius. Auto-widen when a radius leaves <5 results.
-  const ratingFiltered = React.useMemo(
-    () => (min_rating > 0 ? decorated.filter((p) => p.rating >= min_rating) : decorated),
-    [decorated, min_rating],
-  );
+  // Rating filter is now server-side (passed into searchProfessionals as
+  // `min_rating`), so `total` already reflects the filtered set.
+  const ratingFiltered = decorated;
 
   const withinRadius = React.useMemo(() => {
     if (!origin || radius_mi <= 0) return ratingFiltered;
