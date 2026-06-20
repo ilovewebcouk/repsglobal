@@ -325,6 +325,11 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     gyms: row.gyms ?? [],
     lat: row.location?.latitude ?? null,
     lng: row.location?.longitude ?? null,
+    trust: {
+      verified: !!row.trust?.verified,
+      insuranceExpiry: row.trust?.insurance_expiry ?? null,
+      cpd: null,
+    },
     faqs: [],
   };
 }
