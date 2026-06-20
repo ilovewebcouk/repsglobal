@@ -226,6 +226,47 @@ const RATING_DIST = [
 
 type DbPro = Awaited<ReturnType<typeof getPublicProfileBySlug>>;
 
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function formatIssued(issueDate: string | null, year: number | null): string {
+  if (issueDate) {
+    const d = new Date(issueDate);
+    if (!Number.isNaN(d.getTime())) {
+      return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+    }
+  }
+  return year ? String(year) : "—";
+}
+function titleCaseQual(s: string): string {
+  // Only Title-Case if the string is mostly uppercase, otherwise leave as authored.
+  const letters = s.replace(/[^A-Za-z]/g, "");
+  if (!letters.length) return s;
+  const upperRatio = (s.match(/[A-Z]/g)?.length ?? 0) / letters.length;
+  if (upperRatio < 0.7) return s;
+  const small = new Set(["a", "an", "and", "the", "of", "in", "for", "to", "on", "or"]);
+  return s
+    .toLowerCase()
+    .split(/(\s+|-)/)
+    .map((tok, i) => {
+      if (!tok.trim() || tok === "-") return tok;
+      if (i > 0 && small.has(tok)) return tok;
+      return tok.charAt(0).toUpperCase() + tok.slice(1);
+    })
+    .join("");
+}
+function badgeFor(awardingBody: string | null, slug: string | null): string {
+  if (slug) {
+    const s = slug.replace(/[^a-z0-9]/gi, "").toUpperCase();
+    if (s.length) return s.slice(0, 4);
+  }
+  const body = (awardingBody ?? "").trim();
+  if (!body) return "QUAL";
+  const parts = body.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return parts.map((p) => p[0]!.toUpperCase()).join("").slice(0, 4);
+  }
+  return body.replace(/[^a-z0-9]/gi, "").slice(0, 4).toUpperCase() || "QUAL";
+}
+
 function proFromDb(row: NonNullable<DbPro>): Pro {
   const template = PROS["james-carter"];
   const professionLabel =
@@ -264,7 +305,14 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
           },
         ]
       : template.services,
-    qualifications: [],
+    qualifications: (row.qualifications ?? []).map((q) => ({
+      badge: badgeFor(q.awarding_body, q.awarding_body_slug),
+      title: titleCaseQual(q.qualification ?? "Qualification"),
+      issuer: q.awarding_body ?? "Awarding body",
+      id: q.qualification_number?.trim() || q.id.slice(0, 8),
+      issued: formatIssued(q.issue_date, q.year),
+      verified: !!q.regulator_verified,
+    })),
     faqs: [],
   };
 }
