@@ -282,9 +282,11 @@ export function DashboardSidebar({
         className={cn(
           "px-2",
           // Themed thin scrollbar — replaces the ugly native one when the
-          // nav overflows on shorter viewports.
-          "[scrollbar-width:thin] [scrollbar-color:theme(colors.white/15)_transparent]",
-          "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10 hover:[&::-webkit-scrollbar-thumb]:bg-white/20",
+          // nav overflows on shorter viewports. Firefox + WebKit.
+          "[scrollbar-width:thin] [scrollbar-color:rgb(255_255_255/0.12)_transparent]",
+          "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
+          "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10 hover:[&::-webkit-scrollbar-thumb]:bg-white/25",
+          "[&::-webkit-scrollbar-button]:hidden",
         )}
       >
         {groups.map((g) => (
