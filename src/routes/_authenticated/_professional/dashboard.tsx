@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Inbox, Loader2, MessageCircleQuestion, Star } from "lucide-react";
+import { ExternalLink, Inbox, MessageCircleQuestion, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
