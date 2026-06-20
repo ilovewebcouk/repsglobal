@@ -371,7 +371,7 @@ export function DashboardSidebar({
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-reps-border">
+    <Sidebar variant="floating" collapsible="icon">
       <SidebarHeader className="px-4 pb-2 pt-4 group-data-[collapsible=icon]:px-2">
         <Link
           to="/"
