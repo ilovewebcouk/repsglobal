@@ -188,10 +188,6 @@ function ReviewsPage() {
         return pending;
       case "removed":
         return removed;
-      case "5":
-        return approved.filter((r) => r.rating === 5);
-      case "4":
-        return approved.filter((r) => r.rating === 4);
       case "all":
       default:
         return [...approved, ...pending].sort(
