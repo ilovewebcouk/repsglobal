@@ -15,6 +15,7 @@ import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
 import { syncMySubscription } from "@/lib/billing/billing.functions";
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
+import { profileCompleteness } from "@/lib/dashboard/profileCompleteness";
 
 import {
   ActivityTimeline,
@@ -94,6 +95,7 @@ function DashboardPage() {
   const firstName = memberName.split(" ")[0];
 
   const enqStats = hub.enqStats.data;
+  const profilePct = hub.profile.data ? profileCompleteness(hub.profile.data).pct : 0;
   const reviewKpis = hub.reviewKpis.data;
 
   const greeting = useGreeting();
