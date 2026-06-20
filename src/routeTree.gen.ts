@@ -103,7 +103,6 @@ import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from '
 import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
 import { Route as AuthenticatedProfessionalDashboardReviewsRouteImport } from './routes/_authenticated/_professional/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
-import { Route as AuthenticatedProfessionalDashboardPhotosRouteImport } from './routes/_authenticated/_professional/dashboard_.photos'
 import { Route as AuthenticatedProfessionalDashboardEnquiriesRouteImport } from './routes/_authenticated/_professional/dashboard_.enquiries'
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
 import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from './routes/_authenticated/_professional/dashboard.syncing'
@@ -610,12 +609,6 @@ const AuthenticatedProfessionalDashboardProfileRoute =
     path: '/dashboard/profile',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
-const AuthenticatedProfessionalDashboardPhotosRoute =
-  AuthenticatedProfessionalDashboardPhotosRouteImport.update({
-    id: '/dashboard_/photos',
-    path: '/dashboard/photos',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
 const AuthenticatedProfessionalDashboardEnquiriesRoute =
   AuthenticatedProfessionalDashboardEnquiriesRouteImport.update({
     id: '/dashboard_/enquiries',
@@ -813,7 +806,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  '/dashboard/photos': typeof AuthenticatedProfessionalDashboardPhotosRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -925,7 +917,6 @@ export interface FileRoutesByTo {
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  '/dashboard/photos': typeof AuthenticatedProfessionalDashboardPhotosRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -1042,7 +1033,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/_authenticated/_professional/dashboard_/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  '/_authenticated/_professional/dashboard_/photos': typeof AuthenticatedProfessionalDashboardPhotosRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/_authenticated/_professional/dashboard_/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -1157,7 +1147,6 @@ export interface FileRouteTypes {
     | '/dashboard/syncing'
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
-    | '/dashboard/photos'
     | '/dashboard/profile'
     | '/dashboard/reviews'
     | '/dashboard/services'
@@ -1269,7 +1258,6 @@ export interface FileRouteTypes {
     | '/dashboard/syncing'
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
-    | '/dashboard/photos'
     | '/dashboard/profile'
     | '/dashboard/reviews'
     | '/dashboard/services'
@@ -1385,7 +1373,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/cpd'
     | '/_authenticated/_professional/dashboard_/enquiries'
-    | '/_authenticated/_professional/dashboard_/photos'
     | '/_authenticated/_professional/dashboard_/profile'
     | '/_authenticated/_professional/dashboard_/reviews'
     | '/_authenticated/_professional/dashboard_/services'
@@ -2162,13 +2149,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardProfileRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
-    '/_authenticated/_professional/dashboard_/photos': {
-      id: '/_authenticated/_professional/dashboard_/photos'
-      path: '/dashboard/photos'
-      fullPath: '/dashboard/photos'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardPhotosRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
     '/_authenticated/_professional/dashboard_/enquiries': {
       id: '/_authenticated/_professional/dashboard_/enquiries'
       path: '/dashboard/enquiries'
@@ -2392,7 +2372,6 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalCheckoutCreditsRoute: typeof AuthenticatedProfessionalCheckoutCreditsRoute
   AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
   AuthenticatedProfessionalDashboardEnquiriesRoute: typeof AuthenticatedProfessionalDashboardEnquiriesRoute
-  AuthenticatedProfessionalDashboardPhotosRoute: typeof AuthenticatedProfessionalDashboardPhotosRoute
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
   AuthenticatedProfessionalDashboardReviewsRoute: typeof AuthenticatedProfessionalDashboardReviewsRoute
   AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -2413,8 +2392,6 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardCpdRoute,
     AuthenticatedProfessionalDashboardEnquiriesRoute:
       AuthenticatedProfessionalDashboardEnquiriesRoute,
-    AuthenticatedProfessionalDashboardPhotosRoute:
-      AuthenticatedProfessionalDashboardPhotosRoute,
     AuthenticatedProfessionalDashboardProfileRoute:
       AuthenticatedProfessionalDashboardProfileRoute,
     AuthenticatedProfessionalDashboardReviewsRoute:
@@ -2551,3 +2528,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
