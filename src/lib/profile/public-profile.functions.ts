@@ -124,6 +124,23 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       })
       .filter((g): g is { label: string; branch: string } => g !== null);
 
+    const { data: insuranceRow } = await supabaseAdmin
+      .from("insurance_policies")
+      .select("expiry_date, status")
+      .eq("professional_id", r.id)
+      .eq("status", "active")
+      .gte("expiry_date", new Date().toISOString().slice(0, 10))
+      .order("expiry_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const { data: proExtra } = await supabaseAdmin
+      .from("professionals")
+      .select("verification, identity_status, insurance_valid_until")
+      .eq("id", r.id)
+      .maybeSingle();
+
+
     return {
       ...r,
       primary_profession: r.primary_profession ?? null,
