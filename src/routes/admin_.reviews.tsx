@@ -29,17 +29,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import {
   adminListReviews,
@@ -48,6 +37,7 @@ import {
   type AdminReviewRow,
   type AiFlags,
 } from "@/lib/reviews/reviews.functions";
+import { RemoveReviewDialog } from "@/components/admin/RemoveReviewDialog";
 
 export const Route = createFileRoute("/admin_/reviews")({
   ssr: false,
@@ -160,8 +150,14 @@ function AdminReviewsPage() {
   });
 
   const moderate = useMutation({
-    mutationFn: (vars: { id: string; action: "approve" | "remove" }) =>
-      adminModerateReview({ data: vars }),
+    mutationFn: (vars: {
+      id: string;
+      action: "approve" | "remove";
+      note?: string;
+      category?: string;
+      internal_note?: string;
+      notify?: boolean;
+    }) => adminModerateReview({ data: vars }),
     onSuccess: (_d, vars) => {
       toast.success(vars.action === "approve" ? "Review approved" : "Review removed");
       qc.invalidateQueries({ queryKey: ["admin", "reviews"] });
@@ -289,6 +285,21 @@ function AdminReviewsPage() {
                           </p>
                         </div>
                       )}
+                      {r.moderation_status === "removed" && r.removal_reason && (
+                        <div className="mt-2 rounded-[10px] border border-red-500/30 bg-red-500/10 px-3 py-2">
+                          <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-red-300">
+                            <Trash2 className="h-3 w-3" /> Removed
+                            {r.removal_category ? ` · ${r.removal_category}` : ""}
+                          </div>
+                          <p className="mt-1 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/85">
+                            {r.removal_reason}
+                          </p>
+                          <p className="mt-1 text-[10.5px] text-white/45">
+                            {r.removal_notified_at ? "Trainer emailed" : "Trainer not emailed"}
+                            {r.removal_internal_note ? ` · internal: ${r.removal_internal_note}` : ""}
+                          </p>
+                        </div>
+                      )}
                       {r.ai_flags && r.ai_verdict !== "clean" && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {Object.entries(r.ai_flags)
@@ -315,8 +326,20 @@ function AdminReviewsPage() {
                         >
                           Approve
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                        <RemoveReviewDialog
+                          reviewId={r.id}
+                          isPending={moderate.isPending}
+                          onConfirm={(vars) =>
+                            moderate.mutate({
+                              id: r.id,
+                              action: "remove",
+                              note: vars.note,
+                              category: vars.category,
+                              internal_note: vars.internalNote,
+                              notify: vars.notify,
+                            })
+                          }
+                          trigger={
                             <Button
                               size="sm"
                               variant="outline"
@@ -324,24 +347,8 @@ function AdminReviewsPage() {
                             >
                               Remove
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Remove this review?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                It won't be shown on the public profile and the pro will see it as removed.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => moderate.mutate({ id: r.id, action: "remove" })}
-                              >
-                                Remove review
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          }
+                        />
                       </div>
                     ) : null}
                   </div>
