@@ -308,6 +308,29 @@ function ProProfilePage() {
   const realReviews: ReviewDTO[] = liveReviews?.reviews ?? [];
   const hasRealReviews = realReviews.length > 0;
 
+  // For DB-backed pros (no fixture), derive rating summary + distribution
+  // from real reviews so the "What Clients Say" panel reflects reality.
+  const isDbPro = !PROS[slug];
+  const reviewSummary = (() => {
+    if (!isDbPro) {
+      return {
+        rating: pro.rating,
+        count: pro.reviews,
+        dist: RATING_DIST,
+        maxCount: 128,
+      };
+    }
+    const count = realReviews.length;
+    const sum = realReviews.reduce((a, r) => a + (r.rating || 0), 0);
+    const rating = count > 0 ? sum / count : 0;
+    const dist = [5, 4, 3, 2, 1].map((stars) => ({
+      stars,
+      count: realReviews.filter((r) => Math.round(r.rating) === stars).length,
+    }));
+    const maxCount = Math.max(1, ...dist.map((d) => d.count));
+    return { rating, count, dist, maxCount };
+  })();
+
   return (
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" />
