@@ -70,6 +70,17 @@ function CountPill({ children }: { children: React.ReactNode }) {
   );
 }
 
+function FooterItemBadge({ item }: { item: NavItem }) {
+  if (item.label === "Support" && item.to === "/admin/support") {
+    return <SupportUnreadBadge />;
+  }
+  if (item.label === "Support" && item.to === "/dashboard/support") {
+    return <MySupportUnreadBadge />;
+  }
+  if (item.badge) return <CountPill>{item.badge}</CountPill>;
+  return null;
+}
+
 function VerificationCountBadge() {
   const { user } = useSessionUser();
   const fetchTrust = useServerFn(getTrustState);
@@ -320,6 +331,8 @@ export function DashboardSidebar({
             {preFooterItems.map((item) => {
               const isActive = pathname === item.to || item.label === active;
               const Icon = item.icon;
+              const badge = <FooterItemBadge item={item} />;
+              const hasBadge = item.badge !== undefined || item.label === "Support";
               return (
                 <SidebarMenuItem key={`footer:${item.label}`}>
                   <SidebarMenuButton
@@ -336,10 +349,21 @@ export function DashboardSidebar({
                       aria-label={item.label}
                       aria-current={isActive ? "page" : undefined}
                     >
-                      <Icon className="h-[18px] w-[18px]" />
+                      <span className="relative inline-flex shrink-0">
+                        <Icon className="h-[18px] w-[18px]" />
+                        {hasBadge ? (
+                          <span
+                            aria-hidden
+                            className="absolute -right-1 -top-1 hidden h-1.5 w-1.5 rounded-full bg-reps-orange group-data-[collapsible=icon]:block"
+                          />
+                        ) : null}
+                      </span>
                       <span>{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
+                  <SidebarMenuBadge className="bg-transparent p-0 text-inherit">
+                    {badge}
+                  </SidebarMenuBadge>
                 </SidebarMenuItem>
               );
             })}

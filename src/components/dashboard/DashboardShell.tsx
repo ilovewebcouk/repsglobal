@@ -1,8 +1,7 @@
 import * as React from "react";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
-import { Button } from "@/components/ui/button";
 import {
   SidebarInset,
   SidebarProvider,
@@ -122,19 +121,7 @@ function TopBar({
         )}
 
         {actions}
-        {role === "admin" ? (
-          <NotificationsBell />
-        ) : (
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Notifications"
-            disabled
-            className="border-reps-border bg-reps-panel text-white/70 transition-colors hover:bg-reps-panel-soft hover:text-white"
-          >
-            <Bell className="h-4 w-4" />
-          </Button>
-        )}
+        <NotificationsBell />
 
         <UserAccountMenu surface="dashboard" />
       </div>
