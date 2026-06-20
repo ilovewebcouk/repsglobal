@@ -1,86 +1,78 @@
-# Migrate DashboardShell to shadcn Sidebar (sidebar-04)
+# Switch DashboardSidebar to sidebar-04 (floating + collapsible sections)
 
-Replace the hand-rolled sidebar in `src/components/dashboard/DashboardShell.tsx` with the shadcn `Sidebar` primitive, using the **sidebar-04** pattern: header (logo), grouped nav, footer user card, collapsible to a **3rem icon rail** with hover tooltips on collapsed items. Keep every existing behaviour — tier-aware nav, all badge counters, impersonation banner, admin badge, "Switch to Admin", "Upgrade to Pro", mobile sheet, `⌘K` search.
+Rework `src/components/dashboard/DashboardSidebar.tsx` to match the **sidebar-04** pattern: floating rounded sidebar with a gap from the window edge, each nav section a **collapsible group with a chevron**. Leaves stay exactly as they are today — no IA change, no new routes.
 
-This is a shell swap, **not** a redesign. Tokens, colours, radii, copy, and route structure stay identical.
+Pair it with `variant="inset"`-aware spacing on the main content so the floating card has room to breathe.
 
 ---
 
-## 1. Wire `SidebarProvider` at the right level
+## 1. Sidebar variant + provider spacing
 
-The provider must wrap both the Sidebar and `SidebarInset` (main content). Cleanest spot is **inside `DashboardShell` itself** — not in `_authenticated/route.tsx` — because `/portal/*` (client portal) and other authenticated routes don't use this shell.
+In `DashboardShell.tsx`:
 
-```text
-<SidebarProvider defaultOpen> (reads `repsuk:sidebar:open` cookie/localStorage)
-  <DashboardSidebar role tier active member />     ← collapsible="icon"
-  <SidebarInset>
-    <ImpersonationBanner />
-    <TopBar … with <SidebarTrigger /> for desktop collapse + existing mobile <Sheet /> swap-out >
-    <main>{children}</main>
-  </SidebarInset>
-</SidebarProvider>
+- `<Sidebar variant="floating" collapsible="icon">` (replaces `variant="sidebar"`).
+- Keep `SidebarProvider` widths. shadcn's floating variant already adds the outer padding (`p-2`) and rounded-lg + border + shadow internally — no extra wrapper needed.
+- Main `SidebarInset` keeps its current bg (`bg-reps-ink`). The floating gap lets the dark page show through, which reads correctly on our theme (verified visually after build).
+
+## 2. Collapsible section groups
+
+Each `NavGroup` becomes a `Collapsible` wrapping a `SidebarGroup`:
+
+```tsx
+<Collapsible defaultOpen={containsActive} className="group/collapsible">
+  <SidebarGroup>
+    <SidebarGroupLabel asChild>
+      <CollapsibleTrigger>
+        {group.title}
+        <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+      </CollapsibleTrigger>
+    </SidebarGroupLabel>
+    <CollapsibleContent>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map(... existing SidebarMenuButton + Badge ...)}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </CollapsibleContent>
+  </SidebarGroup>
+</Collapsible>
 ```
 
-Persistence: rely on shadcn's built-in cookie (`sidebar_state`) so collapse survives navigation/refresh.
+- `defaultOpen` per group = `true` when any item in that group matches the current pathname (or is `active`). So the section containing the current page is auto-expanded; others start collapsed.
+- Chevron right rotates 90° on open (standard sidebar-04 detail).
+- Hover state on the trigger via `SidebarGroupLabel`'s existing styling — no custom colors.
 
-## 2. New file: `src/components/dashboard/DashboardSidebar.tsx`
+## 3. Icon-rail behaviour (collapsed sidebar)
 
-Extract the sidebar out of `DashboardShell.tsx` into its own file built on shadcn primitives:
+shadcn's `SidebarGroupLabel` already auto-hides in `collapsible=icon` mode. In the icon rail:
+- Section headers (and chevrons) disappear.
+- All leaves render as a flat icon column with tooltips (same as today).
+- The collapsible state of each group is preserved on re-expand.
 
-- `Sidebar collapsible="icon" variant="sidebar"` — dark theme via existing `bg-reps-midnight` class on the inner shell; sidebar tokens (`--sidebar-background` etc.) stay default so we don't fight the primitive.
-- `SidebarHeader` → `RepsWordmark` (full when expanded, mini "R" mark when collapsed via `group-data-[collapsible=icon]` selector).
-- `SidebarContent` → one `SidebarGroup` per existing nav group (`Account` / `Work` / `Deliver` / `Grow` / `Money & Admin` for trainer; `Manage` / `Platform` for admin). Each uses `SidebarGroupLabel` + `SidebarMenu` + `SidebarMenuItem` + `SidebarMenuButton asChild` wrapping `<Link to=…>`.
-  - `isActive` prop wired from `useRouterState` pathname (same logic as today).
-  - `tooltip={item.label}` on every `SidebarMenuButton` so labels still surface in collapsed icon-rail mode.
-  - Counter badges (`VerificationCountBadge`, `EnquiriesUnreadBadge`, `SupportUnreadBadge`, `ReviewsUnreadBadge`, BD chip) rendered via `SidebarMenuBadge` so they auto-hide in icon mode.
-- `SidebarFooter`:
-  - `AdminBadge` (admin only) — hidden in icon mode.
-  - `MemberCard` → collapsed mode swaps to just the avatar (size-8) inside a `SidebarMenuButton size="lg"` pattern (mirrors sidebar-04 NavUser).
-  - "Admin console" + "Upgrade to Pro" CTAs — hidden in icon mode (`group-data-[collapsible=icon]:hidden`).
-- `SidebarRail` at the end (sidebar-04 drag-to-collapse rail).
+So the icon rail experience is identical to what we have now — collapsibles only matter when the sidebar is expanded.
 
-Keep all `*Badge` helper components and `trainerNav` / `ADMIN_NAV` data exactly as-is; just move them with the sidebar.
+## 4. `Collapsible` install check
 
-## 3. Mobile behaviour
-
-shadcn `Sidebar` already provides a built-in `Sheet`-backed mobile drawer at `<lg`. Delete the bespoke `mobileNav` `<Sheet>` block in `DashboardShell` and the `<aside className="hidden lg:block">` wrapper — `SidebarTrigger` covers both desktop collapse and mobile sheet open.
-
-`SidebarTrigger` moves into `TopBar`, replacing the current `mobileNav` button slot. It auto-shows on mobile and stays visible on desktop for collapse toggle (this is the sidebar-04 default).
-
-## 4. ESLint exemption
-
-`mem://design/dashboard-ui-kit` bans `@/components/ui/*` imports under `_authenticated/`. The shadcn Sidebar lives at `@/components/ui/sidebar`. Add `sidebar` to the kit allowlist in `eslint.config.js` (or re-export it from `@/components/dashboard/ui/sidebar.ts` as a passthrough — preferred, matches existing pattern for `dialog`, `button` etc.). Pick the re-export approach for consistency.
-
-New file `src/components/dashboard/ui/sidebar.ts`:
-```ts
-export * from "@/components/ui/sidebar";
-```
-And add to `src/components/dashboard/ui/index.ts` barrel.
+`@/components/ui/collapsible` is a one-line Radix wrapper. If it's not already in the project I'll add it with `bunx shadcn add collapsible`. (I'll check before installing.)
 
 ## 5. Files touched
 
-- **New** `src/components/dashboard/DashboardSidebar.tsx` — extracted + shadcn-ified sidebar.
-- **New** `src/components/dashboard/ui/sidebar.ts` — re-export.
-- **Edit** `src/components/dashboard/ui/index.ts` — add sidebar export.
-- **Edit** `src/components/dashboard/DashboardShell.tsx` — slim down to `SidebarProvider` + `DashboardSidebar` + `SidebarInset` + `TopBar` + `<main>`. Remove old `Sidebar`, `NavSection`, `mobileNav`, desktop `<aside>`.
-- **Edit** `eslint.config.js` — only if the re-export approach doesn't satisfy the rule (verify after first build).
-- **Save** `mem://design/dashboard-ui-kit` — add Sidebar to the kit + note collapse persistence cookie.
+- **Edit** `src/components/dashboard/DashboardSidebar.tsx` — wrap each section in `Collapsible`, add chevron, compute `defaultOpen` from active pathname.
+- **Edit** `src/components/dashboard/DashboardShell.tsx` — flip `Sidebar variant` to `floating`. Possibly nudge `--sidebar-width` (floating eats ~16px of horizontal space for the gap; current 232px stays fine).
+- **Maybe new** `src/components/ui/collapsible.tsx` — only if missing.
+- **No** changes to nav data, routes, badges, or any dashboard page.
 
 ## 6. Out of scope
 
-- No changes to nav items, route paths, tier rules, or any page under `/dashboard/*` and `/admin/*`.
-- No visual redesign — tokens, badge styles, member card, CTAs render with the same classes.
-- No changes to `/portal/*` (client portal uses `ClientShell`, untouched).
-- No changes to TopBar contents beyond swapping the mobile menu button for `SidebarTrigger`.
+- No IA changes, no new routes, no parent-routed hubs.
+- No restyle of tokens, badges, footer card, CTAs, topbar.
+- No change to `/portal/*` or any page-level component.
 
-## 7. QA checklist (post-build)
+## 7. QA after build
 
-1. `/dashboard` (verified, pro, studio tiers) and `/admin` — sidebar renders, active state correct on each route.
-2. Click `SidebarTrigger` → collapses to icon rail (~3rem), labels hidden, tooltips show on hover.
-3. Refresh after collapse → state persists.
-4. Mobile (<lg) → trigger opens Sheet, nav fully visible, footer card visible.
-5. Counter badges (Verification chip, Enquiries unread, Support unread, Reviews unread, BD migration) render in expanded mode, hidden/dot in icon mode.
-6. Impersonation banner + admin-as-trainer "Admin console" CTA still appear.
-7. Verified trainer sees "Upgrade to Pro" CTA; Pro/Studio don't.
-8. `⌘K` still focuses search.
-9. ESLint passes; build clean.
+1. `/dashboard` (verified + pro) and `/admin` — sidebar floats with rounded corners and a gap from the edge.
+2. Section containing current route is open on first paint; other sections collapsed.
+3. Click section header → expand/collapse animates, chevron rotates.
+4. Collapse to icon rail → section headers hidden, leaves still visible with tooltips.
+5. Mobile sheet — sections still collapsible inside the sheet.
+6. Counter badges still render on Verification / Enquiries / Reviews / Support / Migration.
