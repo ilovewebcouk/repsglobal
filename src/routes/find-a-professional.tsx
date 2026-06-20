@@ -386,11 +386,11 @@ function DirectoryPage() {
   const goToPage = (n: number) =>
     navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: n }) });
 
-  // When a radius is active with an origin, pagination must reflect the
-  // FILTERED visible set (client-side filter), not the raw server total.
-  // Otherwise a 1-mile radius showing 2 cards still offers 17 pages.
-  const radiusActive = Boolean(origin) && radius_mi > 0;
-  const visibleTotal = radiusActive ? visiblePros.length : total;
+  // When a client-side filter is active (rating or radius), pagination must
+  // reflect the FILTERED visible set, not the raw server total. Otherwise a
+  // 4★ filter showing 4 cards still offers 17 pages.
+  const clientFilterActive = (Boolean(origin) && radius_mi > 0) || min_rating > 0;
+  const visibleTotal = clientFilterActive ? visiblePros.length : total;
   const totalPages = Math.max(1, Math.ceil(visibleTotal / PAGE_SIZE));
   const rangeStart = visibleTotal === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(page * PAGE_SIZE, visibleTotal);
