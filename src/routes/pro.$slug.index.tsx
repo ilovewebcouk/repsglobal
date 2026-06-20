@@ -88,6 +88,7 @@ type Pro = {
     id: string;
     issued: string;
     verified?: boolean;
+    expires?: string | null;
   }[];
   gyms?: { label: string; branch: string }[];
   lat?: number | null;
@@ -328,6 +329,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       id: q.qualification_number?.trim() || q.id.slice(0, 8),
       issued: formatIssued(q.issue_date, q.year),
       verified: !!q.regulator_verified,
+      expires: q.expiry_date ?? null,
     })),
     gyms: row.gyms ?? [],
     lat: row.location?.latitude ?? null,
@@ -532,6 +534,7 @@ function ProProfilePage() {
             const isVerified = !!pro.trust?.verified;
             const hasQuals = (pro.qualifications?.length ?? 0) > 0;
             const hasInsurance = !!pro.trust?.insuranceExpiry;
+            const today = new Date().toISOString().slice(0, 10);
             const verifiedSub = isVerified
               ? hasInsurance
                 ? "Qualified & insured"
@@ -548,8 +551,14 @@ function ProProfilePage() {
                 />
                 <TrustItem
                   icon={Award}
-                  title="Qualifications Checked"
-                  sub="Up to date"
+                  title={hasQuals ? "Qualifications Checked" : "No qualifications"}
+                  sub={
+                    !hasQuals
+                      ? "Not yet qualified"
+                      : pro.qualifications.some((q) => q.expires && q.expires < today)
+                        ? "Renewal required"
+                        : "Up to date"
+                  }
                 />
                 <TrustItem
                   icon={Umbrella}
