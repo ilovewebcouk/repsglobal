@@ -306,11 +306,7 @@ function ReviewsPage() {
             <div className="mt-2 font-display text-[26px] font-bold leading-none text-white">{k.value}</div>
             <div
               className={`mt-2 text-[11px] font-medium ${
-                k.tone === "up"
-                  ? "text-emerald-300"
-                  : k.tone === "down"
-                    ? "text-rose-300"
-                    : "text-white/55"
+                k.tone === "up" ? "text-emerald-300" : "text-white/55"
               }`}
             >
               {k.delta}
