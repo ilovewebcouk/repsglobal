@@ -97,7 +97,7 @@ function TopBar({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {search ? (
-          <div className="relative hidden md:block">
+          <div className="relative hidden lg:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
             <input
               ref={inputRef}
@@ -112,7 +112,7 @@ function TopBar({
             </kbd>
           </div>
         ) : (
-          <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 md:flex">
+          <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 lg:flex">
             <Search className="h-4 w-4" />
             <span className="flex-1">{searchPlaceholder}</span>
             <kbd className="rounded-[6px] border border-reps-border bg-reps-ink px-1.5 py-0.5 text-[10px] font-semibold text-white/60">
