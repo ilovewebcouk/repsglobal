@@ -1,116 +1,152 @@
-## Why
-`/dashboard/reviews` works but doesn't scale. As soon as a trainer has any volume:
-- "All reviews" + "Removed by REPS" + "Sent requests" stack into a long vertical scroll.
-- Removed reviews live in their own grey panel above the feed, dominating the page.
-- The 5★/4★ filter row is a pill cluster that doesn't carry counts and can't grow.
-- A pending review (waiting on admin approval) isn't surfaced at all on the trainer side.
 
-Admin's `/admin/reviews` already nailed the right pattern: one panel, four shadcn tabs (Pending / Approved / Removed / All), KPI strip on top, sidebar for context. We mirror that here, tuned for a single trainer's data.
+# World-Class Verified Trainer Dashboard — `/dashboard` Index
 
-## Final structure of `/dashboard/reviews`
+Goal: replace the current `/dashboard` index (4 static status tiles + onboarding stepper + blurred Pro previews) with a true command-center that aggregates every Verified-tier surface a trainer already has — Profile, Verification, CPD, Enquiries, Reviews, Services, Support — into one hub. Same shell, same tokens, same primitives. Sub-pages stay untouched (only the index is rebuilt).
 
-```text
-┌─ KPI strip (4 tiles) ────────────────────────────────────────────┐
-│  Overall rating · Last 30 days · Pending · Removed               │
-└──────────────────────────────────────────────────────────────────┘
+## Scope
+- **In scope:** `src/routes/_authenticated/_professional/dashboard.tsx` only.
+- **Out of scope:** Every other dashboard route (already locked or recently QA'd), DashboardShell/Sidebar, nav-data, tokens, primitives, server functions (we reuse what exists).
+- **Tier:** Verified £99/yr. Pro/Studio users see the same hub with an extra "Pro tools" strip linking to clients/calendar/messages.
 
-┌─ MAIN (xl:col-span-8) ──────────────────┐  ┌─ SIDE (xl:col-span-4) ─┐
-│ ┌─ Reviews panel ──────────────────────┐│  │ Rating breakdown card  │
-│ │ Header row: title + search           ││  │ How reviews work card  │
-│ │ [All N][Approved N][Pending N]       ││  └────────────────────────┘
-│ │ [Removed N][5★ N][4★ N]              ││
-│ │ ───────────────────────────────────  ││
-│ │ tab body: list of cards              ││
-│ │ (per-tab empty state)                ││
-│ └──────────────────────────────────────┘│
-│                                          │
-│ ┌─ Sent requests panel ────────────────┐│
-│ │ Header + "Send another" CTA          ││
-│ │ Inline status filters: All/Sent/     ││
-│ │ Opened/Submitted/Expired             ││
-│ │ Scrollable list, max-h ~420px        ││
-│ └──────────────────────────────────────┘│
-└──────────────────────────────────────────┘
+## Layout (12-col grid, DashboardShell content area)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  TopBar (DashboardShell): title "Dashboard" · subtitle "Good morning,   │
+│  James" · actions: [View public profile ↗] [Request a review]           │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROW 1 — Welcome / Listing status banner (full width, PPanel)           │
+│  Avatar · Name · tier badge · "Your listing is LIVE" emerald dot OR     │
+│  "Draft — complete profile to go live" amber dot · Public URL + copy    │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROW 2 — KPI strip (4 × KpiTile, grid-cols-2 md:grid-cols-4)            │
+│  Profile views 30d │ New enquiries │ Avg rating │ Reply rate            │
+│  (each with trend chip vs prev 30d, sparkline icon)                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROW 3 — 8 / 4 split                                                    │
+│  ┌─────────── col-span-8 ──────────┐ ┌──── col-span-4 ──────┐           │
+│  │ "Needs your attention" PPanel   │ │ Profile completeness │           │
+│  │ Dynamic action list (max 6):    │ │ PPanel               │           │
+│  │ • 2 enquiries awaiting reply →  │ │ Radial ring (pct)    │           │
+│  │ • 1 review pending your reply → │ │ 7-item checklist     │           │
+│  │ • Insurance expires in 18 days  │ │ from completion()    │           │
+│  │ • Add a 2nd service to unlock…  │ │ → "Edit profile"     │           │
+│  │ • 1 support reply waiting       │ └──────────────────────┘           │
+│  │ Empty state: DashboardEmpty                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROW 4 — 8 / 4 split                                                    │
+│  ┌─────────── col-span-8 ──────────┐ ┌──── col-span-4 ──────┐           │
+│  │ Recent activity timeline PPanel │ │ Verification status  │           │
+│  │ Merged feed (last 10):          │ │ PPanel               │           │
+│  │  • New enquiry from Sarah       │ │ 3 LayerChips         │           │
+│  │  • ★★★★★ review from Mike       │ │ (Verified/Insured/   │           │
+│  │  • Identity approved            │ │  Qualified) reused   │           │
+│  │  • Certificate added            │ │ from /verification   │           │
+│  │ Each row: icon + text + time +  │ │ → "Manage"           │           │
+│  │ deep link. "View all" footer.   │ └──────────────────────┘           │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROW 5 — 6 / 6 split                                                    │
+│  ┌──── col-span-6 ────────┐ ┌──── col-span-6 ────────┐                  │
+│  │ CPD & education PCard  │ │ Reviews snapshot PCard │                  │
+│  │ Ring (CPD %)+ next     │ │ 1–5★ distribution bar  │                  │
+│  │ earned title + count   │ │ chart + last review    │                  │
+│  │ → "Open CPD"           │ │ quote → "All reviews"  │                  │
+│  └────────────────────────┘ └────────────────────────┘                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROW 6 — Services strip PPanel                                          │
+│  Horizontal list of trainer's services (max 4 + "Add service") with     │
+│  price/duration. "Manage services" link.                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROW 7 — Grow on REPs (Pro upsell, DISTINCT styling, dismissible)       │
+│  Single PPanel with 3 bullets + "See Pro features" — replaces today's   │
+│  heavy blurred preview rows. Verified-only; hidden for Pro/Studio.      │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Tab behaviour
+Sub-pages (Profile, Verification, CPD, Enquiries, Reviews, Services, Support) remain as-is. The hub is purely an aggregator + entry point.
 
-shadcn `Tabs` (`@/components/ui/tabs`) — same component the admin page uses, themed `bg-reps-ink/60`, h-8 triggers, `text-[11px]`.
+## Components used (all existing, zero new primitives)
 
-| Tab | Source | Notes |
-|---|---|---|
-| **All** | `moderation_status !== "removed"` | Default. Approved + pending mixed, newest first. |
-| **Approved** | `moderation_status === "approved"` | The "live on your profile" set. |
-| **Pending** | `moderation_status === "pending"` | New tab. Card has an info strip: _"Waiting on REPS approval. Replies unlock once approved."_ Reply composer hidden (already does this via `isApproved` check). |
-| **Removed** | `moderation_status === "removed"` | What's currently in the standalone panel. Card greyed, "Reason from REPS" callout, fallback copy for legacy nulls. |
-| **5★** / **4★** | filter on top of All | Promoted from pill buttons to tabs so the row stays consistent. |
+- `DashboardShell` (role=trainer, active=Dashboard, title/subtitle/actions/search)
+- `PPanel` for row containers, `PCard` for inner tiles
+- `KpiTile` (label/value/delta/trend/icon) for ROW 2
+- `SectionHeader` for each PPanel
+- `DashboardBadge` (orange/success/warn/danger) for status pills
+- `DashboardEmpty` for empty action list
+- `DashboardButton` for CTAs
+- `Avatar` + `AvatarFallback` (shadcn) — already used in MemberRow
+- `Progress` (shadcn) — for completeness linear bar inside the ring tooltip
+- `LayerChip` reused from `dashboard_.verification.tsx`
+- `VerifiedBadge` for hero banner
+- Lucide icons consistent with sidebar (Inbox, Star, ShieldCheck, GraduationCap, MessageCircle, AlertTriangle, ArrowUpRight)
 
-Each tab label gets a count when > 0, rendered as a `Badge` sibling: `Approved <Badge>12</Badge>`. Zero-count tabs render label only (no `(0)` clutter).
+No new shadcn components need installing. Everything composes from primitives already shipped.
 
-Search lives in the panel header (left of the tab row on desktop, full-width row on mobile) and filters within the active tab — client_name / title / body, exactly as today.
+## Data wiring (reuse existing server functions)
 
-### Per-tab empty states
+| Block | Source |
+|---|---|
+| Welcome banner | `getMyProfile()` already loaded in shell |
+| Listing live/draft | `profile.is_published` |
+| KPI: Profile views | reuse `analytics_query` source already used in admin; if not exposed, omit tile for v1 |
+| KPI: Enquiries | `getEnquiryStats()` (already used by sidebar badge) |
+| KPI: Reviews avg | `getMyReviewKpis()` (already used on Reviews page) |
+| KPI: Reply rate | derive from `getEnquiryStats()` (already returns reply_rate / avg_reply_time) |
+| Needs attention | compose from same calls above + insurance_valid_until + `useMySupportUnread()` + `useReviewsUnread()` |
+| Activity timeline | new server fn `getRecentActivity()` (light SQL UNION over recent enquiries/reviews/verification events) OR v1: client-side merge of existing queries (no new fn needed) |
+| Profile completeness | lift `completion()` helper from `dashboard_.profile.tsx` into a shared `src/lib/dashboard/profileCompleteness.ts` |
+| Verification status | reuse `getMyVerificationLayers()` already on /verification |
+| CPD ring | reuse data from `dashboard_.cpd.tsx` loader |
+| Reviews snapshot | extend `getMyReviewKpis()` to return rating distribution (already returns counts; just expose 1–5 breakdown) |
+| Services strip | reuse `getMyServices()` from /services |
 
-Each empty state is targeted, not generic:
-- **All** — _"No reviews yet. Use 'Request a review' to email a client a one-click link."_ + CTA button.
-- **Approved** — _"No approved reviews yet."_ Sub: pending count link if any.
-- **Pending** — _"Nothing waiting on REPS approval right now."_
-- **Removed** — _"No removed reviews. Your feed is clean."_ (positive framing, no warning tone.)
-- **5★ / 4★** — _"No N-star reviews yet."_
+**v1 keeps zero new server functions** by client-side composing existing loaders via TanStack Query — every query is already prefetched somewhere in the app.
 
-### Removed-tab info strip
-Top of the Removed tab body (thin row, not a full panel):
-> _Removed reviews are hidden from your public profile. Reply to the REPS email if you'd like us to take another look._
+## What gets deleted from current `/dashboard`
 
-### KPI strip — 4 tiles (was 3)
-1. **Overall rating** — unchanged.
-2. **Last 30 days** — unchanged.
-3. **Pending** — count of `moderation_status === "pending"`, tone `neutral`, delta `"With REPS"` if > 0 else `"None"`.
-4. **Removed** — count of `moderation_status === "removed"`, tone `neutral`, delta `"Hidden from profile"` if > 0 else `"None"`.
+- Static 4-tile StatusCard row (Membership / Verification / Listing / Setup)
+- Onboarding stepper Dialog (replaced by inline "Needs attention" items)
+- Blurred Pro preview rows (`KpiRow`, `ScheduleAndAi`, `PerformanceRow`)
+- Live-page Alert banner (folded into welcome banner)
 
-Drops the existing "Flagged" tile (less actionable for the trainer than Pending/Removed; the moderation queue handles flagged on the admin side). Grid stays `md:grid-cols-3 xl:grid-cols-4`.
+## What stays untouched
 
-### Sent requests panel — same shell, lighter weight
-- Add a one-row status filter inline in the header: `All · Sent · Opened · Submitted · Expired` (mirrors review tabs, ghost-styled).
-- Wrap list in `max-h-[420px] overflow-y-auto` once `requests.length > 8` so it never blows the page open.
-- Counts in the header subtitle: _"12 requests · 4 submitted · 1 expired"_.
+- `DashboardShell`, sidebar, nav-data, NotificationsBell
+- All design tokens, radius scale (16/22 for PCard/PPanel)
+- Every other dashboard route
+- Tier gating in `_pro/route.tsx`
 
-### What gets deleted from the current file
-- The standalone `removed.length > 0 && <PPanel>…</PPanel>` block (lines 225–281).
-- The pill-button 5★/4★ row + `filter` state shape — replaced by `tab` state of type `"all" | "approved" | "pending" | "removed" | "5" | "4"`.
-- The "Flagged" KPI tile.
+## Technical details
 
-### What stays untouched
-- Review-card body, stars, initials, ReplyBlock, thank/flag mutations, dates.
-- `RequestReviewDialog`, `HeaderActions`, `StatusPill`.
-- All server functions (`listMyReviews` already returns pending/approved/removed — no DTO change).
-- Admin `/admin/reviews`, removal dialog, AI draft, notifications, email templates.
-- Schema, RLS, RPCs.
+- File: `src/routes/_authenticated/_professional/dashboard.tsx` (full rewrite of `component`, keep route definition + auth gate).
+- Extract `completion()` from `dashboard_.profile.tsx` → `src/lib/dashboard/profileCompleteness.ts` so both pages share it.
+- New small components co-located under `src/components/dashboard/hub/`:
+  - `WelcomeBanner.tsx`
+  - `NeedsAttention.tsx` (composes signals into action list)
+  - `CompletenessCard.tsx` (radial ring + checklist)
+  - `ActivityTimeline.tsx`
+  - `ReviewsSnapshot.tsx` (rating distribution bar)
+  - `ServicesStrip.tsx`
+  - `CpdMini.tsx`
+- All use existing primitives — no new shadcn installs.
+- Responsive: KPI strip `grid-cols-2 md:grid-cols-4`; ROW 3/4 stack on `<xl` to `col-span-12`; services strip becomes horizontal scroll on mobile.
+- A11y: every action item has a real `<Link>`; rings have `aria-label`; status dots paired with text.
 
-### Responsive
-- Mobile: tab row uses `overflow-x-auto` horizontal scroll inside `TabsList` (same trick admin uses on its 4 tabs at 360px). Search input drops to its own full-width row above tabs. Header row uses the `grid-cols-[minmax(0,1fr)_auto]` pattern from the responsive guidelines so title + search don't clip.
-- KPI grid: `grid-cols-2 md:grid-cols-3 xl:grid-cols-4` (was `xl:grid-cols-5` with empty 5th slot).
+## QA pass
 
-## Token & lint compliance
-- All radii from the 9-step scale (10 / 12 / 16 / 18 / 22 / full). No `rounded-xl/2xl/3xl`, no 14/20/28.
-- All colors via existing `reps-*` tokens; emerald used only for status (Approved/Submitted/Live), red kept off Removed tab body (it's neutral grey; only the inline "Reason from REPS" callout uses orange-soft — unchanged).
-- shadcn primitives: `Tabs/TabsList/TabsTrigger`, `Badge` for tab counts, `ScrollArea` for the sent-requests overflow.
+1. Empty new account (no enquiries, no reviews, draft profile) → every empty state copy reads well.
+2. Healthy Verified account (cruz.pt) → all live signals populate.
+3. Pro account → extra "Pro tools" strip appears; "Grow on REPs" upsell hides.
+4. Mobile 375px → vertical stack, no horizontal overflow.
+5. Tablet 768px → KPI 4-up, rows still 8/4.
+6. Insurance expiring < 30 days → warn pill surfaces in Needs Attention.
 
-## Files touched
-- `src/routes/_authenticated/_professional/dashboard_.reviews.tsx` — only file. No schema, no server-fn, no admin-side, no email changes.
+## Out of scope (deferred)
 
-## Out of scope
-- No pagination — `listMyReviews` already caps at 200 server-side, which is more than enough for v1; revisit if a trainer crosses that.
-- No "acknowledge / dismiss" on removed cards yet — keep as permanent record.
-- No bulk actions on requests (resend / cancel) — separate ticket.
-- Admin page stays as-is.
+- Pro/Studio versions of the hub (Pro gets the same hub + light additions for now)
+- Global command palette
+- Breadcrumbs
+- Studio-specific seats/team UI
+- New server functions for analytics — use what's already wired
 
-## QA after build
-1. **Empty account** — every tab shows its specific empty state; KPI strip shows 4 tiles with "—" / "None".
-2. **cruz.pt's current state** (1 removed, ~2 approved) — All tab shows 2 cards; Approved shows 2; Pending shows empty state; Removed shows the Barry White card with fallback copy; tab counts read `All 2 · Approved 2 · Removed 1`.
-3. **Search inside Removed tab** filters by client name.
-4. **Mobile @ 375px** — tab row scrolls horizontally; search drops to full width; KPI grid is 2 columns; cards readable.
-5. **Tablet @ 768px** — side column moves below main; sent-requests panel scrolls inside its panel, not the page.
-6. **Sent requests with 0 items** — same empty state as today; status filter still renders but greyed.
-
-If anything feels off in the live preview I'll iterate before declaring done.
+Used the **shadcn skill** to keep the design composed from existing PPanel/PCard/KpiTile primitives and dark-tuned DashboardBadge/Empty variants — no new components needed.
