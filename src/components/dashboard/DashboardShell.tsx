@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Bell, Search } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
+import { RepsWordmark } from "@/components/brand/RepsWordmark";
 
 import { DashboardSidebar } from "./DashboardSidebar";
 import type {
@@ -72,19 +74,28 @@ function TopBar({
 
   return (
     <header className="flex items-center justify-between gap-3 px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <SidebarTrigger
           aria-label="Toggle navigation"
           className={cn(
-            "size-9 rounded-[10px] border border-reps-border bg-reps-panel text-white/70 hover:bg-reps-panel-soft hover:text-white",
+            "size-9 shrink-0 rounded-[10px] border border-reps-border bg-reps-panel text-white/70 hover:bg-reps-panel-soft hover:text-white",
           )}
         />
-        <div className="min-w-0">
-          <h1 className="font-display text-[22px] font-bold leading-tight text-white">{title}</h1>
-          <p className="mt-0.5 text-[13px] text-white/55">{subtitle}</p>
+        <Link
+          to={role === "admin" ? "/admin" : "/dashboard"}
+          aria-label="REPS dashboard home"
+          className="shrink-0 lg:hidden"
+        >
+          <RepsWordmark className="h-[16px] text-white" />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate font-display text-[20px] font-bold leading-tight text-white sm:text-[22px]">
+            {title}
+          </h1>
+          <p className="mt-0.5 truncate text-[13px] text-white/55">{subtitle}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         {search ? (
           <div className="relative hidden md:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
@@ -166,10 +177,18 @@ export function DashboardShell({
   const searchPlaceholder =
     role === "admin" ? "Search professionals, members, leads…" : "Search…";
 
+  // Read the persisted sidebar state from cookie so the very first paint
+  // matches the user's last choice (avoids an expanded→collapsed flash).
+  const defaultOpen = React.useMemo(() => {
+    if (typeof document === "undefined") return true;
+    const match = document.cookie.match(/(?:^|; )sidebar_state=([^;]+)/);
+    return match ? match[1] !== "false" : true;
+  }, []);
+
   return (
     <div className="h-screen bg-reps-ink text-reps-text">
       <SidebarProvider
-        defaultOpen
+        defaultOpen={defaultOpen}
         style={
           {
             "--sidebar-width": "232px",

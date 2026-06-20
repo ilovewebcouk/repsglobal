@@ -22,6 +22,8 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Store,
+  Tag,
   Target,
   UserCheck,
   UserCircle,
@@ -42,7 +44,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
+  
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +115,8 @@ const PRO_NAV: NavGroup<TrainerActive>[] = [
   {
     title: "Deliver",
     items: [
+      { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
+      { icon: Tag, label: "Services", to: "/dashboard/services" },
       { icon: Dumbbell, label: "Programs", to: "/dashboard/programs" },
       { icon: Apple, label: "Nutrition", to: "/dashboard/nutrition" },
       { icon: ClipboardList, label: "Check-Ins", to: "/dashboard/check-ins" },
@@ -260,15 +264,10 @@ function MemberRow({ member }: { member?: DashboardShellMember }) {
     : "mt-1 border-reps-orange-border bg-reps-orange-soft text-reps-orange hover:bg-reps-orange-soft";
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel p-3",
-        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0",
-      )}
-    >
-      <Avatar className="size-10 rounded-[10px] group-data-[collapsible=icon]:size-8">
+    <div className="flex items-center gap-3 px-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0">
+      <Avatar className="size-9 rounded-[10px] group-data-[collapsible=icon]:size-8">
         {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-[10px]" /> : null}
-        <AvatarFallback className="rounded-[10px] bg-reps-panel-soft text-white/40">
+        <AvatarFallback className="rounded-[10px] bg-reps-panel-soft text-[11px] text-white/60">
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -283,7 +282,7 @@ function MemberRow({ member }: { member?: DashboardShellMember }) {
 
 function AdminBadgeRow() {
   return (
-    <div className="mx-1 flex items-center gap-2 rounded-[10px] bg-reps-orange-soft px-3 py-2 group-data-[collapsible=icon]:hidden">
+    <div className="flex items-center gap-2 rounded-[10px] bg-reps-orange-soft px-3 py-2 group-data-[collapsible=icon]:hidden">
       <ShieldCheck className="h-4 w-4 text-reps-orange" />
       <span className="text-[12px] font-semibold text-reps-orange">REPS Admin</span>
     </div>
@@ -304,8 +303,11 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
       <SidebarGroupContent>
         <SidebarMenu>
           {group.items.map((item) => {
-            const isActive = item.label === active || pathname === item.to;
+            // Pathname is the primary signal — `active` is only a fallback for
+            // routes whose pathname doesn't exactly match an item's `to`.
+            const isActive = pathname === item.to || item.label === active;
             const Icon = item.icon;
+            const badge = <ItemBadge item={item} />;
             return (
               <SidebarMenuItem key={`${group.title}:${item.label}`}>
                 <SidebarMenuButton
@@ -314,16 +316,20 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
                   tooltip={item.label}
                   className={cn(
                     "h-10 rounded-[10px] text-[13px] font-medium text-white/70 hover:bg-reps-panel hover:text-white",
-                    "data-[active=true]:bg-reps-orange-soft data-[active=true]:text-reps-orange data-[active=true]:hover:bg-reps-orange-soft data-[active=true]:hover:text-reps-orange",
+                    "data-[active=true]:bg-reps-orange-soft data-[active=true]:text-reps-orange data-[active=true]:hover:bg-reps-orange/20 data-[active=true]:hover:text-reps-orange",
                   )}
                 >
-                  <Link to={item.to} aria-label={item.label}>
+                  <Link
+                    to={item.to}
+                    aria-label={item.label}
+                    aria-current={isActive ? "page" : undefined}
+                  >
                     <Icon className="h-[18px] w-[18px] shrink-0" />
                     <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
                 <SidebarMenuBadge className="bg-transparent p-0 text-inherit">
-                  <ItemBadge item={item} />
+                  {badge}
                 </SidebarMenuBadge>
               </SidebarMenuItem>
             );
@@ -350,26 +356,23 @@ export function DashboardSidebar({
   const groups: NavGroup[] =
     role === "admin" ? (ADMIN_NAV as NavGroup[]) : (trainerNav(tier) as NavGroup[]);
 
+  const homeHref = role === "admin" ? "/admin" : "/dashboard";
+
   return (
     <Sidebar collapsible="icon" className="border-r border-reps-border">
-      <SidebarHeader className="px-4 pb-2 pt-4 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="gap-2 px-4 pb-2 pt-4 group-data-[collapsible=icon]:px-2">
         <Link
-          to="/"
+          to={homeHref}
           className="flex items-center justify-center"
-          aria-label="REPS home"
+          aria-label="REPS dashboard home"
         >
           <RepsWordmark className="h-[18px] text-white group-data-[collapsible=icon]:hidden" />
           <span className="hidden font-display text-[18px] font-bold text-white group-data-[collapsible=icon]:inline">
             R
           </span>
         </Link>
+        {role === "admin" ? <AdminBadgeRow /> : null}
       </SidebarHeader>
-
-      {role === "admin" ? (
-        <div className="px-3 pb-2 pt-1">
-          <AdminBadgeRow />
-        </div>
-      ) : null}
 
       <SidebarContent className="px-2">
         {groups.map((g) => (
@@ -377,35 +380,58 @@ export function DashboardSidebar({
         ))}
       </SidebarContent>
 
-      <SidebarSeparator className="bg-reps-border" />
-
-      <SidebarFooter className="gap-3 px-3 pb-4 group-data-[collapsible=icon]:px-2">
+      <SidebarFooter className="gap-2 px-3 pb-4 group-data-[collapsible=icon]:px-2">
         <MemberRow member={member} />
         {role === "trainer" && account.isAdmin && !id.isImpersonating ? (
-          <Button
-            asChild
-            variant="outline"
-            className="justify-between text-foreground group-data-[collapsible=icon]:hidden"
-          >
-            <Link to="/admin">
-              <span className="flex items-center gap-2">
+          <>
+            <Button
+              asChild
+              variant="outline"
+              className="justify-between text-foreground group-data-[collapsible=icon]:hidden"
+            >
+              <Link to="/admin">
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  Admin console
+                </span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              aria-label="Admin console"
+              className="hidden size-9 group-data-[collapsible=icon]:flex"
+            >
+              <Link to="/admin">
                 <ShieldCheck className="h-4 w-4" />
-                Admin console
-              </span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+              </Link>
+            </Button>
+          </>
         ) : null}
         {role === "trainer" && tier === "verified" && !id.isImpersonating ? (
-          <Button asChild className="justify-between group-data-[collapsible=icon]:hidden">
-            <Link to="/pricing">
-              <span className="flex items-center gap-2">
+          <>
+            <Button asChild className="justify-between group-data-[collapsible=icon]:hidden">
+              <Link to="/pricing">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Upgrade to Pro
+                </span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="icon"
+              aria-label="Upgrade to Pro"
+              className="hidden size-9 group-data-[collapsible=icon]:flex"
+            >
+              <Link to="/pricing">
                 <Sparkles className="h-4 w-4" />
-                Upgrade to Pro
-              </span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+              </Link>
+            </Button>
+          </>
         ) : null}
       </SidebarFooter>
 
