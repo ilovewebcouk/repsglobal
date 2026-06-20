@@ -715,33 +715,43 @@ function ProProfilePage() {
               <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
                 Qualifications &amp; Credentials
               </h2>
-              <div className="mt-5 space-y-5">
-                {pro.qualifications.map((q) => (
-                  <div
-                    key={q.id}
-                    className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border-b border-reps-stone/70 pb-5 last:border-0 last:pb-0"
-                  >
-                    <div className="flex h-12 w-16 items-center justify-center rounded-[10px] bg-reps-ivory text-[11px] font-bold text-reps-charcoal">
-                      {q.badge}
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-semibold text-reps-charcoal">{q.title}</div>
-                      <div className="text-[12px] text-reps-muted-light">{q.issuer}</div>
-                      <div className="mt-0.5 text-[11px] text-reps-muted-light">ID: {q.id}</div>
-                    </div>
-                    <div className="text-right text-[12px] text-reps-muted-light">
-                      <div>Issued: {q.issued}</div>
-                      <div className="mt-1 text-[11px] font-medium text-reps-green">Verified</div>
-                    </div>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-reps-green text-white">
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                    </span>
+              {pro.qualifications.length === 0 ? (
+                <p className="mt-5 text-[13px] text-reps-muted-light">
+                  Verified qualifications will appear here once added.
+                </p>
+              ) : (
+                <>
+                  <div className="mt-5 space-y-5">
+                    {pro.qualifications.map((q) => (
+                      <div
+                        key={q.id}
+                        className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border-b border-reps-stone/70 pb-5 last:border-0 last:pb-0"
+                      >
+                        <div className="flex h-12 w-16 items-center justify-center rounded-[10px] bg-reps-ivory text-[11px] font-bold text-reps-charcoal">
+                          {q.badge}
+                        </div>
+                        <div>
+                          <div className="text-[14px] font-semibold text-reps-charcoal">{q.title}</div>
+                          <div className="text-[12px] text-reps-muted-light">{q.issuer}</div>
+                          <div className="mt-0.5 text-[11px] text-reps-muted-light">ID: {q.id}</div>
+                        </div>
+                        <div className="text-right text-[12px] text-reps-muted-light">
+                          <div>Issued: {q.issued}</div>
+                          <div className="mt-1 text-[11px] font-medium text-reps-green">
+                            {q.verified === false ? "Approved" : "Verified"}
+                          </div>
+                        </div>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-reps-green text-white">
+                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <a className="mt-5 inline-block text-[13px] font-semibold text-reps-orange hover:underline" href="#qualifications">
-                View all qualifications (3)
-              </a>
+                  <a className="mt-5 inline-block text-[13px] font-semibold text-reps-orange hover:underline" href="#qualifications">
+                    View all qualifications ({pro.qualifications.length})
+                  </a>
+                </>
+              )}
             </div>
 
             <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
