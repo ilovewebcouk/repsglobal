@@ -634,8 +634,21 @@ export const adminListReviews = createServerFn({ method: "POST" })
 const ModerateSchema = z.object({
   id: z.string().uuid(),
   action: z.enum(["approve", "remove"]),
-  note: z.string().trim().max(500).optional(),
+  note: z.string().trim().max(800).optional(),
+  category: z.string().trim().max(60).optional(),
+  internal_note: z.string().trim().max(1000).optional(),
+  notify: z.boolean().optional(),
 });
+
+const REMOVAL_CATEGORY_LABEL: Record<string, string> = {
+  off_topic: "Off-topic",
+  abusive: "Abusive or hateful",
+  fake: "Fake or incentivised",
+  pii: "Personal data / privacy",
+  defamatory: "Defamatory",
+  spam: "Spam / promotion",
+  other: "Other",
+};
 
 export const adminModerateReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
@@ -646,9 +659,149 @@ export const adminModerateReview = createServerFn({ method: "POST" })
       _review_id: data.id,
       _action: data.action,
       _note: data.note ?? null,
+      _category: data.category ?? null,
+      _internal_note: data.internal_note ?? null,
     } as never);
     if (error) throw error;
+
+    // On removal, queue a branded email to the trainer with the reason.
+    if (data.action === "remove" && (data.notify ?? true) && data.note) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: r } = await supabaseAdmin
+          .from("reviews")
+          .select("professional_id, client_name, rating, body")
+          .eq("id", data.id)
+          .maybeSingle();
+        if (r) {
+          const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("full_name, display_name")
+            .eq("id", r.professional_id)
+            .maybeSingle();
+          const { data: user } = await supabaseAdmin.auth.admin.getUserById(
+            r.professional_id as string,
+          );
+          const recipientEmail = user?.user?.email ?? null;
+          if (recipientEmail) {
+            const proName =
+              (profile as any)?.display_name ||
+              (profile as any)?.full_name ||
+              "there";
+            const categoryLabel = data.category
+              ? REMOVAL_CATEGORY_LABEL[data.category] ?? data.category
+              : undefined;
+            const { sendTransactionalEmailServer } = await import(
+              "@/lib/email/send.server"
+            );
+            await sendTransactionalEmailServer({
+              templateName: "review-removed",
+              recipientEmail,
+              idempotencyKey: `review-removed:${data.id}`,
+              templateData: {
+                proName,
+                clientName: r.client_name,
+                reviewRating: r.rating,
+                reviewBody: r.body,
+                removalCategory: categoryLabel,
+                removalReason: data.note,
+                dashboardUrl: "https://repsuk.org/dashboard/reviews",
+              },
+            });
+            await supabaseAdmin
+              .from("reviews")
+              .update({ removal_notified_at: new Date().toISOString() } as never)
+              .eq("id", data.id);
+          }
+        }
+      } catch (e) {
+        console.error("[adminModerateReview] removal email failed", e);
+      }
+    }
+
     return { ok: true };
+  });
+
+// AI-drafted removal reason — admin-only. Returns a 2-4 sentence note that
+// admin can edit before sending. Never PII-echoes the client.
+const DraftSchema = z.object({
+  reviewId: z.string().uuid(),
+  category: z.string().trim().min(1).max(60),
+});
+
+export const draftReviewRemovalReason = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => DraftSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ draft: string }> => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: r } = await supabaseAdmin
+      .from("reviews")
+      .select("rating, title, body")
+      .eq("id", data.reviewId)
+      .maybeSingle();
+    if (!r) throw new Error("review not found");
+
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) {
+      // Sensible fallback if AI isn't available.
+      const label = REMOVAL_CATEGORY_LABEL[data.category] ?? "our guidelines";
+      return {
+        draft: `Hi — we've removed this review because it breaks ${label}. No action is needed from you, and your other reviews aren't affected. If you'd like us to take another look, just reply to this email.`,
+      };
+    }
+
+    const categoryLabel = REMOVAL_CATEGORY_LABEL[data.category] ?? data.category;
+    const system =
+      "You are REPS moderation, writing a short, professional explanation FOR THE TRAINER about why a review on their profile was removed. " +
+      "Audience: a fitness professional. Tone: calm, supportive, neutral, never accusatory. " +
+      "Length: 2 to 4 sentences, under 600 characters. " +
+      "Do NOT quote the review back, do NOT include the client's name, email, phone or any other personal data, do NOT speculate about the client's motives. " +
+      "Briefly name the policy that was broken, state that no public action is needed from the trainer, and invite them to reply if they disagree. " +
+      "Output plain text only — no markdown, no signature, no greeting headers.";
+    const user =
+      `Removal category: ${categoryLabel}\n` +
+      `Star rating left: ${r.rating}/5\n` +
+      `Review title: ${r.title ?? "(none)"}\n` +
+      `Review body: ${r.body}\n\n` +
+      `Write the trainer-facing removal reason now.`;
+
+    try {
+      const res = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Lovable-API-Key": key,
+          },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [
+              { role: "system", content: system },
+              { role: "user", content: user },
+            ],
+            temperature: 0.4,
+          }),
+        },
+      );
+      if (!res.ok) {
+        const label = REMOVAL_CATEGORY_LABEL[data.category] ?? "our guidelines";
+        return {
+          draft: `Hi — we've removed this review because it breaks ${label}. No public action is needed from you, and your other reviews aren't affected. If you'd like us to take another look, just reply to this email.`,
+        };
+      }
+      const json = await res.json();
+      const text: string =
+        json?.choices?.[0]?.message?.content?.trim() ?? "";
+      return { draft: text.slice(0, 600) };
+    } catch (e) {
+      console.error("[draftReviewRemovalReason] AI failed", e);
+      const label = REMOVAL_CATEGORY_LABEL[data.category] ?? "our guidelines";
+      return {
+        draft: `Hi — we've removed this review because it breaks ${label}. No public action is needed from you, and your other reviews aren't affected. If you'd like us to take another look, just reply to this email.`,
+      };
+    }
   });
 
 // Back-compat exports so older imports keep building.
