@@ -214,7 +214,7 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
               item.label === "Enquiries" ||
               item.label === "Support" ||
               item.label === "Reviews";
-            void hasBadge;
+            
             return (
               <SidebarMenuItem key={`${group.title}:${item.label}`}>
                 <SidebarMenuButton
