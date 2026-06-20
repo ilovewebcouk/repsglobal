@@ -285,6 +285,21 @@ function AdminReviewsPage() {
                           </p>
                         </div>
                       )}
+                      {r.moderation_status === "removed" && r.removal_reason && (
+                        <div className="mt-2 rounded-[10px] border border-red-500/30 bg-red-500/10 px-3 py-2">
+                          <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-red-300">
+                            <Trash2 className="h-3 w-3" /> Removed
+                            {r.removal_category ? ` · ${r.removal_category}` : ""}
+                          </div>
+                          <p className="mt-1 whitespace-pre-wrap text-[12.5px] leading-relaxed text-white/85">
+                            {r.removal_reason}
+                          </p>
+                          <p className="mt-1 text-[10.5px] text-white/45">
+                            {r.removal_notified_at ? "Trainer emailed" : "Trainer not emailed"}
+                            {r.removal_internal_note ? ` · internal: ${r.removal_internal_note}` : ""}
+                          </p>
+                        </div>
+                      )}
                       {r.ai_flags && r.ai_verdict !== "clean" && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {Object.entries(r.ai_flags)
