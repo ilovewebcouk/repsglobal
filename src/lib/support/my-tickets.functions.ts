@@ -183,21 +183,35 @@ export const createMyTicket = createServerFn({ method: "POST" })
       .single();
     if (mErr) throw new Error(mErr.message);
 
-    // Fire-and-forget: notify the support team by email.
-    // Failures must NEVER block ticket creation — the in-app inbox is the
+    // Await both emails (admin notify + requester confirmation). On Cloudflare
+    // Workers, fire-and-forget promises are killed when the response returns,
+    // which silently dropped these in production. We still swallow errors so
+    // email failures never block ticket creation — the in-app inbox is the
     // canonical channel; email is a nudge.
-    void notifyAdminOfNewTicket({
-      ticketId: ticketRow.id,
-      ticketNumber: ticketRow.ticket_number,
-      subject: data.subject,
-      body: data.body,
-      category: data.category,
-      requesterEmail: email.toLowerCase(),
-      requesterName: fullName,
-    }).catch((e: unknown) => {
+    try {
+      await Promise.allSettled([
+        notifyAdminOfNewTicket({
+          ticketId: ticketRow.id,
+          ticketNumber: ticketRow.ticket_number,
+          subject: data.subject,
+          body: data.body,
+          category: data.category,
+          requesterEmail: email.toLowerCase(),
+          requesterName: fullName,
+        }),
+        sendRequesterConfirmation({
+          ticketId: ticketRow.id,
+          ticketNumber: ticketRow.ticket_number,
+          subject: data.subject,
+          body: data.body,
+          requesterEmail: email.toLowerCase(),
+          requesterName: fullName,
+        }),
+      ]);
+    } catch (e: unknown) {
       // eslint-disable-next-line no-console
-      console.error("[support] admin notify failed", e);
-    });
+      console.error("[support] ticket emails failed", e);
+    }
 
     return {
       id: ticketRow.id,
