@@ -102,7 +102,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!pro) return null;
 
-    const [{ data: sf }, { data: prof }, { data: services }, coachingSinceYear] = await Promise.all([
+    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, coachingSinceYear] = await Promise.all([
       supabaseAdmin
         .from("shop_fronts")
         .select(
@@ -120,10 +120,21 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .eq("professional_id", pro.id)
         .eq("is_published", true)
         .order("sort_order", { ascending: true }),
+      supabaseAdmin
+        .from("subscriptions")
+        .select("tier, status")
+        .eq("user_id", pro.id)
+        .maybeSingle(),
       fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
     ]);
 
     if (!sf) return null;
+
+    const tier =
+      subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
+        ? (subRow.tier as "verified" | "pro" | "studio")
+        : null;
+
 
     return {
       shopFront: {
