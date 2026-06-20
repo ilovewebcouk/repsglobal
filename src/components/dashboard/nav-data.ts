@@ -58,6 +58,12 @@ export const VERIFIED_NAV = [
     ],
   },
   {
+    title: "Help",
+    items: [
+      { icon: LifeBuoy, label: "Support", to: "/dashboard/support" },
+    ],
+  },
+  {
     title: "System",
     items: [
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
@@ -105,6 +111,17 @@ export const PRO_NAV = [
     items: [
       { icon: CreditCard, label: "Stripe", to: "/dashboard/payments" },
       { icon: Briefcase, label: "Business Tools", to: "/dashboard/business" },
+    ],
+  },
+  {
+    title: "Help",
+    items: [
+      { icon: LifeBuoy, label: "Support", to: "/dashboard/support" },
+    ],
+  },
+  {
+    title: "System",
+    items: [
       { icon: Settings, label: "Settings", to: "/dashboard/settings" },
     ],
   },
