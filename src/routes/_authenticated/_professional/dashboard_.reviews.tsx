@@ -94,7 +94,7 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-type ReviewTab = "all" | "approved" | "pending" | "removed" | "5" | "4";
+type ReviewTab = "all" | "approved" | "pending" | "removed";
 type RequestTab = "all" | "sent" | "opened" | "submitted" | "expired";
 
 function TabCount({ n, active }: { n: number; active: boolean }) {
