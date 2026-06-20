@@ -2092,6 +2092,60 @@ export type Database = {
           },
         ]
       }
+      professional_photos: {
+        Row: {
+          byte_size: number | null
+          created_at: string
+          height: number | null
+          id: string
+          mime_type: string | null
+          professional_id: string
+          sort_order: number
+          storage_path: string
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          byte_size?: number | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          professional_id: string
+          sort_order?: number
+          storage_path: string
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          byte_size?: number | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          professional_id?: string
+          sort_order?: number
+          storage_path?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_photos_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_photos_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           bd_seed_thin: boolean
