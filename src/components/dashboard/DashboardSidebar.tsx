@@ -258,7 +258,14 @@ export function DashboardSidebar({
 }) {
   const account = useAccountMenu();
   const id = useEffectiveIdentity();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const groups: readonly NavGroup[] = role === "admin" ? ADMIN_NAV : trainerNav(tier);
+  const scrollableGroups = groups.filter(
+    (g) => g.title !== "Help" && g.title !== "System",
+  );
+  const preFooterItems = groups
+    .filter((g) => g.title === "Help" || g.title === "System")
+    .flatMap((g) => g.items);
 
   const homeHref = role === "admin" ? "/admin" : "/dashboard";
 
