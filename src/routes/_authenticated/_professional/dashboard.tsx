@@ -214,7 +214,7 @@ function DashboardPage() {
                 unreadSupport={hub.supportUnread}
                 insuranceExpiringDays={insuranceExpiringDays}
                 insuranceExpired={insuranceExpired}
-                profilePct={hub.profile.data ? require("@/lib/dashboard/profileCompleteness").profileCompleteness(hub.profile.data).pct : 0}
+                profilePct={profilePct}
                 isPublished={isPublished}
                 isVerified={isVerified}
               />
