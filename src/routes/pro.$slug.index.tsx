@@ -313,8 +313,30 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     specialisms: (row.specialisms ?? [])
       .map((s) => getSpecialismLabel(s) ?? s)
       .filter(Boolean),
-    services: row.hourly_rate_pence
-      ? [
+    services: (() => {
+      const live = (row as { services?: Array<{ title: string; description: string | null; price_pence: number | null; price_label: string | null; duration_minutes: number | null; mode: string }> }).services ?? [];
+      if (live.length) {
+        const stockImages = [heroCoaching, proDaniel, proSophie];
+        return live.slice(0, 3).map((s, i) => ({
+          title: s.title,
+          desc: s.description ?? "",
+          price:
+            s.price_label?.trim() ||
+            (s.price_pence ? `From £${(s.price_pence / 100).toFixed(0)}` : "Enquire"),
+          unit:
+            s.duration_minutes
+              ? `${s.duration_minutes}-min · ${s.mode.replace("_", " ")}`
+              : s.mode === "online"
+                ? "online"
+                : s.mode === "hybrid"
+                  ? "hybrid"
+                  : "in-person",
+          image: stockImages[i % stockImages.length],
+          icon: Users,
+        }));
+      }
+      if (row.hourly_rate_pence) {
+        return [
           {
             title: "1-to-1 session",
             desc: "Personalised coaching tailored to your goals.",
@@ -323,8 +345,11 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
             image: heroCoaching,
             icon: Users,
           },
-        ]
-      : template.services,
+        ];
+      }
+      return template.services;
+    })(),
+
     qualifications: (row.qualifications ?? []).map((q) => ({
       badge: badgeFor(q.awarding_body, q.awarding_body_slug),
       title: titleCaseQual(q.qualification ?? "Qualification"),
