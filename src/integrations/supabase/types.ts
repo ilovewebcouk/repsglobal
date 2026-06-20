@@ -2495,6 +2495,10 @@ export type Database = {
           professional_id: string
           published_at: string | null
           rating: number
+          removal_category: string | null
+          removal_internal_note: string | null
+          removal_notified_at: string | null
+          removal_reason: string | null
           responded_at: string | null
           response: string | null
           response_edited_at: string | null
@@ -2530,6 +2534,10 @@ export type Database = {
           professional_id: string
           published_at?: string | null
           rating: number
+          removal_category?: string | null
+          removal_internal_note?: string | null
+          removal_notified_at?: string | null
+          removal_reason?: string | null
           responded_at?: string | null
           response?: string | null
           response_edited_at?: string | null
@@ -2565,6 +2573,10 @@ export type Database = {
           professional_id?: string
           published_at?: string | null
           rating?: number
+          removal_category?: string | null
+          removal_internal_note?: string | null
+          removal_notified_at?: string | null
+          removal_reason?: string | null
           responded_at?: string | null
           response?: string | null
           response_edited_at?: string | null
@@ -3368,10 +3380,21 @@ export type Database = {
         Returns: string
       }
       accept_client_invite: { Args: { _token_hash: string }; Returns: string }
-      admin_moderate_review: {
-        Args: { _action: string; _note?: string; _review_id: string }
-        Returns: undefined
-      }
+      admin_moderate_review:
+        | {
+            Args: { _action: string; _note?: string; _review_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _action: string
+              _category?: string
+              _internal_note?: string
+              _note?: string
+              _review_id: string
+            }
+            Returns: undefined
+          }
       admin_seed_all_bd_members: {
         Args: { _limit?: number }
         Returns: {
