@@ -1223,7 +1223,7 @@ function ProfileEditorPage() {
             <Card>
               <SectionHeader
                 title="Identity"
-                subtitle="Your legal name (matches your ID + certificates), the name clients see, and your business name."
+                subtitle="Your legal name (matches your ID + certificates) and the name clients see on your profile."
                 step="02"
               />
               <div className="flex flex-col gap-4">
@@ -1253,18 +1253,6 @@ function ProfileEditorPage() {
                       value={form.display_name}
                       onChange={(v) => set("display_name", v)}
                       placeholder={form.full_name || "How clients see your name"}
-                    />
-                  </Field>
-                </div>
-                <div data-field="business_name">
-                  <Field
-                    label="Business / trading name"
-                    hint="Optional. Used on invoices and your shop-front header."
-                  >
-                    <TextInput
-                      value={form.business_name}
-                      onChange={(v) => set("business_name", v)}
-                      placeholder="e.g. Wilson Strength Co."
                     />
                   </Field>
                 </div>
