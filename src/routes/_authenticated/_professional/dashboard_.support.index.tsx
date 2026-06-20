@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { listMyTickets, type MyTicketRow } from "@/lib/support/my-tickets.functions";
 
 export const Route = createFileRoute(
-  "/_authenticated/_professional/dashboard_/support",
+  "/_authenticated/_professional/dashboard_/support/",
 )({
   head: () => ({
     meta: [
