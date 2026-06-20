@@ -329,6 +329,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       id: q.qualification_number?.trim() || q.id.slice(0, 8),
       issued: formatIssued(q.issue_date, q.year),
       verified: !!q.regulator_verified,
+      expires: q.expiry_date ?? null,
     })),
     gyms: row.gyms ?? [],
     lat: row.location?.latitude ?? null,
