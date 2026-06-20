@@ -1147,21 +1147,6 @@ function FiltersBody({
         </p>
       </FilterBlock>
 
-      <FilterBlock label="Featured only">
-        <label className="flex cursor-pointer items-center justify-between gap-3">
-          <span className="flex items-center gap-2 text-[13px] text-reps-charcoal">
-            <Star className="size-4 fill-reps-orange text-reps-orange" />
-            Featured only
-          </span>
-          <Switch
-            checked={state.featured}
-            onCheckedChange={(v) => onChange({ featured: v })}
-          />
-        </label>
-        <p className="text-[11px] leading-snug text-reps-muted-light">
-          Hand-picked pros currently rotated on the homepage and city pages.
-        </p>
-      </FilterBlock>
 
       <FilterBlock label="Minimum rating">
         <RadioGroup
