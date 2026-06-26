@@ -36,6 +36,9 @@ const ctaTrainers = ctaTrainersAsset.url;
 import proJames from "@/assets/pro-james.jpg";
 import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
+import outcomeMark from "@/assets/outcomes/outcome-mark.jpg";
+import outcomePriya from "@/assets/outcomes/outcome-priya.jpg";
+import outcomeTom from "@/assets/outcomes/outcome-tom.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 
 
@@ -113,7 +116,7 @@ const specialisms: { icon: typeof Dumbbell; label: string; search: SpecialismSea
 
 const outcomes = [
   {
-    img: proJames,
+    img: outcomeMark,
     coach: "James Carter",
     headline: "Down 12kg in 6 months.",
     quote: "I'd tried every app. James gave me a plan I actually stuck to and a coach who held me to it.",
@@ -121,7 +124,7 @@ const outcomes = [
     metric: "12kg lost · 24-week plan",
   },
   {
-    img: proSophie,
+    img: outcomePriya,
     coach: "Sophie Williams",
     headline: "Back to running pain-free.",
     quote: "After my second pregnancy I thought running was over. Sophie rebuilt my core and I'm doing 10ks again.",
@@ -129,7 +132,7 @@ const outcomes = [
     metric: "Post-natal · 12-week return",
   },
   {
-    img: proDaniel,
+    img: outcomeTom,
     coach: "Daniel Roberts",
     headline: "Deadlift PB +40kg.",
     quote: "Programmed properly for the first time in my life. The progression was relentless and the results showed.",
