@@ -47,6 +47,13 @@ export type TitleEntry = {
     | "yoga-teacher";
   /** If true, REPs must verify against an external register before granting. */
   requiresRegisterVerification?: boolean;
+  /**
+   * Titles this one fully covers. When the pro also holds any of these,
+   * they are HIDDEN from display surfaces (picker, badge, profile,
+   * shop-front) but kept in `pro_titles`. Pure data — drives
+   * `filterVisibleTitles()`.
+   */
+  supersedes?: TitleSlug[];
   /** Plain-English "how to earn this title" line shown in the locked roadmap. */
   earnedBy: string;
 };
