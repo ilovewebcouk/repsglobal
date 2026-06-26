@@ -359,3 +359,164 @@ export const uploadCertificateFile = createServerFn({ method: "POST" })
 
     return { path, sha256 };
   });
+
+/* -------------------------------------------------------------------------- *
+ * QR "scan with phone" handoff (mirrors insurance upload sessions)
+ * -------------------------------------------------------------------------- */
+
+export const createCertUploadSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await supabase
+      .from("professionals")
+      .upsert({ id: userId } as never, { onConflict: "id" });
+    const { data, error } = await supabase
+      .from("certificate_upload_sessions")
+      .insert({ professional_id: userId } as never)
+      .select("id, expires_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return data as { id: string; expires_at: string };
+  });
+
+export const getCertUploadSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row, error } = await supabase
+      .from("certificate_upload_sessions")
+      .select("id, status, doc_path, filename, expires_at, created_at")
+      .eq("id", data.id)
+      .eq("professional_id", userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const markCertUploadSessionConsumed = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await supabase
+      .from("certificate_upload_sessions")
+      .update({ status: "consumed" } as never)
+      .eq("id", data.id)
+      .eq("professional_id", userId);
+    return { ok: true };
+  });
+
+/**
+ * Read a file already in `verification-docs` (uploaded via the QR flow) and
+ * return its data URL + filename so the desktop dialog can run the same
+ * AI-extract / confirm flow it uses for direct uploads.
+ */
+export const fetchCertUploadPayload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ session_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row, error } = await supabase
+      .from("certificate_upload_sessions")
+      .select("doc_path, filename, status, professional_id")
+      .eq("id", data.session_id)
+      .eq("professional_id", userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Session not found");
+    if (row.status !== "uploaded" || !row.doc_path) {
+      throw new Error("Nothing uploaded yet");
+    }
+    const { data: blob, error: dErr } = await supabase.storage
+      .from("verification-docs")
+      .download(row.doc_path);
+    if (dErr || !blob) throw new Error(dErr?.message ?? "File not found");
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+    const b64 = btoa(bin);
+    const mime = blob.type || "application/octet-stream";
+    return {
+      file_data_url: `data:${mime};base64,${b64}`,
+      filename: row.filename ?? "certificate",
+      doc_path: row.doc_path,
+    };
+  });
+
+/* --- Public (no auth) endpoints used by the mobile handoff page ----------- */
+
+const certLookupInput = z.object({ session_id: z.string().uuid() });
+
+export const lookupCertUploadSession = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => certLookupInput.parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("certificate_upload_sessions")
+      .select("id, status, expires_at, professional_id")
+      .eq("id", data.session_id)
+      .maybeSingle();
+    if (!row) return { ok: false as const, reason: "not_found" as const };
+    if (new Date(row.expires_at).getTime() < Date.now()) {
+      return { ok: false as const, reason: "expired" as const };
+    }
+    if (row.status !== "pending") {
+      return {
+        ok: false as const,
+        reason: row.status as "uploaded" | "consumed" | "expired",
+      };
+    }
+    return { ok: true as const, expires_at: row.expires_at };
+  });
+
+const certMobileSubmitInput = z.object({
+  session_id: z.string().uuid(),
+  file_data_url: z.string().startsWith("data:").max(15_000_000),
+  filename: z.string().min(1).max(200),
+});
+
+export const submitCertFromMobile = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => certMobileSubmitInput.parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("certificate_upload_sessions")
+      .select("id, status, expires_at, professional_id")
+      .eq("id", data.session_id)
+      .maybeSingle();
+    if (!row) throw new Error("Session not found");
+    if (new Date(row.expires_at).getTime() < Date.now()) throw new Error("Session expired");
+    if (row.status !== "pending") throw new Error("Session already used");
+
+    const match = data.file_data_url.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) throw new Error("Invalid file payload");
+    const [, mime, b64] = match;
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
+    const sha256 = Array.from(new Uint8Array(hashBuf), (b) =>
+      b.toString(16).padStart(2, "0"),
+    ).join("");
+    const ext = data.filename.split(".").pop()?.toLowerCase() ?? "bin";
+    const path = `${row.professional_id}/${Date.now()}-${sha256.slice(0, 8)}.${ext}`;
+
+    const { error: upErr } = await supabaseAdmin.storage
+      .from("verification-docs")
+      .upload(path, bytes, { contentType: mime, upsert: false });
+    if (upErr) throw new Error(upErr.message);
+
+    const { error: updErr } = await supabaseAdmin
+      .from("certificate_upload_sessions")
+      .update({
+        status: "uploaded",
+        doc_path: path,
+        filename: data.filename,
+      } as never)
+      .eq("id", data.session_id);
+    if (updErr) throw new Error(updErr.message);
+
+    return { ok: true, sha256 };
+  });
