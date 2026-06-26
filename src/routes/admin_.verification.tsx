@@ -1596,3 +1596,106 @@ function AdminInsuranceTab() {
 }
 
 
+
+/* -------------------------------------------------------------------------- */
+/* Verification-column drift chip                                             */
+/* -------------------------------------------------------------------------- */
+
+function DriftChip() {
+  const fetchDrift = useServerFn(auditVerificationDrift);
+  const recompute = useServerFn(recomputeProVerification);
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const query = useQuery({
+    queryKey: ["admin-verification-drift"],
+    queryFn: () => fetchDrift({}),
+    staleTime: 60_000,
+  });
+
+  const fixMutation = useMutation({
+    mutationFn: (professional_id: string) =>
+      recompute({ data: { professional_id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-verification-drift"] }),
+  });
+
+  const rows = query.data ?? [];
+  const count = rows.length;
+  const tone =
+    count === 0
+      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+      : "border-amber-400/40 bg-amber-500/15 text-amber-200";
+
+  return (
+    <>
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold ${tone}`}
+        >
+          <ShieldCheck className="h-3.5 w-3.5" />
+          {query.isLoading
+            ? "Checking verification drift…"
+            : count === 0
+            ? "0 verification drift"
+            : `${count} verification drift — review`}
+        </button>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Verification column drift</DialogTitle>
+            <DialogDescription>
+              Pros whose canonical <code>verification</code> column disagrees
+              with the cached <code>verification_status</code>, or with the
+              live 3-pillar check. Should always be 0.
+            </DialogDescription>
+          </DialogHeader>
+          {count === 0 ? (
+            <div className="rounded-[12px] border border-emerald-400/30 bg-emerald-500/10 px-3 py-6 text-center text-[13px] text-emerald-200">
+              No drift detected.
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto rounded-[12px] border border-reps-border">
+              <table className="w-full text-left text-[12px]">
+                <thead className="bg-reps-panel/60 text-white/60">
+                  <tr>
+                    <th className="px-3 py-2">Slug</th>
+                    <th className="px-3 py-2">verification</th>
+                    <th className="px-3 py-2">verification_status</th>
+                    <th className="px-3 py-2">3-pillar</th>
+                    <th className="px-3 py-2">Reason</th>
+                    <th className="px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.professional_id} className="border-t border-reps-border/60">
+                      <td className="px-3 py-2 font-mono text-white/80">{r.slug ?? "—"}</td>
+                      <td className="px-3 py-2 text-white/80">{r.verification}</td>
+                      <td className="px-3 py-2 text-white/80">{r.verification_status}</td>
+                      <td className="px-3 py-2 text-white/80">{r.fully_verified ? "yes" : "no"}</td>
+                      <td className="px-3 py-2 text-amber-200">{r.reason}</td>
+                      <td className="px-3 py-2 text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={fixMutation.isPending}
+                          onClick={() => fixMutation.mutate(r.professional_id)}
+                        >
+                          Recompute
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
