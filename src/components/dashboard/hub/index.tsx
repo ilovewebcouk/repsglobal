@@ -794,6 +794,7 @@ export function useHubData(enabled: boolean) {
   const fetchReviewKpis = useServerFn(getMyReviewKpis);
   const fetchReviews = useServerFn(listMyReviews);
   const fetchShopFront = useServerFn(getMyShopFront);
+  const fetchTrust = useServerFn(getTrustState);
 
   const profile = useQuery({
     queryKey: ["my-dashboard-profile"],
@@ -825,6 +826,12 @@ export function useHubData(enabled: boolean) {
     queryFn: () => fetchShopFront(),
     enabled,
   });
+  const trust = useQuery({
+    queryKey: ["my-trust-state"],
+    queryFn: () => fetchTrust(),
+    enabled,
+  });
+
 
   const reviewsUnread = useReviewsUnread({ enabled });
   const supportUnread = useMySupportUnread({ enabled });
@@ -840,6 +847,7 @@ export function useHubData(enabled: boolean) {
     reviewKpis,
     reviews,
     shopFront,
+    trust,
     reviewsUnread: reviewsUnread.unread,
     supportUnread: supportUnread.unread,
     pendingReviewReplies,
