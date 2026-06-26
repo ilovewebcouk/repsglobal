@@ -904,7 +904,7 @@ function AdminVerificationPage() {
                     <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-display text-[14px] font-bold text-white">Decision</h4>
                       <span className="text-[11px] text-white/55">
-                        Will mark as: <span className="font-semibold text-white">Verified</span>
+                        Will approve: <span className="font-semibold text-white">this qualification</span>
                       </span>
                     </div>
 
@@ -967,9 +967,9 @@ function AdminVerificationPage() {
                           override_reason: overrideReason.trim() || null,
                         })}
                         className="bg-reps-orange text-white hover:bg-reps-orange-hover disabled:opacity-50"
-                        title={approveAllowed ? "Approve & verify" : `Failing: ${gates.blockingReasons.join(", ")}`}
+                        title={approveAllowed ? "Approve qualification" : `Failing: ${gates.blockingReasons.join(", ")}`}
                       >
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve & verify"}
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve qualification"}
                       </Button>
                     </div>
                   </PCard>
