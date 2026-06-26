@@ -40,7 +40,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
     title: "Company",
     links: [
       { label: "About REPS", to: "/about" },
-      { label: "Standards", soon: true },
+      { label: "Standards", to: "/standards" },
       { label: "Resources", to: "/resources" },
       { label: "Careers", soon: true },
       { label: "Press", soon: true },
