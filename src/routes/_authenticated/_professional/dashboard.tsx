@@ -237,12 +237,8 @@ function DashboardPage() {
               )}
             </div>
             <div className="xl:col-span-4">
-              <VerificationStatusCard
-                isVerified={isVerified}
-                hasInsurance={hasInsurance}
-                hasQualifications={hasQualifications}
-                insuranceUntil={insuranceUntil}
-              />
+              <VerificationStatusCard trust={hub.trust.data ?? null} />
+
             </div>
           </div>
 
