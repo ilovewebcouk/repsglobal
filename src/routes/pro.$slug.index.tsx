@@ -968,11 +968,18 @@ function ProProfilePage() {
                 const cpd = trust.cpd ?? (isFixture ? { done: 18, total: 20 } : null);
                 const items = [
                   {
-                    on: trust.verified,
-                    t: "REPS Verified Professional",
-                    s: trust.verified
-                      ? "ID verified and top-tier qualification approved"
-                      : "Verification pending",
+                    on: !!trust.identityVerifiedAt || (isFixture && trust.verified),
+                    t: "Identity Verified",
+                    s: trust.identityVerifiedAt
+                      ? `Confirmed ${new Date(trust.identityVerifiedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                      : "Not yet verified",
+                  },
+                  {
+                    on: !!trust.qualificationsCheckedAt || (isFixture && trust.verified),
+                    t: "Qualifications Approved",
+                    s: trust.qualificationsCheckedAt
+                      ? `Checked ${new Date(trust.qualificationsCheckedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                      : "Awaiting review",
                   },
                   {
                     on: !!trust.insuranceExpiry,
