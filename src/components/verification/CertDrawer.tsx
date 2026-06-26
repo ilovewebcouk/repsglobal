@@ -211,24 +211,6 @@ export function CertDrawer({
 
           <Separator className="bg-reps-border" />
 
-          {/* Cross-checks */}
-          <section>
-            <h4 className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-white/55">
-              Cross-checks
-            </h4>
-            <div className="space-y-1.5">
-              {crossChecks.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center gap-2 rounded-[10px] bg-white/[0.03] px-3 py-2 text-[12px]"
-                >
-                  <span className={`h-2 w-2 rounded-full ${STATUS_DOT[c.status]}`} />
-                  <span className="flex-1 text-white/80">{c.label}</span>
-                  <span className="text-white/55">{c.detail ?? c.status}</span>
-                </div>
-              ))}
-            </div>
-          </section>
 
           {/* Decision footer (admin only) */}
           {!readOnly && (
