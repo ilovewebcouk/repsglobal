@@ -516,163 +516,160 @@ function AdminVerificationPage() {
                 </PCard>
 
 
-                {/* Artefacts grid */}
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                  {/* Identity */}
-                  <PCard>
-                    <div className="mb-2 flex items-center justify-between">
-                      <h4 className="font-display text-[14px] font-bold text-white">Identity</h4>
-                      {id ? (
-                        <Badge variant="neutral" className={id.status === "approved" ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300" : "border-amber-400/30 bg-amber-500/15 text-amber-300"}>{id.status}</Badge>
-                      ) : (
-                        <Badge variant="neutral" className="border-white/15 bg-white/5 text-white/55">Missing</Badge>
-                      )}
-                    </div>
-                    {!id ? (
-                      <p className="text-[12px] text-white/55">No ID submitted. Send a reminder to request one.</p>
-                    ) : id.vendor === "stripe" ? (
-                      <div className="space-y-1.5 text-[12px] text-white/75">
-                        <div className="flex items-center gap-1.5">
-                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-                          <span className="font-semibold text-white">Stripe Identity</span>
-                          {id.stripe_status && (
-                            <span className="rounded-[6px] bg-white/5 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-white/60">
-                              {id.stripe_status}
-                            </span>
-                          )}
+                {/* ── STEP 1 · IDENTITY ──────────────────────────────── */}
+                <PCard>
+                  <StepHeader
+                    num={1}
+                    title="Identity"
+                    pill={
+                      id?.status === "approved"
+                        ? { tone: "ok", label: `Verified${id.vendor === "stripe" ? " · Stripe" : id?.vendor === "veriff" ? " · Veriff" : ""}` }
+                        : id
+                          ? { tone: "warn", label: `Pending${id.stripe_status ? ` · ${id.stripe_status}` : ""}` }
+                          : { tone: "miss", label: "Not submitted" }
+                    }
+                  />
+                  {!id ? (
+                    <p className="text-[12px] text-white/55">
+                      No ID submitted. Use the reminder button at the bottom to request one.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-[12px] text-white/75 sm:grid-cols-2">
+                      <div><span className="text-white/45">Name on doc</span> · {id.name_on_doc || "—"}</div>
+                      <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
+                      <div><span className="text-white/45">Doc</span> · {id.doc_type || "—"}{id.doc_country ? ` (${id.doc_country})` : ""}</div>
+                      <div><span className="text-white/45">Expiry</span> · {id.doc_expiry || "—"}</div>
+                      {id.vendor === "stripe" && id.stripe_reason && (
+                        <div className="sm:col-span-2 mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
+                          {id.stripe_reason}
                         </div>
-                        <div><span className="text-white/45">Name</span> · {id.name_on_doc || "—"}</div>
-                        <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
-                        <div><span className="text-white/45">Doc</span> · {id.doc_type || "—"} {id.doc_country ? `(${id.doc_country})` : ""}</div>
-                        {id.stripe_reason && (
-                          <div className="mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
-                            {id.stripe_reason}
-                          </div>
-                        )}
-                        {id.stripe_vs_id && (
+                      )}
+                      {id.vendor === "veriff" && id.veriff_reason && (
+                        <div className="sm:col-span-2 mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
+                          {id.veriff_reason}
+                        </div>
+                      )}
+                      <div className="sm:col-span-2 flex flex-wrap gap-1.5 pt-2">
+                        {id.vendor === "stripe" && id.stripe_vs_id && (
                           <a
                             href={`https://dashboard.stripe.com/identity/verification-sessions/${id.stripe_vs_id}`}
                             target="_blank"
                             rel="noopener"
-                            className="mt-1 inline-flex items-center gap-1 text-[11px] text-white/55 hover:text-white"
+                            className="inline-flex items-center gap-1 rounded-[8px] border border-white/15 bg-white/[0.04] px-2 py-1 text-[11px] text-white/85 hover:bg-white/[0.08]"
                           >
-                            Open in Stripe Dashboard <ExternalLink className="h-3 w-3" />
+                            Open in Stripe <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
+                        {id.doc_path_front && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_front!)}>Front</DocChip>}
+                        {id.doc_path_back && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_back!)}>Back</DocChip>}
+                        {id.selfie_path && <DocChip onClick={() => openDoc("identity-docs", id.selfie_path!)}>Selfie</DocChip>}
                       </div>
-                    ) : id.vendor === "veriff" ? (
-                      <div className="space-y-1.5 text-[12px] text-white/75">
-                        <div className="flex items-center gap-1.5">
-                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-                          <span className="font-semibold text-white">Veriff (legacy)</span>
-                          {id.veriff_status && (
-                            <span className="rounded-[6px] bg-white/5 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-white/60">
-                              {id.veriff_status}
-                            </span>
-                          )}
-                        </div>
-                        <div><span className="text-white/45">Name</span> · {id.name_on_doc || "—"}</div>
-                        <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
-                        <div><span className="text-white/45">Doc</span> · {id.doc_type || "—"} {id.doc_country ? `(${id.doc_country})` : ""}</div>
-                        <div><span className="text-white/45">Expiry</span> · {id.doc_expiry || "—"}</div>
-                        {id.veriff_reason && (
-                          <div className="mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
-                            {id.veriff_reason}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5 text-[12px] text-white/75">
-                        <div><span className="text-white/45">Type</span> · {id.doc_type}</div>
-                        <div><span className="text-white/45">Name</span> · {id.name_on_doc || "—"}</div>
-                        <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
-                        <div><span className="text-white/45">Expiry</span> · {id.doc_expiry || "—"}</div>
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {id.doc_path_front && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_front!)}>Front</DocChip>}
-                          {id.doc_path_back && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_back!)}>Back</DocChip>}
-                          {id.selfie_path && <DocChip onClick={() => openDoc("identity-docs", id.selfie_path!)}>Selfie</DocChip>}
-                        </div>
-                      </div>
-                    )}
-                  </PCard>
-
-                  {/* Insurance */}
-                  <PCard>
-                    <div className="mb-2 flex items-center justify-between">
-                      <h4 className="font-display text-[14px] font-bold text-white">Insurance</h4>
-                      {ins ? (
-                        <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">{ins.status}</Badge>
-                      ) : (
-                        <Badge variant="neutral" className="border-white/15 bg-white/5 text-white/55">Missing</Badge>
-                      )}
                     </div>
-                    {!ins ? (
-                      <p className="text-[12px] text-white/55">No insurance on file. Required for Pro tier.</p>
-                    ) : (
-                      <div className="space-y-1.5 text-[12px] text-white/75">
-                        <div><span className="text-white/45">Provider</span> · {ins.provider}</div>
-                        <div><span className="text-white/45">Cover</span> · £{(ins.cover_amount_gbp ?? 0).toLocaleString()}</div>
-                        <div><span className="text-white/45">Policy</span> · {ins.policy_number || "—"}</div>
-                        <div><span className="text-white/45">Expires</span> · {ins.expiry_date}</div>
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {ins.doc_path && <DocChip onClick={() => openDoc("insurance-docs", ins.doc_path!)}>Certificate</DocChip>}
-                        </div>
-                      </div>
-                    )}
-                  </PCard>
+                  )}
+                </PCard>
 
-                  {/* Qualification */}
-                  <PCard>
-                    <div className="mb-2 flex items-center justify-between">
-                      <h4 className="font-display text-[14px] font-bold text-white">Qualification</h4>
-                      {sub.regulator_verified ? (
-                        <Badge variant="neutral" className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">Ofqual</Badge>
-                      ) : (
-                        <Badge variant="neutral" className="border-amber-400/30 bg-amber-500/15 text-amber-300">Manual</Badge>
-                      )}
-                    </div>
-                    {(() => {
-                      const certNo = (sub as { certificate_number?: string | null }).certificate_number ?? null;
-                      const qualNo = (sub as { qualification_number?: string | null }).qualification_number ?? null;
-                      const learnerNo = (sub as { learner_number?: string | null }).learner_number ?? null;
-                      const slug = (sub as { awarding_body_slug?: string | null }).awarding_body_slug ?? null;
-                      const ocrHolder = (sub as { ai_extraction?: { holder_name?: string | null } | null }).ai_extraction?.holder_name
-                        ?? sub.holder_name ?? null;
-                      const links = buildAwardingBodyVerifyLinks({ slug, qualNumber: qualNo, certNumber: certNo, learnerNumber: learnerNo });
-                      const profileName = prof?.full_name ?? null;
-                      const nameMismatch = !!(ocrHolder && profileName && ocrHolder.trim().toLowerCase() !== profileName.trim().toLowerCase());
-                      return (
-                        <div className="space-y-1.5 text-[12px] text-white/75">
-                          <div>{sub.qualification}</div>
-                          <div className="text-white/55">{sub.awarding_body}</div>
-                          {(certNo || qualNo) && (
-                            <div className="pt-1 space-y-0.5">
-                              {qualNo && <div><span className="text-white/45">Qual no.</span> · <span className="font-mono">{qualNo}</span></div>}
-                              {certNo && <div><span className="text-white/45">Cert no.</span> · <span className="font-mono">{certNo}</span></div>}
+                {/* ── STEP 2 · INSURANCE ─────────────────────────────── */}
+                <PCard>
+                  {(() => {
+                    const insExpired = ins?.expiry_date ? new Date(ins.expiry_date).getTime() < Date.now() : false;
+                    const lowCover = ins ? (ins.cover_amount_gbp ?? 0) < 1_000_000 : false;
+                    const insPill = !ins
+                      ? { tone: "miss" as const, label: "Not submitted" }
+                      : insExpired
+                        ? { tone: "fail" as const, label: `Expired ${ins.expiry_date}` }
+                        : lowCover
+                          ? { tone: "warn" as const, label: `Low cover · £${(ins.cover_amount_gbp ?? 0).toLocaleString()}` }
+                          : { tone: "ok" as const, label: `In date · expires ${ins.expiry_date}` };
+                    return (
+                      <>
+                        <StepHeader num={2} title="Insurance" pill={insPill} />
+                        {!ins ? (
+                          <p className="text-[12px] text-white/55">
+                            No insurance on file. Required for the Pro tier (Verified can be approved without).
+                          </p>
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-[12px] text-white/75 sm:grid-cols-2">
+                              <div><span className="text-white/45">Provider</span> · {ins.provider}</div>
+                              <div><span className="text-white/45">Cover</span> · £{(ins.cover_amount_gbp ?? 0).toLocaleString()}</div>
+                              <div><span className="text-white/45">Policy</span> · {ins.policy_number || "—"}</div>
+                              <div><span className="text-white/45">Expires</span> · {ins.expiry_date}</div>
                             </div>
-                          )}
-                          {ocrHolder && (
-                            <div className={`mt-2 rounded-[8px] border px-2 py-1.5 ${nameMismatch ? "border-amber-400/30 bg-amber-500/5 text-amber-100/85" : "border-emerald-400/20 bg-emerald-500/5 text-emerald-100/85"}`}>
-                              <div className="text-[10.5px] uppercase tracking-wide opacity-70">OCR holder name</div>
-                              <div className="flex items-baseline justify-between gap-2">
-                                <span className="font-semibold">{ocrHolder}</span>
-                                {profileName && <span className="text-[11px] opacity-70">profile: {profileName}</span>}
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              {ins.doc_path && <DocChip onClick={() => openDoc("insurance-docs", ins.doc_path!)}>View certificate</DocChip>}
+                            </div>
+                            {insExpired && (
+                              <div className="mt-3 rounded-[8px] border border-red-400/30 bg-red-500/10 px-2.5 py-2 text-[11.5px] text-red-200">
+                                Policy expired on {ins.expiry_date}. Cannot approve as Pro — request a renewed certificate, or approve at Verified only.
                               </div>
+                            )}
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </PCard>
+
+                {/* ── STEP 3 · QUALIFICATION ─────────────────────────── */}
+                <PCard>
+                  {(() => {
+                    const certNo = (sub as { certificate_number?: string | null }).certificate_number ?? null;
+                    const qualNo = (sub as { qualification_number?: string | null }).qualification_number ?? null;
+                    const learnerNo = (sub as { learner_number?: string | null }).learner_number ?? null;
+                    const slug = (sub as { awarding_body_slug?: string | null }).awarding_body_slug ?? null;
+                    const ocrHolder = (sub as { ai_extraction?: { holder_name?: string | null } | null }).ai_extraction?.holder_name
+                      ?? sub.holder_name ?? null;
+                    const links = buildAwardingBodyVerifyLinks({ slug, qualNumber: qualNo, certNumber: certNo, learnerNumber: learnerNo });
+                    const profileName = prof?.full_name ?? null;
+                    const nameMismatch = !!(ocrHolder && profileName && ocrHolder.trim().toLowerCase() !== profileName.trim().toLowerCase());
+                    const certExpired = (sub as { expiry_date?: string | null }).expiry_date
+                      ? new Date((sub as { expiry_date?: string | null }).expiry_date!).getTime() < Date.now()
+                      : false;
+                    const qualPill = certExpired
+                      ? { tone: "fail" as const, label: "Certificate expired" }
+                      : nameMismatch
+                        ? { tone: "warn" as const, label: "Name doesn't match" }
+                        : sub.regulator_verified
+                          ? { tone: "ok" as const, label: "Ofqual-listed" }
+                          : { tone: "warn" as const, label: "Manual check required" };
+                    return (
+                      <>
+                        <StepHeader num={3} title="Qualification" pill={qualPill} />
+                        <div className="space-y-1.5 text-[12px] text-white/75">
+                          <div className="font-semibold text-white">{sub.qualification}</div>
+                          <div className="text-white/55">{sub.awarding_body}</div>
+                          <div className="grid grid-cols-1 gap-x-6 gap-y-1 pt-1 sm:grid-cols-2">
+                            {qualNo && <div><span className="text-white/45">Qual no.</span> · <span className="font-mono">{qualNo}</span></div>}
+                            {certNo && <div><span className="text-white/45">Cert no.</span> · <span className="font-mono">{certNo}</span></div>}
+                            {titleLabel && <div className="sm:col-span-2"><span className="text-white/45">If approved → unlocks title</span> · {titleLabel}</div>}
+                          </div>
+                          {ocrHolder && (
+                            <div className={`mt-2 rounded-[8px] border px-2.5 py-2 text-[11.5px] ${nameMismatch ? "border-amber-400/30 bg-amber-500/5 text-amber-100/85" : "border-emerald-400/20 bg-emerald-500/5 text-emerald-100/85"}`}>
+                              <div className="flex items-center gap-1.5 font-semibold">
+                                {nameMismatch ? <AlertTriangle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                Holder on cert: {ocrHolder}
+                              </div>
+                              {profileName && (
+                                <div className="opacity-70">Profile name: {profileName}{nameMismatch ? " — review carefully" : " — matches"}</div>
+                              )}
                             </div>
                           )}
-                          {links.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 pt-2">
-                              {links.map((l) => (
-                                <a
-                                  key={l.url}
-                                  href={l.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 rounded-[8px] border border-white/15 bg-white/[0.04] px-2 py-1 text-[11px] text-white/85 hover:bg-white/[0.08]"
-                                >
-                                  <ExternalLink className="h-3 w-3" /> {l.label}
-                                </a>
-                              ))}
+                          {(links.length > 0 || !sub.regulator_verified) && (
+                            <div className="pt-2">
+                              <div className="text-[10.5px] uppercase tracking-wide text-white/45">Verify on</div>
+                              <div className="mt-1 flex flex-wrap gap-1.5">
+                                {links.map((l) => (
+                                  <a
+                                    key={l.url}
+                                    href={l.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 rounded-[8px] border border-white/15 bg-white/[0.04] px-2 py-1 text-[11px] text-white/85 hover:bg-white/[0.08]"
+                                  >
+                                    <ExternalLink className="h-3 w-3" /> {l.label}
+                                  </a>
+                                ))}
+                              </div>
                             </div>
                           )}
                           <div className="pt-2">
@@ -680,68 +677,39 @@ function AdminVerificationPage() {
                               size="sm"
                               variant="subtle"
                               onClick={() => setCertOpen(true)}
-                              className="w-full"
+                              className="w-full sm:w-auto"
                             >
                               <FileText className="mr-1 h-3.5 w-3.5" />
-                              Review certificate ({(sub.doc_paths ?? []).length})
+                              Open certificate ({(sub.doc_paths ?? []).length})
                             </Button>
                           </div>
+                          {!sub.regulator_verified && !isFinal && (
+                            <label className="mt-3 flex items-start gap-2 rounded-[8px] border border-amber-400/30 bg-amber-500/[0.06] px-3 py-2 text-[12px] text-amber-100/90 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 h-3.5 w-3.5 accent-reps-orange"
+                                checked={manualQualConfirmed}
+                                onChange={(e) => {
+                                  const next = e.target.checked;
+                                  setManualQualConfirmed(next);
+                                  if (next && !overrideReason.trim()) {
+                                    const ref = certNo || qualNo || "certificate";
+                                    setOverrideReason(`Confirmed on ${sub.awarding_body ?? "awarding body"} site — ${ref}`);
+                                  }
+                                }}
+                              />
+                              <span>
+                                I&rsquo;ve confirmed this certificate on the awarding body site. Required because this awarding body isn&rsquo;t on the Ofqual register.
+                              </span>
+                            </label>
+                          )}
                         </div>
-                      );
-                    })()}
-                  </PCard>
-                </div>
-
-                {/* Cross-checks */}
-                <PCard>
-                  <h4 className="mb-3 font-display text-[14px] font-bold text-white">Cross-checks</h4>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {crossChecks.map((c) => (
-                      <div key={c.id} className="flex items-center gap-2 rounded-[8px] bg-white/[0.03] px-2.5 py-2 text-[12px]">
-                        <span className={`h-2 w-2 rounded-full ${STATUS_DOT[c.status]}`} />
-                        <span className="flex-1 text-white/80">{c.label}</span>
-                        <span className="text-white/45">{c.detail ?? c.status}</span>
-                      </div>
-                    ))}
-                  </div>
+                      </>
+                    );
+                  })()}
                 </PCard>
 
-                {/* Gates — auto-derived */}
-                <PCard>
-                  <h4 className="mb-2 font-display text-[14px] font-bold text-white">
-                    Gates {gates.hardPassed
-                      ? <span className="ml-2 rounded-[6px] border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-emerald-300">All pass</span>
-                      : <span className="ml-2 rounded-[6px] border border-red-400/30 bg-red-500/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-red-300">{gates.blockingReasons.length} failing</span>
-                    }
-                  </h4>
-                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                    {gates.hardGates.map((g) => (
-                      <div key={g.id} className="flex items-center gap-2 rounded-[8px] bg-white/[0.03] px-2.5 py-2 text-[12px]">
-                        {g.passed
-                          ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
-                          : <XCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />}
-                        <span className="flex-1 text-white/80">{g.label}</span>
-                        <span className="text-white/45 text-[11px]">{g.detail}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {gates.softGates.length > 0 && (
-                    <div className="mt-3">
-                      <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">Soft warnings</div>
-                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                        {gates.softGates.map((g) => (
-                          <div key={g.id} className="flex items-center gap-2 rounded-[8px] bg-amber-500/5 border border-amber-400/20 px-2.5 py-2 text-[12px]">
-                            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-300" />
-                            <span className="flex-1 text-amber-100/85">{g.label}</span>
-                            <span className="text-amber-200/60 text-[11px]">{g.detail}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </PCard>
-
-                {/* Decision */}
+                {/* ── DECISION ───────────────────────────────────────── */}
                 {isFinal ? (
                   <PCard>
                     <div className="text-[12.5px] text-white/65">
@@ -749,73 +717,81 @@ function AdminVerificationPage() {
                     </div>
                   </PCard>
                 ) : (
-                <PCard>
-                  <h4 className="mb-1 font-display text-[14px] font-bold text-white">Decision</h4>
-                  <p className="text-[11.5px] text-white/55">
-                    Tier on approve: <span className="text-white/85 font-semibold">{canApprovePro ? "Pro-eligible" : "Verified only"}</span>
-                    {titleLabel ? ` · Title: ${titleLabel}` : ""}
-                  </p>
-                  <Textarea
-                    className="mt-3"
-                    placeholder="Reviewer notes (required for reject / changes)"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={3}
-                  />
-                  {!gates.hardPassed && (
-                    <div className="mt-3">
-                      <div className="mb-1 flex items-center gap-2 text-[11px] text-red-300">
-                        <AlertTriangle className="h-3.5 w-3.5" />
-                        Override required to approve. Failing: {gates.blockingReasons.join(", ")}
-                      </div>
-                      <Input
-                        placeholder="Type override reason (≥8 chars) — recorded permanently"
-                        value={overrideReason}
-                        onChange={(e) => setOverrideReason(e.target.value)}
-                      />
+                  <PCard>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h4 className="font-display text-[14px] font-bold text-white">Decision</h4>
+                      <span className="text-[11px] text-white/55">
+                        Will approve at: <span className="font-semibold text-white">{canApprovePro ? "Pro" : "Verified"}</span>
+                        {!canApprovePro && ins && " (insurance issue blocks Pro)"}
+                        {!canApprovePro && !ins && " (no insurance on file)"}
+                      </span>
                     </div>
-                  )}
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    {missing.length > 0 && (
-                      <Button
-                        variant="subtle"
-                        size="sm"
-                        disabled={busy}
-                        onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
-                      >
-                        <Mail className="mr-1 h-3.5 w-3.5" /> Request {missing.join(" + ")}
-                      </Button>
+
+                    {!gates.hardPassed && (
+                      <div className="mb-3 rounded-[8px] border border-red-400/30 bg-red-500/10 px-3 py-2 text-[11.5px] text-red-200">
+                        <div className="mb-1 flex items-center gap-1.5 font-semibold">
+                          <AlertTriangle className="h-3.5 w-3.5" /> Blocking issues — override required
+                        </div>
+                        <ul className="list-disc space-y-0.5 pl-5 text-red-100/85">
+                          {gates.blockingReasons.map((r) => <li key={r}>{r}</li>)}
+                        </ul>
+                      </div>
                     )}
-                    <div className="flex-1" />
-                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
-                      Request changes
-                    </Button>
-                    <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
-                      Reject
-                    </Button>
-                    {canApprovePro && approveAllowed && (
+
+                    <Textarea
+                      placeholder="Reviewer notes (required for reject / changes)"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      rows={3}
+                    />
+
+                    {!gates.hardPassed && (
+                      <div className="mt-3">
+                        <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-white/55">
+                          Override reason <span className="text-white/40">(≥8 chars, recorded permanently)</span>
+                        </label>
+                        <Input
+                          placeholder="e.g. Confirmed cert on Innovate Awarding site, holder name matches"
+                          value={overrideReason}
+                          onChange={(e) => setOverrideReason(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {missing.length > 0 && (
+                        <Button
+                          variant="subtle"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
+                        >
+                          <Mail className="mr-1 h-3.5 w-3.5" /> Request {missing.join(" + ")}
+                        </Button>
+                      )}
+                      <div className="flex-1" />
+                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
+                        Request changes
+                      </Button>
+                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
+                        Reject
+                      </Button>
                       <Button
                         size="sm"
-                        disabled={busy}
-                        onClick={() => decideMutation.mutate({ decision: "approved", unlocked_tier: "pro", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null })}
-                        className="bg-reps-orange text-white hover:bg-reps-orange-hover"
-                        title="Approves with Pro eligibility (identity + insurance present)"
+                        disabled={busy || !approveAllowed}
+                        onClick={() => decideMutation.mutate({
+                          decision: "approved",
+                          unlocked_tier: canApprovePro ? "pro" : "verified",
+                          gates_snapshot: gatesSnap,
+                          override_reason: overrideReason.trim() || null,
+                        })}
+                        className="bg-reps-orange text-white hover:bg-reps-orange-hover disabled:opacity-50"
+                        title={approveAllowed ? `Approve as ${canApprovePro ? "Pro" : "Verified"}` : `Failing: ${gates.blockingReasons.join(", ")}`}
                       >
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve as Pro"}
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : `Approve as ${canApprovePro ? "Pro" : "Verified"}`}
                       </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      disabled={busy || !approveAllowed}
-                      onClick={() => decideMutation.mutate({ decision: "approved", unlocked_tier: "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null })}
-                      className={canApprovePro ? "" : "bg-reps-orange text-white hover:bg-reps-orange-hover"}
-                      variant={canApprovePro ? "subtle" : undefined}
-                      title={approveAllowed ? "Approves at Verified tier" : `Failing: ${gates.blockingReasons.join(", ")}`}
-                    >
-                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve as Verified"}
-                    </Button>
-                  </div>
-                </PCard>
+                    </div>
+                  </PCard>
                 )}
 
                 {/* History */}
