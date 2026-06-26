@@ -337,43 +337,32 @@ function HomeV2() {
           </div>
 
           <div className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
-            {featuredCards.map((p) => (
-              <Link
-                key={p.name}
-                to="/pro/$slug"
-                params={{ slug: p.slug ?? p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }}
-                className="group block w-[78%] shrink-0 snap-center overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel text-white shadow-[var(--reps-shadow-card)] transition-transform hover:-translate-y-0.5 sm:w-auto"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden">
-                  <img src={p.image} alt={`${p.name} — ${p.role}`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-reps-panel via-reps-panel/70 to-transparent" />
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
-                    <BadgeCheck className="h-3 w-3" />
-                    REPS Verified
-                  </span>
+            {featuredCards.map((p) => {
+              const mode: FeaturedPro["mode"] =
+                p.mode === "Online" || p.mode === "In-person" || p.mode === "In-person & Online"
+                  ? (p.mode as FeaturedPro["mode"])
+                  : "In-person";
+              const pro: FeaturedPro = {
+                name: p.name,
+                role: p.role,
+                city: p.location,
+                rating: p.rating,
+                reviews: p.reviews,
+                mode,
+                tags: [],
+                image: p.image,
+                identityStatus: "approved",
+                verification: "verified",
+                tier: "verified",
+              };
+              return (
+                <div key={p.name} className="w-[78%] shrink-0 snap-center sm:w-auto">
+                  <FeaturedProCard pro={pro} />
                 </div>
-                <div className="space-y-2 px-4 pb-4 pt-3">
-                  <div>
-                    <h3 className="font-display text-[18px] font-bold leading-tight text-white">{p.name}</h3>
-                    <div className="text-[13px] text-white/65">{p.role}</div>
-                  </div>
-                  <div className={`flex items-center gap-1.5 text-[13px] ${p.online ? "text-reps-blue" : "text-white/65"}`}>
-                    <MapPin className="h-3.5 w-3.5" />
-                    {p.location}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[13px] text-reps-orange">
-                    <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
-                    <span className="font-semibold text-white">{p.rating.toFixed(1)}</span>
-                    <span className="text-white/55">({p.reviews})</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 pt-1 text-[12px] text-white/55">
-                    <Laptop className="h-3.5 w-3.5" />
-                    {p.mode}
-                  </div>
-                </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
+
         </div>
       </section>
 
