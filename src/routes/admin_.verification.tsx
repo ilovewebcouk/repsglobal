@@ -1016,6 +1016,20 @@ function StepHeader({ num, title, pill }: { num: number; title: string; pill: St
   );
 }
 
+function SubCheckChip({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-[6px] border px-1.5 py-0.5 ${
+        ok
+          ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
+          : "border-amber-400/30 bg-amber-500/10 text-amber-200"
+      }`}
+    >
+      {ok ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+      {label}
+    </span>
+  );
+
 /* -------------------------------------------------------------------------- */
 /* Identity tab — admin index of all identity_documents                       */
 /* -------------------------------------------------------------------------- */
