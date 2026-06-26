@@ -53,6 +53,8 @@ import {
   reviewVerification,
   revokeQualification,
   sendVerificationReminder,
+  auditVerificationDrift,
+  recomputeProVerification,
 } from "@/lib/verification/verification.functions";
 import {
   listIdentityChecks,
