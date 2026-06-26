@@ -106,9 +106,20 @@ export const getTrustState = createServerFn({ method: "GET" })
         .sort()
         .at(-1) ?? null;
 
-    const titleLabels = ((proTitles ?? []) as Array<{ title_slug: string }>)
+    const approvedTitleRows = (proTitles ?? []) as Array<{ title_slug: string }>;
+    const titleLabels = approvedTitleRows
       .map((r) => TITLES.find((t) => t.slug === r.title_slug)?.label)
       .filter((x): x is string => !!x);
+
+    // Prefer the pro's chosen primary title (if still approved); otherwise
+    // fall back to the first approved title label.
+    const primarySlug = proRow?.primary_title_slug ?? null;
+    const primaryStillApproved =
+      primarySlug && approvedTitleRows.some((r) => r.title_slug === primarySlug);
+    const primaryTitle = primaryStillApproved
+      ? TITLES.find((t) => t.slug === primarySlug)?.label ?? null
+      : titleLabels[0] ?? null;
+
 
     const qualTick = approvedCount > 0;
 
