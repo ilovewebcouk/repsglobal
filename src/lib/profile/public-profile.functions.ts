@@ -101,7 +101,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     const { data: qualRows } = await supabaseAdmin
       .from("verification_submissions")
       .select(
-        "id, awarding_body, awarding_body_slug, qualification, qualification_number, issue_date, year, expiry_date, regulator_verified",
+        "id, awarding_body, awarding_body_slug, qualification, qualification_number, issue_date, year, expiry_date, regulator_verified, reviewed_at",
       )
       .eq("professional_id", r.id)
       .eq("status", "approved")
