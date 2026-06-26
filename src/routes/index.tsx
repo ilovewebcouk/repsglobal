@@ -8,14 +8,11 @@ import {
   Apple,
   ArrowRight,
   Award,
-  BadgeCheck,
   Calendar,
   ChevronLeft,
   ChevronRight,
   Dumbbell,
   Globe,
-  Laptop,
-  MapPin,
   MessageCircle,
   Quote,
   Search,
@@ -25,6 +22,8 @@ import {
   Target,
   Users,
 } from "lucide-react";
+import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
+
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
