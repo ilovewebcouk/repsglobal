@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 
 import { RESOURCE_ARTICLES } from "@/lib/resources";
+import { HELP_CATEGORIES } from "@/content/help/categories";
+import { getArticleSummaries } from "@/content/help/registry";
 
 const BASE_URL = "https://repsglobal.lovable.app";
 
@@ -59,7 +61,24 @@ export const Route = createFileRoute("/sitemap.xml")({
           priority: "0.7",
         }));
 
-        const entries = [...STATIC_ROUTES, ...articleEntries];
+        const helpCategoryEntries: SitemapEntry[] = HELP_CATEGORIES.map((c) => ({
+          path: `/help/${c.slug}`,
+          changefreq: "monthly",
+          priority: "0.6",
+        }));
+        const helpArticleEntries: SitemapEntry[] = getArticleSummaries().map((a) => ({
+          path: `/help/${a.category}/${a.slug}`,
+          lastmod: a.lastReviewed,
+          changefreq: "monthly",
+          priority: "0.5",
+        }));
+
+        const entries = [
+          ...STATIC_ROUTES,
+          ...articleEntries,
+          ...helpCategoryEntries,
+          ...helpArticleEntries,
+        ];
 
         const urls = entries.map((e) =>
           [
