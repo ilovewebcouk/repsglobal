@@ -435,7 +435,42 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* Outcomes section removed — placeholder testimonials retired until real client outcomes exist. */}
+      {/* ============ OUTCOMES ============ */}
+      <section className="bg-reps-ivory">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-[680px]">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Real results</span>
+            <h2 className="mt-2 font-display text-[34px] font-bold leading-tight text-reps-charcoal lg:text-[42px]">
+              Outcomes from people who train with REPS.
+            </h2>
+            <p className="mt-3 text-[15px] text-reps-muted-light">
+              These aren't testimonials. They're outcomes — measured, dated and tied to a real coach.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {outcomes.map((o) => (
+              <article key={o.name} className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img src={o.img} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-reps-ink/85 via-reps-ink/40 to-transparent p-4 text-white">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange/90 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white">
+                      {o.metric}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="font-display text-[22px] font-bold leading-tight text-reps-charcoal">{o.headline}</h3>
+                  <p className="mt-3 text-[14px] leading-relaxed text-reps-charcoal/75">"{o.quote}"</p>
+                  <div className="mt-5 flex items-center justify-between border-t border-reps-stone pt-4 text-[12px]">
+                    <span className="font-semibold text-reps-charcoal">{o.name}</span>
+                    <span className="text-reps-muted-light">with {o.coach}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
 
 
