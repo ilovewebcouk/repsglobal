@@ -96,6 +96,7 @@ type Pro = {
   gyms?: { label: string; branch: string }[];
   lat?: number | null;
   lng?: number | null;
+  memberSince?: string | null;
   trust?: {
     verified: boolean;
     insuranceExpiry: string | null;
