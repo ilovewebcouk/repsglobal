@@ -34,19 +34,12 @@ export type CertDrawerData = {
   professional_name?: string | null;
 };
 
-const STATUS_DOT: Record<CheckStatus, string> = {
-  pass: "bg-emerald-400",
-  warn: "bg-amber-400",
-  fail: "bg-red-500",
-  pending: "bg-white/30",
-  skip: "bg-white/15",
-};
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   cert: CertDrawerData | null;
-  crossChecks: CrossCheck[];
+  crossChecks?: CrossCheck[];
   resolveDocUrl: (path: string) => Promise<string>;
   readOnly?: boolean;
   onApprove?: () => void;
@@ -59,7 +52,6 @@ export function CertDrawer({
   open,
   onOpenChange,
   cert,
-  crossChecks,
   resolveDocUrl,
   readOnly = false,
   onApprove,
@@ -211,24 +203,6 @@ export function CertDrawer({
 
           <Separator className="bg-reps-border" />
 
-          {/* Cross-checks */}
-          <section>
-            <h4 className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-white/55">
-              Cross-checks
-            </h4>
-            <div className="space-y-1.5">
-              {crossChecks.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center gap-2 rounded-[10px] bg-white/[0.03] px-3 py-2 text-[12px]"
-                >
-                  <span className={`h-2 w-2 rounded-full ${STATUS_DOT[c.status]}`} />
-                  <span className="flex-1 text-white/80">{c.label}</span>
-                  <span className="text-white/55">{c.detail ?? c.status}</span>
-                </div>
-              ))}
-            </div>
-          </section>
 
           {/* Decision footer (admin only) */}
           {!readOnly && (
