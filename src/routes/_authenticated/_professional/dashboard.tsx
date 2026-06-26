@@ -75,7 +75,6 @@ function DashboardPage() {
   const hasProAccess = data?.entitlement.hasProAccess ?? false;
   const slug = data?.profile?.slug ?? null;
   const insuranceUntil = data?.profile?.insurance_valid_until ?? null;
-  const hasInsurance = !!insuranceUntil;
   const hasQualifications = !!data?.profile?.cert_uploaded_at;
 
   const insuranceDays = React.useMemo(() => {
@@ -237,12 +236,8 @@ function DashboardPage() {
               )}
             </div>
             <div className="xl:col-span-4">
-              <VerificationStatusCard
-                isVerified={isVerified}
-                hasInsurance={hasInsurance}
-                hasQualifications={hasQualifications}
-                insuranceUntil={insuranceUntil}
-              />
+              <VerificationStatusCard trust={hub.trust.data ?? null} />
+
             </div>
           </div>
 

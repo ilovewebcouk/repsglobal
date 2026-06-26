@@ -443,10 +443,11 @@ function AdminVerificationPage() {
             const titleLabel = getTitleLabel(sub.derived_title_slug ?? null);
             const missing: ("identity" | "selfie" | "insurance" | "cert")[] = [];
             if (!id) missing.push("identity");
-            else if (!id.selfie_path) missing.push("selfie");
+            // Stripe Identity captures doc + selfie in the same session — no separate selfie_path is stored.
+            else if (!id.selfie_path && (id as { vendor?: string | null }).vendor !== "stripe") missing.push("selfie");
             if (!ins) missing.push("insurance");
 
-            const canApprovePro = !!id && !!ins && gates.hardPassed;
+            // (canApprovePro removed — verification is now decoupled from subscription tier.)
             const isApproved = subStatus === "approved";
             const isFinal = subStatus === "approved" || subStatus === "rejected";
             const overrideOk = overrideReason.trim().length >= 8;
@@ -608,7 +609,7 @@ function AdminVerificationPage() {
                         <StepHeader num={2} title="Insurance" pill={insPill} />
                         {!ins ? (
                           <p className="text-[12px] text-white/55">
-                            No insurance on file. Required for the Pro tier (Verified can be approved without).
+                            No insurance on file. You can still approve — insurance is tracked separately and the pro will be nudged to upload.
                           </p>
                         ) : (
                           <>
@@ -618,6 +619,35 @@ function AdminVerificationPage() {
                               <div><span className="text-white/45">Policy</span> · {ins.policy_number || "—"}</div>
                               <div><span className="text-white/45">Expires</span> · {ins.expiry_date}</div>
                             </div>
+                            {(() => {
+                              const insured = (ins as { insured_name?: string | null }).insured_name ?? null;
+                              const nameMatchVal = (ins as { name_match?: boolean | null }).name_match ?? null;
+                              const idName = (pro as { identity_verified_name?: string | null } | null)?.identity_verified_name ?? null;
+                              const refName = idName ?? prof?.full_name ?? null;
+                              const tone: "ok" | "warn" | "fail" =
+                                nameMatchVal === true ? "ok" : nameMatchVal === false ? "fail" : "warn";
+                              const toneCls =
+                                tone === "ok"
+                                  ? "border-emerald-400/30 bg-emerald-500/5 text-emerald-100/85"
+                                  : tone === "fail"
+                                    ? "border-red-400/30 bg-red-500/10 text-red-200"
+                                    : "border-amber-400/30 bg-amber-500/5 text-amber-100/85";
+                              return (
+                                <div className={`mt-2 rounded-[8px] border px-2.5 py-2 text-[11.5px] ${toneCls}`}>
+                                  <div className="font-semibold">
+                                    {insured
+                                      ? `Insured name: ${insured}`
+                                      : "Insured name: not extracted — verify manually on certificate"}
+                                  </div>
+                                  {refName && (
+                                    <div className="opacity-70">
+                                      {idName ? "ID-verified name" : "Profile name"}: {refName}
+                                      {nameMatchVal === true ? " — matches" : nameMatchVal === false ? " — MISMATCH, review carefully" : ""}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             <div className="mt-3 flex flex-wrap gap-1.5">
                               {ins.doc_path && <DocChip onClick={() => openDoc("insurance-docs", ins.doc_path!)}>View certificate</DocChip>}
                             </div>
@@ -874,9 +904,7 @@ function AdminVerificationPage() {
                     <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-display text-[14px] font-bold text-white">Decision</h4>
                       <span className="text-[11px] text-white/55">
-                        Will approve at: <span className="font-semibold text-white">{canApprovePro ? "Pro" : "Verified"}</span>
-                        {!canApprovePro && ins && " (insurance issue blocks Pro)"}
-                        {!canApprovePro && !ins && " (no insurance on file)"}
+                        Will mark as: <span className="font-semibold text-white">Verified</span>
                       </span>
                     </div>
 
@@ -934,14 +962,14 @@ function AdminVerificationPage() {
                         disabled={busy || !approveAllowed}
                         onClick={() => decideMutation.mutate({
                           decision: "approved",
-                          unlocked_tier: canApprovePro ? "pro" : "verified",
+                          unlocked_tier: "verified",
                           gates_snapshot: gatesSnap,
                           override_reason: overrideReason.trim() || null,
                         })}
                         className="bg-reps-orange text-white hover:bg-reps-orange-hover disabled:opacity-50"
-                        title={approveAllowed ? `Approve as ${canApprovePro ? "Pro" : "Verified"}` : `Failing: ${gates.blockingReasons.join(", ")}`}
+                        title={approveAllowed ? "Approve & verify" : `Failing: ${gates.blockingReasons.join(", ")}`}
                       >
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : `Approve as ${canApprovePro ? "Pro" : "Verified"}`}
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve & verify"}
                       </Button>
                     </div>
                   </PCard>
@@ -988,7 +1016,7 @@ function AdminVerificationPage() {
                     return url;
                   }}
                   busy={busy}
-                  onApprove={() => { setCertOpen(false); decideMutation.mutate({ decision: "approved", unlocked_tier: canApprovePro ? "pro" : "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null }); }}
+                  onApprove={() => { setCertOpen(false); decideMutation.mutate({ decision: "approved", unlocked_tier: "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null }); }}
                   onReject={() => { setCertOpen(false); decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap }); }}
                   onRequestChanges={() => { setCertOpen(false); decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap }); }}
                 />
