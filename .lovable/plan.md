@@ -7,6 +7,7 @@ The product truth must be:
 - **Core** is the paid entry tier formerly shown as “Verified”. Internally it can continue to use the legacy enum key `verified` until a safe billing/data migration is done.
 - **REPS Verified** is the trust badge. It means the trainer has all 3 checks approved: identity, qualification, and active in-date insurance.
 - Jordon is currently **Unverified** because his insurance rows are `pending`, not `active`, and pending insurance is not visible enough for admin human review.
+- QA also found a critical database bug: `is_pro_fully_verified(uuid)` is self-referential and currently checks `professionals.verification = 'verified'` as an input. That means the recompute trigger can downgrade someone, but cannot reliably promote a pending trainer to verified.
 
 ---
 
@@ -172,9 +173,26 @@ This directly fixes the confusing Jordon dashboard copy.
 
 Jordon can have identity approved, qualification uploaded/approved, and insurance uploaded, and still be **Unverified** because the trust badge requires **active** insurance, not merely uploaded insurance.
 
-His current blocker is insurance: uploaded rows are `pending`, and without the new admin insurance queue/admin action or successful AI auto-approval, the database function correctly refuses to mark him fully verified.
+His current blockers are:
 
-Once one insurance row is approved as `active` and in-date, the existing verification recompute trigger should flip him to fully verified if the other two checks are also approved.
+1. Insurance: uploaded rows are `pending`, and without the new admin insurance queue/admin action or successful AI auto-approval, he has no active in-date insurance row.
+2. Database recompute logic: `is_pro_fully_verified(uuid)` currently contains a circular dependency by checking `professionals.verification = 'verified'` inside the function that decides whether `professionals.verification` should become `verified`.
+
+Fix the database function so it checks the three independent pillars instead:
+
+```sql
+identity_status = 'approved'
+AND EXISTS approved qualification submission
+AND EXISTS active in-date insurance policy
+```
+
+Once one insurance row is approved as `active` and in-date, the fixed recompute trigger should flip him to fully verified if identity and qualification are also approved.
+
+Add a migration that:
+
+- replaces `is_pro_fully_verified(uuid)` with the true 3-of-3 gate,
+- keeps `professionals.verification` as the output, not an input,
+- backfills by running `recompute_pro_verification(id)` for existing professionals after the function is fixed.
 
 ---
 
