@@ -362,9 +362,9 @@ function LocationLanding() {
     staleTime: 60 * 60_000,
   });
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros
+    .slice(0, 4)
+    .map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]));
 
   const professionSlugs = loc.professions.map((p) => p.slug);
   const { data: liveCounts } = useQuery({
