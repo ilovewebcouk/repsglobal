@@ -290,33 +290,76 @@ export function UploadCertificateDialog({
         </DialogHeader>
 
         {step === "pick" ? (
-          <>
-            <label
-              htmlFor="cpd-cert-file"
-              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-8 text-center transition hover:border-reps-orange/60"
-            >
-              <Upload className="size-6 text-reps-orange" />
-              <div className="text-[14px] font-semibold text-white">Choose a file</div>
-              <div className="text-[12px] text-white/55">PDF, JPG or PNG · max 10MB</div>
-              <input
-                id="cpd-cert-file"
-                type="file"
-                accept="application/pdf,image/jpeg,image/png"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void handlePickFile(f);
-                }}
-              />
-            </label>
+          <Tabs value={tab} onValueChange={(v) => {
+            const next = v as Tab;
+            setTab(next);
+            if (next === "qr" && !sessionId) void startQrSession();
+          }}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">
+                <Upload className="mr-1.5 size-3.5" /> Upload file
+              </TabsTrigger>
+              <TabsTrigger value="qr">
+                <Smartphone className="mr-1.5 size-3.5" /> Scan with phone
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upload" className="mt-3">
+              <label
+                htmlFor="cpd-cert-file"
+                className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-8 text-center transition hover:border-reps-orange/60"
+              >
+                <Upload className="size-6 text-reps-orange" />
+                <div className="text-[14px] font-semibold text-white">Choose a file</div>
+                <div className="text-[12px] text-white/55">PDF, JPG or PNG · max 10MB</div>
+                <input
+                  id="cpd-cert-file"
+                  type="file"
+                  accept="application/pdf,image/jpeg,image/png"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void handlePickFile(f);
+                  }}
+                />
+              </label>
+            </TabsContent>
+
+            <TabsContent value="qr" className="mt-3">
+              <div className="flex flex-col items-center justify-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft p-6 text-center">
+                {mobileUrl ? (
+                  <>
+                    <div className="rounded-[12px] bg-white p-3">
+                      <QRCodeSVG value={mobileUrl} size={160} level="M" />
+                    </div>
+                    <div className="text-[13px] font-semibold text-white">
+                      Scan with your phone camera
+                    </div>
+                    <div className="text-[12px] text-white/55">
+                      Snap a photo of the certificate — it lands here automatically.
+                    </div>
+                    {sessionExpiresAt ? (
+                      <div className="text-[11px] text-white/45">
+                        Link expires {new Date(sessionExpiresAt).toLocaleTimeString()}
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2 text-[13px] text-white/65">
+                    <Loader2 className="size-4 animate-spin" /> Generating QR…
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
             <div className="mt-3 flex items-start gap-2 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[11.5px] text-white/65">
               <Lock className="mt-0.5 size-3.5 shrink-0 text-white/55" />
               <span>
                 Your certificate is stored privately — only visible to you and REPs admins. We keep it on file so the verification stands behind the original document.
               </span>
             </div>
-          </>
+          </Tabs>
         ) : null}
 
         {step === "extracting" ? (
