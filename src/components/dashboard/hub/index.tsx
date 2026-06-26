@@ -693,12 +693,27 @@ export function CpdMini({
   uploadedAt: string | null;
   trust?: TrustState | null;
 }) {
-  const approvedCount = trust?.qualifications.count ?? 0;
+  const certCount = trust?.qualifications.count ?? 0;
   const pendingCount = trust?.qualifications.pendingCount ?? 0;
   const titles = trust?.qualifications.titles ?? [];
+  const primaryTitle = trust?.qualifications.primaryTitle ?? null;
   const latestAt = trust?.qualifications.latestApprovedAt ?? uploadedAt ?? null;
-  const hasApproved = approvedCount > 0;
+  const titleCount = titles.length;
+  const hasApproved = titleCount > 0 || certCount > 0;
   const showUploaded = hasApproved || qualUploaded;
+
+  const orderedTitles = primaryTitle
+    ? [primaryTitle, ...titles.filter((t) => t !== primaryTitle)]
+    : titles;
+
+  const formattedDate = latestAt
+    ? new Date(latestAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    : null;
+
+  const certLine =
+    certCount > 0
+      ? `${certCount} certificate${certCount === 1 ? "" : "s"} on file`
+      : null;
 
   return (
     <PCard>
@@ -715,31 +730,36 @@ export function CpdMini({
         <Ring value={showUploaded ? 100 : 0} />
         <div className="min-w-0 flex-1">
           <p className="font-display text-[18px] font-semibold text-white">
-            {hasApproved
-              ? `${approvedCount} approved qualification${approvedCount === 1 ? "" : "s"}`
+            {titleCount > 0
+              ? `Qualified to deliver ${titleCount} title${titleCount === 1 ? "" : "s"}`
               : showUploaded
                 ? "Qualifications uploaded"
                 : "No certificates yet"}
           </p>
           <p className="text-[12px] text-white/55">
-            {latestAt
-              ? `Last update ${new Date(latestAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-              : "Add certificates to earn the Qualified layer."}
-            {pendingCount > 0 ? ` · ${pendingCount} pending review` : ""}
+            {[certLine, formattedDate ? `last update ${formattedDate}` : null, pendingCount > 0 ? `${pendingCount} pending review` : null]
+              .filter(Boolean)
+              .join(" · ") || "Add certificates to earn the Qualified layer."}
           </p>
         </div>
       </div>
-      {titles.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {titles.map((t) => (
-            <span
-              key={t}
-              className="inline-flex items-center rounded-md border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[11.5px] font-medium text-emerald-300"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
+      {orderedTitles.length > 0 ? (
+        <ul className="mt-4 divide-y divide-white/5 rounded-[12px] border border-white/8 bg-white/[0.02]">
+          {orderedTitles.map((t) => {
+            const isPrimary = t === primaryTitle;
+            return (
+              <li key={t} className="flex items-center gap-2.5 px-3 py-2">
+                <CheckCircle2 className="size-4 shrink-0 text-emerald-400" aria-hidden />
+                <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-white">{t}</span>
+                {isPrimary ? (
+                  <span className="inline-flex items-center rounded-md border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-emerald-300">
+                    Primary
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
       ) : null}
     </PCard>
   );
