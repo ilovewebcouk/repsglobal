@@ -23,6 +23,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
@@ -54,6 +55,7 @@ import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
+import { Route as HelpCategoryRouteImport } from './routes/help.$category'
 import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
 import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
 import { Route as FeaturesShopFrontRouteImport } from './routes/features.shop-front'
@@ -202,6 +204,11 @@ const HomeLegacyRoute = HomeLegacyRouteImport.update({
   path: '/home-legacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -297,9 +304,9 @@ const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpIndexRoute = HelpIndexRouteImport.update({
-  id: '/help/',
-  path: '/help/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => HelpRoute,
 } as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
   id: '/resources/$slug',
@@ -355,6 +362,11 @@ const InLocationRoute = InLocationRouteImport.update({
   id: '/in/$location',
   path: '/in/$location',
   getParentRoute: () => rootRouteImport,
+} as any)
+const HelpCategoryRoute = HelpCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
+  getParentRoute: () => HelpRoute,
 } as any)
 const GymsSlugRoute = GymsSlugRouteImport.update({
   id: '/gyms/$slug',
@@ -503,9 +515,9 @@ const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
   getParentRoute: () => ProSlugRoute,
 } as any)
 const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
-  id: '/help/$category/',
-  path: '/help/$category/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => HelpCategoryRoute,
 } as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
@@ -533,9 +545,9 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpCategorySlugRoute = HelpCategorySlugRouteImport.update({
-  id: '/help/$category/$slug',
-  path: '/help/$category/$slug',
-  getParentRoute: () => rootRouteImport,
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => HelpCategoryRoute,
 } as any)
 const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   id: '/checkout/credits/return',
@@ -800,6 +812,7 @@ export interface FileRoutesByFullPath {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/portal': typeof PortalRoute
@@ -841,6 +854,7 @@ export interface FileRoutesByFullPath {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
+  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -1042,6 +1056,7 @@ export interface FileRoutesById {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/portal': typeof PortalRoute
@@ -1084,6 +1099,7 @@ export interface FileRoutesById {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
+  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
@@ -1167,6 +1183,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
+    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/portal'
@@ -1208,6 +1225,7 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
+    | '/help/$category'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1408,6 +1426,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
+    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/portal'
@@ -1450,6 +1469,7 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
+    | '/help/$category'
     | '/in/$location'
     | '/portal_/check-ins'
     | '/portal_/messages'
@@ -1533,6 +1553,7 @@ export interface RootRouteChildren {
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HelpRoute: typeof HelpRouteWithChildren
   HomeLegacyRoute: typeof HomeLegacyRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PortalRoute: typeof PortalRoute
@@ -1585,14 +1606,11 @@ export interface RootRouteChildren {
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
   RTokenRoute: typeof RTokenRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
-  HelpIndexRoute: typeof HelpIndexRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
-  HelpCategorySlugRoute: typeof HelpCategorySlugRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
-  HelpCategoryIndexRoute: typeof HelpCategoryIndexRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicHooksSupportAutoCloseRoute: typeof ApiPublicHooksSupportAutoCloseRoute
@@ -1702,6 +1720,13 @@ declare module '@tanstack/react-router' {
       path: '/home-legacy'
       fullPath: '/home-legacy'
       preLoaderRoute: typeof HomeLegacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -1839,10 +1864,10 @@ declare module '@tanstack/react-router' {
     }
     '/help/': {
       id: '/help/'
-      path: '/help'
+      path: '/'
       fullPath: '/help/'
       preLoaderRoute: typeof HelpIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof HelpRoute
     }
     '/resources/$slug': {
       id: '/resources/$slug'
@@ -1920,6 +1945,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/in/$location'
       preLoaderRoute: typeof InLocationRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/help/$category': {
+      id: '/help/$category'
+      path: '/$category'
+      fullPath: '/help/$category'
+      preLoaderRoute: typeof HelpCategoryRouteImport
+      parentRoute: typeof HelpRoute
     }
     '/gyms/$slug': {
       id: '/gyms/$slug'
@@ -2126,10 +2158,10 @@ declare module '@tanstack/react-router' {
     }
     '/help/$category/': {
       id: '/help/$category/'
-      path: '/help/$category'
+      path: '/'
       fullPath: '/help/$category/'
       preLoaderRoute: typeof HelpCategoryIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof HelpCategoryRoute
     }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
@@ -2168,10 +2200,10 @@ declare module '@tanstack/react-router' {
     }
     '/help/$category/$slug': {
       id: '/help/$category/$slug'
-      path: '/help/$category/$slug'
+      path: '/$slug'
       fullPath: '/help/$category/$slug'
       preLoaderRoute: typeof HelpCategorySlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof HelpCategoryRoute
     }
     '/checkout/credits/return': {
       id: '/checkout/credits/return'
@@ -2627,6 +2659,32 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface HelpCategoryRouteChildren {
+  HelpCategorySlugRoute: typeof HelpCategorySlugRoute
+  HelpCategoryIndexRoute: typeof HelpCategoryIndexRoute
+}
+
+const HelpCategoryRouteChildren: HelpCategoryRouteChildren = {
+  HelpCategorySlugRoute: HelpCategorySlugRoute,
+  HelpCategoryIndexRoute: HelpCategoryIndexRoute,
+}
+
+const HelpCategoryRouteWithChildren = HelpCategoryRoute._addFileChildren(
+  HelpCategoryRouteChildren,
+)
+
+interface HelpRouteChildren {
+  HelpCategoryRoute: typeof HelpCategoryRouteWithChildren
+  HelpIndexRoute: typeof HelpIndexRoute
+}
+
+const HelpRouteChildren: HelpRouteChildren = {
+  HelpCategoryRoute: HelpCategoryRouteWithChildren,
+  HelpIndexRoute: HelpIndexRoute,
+}
+
+const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
+
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -2661,6 +2719,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HelpRoute: HelpRouteWithChildren,
   HomeLegacyRoute: HomeLegacyRoute,
   HowItWorksRoute: HowItWorksRoute,
   PortalRoute: PortalRoute,
@@ -2713,14 +2772,11 @@ const rootRouteChildren: RootRouteChildren = {
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
   RTokenRoute: RTokenRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
-  HelpIndexRoute: HelpIndexRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
-  HelpCategorySlugRoute: HelpCategorySlugRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
-  HelpCategoryIndexRoute: HelpCategoryIndexRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
