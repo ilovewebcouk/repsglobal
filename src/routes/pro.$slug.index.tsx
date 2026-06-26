@@ -552,11 +552,15 @@ function ProProfilePage() {
             {/* Right info */}
             <div className="flex flex-col">
               {pro.trust?.verified ? (
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
                   <BadgeCheck className="h-3 w-3" />
-                  REPS Verified
+                  REPs Verified
                 </span>
-              ) : null}
+              ) : (
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-muted-light">
+                  Unverified
+                </span>
+              )}
 
               <h1 className="mt-3 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.01em] text-reps-charcoal lg:text-[52px]">
                 {pro.name}
