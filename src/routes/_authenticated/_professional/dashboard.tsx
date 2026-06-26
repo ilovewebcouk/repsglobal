@@ -204,6 +204,11 @@ function DashboardPage() {
             />
           </div>
 
+          {/* ROW 2b — Discoverability (views / impressions / position / CTR) */}
+          <DiscoverabilityStrip
+            data={hub.discoverability.data ?? null}
+            isLoading={hub.discoverability.isLoading}
+          />
 
           {/* Merged row — Needs Attention + Activity (left) | Completeness + Verification (right) */}
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
