@@ -70,7 +70,7 @@ function DashboardPage() {
 
   const subTier = data?.subscription?.tier ?? "free";
   const hasPaidTier = subTier === "verified" || subTier === "pro" || subTier === "studio";
-  const isVerified = (data?.profile?.verification_status ?? "pending") === "verified";
+  
   const isPublished = data?.profile?.is_published ?? false;
   const hasProAccess = data?.entitlement.hasProAccess ?? false;
   const slug = data?.profile?.slug ?? null;
