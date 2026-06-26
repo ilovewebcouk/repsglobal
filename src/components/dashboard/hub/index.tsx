@@ -207,22 +207,27 @@ export function WelcomeBanner({
             {headline ? (
               <p className="mt-1 truncate text-[13px] text-white/55">{headline}</p>
             ) : null}
-            <div className="mt-2 flex items-center gap-2 text-[12px] text-white/65">
-              <span
-                className={cn(
-                  "inline-block size-2 rounded-full",
-                  isPublished ? "bg-emerald-400" : "bg-amber-400",
-                )}
-                aria-hidden
-              />
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-white/65">
+              <span className="inline-flex items-center gap-2">
+                <span
+                  className={cn(
+                    "inline-block size-2 rounded-full",
+                    isPublished ? "bg-emerald-400" : "bg-amber-400",
+                  )}
+                  aria-hidden
+                />
+                {isPublished ? "Live on REPS" : "Draft — complete your profile to go live"}
+              </span>
               {isPublished ? (
-                <span>Your listing is live on REPS</span>
-              ) : (
-                <span>Draft — complete your profile to go live</span>
-              )}
+                <>
+                  <span className="hidden h-3 w-px bg-white/10 sm:inline-block" aria-hidden />
+                  <HeaderSparkline data={dailyViews ?? null} />
+                </>
+              ) : null}
             </div>
           </div>
         </div>
+
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {publicUrl ? (
