@@ -1102,6 +1102,37 @@ function AdminIdentityTab({
       </div>
       {/* signUrl prop intentionally accepted for future per-row doc preview */}
       <span className="hidden">{typeof signUrl}</span>
+      <Dialog open={!!overrideTarget} onOpenChange={(o) => { if (!o) { setOverrideTarget(null); setOverrideReason(""); } }}>
+        <DialogContent className="border-reps-border bg-reps-ink text-white">
+          <DialogHeader>
+            <DialogTitle>
+              Mark identity check as &ldquo;{overrideTarget?.decision === "needs_more_info" ? "needs more info" : overrideTarget?.decision}&rdquo;
+            </DialogTitle>
+            <DialogDescription className="text-white/65">
+              Reason is recorded permanently in the audit log.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Reason (min 8 chars)"
+            value={overrideReason}
+            onChange={(e) => setOverrideReason(e.target.value)}
+            rows={3}
+          />
+          <DialogFooter>
+            <Button variant="subtle" size="sm" disabled={overrideBusy} onClick={() => setOverrideTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={overrideBusy || overrideReason.trim().length < 8}
+              onClick={submitOverride}
+              className="bg-reps-orange text-white hover:bg-reps-orange-hover"
+            >
+              {overrideBusy ? <Loader2 className="size-3.5 animate-spin" /> : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PPanel>
   );
 }
