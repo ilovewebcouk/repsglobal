@@ -207,7 +207,8 @@ function HomeV2() {
   const liveFeatured = featuredResult?.pros ?? [];
   const featuredCards: HomeFeaturedCard[] = liveFeatured.length
     ? liveFeatured.slice(0, 4).map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]))
-    : FALLBACK_FEATURED;
+    : [];
+  const hasFeatured = featuredCards.length > 0;
 
   return (
     <div className="min-h-screen bg-reps-ivory">
