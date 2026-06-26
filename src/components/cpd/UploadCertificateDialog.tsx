@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { FileText, Landmark, Loader2, Lock, Sparkles, Upload } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { FileText, Landmark, Loader2, Lock, Smartphone, Sparkles, Upload } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 import {
   Dialog,
@@ -20,16 +22,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 import { AWARDING_BODIES, OFQUAL_QUAL_NO_REGEX } from "@/lib/cpd/awarding-bodies";
 import {
+  createCertUploadSession,
   extractCertificateFields,
+  fetchCertUploadPayload,
+  getCertUploadSession,
+  markCertUploadSessionConsumed,
   submitCertificate,
   uploadCertificateFile,
 } from "@/lib/cpd/cpd.functions";
 
 type Step = "pick" | "extracting" | "confirm" | "submitting";
+type Tab = "upload" | "qr";
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

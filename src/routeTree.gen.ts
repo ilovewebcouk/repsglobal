@@ -82,6 +82,7 @@ import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
+import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -492,6 +493,11 @@ const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   path: '/u/insurance/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UCpdSessionIdRoute = UCpdSessionIdRouteImport.update({
+  id: '/u/cpd/$sessionId',
+  path: '/u/cpd/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProSlugReviewRoute = ProSlugReviewRouteImport.update({
   id: '/review',
   path: '/review',
@@ -828,6 +834,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -943,6 +950,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1062,6 +1070,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1180,6 +1189,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/pro/$slug/'
     | '/checkout/credits'
@@ -1295,6 +1305,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/pro/$slug'
     | '/checkout/credits'
@@ -1413,6 +1424,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/pro/$slug/'
     | '/_authenticated/_professional/checkout_/credits'
@@ -1527,6 +1539,7 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -2050,6 +2063,13 @@ declare module '@tanstack/react-router' {
       path: '/u/insurance/$sessionId'
       fullPath: '/u/insurance/$sessionId'
       preLoaderRoute: typeof UInsuranceSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/cpd/$sessionId': {
+      id: '/u/cpd/$sessionId'
+      path: '/u/cpd/$sessionId'
+      fullPath: '/u/cpd/$sessionId'
+      preLoaderRoute: typeof UCpdSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pro/$slug/review': {
@@ -2615,6 +2635,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
