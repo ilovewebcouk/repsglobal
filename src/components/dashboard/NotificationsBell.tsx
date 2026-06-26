@@ -1,13 +1,15 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Mail, Star } from "lucide-react";
+import { Bell, Mail, ShieldAlert, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
 import { useMySupportUnread } from "@/hooks/useMySupportUnread";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
+import { useVerificationUnread } from "@/hooks/useVerificationUnread";
 import { useSessionUser } from "@/hooks/use-session-user";
+
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -45,6 +47,14 @@ type FeedItem =
       preview: string;
       createdAt: string;
       rating: number;
+    }
+  | {
+      kind: "verification";
+      key: string;
+      title: string;
+      preview: string;
+      createdAt: string;
+      href: string;
     };
 
 export function NotificationsBell() {
@@ -52,6 +62,7 @@ export function NotificationsBell() {
   const adminSupport = useSupportUnread({ enabled: isAdmin });
   const mySupport = useMySupportUnread({ enabled: !!user });
   const reviews = useReviewsUnread({ enabled: !!user });
+  const verification = useVerificationUnread({ enabled: !!user && !isAdmin });
   const [open, setOpen] = React.useState(false);
 
   const combined = React.useMemo<FeedItem[]>(() => {
@@ -80,16 +91,27 @@ export function NotificationsBell() {
       createdAt: i.createdAt,
       rating: i.rating,
     }));
-    return [...reviewItems, ...adminSupportItems, ...mySupportItems].sort(
+    const verificationItems: FeedItem[] = verification.items.map((i) => ({
+      kind: "verification",
+      key: i.key,
+      title: i.title,
+      preview: i.preview,
+      createdAt: i.createdAt,
+      href: i.href,
+    }));
+    return [...verificationItems, ...reviewItems, ...adminSupportItems, ...mySupportItems].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
-  }, [adminSupport.items, mySupport.items, reviews.items]);
+  }, [adminSupport.items, mySupport.items, reviews.items, verification.items]);
 
   const unread = combined.length;
   const [snapshot, setSnapshot] = React.useState<FeedItem[] | null>(null);
   const visible = open && snapshot ? snapshot : combined;
   const isLoading =
-    adminSupport.isLoading || mySupport.isLoading || reviews.isLoading;
+    adminSupport.isLoading ||
+    mySupport.isLoading ||
+    reviews.isLoading ||
+    verification.isLoading;
 
   const handleOpenChange = (next: boolean) => {
     if (next) setSnapshot(combined);
@@ -103,6 +125,7 @@ export function NotificationsBell() {
     if (user) {
       tasks.push(mySupport.markAllRead());
       tasks.push(reviews.markAllRead());
+      tasks.push(verification.markAllRead());
     }
     await Promise.all(tasks);
     setSnapshot([]);
