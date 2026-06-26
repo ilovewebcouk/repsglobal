@@ -22,12 +22,12 @@ import {
 import { PCard, PPanel, SectionHeader } from "@/components/dashboard/primitives";
 import {
   DashboardBadge,
+  DashboardButton,
   DashboardEmpty,
   DashboardEmptyDescription,
   DashboardEmptyIcon,
   DashboardEmptyTitle,
 } from "@/components/dashboard/ui";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -133,25 +133,25 @@ export function WelcomeBanner({
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {publicUrl ? (
             <>
-              <Button
+              <DashboardButton
                 size="sm"
+                variant="ghost"
                 onClick={copyUrl}
-                className="rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]"
                 title="Copy public URL"
               >
                 <Copy className="mr-1.5 size-4" /> Copy link
-              </Button>
-              <Button asChild size="sm" className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90">
+              </DashboardButton>
+              <DashboardButton asChild size="sm" variant="primary">
                 <Link to={publicUrl as any} target="_blank">
                   View public profile
                   <ExternalLink className="ml-1.5 size-4" />
                 </Link>
-              </Button>
+              </DashboardButton>
             </>
           ) : (
-            <Button asChild size="sm" className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90">
+            <DashboardButton asChild size="sm" variant="primary">
               <Link to="/dashboard/profile">Finish profile</Link>
-            </Button>
+            </DashboardButton>
           )}
         </div>
       </div>
@@ -372,9 +372,9 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
           </li>
         ))}
       </ul>
-      <Button asChild size="sm" className="mt-4 w-full rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]">
+      <DashboardButton asChild size="sm" variant="ghost" className="mt-4 w-full">
         <Link to="/dashboard/profile">Edit profile</Link>
-      </Button>
+      </DashboardButton>
     </PPanel>
   );
 }
@@ -561,9 +561,9 @@ export function VerificationStatusCard({
           </li>
         ))}
       </ul>
-      <Button asChild size="sm" className="mt-4 w-full rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]">
+      <DashboardButton asChild size="sm" variant="ghost" className="mt-4 w-full">
         <Link to="/dashboard/verification">Manage verification</Link>
-      </Button>
+      </DashboardButton>
     </PPanel>
   );
 }
@@ -579,9 +579,9 @@ export function ReviewsSnapshot({ kpis }: { kpis: ReviewKpis | undefined }) {
         title="Reviews"
         icon={Star}
         action={
-          <Button asChild size="sm" variant="ghost" className="h-7 rounded-[8px] px-2 text-[12px] text-white/70 hover:bg-white/[0.06] hover:text-white">
+          <DashboardButton asChild size="sm" variant="link" className="h-7 px-0 text-[12px]">
             <Link to="/dashboard/reviews">All reviews</Link>
-          </Button>
+          </DashboardButton>
         }
       />
       <div className="flex items-baseline gap-2">
@@ -623,9 +623,9 @@ export function CpdMini({
         title="Education & CPD"
         icon={GraduationCap}
         action={
-          <Button asChild size="sm" variant="ghost" className="h-7 rounded-[8px] px-2 text-[12px] text-white/70 hover:bg-white/[0.06] hover:text-white">
+          <DashboardButton asChild size="sm" variant="link" className="h-7 px-0 text-[12px]">
             <Link to="/dashboard/cpd">Open CPD</Link>
-          </Button>
+          </DashboardButton>
         }
       />
       <div className="flex items-center gap-4">
@@ -658,9 +658,9 @@ export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
         description="Shown on your public listing and enquiry form."
         icon={Sparkles}
         action={
-          <Button asChild size="sm" className="rounded-[10px] border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]">
+          <DashboardButton asChild size="sm" variant="ghost">
             <Link to="/dashboard/services">Manage services</Link>
-          </Button>
+          </DashboardButton>
         }
       />
       {top.length === 0 ? (
@@ -718,9 +718,9 @@ export function ProUpsellStrip() {
             in-app messaging — every Pro feature, no add-ons.
           </p>
         </div>
-        <Button asChild size="sm" className="shrink-0 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90">
+        <DashboardButton asChild size="sm" variant="primary" className="shrink-0">
           <Link to="/pricing">See Pro features</Link>
-        </Button>
+        </DashboardButton>
       </div>
     </PPanel>
   );
