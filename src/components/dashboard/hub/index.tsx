@@ -712,14 +712,14 @@ export function CpdMini({
   const pendingCount = trust?.qualifications.pendingCount ?? 0;
   const titles = trust?.qualifications.titles ?? [];
   const primaryTitle = trust?.qualifications.primaryTitle ?? null;
+  const secondaryTitle = trust?.qualifications.secondaryTitle ?? null;
   const latestAt = trust?.qualifications.latestApprovedAt ?? uploadedAt ?? null;
   const titleCount = titles.length;
   const hasApproved = titleCount > 0 || certCount > 0;
   const showUploaded = hasApproved || qualUploaded;
 
-  const orderedTitles = primaryTitle
-    ? [primaryTitle, ...titles.filter((t) => t !== primaryTitle)]
-    : titles;
+  // titles already arrives primary-first, secondary-second from trust.functions.ts
+  const orderedTitles = titles;
 
   const formattedDate = latestAt
     ? new Date(latestAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
@@ -762,6 +762,7 @@ export function CpdMini({
         <ul className="mt-4 divide-y divide-white/5 rounded-[12px] border border-white/8 bg-white/[0.02]">
           {orderedTitles.map((t) => {
             const isPrimary = t === primaryTitle;
+            const isSecondary = !isPrimary && t === secondaryTitle;
             return (
               <li key={t} className="flex items-center gap-2.5 px-3 py-2">
                 <CheckCircle2 className="size-4 shrink-0 text-emerald-400" aria-hidden />
@@ -769,6 +770,10 @@ export function CpdMini({
                 {isPrimary ? (
                   <span className="inline-flex items-center rounded-md border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-emerald-300">
                     Primary
+                  </span>
+                ) : isSecondary ? (
+                  <span className="inline-flex items-center rounded-md border border-reps-orange-border bg-reps-orange-soft px-1.5 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-reps-orange">
+                    Secondary
                   </span>
                 ) : null}
               </li>
