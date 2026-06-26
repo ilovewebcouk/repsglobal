@@ -15,7 +15,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name:"description",
         content:
-"Verified £99/yr. Pro Founding £59/mo with a 30-day free trial. Studio is waitlist-only.",
+"Verified £99/yr is live. Pro Founding £59/mo and Studio are waitlist-only.",
       },
       { property:"og:title", content:"REPS pricing" },
       {

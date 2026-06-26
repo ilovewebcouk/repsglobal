@@ -61,7 +61,7 @@ function buildSubject(audience: "pro" | "partner", reason?: string, org?: string
 
 const REASON_LABELS: Record<string, string> = {
   verification: "Verification help",
-  upgrade: "Upgrade to Pro or Studio",
+  upgrade: "Join Pro or Studio waitlist",
   profile: "Profile / shop-front issue",
   billing: "Billing query",
   safeguarding: "Safeguarding / conduct",

@@ -79,13 +79,13 @@ function ConnectSection() {
                 <Zap className="h-4 w-4" />
               </span>
               <div className="flex-1">
-                <div className="text-[14px] font-semibold text-white">Upgrade to Pro to take payments</div>
+                <div className="text-[14px] font-semibold text-white">Pro is coming soon — join the Pro waitlist</div>
                 <p className="mt-1 text-[13px] leading-relaxed text-white/65">
-                  Stripe payments are part of the Pro tier. Money lands directly in your Stripe account — REPs takes £0 booking fee. Upgrade to connect your account.
+                  Stripe payments are part of the Pro tier. Money lands directly in your Stripe account — REPs takes £0 booking fee. Join the waitlist to be first in when Pro opens.
                 </p>
                 <div className="mt-3">
-                  <a href="/pricing" className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover">
-                    See plans <ArrowUpRight className="h-4 w-4" />
+                  <a href="/contact" className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover">
+                    Join Pro waitlist <ArrowUpRight className="h-4 w-4" />
                   </a>
                 </div>
               </div>

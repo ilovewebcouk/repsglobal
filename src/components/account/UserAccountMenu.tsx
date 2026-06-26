@@ -215,9 +215,9 @@ export function UserAccountMenu({
           <>
             <DropdownMenuSeparator className="my-1 bg-reps-stone" />
             <DropdownMenuItem asChild className="rounded-[10px] focus:bg-reps-warm-white">
-              <Link to="/pricing" className="font-semibold text-reps-orange">
+              <Link to="/contact" className="font-semibold text-reps-orange">
                 <Sparkles className="mr-2 size-4 text-reps-orange" aria-hidden />
-                Upgrade to Pro
+                Join Pro waitlist
               </Link>
             </DropdownMenuItem>
           </>
