@@ -251,7 +251,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         const row = r as { id: string; quality_score: number | null; verification: string | null; updated_at: string | null };
         const c = origin ? coordById.get(row.id) : undefined;
         const d = origin && c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
-        const verifiedRank = row.verification === "verified" ? 1 : 0;
+        const verifiedRank = fullyVerifiedIds.has(row.id) ? 1 : 0;
         const paidRank = paidTierById.get(row.id) ?? 0;
         const quality = row.quality_score ?? 0;
         return {
