@@ -58,8 +58,9 @@ export const saveInsurance = createServerFn({ method: "POST" })
     let insuredName: string | null = null;
     let nameMatch: boolean | null = null;
     try {
-      aiExtraction = await runAiOnInsurancePath(data.doc_path);
-      insuredName = aiExtraction.insured_name ?? null;
+      const ai = await runInsuranceAiFromPath(data.doc_path, userId);
+      aiExtraction = ai;
+      insuredName = ai.insured_name ?? null;
 
       // Pull the verified legal name (locked at ID approval) to score against.
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -82,26 +83,25 @@ export const saveInsurance = createServerFn({ method: "POST" })
         insuredName && identityName ? nameSimilarity(insuredName, identityName) : null;
       nameMatch = nameScore === null ? null : nameScore >= 0.85;
 
-      // Expiry mismatch: AI saw a different date than the user typed
       const expiryMismatch =
-        aiExtraction.expiry_date && aiExtraction.expiry_date !== data.expiry_date;
+        ai.expiry_date && ai.expiry_date !== data.expiry_date;
 
       const lowCover =
-        typeof aiExtraction.cover_amount_gbp === "number"
-          ? aiExtraction.cover_amount_gbp < INSURANCE_MIN_COVER_GBP()
+        typeof ai.cover_amount_gbp === "number"
+          ? ai.cover_amount_gbp < INSURANCE_MIN_COVER_GBP()
           : (data.cover_amount_gbp ?? 0) < INSURANCE_MIN_COVER_GBP();
 
       trustSignals = {
         ai: "ok",
-        ai_confidence: aiExtraction.confidence ?? null,
+        ai_confidence: ai.confidence ?? null,
         name_score: nameScore,
         name_match: nameMatch,
         expiry_mismatch: expiryMismatch || false,
         low_cover: lowCover,
         ai_extracted: {
-          provider: aiExtraction.provider,
-          cover_amount_gbp: aiExtraction.cover_amount_gbp,
-          expiry_date: aiExtraction.expiry_date,
+          provider: ai.provider,
+          cover_amount_gbp: ai.cover_amount_gbp,
+          expiry_date: ai.expiry_date,
           insured_name: insuredName,
         },
       };
@@ -114,8 +114,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
           event: "insurance.flagged_low_cover",
           context: {
             expiry_date: data.expiry_date,
-            cover_amount_gbp:
-              aiExtraction.cover_amount_gbp ?? data.cover_amount_gbp ?? 0,
+            cover_amount_gbp: ai.cover_amount_gbp ?? data.cover_amount_gbp ?? 0,
           },
           proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
           alsoEmail: true,
@@ -136,6 +135,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
     } catch (e) {
       trustSignals = { ai: "skipped", ai_error: (e as Error).message };
     }
+
 
     const { data: row, error } = await supabase
       .from("insurance_policies")
