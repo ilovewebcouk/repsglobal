@@ -316,25 +316,27 @@ export function NeedsAttention({
   const visible = items.slice(0, 6);
 
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader
         title="Needs your attention"
         description="Live signals from across your dashboard."
         icon={CheckCircle2}
       />
       {visible.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <CheckCircle2 />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            Nothing needs your attention right now. We'll surface enquiries, reviews
-            and renewals here as they come in.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
+        <div className="flex flex-1 items-center justify-center">
+          <DashboardEmpty>
+            <DashboardEmptyIcon>
+              <CheckCircle2 />
+            </DashboardEmptyIcon>
+            <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
+            <DashboardEmptyDescription>
+              Nothing needs your attention right now. We'll surface enquiries, reviews
+              and renewals here as they come in.
+            </DashboardEmptyDescription>
+          </DashboardEmpty>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
           {visible.map((item) => {
             const Icon = item.icon;
             return (
