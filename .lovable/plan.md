@@ -1,90 +1,203 @@
-## Goal
+## Full verification QA plan — trainer view, admin view, notifications
 
-Lift insurance verification to the same AI-assisted standard as qualifications, and close the trainer-notification gap so a pro is never left with a silent "stuck" verification.
+### Brutal diagnosis
 
-For Jordan's case specifically: he should have been told the moment he uploaded the expired certificate; failing that, he should be told the moment an admin opens his case and can't verify; failing that, a scheduled renewal nudge should reach him before expiry.
+The current verification experience is split-brained:
 
-## Brutal-honest current state (for context, not action)
+1. **Education & CPD looks empty during admin “view as Jordan”** because `myCertificates` still uses plain `requireSupabaseAuth`, so the server reads the signed-in admin’s certificates instead of the impersonated trainer’s certificates.
+2. **Insurance can look empty / not pending for the same reason** because `myInsurance` also uses plain auth instead of the impersonation-aware middleware.
+3. **Verification says “Qualifications: Not started”** because `getTrustState` only counts `approved` rows. Submitted certificates and “changes requested” rows are invisible to the summary, so pending qualifications are treated like they do not exist.
+4. **The dashboard verification card has a bad fallback**: it guesses qualifications are “In review” based on unrelated identity/insurance activity rather than actual qualification rows.
+5. **Expired insurance is computed inconsistently**: some UI computes expiry at render time, but the trust model and notification rail do not guarantee the trainer sees “Your insurance expired — upload a new one.”
+6. **Notifications are not complete**: insurance nudges exist, but qualification review decisions are not wired into trainer bell/email events, and the bell is disabled for admins even when an admin is impersonating a trainer.
+7. **Impersonation chrome is hiding trainer context**: `getImpersonationStatus` does not return the trainer email, and `useEffectiveIdentity` replaces the tier with “Viewing,” which makes QA harder.
 
-- AI extraction exists on both insurance and qualifications (Gemini 2.5 Pro).
-- Qualifications also have Ofqual cross-check, name-match, AI persisted on the row.
-- Insurance has none of: persistence, expiry guard, low-cover guard, name-match, trainer notification, renewal nudge.
-- No trainer-facing notification fires when verification is blocked.
+### What “world-class 10/10” should do
 
-## Scope
+For the trainer dashboard, every page should use the same source of truth:
 
-### 1. Insurance: persist AI signals on the row
+- **Identity**: Stripe/manual status from `professionals.identity_status`.
+- **Insurance**: latest insurance row, with `expired` computed from `expiry_date < today`; expired is a blocking state, not “pending” and not empty.
+- **Qualifications**: all relevant `verification_submissions` statuses, not just approved.
 
-Migration on `insurance_policies`:
-- `ai_extraction jsonb` — full Gemini result + confidence
-- `ai_checked_at timestamptz`
-- `trust_signals jsonb` — `{ expired, expires_soon, low_cover, name_match, provider_known }`
-- `insured_name text` — extracted name on the certificate
-- `name_match boolean` — comparison to `professionals.identity_verified_name`
+The trainer should see:
 
-No new tables. Existing RLS already covers admin + owner reads.
+- Expired insurance: red state, exact expiry date, clear “Upload renewed certificate” CTA, bell notification.
+- Submitted qualification: amber “Pending review,” visible in Verification and Education & CPD.
+- Changes requested: amber/red “Action needed,” admin note visible.
+- Rejected qualification: visible, not silently hidden.
+- Approved qualification: green, title unlocked.
 
-### 2. Insurance: run AI at submit time and act on it
+### Build plan
 
-Refactor `saveInsurance` (`src/lib/verification/insurance.functions.ts`):
-- After upload, call `runInsuranceAi(...)` server-side (don't trust client-supplied fields blindly).
-- Compute trust signals:
-  - `expired` = `expiry_date < today`
-  - `expires_soon` = within 30 days
-  - `low_cover` = `cover_amount_gbp < 1_000_000` (industry minimum £1m PL)
-  - `name_match` = fuzzy-match `insured_name` vs `identity_verified_name` (reuse cert helper)
-  - `provider_known` = provider name in a small allow-list (Insure4Sport / Hiscox / Westminster / Protectivity / Tribe / Fitpro / Sportscover etc.)
-- **If `expired`**: reject the save with a clear error (`"Certificate expired on {date} — please upload your current cover."`). Trainer sees the message inline; nothing is written to `insurance_policies`.
-- **Otherwise**: persist row with `ai_extraction`, `trust_signals`, `insured_name`, `name_match`, `ai_checked_at`.
+#### 1. Fix impersonation data reads
 
-Admin verification page (Step 2) reads the new fields and shows the same chip pattern as the Ofqual panel:
-- Green: "AI: provider verified · £5m cover · name matches"
-- Amber: "AI: name mismatch — printed as {insured_name}"
-- Red: "AI: cover below £1m" / "AI: expires in 6 days"
+Files:
+- `src/lib/verification/insurance.functions.ts`
+- `src/lib/cpd/cpd.functions.ts`
 
-### 3. Qualifications: surface AI on the admin card
+Changes:
+- Swap `myInsurance` from `requireSupabaseAuth` to `requireSupabaseAuthWithImpersonation`.
+- Swap `myCertificates` from `requireSupabaseAuth` to `requireSupabaseAuthWithImpersonation`.
+- Keep upload/save/delete functions on normal auth unless deliberately allowing admins to mutate trainer data.
 
-Already extracted, already persisted — just bring its summary chips alongside the Ofqual chips already shown. No DB work.
+Acceptance:
+- While viewing as Jordan, Education & CPD shows Jordan’s uploaded certificates.
+- Verification insurance card shows Jordan’s latest insurance row instead of “upload certificate” when he already has one.
 
-### 4. Trainer notifications (bell + email)
+#### 2. Fix impersonation identity chrome
 
-New helper `notifyVerificationEvent(proId, event)` writing to existing notification rails. Events:
+Files:
+- `src/lib/admin/impersonation.functions.ts`
+- `src/hooks/use-effective-identity.ts`
 
-| Event | Trigger | Bell + Email |
-|---|---|---|
-| `insurance.rejected_expired` | Server rejects an expired upload at submit | ✅ |
-| `insurance.flagged` | Row saved with red trust signals (low cover / name mismatch) | ✅ |
-| `insurance.expires_soon` | Cron at 60/30/7/0 days before expiry (once per threshold; uses `verification_renewal_nudges` table already in DB) | ✅ |
-| `qualification.flagged` | Submission saved with `name_mismatch` or Ofqual `not-found` | ✅ |
-| `verification.blocked_by_insurance` | Admin opens a case where ID + qual pass but insurance missing/expired → auto-fire once per pro per 14 days | ✅ |
+Changes:
+- In `getImpersonationStatus`, fetch the impersonated trainer’s auth email via `supabaseAdmin.auth.admin.getUserById`.
+- Return `email` in the active impersonation payload.
+- In `useEffectiveIdentity`, stop forcing `email: null` and stop forcing `tierLabel: "Viewing"`.
+- Show the actual subscription label: `Verified`, `Pro`, or `Studio`.
 
-Bell uses existing review/support notification table pattern (`review_notifications`-style). Email uses the existing `contact-autoresponse` pipeline with two new React Email templates: `verification-blocked.tsx` and `verification-renewal-due.tsx`. Copy matches the standardised tone we shipped for review removals.
+Acceptance:
+- Sidebar card/header clearly show the trainer being viewed, with their real trainer tier label.
 
-### 5. Renewal cron
+#### 3. Make `getTrustState` a real single source of truth
 
-Single pg_cron job daily at 09:00 UTC calling a new SQL function `insurance_check_renewals()` which:
-- Scans `insurance_policies` where `status = 'active'`
-- Computes days-to-expiry; inserts into `verification_renewal_nudges` for thresholds not yet sent
-- Enqueues an email per insert via `enqueue_email('transactional', ...)` (existing pgmq queue)
-- Idempotent via the existing `verification_renewal_nudges` primary key
+File:
+- `src/lib/verification/trust.functions.ts`
 
-### 6. Admin verification UX (small)
+Changes:
+- Query all trainer verification submissions with statuses:
+  - `submitted`
+  - `changes_requested`
+  - `approved`
+  - `rejected`
+- Extend `TrustState.qualifications` with:
+  - `pendingCount`
+  - `changesRequestedCount`
+  - `rejectedCount`
+  - `totalCount`
+- Keep `count` as approved count for backwards compatibility.
+- Insurance status remains computed from latest insurance row, but expired must always win over `active`/`pending` if the expiry date is in the past.
 
-In `src/routes/admin_.verification.tsx` Step 2:
-- New "Nudge trainer to renew" button (visible when insurance is expired or within 14 days) → calls `notifyVerificationEvent(proId, 'verification.blocked_by_insurance')` on demand. Disabled-and-greyed for 14 days after firing.
-- Status banner at the top of the page: "Blocked: insurance expired on {date}. Trainer was notified {relative time}." So you can always see whether the trainer knows.
+Acceptance:
+- A trainer with submitted certificates but no approved certificates shows “Pending review,” not “Not started.”
+- A trainer with expired insurance shows `insurance.status = "expired"` everywhere.
 
-## Out of scope
+#### 4. Fix Verification page qualification status
 
-- Re-architecting Stripe Identity (already works).
-- Changing the public "REPS Verified" badge rule (stays ID + qual + in-date insurance).
-- Auto-approving insurance without admin sign-off. AI accelerates; humans still confirm.
-- Buying insurance through REPs / partnerships.
+File:
+- `src/routes/_authenticated/_professional/dashboard_.verification.tsx`
 
-## Acceptance
+Changes:
+- `QualificationsCard` should render:
+  - Green `Verified` when approved count > 0.
+  - Amber `Pending review` when pendingCount > 0.
+  - Amber/red `Changes requested` when changesRequestedCount > 0.
+  - Red/neutral `Not approved` when only rejected rows exist.
+  - Neutral `Not started` only when total count is 0.
+- Copy should point to Education & CPD and describe exactly what is happening.
 
-- Pro uploads an expired certificate → save fails inline with a clear message; no row is created; nothing for admin to do.
-- Pro uploads a valid certificate with £500k cover → row saved, AI flag visible to admin, pro receives "your cover is below the industry minimum" email.
-- 30 / 7 / 0 days before expiry, pro receives a renewal reminder email and a bell notification — exactly once per threshold.
-- Admin opens Jordan's case today → can hit "Nudge trainer to renew", which sends the email + bell; banner records the nudge.
-- All three gates green → existing approve button works unchanged.
+Acceptance:
+- Jordan’s Verification page no longer says “Qualifications: Not started” if a certificate exists in review.
+
+#### 5. Fix dashboard hub verification summary
+
+File:
+- `src/components/dashboard/hub/index.tsx`
+
+Changes:
+- Stop guessing qualification status from identity/insurance activity.
+- Use the new counts in `trust.qualifications`.
+- Insurance detail for expired should say: `Expired {date} — upload renewed certificate`.
+
+Acceptance:
+- Dashboard summary mirrors the Verification page exactly.
+
+#### 6. Improve insurance card copy and state
+
+File:
+- `src/components/dashboard/verification/TrustBlock.tsx`
+
+Changes:
+- Include `insured_name` in `InsuranceRow` type and display it.
+- For expired insurance, show a red warning panel:
+  - “Your insurance expired on {date}. You are not fully verified until you upload a current certificate.”
+  - CTA: “Upload renewed certificate” (not generic “Replace certificate”).
+- For pending insurance, show “Pending admin review.”
+- For rejected insurance, show the admin note and renewal CTA.
+
+Acceptance:
+- Jordan sees the problem immediately in the insurance section without waiting for admin nudges.
+
+#### 7. Wire qualification review notifications
+
+Files:
+- `src/lib/verification/notifications.functions.ts`
+- `src/lib/verification/verification.functions.ts`
+
+Changes:
+- Add events:
+  - `qualification.approved`
+  - `qualification.rejected`
+  - `qualification.changes_requested`
+- Add notification titles/previews for these events.
+- In `reviewVerification`, after updating a submission, call `notifyVerificationEvent` with:
+  - professional id
+  - submission id in context
+  - qualification title
+  - admin note where relevant
+  - `alsoEmail: true` for rejected / changes requested / approved if desired.
+- Do not update `professionals.verification = "verified"` from qualification approval alone; full verified remains ID + qualification + in-date insurance.
+
+Acceptance:
+- Trainer gets bell notification when qualification is approved, rejected, or changes requested.
+
+#### 8. Make the bell work while admin is viewing as trainer
+
+File:
+- `src/components/dashboard/NotificationsBell.tsx`
+
+Changes:
+- Use `useEffectiveIdentity` or impersonation status to enable verification notifications while impersonating.
+- Keep admin support notifications available for real admin mode, but when impersonating trainer pages, the verification rail should query the impersonated trainer via the impersonation-aware server function.
+- Update subtitle copy from “Reviews, support tickets, and inbound emails” to include verification.
+
+Acceptance:
+- In “Viewing as Jordan” mode, the bell can show Jordan’s verification notifications.
+
+#### 9. Align Education & CPD empty state
+
+File:
+- `src/routes/_authenticated/_professional/dashboard_.cpd.tsx`
+
+Changes:
+- Once `myCertificates` returns impersonated rows, the current page should populate.
+- Add explicit copy for pending/changes requested so it does not look empty when there are no approved titles.
+
+Acceptance:
+- If a certificate exists but is pending, the certificate list is not empty and the top card says pending review.
+
+#### 10. Optional migration cleanup for notification idempotency
+
+File:
+- New migration under `supabase/migrations/`
+
+Changes:
+- Add a unique expression index for qualification events if repeated decisions need idempotency by `submission_id`.
+- If using generic `context`, index `(professional_id, event, context->>'submission_id')` for qualification notifications.
+
+Acceptance:
+- Re-reviewing or retrying does not spam duplicate trainer bell rows.
+
+### QA checklist
+
+- Admin views as Jordan → Verification page shows Jordan data, not admin data.
+- Admin views as Jordan → Education & CPD shows Jordan certificates.
+- Expired insurance row → red expired state, renewal CTA, no “pending” language.
+- Pending insurance row → amber pending state.
+- Submitted certificate row → pending review in both Verification and CPD.
+- Changes requested row → action-needed state with admin note.
+- Approved qualification + expired insurance + approved ID → still only 2/3, not fully verified.
+- Bell shows insurance expiry/renewal notification for trainer.
+- Bell shows qualification decision notification for trainer.
+- Public REPS Verified badge still requires all three: ID approved, qualification approved, in-date insurance.
