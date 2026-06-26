@@ -111,6 +111,7 @@ function AdminVerificationPage() {
   const revoke = useServerFn(revokeQualification);
   const remind = useServerFn(sendVerificationReminder);
   const signUrl = useServerFn(getDocSignedUrl);
+  const recheckOfqual = useServerFn(recheckOfqualForSubmission);
 
   const [topTab, setTopTab] = useState<TopTab>("qualifications");
   const [selectedId, setSelectedId] = useState<string | null>(null);
