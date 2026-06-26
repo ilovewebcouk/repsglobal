@@ -1,31 +1,45 @@
-## Why it's still showing
+## Goal
+Hide the 7 fake demo professionals from the default views in `/admin/professionals` and surface them under a new **Demos** tab so you can still inspect James Wilson's record for the `/c/james-wilson` mock-up.
 
-There are two different "verified" signals in the dashboard hub, and they disagree for Jordon:
+## Demo records (confirmed in DB)
+- `emily-carter` (pilates)
+- `sophie-taylor` (pilates)
+- `liam-roberts` (strength)
+- `marcus-lee` (strength)
+- `priya-sharma` (nutritionist)
+- `hannah-thompson` (PT)
+- `james-wilson` (PT — coach shop-front mock)
 
-- The **REPS Verified badge** in the header card uses `trust.ticks.identity && trust.ticks.insurance && trust.ticks.qualifications` — the live 3-of-3 trust state (`src/components/dashboard/hub/index.tsx`, line 93). Jordon passes all three, so the badge is green.
-- The **"Complete your verification" attention item** uses `isVerified` derived from `profile.verification_status === "verified"` (`src/routes/_authenticated/_professional/dashboard.tsx`, line 73), passed into `NeedsAttention` (line 218) and checked at `hub/index.tsx` line 252.
+(`james-carter` is a route-level fixture, not in the DB — already gated.)
 
-`professionals.verification_status` is the cached column updated by `recompute_pro_verification`. When Jordon's insurance was approved in the new admin queue, the trust ticks went green immediately (they read live from `insurance_policies` + `verification_submissions` + `identity_documents`), but the cached column either didn't recompute or the trigger fired against an older row state. Result: badge says Verified, but the Needs Attention card still nags him to verify.
+## Approach
 
-## Fix
+### 1. Flag demos in the DB
+Add a boolean `is_demo` column to `professionals` (default `false`, indexed). Backfill `true` for the 7 slugs above. Single source of truth — future demo accounts just flip the flag, no code change.
 
-Make Needs Attention use the same single source of truth as the badge — the live trust ticks — so the two surfaces can never disagree again.
+### 2. Filter them out of the admin list + KPIs
+`src/lib/admin/professionals.functions.ts`:
+- `listAdminProfessionals`: select `is_demo`; when `tab !== 'demos'`, append `.eq('is_demo', false)`; when `tab === 'demos'`, append `.eq('is_demo', true)`.
+- KPI / count helpers in the same file (the confirmed-pro count RPCs and any `count_*` calls): exclude `is_demo = true` so headline numbers stop including demos.
 
-### Frontend change
+### 3. Add the Demos tab to the UI
+`src/routes/admin_.professionals.tsx`:
+- Extend `AdminProTab` union with `'demos'`.
+- Append `{ label: "Demos", value: "demos" }` to `TABS` (rightmost, after "Recently joined").
+- No other UI changes — existing row actions (view, suspend, etc.) keep working for demo rows under that tab.
 
-1. In `src/components/dashboard/hub/index.tsx`:
-   - Drop the `isVerified: boolean` prop from `NeedsAttention`.
-   - Replace `if (!isVerified)` with `if (!trust || !trust.ticks.identity || !trust.ticks.insurance || !trust.ticks.qualifications)` (the `trust` prop is already passed in).
+### 4. Keep public surfaces clean
+Belt-and-braces — also filter `is_demo` out of:
+- `src/lib/directory/search.functions.ts` (directory results)
+- `src/lib/directory/featured.functions.ts` (featured grids, profession + city pages)
 
-2. In `src/routes/_authenticated/_professional/dashboard.tsx`:
-   - Remove the `isVerified` calculation and the `isVerified={isVerified}` prop on `<NeedsAttention>`.
-
-No other call sites use `isVerified` on this component.
-
-### Backend hygiene (one-time)
-
-Run `recompute_pro_verification(<jordon's pro id>)` once so `professionals.verification_status` matches the live state and the admin list / search filters don't lag. No schema change — just call the existing function.
+These should already be hidden via `is_published = false` on the 7 records, but the explicit flag prevents accidental publication from leaking them.
 
 ## Out of scope
+- No change to `/c/james-wilson` mock-up route — still renders from the same DB record.
+- No change to James Carter route fixture.
+- No change to `bd_seed_thin` migrated pros (those are real, not demos).
 
-- The recompute trigger itself looks correct; if you'd like a deeper QA on why the cached column drifted (trigger timing, RLS on update, etc.) I'll do that as a separate pass. For now the UI fix removes the user-visible inconsistency.
+## Technical notes
+- Migration: `ALTER TABLE public.professionals ADD COLUMN is_demo boolean NOT NULL DEFAULT false;` + partial index `WHERE is_demo` + `UPDATE` for the 7 slugs. No RLS change needed (admin reads use service role; public reads already gate on `is_published`).
+- Types regenerate after migration; admin functions ship in the same turn after that.

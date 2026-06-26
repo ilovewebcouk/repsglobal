@@ -116,6 +116,7 @@ const TABS: { label: string; value: AdminProTab }[] = [
   { label: "Flagged", value: "flagged" },
   { label: "Suspended", value: "suspended" },
   { label: "Recently joined", value: "recent" },
+  { label: "Demos", value: "demos" },
 ];
 
 const SORT_OPTIONS: { value: AdminProSort; label: string; defaultDir: SortDir }[] = [

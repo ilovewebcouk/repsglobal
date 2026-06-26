@@ -124,6 +124,7 @@ async function fetchFeaturedPool(
       "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
     )
     .eq("is_published", true)
+    .eq("is_demo", false)
     .in("id", fullyVerifiedIds);
 
   if (scope === "city" && value) qb = qb.ilike("city", `%${value}%`);

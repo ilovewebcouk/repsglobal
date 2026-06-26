@@ -2260,6 +2260,7 @@ export type Database = {
           identity_verified_name: string | null
           in_person_available: boolean
           insurance_valid_until: string | null
+          is_demo: boolean
           is_published: boolean
           languages: string[]
           locale: string
@@ -2309,6 +2310,7 @@ export type Database = {
           identity_verified_name?: string | null
           in_person_available?: boolean
           insurance_valid_until?: string | null
+          is_demo?: boolean
           is_published?: boolean
           languages?: string[]
           locale?: string
@@ -2358,6 +2360,7 @@ export type Database = {
           identity_verified_name?: string | null
           in_person_available?: boolean
           insurance_valid_until?: string | null
+          is_demo?: boolean
           is_published?: boolean
           languages?: string[]
           locale?: string
