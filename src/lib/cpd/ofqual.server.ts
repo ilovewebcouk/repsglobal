@@ -40,32 +40,59 @@ function titleSimilarity(a: string, b: string): number {
   return hits / Math.max(A.size, B.size);
 }
 
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+}
+
 async function fetchFromOfqual(qualNo: string): Promise<OfqualRecord | null> {
-  // The Ofqual register exposes a public JSON API.
-  const url = `https://register.ofqual.gov.uk/api/v2/Qualifications/${encodeURIComponent(qualNo)}`;
+  // The legacy register.ofqual.gov.uk JSON API was decommissioned (now 301s to gov.uk).
+  // The current public surface is the HTML page on find-a-qualification.services.ofqual.gov.uk
+  // keyed by the qualification number with slashes stripped (e.g. 601/3866/X -> 6013866X).
+  const slug = qualNo.replace(/\//g, "");
+  const url = `https://find-a-qualification.services.ofqual.gov.uk/qualifications/${encodeURIComponent(slug)}`;
   try {
     const res = await fetch(url, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(6000),
+      headers: { Accept: "text/html", "User-Agent": "REPs-Verification/1.0 (+https://repsuk.org)" },
+      signal: AbortSignal.timeout(8000),
+      redirect: "follow",
     });
     if (res.status === 404) return null;
     if (!res.ok) return null;
-    const json = (await res.json()) as Record<string, unknown>;
+    const html = await res.text();
+
+    // Title lives in the first <h1>.
+    const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
+    const title = h1 ? stripHtml(h1[1]) : null;
+
+    // Detail rows render as <dt>Label</dt><dd>Value</dd>. Extract into a map.
+    const fields: Record<string, string> = {};
+    const re = /<dt[^>]*>([\s\S]*?)<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(html)) !== null) {
+      const k = stripHtml(m[1]).toLowerCase();
+      const v = stripHtml(m[2]);
+      if (k) fields[k] = v;
+    }
+
+    // Confirm we actually landed on the qual page (defends against HTML error pages).
+    const qnOnPage = fields["qualification number"];
+    if (!qnOnPage || qnOnPage.replace(/\//g, "").toUpperCase() !== slug.toUpperCase()) {
+      return null;
+    }
+
     return {
       qualificationNumber: qualNo,
-      title: (json.Title as string | undefined) ?? (json.title as string | undefined) ?? null,
-      awardingOrganisation:
-        (json.OrganisationName as string | undefined) ??
-        (json.awardingOrganisation as string | undefined) ??
-        null,
-      level: (json.Level as string | undefined) ?? (json.level as string | undefined) ?? null,
-      status: (json.OperationalStatus as string | undefined) ?? (json.status as string | undefined) ?? null,
-      raw: json,
+      title,
+      awardingOrganisation: fields["awarding organisation"] ?? null,
+      level: fields["qualification level"] ?? null,
+      status: fields["status"] ?? null,
+      raw: { source: "find-a-qualification.services.ofqual.gov.uk", url, fields, title },
     };
   } catch {
     return null;
   }
 }
+
 
 /**
  * Look up an Ofqual qualification number. Reads from cache first, falls back
