@@ -15,11 +15,11 @@ export const Route = createFileRoute("/help/$category/$slug")({
     if (!article) throw notFound();
     const category = getCategory(params.category);
     if (!category) throw notFound();
-    return { article, category, related: getRelated(article) };
+    return { category: params.category, slug: params.slug };
   },
-  head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [] };
-    const { article } = loaderData;
+  head: ({ params }) => {
+    const article = getArticle(params.category, params.slug);
+    if (!article) return { meta: [] };
     const canonical = `https://repsglobal.lovable.app/help/${article.category}/${article.slug}`;
     const title = `${article.title} — REPS Help`;
     const desc = article.summary;
@@ -68,7 +68,10 @@ export const Route = createFileRoute("/help/$category/$slug")({
 });
 
 function HelpArticlePage() {
-  const { article, category, related } = Route.useLoaderData();
+  const { category: categorySlug, slug } = Route.useLoaderData();
+  const article = getArticle(categorySlug, slug)!;
+  const category = getCategory(categorySlug)!;
+  const related = getRelated(article);
   const Body = article.Body;
   const reviewedHuman = new Date(article.lastReviewed).toLocaleDateString("en-GB", {
     day: "numeric",
