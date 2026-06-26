@@ -38,7 +38,7 @@ export const Route = createFileRoute("/help/$category/$slug")({
       ld.push({
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        mainEntity: article.faqs.map((f) => ({
+        mainEntity: article.faqs.map((f: {q: string; a: string}) => ({
           "@type": "Question",
           name: f.q,
           acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -107,7 +107,7 @@ function HelpArticlePage() {
           <span className="inline-flex items-center gap-1.5">
             <UserIcon className="size-3.5" aria-hidden /> {article.author}
           </span>
-          {article.tags.slice(0, 3).map((t) => (
+          {article.tags.slice(0, 3).map((t: string) => (
             <span
               key={t}
               className="rounded-full border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[11px] font-medium text-white/70"
@@ -129,7 +129,7 @@ function HelpArticlePage() {
               FAQ
             </h2>
             <dl className="mt-6 space-y-5">
-              {article.faqs.map((f) => (
+              {article.faqs.map((f: {q: string; a: string}) => (
                 <div
                   key={f.q}
                   className="rounded-[14px] border border-white/10 bg-white/[0.03] p-5"

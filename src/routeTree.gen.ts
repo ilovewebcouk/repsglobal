@@ -23,6 +23,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
@@ -53,6 +54,7 @@ import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
+import { Route as HelpCategoryRouteImport } from './routes/help.$category'
 import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
 import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
 import { Route as FeaturesShopFrontRouteImport } from './routes/features.shop-front'
@@ -87,6 +89,7 @@ import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
@@ -197,6 +200,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
 const HomeLegacyRoute = HomeLegacyRouteImport.update({
   id: '/home-legacy',
   path: '/home-legacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -347,6 +355,11 @@ const InLocationRoute = InLocationRouteImport.update({
   id: '/in/$location',
   path: '/in/$location',
   getParentRoute: () => rootRouteImport,
+} as any)
+const HelpCategoryRoute = HelpCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
+  getParentRoute: () => HelpRoute,
 } as any)
 const GymsSlugRoute = GymsSlugRouteImport.update({
   id: '/gyms/$slug',
@@ -518,6 +531,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
+} as any)
+const HelpCategorySlugRoute = HelpCategorySlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => HelpCategoryRoute,
 } as any)
 const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   id: '/checkout/credits/return',
@@ -782,6 +800,7 @@ export interface FileRoutesByFullPath {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/portal': typeof PortalRoute
@@ -823,6 +842,7 @@ export interface FileRoutesByFullPath {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
+  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -838,6 +858,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
+  '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -900,6 +921,7 @@ export interface FileRoutesByTo {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/portal': typeof PortalRoute
@@ -941,6 +963,7 @@ export interface FileRoutesByTo {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
+  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -955,6 +978,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
+  '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -1018,6 +1042,7 @@ export interface FileRoutesById {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/portal': typeof PortalRoute
@@ -1060,6 +1085,7 @@ export interface FileRoutesById {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
+  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
@@ -1076,6 +1102,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
+  '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -1140,6 +1167,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
+    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/portal'
@@ -1181,6 +1209,7 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
+    | '/help/$category'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1196,6 +1225,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/checkout/credits/return'
+    | '/help/$category/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1258,6 +1288,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
+    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/portal'
@@ -1299,6 +1330,7 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
+    | '/help/$category'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1313,6 +1345,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/checkout/credits/return'
+    | '/help/$category/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1375,6 +1408,7 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
+    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/portal'
@@ -1417,6 +1451,7 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
+    | '/help/$category'
     | '/in/$location'
     | '/portal_/check-ins'
     | '/portal_/messages'
@@ -1433,6 +1468,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
     | '/checkout/credits/return'
+    | '/help/$category/$slug'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1497,6 +1533,7 @@ export interface RootRouteChildren {
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HelpRoute: typeof HelpRouteWithChildren
   HomeLegacyRoute: typeof HomeLegacyRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PortalRoute: typeof PortalRoute
@@ -1663,6 +1700,13 @@ declare module '@tanstack/react-router' {
       path: '/home-legacy'
       fullPath: '/home-legacy'
       preLoaderRoute: typeof HomeLegacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -1874,6 +1918,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/in/$location'
       preLoaderRoute: typeof InLocationRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/help/$category': {
+      id: '/help/$category'
+      path: '/$category'
+      fullPath: '/help/$category'
+      preLoaderRoute: typeof HelpCategoryRouteImport
+      parentRoute: typeof HelpRoute
     }
     '/gyms/$slug': {
       id: '/gyms/$slug'
@@ -2112,6 +2163,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/lovable/email/suppression'
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/help/$category/$slug': {
+      id: '/help/$category/$slug'
+      path: '/$slug'
+      fullPath: '/help/$category/$slug'
+      preLoaderRoute: typeof HelpCategorySlugRouteImport
+      parentRoute: typeof HelpCategoryRoute
     }
     '/checkout/credits/return': {
       id: '/checkout/credits/return'
@@ -2567,6 +2625,28 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface HelpCategoryRouteChildren {
+  HelpCategorySlugRoute: typeof HelpCategorySlugRoute
+}
+
+const HelpCategoryRouteChildren: HelpCategoryRouteChildren = {
+  HelpCategorySlugRoute: HelpCategorySlugRoute,
+}
+
+const HelpCategoryRouteWithChildren = HelpCategoryRoute._addFileChildren(
+  HelpCategoryRouteChildren,
+)
+
+interface HelpRouteChildren {
+  HelpCategoryRoute: typeof HelpCategoryRouteWithChildren
+}
+
+const HelpRouteChildren: HelpRouteChildren = {
+  HelpCategoryRoute: HelpCategoryRouteWithChildren,
+}
+
+const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
+
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -2601,6 +2681,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindAProfessionalRoute: FindAProfessionalRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HelpRoute: HelpRouteWithChildren,
   HomeLegacyRoute: HomeLegacyRoute,
   HowItWorksRoute: HowItWorksRoute,
   PortalRoute: PortalRoute,

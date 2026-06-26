@@ -67,7 +67,7 @@ function HelpCategoryPage() {
           <p className="text-white/60">No articles yet — we're writing them.</p>
         ) : (
           <ul className="grid gap-3">
-            {articles.map((a) => (
+            {articles.map((a: typeof articles[number]) => (
               <li key={a.slug}>
                 <Link
                   to="/help/$category/$slug"
