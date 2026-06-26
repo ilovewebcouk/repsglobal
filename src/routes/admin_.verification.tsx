@@ -955,6 +955,9 @@ function AdminIdentityTab({
   const override = useServerFn(adminOverride);
   const [status, setStatus] = useState<IdentityStatus>("pending");
   const [search, setSearch] = useState("");
+  const [overrideTarget, setOverrideTarget] = useState<{ id: string; decision: "approved" | "rejected" | "needs_more_info" } | null>(null);
+  const [overrideReason, setOverrideReason] = useState("");
+  const [overrideBusy, setOverrideBusy] = useState(false);
 
   const query = useQuery({
     queryKey: ["admin-identity-checks", status],
