@@ -22,7 +22,7 @@ import { CommandPalette, HelpSearchTrigger } from "@/components/help/CommandPale
 const CANONICAL = "https://repsglobal.lovable.app/help";
 const META_TITLE = "REPS Help Centre — Verification, profiles, reviews";
 const META_DESC =
-  "Everything you need to set up your REPS profile, get verified, and run your listing. Built for professionals on the Verified tier.";
+  "Everything you need to set up your REPS profile, get verified, and run your listing. Built for professionals on the Core tier.";
 
 export const Route = createFileRoute("/help/")({
   head: () => ({
@@ -55,10 +55,10 @@ export const Route = createFileRoute("/help/")({
             },
             {
               "@type": "Question",
-              name: "Is the Verified tier free?",
+              name: "Is the Core tier free?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "Yes. Verified is free during launch. It includes a public profile, verified badge, enquiry inbox and review collection.",
+                text: "Core is £99/year and includes a public profile, verified badge, enquiry inbox and review collection.",
               },
             },
           ],
@@ -109,7 +109,7 @@ function HelpLandingPage() {
             How can we help?
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-[16px] leading-relaxed text-white/70">
-            Plain-English guides for the Verified tier — from your first upload to your hundredth
+            Plain-English guides for the Core tier — from your first upload to your hundredth
             client enquiry. Written by the team that runs REPS.
           </p>
           <div className="mx-auto flex max-w-xl flex-col items-center">
