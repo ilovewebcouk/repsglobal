@@ -96,7 +96,7 @@ const STATUS_DOT: Record<CheckStatus, string> = {
 };
 
 type StatusFilter = "submitted" | "approved" | "rejected" | "changes_requested";
-type TopTab = "qualifications" | "identity";
+type TopTab = "qualifications" | "identity" | "insurance";
 
 const STATUS_LABEL: Record<StatusFilter, string> = {
   submitted: "Pending",
