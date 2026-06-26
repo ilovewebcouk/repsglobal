@@ -3723,6 +3723,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recompute_pro_verification: {
+        Args: { _pro_id: string }
+        Returns: undefined
+      }
       refresh_pro_quality_score: {
         Args: { _pro_id: string }
         Returns: undefined

@@ -226,13 +226,11 @@ export const reviewVerification = createServerFn({ method: "POST" })
     } as never);
 
     if (data.decision === "approved") {
-      await supabaseAdmin
-        .from("professionals")
-        .update({
-          verification: "verified",
-          verification_status: "verified",
-        } as never)
-        .eq("id", sub.professional_id);
+      // NOTE: We intentionally do NOT flip `professionals.verification` here.
+      // The public "REPS Verified" credential is the 3-of-3 gate
+      // (ID + qualification + in-date insurance) and is recomputed by the
+      // `recompute_pro_verification` DB trigger whenever any input changes.
+      // Approving the qualification on its own does not earn the badge.
 
       // Re-run the rules engine on the freshest server data (cheap, deterministic).
       // We deliberately do NOT trust client-supplied derived_* columns blindly.
@@ -331,15 +329,9 @@ export const reviewVerification = createServerFn({ method: "POST" })
             .eq("id", sub.professional_id);
         }
       }
-    } else if (data.decision === "rejected") {
-      await supabaseAdmin
-        .from("professionals")
-        .update({
-          verification: "rejected",
-          verification_status: "unverified",
-        } as never)
-        .eq("id", sub.professional_id);
     }
+    // NOTE: Rejected/changes_requested decisions do not touch the
+    // `verification` column either — the DB trigger handles it.
 
     // Bell + email for the trainer on every review outcome.
     try {
