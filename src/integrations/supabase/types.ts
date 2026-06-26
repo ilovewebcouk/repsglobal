@@ -3189,26 +3189,39 @@ export type Database = {
           created_at: string
           event: string
           id: string
+          policy_id: string | null
           professional_id: string
           read_at: string | null
+          threshold_days: number | null
         }
         Insert: {
           context?: Json | null
           created_at?: string
           event: string
           id?: string
+          policy_id?: string | null
           professional_id: string
           read_at?: string | null
+          threshold_days?: number | null
         }
         Update: {
           context?: Json | null
           created_at?: string
           event?: string
           id?: string
+          policy_id?: string | null
           professional_id?: string
           read_at?: string | null
+          threshold_days?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "verification_notifications_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_policies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "verification_notifications_professional_id_fkey"
             columns: ["professional_id"]
