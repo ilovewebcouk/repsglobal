@@ -455,7 +455,7 @@ function ProProfilePage() {
   // client-side so SSR always renders a neutral skeleton (no leak via SEO).
   const session = useSessionUser();
   const { isAdmin, isLoading: authLoading } = session;
-  const viewerId = session.userId ?? null;
+  const viewerId = session.user?.id ?? null;
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => {
     setMounted(true);
