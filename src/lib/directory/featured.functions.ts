@@ -106,13 +106,15 @@ async function fetchFeaturedPool(
 ): Promise<{ pool: FeaturedProRow[]; paidCount: number; backfillUsed: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+  // Featured rail stays strict: published + verified only. We do NOT filter on
+  // bd_seed_thin here either — a verified pro isn't thin by definition, and
+  // every published pro deserves to be reachable from the directory.
   let qb = supabaseAdmin
     .from("professionals")
     .select(
       "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
     )
     .eq("is_published", true)
-    .eq("bd_seed_thin", false)
     .eq("verification", "verified");
 
   if (scope === "city" && value) qb = qb.ilike("city", `%${value}%`);

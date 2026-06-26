@@ -112,8 +112,10 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let qb = supabaseAdmin
       .from("professionals")
       .select(COLS, { count: "exact" })
-      .eq("is_published", true)
-      .eq("bd_seed_thin", false);
+      .eq("is_published", true);
+    // Note: we deliberately do NOT filter on bd_seed_thin. Every published
+    // professional appears in the directory, including legacy-imported shells
+    // with no bio or photo (monogram avatar fallback handles missing photos).
 
     if (data.city) qb = qb.ilike("city", `%${data.city}%`);
     if (data.profession) qb = qb.eq("primary_profession", data.profession);

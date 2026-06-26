@@ -145,7 +145,6 @@ export const ADMIN_NAV = [
     title: "Platform",
     items: [
       { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
-      { icon: Users, label: "Seed shells", to: "/admin/seed-shells" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
