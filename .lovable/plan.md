@@ -1,111 +1,66 @@
-# Two display titles with supersession (Option A: hide, don't revoke)
 
-## Goal
+## Brutal honest take
 
-A Pro can display **up to two titles** on their public profile and shop-front. The **highest-tier title leads** (default), with optional manual reorder. Titles that are **superseded by another granted title** are hidden from the display picker but **kept in `pro_titles`** (reversible if the higher cert ever lapses).
+You're right — the current dashboard reads as a stack of cards floating on a dark background, not a SaaS surface. Three concrete reasons:
 
-Jordon's outcome: picker offers **Personal Trainer** + **Nutrition Coach** only. Fitness Instructor stays in the DB (superseded by PT) but is hidden everywhere — picker, badge, shop-front, profile.
+1. **Rows don't equalise height.** Each `grid` row lets its two children size to content, so "Needs your attention" finishes early while "Profile completeness" keeps going — the gap is just exposed page background. Dribbble dashboards lock the row to the tallest sibling and let the shorter card breathe with internal padding (or scroll).
+2. **No internal scroll regions.** `Needs your attention` and `Recent activity` truncate by hard-coding 5/10 items into the DOM. There's nowhere for "more rows than fit" to live.
+3. **Rhythm is broken.** Row 5 (CPD + Reviews) is a different grid ratio (50/50) than rows 3–4 (66/33). The eye sees three different columns systems on one page.
 
-## What we're building
+## What to change
 
-### 1. Supersession as catalog data (not hand-coded cases)
+Scope is presentational only — no data, no business logic. All work in `src/components/dashboard/hub/index.tsx` and `src/routes/_authenticated/_professional/dashboard.tsx`.
 
-Add a `supersedes: TitleSlug[]` field to each entry in `src/lib/cpd/titles-catalog.ts`. One-time rules:
+### 1. Equal-height rows (the headline fix)
 
-- `personal-trainer` supersedes `["fitness-instructor", "group-fitness-instructor"]`
-- `advanced-personal-trainer` supersedes `["personal-trainer", "fitness-instructor", "group-fitness-instructor"]`
-- `strength-coach` supersedes `["fitness-instructor"]` (NOT PT — different scope)
-- `accredited-sc-coach` supersedes `["strength-coach"]`
-- `nutrition-coach` supersedes `[]` (different family — additive)
-- `registered-nutritionist` supersedes `["nutrition-coach"]`
-- `registered-dietitian` supersedes `["nutrition-coach", "registered-nutritionist"]`
-- `pilates-instructor`, `yoga-teacher` supersede `[]`
-
-Helper in the same file:
-
-```ts
-export function filterVisibleTitles(granted: TitleSlug[]): TitleSlug[]
-```
-
-Returns granted minus any slug that appears in another granted slug's `supersedes` list. Pure, deterministic, unit-testable.
-
-### 2. Database: store the display picks
-
-New column `professionals.secondary_title_slug TEXT NULL` (existing `primary_title_slug` already covers slot 1). Migration adds the column + a CHECK that `secondary_title_slug != primary_title_slug` when both are set.
-
-No new tables. No data migration needed — column defaults to NULL; UI auto-derives defaults on first read.
-
-### 3. Display-titles derivation (single source of truth)
-
-New helper in `src/lib/cpd/titles.functions.ts`:
-
-```ts
-getDisplayTitles(): Promise<{ primary: TitleSlug | null; secondary: TitleSlug | null; visibleGranted: TitleSlug[] }>
-```
-
-Logic:
-1. Load `pro_titles` (all granted) + `professionals.primary_title_slug` + `secondary_title_slug`.
-2. `visibleGranted = filterVisibleTitles(granted)`.
-3. If stored `primary` is in `visibleGranted` → use it; else fall back to **highest-tier** entry of `visibleGranted` (tier 1 beats 2 beats 3; ties broken by catalog order).
-4. If stored `secondary` is in `visibleGranted` and ≠ primary → use it; else `null` (don't auto-pick — let the user opt in to a second title).
-
-This is what `trust.functions.ts`, shop-front, public profile, and the badge all consume.
-
-### 4. UI: rebuild `EarnedTitlePicker`
-
-Current picker is single-select for primary only. New layout:
+Add `h-full` to every `PPanel` / `PCard` used inside a row, and `items-stretch` on the row grids. Wrap each grid cell so the card fills the cell:
 
 ```text
-Your displayed titles                    [ Save ]
-─────────────────────────────────────────────────
-Slot 1 — Primary           [ Personal Trainer ▾ ]
-Slot 2 — Secondary         [ Nutrition Coach ▾ ] [×]
-                           [ + Add a second title ]
-
-Hidden because a higher qualification covers them:
-  • Fitness Instructor — covered by Personal Trainer
+Row 3 ─ Needs attention (8 cols) ──── Profile completeness (4 cols)  ← same height
+Row 4 ─ Recent activity  (8 cols) ──── Verification         (4 cols)  ← same height
+Row 5 ─ Education & CPD  (6 cols) ──── Reviews snapshot     (6 cols)  ← same height
 ```
 
-- Both dropdowns list only `visibleGranted`.
-- Slot 2 options exclude whatever's in Slot 1.
-- "Hidden" list explains supersession so the trainer understands why FI disappeared.
-- Save writes both `primary_title_slug` and `secondary_title_slug` via a new `setDisplayTitles` server fn.
+Each card becomes `flex flex-col` so the header sits at top, body fills, footer (if any) pins to bottom.
 
-### 5. Consumers updated to render two titles
+### 2. Internal scroll for list bodies
 
-- **`trust.functions.ts`** — return `{ primaryTitle, secondaryTitle, titles: visibleLabels }` instead of just `primaryTitle`. `titles[]` becomes the supersession-filtered list (used by `CpdMini`'s checked list).
-- **Verified badge** (`/pro/$slug` + shop-front header) — subtitle reads `"Verified · Insured · Personal Trainer & Nutrition Coach"` when secondary set, else single title.
-- **`CpdMini`** in dashboard hub — headline counts `visibleGranted.length` titles; pinned-Primary list shows Primary + Secondary (badged) on top, remaining visible titles below.
-- **Shop-front `/c/$slug`** — hero subtitle uses primary + secondary join.
-- **Search / directory cards** — already use `primary_title_slug` only; no change for slot 1, but card chips should reflect filtered list (small follow-up).
+Inside `NeedsAttention`, `ActivityTimeline`, and `CpdMini`:
+- Header (icon + title + meta) stays fixed at top.
+- Body becomes `flex-1 min-h-0 overflow-y-auto pr-1` with a subtle scrollbar.
+- This is the answer to your CPD-vs-Reviews concern: if a trainer adds a 4th qualification, the CPD body scrolls inside its card — Reviews stays the same shape.
 
-### 6. Self-healing on grant/revoke
+### 3. Unify the row system
 
-Extend the existing `verification.functions.ts` flow that already clears `primary_title_slug` when its grant is removed:
+Promote row 5 from `lg:grid-cols-2` to the same `xl:grid-cols-12` 6/6 split so all three two-column rows share one column grid. The KPI strip stays full-width 4-up.
 
-- When a new title is granted, do NOT auto-shuffle the user's chosen slots — if a higher-tier title arrives, leave their current pick alone but surface a one-time dashboard nudge ("You're now qualified as Advanced PT — want to display it?").
-- When a grant is revoked, clear the affected slot (existing behaviour for primary; mirror for secondary).
-- Supersession only ever **hides** — it never deletes the `pro_titles` row.
+### 4. Minimum heights so empty cards don't collapse
 
-## Out of scope
+Set `min-h-[320px]` on rows 3 and 4, `min-h-[260px]` on row 5. Stops a brand-new account (no activity, no qualifications) from looking like a series of header strips.
 
-- Allowing more than 2 display titles.
-- Auto-promoting a newly higher-tier title without user consent.
-- Changing the rules engine (`title-rules.ts`) — supersession lives at the display layer only; grants still reflect actual qualifications held.
-- Editorial rewrites of profession landing pages.
+### 5. Card-level polish (small but compounding)
 
-## Technical notes
+- Bump `PPanel` inner padding from `p-5` to `p-6` to match the breathing room you see in the Panze reference.
+- Add a subtle 1px inner highlight (`shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]`) so cards lift off the panel background — currently they're flat on flat.
+- Tighten `SectionHeader` line-height and add a hairline divider under it (`border-b border-reps-border/40 pb-3 mb-4`) so header and body read as distinct zones.
+- "Recent activity" footer (timestamp + chevron) sits on its own row with a top divider, not floating mid-card.
+- "Needs your attention" empty state: when there's nothing to do, show a single confident "You're all caught up" Empty primitive, not a blank panel.
 
-Files touched:
+### 6. Hierarchy fixes spotted in QA
 
-- `src/lib/cpd/titles-catalog.ts` — add `supersedes` + `filterVisibleTitles()`.
-- `src/lib/cpd/titles.functions.ts` — add `getDisplayTitles`, `setDisplayTitles`.
-- `src/lib/verification/trust.functions.ts` — expose `secondaryTitle` + filtered `titles[]`.
-- `src/lib/verification/verification.functions.ts` — mirror existing primary-clear logic for secondary on revoke.
-- `src/components/profile/EarnedTitlePicker.tsx` — two-slot picker + hidden list.
-- `src/components/cpd/EarnedTitlesPanel.tsx`, `src/components/dashboard/hub/index.tsx` (CpdMini) — render two titles.
-- `src/routes/pro.$slug.index.tsx` + Verified badge component — render two-title subtitle.
-- `src/lib/shop-front/shop-front.functions.ts` + `/c/$slug` route — include secondary in hero/header.
-- One migration: `ALTER TABLE professionals ADD COLUMN secondary_title_slug TEXT NULL` + CHECK.
+- KPI tiles have no separator between value and delta — add `text-xs text-muted-foreground mt-1` so "0 unread" doesn't look like part of the number.
+- "Your services" empty state currently dominates a full-width card; reduce to `min-h-[180px]` and move "Manage services" into the empty state itself, not the header.
+- "Grow your business inside REPS" CTA: contain it to the column grid width (currently breaks the rhythm by spanning edge-to-edge) and reduce vertical padding by ~30%.
 
-No schema changes to `pro_titles`. No backfill needed. Locked screens (homepage, /pro, /c, /in/*, /professions/*) keep their layouts — only the title subtitle string changes.
+### Technical notes
+
+- Equal-height via `h-full` on cards plus default `items-stretch` on CSS grid — no JS measuring, no `ResizeObserver`.
+- Scroll regions use `min-h-0` on the flex parent (required for `overflow-y-auto` inside flex column to actually clip).
+- All tokens stay semantic — no hardcoded colours added. Shadow uses an existing rgba pattern already in the file.
+- shadcn primitives used: `Empty` for caught-up state, `Separator` for in-card dividers, `ScrollArea` is intentionally **not** used (native overflow is lighter and matches the dark theme better here).
+
+### Out of scope (flag for separate pass)
+
+- Sidebar density and the empty `Account / Deliver` section labels — separate IA pass.
+- KPI tile redesign with sparklines — needs design directions.
+- Mobile breakpoints below `lg` — current request is desktop polish; mobile already stacks correctly.

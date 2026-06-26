@@ -316,25 +316,27 @@ export function NeedsAttention({
   const visible = items.slice(0, 6);
 
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader
         title="Needs your attention"
         description="Live signals from across your dashboard."
         icon={CheckCircle2}
       />
       {visible.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <CheckCircle2 />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            Nothing needs your attention right now. We'll surface enquiries, reviews
-            and renewals here as they come in.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
+        <div className="flex flex-1 items-center justify-center">
+          <DashboardEmpty>
+            <DashboardEmptyIcon>
+              <CheckCircle2 />
+            </DashboardEmptyIcon>
+            <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
+            <DashboardEmptyDescription>
+              Nothing needs your attention right now. We'll surface enquiries, reviews
+              and renewals here as they come in.
+            </DashboardEmptyDescription>
+          </DashboardEmpty>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
           {visible.map((item) => {
             const Icon = item.icon;
             return (
@@ -376,7 +378,7 @@ export function NeedsAttention({
 export function CompletenessCard({ profile }: { profile: DashboardProfile | null }) {
   const { pct, checklist } = profileCompleteness(profile);
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader title="Profile completeness" icon={Sparkles} />
       <div className="flex items-center gap-4">
         <Ring value={pct} />
@@ -387,7 +389,7 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
           </p>
         </div>
       </div>
-      <ul className="mt-4 flex flex-col gap-1.5">
+      <ul className="mt-4 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
         {checklist.map((c) => (
           <li
             key={c.label}
@@ -485,24 +487,26 @@ export function ActivityTimeline({
   }, [enquiries, reviews]);
 
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader
         title="Recent activity"
         description="The last 10 events across enquiries and reviews."
         icon={Sparkles}
       />
       {events.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <Sparkles />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>No activity yet</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            When clients enquire or leave reviews, you'll see the activity stream here.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
+        <div className="flex flex-1 items-center justify-center">
+          <DashboardEmpty>
+            <DashboardEmptyIcon>
+              <Sparkles />
+            </DashboardEmptyIcon>
+            <DashboardEmptyTitle>No activity yet</DashboardEmptyTitle>
+            <DashboardEmptyDescription>
+              When clients enquire or leave reviews, you'll see the activity stream here.
+            </DashboardEmptyDescription>
+          </DashboardEmpty>
+        </div>
       ) : (
-        <ul className="flex flex-col">
+        <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
           {events.map((ev, i) => {
             const Icon = ev.icon;
             return (
@@ -613,9 +617,9 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     { label: "Qualifications", status: qualificationsRowFinal },
   ];
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader title="Verification" icon={ShieldCheck} />
-      <ul className="flex flex-col gap-2.5">
+      <ul className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1">
         {rows.map((r) => {
           const done = r.status.tone === "ok";
           return (
@@ -663,7 +667,7 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
 
 export function ReviewsSnapshot({ kpis }: { kpis: ReviewKpis | undefined }) {
   return (
-    <PCard>
+    <PCard className="flex h-full flex-col">
       <SectionHeader
         title="Reviews"
         icon={Star}
@@ -681,7 +685,7 @@ export function ReviewsSnapshot({ kpis }: { kpis: ReviewKpis | undefined }) {
           {kpis?.review_count ?? 0} {kpis?.review_count === 1 ? "review" : "reviews"}
         </span>
       </div>
-      <div className="mt-3 flex flex-col gap-1.5">
+      <div className="mt-3 flex min-h-0 flex-1 flex-col justify-center gap-1.5">
         {(kpis?.breakdown ?? []).map((b) => (
           <div key={b.stars} className="flex items-center gap-2 text-[11.5px] text-white/70">
             <span className="w-4 shrink-0 text-right">{b.stars}</span>
@@ -731,7 +735,7 @@ export function CpdMini({
       : null;
 
   return (
-    <PCard>
+    <PCard className="flex h-full flex-col">
       <SectionHeader
         title="Education & CPD"
         icon={GraduationCap}
@@ -759,7 +763,7 @@ export function CpdMini({
         </div>
       </div>
       {orderedTitles.length > 0 ? (
-        <ul className="mt-4 divide-y divide-white/5 rounded-[12px] border border-white/8 bg-white/[0.02]">
+        <ul className="mt-4 flex min-h-0 flex-1 flex-col divide-y divide-white/5 overflow-y-auto rounded-[12px] border border-white/8 bg-white/[0.02]">
           {orderedTitles.map((t) => {
             const isPrimary = t === primaryTitle;
             const isSecondary = !isPrimary && t === secondaryTitle;
@@ -780,7 +784,9 @@ export function CpdMini({
             );
           })}
         </ul>
-      ) : null}
+      ) : (
+        <div className="mt-4 flex-1" />
+      )}
     </PCard>
   );
 }
