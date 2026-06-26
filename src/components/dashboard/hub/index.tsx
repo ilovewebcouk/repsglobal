@@ -62,6 +62,68 @@ import {
   getDiscoverabilityKpis,
   type DiscoverabilityKpis,
 } from "@/lib/discoverability/kpis.functions";
+import { HeaderSparkline } from "./HeaderSparkline";
+
+/* ------------------------------------------------------------------ */
+/* Motion helpers                                                     */
+/* ------------------------------------------------------------------ */
+
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduce(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduce(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduce;
+}
+
+function useCountUp(target: number, duration = 600) {
+  const reduce = usePrefersReducedMotion();
+  const [value, setValue] = React.useState(reduce ? target : 0);
+  React.useEffect(() => {
+    if (reduce || target === 0) {
+      setValue(target);
+      return;
+    }
+    if (typeof window === "undefined") {
+      setValue(target);
+      return;
+    }
+    const start = performance.now();
+    let raf = 0;
+    const step = (t: number) => {
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, reduce]);
+  return value;
+}
+
+function usePulseOnIncrease(value: number, duration = 2000) {
+  const prev = React.useRef(value);
+  const [pulse, setPulse] = React.useState(false);
+  React.useEffect(() => {
+    if (value > prev.current) {
+      setPulse(true);
+      const t = window.setTimeout(() => setPulse(false), duration);
+      return () => window.clearTimeout(t);
+    }
+    prev.current = value;
+  }, [value, duration]);
+  React.useEffect(() => {
+    prev.current = value;
+  }, [value]);
+  return pulse;
+}
+
 
 /* ------------------------------------------------------------------ */
 /* Welcome banner                                                     */
