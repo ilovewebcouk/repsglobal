@@ -198,6 +198,7 @@ export const submitCertificate = createServerFn({ method: "POST" })
         const { lookupOfqualQualification } = await import("./ofqual.server");
         const result = await lookupOfqualQualification(data.qualification_number, {
           awardingBody: data.awarding_body,
+          awardingBodySlug: data.awarding_body_slug ?? null,
           qualification: data.qualification,
         });
         regulatorRecord = result.record;
