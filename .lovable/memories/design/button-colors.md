@@ -19,11 +19,18 @@ Use instead:
 - `DashboardButton variant="ghost"` (preferred inside dashboards), or
 - `Button` with explicit classes: `border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]`.
 
+## External-link / secondary header buttons in dashboards
+- Buttons such as **“View public profile”**, preview links, copy links, and other secondary actions in dashboard headers **must never render as a pale/cream filled button**.
+- Use `DashboardButton variant="ghost"` for these actions: dark translucent shell, white text, visible white border.
+- Never use shadcn `Button variant="outline"`, `bg-background`, `bg-reps-warm-white`, `bg-white`, `text-foreground`, or `text-reps-charcoal` for dashboard header buttons.
+- If the dashboard surface is dark, the text must be `text-white` (or supplied by `DashboardButton`) and the shell must stay dark/translucent.
+
 ## Quick reference
 | Intent                       | Classes                                                                 |
 | ---------------------------- | ----------------------------------------------------------------------- |
 | Primary CTA (orange)         | `bg-reps-orange text-white hover:bg-reps-orange/90`                     |
 | Secondary on dark            | `border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]` |
+| Dashboard external link      | `DashboardButton variant="ghost"`                                        |
 | Destructive on dark          | `border border-red-400/25 bg-white/[0.03] text-red-300 hover:bg-red-500/10` |
 
 ## Why

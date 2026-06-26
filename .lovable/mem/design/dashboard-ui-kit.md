@@ -33,6 +33,10 @@ Text: `text-white` (primary), `text-white/70` (description), `text-white/65` (em
 Status: emerald per `mem://design/status-colors`. Red `text-red-300 border-red-400/25 bg-red-500/10`. Amber `text-amber-300 border-amber-400/30 bg-amber-500/12`.
 Radii: 8 (tooltip/select-item), 10 (button), 12 (input/textarea/select-trigger), 14 (select-content/note), 16 (card/empty), 18 (dialog).
 
+## Locked button contrast rule
+
+Dashboard header/link actions such as “View public profile”, preview links, copy links, and similar secondary actions MUST use `DashboardButton variant="ghost"`. They must stay dark/translucent with white text and a visible border. Pale/cream/light filled buttons (`variant="outline"`, `bg-background`, `bg-white`, `bg-reps-warm-white`, `text-foreground`, `text-reps-charcoal`) are forbidden on authenticated dark surfaces.
+
 ## Style-guide page
 
 `/dashboard/design-kit` (`src/routes/_authenticated/dashboard_.design-kit.tsx`, `noindex`) renders every primitive in every variant. Use as visual QA when extending the kit.

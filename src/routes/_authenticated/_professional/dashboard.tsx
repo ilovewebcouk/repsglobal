@@ -4,11 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Inbox, MessageCircleQuestion, Star } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { DashboardButton } from "@/components/dashboard/ui";
 import { KpiTile } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { TIERS } from "@/lib/billing";
@@ -116,16 +116,16 @@ function DashboardPage() {
       actions={
         <div className="flex items-center gap-2">
           {slug ? (
-            <Button asChild size="sm" variant="outline" className="rounded-[10px]">
+            <DashboardButton asChild size="sm" variant="ghost">
               <Link to="/pro/$slug" params={{ slug }} target="_blank">
                 View public profile
                 <ExternalLink className="ml-1.5 size-4" />
               </Link>
-            </Button>
+            </DashboardButton>
           ) : null}
-          <Button asChild size="sm" className="rounded-[10px]">
+          <DashboardButton asChild size="sm" variant="primary">
             <Link to="/dashboard/reviews">Request a review</Link>
-          </Button>
+          </DashboardButton>
         </div>
       }
     >
@@ -143,9 +143,9 @@ function DashboardPage() {
         <Alert className="border-reps-border bg-reps-panel">
           <AlertDescription className="flex items-center justify-between gap-4">
             We couldn't load your dashboard.
-            <Button variant="outline" size="sm" onClick={() => status.refetch()}>
+            <DashboardButton variant="ghost" size="sm" onClick={() => status.refetch()}>
               Try again
-            </Button>
+            </DashboardButton>
           </AlertDescription>
         </Alert>
       ) : (
