@@ -225,28 +225,6 @@ export function NeedsAttention({
 
   const items: Attention[] = [];
 
-  if (unreadEnquiries > 0) {
-    items.push({
-      key: "enquiries",
-      icon: Inbox,
-      tone: "orange",
-      title: `${unreadEnquiries} new ${unreadEnquiries === 1 ? "enquiry" : "enquiries"} awaiting reply`,
-      detail: "Reply from your inbox to keep response time strong.",
-      to: "/dashboard/enquiries",
-      cta: "Open",
-    });
-  }
-  if (pendingReviewReplies > 0) {
-    items.push({
-      key: "reviews",
-      icon: Star,
-      tone: "orange",
-      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review" : "reviews"} need a response`,
-      detail: "Replies show prospects you're engaged.",
-      to: "/dashboard/reviews",
-      cta: "Reply",
-    });
-  }
   if (insuranceExpired) {
     items.push({
       key: "insurance-expired",
@@ -268,26 +246,37 @@ export function NeedsAttention({
       cta: "Update",
     });
   }
+  if (unreadEnquiries > 0) {
+    items.push({
+      key: "enquiries",
+      icon: Inbox,
+      tone: "orange",
+      title: `${unreadEnquiries} new ${unreadEnquiries === 1 ? "enquiry" : "enquiries"} awaiting reply`,
+      detail: "Reply from your inbox to keep response time strong.",
+      to: "/dashboard/enquiries",
+      cta: "Open",
+    });
+  }
+  if (pendingReviewReplies > 0) {
+    items.push({
+      key: "reviews",
+      icon: Star,
+      tone: "neutral",
+      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review" : "reviews"} need a response`,
+      detail: "Replies show prospects you're engaged.",
+      to: "/dashboard/reviews",
+      cta: "Reply",
+    });
+  }
   if (!isVerified) {
     items.push({
       key: "verify",
       icon: ShieldCheck,
-      tone: "orange",
+      tone: "warn",
       title: "Complete your verification",
       detail: "Identity, insurance and qualifications unlock your REPS Verified badge.",
       to: "/dashboard/verification",
       cta: "Verify",
-    });
-  }
-  if (profilePct < 100) {
-    items.push({
-      key: "profile",
-      icon: Sparkles,
-      tone: "neutral",
-      title: `Your profile is ${profilePct}% complete`,
-      detail: "A complete profile ranks higher and gets more enquiries.",
-      to: "/dashboard/profile",
-      cta: "Polish",
     });
   }
   if (!isPublished) {
@@ -299,6 +288,17 @@ export function NeedsAttention({
       detail: "Publish to appear on the REPS directory.",
       to: "/dashboard/profile",
       cta: "Publish",
+    });
+  }
+  if (profilePct < 100) {
+    items.push({
+      key: "profile",
+      icon: Sparkles,
+      tone: "neutral",
+      title: `Your profile is ${profilePct}% complete`,
+      detail: "A complete profile ranks higher and gets more enquiries.",
+      to: "/dashboard/profile",
+      cta: "Polish",
     });
   }
   if (unreadSupport > 0) {
@@ -313,30 +313,29 @@ export function NeedsAttention({
     });
   }
 
+
   const visible = items.slice(0, 6);
 
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
       <SectionHeader
         title="Needs your attention"
         description="Live signals from across your dashboard."
         icon={CheckCircle2}
       />
       {visible.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <DashboardEmpty>
-            <DashboardEmptyIcon>
-              <CheckCircle2 />
-            </DashboardEmptyIcon>
-            <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
-            <DashboardEmptyDescription>
-              Nothing needs your attention right now. We'll surface enquiries, reviews
-              and renewals here as they come in.
-            </DashboardEmptyDescription>
-          </DashboardEmpty>
-        </div>
+        <DashboardEmpty>
+          <DashboardEmptyIcon>
+            <CheckCircle2 />
+          </DashboardEmptyIcon>
+          <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
+          <DashboardEmptyDescription>
+            Nothing needs your attention right now. We'll surface enquiries, reviews
+            and renewals here as they come in.
+          </DashboardEmptyDescription>
+        </DashboardEmpty>
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
+        <ul className="flex flex-col gap-2">
           {visible.map((item) => {
             const Icon = item.icon;
             return (
@@ -370,6 +369,7 @@ export function NeedsAttention({
     </PPanel>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Profile completeness card                                          */
