@@ -342,7 +342,7 @@ export function NeedsAttention({
       key: "reviews",
       icon: Star,
       tone: "neutral",
-      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review" : "reviews"} need a response`,
+      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review needs" : "reviews need"} a reply`,
       detail: "Replies show prospects you're engaged.",
       to: "/dashboard/reviews",
       cta: "Reply",
