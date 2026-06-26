@@ -225,6 +225,14 @@ function AdminVerificationPage() {
     onError: (e) => alert(e instanceof Error ? e.message : "Decision failed"),
   });
 
+  const recheckMutation = useMutation({
+    mutationFn: async (submission_id: string) => recheckOfqual({ data: { submission_id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-workspace", selectedId] });
+    },
+    onError: (e) => alert(e instanceof Error ? e.message : "Ofqual re-check failed"),
+  });
+
   const closeCase = async () => {
     if (selectedId) {
       try { await release({ data: { id: selectedId } }); } catch { /* ignore */ }
