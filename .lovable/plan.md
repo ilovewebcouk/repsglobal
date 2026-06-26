@@ -1,44 +1,49 @@
-## Goal
+# /standards — REPs Standards page
 
-Pro tier isn't launching yet, so every public/dashboard CTA that nudges users to buy Pro should behave the same as Studio: a "Join Pro waitlist" button that routes to `/contact`. Backend Pro access, admin tier management, and the existing Pro-tier trainer's dashboards stay exactly as they are.
+Single public route that explains what being on REPs actually means. Wired into the footer slot already reserved as "Standards (soon)" and the existing in-product links from `/c/$slug` and `/` that already point to `/standards`.
 
-## Changes
+## Route & file
 
-### 1. Pricing page (`src/components/pricing/pricing-data.ts` + `PricingPlans.tsx`)
-- Pro card: `cta: "Join Pro waitlist"`, mark `waitlist: true`, `ctaHref: "/contact"`.
-- Drop the founding-trial meta line on the Pro card (`Billed monthly after 30-day trial` → `Founding price · waitlist only`); annual meta similarly tagged as waitlist.
-- Page hero subtitle (`src/routes/pricing.tsx` line 18): replace "Pro Founding £59/mo with a 30-day free trial" with "Pro Founding £59/mo — waitlist open."
-- Comparison table row "Live offer" Pro cell → "£59/month or £590/year · waitlist".
-- FAQ entries that mention the 30-day trial (lines 203, 223) reworded: Pro is waitlist-only at founding price; no trial copy.
-- `PricingPlans.tsx`: no logic change needed — existing `if (p.waitlist) navigate /contact` branch already handles it once Pro is flagged.
+- New file: `src/routes/standards.tsx` → `createFileRoute('/standards')`.
+- Public route (no auth, indexable). `head()` with route-specific title, description, OG/Twitter text. No `og:image` for v1.
+- Drop the `soon: true` flag on the Standards entry in `src/components/public/PublicFooter.tsx` so the link goes live.
+- Leave the existing `<Link to="/standards">` call sites on `/`, `/c/$slug` and home-legacy untouched — they start resolving automatically.
 
-### 2. Signup route (`src/routes/signup.tsx`)
-- If `?tier=pro`, redirect to `/contact` (waitlist) instead of rendering the Pro signup flow.
-- Verified signup flow stays unchanged.
-- Remove the "30-day free trial" meta line from the Pro plan summary (kept for reference if someone is sent there directly via admin).
+## Tone & visual system
 
-### 3. Dashboard "Upgrade to Pro" surfaces → "Join Pro waitlist"
-All copy + link swaps; gating logic untouched.
-- `src/components/dashboard/DashboardSidebar.tsx` (lines 407, 415): label + aria-label → "Join Pro waitlist"; link → `/contact`.
-- `src/components/dashboard/primitives/UpgradePanel.tsx`: default `ctaLabel` → "Join Pro waitlist"; default href → `/contact`.
-- `src/components/dashboard/PaymentsSettingsTab.tsx` (line 82): "Upgrade to Pro to take payments" → "Pro is coming soon — join the Pro waitlist".
-- `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` (line 162): "Upgrade to Pro to add services…" → "Pro is launching soon — join the waitlist to add services and branding."
-- `src/routes/_authenticated/_professional/dashboard_.enquiries.tsx` (line 200): button copy → "Join Pro waitlist", link → `/contact`.
-- `src/routes/_authenticated/_professional/_pro/route.tsx` (line 48): description → "Pro is launching soon. Join the Pro waitlist to be first in." (this is the wall non-Pro users see when they try a `_pro` route).
-- `src/lib/dashboard/useProGuard.ts` (line 26): toast description → "Pro is launching soon — join the Pro waitlist."
-- `src/components/account/UserAccountMenu.tsx` (line 220): label → "Join Pro waitlist", link → `/contact`.
+Sectioned marketing pillar matching the rest of the site (same family as `/about` / `/features/visibility`):
 
-### 4. Contact form (`src/components/contact/ContactForm.tsx`)
-- Reason option `upgrade`: relabel from "Upgrade to Pro or Studio" → "Join Pro or Studio waitlist".
-- Same swap in `src/routes/api/public/support/contact-form.ts` (line 64) so labels stay aligned for inbound routing.
+- `HeroOverlay` shared primitive for the hero wash (per `mem://design/hero-overlay-system`).
+- `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `MarketingHeroEyebrow` from `src/components/marketing/` for every section header. No hand-rolled H2/H3.
+- Locked vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; sections `py-20 lg:py-28`; no hairline dividers, alternate `bg-reps-panel/15` ↔ `/30` for rhythm.
+- Type scale per locked rules: hero lede 16px; section lede 15–15.5px; allowed white opacities only (/45 /55 /70 /80).
+- Emerald only for status semantics (verified / approved tick rows). Brand orange for primary accents and the FinalCta. No new colour tokens.
+- All cards use the locked radius scale (18px content cards, 22px large panels, 10px buttons, 12px inputs).
+- Global copy rules: no country qualifiers (no "UK"), no banned org names (no CIMSPA — use "Ofqual-regulated / recognised awarding body"), no booking-fee / flat-plan claims, no third-party logo-grid.
+- Shared `FinalCta` at the bottom.
 
-### 5. What we deliberately don't change
-- `src/lib/billing.ts` Stripe price IDs, `auth.tsx` `tier=pro` validation, all `_pro` route logic, admin memberships KPIs, admin invite plan label, and any `tier === "pro"` permission check. The existing Pro-tier trainer keeps full Pro dashboards.
-- Admin can still grant Pro via the existing admin invite/impersonation flows.
-- Resources / competitor editorial copy (`src/lib/resources.ts`, `src/data/competitor-*`) — out of scope for this pass.
+## Page sections (in order)
 
-## QA after build
-- `/pricing`: Pro card shows "Join Pro waitlist", clicks land on `/contact`. Studio unchanged.
-- Logged in as a non-Pro trainer: sidebar, enquiries upsell, shop-front empty state, account menu all say "Join Pro waitlist" and route to `/contact`.
-- Logged in as the existing Pro-tier trainer: full Pro dashboard still loads (no waitlist CTA visible — they're already Pro).
-- `/signup?tier=pro` redirects to `/contact`. `/signup?tier=verified` still works.
+1. **Hero** — `HeroOverlay` + eyebrow "What REPs stands for" + H1 "The standard behind every REPs professional." + 16px lede explaining the page in one paragraph + two trust chips ("Independently verified", "Reviewed regularly"). No CTAs — informational page.
+2. **Last checked strip** — small panel: "Last reviewed: {date}" + link "How we verify →" anchoring to the verification section. Mirrors the `/comparison-methodology` honesty pattern.
+3. **Code of conduct** — `SectionHeader` + 6 conduct pillars in a 2×3 grid of cards: Client safety first, Honest marketing, Scope of practice, Safeguarding & duty of care, Inclusive practice, Confidentiality. Each: short title + 2-sentence body. Card radius 18px.
+4. **Verification standards** — 3 stacked rows (Identity / Qualifications / Insurance). Each row: emerald check icon, what we check, evidence accepted, re-check cadence. Mirrors the verification UX in `/dashboard/verification` so the public claim and the back-end check line up.
+5. **Qualifications framework** — table-style block: minimum level by profession (PT = L3, Group Ex = L2, S&C = L3+, Nutritionist = registered with a recognised body, Yoga/Pilates = recognised training hours). Cite "Ofqual-regulated or recognised awarding body" wording. No vendor names.
+6. **Complaints & removal** — 4-step process (Raise → Acknowledge → Investigate → Outcome) using the same step-card pattern as `VerifySteps`. Followed by a "Grounds for removal" list (misrepresentation, lapsed insurance, safeguarding breach, repeated unresolved complaints, fraud).
+7. **FAQ** — `MarketingFaq` with 5 Qs (Who can join? How do I report a concern? Do you ever remove pros? How often do you re-check? Is REPs a regulator?). Answer "No, REPs is a global register and standards platform" cleanly to the regulator question.
+8. **FinalCta** — shared `FinalCta`: headline "Raise a concern or ask about a pro" + primary "Contact REPs" → `/contact` + secondary "Find a professional" → `/find-a-professional`.
+
+## Out of scope (Phase 2)
+
+- No CPD section yet — `/cpd` already covers it and CPD copy on this page would duplicate. Add a one-line "Ongoing learning is covered on /cpd →" link inside the Code of conduct intro instead.
+- No DB-backed "last reviewed" — hard-coded constant in the route file for v1, easy to bump.
+- No new images. Page is type-led to match `/comparison-methodology` weight while still using marketing pillar primitives.
+
+## Compliance checklist (pre-flight)
+
+- Use semantic tokens only, no raw hex.
+- Radii from the locked 9-step scale.
+- Marketing primitives for every header / eyebrow / FAQ / final CTA.
+- Emerald only on verification check rows.
+- No banned phrases, no country qualifiers, no third-party brand logos.
+- `head()` with unique title + description + OG/Twitter text.
