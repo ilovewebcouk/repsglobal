@@ -181,6 +181,71 @@ export const setPrimaryTitle = createServerFn({ method: "POST" })
   });
 
 /* -------------------------------------------------------------------------- */
+/* Set display titles (primary + optional secondary, with supersession check)  */
+/* -------------------------------------------------------------------------- */
+
+const setDisplayInput = z.object({
+  primary_title_slug: z.string().min(2).max(60),
+  secondary_title_slug: z.string().min(2).max(60).nullable().optional(),
+});
+
+export const setDisplayTitles = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => setDisplayInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const primary = data.primary_title_slug;
+    const secondary = data.secondary_title_slug ?? null;
+
+    if (!isTitleSlug(primary)) throw new Error("Unknown primary title");
+    if (secondary && !isTitleSlug(secondary)) throw new Error("Unknown secondary title");
+    if (secondary && secondary === primary) {
+      throw new Error("Secondary title must differ from primary.");
+    }
+
+    // Verify the pro actually holds both titles (and that they're visible —
+    // not superseded by a higher one they also hold).
+    const { data: grants } = await supabase
+      .from("pro_titles")
+      .select("title_slug")
+      .eq("professional_id", userId);
+    const granted = ((grants ?? []) as Array<{ title_slug: string }>).map((g) => g.title_slug);
+    const visible = filterVisibleTitles(granted);
+
+    if (!visible.includes(primary as TitleSlug)) {
+      throw new Error("You haven't earned this title, or it's covered by a higher one.");
+    }
+    if (secondary && !visible.includes(secondary as TitleSlug)) {
+      throw new Error("Secondary title isn't available — either not earned or covered by a higher one.");
+    }
+
+    const titleEntry = TITLES.find((t) => t.slug === primary)!;
+
+    // Mirror is_primary flag (legacy column on pro_titles).
+    await supabase
+      .from("pro_titles")
+      .update({ is_primary: false } as never)
+      .eq("professional_id", userId);
+    await supabase
+      .from("pro_titles")
+      .update({ is_primary: true } as never)
+      .eq("professional_id", userId)
+      .eq("title_slug", primary);
+
+    await supabase
+      .from("professionals")
+      .update({
+        primary_title_slug: primary,
+        secondary_title_slug: secondary,
+        primary_profession: titleEntry.professionSlug,
+      } as never)
+      .eq("id", userId);
+
+    return { ok: true, primary_title_slug: primary, secondary_title_slug: secondary };
+  });
+
+/* -------------------------------------------------------------------------- */
 /* Admin preview: "Approving this submission will unlock X"                    */
 /* -------------------------------------------------------------------------- */
 
