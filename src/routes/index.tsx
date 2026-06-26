@@ -367,6 +367,7 @@ function HomeV2() {
 
         </div>
       </section>
+      )}
 
       {/* ============ EXPLORE BY SPECIALISM ============ */}
       <section className="bg-reps-ivory">
