@@ -111,7 +111,8 @@ async function fetchFeaturedPool(
     .select(
       "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
     )
-    .eq("is_published", true);
+    .eq("is_published", true)
+    .eq("bd_seed_thin", false);
 
   if (scope === "city" && value) qb = qb.ilike("city", `%${value}%`);
   if (scope === "profession" && value) qb = qb.eq("primary_profession", value);
