@@ -52,7 +52,7 @@ export const getTrustState = createServerFn({ method: "GET" })
     const [{ data: pro }, { data: ins }, { data: subs }, { data: proTitles }] = await Promise.all([
       supabase
         .from("professionals")
-        .select("identity_verified_name, identity_verified_at, identity_status, primary_title_slug")
+        .select("identity_verified_name, identity_verified_at, identity_status, primary_title_slug, secondary_title_slug")
         .eq("id", userId)
         .maybeSingle(),
 
@@ -74,7 +74,13 @@ export const getTrustState = createServerFn({ method: "GET" })
     ]);
 
     const proRow = pro as
-      | { identity_verified_name: string | null; identity_verified_at: string | null; identity_status: string | null; primary_title_slug: string | null }
+      | {
+          identity_verified_name: string | null;
+          identity_verified_at: string | null;
+          identity_status: string | null;
+          primary_title_slug: string | null;
+          secondary_title_slug: string | null;
+        }
       | null;
 
     const insRow = ins as
