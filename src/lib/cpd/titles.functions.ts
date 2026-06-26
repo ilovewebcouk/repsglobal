@@ -63,7 +63,7 @@ export const myUnlockedTitles = createServerFn({ method: "GET" })
         .order("granted_at", { ascending: false }),
       supabase
         .from("professionals")
-        .select("primary_title_slug")
+        .select("primary_title_slug, secondary_title_slug")
         .eq("id", userId)
         .maybeSingle(),
     ]);
@@ -101,13 +101,27 @@ export const myUnlockedTitles = createServerFn({ method: "GET" })
       earnedBy: t.earnedBy,
     }));
 
-    const proPrimary =
-      (proRow as { primary_title_slug?: string | null } | null)?.primary_title_slug ?? null;
+    const proCols =
+      (proRow as { primary_title_slug?: string | null; secondary_title_slug?: string | null } | null) ?? null;
+    const proPrimary = proCols?.primary_title_slug ?? null;
+    const proSecondary = proCols?.secondary_title_slug ?? null;
+
+    const grantedSlugs = unlocked.map((t) => t.title_slug);
+    const visible = filterVisibleTitles(grantedSlugs);
+    const hidden = getSupersededTitles(grantedSlugs).map((h) => ({
+      slug: h.slug,
+      label: TITLES.find((t) => t.slug === h.slug)?.label ?? h.slug,
+      coveredBy: h.coveredBy,
+      coveredByLabel: TITLES.find((t) => t.slug === h.coveredBy)?.label ?? h.coveredBy,
+    }));
 
     return {
       unlocked,
       locked,
       primary_title_slug: isTitleSlug(proPrimary) ? (proPrimary as TitleSlug) : null,
+      secondary_title_slug: isTitleSlug(proSecondary) ? (proSecondary as TitleSlug) : null,
+      visible_title_slugs: visible,
+      hidden_by_supersession: hidden,
     };
   });
 
