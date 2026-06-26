@@ -73,6 +73,11 @@ export function UploadCertificateDialog({
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
   const [trustBadges, setTrustBadges] = useState<string[]>([]);
 
+  // QR / scan with phone
+  const [tab, setTab] = useState<Tab>("upload");
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionExpiresAt, setSessionExpiresAt] = useState<string | null>(null);
+
   // Confirm form fields
   const [awardingBodySlug, setAwardingBodySlug] = useState<string>("other");
   const [awardingBodyOther, setAwardingBodyOther] = useState("");
@@ -86,6 +91,10 @@ export function UploadCertificateDialog({
   const extract = useServerFn(extractCertificateFields);
   const upload = useServerFn(uploadCertificateFile);
   const submit = useServerFn(submitCertificate);
+  const createSession = useServerFn(createCertUploadSession);
+  const getSession = useServerFn(getCertUploadSession);
+  const fetchPayload = useServerFn(fetchCertUploadPayload);
+  const markConsumed = useServerFn(markCertUploadSessionConsumed);
 
   const isOfqualFormat = useMemo(
     () => qualificationNumber.trim() !== "" && OFQUAL_QUAL_NO_REGEX.test(qualificationNumber.trim()),
