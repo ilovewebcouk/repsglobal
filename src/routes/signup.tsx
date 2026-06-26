@@ -44,7 +44,7 @@ const PLAN_SUMMARIES: Record<
 > = {
   verified: {
     monthly: {
-      name: "REPS Verified",
+      name: "REPS Core",
       tagline: "Monetise your professional trust.",
       price: "£99",
       unit: "/year",
@@ -52,7 +52,7 @@ const PLAN_SUMMARIES: Record<
       highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
     },
     annual: {
-      name: "REPS Verified",
+      name: "REPS Core",
       tagline: "Monetise your professional trust.",
       price: "£8.25",
       unit: "/month",
@@ -69,7 +69,7 @@ const PLAN_SUMMARIES: Record<
       unit: "/month",
       meta: "30-day free trial · then £59/month unless cancelled",
       founding: true,
-      highlights: ["Everything in Verified", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
+      highlights: ["Everything in Core", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
     },
     annual: {
       name: "Founding Pro",
@@ -79,7 +79,7 @@ const PLAN_SUMMARIES: Record<
       unit: "/month",
       meta: "£590 billed yearly · 2 months free",
       founding: true,
-      highlights: ["Everything in Verified", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
+      highlights: ["Everything in Core", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
     },
   },
 };

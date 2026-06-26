@@ -577,3 +577,164 @@ export const submitInsuranceFromMobile = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/* -------------------------------------------------------------------------- */
+/* Admin: insurance review queue                                              */
+/* -------------------------------------------------------------------------- */
+
+async function assertAdmin(supabase: unknown, userId: string) {
+  const sb = supabase as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> };
+  const { data } = await sb.rpc("has_role", { _user_id: userId, _role: "admin" });
+  if (!data) throw new Error("Forbidden");
+}
+
+const INSURANCE_STATUSES = ["pending", "active", "rejected", "expired"] as const;
+type InsuranceListStatus = (typeof INSURANCE_STATUSES)[number];
+
+export const listInsurancePolicies = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({ statuses: z.array(z.enum(INSURANCE_STATUSES)).min(1).default(["pending"]) })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("insurance_policies")
+      .select(
+        "id, professional_id, provider, policy_number, cover_amount_gbp, start_date, expiry_date, doc_path, status, insured_name, name_match, ai_checked_at, ai_extraction, trust_signals, admin_note, reviewed_at, reviewed_by, created_at",
+      )
+      .in("status", data.statuses as unknown as string[])
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    const ids = Array.from(new Set((rows ?? []).map((r) => r.professional_id))).filter(Boolean) as string[];
+    const profilesById = new Map<string, { full_name: string | null; display_name: string | null }>();
+    if (ids.length) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, display_name")
+        .in("id", ids);
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null }>) {
+        profilesById.set(p.id, { full_name: p.full_name, display_name: p.display_name });
+      }
+    }
+    return (rows ?? []).map((r) => ({
+      ...r,
+      professional: profilesById.get(r.professional_id) ?? null,
+    }));
+  });
+
+const reviewInsuranceInput = z.object({
+  id: z.string().uuid(),
+  decision: z.enum(["approved", "rejected"]),
+  admin_note: z.string().max(2000).optional().nullable(),
+});
+
+export const reviewInsurance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => reviewInsuranceInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    if (data.decision === "rejected" && !(data.admin_note ?? "").trim()) {
+      throw new Error("Note required to reject an insurance policy.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: getErr } = await supabaseAdmin
+      .from("insurance_policies")
+      .select("id, professional_id, expiry_date, status")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (getErr || !existing) throw new Error(getErr?.message ?? "Policy not found");
+
+    const newStatus = data.decision === "approved" ? "active" : "rejected";
+    const nowIso = new Date().toISOString();
+    const { error: updErr } = await supabaseAdmin
+      .from("insurance_policies")
+      .update({
+        status: newStatus,
+        reviewed_at: nowIso,
+        reviewed_by: context.userId,
+        admin_note: (data.admin_note ?? "").trim() || null,
+      } as never)
+      .eq("id", data.id);
+    if (updErr) throw new Error(updErr.message);
+
+    // Notify the pro. DB trigger recomputes professionals.verification.
+    try {
+      await notifyVerificationEvent({
+        professionalId: existing.professional_id,
+        event: data.decision === "approved" ? "insurance.approved" : "insurance.rejected",
+        policyId: data.id,
+        context: { expiry_date: existing.expiry_date, note: data.admin_note ?? null },
+        alsoEmail: true,
+      });
+    } catch {
+      /* notification best-effort */
+    }
+
+    return { ok: true, status: newStatus };
+  });
+
+export const recheckInsuranceAi = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("insurance_policies")
+      .select("id, professional_id, doc_path")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error || !row) throw new Error(error?.message ?? "Policy not found");
+
+    // Download via admin client (admin paths bypass folder ownership).
+    const { data: blob, error: dlErr } = await supabaseAdmin.storage
+      .from("insurance-docs")
+      .download(row.doc_path);
+    if (dlErr || !blob) throw new Error(dlErr?.message ?? "Document not found");
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+    const b64 = btoa(bin);
+    const mime = blob.type || "application/octet-stream";
+    const dataUrl = `data:${mime};base64,${b64}`;
+    const filename = row.doc_path.split("/").pop() ?? "insurance";
+    const ai = await runInsuranceAi(dataUrl, filename);
+
+    // Score against identity name if available.
+    const { data: pro } = await supabaseAdmin
+      .from("professionals")
+      .select("identity_verified_name")
+      .eq("id", row.professional_id)
+      .maybeSingle();
+    const proAny = pro as { identity_verified_name?: string | null } | null;
+    const score =
+      ai.insured_name && proAny?.identity_verified_name
+        ? nameSimilarity(ai.insured_name, proAny.identity_verified_name)
+        : null;
+
+    const nowIso = new Date().toISOString();
+    const { error: updErr } = await supabaseAdmin
+      .from("insurance_policies")
+      .update({
+        ai_extraction: ai as never,
+        ai_checked_at: nowIso,
+        insured_name: ai.insured_name ?? null,
+        name_match: score === null ? null : score >= 0.85,
+        trust_signals: {
+          ai: "ok",
+          ai_confidence: ai.confidence ?? null,
+          name_score: score,
+          ai_extracted: ai,
+          rechecked_at: nowIso,
+        } as never,
+      } as never)
+      .eq("id", data.id);
+    if (updErr) throw new Error(updErr.message);
+    return { ok: true, ai, name_score: score };
+  });
+
+
