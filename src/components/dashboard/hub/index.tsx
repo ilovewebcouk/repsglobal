@@ -667,7 +667,7 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
 
 export function ReviewsSnapshot({ kpis }: { kpis: ReviewKpis | undefined }) {
   return (
-    <PCard>
+    <PCard className="flex h-full flex-col">
       <SectionHeader
         title="Reviews"
         icon={Star}
@@ -685,7 +685,7 @@ export function ReviewsSnapshot({ kpis }: { kpis: ReviewKpis | undefined }) {
           {kpis?.review_count ?? 0} {kpis?.review_count === 1 ? "review" : "reviews"}
         </span>
       </div>
-      <div className="mt-3 flex flex-col gap-1.5">
+      <div className="mt-3 flex min-h-0 flex-1 flex-col justify-center gap-1.5">
         {(kpis?.breakdown ?? []).map((b) => (
           <div key={b.stars} className="flex items-center gap-2 text-[11.5px] text-white/70">
             <span className="w-4 shrink-0 text-right">{b.stars}</span>
