@@ -738,9 +738,10 @@ export const recheckOfqualForSubmission = createServerFn({ method: "POST" })
     if (!row.qualification_number) {
       return {
         ok: false as const,
-        reason: "no_qualification_number",
+        reason: "no_qualification_number" as const,
         regulator_verified: !!row.regulator_verified,
-        record: row.regulator_record ?? null,
+        record: null,
+        matches: null,
       };
     }
 
