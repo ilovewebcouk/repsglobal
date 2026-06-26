@@ -1,49 +1,85 @@
-# /standards — REPs Standards page
+# /privacy, /cookies, /terms — Legal pages
 
-Single public route that explains what being on REPs actually means. Wired into the footer slot already reserved as "Standards (soon)" and the existing in-product links from `/c/$slug` and `/` that already point to `/standards`.
+Build a consistent set of three customer-facing legal pages using a single shared `LegalLayout` so the chrome, type rhythm, table-of-contents, and "Last updated" strip match across all three. Content is operator-editable plain text — no `dangerouslySetInnerHTML`, no Markdown rendering.
 
-## Route & file
+## Shared shell
 
-- New file: `src/routes/standards.tsx` → `createFileRoute('/standards')`.
-- Public route (no auth, indexable). `head()` with route-specific title, description, OG/Twitter text. No `og:image` for v1.
-- Drop the `soon: true` flag on the Standards entry in `src/components/public/PublicFooter.tsx` so the link goes live.
-- Leave the existing `<Link to="/standards">` call sites on `/`, `/c/$slug` and home-legacy untouched — they start resolving automatically.
+New primitive: `src/components/legal/LegalLayout.tsx`
+- Dark hero header (eyebrow "Legal" + H1 + 1-sentence lede + "Last updated: {date}" + entity line "Operated by Cruz Pereira, trading as REPs, contactable at support@repsuk.org. Governing law: England & Wales.")
+- Two-column body on lg: sticky in-page `<nav>` table of contents on the left, prose column on the right.
+- Reuses locked tokens (radius 18px cards / 22px hero panel / 10px buttons / 12px inputs, semantic colour tokens only, no emerald, no banned phrases).
+- Renders one `<h2 id="...">` per section so the ToC links anchor cleanly.
+- Footer = `PublicFooter`.
 
-## Tone & visual system
+Updates to existing routes:
+- `src/routes/privacy.tsx` — full rewrite, uses `LegalLayout`.
+- `src/routes/terms.tsx` — full rewrite, uses `LegalLayout`.
+- `src/routes/cookies.tsx` — refit onto `LegalLayout`, keep the four-category table (Essential / Functional / Analytics / Marketing).
 
-Sectioned marketing pillar matching the rest of the site (same family as `/about` / `/features/visibility`):
+All three get matching `head()` with route-specific title, description, og:title, og:description, og:url (self-referencing `https://repsuk.org/...`), and a self-referencing canonical `<link>`.
 
-- `HeroOverlay` shared primitive for the hero wash (per `mem://design/hero-overlay-system`).
-- `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `MarketingHeroEyebrow` from `src/components/marketing/` for every section header. No hand-rolled H2/H3.
-- Locked vertical rhythm: hero `pt-24 pb-20 lg:pt-28 lg:pb-24`; sections `py-20 lg:py-28`; no hairline dividers, alternate `bg-reps-panel/15` ↔ `/30` for rhythm.
-- Type scale per locked rules: hero lede 16px; section lede 15–15.5px; allowed white opacities only (/45 /55 /70 /80).
-- Emerald only for status semantics (verified / approved tick rows). Brand orange for primary accents and the FinalCta. No new colour tokens.
-- All cards use the locked radius scale (18px content cards, 22px large panels, 10px buttons, 12px inputs).
-- Global copy rules: no country qualifiers (no "UK"), no banned org names (no CIMSPA — use "Ofqual-regulated / recognised awarding body"), no booking-fee / flat-plan claims, no third-party logo-grid.
-- Shared `FinalCta` at the bottom.
+## Shared facts used throughout
 
-## Page sections (in order)
+- Entity: "Cruz Pereira, sole trader trading as REPs ("REPs", "we", "us")".
+- Contact: `support@repsuk.org` for privacy, legal and complaints.
+- Governing law: England & Wales.
+- Subprocessor language: generic categories only — "hosting & infrastructure provider", "payments processor", "email delivery provider", "analytics provider", "AI provider". No vendor names.
+- Domain: `https://repsuk.org`.
+- Last updated: `26 June 2026` (single constant per file).
 
-1. **Hero** — `HeroOverlay` + eyebrow "What REPs stands for" + H1 "The standard behind every REPs professional." + 16px lede explaining the page in one paragraph + two trust chips ("Independently verified", "Reviewed regularly"). No CTAs — informational page.
-2. **Last checked strip** — small panel: "Last reviewed: {date}" + link "How we verify →" anchoring to the verification section. Mirrors the `/comparison-methodology` honesty pattern.
-3. **Code of conduct** — `SectionHeader` + 6 conduct pillars in a 2×3 grid of cards: Client safety first, Honest marketing, Scope of practice, Safeguarding & duty of care, Inclusive practice, Confidentiality. Each: short title + 2-sentence body. Card radius 18px.
-4. **Verification standards** — 3 stacked rows (Identity / Qualifications / Insurance). Each row: emerald check icon, what we check, evidence accepted, re-check cadence. Mirrors the verification UX in `/dashboard/verification` so the public claim and the back-end check line up.
-5. **Qualifications framework** — table-style block: minimum level by profession (PT = L3, Group Ex = L2, S&C = L3+, Nutritionist = registered with a recognised body, Yoga/Pilates = recognised training hours). Cite "Ofqual-regulated or recognised awarding body" wording. No vendor names.
-6. **Complaints & removal** — 4-step process (Raise → Acknowledge → Investigate → Outcome) using the same step-card pattern as `VerifySteps`. Followed by a "Grounds for removal" list (misrepresentation, lapsed insurance, safeguarding breach, repeated unresolved complaints, fraud).
-7. **FAQ** — `MarketingFaq` with 5 Qs (Who can join? How do I report a concern? Do you ever remove pros? How often do you re-check? Is REPs a regulator?). Answer "No, REPs is a global register and standards platform" cleanly to the regulator question.
-8. **FinalCta** — shared `FinalCta`: headline "Raise a concern or ask about a pro" + primary "Contact REPs" → `/contact` + secondary "Find a professional" → `/find-a-professional`.
+## /privacy — sections
 
-## Out of scope (Phase 2)
+1. Who we are (controller + contact)
+2. What data we collect (account, profile, verification docs, reviews, support, payments, technical/usage)
+3. How we use it (operate REPs, verify professionals, prevent fraud, communicate, improve, legal obligations)
+4. Lawful bases (contract, legitimate interests, consent, legal obligation) — UK GDPR named explicitly
+5. Sharing & subprocessors (generic categories only)
+6. International transfers (UK IDTA / SCC reference; no specific countries promised)
+7. Retention (account data: while active + 6yrs for tax; verification evidence: while listed + 2yrs; support: 3yrs; analytics: 26mo)
+8. Your rights (access, rectification, erasure, restriction, portability, objection, complaint to ICO)
+9. Children (16+ only; under-18s with consent from parent/guardian)
+10. Security (TLS, role-based access, encrypted at rest via hosting provider)
+11. Changes to this policy
+12. How to contact us
 
-- No CPD section yet — `/cpd` already covers it and CPD copy on this page would duplicate. Add a one-line "Ongoing learning is covered on /cpd →" link inside the Code of conduct intro instead.
-- No DB-backed "last reviewed" — hard-coded constant in the route file for v1, easy to bump.
-- No new images. Page is type-led to match `/comparison-methodology` weight while still using marketing pillar primitives.
+## /terms — sections
 
-## Compliance checklist (pre-flight)
+1. About these terms (binding agreement; who they cover — clients and professionals)
+2. Eligibility (16+; legal capacity)
+3. Accounts (truthful info, account security, suspension grounds)
+4. Professional listings & standards (link to `/standards`; verification is platform-level, not a regulator endorsement)
+5. Reviews (must be genuine and based on a real interaction; we may remove fake/abusive reviews)
+6. Bookings, payments & refunds (between client and professional; REPs is not a party; payments processed by a third-party payments processor; refunds at the professional's discretion unless law requires otherwise)
+7. Acceptable use (no scraping, no impersonation, no harassment, no unlawful content)
+8. Intellectual property (we own REPs branding; you license us the content you submit to operate the platform)
+9. Disclaimers & liability (platform "as is" within the limits the law allows; no exclusion for death, personal injury, fraud, or rights that can't be excluded under English law)
+10. Suspension & termination
+11. Changes to these terms (30 days' notice for material changes)
+12. Governing law & disputes (England & Wales; consumer rights preserved)
+13. How to contact us
 
-- Use semantic tokens only, no raw hex.
-- Radii from the locked 9-step scale.
-- Marketing primitives for every header / eyebrow / FAQ / final CTA.
-- Emerald only on verification check rows.
-- No banned phrases, no country qualifiers, no third-party brand logos.
-- `head()` with unique title + description + OG/Twitter text.
+## /cookies — sections (rewrap existing content)
+
+1. What cookies are
+2. Categories we use (existing table: Essential / Functional / Analytics / Marketing — keep current copy)
+3. Managing your preferences (browser settings + future consent banner placeholder)
+4. Third-party cookies (generic — analytics provider, payments processor checkout)
+5. Changes to this policy
+6. How to contact us
+
+## Out of scope
+
+- No DPA / SCC PDF downloads (operator can request later).
+- No live consent banner wiring — page only references it.
+- No vendor names anywhere (per user choice).
+- No JSON-LD beyond what `__root.tsx` already emits.
+- No `og:image` — text pages don't benefit from a placeholder.
+
+## Compliance checklist
+
+- Semantic tokens only, no raw hex.
+- Radii from the locked 9-step scale (10/12/18/22).
+- No banned phrases ("UK PTs", booking fee/commission, CIMSPA, third-party logo grids).
+- Self-referencing canonical + og:url per route.
+- Plain JSX text, no `dangerouslySetInnerHTML`.
+- "Maintained by REPs" qualifier on every page (per trust-page-generation guidance).
