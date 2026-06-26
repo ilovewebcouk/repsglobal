@@ -24,6 +24,9 @@ export type TrustState = {
   };
   qualifications: {
     count: number;
+    pendingCount: number;
+    changesRequestedCount: number;
+    rejectedCount: number;
     titles: string[];
     latestApprovedAt: string | null;
   };
@@ -54,8 +57,7 @@ export const getTrustState = createServerFn({ method: "GET" })
       supabase
         .from("verification_submissions")
         .select("status, reviewed_at")
-        .eq("professional_id", userId)
-        .eq("status", "approved"),
+        .eq("professional_id", userId),
       supabase
         .from("pro_titles")
         .select("title_slug, granted_at")
@@ -78,14 +80,23 @@ export const getTrustState = createServerFn({ method: "GET" })
     } else if (insRow?.status === "rejected") {
       insStatus = "rejected";
     } else if (insRow?.status === "pending") {
-      insStatus = "pending";
+      // Pending in DB, but if cert has already expired surface that more
+      // honestly — the trainer needs to know they have to re-upload.
+      insStatus = insRow.expiry_date && insRow.expiry_date < today ? "expired" : "pending";
+    } else if (insRow?.status === "expired") {
+      insStatus = "expired";
     }
     const insTick = insStatus === "active";
 
-    const approvedCount = (subs ?? []).length;
+    const allSubs = (subs ?? []) as Array<{ status: string | null; reviewed_at: string | null }>;
+    const approvedSubs = allSubs.filter((s) => s.status === "approved");
+    const approvedCount = approvedSubs.length;
+    const pendingCount = allSubs.filter((s) => s.status === "submitted").length;
+    const changesRequestedCount = allSubs.filter((s) => s.status === "changes_requested").length;
+    const rejectedCount = allSubs.filter((s) => s.status === "rejected").length;
     const latestApprovedAt =
-      (subs ?? [])
-        .map((s) => (s as { reviewed_at: string | null }).reviewed_at)
+      approvedSubs
+        .map((s) => s.reviewed_at)
         .filter((x): x is string => !!x)
         .sort()
         .at(-1) ?? null;
@@ -113,6 +124,9 @@ export const getTrustState = createServerFn({ method: "GET" })
       },
       qualifications: {
         count: approvedCount,
+        pendingCount,
+        changesRequestedCount,
+        rejectedCount,
         titles: titleLabels,
         latestApprovedAt,
       },
