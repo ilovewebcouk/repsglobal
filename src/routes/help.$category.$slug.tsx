@@ -15,7 +15,7 @@ export const Route = createFileRoute("/help/$category/$slug")({
     if (!article) throw notFound();
     const category = getCategory(params.category);
     if (!category) throw notFound();
-    return { article, category, related: getRelated(article) };
+    return { category: params.category, slug: params.slug };
   },
   head: ({ loaderData }) => {
     if (!loaderData) return { meta: [] };
