@@ -148,7 +148,10 @@ function titleFor(event: VerificationEvent, threshold?: number | null) {
     case "insurance.flagged_name_mismatch":
       return "Insurance name doesn't match ID";
     case "insurance.auto_approved":
+    case "insurance.approved":
       return "Insurance approved";
+    case "insurance.rejected":
+      return "Insurance certificate rejected";
     case "insurance.renewal_due":
       return threshold && threshold > 0
         ? `Insurance renewal due in ${threshold} day${threshold === 1 ? "" : "s"}`
