@@ -780,7 +780,15 @@ export const recheckOfqualForSubmission = createServerFn({ method: "POST" })
     return {
       ok: true as const,
       regulator_verified: regulatorVerified,
-      record: result.record,
+      record: result.record
+        ? {
+            qualificationNumber: result.record.qualificationNumber,
+            title: result.record.title,
+            awardingOrganisation: result.record.awardingOrganisation,
+            level: result.record.level,
+            status: result.record.status,
+          }
+        : null,
       matches: result.matches ?? null,
     };
   });
