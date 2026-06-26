@@ -158,7 +158,15 @@ export function WelcomeBanner({
                 onClick={copyUrl}
                 title="Copy public URL"
               >
-                <Copy className="mr-1.5 size-4" /> Copy link
+                {copied ? (
+                  <>
+                    <BadgeCheck className="mr-1.5 size-4 text-emerald-400" /> Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-1.5 size-4" /> Copy link
+                  </>
+                )}
               </DashboardButton>
               <DashboardButton asChild size="sm" variant="primary">
                 <Link to={publicUrl as any} target="_blank">
