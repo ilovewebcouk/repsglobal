@@ -612,27 +612,18 @@ export function ActivityTimeline({
     return e.sort((a, b) => +new Date(b.at) - +new Date(a.at)).slice(0, 10);
   }, [enquiries, reviews]);
 
-  return (
-    <PPanel className="flex flex-col p-5">
-
-      <SectionHeader
-        title="Recent activity"
-        description="The last 10 events across enquiries and reviews."
-        icon={Sparkles}
-      />
-      {events.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <DashboardEmpty>
-            <DashboardEmptyIcon>
-              <Sparkles />
-            </DashboardEmptyIcon>
-            <DashboardEmptyTitle>No activity yet</DashboardEmptyTitle>
-            <DashboardEmptyDescription>
-              When clients enquire or leave reviews, you'll see the activity stream here.
-            </DashboardEmptyDescription>
-          </DashboardEmpty>
-        </div>
-      ) : (
+  // Slim mode for sparse states (0–2 events) — no card chrome.
+  if (events.length === 0) {
+    return (
+      <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft/30 px-4 py-3 text-[13px] text-white/65">
+        <Sparkles className="size-4 shrink-0 text-white/45" />
+        <span className="flex-1">No activity yet — enquiries and reviews will appear here as they land.</span>
+      </div>
+    );
+  }
+  if (events.length <= 2) {
+    return (
+      <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft/30 p-1.5">
         <ul className="flex flex-col">
           {events.map((ev, i) => {
             const Icon = ev.icon;
@@ -641,7 +632,7 @@ export function ActivityTimeline({
                 <Link
                   to={ev.to as any}
                   className={cn(
-                    "flex items-center gap-3 py-2.5 text-[13px] text-white/70 hover:text-white",
+                    "flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] text-white/70 hover:bg-reps-panel-soft hover:text-white",
                     i < events.length - 1 && "border-b border-reps-border/60",
                   )}
                 >
@@ -654,10 +645,42 @@ export function ActivityTimeline({
             );
           })}
         </ul>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <PPanel className="flex flex-col p-5">
+      <SectionHeader
+        title="Recent activity"
+        description="Last 10 events"
+        icon={Sparkles}
+      />
+      <ul className="flex flex-col">
+        {events.map((ev, i) => {
+          const Icon = ev.icon;
+          return (
+            <li key={ev.key}>
+              <Link
+                to={ev.to as any}
+                className={cn(
+                  "flex items-center gap-3 py-2.5 text-[13px] text-white/70 hover:text-white",
+                  i < events.length - 1 && "border-b border-reps-border/60",
+                )}
+              >
+                <Icon className="size-3.5 shrink-0 text-white/45" />
+                <span className="flex-1 truncate">{ev.text}</span>
+                <time className="shrink-0 text-[11px] text-white/45">{relTime(ev.at)}</time>
+                <ArrowUpRight className="size-3.5 shrink-0 text-white/35" />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </PPanel>
   );
 }
+
 
 function relTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
