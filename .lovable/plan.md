@@ -1,82 +1,232 @@
 ## Goal
 
-Kill the "Verified means two different things" problem on Jordon's dashboard, and stop lying about insurance status.
+Remove the Core/Verified naming collision everywhere, make insurance review a first-class admin workflow, and make Jordon Gumbley's verification state explainable and correct.
 
-Three fixes, all UI/copy + one trust-state computation tweak. No schema changes, no Stripe price changes — the £99/yr tier keeps the same product/price IDs, only its **display name** changes.
+The product truth must be:
 
----
-
-## 1. Rename the £99/yr tier "Verified" → "Core"
-
-The tier name collides with the verification status. Renaming to **Core** keeps the ladder readable: **Core → Pro → Studio**.
-
-What changes:
-
-- `src/lib/billing.ts` — tier label/copy constants: `"Verified"` → `"Core"` (and `"Verified plan"` → `"Core plan"`). Keep all Stripe `price_…` / `prod_…` IDs and the internal `tier` enum key (`"verified"`) untouched so subscriptions, webhooks, RLS, and `useTrainerTier()` keep working.
-- `src/hooks/use-effective-identity.ts` — `tier === "verified" ? "Verified"` → `"Core"`.
-- `src/components/dashboard/DashboardShell.types.ts` / `nav-data` — anywhere a tier label string is rendered, swap to "Core".
-- Sidebar member card ("Verified" pill under Jordon's email) → "Core".
-- `/pricing`, `/for-professionals`, comparison pages, `/features/*` Verified-vs-Pro matrices, FAQ copy, and any "Join REPS Verified" CTAs → "Join REPS Core" / "Core plan". (Pass: ripgrep for `Verified` in `src/routes/{pricing,for-professionals,features.*,compare*,standards}.tsx`, `src/components/{marketing,pricing}/**`, and the help articles in `src/content/help/**`. Skip matches that refer to the trust state, e.g. "REPS Verified badge".)
-- Email templates and any admin copy that says "Verified tier".
-
-What does **not** change:
-
-- The trust badge stays **"REPS Verified"** — that's the 3-of-3 credential.
-- DB enum/internal key stays `"verified"` (renaming the enum would touch every RLS policy and subscription row for zero user benefit).
-- `is_pro_fully_verified()` and `list_fully_verified_pro_ids()` — unaffected.
-- Stripe prices.
-
-Memory update: `mem://index.md` Core line "Phase 2.0 in progress: wire Verified £99/yr…" → "Core £99/yr…", and add a one-liner: *"Tier rename: £99/yr tier is **Core** in all UI/marketing. Internal enum key stays `verified`. The trust badge is **REPS Verified** (3-of-3) — different concept."*
+- **Core** is the paid entry tier formerly shown as “Verified”. Internally it can continue to use the legacy enum key `verified` until a safe billing/data migration is done.
+- **REPS Verified** is the trust badge. It means the trainer has all 3 checks approved: identity, qualification, and active in-date insurance.
+- Jordon is currently **Unverified** because his insurance rows are `pending`, not `active`, and pending insurance is not visible enough for admin human review.
+- QA also found a critical database bug: `is_pro_fully_verified(uuid)` is self-referential and currently checks `professionals.verification = 'verified'` as an input. That means the recompute trigger can downgrade someone, but cannot reliably promote a pending trainer to verified.
 
 ---
 
-## 2. Replace the orange tier chip beside "Jordon Gumbley" with a true verification pill
+## 1. Rename the paid tier from Verified to Core across the app
 
-Today the header (`DashboardHeader` / hub welcome card on `/dashboard`) renders the tier as an orange "Verified" pill right next to the trainer's name. That reads as "your profile is verified" — it isn't (Jordon is 2/3).
+Use **Core** anywhere the app is talking about the paid plan/tier/product.
 
-Change: render `<VerificationPill identityStatus={…} verification={…} />` (the existing component in `src/components/directory/VerificationPill.tsx`, dark-variant) driven by `getTrustState`:
+Examples:
 
-- All 3 ticks (identity + insurance active + qualification) → emerald **"REPS Verified"** pill.
-- Anything less → neutral **"Unverified"** pill.
+- “Verified plan” → “Core plan”
+- “REPS Verified tier” → “REPS Core tier”
+- “Join REPS Verified” → “Join REPS Core”
+- Admin membership/professional tables must show `Core`, not the raw database value `verified`.
 
-Tier ("Core / Pro / Studio") moves to: (a) the sidebar member card where it already exists, and (b) a small muted label under the verification pill if needed for hierarchy. The header stops conflating the two.
+Keep **REPS Verified** only for the 3-of-3 trust badge and verification state language.
 
-Files: the welcome/hero card in `src/routes/_authenticated/_professional/dashboard.tsx` (and the hub equivalent for the `/dashboard` Hub redesign) + wherever `DashboardShell` renders the inline tier chip.
+Files to sweep:
+
+- `src/lib/billing.ts` — source of truth for tier display label/copy.
+- `src/lib/billing/startCheckout.ts` — keep legacy tier key if checkout still expects `verified`, but callers/UI must display Core.
+- `src/hooks/use-effective-identity.ts`
+- `src/hooks/use-account-menu.ts`
+- `src/components/dashboard/DashboardShell.types.ts`
+- `src/components/dashboard/DashboardSidebar*`
+- `src/routes/pricing.tsx`
+- `src/routes/signup.tsx`
+- `src/routes/for-professionals.tsx`
+- `src/routes/features.*.tsx`
+- `src/routes/help.index.tsx`
+- `src/content/help/**`
+- `src/emails/**`
+- Admin tables/routes: `src/routes/admin_.professionals*`, `src/routes/admin_.memberships*`, `src/routes/admin_.subscriptions*`, or equivalent.
+
+### Stripe product naming
+
+If `STRIPE_SECRET_KEY` is available in build mode, update the Stripe Product display name/description for the legacy `verified` product to **REPS Core** while preserving all existing product and price IDs.
+
+Do **not** delete or recreate Stripe prices. Existing subscriptions must continue to bill normally.
+
+If Stripe credentials are not available, leave a one-off script or exact checklist for updating product metadata in Stripe Dashboard.
 
 ---
 
-## 3. Insurance card: show "Expired" instead of "In review" when the cert has lapsed
+## 2. Replace raw plan displays with a single label helper
 
-`getTrustState` already computes `insurance.status = "expired"` correctly when `expiry_date < today`, even if the DB row is still `pending`. The Verification sidebar card on `/dashboard` is reading the raw row status ("Admin is reviewing your certificate · In review") instead of the trust-state-derived status. That's the lie in the screenshot.
+Create/use a single helper so raw enum values never leak:
 
-Fix the small "Verification" panel on the hub (right-rail card in the screenshot) to consume `getTrustState().insurance.status` and render:
+```ts
+getTierDisplayName("verified") // "Core"
+getTierDisplayName("pro")      // "Pro"
+getTierDisplayName("studio")   // "Studio"
+```
 
-| status | pill | subline | CTA |
+Use this helper in:
+
+- Trainer header/sidebar/account menu.
+- Admin Professionals list.
+- Admin Memberships/subscriptions list.
+- Billing/pricing components.
+- Email templates that mention a plan.
+
+This fixes the specific admin issue: **Professionals must not show “plan verified”; it must show “Core”.**
+
+---
+
+## 3. Dashboard header must show verification, not plan, beside the trainer name
+
+The trainer dashboard header/welcome panel must not put an orange “Verified”/Core plan pill beside Jordon’s name because that reads like trust verification.
+
+New behaviour:
+
+- If `is_pro_fully_verified` / trust state says all 3 are approved → green **REPS Verified** pill.
+- Otherwise → neutral/amber **Unverified** pill.
+- The paid plan can be shown separately as muted metadata: “Plan: Core”.
+
+This makes Jordon’s dashboard truthful: he can be on the Core paid plan while still being **Unverified** as a profile.
+
+---
+
+## 4. Insurance auto-approval must be explicit and auditable
+
+The intended insurance flow:
+
+1. Trainer uploads certificate.
+2. Gemini extracts policy holder / insured name, insurer/provider, policy number, cover amount, start date, expiry date, and confidence.
+3. System compares policy holder against the Stripe-verified legal name, not just display name.
+4. If confidence is high and all rules pass, auto-approve insurance.
+5. If any rule fails or confidence is not high enough, send it to human review.
+
+Auto-approval rules:
+
+- Identity must be Stripe-approved.
+- Policy holder name must match the Stripe legal name above threshold, recommended `>= 0.92` for auto-approval.
+- Insurance must be in date.
+- Cover must meet the minimum required amount.
+- Insurer/provider must be recognised or admin-approved.
+- AI confidence must be high enough.
+
+All AI decisions must write to `trust_signals`/metadata: `ai_checked_at`, `ai_confidence`, `insured_name`, `name_score`, `name_match`, `expiry_date_extracted`, `cover_amount_extracted`, `provider_extracted`, `auto_approved`, and `reason`.
+
+---
+
+## 5. Make pending insurance visible in Admin → Verification
+
+Current gap: admin verification is driven mainly by qualification submissions, so insurance rows like Jordon’s can sit in `pending` without a human place to approve/reject them.
+
+Build a first-class insurance queue inside `/admin/verification`.
+
+Top-level tabs:
+
+- **Identity**
+- **Insurance**
+- **Qualifications**
+
+or a unified queue with clear type filters, but insurance must be directly visible.
+
+Insurance queue item must show:
+
+- Trainer name.
+- Current profile verification state.
+- Stripe legal name / identity status.
+- Policy holder name extracted by AI.
+- Name match score.
+- Insurer/provider.
+- Cover amount.
+- Start/expiry dates.
+- Certificate preview/download.
+- AI recommendation: Auto-approved, Recommend approve, Needs human review, or Recommend reject with reason.
+
+Admin actions:
+
+- **Approve insurance** — sets policy `status = active` if in-date.
+- **Reject insurance** — requires reason and notifies trainer.
+- **Request replacement** — for expired/unreadable/wrong-name certificates.
+- **Re-run AI check** — useful for rows with `ai_checked_at = null`, including Jordon’s existing pending policies.
+
+Safety:
+
+- Admin approval must not allow an expired policy to become active.
+- If expired, show “Expired — request renewed certificate”, not “pending review”.
+
+---
+
+## 6. Fix trainer-facing insurance status copy
+
+Do not show “Insurance on file — admin is reviewing” when the expiry date is already lapsed.
+
+Use trust-state-derived status, not raw row status:
+
+| Status | Trainer-facing label | Copy | CTA |
 |---|---|---|---|
-| `active` | emerald "In date" | provider · expires DD MMM YYYY | — |
-| `expired` | **rose "Expired"** | "Your certificate lapsed on DD MMM YYYY" | **"Upload renewed certificate"** → `/dashboard/verification#insurance` |
-| `pending` (and not expired) | amber "In review" | "Admin is reviewing your certificate" | — |
-| `rejected` | rose "Rejected" | reason if present | "Upload new certificate" |
-| `none` | neutral "Not started" | "Upload your professional liability cover" | "Upload certificate" |
+| `active` | In date | Provider + expiry date | none |
+| `expired` | Expired | “Your certificate lapsed on …” | Upload renewed certificate |
+| `pending` | In review | “Admin is reviewing your certificate” | none |
+| `rejected` | Rejected | show reason | Upload replacement |
+| `none` | Not started | “Upload your insurance certificate” | Upload certificate |
 
-Same logic should drive the matching row on `/dashboard/verification` (already uses `InsuranceProfileCard` — confirm its pill maps `expired` → rose, not amber/in-review).
-
-Knock-on: the "Needs your attention" list ("Complete your verification") should split into discrete tasks when there's an actionable signal — at minimum surface a dedicated **"Insurance expired — upload renewed certificate"** card when `insurance.status === "expired"`, separate from the generic "Complete your verification" nudge.
+This directly fixes the confusing Jordon dashboard copy.
 
 ---
 
-## Technical notes
+## 7. Why Jordon is currently still Unverified
 
-- No DB migration. No Stripe product changes.
-- `useTrainerTier()` keeps returning `"verified" | "pro" | "studio"` — only display strings change.
-- `VerificationPill` already exists; reuse the "onImage" variant for the dark header.
-- The trust card's "Insurance on file · In review" copy currently lives in the right-rail `Verification` card on the hub (the screenshot's third panel). That card needs to read from `getTrustState` rather than the raw `insurance_policies.status`.
-- Audit: after the rename, grep for stray `"Verified"` referring to the tier (not the badge) in: `src/lib/billing.ts`, `src/components/pricing/**`, `src/routes/pricing.tsx`, `src/routes/for-professionals.tsx`, `src/routes/features.*`, `src/routes/compare*.tsx`, `src/content/help/**`, `src/emails/**`.
+Jordon can have identity approved, qualification uploaded/approved, and insurance uploaded, and still be **Unverified** because the trust badge requires **active** insurance, not merely uploaded insurance.
+
+His current blockers are:
+
+1. Insurance: uploaded rows are `pending`, and without the new admin insurance queue/admin action or successful AI auto-approval, he has no active in-date insurance row.
+2. Database recompute logic: `is_pro_fully_verified(uuid)` currently contains a circular dependency by checking `professionals.verification = 'verified'` inside the function that decides whether `professionals.verification` should become `verified`.
+
+Fix the database function so it checks the three independent pillars instead:
+
+```sql
+identity_status = 'approved'
+AND EXISTS approved qualification submission
+AND EXISTS active in-date insurance policy
+```
+
+Once one insurance row is approved as `active` and in-date, the fixed recompute trigger should flip him to fully verified if identity and qualification are also approved.
+
+Add a migration that:
+
+- replaces `is_pro_fully_verified(uuid)` with the true 3-of-3 gate,
+- keeps `professionals.verification` as the output, not an input,
+- backfills by running `recompute_pro_verification(id)` for existing professionals after the function is fixed.
 
 ---
 
-## Out of scope
+## 8. QA checklist after implementation
 
-- Renaming the `verification_status` enum or the `tier` enum value (cosmetic-only rename keeps blast radius tiny).
-- Auto-rejecting expired insurance in admin queue (already on roadmap; today it stays `pending` until an admin actions it — UI just stops lying about that).
-- Touching the public profile or `/pro/$slug` — already correct (uses `VerificationPill` + `is_pro_fully_verified`).
+### Naming QA
+
+- Ripgrep for plan-related “Verified” and remove/replace with “Core”.
+- Confirm “REPS Verified” still appears only for trust badge/verification language.
+- Admin Professionals shows plan **Core**, not `verified`.
+- Pricing page shows **Core**, not Verified.
+- Checkout still sends legacy key if needed but shows Core to the user.
+
+### Insurance QA
+
+- Upload a clear in-date certificate with matching legal name → AI auto-approves.
+- Upload an expired certificate → no auto-approval; trainer sees Expired / replacement CTA.
+- Upload mismatched policy holder name → no auto-approval; appears in admin insurance queue.
+- Upload low-cover policy → no auto-approval; appears in admin insurance queue.
+- Existing orphan pending policies appear in `/admin/verification` → Insurance.
+- Admin can approve/reject/request replacement.
+- Trainer receives notification after admin decision.
+
+### Jordon QA
+
+- Dashboard top pill shows **Unverified** until insurance is active.
+- Plan label shows **Core**.
+- Insurance card shows the correct state from expiry/status.
+- Admin can review his pending insurance in the insurance queue.
+- Once approved, Jordon becomes **REPS Verified** only if identity + qualification + insurance are all approved.
+
+---
+
+## Out of scope unless explicitly approved
+
+- Renaming the database enum value from `verified` to `core`. That is a larger migration touching subscriptions, Stripe webhook assumptions, RLS/policies, and historical rows. The safer immediate fix is a complete display-layer rename plus Stripe product display-name update.
+- Recreating Stripe prices/products.
