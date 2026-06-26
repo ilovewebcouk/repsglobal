@@ -27,9 +27,14 @@ export type TrustState = {
     pendingCount: number;
     changesRequestedCount: number;
     rejectedCount: number;
+    /** Visible (post-supersession) title labels, primary first then secondary. */
     titles: string[];
-    /** The pro's chosen primary title label (falls back to first approved). */
+    /** The pro's chosen primary title label (falls back to highest-tier visible). */
     primaryTitle: string | null;
+    /** Optional second title shown alongside primary, when the pro picked one. */
+    secondaryTitle: string | null;
+    /** Joined "Primary & Secondary" — convenient for badge subtitles. */
+    professionLabel: string | null;
     latestApprovedAt: string | null;
   };
 
