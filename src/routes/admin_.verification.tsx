@@ -663,7 +663,7 @@ function AdminVerificationPage() {
                                   <div className="mt-2">
                                     <Button
                                       size="sm"
-                                      variant="outline"
+                                      variant="subtle"
                                       onClick={() => nudgeRenewalMutation.mutate(pro.id)}
                                       disabled={nudgeRenewalMutation.isPending || nudgeRenewalMutation.isSuccess}
                                     >
