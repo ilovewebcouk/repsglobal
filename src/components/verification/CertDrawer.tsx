@@ -39,7 +39,7 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   cert: CertDrawerData | null;
-  crossChecks: CrossCheck[];
+  crossChecks?: CrossCheck[];
   resolveDocUrl: (path: string) => Promise<string>;
   readOnly?: boolean;
   onApprove?: () => void;
