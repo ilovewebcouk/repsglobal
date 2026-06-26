@@ -407,9 +407,9 @@ function ProfessionLanding() {
   const verifiedCount = countResult?.count ?? null;
   const verifiedCountLabel = verifiedCount && verifiedCount > 0 ? verifiedCount.toLocaleString() : "—";
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros
+    .slice(0, 4)
+    .map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]));
 
   // Profession-scoped specialism chips. If a pro picks specialisms on their
   // profile, those are the ones we feature here. Falls back to the static
