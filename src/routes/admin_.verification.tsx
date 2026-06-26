@@ -1681,7 +1681,7 @@ function DriftChip() {
                       <td className="px-3 py-2 text-right">
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="ghost"
                           disabled={fixMutation.isPending}
                           onClick={() => fixMutation.mutate(r.professional_id)}
                         >
