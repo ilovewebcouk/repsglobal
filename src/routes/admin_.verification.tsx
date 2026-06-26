@@ -53,6 +53,8 @@ import {
   reviewVerification,
   revokeQualification,
   sendVerificationReminder,
+  auditVerificationDrift,
+  recomputeProVerification,
 } from "@/lib/verification/verification.functions";
 import {
   listIdentityChecks,
@@ -277,7 +279,10 @@ function AdminVerificationPage() {
               <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-white/5 text-white/70">
                 <t.icon className="h-4 w-4" />
               </span>
-            </div>
+      </div>
+
+      <DriftChip />
+
           </PCard>
         ))}
       </div>
@@ -515,7 +520,7 @@ function AdminVerificationPage() {
                     <div className="flex items-center gap-2">
                       {isApproved && (
                         <Button
-                          variant="subtle"
+                          variant="ghost"
                           size="sm"
                           disabled={busy}
                           onClick={() => { setRevokeReason(""); setRevokeOpen(true); }}
@@ -524,7 +529,7 @@ function AdminVerificationPage() {
                           Revoke
                         </Button>
                       )}
-                      <Button variant="subtle" size="sm" onClick={closeCase}>Close</Button>
+                      <Button variant="ghost" size="sm" onClick={closeCase}>Close</Button>
                     </div>
                   </div>
                   {isApproved && (
@@ -702,7 +707,7 @@ function AdminVerificationPage() {
                                   <div className="mt-2">
                                     <Button
                                       size="sm"
-                                      variant="subtle"
+                                      variant="ghost"
                                       onClick={() => nudgeRenewalMutation.mutate(pro.id)}
                                       disabled={nudgeRenewalMutation.isPending || nudgeRenewalMutation.isSuccess}
                                     >
@@ -866,7 +871,7 @@ function AdminVerificationPage() {
                           <div className="pt-2">
                             <Button
                               size="sm"
-                              variant="subtle"
+                              variant="ghost"
                               onClick={() => setCertOpen(true)}
                               className="w-full sm:w-auto"
                             >
@@ -951,7 +956,7 @@ function AdminVerificationPage() {
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       {missing.length > 0 && (
                         <Button
-                          variant="subtle"
+                          variant="ghost"
                           size="sm"
                           disabled={busy}
                           onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
@@ -960,10 +965,10 @@ function AdminVerificationPage() {
                         </Button>
                       )}
                       <div className="flex-1" />
-                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
+                      <Button variant="ghost" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
                         Request changes
                       </Button>
-                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
+                      <Button variant="ghost" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
                         Reject
                       </Button>
                       <Button
@@ -1046,7 +1051,7 @@ function AdminVerificationPage() {
                       rows={3}
                     />
                     <DialogFooter>
-                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => setRevokeOpen(false)}>
+                      <Button variant="ghost" size="sm" disabled={busy} onClick={() => setRevokeOpen(false)}>
                         Cancel
                       </Button>
                       <Button
@@ -1284,13 +1289,13 @@ function AdminIdentityTab({
                 <td className="py-2">
                   <div className="flex flex-wrap gap-1">
                     {r.status !== "approved" && (
-                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "approved")}>Approve</Button>
+                      <Button size="sm" variant="ghost" onClick={() => doOverride(r.id, "approved")}>Approve</Button>
                     )}
                     {r.status !== "rejected" && (
-                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "rejected")}>Reject</Button>
+                      <Button size="sm" variant="ghost" onClick={() => doOverride(r.id, "rejected")}>Reject</Button>
                     )}
                     {r.status !== "needs_more_info" && (
-                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "needs_more_info")}>Needs info</Button>
+                      <Button size="sm" variant="ghost" onClick={() => doOverride(r.id, "needs_more_info")}>Needs info</Button>
                     )}
                   </div>
                 </td>
@@ -1318,7 +1323,7 @@ function AdminIdentityTab({
             rows={3}
           />
           <DialogFooter>
-            <Button variant="subtle" size="sm" disabled={overrideBusy} onClick={() => setOverrideTarget(null)}>
+            <Button variant="ghost" size="sm" disabled={overrideBusy} onClick={() => setOverrideTarget(null)}>
               Cancel
             </Button>
             <Button
@@ -1528,19 +1533,19 @@ function AdminInsuranceTab() {
                   </td>
                   <td className="py-2">
                     <div className="flex flex-wrap gap-1">
-                      <Button size="sm" variant="subtle" onClick={() => openDoc(r.doc_path)}>
+                      <Button size="sm" variant="ghost" onClick={() => openDoc(r.doc_path)}>
                         <FileText className="mr-1 size-3.5" /> View
                       </Button>
-                      <Button size="sm" variant="subtle" disabled={busy === r.id} onClick={() => doRecheck(r.id)}>
+                      <Button size="sm" variant="ghost" disabled={busy === r.id} onClick={() => doRecheck(r.id)}>
                         {busy === r.id ? <Loader2 className="size-3.5 animate-spin" /> : "Re-check AI"}
                       </Button>
                       {r.status !== "active" && (
-                        <Button size="sm" variant="subtle" onClick={() => { setTarget({ id: r.id, decision: "approved" }); setNote(""); }}>
+                        <Button size="sm" variant="ghost" onClick={() => { setTarget({ id: r.id, decision: "approved" }); setNote(""); }}>
                           Approve
                         </Button>
                       )}
                       {r.status !== "rejected" && (
-                        <Button size="sm" variant="subtle" onClick={() => { setTarget({ id: r.id, decision: "rejected" }); setNote(""); }}>
+                        <Button size="sm" variant="ghost" onClick={() => { setTarget({ id: r.id, decision: "rejected" }); setNote(""); }}>
                           Reject
                         </Button>
                       )}
@@ -1572,7 +1577,7 @@ function AdminInsuranceTab() {
             rows={3}
           />
           <DialogFooter>
-            <Button variant="subtle" size="sm" disabled={busy !== null} onClick={() => setTarget(null)}>
+            <Button variant="ghost" size="sm" disabled={busy !== null} onClick={() => setTarget(null)}>
               Cancel
             </Button>
             <Button
@@ -1591,3 +1596,106 @@ function AdminInsuranceTab() {
 }
 
 
+
+/* -------------------------------------------------------------------------- */
+/* Verification-column drift chip                                             */
+/* -------------------------------------------------------------------------- */
+
+function DriftChip() {
+  const fetchDrift = useServerFn(auditVerificationDrift);
+  const recompute = useServerFn(recomputeProVerification);
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const query = useQuery({
+    queryKey: ["admin-verification-drift"],
+    queryFn: () => fetchDrift({}),
+    staleTime: 60_000,
+  });
+
+  const fixMutation = useMutation({
+    mutationFn: (professional_id: string) =>
+      recompute({ data: { professional_id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-verification-drift"] }),
+  });
+
+  const rows = query.data ?? [];
+  const count = rows.length;
+  const tone =
+    count === 0
+      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+      : "border-amber-400/40 bg-amber-500/15 text-amber-200";
+
+  return (
+    <>
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold ${tone}`}
+        >
+          <ShieldCheck className="h-3.5 w-3.5" />
+          {query.isLoading
+            ? "Checking verification drift…"
+            : count === 0
+            ? "0 verification drift"
+            : `${count} verification drift — review`}
+        </button>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Verification column drift</DialogTitle>
+            <DialogDescription>
+              Pros whose canonical <code>verification</code> column disagrees
+              with the cached <code>verification_status</code>, or with the
+              live 3-pillar check. Should always be 0.
+            </DialogDescription>
+          </DialogHeader>
+          {count === 0 ? (
+            <div className="rounded-[12px] border border-emerald-400/30 bg-emerald-500/10 px-3 py-6 text-center text-[13px] text-emerald-200">
+              No drift detected.
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto rounded-[12px] border border-reps-border">
+              <table className="w-full text-left text-[12px]">
+                <thead className="bg-reps-panel/60 text-white/60">
+                  <tr>
+                    <th className="px-3 py-2">Slug</th>
+                    <th className="px-3 py-2">verification</th>
+                    <th className="px-3 py-2">verification_status</th>
+                    <th className="px-3 py-2">3-pillar</th>
+                    <th className="px-3 py-2">Reason</th>
+                    <th className="px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.professional_id} className="border-t border-reps-border/60">
+                      <td className="px-3 py-2 font-mono text-white/80">{r.slug ?? "—"}</td>
+                      <td className="px-3 py-2 text-white/80">{r.verification}</td>
+                      <td className="px-3 py-2 text-white/80">{r.verification_status}</td>
+                      <td className="px-3 py-2 text-white/80">{r.fully_verified ? "yes" : "no"}</td>
+                      <td className="px-3 py-2 text-amber-200">{r.reason}</td>
+                      <td className="px-3 py-2 text-right">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={fixMutation.isPending}
+                          onClick={() => fixMutation.mutate(r.professional_id)}
+                        >
+                          Recompute
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

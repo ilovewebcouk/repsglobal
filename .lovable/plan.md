@@ -1,45 +1,68 @@
-## Goal
-Hide the 7 fake demo professionals from the default views in `/admin/professionals` and surface them under a new **Demos** tab so you can still inspect James Wilson's record for the `/c/james-wilson` mock-up.
+# Deep QA: Why `professionals.verification_status` drifted from `professionals.verification`
 
-## Demo records (confirmed in DB)
-- `emily-carter` (pilates)
-- `sophie-taylor` (pilates)
-- `liam-roberts` (strength)
-- `marcus-lee` (strength)
-- `priya-sharma` (nutritionist)
-- `hannah-thompson` (PT)
-- `james-wilson` (PT — coach shop-front mock)
+This is a separate pass from the demo-pros cleanup. Goal: find every way the two columns can disagree and close each gap, so the "Needs your attention" patch isn't just a band-aid.
 
-(`james-carter` is a route-level fixture, not in the DB — already gated.)
+## What's there today
 
-## Approach
+Two columns on `professionals`, two different enums:
+- `verification` — enum `verification_status` (`pending | verified | rejected | suspended`) — treated as canonical, drives the public REPS Verified badge via `is_pro_fully_verified()`.
+- `verification_status` — enum `verification_state` (`unverified | pending | verified | ...`) — a denormalised cache the dashboard / Needs-Attention / dashboard-profile read.
 
-### 1. Flag demos in the DB
-Add a boolean `is_demo` column to `professionals` (default `false`, indexed). Backfill `true` for the 7 slugs above. Single source of truth — future demo accounts just flip the flag, no code change.
+Sync mechanism:
+- `recompute_pro_verification(pro_id)` recomputes from the 3 pillars and writes both columns.
+- Fired by triggers on `verification_submissions` (status change), `insurance_policies` (status / expiry_date change), and `professionals` (identity_status change).
+- Current drift count in prod: 0 (after the last backfill) — but the conditions that caused it are still live.
 
-### 2. Filter them out of the admin list + KPIs
-`src/lib/admin/professionals.functions.ts`:
-- `listAdminProfessionals`: select `is_demo`; when `tab !== 'demos'`, append `.eq('is_demo', false)`; when `tab === 'demos'`, append `.eq('is_demo', true)`.
-- KPI / count helpers in the same file (the confirmed-pro count RPCs and any `count_*` calls): exclude `is_demo = true` so headline numbers stop including demos.
+## Root causes of drift (ranked by blast radius)
 
-### 3. Add the Demos tab to the UI
-`src/routes/admin_.professionals.tsx`:
-- Extend `AdminProTab` union with `'demos'`.
-- Append `{ label: "Demos", value: "demos" }` to `TABS` (rightmost, after "Recently joined").
-- No other UI changes — existing row actions (view, suspend, etc.) keep working for demo rows under that tab.
+1. **Insurance expiry is time-based, not event-based.** A policy with `status='active'` and `expiry_date = yesterday` makes `is_pro_fully_verified` return false the moment the clock ticks past midnight — but no row changes, so no trigger fires. Both columns silently lie until the next manual write. This is the systemic leak.
+2. **Two enums for one concept.** `verification_status` (enum) and `verification_state` (enum) have overlapping but non-identical values (`unverified` exists on one, not the other). Any code that maps between them is a drift opportunity. `recompute_pro_verification` has to literal-cast both — easy to update one branch and forget the other.
+3. **The "not fully verified" branch in `recompute_pro_verification` is asymmetric.** It only collapses to `pending` when `verification` is currently `verified` or NULL. If `verification = 'rejected'` and `verification_status = 'pending'` (or vice versa), the function leaves them mismatched on purpose to "preserve" rejected/suspended — but it never re-aligns the cache to match.
+4. **Direct writes bypass recompute.** `revokeQualification` writes both columns to `'unverified'` directly (verification.functions.ts ~L682). Any future admin path that updates only one column (e.g. a manual "suspend") will drift instantly because the recompute trigger only fires on `identity_status` updates, not on `verification` updates.
+5. **No trigger on `identity_documents`.** The self-trigger fires on `professionals.identity_status`, which is set by app code after an identity decision. If a script or admin SQL touches `identity_documents.status` directly and forgets to mirror it to `professionals.identity_status`, the cache is stale until the next pillar change.
+6. **UI read the cache, badge read live ticks.** Hub's "Complete your verification" task read `verification_status` while the public badge derived from `is_pro_fully_verified`. Drift was invisible to admins until a pro complained — already patched, kept here for completeness.
+7. **No backfill discipline.** When `verification_status` was first added, there was no migration that ran `recompute_pro_verification` for every pro. Same risk every time we change `is_pro_fully_verified` logic — last week's change to the 3-pillar gate is exactly that scenario.
 
-### 4. Keep public surfaces clean
-Belt-and-braces — also filter `is_demo` out of:
-- `src/lib/directory/search.functions.ts` (directory results)
-- `src/lib/directory/featured.functions.ts` (featured grids, profession + city pages)
+## Fix plan
 
-These should already be hidden via `is_published = false` on the 7 records, but the explicit flag prevents accidental publication from leaking them.
+### Pass A — eliminate the two-column problem at the source
 
-## Out of scope
-- No change to `/c/james-wilson` mock-up route — still renders from the same DB record.
-- No change to James Carter route fixture.
-- No change to `bd_seed_thin` migrated pros (those are real, not demos).
+- Make `verification_status` a generated / derived value, not a separately-written cache:
+  - Option 1 (preferred): keep both columns but **remove every direct write to `verification_status` from app code**. Only `recompute_pro_verification` may write it. Update `revokeQualification` and any future admin code to call the recompute RPC instead of updating columns inline.
+  - Option 2 (later, bigger): drop `verification_status` entirely; replace reads with a `v_professional_verification` view that returns the live 3-pillar status. Out of scope for this pass — flagged as follow-up.
+
+### Pass B — close the insurance-expiry leak
+
+- Add a daily `pg_cron` job that runs `recompute_pro_verification` for every pro with an `insurance_policies` row whose `expiry_date` crossed `CURRENT_DATE` in the last 24h, plus any pro currently marked `verification='verified'` whose insurance is now stale. Cheap (<400 pros) and idempotent.
+- Add a guard inside `is_pro_fully_verified` already covers the read side; this fixes the write side so badges/UI/SEO don't lag.
+
+### Pass C — make `recompute_pro_verification` symmetric and idempotent
+
+- Rewrite the "not fully verified" branch so both columns always agree afterwards (no "preserve rejected on one column only" logic). The canonical mapping becomes:
+  - `verification='verified'`  ↔ `verification_status='verified'`
+  - `verification='rejected'`  ↔ `verification_status='unverified'` (cache enum has no 'rejected')
+  - `verification='suspended'` ↔ `verification_status='unverified'`
+  - everything else            ↔ both = `pending`
+- Add a check at the bottom of the function: if the two columns still disagree after the update, log to `admin_audit_log` so we see future drift instead of swallowing it.
+
+### Pass D — trigger coverage
+
+- Add an `AFTER UPDATE OF verification` trigger on `professionals` that calls recompute. Stops manual SQL / future admin paths from desyncing by writing only one column.
+- Add `AFTER INSERT OR UPDATE OF status ON identity_documents` → recompute, as belt-and-braces for the `identity_documents`-but-not-`professionals.identity_status` scenario.
+
+### Pass E — one-shot backfill + drift monitor
+
+- Migration runs `SELECT recompute_pro_verification(id) FROM professionals` once to align every row against the current `is_pro_fully_verified` logic.
+- Add a SECURITY DEFINER RPC `audit_verification_drift()` that returns rows where the two columns disagree OR where `verification='verified'` but `is_pro_fully_verified(id)=false`. Surface the count on `/admin/verification` as a small chip ("0 drift" / "N drift — review"); clicking opens the affected list.
+
+## Out of scope (flag for later)
+
+- Collapsing the two enums into one — requires touching every read site and a careful enum migration; worth doing once Pass A has run for a couple of weeks with zero drift events logged.
+- Replacing `verification_status` with a view — same reason, follow-up.
 
 ## Technical notes
-- Migration: `ALTER TABLE public.professionals ADD COLUMN is_demo boolean NOT NULL DEFAULT false;` + partial index `WHERE is_demo` + `UPDATE` for the 7 slugs. No RLS change needed (admin reads use service role; public reads already gate on `is_published`).
-- Types regenerate after migration; admin functions ship in the same turn after that.
+
+- All SQL changes ship as a single migration (functions + triggers + cron job + backfill).
+- Cron job uses the existing `pg_cron` extension; schedule `0 1 * * *` (01:00 UTC daily). Idempotent recompute means missed runs self-heal next night.
+- `audit_verification_drift()` is admin-only (gated via `has_role(auth.uid(),'admin')`).
+- No changes to public-facing UI, tokens, or radii — backend + admin chip only.

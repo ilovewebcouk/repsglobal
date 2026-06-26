@@ -3554,6 +3554,17 @@ export type Database = {
         }[]
       }
       admin_seed_demo_pros: { Args: never; Returns: number }
+      audit_verification_drift: {
+        Args: never
+        Returns: {
+          fully_verified: boolean
+          professional_id: string
+          reason: string
+          slug: string
+          verification: string
+          verification_status: string
+        }[]
+      }
       clear_pro_review_response: {
         Args: { _review_id: string }
         Returns: undefined
@@ -3730,6 +3741,7 @@ export type Database = {
         Args: { _pro_id: string }
         Returns: undefined
       }
+      recompute_verification_daily_sweep: { Args: never; Returns: number }
       refresh_pro_quality_score: {
         Args: { _pro_id: string }
         Returns: undefined
