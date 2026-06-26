@@ -346,6 +346,9 @@ async function runInsuranceAiFromPath(docPath: string, userId: string): Promise<
   const dataUrl = `data:${mime};base64,${b64}`;
   const filename = docPath.split("/").pop() ?? "insurance";
   return runInsuranceAi(dataUrl, filename);
+}
+
+
 
 export const extractInsuranceFromDoc = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
