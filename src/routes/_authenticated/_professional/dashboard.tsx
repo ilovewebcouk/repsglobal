@@ -204,9 +204,9 @@ function DashboardPage() {
             />
           </div>
 
-          {/* ROW 3 — Needs attention + Completeness */}
+          {/* Merged row — Needs Attention + Activity (left) | Completeness + Verification (right) */}
           <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
-            <div className="min-h-[340px] xl:col-span-8">
+            <div className="flex flex-col gap-4 xl:col-span-8">
               <NeedsAttention
                 unreadEnquiries={enqStats?.unread ?? 0}
                 pendingReviewReplies={hub.pendingReviewReplies}
@@ -217,17 +217,8 @@ function DashboardPage() {
                 isPublished={isPublished}
                 trust={hub.trust.data ?? null}
               />
-            </div>
-            <div className="min-h-[340px] xl:col-span-4">
-              <CompletenessCard profile={hub.profile.data ?? null} />
-            </div>
-          </div>
-
-          {/* ROW 4 — Activity + Verification */}
-          <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
-            <div className="min-h-[320px] xl:col-span-8">
               {hub.enquiries.isLoading || hub.reviews.isLoading ? (
-                <Skeleton className="h-full w-full rounded-[22px]" />
+                <Skeleton className="h-[260px] w-full rounded-[22px]" />
               ) : (
                 <ActivityTimeline
                   enquiries={hub.enquiries.data ?? []}
@@ -235,24 +226,26 @@ function DashboardPage() {
                 />
               )}
             </div>
-            <div className="min-h-[320px] xl:col-span-4">
+            <div className="flex flex-col gap-4 xl:col-span-4">
+              <CompletenessCard profile={hub.profile.data ?? null} />
               <VerificationStatusCard trust={hub.trust.data ?? null} />
             </div>
           </div>
 
-          {/* ROW 5 — CPD + Reviews snapshot */}
+          {/* Row 5 — CPD + Reviews snapshot */}
           <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
-            <div className="min-h-[300px] xl:col-span-8">
+            <div className="xl:col-span-8">
               <CpdMini
                 qualUploaded={hasQualifications}
                 uploadedAt={data?.profile?.cert_uploaded_at ?? null}
                 trust={hub.trust.data ?? null}
               />
             </div>
-            <div className="min-h-[300px] xl:col-span-4">
+            <div className="xl:col-span-4">
               <ReviewsSnapshot kpis={reviewKpis} />
             </div>
           </div>
+
 
 
           {/* ROW 6 — Services */}
