@@ -1,6 +1,7 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useSessionUser } from "@/hooks/use-session-user";
 import {
   Award,
   BadgeCheck,
@@ -376,18 +377,29 @@ export const Route = createFileRoute("/pro/$slug/")({
   loader: async ({ params }) => {
     if (PROS[params.slug]) return { source: "fixture" as const, db: null };
     const db = await getPublicProfileBySlug({ data: { slug: params.slug } });
-    return { source: db ? ("db" as const) : ("fallback" as const), db };
+    if (!db) throw notFound();
+    return { source: "db" as const, db };
   },
   head: ({ params, loaderData }) => {
     const fixture = PROS[params.slug];
     const dbPro = loaderData?.db ? proFromDb(loaderData.db) : null;
-    const pro = fixture ?? dbPro ?? PROS["james-carter"];
+    const pro = fixture ?? dbPro;
+    if (!pro) {
+      return {
+        meta: [
+          { title: "Not found | REPS" },
+          { name: "robots", content: "noindex,nofollow" },
+        ],
+      };
+    }
     const title = `${pro.name} — ${pro.role} | REPS`;
     const description = `${pro.name}, REPS Verified ${pro.role}${pro.location ? ` in ${pro.location}` : ""}. ${pro.blurb}`;
+    const noindex = !!fixture;
     return {
       meta: [
         { title },
         { name: "description", content: description },
+        ...(noindex ? [{ name: "robots", content: "noindex,nofollow" }] : []),
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:url", content: `/pro/${pro.slug}` },
@@ -395,13 +407,55 @@ export const Route = createFileRoute("/pro/$slug/")({
       links: [{ rel: "canonical", href: `/pro/${pro.slug}` }],
     };
   },
+  notFoundComponent: ProNotFound,
   component: ProProfilePage,
 });
+
+function ProNotFound() {
+  return (
+    <div className="min-h-screen bg-reps-ivory">
+      <PublicHeader variant="solid" />
+      <div className="mx-auto flex max-w-[640px] flex-col items-center px-6 py-32 text-center">
+        <h1 className="font-display text-[40px] font-bold leading-tight text-reps-charcoal">
+          Profile not found
+        </h1>
+        <p className="mt-3 text-[15px] text-reps-muted-light">
+          This professional profile is not available.
+        </p>
+        <Link
+          to="/find-a-professional"
+          className="mt-8 inline-flex items-center gap-2 rounded-[10px] bg-reps-orange px-5 py-2.5 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange/90"
+        >
+          Browse professionals
+        </Link>
+      </div>
+      <PublicFooter />
+    </div>
+  );
+}
 
 function ProProfilePage() {
   const { slug } = Route.useParams();
   const { db } = Route.useLoaderData();
-  const pro = PROS[slug] ?? (db ? proFromDb(db) : PROS["james-carter"]);
+  const isFixture = !!PROS[slug];
+
+  // Fixture pages (james-carter) are admin-only mock-up references — gated
+  // client-side so SSR always renders a neutral skeleton (no leak via SEO).
+  const { isAdmin, isLoading: authLoading } = useSessionUser();
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (isFixture) {
+    if (!mounted || authLoading) {
+      return <div className="min-h-screen bg-reps-ivory" aria-hidden />;
+    }
+    if (!isAdmin) return <ProNotFound />;
+  }
+
+  const pro = PROS[slug] ?? (db ? proFromDb(db) : null);
+  if (!pro) return <ProNotFound />;
 
 
 

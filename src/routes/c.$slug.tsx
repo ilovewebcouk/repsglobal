@@ -1,6 +1,8 @@
+import * as React from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useSessionUser } from "@/hooks/use-session-user";
 import { getShopFrontBySlug, type ServiceDTO, type ShopFrontDTO } from "@/lib/shop-front/shop-front.functions";
 import {
   ArrowRight,
@@ -377,7 +379,15 @@ export const Route = createFileRoute("/c/$slug")({
     </div>
   ),
   head: ({ params }) => {
-    const coach = COACHES[params.slug] ?? COACHES["james-wilson"];
+    const coach = COACHES[params.slug];
+    if (!coach) {
+      return {
+        meta: [
+          { title: "Coach not found | REPS" },
+          { name: "robots", content: "noindex,nofollow" },
+        ],
+      };
+    }
     const title = `${coach.name} — ${coach.role} | REPS`;
     const description = `${coach.promise} ${coach.subhead}`;
     return {
@@ -410,13 +420,51 @@ const NAV_ITEMS = [
 function CoachShopFrontPage() {
   const { slug } = Route.useParams();
   const fetchShopFront = useServerFn(getShopFrontBySlug);
+  const isFixture = !!COACHES[slug];
+
+  // Fixture coach pages (james-wilson) are admin-only mock-up references —
+  // gated client-side so SSR always renders a neutral skeleton.
+  const { isAdmin, isLoading: authLoading } = useSessionUser();
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { data: live } = useQuery({
     queryKey: ["shop-front", slug],
     queryFn: () => fetchShopFront({ data: { slug } }),
     staleTime: 60_000,
+    enabled: !isFixture,
   });
-  const baseCoach = COACHES[slug] ?? COACHES["james-wilson"];
-  const coach = live ? mergeLiveIntoCoach(baseCoach, live.shopFront, live.services) : baseCoach;
+
+  if (isFixture) {
+    if (!mounted || authLoading) {
+      return <div className="min-h-screen bg-reps-ink" aria-hidden />;
+    }
+    if (!isAdmin) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-white">Page not found</h1>
+            <p className="mt-2 text-sm">This shop-front is not available.</p>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  const baseCoach = COACHES[slug];
+  if (!baseCoach && !live) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-white">Page not found</h1>
+          <p className="mt-2 text-sm">This shop-front is not available.</p>
+        </div>
+      </div>
+    );
+  }
+  const coach = live ? mergeLiveIntoCoach(baseCoach ?? COACHES["james-wilson"], live.shopFront, live.services) : baseCoach!;
   const accent = `var(--coach-accent-${coach.accent})`;
 
   const accentStyle = {

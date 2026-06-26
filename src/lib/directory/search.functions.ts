@@ -112,7 +112,8 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let qb = supabaseAdmin
       .from("professionals")
       .select(COLS, { count: "exact" })
-      .eq("is_published", true);
+      .eq("is_published", true)
+      .eq("bd_seed_thin", false);
 
     if (data.city) qb = qb.ilike("city", `%${data.city}%`);
     if (data.profession) qb = qb.eq("primary_profession", data.profession);
