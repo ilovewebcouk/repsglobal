@@ -52,7 +52,6 @@ export function CertDrawer({
   open,
   onOpenChange,
   cert,
-  crossChecks,
   resolveDocUrl,
   readOnly = false,
   onApprove,
