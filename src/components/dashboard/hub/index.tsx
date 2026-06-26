@@ -137,6 +137,7 @@ export function WelcomeBanner({
   isPublished,
   slug,
   trust,
+  dailyViews,
 }: {
   name: string;
   avatarUrl: string | null | undefined;
@@ -145,7 +146,9 @@ export function WelcomeBanner({
   isPublished: boolean;
   slug: string | null | undefined;
   trust: TrustState | null | undefined;
+  dailyViews?: Array<{ date: string; count: number }> | null;
 }) {
+
   const initials = name
     .split(" ")
     .map((s) => s[0])
