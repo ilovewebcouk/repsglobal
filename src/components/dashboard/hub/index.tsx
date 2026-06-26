@@ -255,7 +255,7 @@ export function NeedsAttention({
       icon: ShieldCheck,
       tone: "orange",
       title: "Complete your verification",
-      detail: "Identity, insurance and qualifications unlock your Verified badge.",
+      detail: "Identity, insurance and qualifications unlock your REPS Verified badge.",
       to: "/dashboard/verification",
       cta: "Verify",
     });
