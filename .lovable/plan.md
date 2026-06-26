@@ -1,66 +1,91 @@
+## What's changing
 
-## Brutal honest take
-
-You're right — the current dashboard reads as a stack of cards floating on a dark background, not a SaaS surface. Three concrete reasons:
-
-1. **Rows don't equalise height.** Each `grid` row lets its two children size to content, so "Needs your attention" finishes early while "Profile completeness" keeps going — the gap is just exposed page background. Dribbble dashboards lock the row to the tallest sibling and let the shorter card breathe with internal padding (or scroll).
-2. **No internal scroll regions.** `Needs your attention` and `Recent activity` truncate by hard-coding 5/10 items into the DOM. There's nowhere for "more rows than fit" to live.
-3. **Rhythm is broken.** Row 5 (CPD + Reviews) is a different grid ratio (50/50) than rows 3–4 (66/33). The eye sees three different columns systems on one page.
-
-## What to change
-
-Scope is presentational only — no data, no business logic. All work in `src/components/dashboard/hub/index.tsx` and `src/routes/_authenticated/_professional/dashboard.tsx`.
-
-### 1. Equal-height rows (the headline fix)
-
-Add `h-full` to every `PPanel` / `PCard` used inside a row, and `items-stretch` on the row grids. Wrap each grid cell so the card fills the cell:
+Today the dashboard has two parallel rows:
 
 ```text
-Row 3 ─ Needs attention (8 cols) ──── Profile completeness (4 cols)  ← same height
-Row 4 ─ Recent activity  (8 cols) ──── Verification         (4 cols)  ← same height
-Row 5 ─ Education & CPD  (6 cols) ──── Reviews snapshot     (6 cols)  ← same height
+Row 3:  [ Needs Attention      8 ] [ Completeness  4 ]
+Row 4:  [ Recent Activity      8 ] [ Verification  4 ]
+Row 5:  [ Education & CPD      8 ] [ Reviews       4 ]
 ```
 
-Each card becomes `flex flex-col` so the header sits at top, body fills, footer (if any) pins to bottom.
+Because Verification is intrinsically a short card (3 status rows + header + button ≈ 240px) and Activity is intrinsically tall (up to 10 events), forcing them to the same row height pads Verification with dead space and stretches Activity to feel sparse.
 
-### 2. Internal scroll for list bodies
+The fix merges rows 3 + 4 into a single 8/4 grid where the right column **stacks** two compact cards to match the combined height of the two tall left cards:
 
-Inside `NeedsAttention`, `ActivityTimeline`, and `CpdMini`:
-- Header (icon + title + meta) stays fixed at top.
-- Body becomes `flex-1 min-h-0 overflow-y-auto pr-1` with a subtle scrollbar.
-- This is the answer to your CPD-vs-Reviews concern: if a trainer adds a 4th qualification, the CPD body scrolls inside its card — Reviews stays the same shape.
+```text
+Merged row:
+┌──────────────────────────┬──────────────────┐
+│  Needs Attention   (8)   │  Completeness    │
+│                          │  (compact)       │
+│                          ├──────────────────┤
+│  Recent Activity   (8)   │  Verification    │
+│                          │  (compact)       │
+└──────────────────────────┴──────────────────┘
 
-### 3. Unify the row system
+Row 5 (unchanged):
+[ Education & CPD     8 ] [ Reviews       4 ]
+```
 
-Promote row 5 from `lg:grid-cols-2` to the same `xl:grid-cols-12` 6/6 split so all three two-column rows share one column grid. The KPI strip stays full-width 4-up.
+This is the Linear / Vercel / Stripe pattern: the wide column carries the dense, scannable content; the narrow column stacks two natural-height status cards so nothing is artificially stretched.
 
-### 4. Minimum heights so empty cards don't collapse
+## Behaviour
 
-Set `min-h-[320px]` on rows 3 and 4, `min-h-[260px]` on row 5. Stops a brand-new account (no activity, no qualifications) from looking like a series of header strips.
+- **Right column** becomes a vertical flex stack (`flex flex-col gap-4`). Completeness and Verification size to their natural content — no min-heights, no dead space.
+- **Left column** stays a vertical stack: Needs Attention on top, Recent Activity below, both with internal scroll when content overflows.
+- **Row heights auto-balance**: the merged grid row stretches to whichever column is taller. In practice the two left cards together (~640px) will roughly match the two right cards stacked (~520px), and the leftover space is absorbed by Activity's flex-1, which keeps it pleasantly tall without looking padded.
+- **No forced equal heights anywhere.** The previous `min-h-[320px]` / `min-h-[340px]` wrappers come off.
+- Row 5 (CPD + Reviews) stays as-is — both cards have similar density so equal-height there still works; just drop the `min-h-[300px]` so it breathes naturally.
 
-### 5. Card-level polish (small but compounding)
+## Technical details
 
-- Bump `PPanel` inner padding from `p-5` to `p-6` to match the breathing room you see in the Panze reference.
-- Add a subtle 1px inner highlight (`shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]`) so cards lift off the panel background — currently they're flat on flat.
-- Tighten `SectionHeader` line-height and add a hairline divider under it (`border-b border-reps-border/40 pb-3 mb-4`) so header and body read as distinct zones.
-- "Recent activity" footer (timestamp + chevron) sits on its own row with a top divider, not floating mid-card.
-- "Needs your attention" empty state: when there's nothing to do, show a single confident "You're all caught up" Empty primitive, not a blank panel.
+**File:** `src/routes/_authenticated/_professional/dashboard.tsx`
 
-### 6. Hierarchy fixes spotted in QA
+Replace rows 3 and 4 (lines ~207–242) with a single merged grid:
 
-- KPI tiles have no separator between value and delta — add `text-xs text-muted-foreground mt-1` so "0 unread" doesn't look like part of the number.
-- "Your services" empty state currently dominates a full-width card; reduce to `min-h-[180px]` and move "Manage services" into the empty state itself, not the header.
-- "Grow your business inside REPS" CTA: contain it to the column grid width (currently breaks the rhythm by spanning edge-to-edge) and reduce vertical padding by ~30%.
+```tsx
+{/* Merged row — Needs Attention + Activity (left) | Completeness + Verification (right) */}
+<div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
+  <div className="flex flex-col gap-4 xl:col-span-8">
+    <NeedsAttention ... />
+    {hub.enquiries.isLoading || hub.reviews.isLoading ? (
+      <Skeleton className="h-[260px] w-full rounded-[22px]" />
+    ) : (
+      <ActivityTimeline ... />
+    )}
+  </div>
+  <div className="flex flex-col gap-4 xl:col-span-4">
+    <CompletenessCard ... />
+    <VerificationStatusCard ... />
+  </div>
+</div>
+```
 
-### Technical notes
+Then for row 5, drop the `min-h-[300px]` wrappers:
 
-- Equal-height via `h-full` on cards plus default `items-stretch` on CSS grid — no JS measuring, no `ResizeObserver`.
-- Scroll regions use `min-h-0` on the flex parent (required for `overflow-y-auto` inside flex column to actually clip).
-- All tokens stay semantic — no hardcoded colours added. Shadow uses an existing rgba pattern already in the file.
-- shadcn primitives used: `Empty` for caught-up state, `Separator` for in-card dividers, `ScrollArea` is intentionally **not** used (native overflow is lighter and matches the dark theme better here).
+```tsx
+<div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
+  <div className="xl:col-span-8"><CpdMini ... /></div>
+  <div className="xl:col-span-4"><ReviewsSnapshot ... /></div>
+</div>
+```
 
-### Out of scope (flag for separate pass)
+**File:** `src/components/dashboard/hub/index.tsx`
 
-- Sidebar density and the empty `Account / Deliver` section labels — separate IA pass.
-- KPI tile redesign with sparklines — needs design directions.
-- Mobile breakpoints below `lg` — current request is desktop polish; mobile already stacks correctly.
+The cards already have `flex h-full flex-col` and internal scroll regions from the last pass — no changes needed inside the cards themselves. They'll automatically size correctly inside the new stacked layout:
+
+- `CompletenessCard` and `VerificationStatusCard` will collapse to natural height (the `min-h-0 flex-1 overflow-y-auto` on their inner lists becomes a no-op when content fits).
+- `NeedsAttention` and `ActivityTimeline` will fill their column via `flex-1` inside the left stack, with internal scroll on overflow.
+
+## Why this is 10/10
+
+1. **No dead space.** Verification stops looking padded.
+2. **No forced parity.** Cards size to their content density.
+3. **Visual rhythm preserved.** The 8/4 grid still reads as one balanced row; the eye sees one block, not two.
+4. **Scales with data.** If a trainer has 1 attention item and 2 activity events, the row collapses gracefully. If they have 10 of each, internal scroll kicks in. Verification and Completeness stay the same size either way.
+5. **Matches what Linear / Vercel / Stripe ship.** Dense list on the wide side, stacked status cards on the narrow side, no fake equal-height.
+
+## Out of scope
+
+- KPI strip styling, Welcome banner, Services strip, Pro upsell — leave alone.
+- Card internals (typography, padding, icons) — last pass already polished these.
+- Row 5 (CPD / Reviews) layout — already balanced; just removing the min-h.
