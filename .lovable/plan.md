@@ -1,82 +1,66 @@
-## What we're building
 
-A complete rebuild of `/dashboard` for the Verified tier. The brief is no longer "fitness SaaS analytics dashboard" — it's a **calm daily command centre for the trainer's public presence on REPs**. Superhuman prioritisation, Linear dark polish, Notion/Things hierarchy, Stripe-level card craft. The first question it answers is: *"What needs my attention today?"*
+## Brutal honest take
 
-Empty-state is the default state — most Verified members will land here with zeros. The dashboard must never look broken, dead, or padded with skeletons. We hide what hasn't been earned.
+You're right — the current dashboard reads as a stack of cards floating on a dark background, not a SaaS surface. Three concrete reasons:
 
-## New page structure (replaces current 8-tile + dual-rail grid)
+1. **Rows don't equalise height.** Each `grid` row lets its two children size to content, so "Needs your attention" finishes early while "Profile completeness" keeps going — the gap is just exposed page background. Dribbble dashboards lock the row to the tallest sibling and let the shorter card breathe with internal padding (or scroll).
+2. **No internal scroll regions.** `Needs your attention` and `Recent activity` truncate by hard-coding 5/10 items into the DOM. There's nowhere for "more rows than fit" to live.
+3. **Rhythm is broken.** Row 5 (CPD + Reviews) is a different grid ratio (50/50) than rows 3–4 (66/33). The eye sees three different columns systems on one page.
+
+## What to change
+
+Scope is presentational only — no data, no business logic. All work in `src/components/dashboard/hub/index.tsx` and `src/routes/_authenticated/_professional/dashboard.tsx`.
+
+### 1. Equal-height rows (the headline fix)
+
+Add `h-full` to every `PPanel` / `PCard` used inside a row, and `items-stretch` on the row grids. Wrap each grid cell so the card fills the cell:
 
 ```text
-┌───────────────────────────────────────────────────────────┐
-│ 1.  PROFILE STATUS CARD  (full width, hero)               │
-│     photo · name · Verified badge · Core plan             │
-│     headline · Live on REPS · Copy link · View profile    │
-│     Request a review                                      │
-├──────────────────────────────────┬────────────────────────┤
-│ 2.  NEEDS ATTENTION TODAY        │ 4.  TRUST RAIL         │
-│     ONE card, ONE primary CTA    │     · Completeness     │
-│     rotates state:               │     · Verification 3/3 │
-│     - 1 review needs a reply     │     · Reviews summary  │
-│     - Add your first service     │     · CPD status       │
-│     - Request your first review  │                        │
-│     - Insurance expires soon     │                        │
-│     - Add a profile photo        │                        │
-│     - Profile live — share it    │                        │
-│                                  │                        │
-│ 3.  KPI STRIP (max 4, earned)    │                        │
-│     Enquiries · Reviews ·        │                        │
-│     Views · Impressions          │                        │
-│     Tiles only appear once data  │                        │
-│     exists; otherwise collapsed  │                        │
-├──────────────────────────────────┴────────────────────────┤
-│ 5.  LOWER SECTIONS (stacked, only if real)                │
-│     Education & CPD                                       │
-│     Reviews                                               │
-│     Services                                              │
-│     Recent activity (hidden if empty)                     │
-├───────────────────────────────────────────────────────────┤
-│ 6.  Upgrade to Pro card (footer, quiet)                   │
-└───────────────────────────────────────────────────────────┘
+Row 3 ─ Needs attention (8 cols) ──── Profile completeness (4 cols)  ← same height
+Row 4 ─ Recent activity  (8 cols) ──── Verification         (4 cols)  ← same height
+Row 5 ─ Education & CPD  (6 cols) ──── Reviews snapshot     (6 cols)  ← same height
 ```
 
-## Design language
+Each card becomes `flex flex-col` so the header sits at top, body fills, footer (if any) pins to bottom.
 
-- **Hierarchy:** one hero moment (Needs Attention) — everything else is supporting. No equal-weight grids.
-- **Spacing:** generous. Stripe-level card padding (24–32px), 24px gutters, no cramped 8/4 split.
-- **KPIs:** 4 max, each tile shows value + 14d sparkline OR a one-line "first 30 days" coaching hint when zero. Never a bare "—".
-- **Orange:** restricted to the single primary CTA inside Needs Attention + the hero "View public profile" button. Nothing else.
-- **Emerald:** Verified ticks + "Live on REPS" dot only.
-- **Cards:** flat, no shadows on buttons, `rounded-[18px]` standard / `rounded-[22px]` hero per the locked radius scale.
-- **Motion:** subtle staggered fade-up on mount (Linear-style), count-up on KPIs once data exists, no decorative animation.
+### 2. Internal scroll for list bodies
 
-## Onboarding-first behaviour (day-one trainer)
+Inside `NeedsAttention`, `ActivityTimeline`, and `CpdMini`:
+- Header (icon + title + meta) stays fixed at top.
+- Body becomes `flex-1 min-h-0 overflow-y-auto pr-1` with a subtle scrollbar.
+- This is the answer to your CPD-vs-Reviews concern: if a trainer adds a 4th qualification, the CPD body scrolls inside its card — Reviews stays the same shape.
 
-| Card | Has data | No data |
-|---|---|---|
-| Profile status | normal | normal |
-| Needs Attention | rotates priorities | "Your profile is live — share it today" + Copy link CTA |
-| KPI strip | shows tiles with sparkline | **strip is hidden entirely**; replaced by single "Tracking starts when your first visitor lands" line |
-| Reviews / Activity / Services | shown if items exist | hidden, not skeleton-padded |
-| Trust rail | always shown | always shown (this is the point of Verified) |
+### 3. Unify the row system
 
-Result: a brand-new Verified trainer sees ~3 cards (profile, needs-attention, trust rail) — focused, intentional, never empty-feeling.
+Promote row 5 from `lg:grid-cols-2` to the same `xl:grid-cols-12` 6/6 split so all three two-column rows share one column grid. The KPI strip stays full-width 4-up.
 
-## Files I'll touch
+### 4. Minimum heights so empty cards don't collapse
 
-- `src/routes/_authenticated/_professional/dashboard.tsx` — full layout rewrite
-- `src/components/dashboard/hub/index.tsx` — strip down to: `WelcomeBanner` (kept, tightened), `NeedsAttentionHero` (new, replaces current `NeedsAttention`), `KpiStrip` (new, ≤4, conditional), `TrustRail` (recomposes existing `CompletenessCard` + `VerificationStatusCard` + `ReviewsSnapshot` + `CpdMini`)
-- Delete/retire: `DiscoverabilityStrip` (folded into KPI strip), `ActivityTimeline` (only renders when ≥1 event), the second 8-tile KPI row, stacked-rail layout
-- `src/components/dashboard/hub/HeaderSparkline.tsx` — keep, reused inside KPI tiles
-- No DB changes. No new server functions. Discoverability tables stay as-is.
+Set `min-h-[320px]` on rows 3 and 4, `min-h-[260px]` on row 5. Stops a brand-new account (no activity, no qualifications) from looking like a series of header strips.
 
-## Out of scope (explicit)
+### 5. Card-level polish (small but compounding)
 
-- Pro / Studio / Admin dashboards (Verified only this pass)
-- Public profile, enquire, coach shop-front (all locked)
-- Any business-logic / billing / verification changes
+- Bump `PPanel` inner padding from `p-5` to `p-6` to match the breathing room you see in the Panze reference.
+- Add a subtle 1px inner highlight (`shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]`) so cards lift off the panel background — currently they're flat on flat.
+- Tighten `SectionHeader` line-height and add a hairline divider under it (`border-b border-reps-border/40 pb-3 mb-4`) so header and body read as distinct zones.
+- "Recent activity" footer (timestamp + chevron) sits on its own row with a top divider, not floating mid-card.
+- "Needs your attention" empty state: when there's nothing to do, show a single confident "You're all caught up" Empty primitive, not a blank panel.
 
-## Quality bar
+### 6. Hierarchy fixes spotted in QA
 
-Before saying done: side-by-side screenshot vs current, day-one (zero data) AND populated states both checked, no orange outside the two allowed spots, no `rounded-xl/2xl/3xl`, no shadows on buttons, audit script green.
+- KPI tiles have no separator between value and delta — add `text-xs text-muted-foreground mt-1` so "0 unread" doesn't look like part of the number.
+- "Your services" empty state currently dominates a full-width card; reduce to `min-h-[180px]` and move "Manage services" into the empty state itself, not the header.
+- "Grow your business inside REPS" CTA: contain it to the column grid width (currently breaks the rhythm by spanning edge-to-edge) and reduce vertical padding by ~30%.
 
-Used the **redesign** skill to pin taste before building, and **reps-build-compliance** as the post-flight gate.
+### Technical notes
+
+- Equal-height via `h-full` on cards plus default `items-stretch` on CSS grid — no JS measuring, no `ResizeObserver`.
+- Scroll regions use `min-h-0` on the flex parent (required for `overflow-y-auto` inside flex column to actually clip).
+- All tokens stay semantic — no hardcoded colours added. Shadow uses an existing rgba pattern already in the file.
+- shadcn primitives used: `Empty` for caught-up state, `Separator` for in-card dividers, `ScrollArea` is intentionally **not** used (native overflow is lighter and matches the dark theme better here).
+
+### Out of scope (flag for separate pass)
+
+- Sidebar density and the empty `Account / Deliver` section labels — separate IA pass.
+- KPI tile redesign with sparklines — needs design directions.
+- Mobile breakpoints below `lg` — current request is desktop polish; mobile already stacks correctly.
