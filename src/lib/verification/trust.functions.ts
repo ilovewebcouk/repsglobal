@@ -28,8 +28,11 @@ export type TrustState = {
     changesRequestedCount: number;
     rejectedCount: number;
     titles: string[];
+    /** The pro's chosen primary title label (falls back to first approved). */
+    primaryTitle: string | null;
     latestApprovedAt: string | null;
   };
+
   ticks: { identity: boolean; insurance: boolean; qualifications: boolean };
   completedCount: 0 | 1 | 2 | 3;
 };
