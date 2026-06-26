@@ -144,6 +144,8 @@ export const getTrustState = createServerFn({ method: "GET" })
         changesRequestedCount,
         rejectedCount,
         titles: titleLabels,
+        primaryTitle,
+
         latestApprovedAt,
       },
       ticks,
