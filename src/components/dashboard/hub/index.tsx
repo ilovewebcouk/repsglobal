@@ -9,14 +9,19 @@ import {
   CheckCircle2,
   ChevronRight,
   Copy,
+  Eye,
   ExternalLink,
   GraduationCap,
   Inbox,
   Loader2,
   MessageCircle,
+  MousePointerClick,
+  Search as SearchIcon,
   ShieldCheck,
   Sparkles,
   Star,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 
 import { PCard, PPanel, SectionHeader } from "@/components/dashboard/primitives";
