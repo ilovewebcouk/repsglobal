@@ -19,7 +19,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
       { label: "How REPS Works", to: "/how-it-works" },
       { label: "Specialisms", to: "/specialisms" },
       { label: "Reviews", to: "/reviews" },
-      { label: "Help Centre", soon: true },
+      { label: "Help Centre", to: "/help" },
       { label: "FAQ", soon: true },
     ],
   },
