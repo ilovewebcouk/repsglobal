@@ -413,10 +413,10 @@ function ForProsPage() {
           <div className="grid gap-4 md:grid-cols-3">
             {[
               {
-                name:"Verified",
+                name:"Core",
                 price:"£99",
                 cadence:"/ year",
-                tagline:"Your verified profile on the register the public already searches.",
+                tagline:"Your profile on the register the public already searches.",
                 href:"/pricing",
               },
               {

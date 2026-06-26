@@ -1,37 +1,82 @@
 ## Goal
 
-Stop the qualification-review button from sounding like it grants the full REPS Verified credential. The credential is the 3-of-3 gate (ID + qualification + in-date insurance) and should only flip on when all three pass.
+Kill the "Verified means two different things" problem on Jordon's dashboard, and stop lying about insurance status.
 
-## Changes
+Three fixes, all UI/copy + one trust-state computation tweak. No schema changes, no Stripe price changes — the £99/yr tier keeps the same product/price IDs, only its **display name** changes.
 
-### 1. Admin button copy — `src/routes/admin_.verification.tsx`
-- Replace `"Approve & verify"` (button label + tooltip, ~line 970–972) with `"Approve qualification"`.
-- Change the right-hand "Will mark as: Verified" hint above the textarea (line 906–908) to say `Will approve: this qualification` to match.
+---
 
-### 2. Server: don't write the legacy `verification` column from this action — `src/lib/verification/verification.functions.ts`
-- In `reviewVerification`, remove the `professionals.verification = 'verified' / verification_status = 'verified'` write inside the `decision === 'approved'` branch. The qualification `pro_titles` grant + title assignment stays exactly as-is.
-- Keep the `decision === 'rejected'` write that flips `verification = 'rejected'` only if it's currently `verified` (so a single rejection of one cert doesn't unverify someone who has other valid quals). I'll guard it with a check on the current value before writing — if you'd rather just remove that branch entirely too, say the word and I'll drop it.
-- Leave the new notification fire-and-forget for `qualification.approved` / `rejected` / `changes_requested` in place.
+## 1. Rename the £99/yr tier "Verified" → "Core"
 
-### 3. Recompute the public "REPS Verified" flag automatically
-Today `professionals.verification` is a denormalised column that the legacy badge code still reads in places. The single source of truth going forward is `is_pro_fully_verified(uuid)` (ID approved + approved qualification + active+in-date insurance).
+The tier name collides with the verification status. Renaming to **Core** keeps the ladder readable: **Core → Pro → Studio**.
 
-I'll add a tiny trigger so the column self-heals whenever any of the three inputs change, instead of relying on whoever clicks a button to set it:
-- New trigger function `public.recompute_pro_verification(uuid)` that sets `professionals.verification` to `'verified'` when `is_pro_fully_verified` returns true and `'unverified'` otherwise (preserving manual `rejected` only if you've explicitly rejected within the last 30 days — happy to drop this nuance if you prefer the simple two-state version).
-- Triggers on `verification_submissions` (after insert/update of status), `insurance_policies` (after insert/update of status/expiry_date), and `professionals` (after update of identity_status) that call it.
+What changes:
 
-This means: the moment Jordon uploads a current insurance certificate that passes, his badge flips on with no admin action. The moment any of the three lapses, it flips off.
+- `src/lib/billing.ts` — tier label/copy constants: `"Verified"` → `"Core"` (and `"Verified plan"` → `"Core plan"`). Keep all Stripe `price_…` / `prod_…` IDs and the internal `tier` enum key (`"verified"`) untouched so subscriptions, webhooks, RLS, and `useTrainerTier()` keep working.
+- `src/hooks/use-effective-identity.ts` — `tier === "verified" ? "Verified"` → `"Core"`.
+- `src/components/dashboard/DashboardShell.types.ts` / `nav-data` — anywhere a tier label string is rendered, swap to "Core".
+- Sidebar member card ("Verified" pill under Jordon's email) → "Core".
+- `/pricing`, `/for-professionals`, comparison pages, `/features/*` Verified-vs-Pro matrices, FAQ copy, and any "Join REPS Verified" CTAs → "Join REPS Core" / "Core plan". (Pass: ripgrep for `Verified` in `src/routes/{pricing,for-professionals,features.*,compare*,standards}.tsx`, `src/components/{marketing,pricing}/**`, and the help articles in `src/content/help/**`. Skip matches that refer to the trust state, e.g. "REPS Verified badge".)
+- Email templates and any admin copy that says "Verified tier".
 
-### 4. Trainer dashboard hero copy — `src/routes/_authenticated/_professional/dashboard_.verification.tsx`
-No code change needed — the hero already shows "2 of 3 — keep going" off `trust.completedCount`, which already keys off the three independent ticks.
+What does **not** change:
 
-## Out of scope (flag for later if you want)
+- The trust badge stays **"REPS Verified"** — that's the 3-of-3 credential.
+- DB enum/internal key stays `"verified"` (renaming the enum would touch every RLS policy and subscription row for zero user benefit).
+- `is_pro_fully_verified()` and `list_fully_verified_pro_ids()` — unaffected.
+- Stripe prices.
 
-- Renaming the underlying `professionals.verification` column to something less ambiguous (e.g. `credential_state`). Big refactor; not worth doing in this pass.
-- Bringing the legacy `verification_status` column into line — it's mostly unused by the new badge logic but a handful of admin lists still read it. I'll leave it alone unless you want me to do a sweep.
+Memory update: `mem://index.md` Core line "Phase 2.0 in progress: wire Verified £99/yr…" → "Core £99/yr…", and add a one-liner: *"Tier rename: £99/yr tier is **Core** in all UI/marketing. Internal enum key stays `verified`. The trust badge is **REPS Verified** (3-of-3) — different concept."*
 
-## Sequence
+---
 
-1. Migration: add the trigger + helper.
-2. Code edits: button copy, remove the legacy write, keep notifications.
-3. Verify on `/admin/verification` for Jordon: clicking the new "Approve qualification" button approves the cert, fires the bell, **does not** flip the public badge (because insurance is still expired). Then upload a fresh in-date insurance cert (or admin-edit the row) and confirm the trigger flips `verification` to `'verified'`.
+## 2. Replace the orange tier chip beside "Jordon Gumbley" with a true verification pill
+
+Today the header (`DashboardHeader` / hub welcome card on `/dashboard`) renders the tier as an orange "Verified" pill right next to the trainer's name. That reads as "your profile is verified" — it isn't (Jordon is 2/3).
+
+Change: render `<VerificationPill identityStatus={…} verification={…} />` (the existing component in `src/components/directory/VerificationPill.tsx`, dark-variant) driven by `getTrustState`:
+
+- All 3 ticks (identity + insurance active + qualification) → emerald **"REPS Verified"** pill.
+- Anything less → neutral **"Unverified"** pill.
+
+Tier ("Core / Pro / Studio") moves to: (a) the sidebar member card where it already exists, and (b) a small muted label under the verification pill if needed for hierarchy. The header stops conflating the two.
+
+Files: the welcome/hero card in `src/routes/_authenticated/_professional/dashboard.tsx` (and the hub equivalent for the `/dashboard` Hub redesign) + wherever `DashboardShell` renders the inline tier chip.
+
+---
+
+## 3. Insurance card: show "Expired" instead of "In review" when the cert has lapsed
+
+`getTrustState` already computes `insurance.status = "expired"` correctly when `expiry_date < today`, even if the DB row is still `pending`. The Verification sidebar card on `/dashboard` is reading the raw row status ("Admin is reviewing your certificate · In review") instead of the trust-state-derived status. That's the lie in the screenshot.
+
+Fix the small "Verification" panel on the hub (right-rail card in the screenshot) to consume `getTrustState().insurance.status` and render:
+
+| status | pill | subline | CTA |
+|---|---|---|---|
+| `active` | emerald "In date" | provider · expires DD MMM YYYY | — |
+| `expired` | **rose "Expired"** | "Your certificate lapsed on DD MMM YYYY" | **"Upload renewed certificate"** → `/dashboard/verification#insurance` |
+| `pending` (and not expired) | amber "In review" | "Admin is reviewing your certificate" | — |
+| `rejected` | rose "Rejected" | reason if present | "Upload new certificate" |
+| `none` | neutral "Not started" | "Upload your professional liability cover" | "Upload certificate" |
+
+Same logic should drive the matching row on `/dashboard/verification` (already uses `InsuranceProfileCard` — confirm its pill maps `expired` → rose, not amber/in-review).
+
+Knock-on: the "Needs your attention" list ("Complete your verification") should split into discrete tasks when there's an actionable signal — at minimum surface a dedicated **"Insurance expired — upload renewed certificate"** card when `insurance.status === "expired"`, separate from the generic "Complete your verification" nudge.
+
+---
+
+## Technical notes
+
+- No DB migration. No Stripe product changes.
+- `useTrainerTier()` keeps returning `"verified" | "pro" | "studio"` — only display strings change.
+- `VerificationPill` already exists; reuse the "onImage" variant for the dark header.
+- The trust card's "Insurance on file · In review" copy currently lives in the right-rail `Verification` card on the hub (the screenshot's third panel). That card needs to read from `getTrustState` rather than the raw `insurance_policies.status`.
+- Audit: after the rename, grep for stray `"Verified"` referring to the tier (not the badge) in: `src/lib/billing.ts`, `src/components/pricing/**`, `src/routes/pricing.tsx`, `src/routes/for-professionals.tsx`, `src/routes/features.*`, `src/routes/compare*.tsx`, `src/content/help/**`, `src/emails/**`.
+
+---
+
+## Out of scope
+
+- Renaming the `verification_status` enum or the `tier` enum value (cosmetic-only rename keeps blast radius tiny).
+- Auto-rejecting expired insurance in admin queue (already on roadmap; today it stays `pending` until an admin actions it — UI just stops lying about that).
+- Touching the public profile or `/pro/$slug` — already correct (uses `VerificationPill` + `is_pro_fully_verified`).
