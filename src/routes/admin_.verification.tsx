@@ -1029,6 +1029,9 @@ function SubCheckChip({ ok, label }: { ok: boolean; label: string }) {
       {label}
     </span>
   );
+}
+
+
 
 /* -------------------------------------------------------------------------- */
 /* Identity tab — admin index of all identity_documents                       */
