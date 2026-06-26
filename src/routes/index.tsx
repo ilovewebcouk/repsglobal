@@ -166,7 +166,11 @@ type HomeFeaturedCard = {
   image: string;
   online?: boolean;
   slug?: string;
+  identityStatus?: string | null;
+  verification?: string | null;
+  tier?: "studio" | "pro" | "verified" | "free" | null;
 };
+
 
 const FALLBACK_FEATURED: HomeFeaturedCard[] = [
   { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
@@ -195,6 +199,9 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
     image: r.avatar_url ?? fallbackImg,
     online: !r.in_person_available && Boolean(r.online_available),
     slug: r.slug,
+    identityStatus: r.identity_status,
+    verification: r.verification,
+    tier: r.tier,
   };
 }
 
@@ -353,9 +360,9 @@ function HomeV2() {
                 mode,
                 tags: [],
                 image: p.image,
-                identityStatus: "approved",
-                verification: "verified",
-                tier: "verified",
+                identityStatus: p.identityStatus ?? null,
+                verification: p.verification ?? null,
+                tier: p.tier ?? null,
               };
               return (
                 <div key={p.name} className="w-[78%] shrink-0 snap-center sm:w-auto">
