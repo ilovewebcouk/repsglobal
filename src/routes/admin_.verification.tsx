@@ -988,16 +988,23 @@ function AdminIdentityTab({
     );
   }, [query.data, search]);
 
-  const doOverride = async (id: string, decision: "approved" | "rejected" | "needs_more_info") => {
-    const reason = window.prompt(
-      `Reason for marking this identity check as "${decision}" (required, min 8 chars):`,
-    );
-    if (!reason || reason.trim().length < 8) return;
+  const doOverride = (id: string, decision: "approved" | "rejected" | "needs_more_info") => {
+    setOverrideReason("");
+    setOverrideTarget({ id, decision });
+  };
+
+  const submitOverride = async () => {
+    if (!overrideTarget || overrideReason.trim().length < 8) return;
+    setOverrideBusy(true);
     try {
-      await override({ data: { identity_id: id, decision, reason: reason.trim() } });
+      await override({ data: { identity_id: overrideTarget.id, decision: overrideTarget.decision, reason: overrideReason.trim() } });
       qc.invalidateQueries({ queryKey: ["admin-identity-checks"] });
+      setOverrideTarget(null);
+      setOverrideReason("");
     } catch (e) {
       alert(e instanceof Error ? e.message : "Override failed");
+    } finally {
+      setOverrideBusy(false);
     }
   };
 
