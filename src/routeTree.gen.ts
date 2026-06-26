@@ -74,7 +74,6 @@ import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
-import { Route as AdminSeedShellsRouteImport } from './routes/admin_.seed-shells'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
@@ -460,11 +459,6 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminSeedShellsRoute = AdminSeedShellsRouteImport.update({
-  id: '/admin_/seed-shells',
-  path: '/admin/seed-shells',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
   id: '/admin_/reviews',
   path: '/admin/reviews',
@@ -842,7 +836,6 @@ export interface FileRoutesByFullPath {
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/seed-shells': typeof AdminSeedShellsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -965,7 +958,6 @@ export interface FileRoutesByTo {
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/seed-shells': typeof AdminSeedShellsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -1089,7 +1081,6 @@ export interface FileRoutesById {
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reviews': typeof AdminReviewsRoute
-  '/admin_/seed-shells': typeof AdminSeedShellsRoute
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
@@ -1216,7 +1207,6 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
-    | '/admin/seed-shells'
     | '/admin/settings'
     | '/admin/support'
     | '/admin/verification'
@@ -1339,7 +1329,6 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reviews'
-    | '/admin/seed-shells'
     | '/admin/settings'
     | '/admin/support'
     | '/admin/verification'
@@ -1462,7 +1451,6 @@ export interface FileRouteTypes {
     | '/admin_/payments'
     | '/admin_/professionals'
     | '/admin_/reviews'
-    | '/admin_/seed-shells'
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/verification'
@@ -1589,7 +1577,6 @@ export interface RootRouteChildren {
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
-  AdminSeedShellsRoute: typeof AdminSeedShellsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
@@ -2090,13 +2077,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/seed-shells': {
-      id: '/admin_/seed-shells'
-      path: '/admin/seed-shells'
-      fullPath: '/admin/seed-shells'
-      preLoaderRoute: typeof AdminSeedShellsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/reviews': {
@@ -2763,7 +2743,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
-  AdminSeedShellsRoute: AdminSeedShellsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
