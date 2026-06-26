@@ -17,7 +17,6 @@ export const getHomepageHeroAvatars = createServerFn({ method: "GET" }).handler(
       .from("professionals")
       .select("id, slug, city, quality_score")
       .eq("is_published", true)
-      .eq("identity_status", "approved")
       .eq("bd_seed_thin", false)
       .order("quality_score", { ascending: false, nullsFirst: false })
       .limit(24);
