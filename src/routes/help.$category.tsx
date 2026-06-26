@@ -11,17 +11,15 @@ export const Route = createFileRoute("/help/$category")({
   loader: ({ params }) => {
     const category = getCategory(params.category);
     if (!category) throw notFound();
-    const articles = getArticlesByCategory(params.category);
-    return { category, articles };
+    return { categorySlug: category.slug };
   },
-  head: ({ loaderData }) => {
-    const title = loaderData
-      ? `${loaderData.category.title} — REPS Help Centre`
+  head: ({ params }) => {
+    const category = getCategory(params.category);
+    const title = category
+      ? `${category.title} — REPS Help Centre`
       : "REPS Help Centre";
-    const desc = loaderData?.category.description ?? "";
-    const canonical = loaderData
-      ? `https://repsglobal.lovable.app/help/${loaderData.category.slug}`
-      : "https://repsglobal.lovable.app/help";
+    const desc = category?.description ?? "";
+    const canonical = `https://repsglobal.lovable.app/help/${params.category}`;
     return {
       meta: [
         { title },
@@ -41,7 +39,9 @@ export const Route = createFileRoute("/help/$category")({
 });
 
 function HelpCategoryPage() {
-  const { category, articles } = Route.useLoaderData();
+  const { categorySlug } = Route.useLoaderData();
+  const category = getCategory(categorySlug)!;
+  const articles = getArticlesByCategory(categorySlug);
   return (
     <div className="min-h-screen bg-reps-ink text-white">
       <PublicHeader />
