@@ -2,7 +2,7 @@
 // Ofqual register. Uses a Postgres-backed 7-day cache to avoid hammering
 // gov.uk on every submission view.
 
-import { OFQUAL_QUAL_NO_REGEX } from "./awarding-bodies";
+import { OFQUAL_QUAL_NO_REGEX, matchesAwardingBody } from "./awarding-bodies";
 
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -74,7 +74,12 @@ async function fetchFromOfqual(qualNo: string): Promise<OfqualRecord | null> {
  */
 export async function lookupOfqualQualification(
   qualNoRaw: string,
-  submission: { awardingBody?: string | null; qualification?: string | null } = {},
+  submission: {
+    awardingBody?: string | null;
+    awardingBodySlug?: string | null;
+    qualification?: string | null;
+  } = {},
+  options: { force?: boolean } = {},
 ): Promise<OfqualLookupResult> {
   const qualNo = qualNoRaw.trim().toUpperCase();
   if (!OFQUAL_QUAL_NO_REGEX.test(qualNo)) {
@@ -83,17 +88,20 @@ export async function lookupOfqualQualification(
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  // Read cache
-  const { data: cached } = await supabaseAdmin
-    .from("ofqual_cache")
-    .select("record, found, fetched_at")
-    .eq("qualification_number", qualNo)
-    .maybeSingle();
+  // Read cache (skipped on force)
+  const { data: cached } = options.force
+    ? { data: null as unknown as { record: OfqualRecord | null; found: boolean; fetched_at: string } | null }
+    : await supabaseAdmin
+        .from("ofqual_cache")
+        .select("record, found, fetched_at")
+        .eq("qualification_number", qualNo)
+        .maybeSingle();
 
   let record: OfqualRecord | null = null;
   let found = false;
 
   const stale =
+    options.force ||
     !cached ||
     Date.now() - new Date((cached as { fetched_at: string }).fetched_at).getTime() > CACHE_TTL_MS;
 
@@ -119,14 +127,13 @@ export async function lookupOfqualQualification(
 
   if (!record) return { found: false, record: null };
 
-  const awardingBodyMatch =
-    !!submission.awardingBody &&
-    !!record.awardingOrganisation &&
-    (normalise(submission.awardingBody).includes(normalise(record.awardingOrganisation)) ||
-      normalise(record.awardingOrganisation).includes(normalise(submission.awardingBody)));
+  const awardingBodyMatch = matchesAwardingBody(record.awardingOrganisation, {
+    slug: submission.awardingBodySlug ?? null,
+    name: submission.awardingBody ?? null,
+  });
 
   const titleMatch =
-    !!submission.qualification && !!record.title && titleSimilarity(submission.qualification, record.title) >= 0.5;
+    !!submission.qualification && !!record.title && titleSimilarity(submission.qualification, record.title) >= 0.6;
 
   const isLive =
     !record.status || /live|available|active|operational/i.test(record.status);

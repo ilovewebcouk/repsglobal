@@ -88,3 +88,68 @@ export function isOfqualQualNumber(input: string | null | undefined): boolean {
   if (!input) return false;
   return OFQUAL_QUAL_NO_REGEX.test(input.trim());
 }
+
+/**
+ * Accepted Ofqual `OrganisationName` variants per slug.
+ * Used by the Ofqual cross-check to avoid false-negatives when the awarding
+ * body's legal name on the register differs from the friendly label the Pro
+ * picked (e.g. "Innovate Awarding" vs "Innovate Awarding Organisation Limited"
+ * — or acronyms like "IAO" / "NCFE-CACHE").
+ *
+ * Each variant is matched case-insensitively after normalisation to
+ * alphanumerics + spaces. New aliases here flow through both the live lookup
+ * and admin "Re-check Ofqual" without code changes elsewhere.
+ */
+export const OFQUAL_BODY_ALIASES: Record<string, string[]> = {
+  "active-iq": ["active iq", "active iq limited", "active iq ltd", "activeiq"],
+  ncfe: ["ncfe", "ncfe cache", "cache", "ncfe (cache)", "council for awards in care health and education"],
+  "focus-awards": ["focus awards", "focus awards limited", "focus awards ltd"],
+  "ymca-awards": ["ymca awards", "ymca awards limited", "ymca awards ltd", "ymca"],
+  vtct: ["vtct", "vocational training charitable trust", "itec"],
+  "innovate-awarding": [
+    "innovate awarding",
+    "innovate awarding organisation",
+    "innovate awarding organisation limited",
+    "innovate awarding organisation ltd",
+    "iao",
+  ],
+  "1st4sport": ["1st4sport", "1st4sport qualifications", "1st 4 sport", "1st 4 sport qualifications"],
+  pearson: ["pearson", "pearson education", "pearson education limited", "edexcel", "btec", "pearson edexcel"],
+  "city-and-guilds": ["city and guilds", "city & guilds", "the city and guilds of london institute", "c and g"],
+  ocr: ["ocr", "oxford cambridge and rsa", "oxford cambridge and rsa examinations"],
+  tquk: ["tquk", "training qualifications uk", "training qualifications uk limited", "training qualifications uk ltd"],
+  "aim-qualifications": ["aim", "aim qualifications", "aim qualifications and assessment group"],
+  "open-awards": ["open awards", "open awards limited"],
+  "gateway-qualifications": ["gateway qualifications", "gateway qualifications limited"],
+  iao: ["iao", "industry qualifications", "industry qualifications limited", "iq"],
+};
+
+const normAlias = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+/**
+ * Decide whether `registerName` (from Ofqual) refers to the same awarding body
+ * as the one the Pro selected. Slug + alias table wins; falls back to a
+ * bidirectional substring compare so unknown bodies still have a chance.
+ */
+export function matchesAwardingBody(
+  registerName: string | null | undefined,
+  submitted: { slug?: string | null; name?: string | null },
+): boolean {
+  if (!registerName) return false;
+  const reg = normAlias(registerName);
+  if (!reg) return false;
+
+  const slug = submitted.slug ?? null;
+  if (slug && OFQUAL_BODY_ALIASES[slug]) {
+    for (const alias of OFQUAL_BODY_ALIASES[slug]) {
+      const a = normAlias(alias);
+      if (!a) continue;
+      if (reg === a || reg.includes(a) || a.includes(reg)) return true;
+    }
+  }
+
+  const name = submitted.name ? normAlias(submitted.name) : "";
+  if (name && (reg === name || reg.includes(name) || name.includes(reg))) return true;
+
+  return false;
+}
