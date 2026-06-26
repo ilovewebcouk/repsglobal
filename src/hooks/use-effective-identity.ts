@@ -33,11 +33,13 @@ export function useEffectiveIdentity(): EffectiveIdentity {
   });
 
   if (data?.active) {
+    const tierLabel =
+      data.tier === "pro" ? "Pro" : data.tier === "studio" ? "Studio" : "Verified";
     return {
       name: data.name,
-      email: null, // we don't expose auth.users.email to the client
+      email: data.email ?? null,
       avatarUrl: data.avatarUrl,
-      tierLabel: "Viewing",
+      tierLabel,
       isImpersonating: true,
       isLoading: false,
     };

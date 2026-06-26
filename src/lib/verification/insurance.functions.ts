@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { nameSimilarity, INSURANCE_MIN_COVER_GBP } from "@/lib/verification/cross-checks";
 import { notifyVerificationEvent } from "@/lib/verification/notifications.functions";
 
@@ -163,7 +164,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
 
 
 export const myInsurance = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data, error } = await supabase

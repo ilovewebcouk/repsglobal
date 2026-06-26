@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { matchAwardingBody, OFQUAL_QUAL_NO_REGEX } from "./awarding-bodies";
 import { deriveTitlesForSubmission } from "./title-rules";
 
@@ -294,7 +295,7 @@ export const submitCertificate = createServerFn({ method: "POST" })
  * -------------------------------------------------------------------------- */
 
 export const myCertificates = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
