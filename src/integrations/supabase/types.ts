@@ -470,6 +470,54 @@ export type Database = {
           },
         ]
       }
+      certificate_upload_sessions: {
+        Row: {
+          created_at: string
+          doc_path: string | null
+          expires_at: string
+          filename: string | null
+          id: string
+          professional_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doc_path?: string | null
+          expires_at?: string
+          filename?: string | null
+          id?: string
+          professional_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doc_path?: string | null
+          expires_at?: string
+          filename?: string | null
+          id?: string
+          professional_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_upload_sessions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificate_upload_sessions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       client_invites: {
         Row: {
           accepted_at: string | null

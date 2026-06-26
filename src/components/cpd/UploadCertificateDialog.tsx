@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { FileText, Landmark, Loader2, Lock, Sparkles, Upload } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { FileText, Landmark, Loader2, Lock, Smartphone, Sparkles, Upload } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 import {
   Dialog,
@@ -20,16 +22,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 import { AWARDING_BODIES, OFQUAL_QUAL_NO_REGEX } from "@/lib/cpd/awarding-bodies";
 import {
+  createCertUploadSession,
   extractCertificateFields,
+  fetchCertUploadPayload,
+  getCertUploadSession,
+  markCertUploadSessionConsumed,
   submitCertificate,
   uploadCertificateFile,
 } from "@/lib/cpd/cpd.functions";
 
 type Step = "pick" | "extracting" | "confirm" | "submitting";
+type Tab = "upload" | "qr";
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -39,6 +47,18 @@ function fileToDataUrl(file: File): Promise<string> {
     r.readAsDataURL(file);
   });
 }
+
+function dataUrlToBlob(dataUrl: string): Blob {
+  const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) return new Blob();
+  const [, mime, b64] = m;
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
+
 
 function confidenceLabel(c: number | null | undefined): { label: string; tone: string } {
   const v = c ?? 0;
@@ -65,6 +85,11 @@ export function UploadCertificateDialog({
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
   const [trustBadges, setTrustBadges] = useState<string[]>([]);
 
+  // QR / scan with phone
+  const [tab, setTab] = useState<Tab>("upload");
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionExpiresAt, setSessionExpiresAt] = useState<string | null>(null);
+
   // Confirm form fields
   const [awardingBodySlug, setAwardingBodySlug] = useState<string>("other");
   const [awardingBodyOther, setAwardingBodyOther] = useState("");
@@ -78,6 +103,10 @@ export function UploadCertificateDialog({
   const extract = useServerFn(extractCertificateFields);
   const upload = useServerFn(uploadCertificateFile);
   const submit = useServerFn(submitCertificate);
+  const createSession = useServerFn(createCertUploadSession);
+  const getSession = useServerFn(getCertUploadSession);
+  const fetchPayload = useServerFn(fetchCertUploadPayload);
+  const markConsumed = useServerFn(markCertUploadSessionConsumed);
 
   const isOfqualFormat = useMemo(
     () => qualificationNumber.trim() !== "" && OFQUAL_QUAL_NO_REGEX.test(qualificationNumber.trim()),
@@ -102,6 +131,58 @@ export function UploadCertificateDialog({
     setExpiryDate("");
     setCertNumber("");
     setHolderName("");
+    setTab("upload");
+    setSessionId(null);
+    setSessionExpiresAt(null);
+  };
+
+  // Build the absolute mobile URL once we have a session id.
+  const mobileUrl = useMemo(() => {
+    if (!sessionId) return null;
+    if (typeof window === "undefined") return null;
+    return `${window.location.origin}/u/cpd/${sessionId}`;
+  }, [sessionId]);
+
+  // Poll session status when QR tab is active.
+  const sessionPoll = useQuery({
+    queryKey: ["cert-upload-session", sessionId],
+    queryFn: () => getSession({ data: { id: sessionId! } }),
+    enabled: Boolean(sessionId) && tab === "qr" && step === "pick",
+    refetchInterval: 2000,
+  });
+
+  // When a mobile upload arrives, pull it down and run the same extract flow.
+  useEffect(() => {
+    if (!sessionId) return;
+    const row = sessionPoll.data;
+    if (!row || row.status !== "uploaded") return;
+    (async () => {
+      setStep("extracting");
+      try {
+        const payload = await fetchPayload({ data: { session_id: sessionId } });
+        const synth = new File(
+          [dataUrlToBlob(payload.file_data_url)],
+          payload.filename,
+          { type: payload.file_data_url.match(/^data:([^;]+);/)?.[1] ?? "application/octet-stream" },
+        );
+        await markConsumed({ data: { id: sessionId } });
+        await handlePickFile(synth);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to fetch upload");
+        setStep("pick");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionPoll.data?.status, sessionId]);
+
+  const startQrSession = async () => {
+    try {
+      const s = await createSession({ data: undefined });
+      setSessionId(s.id);
+      setSessionExpiresAt(s.expires_at);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not start session");
+    }
   };
 
   const handleClose = (v: boolean) => {
@@ -209,33 +290,76 @@ export function UploadCertificateDialog({
         </DialogHeader>
 
         {step === "pick" ? (
-          <>
-            <label
-              htmlFor="cpd-cert-file"
-              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-8 text-center transition hover:border-reps-orange/60"
-            >
-              <Upload className="size-6 text-reps-orange" />
-              <div className="text-[14px] font-semibold text-white">Choose a file</div>
-              <div className="text-[12px] text-white/55">PDF, JPG or PNG · max 10MB</div>
-              <input
-                id="cpd-cert-file"
-                type="file"
-                accept="application/pdf,image/jpeg,image/png"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void handlePickFile(f);
-                }}
-              />
-            </label>
+          <Tabs value={tab} onValueChange={(v) => {
+            const next = v as Tab;
+            setTab(next);
+            if (next === "qr" && !sessionId) void startQrSession();
+          }}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">
+                <Upload className="mr-1.5 size-3.5" /> Upload file
+              </TabsTrigger>
+              <TabsTrigger value="qr">
+                <Smartphone className="mr-1.5 size-3.5" /> Scan with phone
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upload" className="mt-3">
+              <label
+                htmlFor="cpd-cert-file"
+                className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-8 text-center transition hover:border-reps-orange/60"
+              >
+                <Upload className="size-6 text-reps-orange" />
+                <div className="text-[14px] font-semibold text-white">Choose a file</div>
+                <div className="text-[12px] text-white/55">PDF, JPG or PNG · max 10MB</div>
+                <input
+                  id="cpd-cert-file"
+                  type="file"
+                  accept="application/pdf,image/jpeg,image/png"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void handlePickFile(f);
+                  }}
+                />
+              </label>
+            </TabsContent>
+
+            <TabsContent value="qr" className="mt-3">
+              <div className="flex flex-col items-center justify-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft p-6 text-center">
+                {mobileUrl ? (
+                  <>
+                    <div className="rounded-[12px] bg-white p-3">
+                      <QRCodeSVG value={mobileUrl} size={160} level="M" />
+                    </div>
+                    <div className="text-[13px] font-semibold text-white">
+                      Scan with your phone camera
+                    </div>
+                    <div className="text-[12px] text-white/55">
+                      Snap a photo of the certificate — it lands here automatically.
+                    </div>
+                    {sessionExpiresAt ? (
+                      <div className="text-[11px] text-white/45">
+                        Link expires {new Date(sessionExpiresAt).toLocaleTimeString()}
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2 text-[13px] text-white/65">
+                    <Loader2 className="size-4 animate-spin" /> Generating QR…
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
             <div className="mt-3 flex items-start gap-2 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[11.5px] text-white/65">
               <Lock className="mt-0.5 size-3.5 shrink-0 text-white/55" />
               <span>
                 Your certificate is stored privately — only visible to you and REPs admins. We keep it on file so the verification stands behind the original document.
               </span>
             </div>
-          </>
+          </Tabs>
         ) : null}
 
         {step === "extracting" ? (
