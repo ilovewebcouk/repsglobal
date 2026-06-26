@@ -566,6 +566,7 @@ function LocationLanding() {
               <Link
                 key={a}
                 to="/find-a-professional"
+                search={{ city: loc.name, q: a }}
                 className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-ivory px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:text-reps-orange"
               >
                 <Navigation className="h-3 w-3" />
