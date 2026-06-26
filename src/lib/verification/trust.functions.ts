@@ -47,9 +47,10 @@ export const getTrustState = createServerFn({ method: "GET" })
     const [{ data: pro }, { data: ins }, { data: subs }, { data: proTitles }] = await Promise.all([
       supabase
         .from("professionals")
-        .select("identity_verified_name, identity_verified_at, identity_status")
+        .select("identity_verified_name, identity_verified_at, identity_status, primary_title_slug")
         .eq("id", userId)
         .maybeSingle(),
+
       supabase
         .from("insurance_policies")
         .select("status, provider, cover_amount_gbp, expiry_date")
