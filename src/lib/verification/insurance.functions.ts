@@ -58,6 +58,9 @@ export const saveInsurance = createServerFn({ method: "POST" })
     let trustSignals: Record<string, unknown> = {};
     let insuredName: string | null = null;
     let nameMatch: boolean | null = null;
+    let autoApprove = false;
+    let autoApproveReason: string | null = null;
+    let proName: string | null = null;
     try {
       const ai = await runInsuranceAiFromPath(data.doc_path, userId);
       aiExtraction = ai;
@@ -67,38 +70,64 @@ export const saveInsurance = createServerFn({ method: "POST" })
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: pro } = await supabaseAdmin
         .from("professionals")
-        .select("identity_verified_name")
+        .select("identity_verified_name, identity_status")
         .eq("id", userId)
         .maybeSingle();
-      const proAny = pro as { identity_verified_name?: string | null } | null;
+      const proAny = pro as { identity_verified_name?: string | null; identity_status?: string | null } | null;
       const { data: prof } = await supabaseAdmin
         .from("profiles")
         .select("full_name, display_name")
         .eq("id", userId)
         .maybeSingle();
       const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
+      proName = profAny?.display_name ?? profAny?.full_name ?? null;
       const identityName =
         proAny?.identity_verified_name ?? profAny?.full_name ?? profAny?.display_name ?? null;
+      const identityApproved = proAny?.identity_status === "approved";
 
       const nameScore =
         insuredName && identityName ? nameSimilarity(insuredName, identityName) : null;
       nameMatch = nameScore === null ? null : nameScore >= 0.85;
 
       const expiryMismatch =
-        ai.expiry_date && ai.expiry_date !== data.expiry_date;
+        !!(ai.expiry_date && ai.expiry_date !== data.expiry_date);
 
-      const lowCover =
-        typeof ai.cover_amount_gbp === "number"
-          ? ai.cover_amount_gbp < INSURANCE_MIN_COVER_GBP()
-          : (data.cover_amount_gbp ?? 0) < INSURANCE_MIN_COVER_GBP();
+      const aiCover =
+        typeof ai.cover_amount_gbp === "number" ? ai.cover_amount_gbp : null;
+      const effectiveCover = aiCover ?? data.cover_amount_gbp ?? 0;
+      const lowCover = effectiveCover < INSURANCE_MIN_COVER_GBP();
+
+      // --- Auto-approval gate -------------------------------------------------
+      // All of: identity already approved (so we have a real name to match
+      // against), AI extracted cleanly, name match strong, in-date, full cover,
+      // and the insurer is on the allow-list. The expiry has already been
+      // hard-rejected above if it was in the past.
+      const providerKnown = isAllowedInsurer(ai.provider ?? data.provider);
+      const aiConfident = (ai.confidence ?? 0) >= 0.7;
+      const strongNameMatch = nameScore !== null && nameScore >= 0.92;
+
+      if (
+        identityApproved &&
+        strongNameMatch &&
+        !lowCover &&
+        !expiryMismatch &&
+        aiConfident &&
+        providerKnown
+      ) {
+        autoApprove = true;
+        autoApproveReason = `name ${(nameScore! * 100).toFixed(0)}%, cover £${effectiveCover.toLocaleString()}, insurer "${ai.provider ?? data.provider}", confidence ${(ai.confidence! * 100).toFixed(0)}%`;
+      }
 
       trustSignals = {
         ai: "ok",
         ai_confidence: ai.confidence ?? null,
         name_score: nameScore,
         name_match: nameMatch,
-        expiry_mismatch: expiryMismatch || false,
+        expiry_mismatch: expiryMismatch,
         low_cover: lowCover,
+        provider_known: providerKnown,
+        auto_approved: autoApprove,
+        auto_approve_reason: autoApproveReason,
         ai_extracted: {
           provider: ai.provider,
           cover_amount_gbp: ai.cover_amount_gbp,
@@ -117,7 +146,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
             expiry_date: data.expiry_date,
             cover_amount_gbp: ai.cover_amount_gbp ?? data.cover_amount_gbp ?? 0,
           },
-          proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+          proName: proName ?? undefined,
           alsoEmail: true,
         });
       }
@@ -129,7 +158,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
             insured_name: insuredName,
             identity_name: identityName,
           },
-          proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+          proName: proName ?? undefined,
           alsoEmail: true,
         });
       }
@@ -137,6 +166,9 @@ export const saveInsurance = createServerFn({ method: "POST" })
       trustSignals = { ai: "skipped", ai_error: (e as Error).message };
     }
 
+
+    const initialStatus = autoApprove ? "active" : "pending";
+    const nowIso = new Date().toISOString();
 
     const { data: row, error } = await supabase
       .from("insurance_policies")
@@ -148,18 +180,68 @@ export const saveInsurance = createServerFn({ method: "POST" })
         start_date: data.start_date ?? null,
         expiry_date: data.expiry_date,
         doc_path: data.doc_path,
-        status: "pending",
+        status: initialStatus,
         ai_extraction: (aiExtraction ?? null) as never,
-        ai_checked_at: aiExtraction ? new Date().toISOString() : null,
+        ai_checked_at: aiExtraction ? nowIso : null,
         trust_signals: trustSignals as never,
         insured_name: insuredName,
         name_match: nameMatch,
+        reviewed_at: autoApprove ? nowIso : null,
+        reviewed_by: null,
+        admin_note: autoApprove ? `Auto-approved by AI — ${autoApproveReason}` : null,
       } as never)
       .select("id, status, expiry_date, created_at")
       .single();
     if (error) throw new Error(error.message);
+
+    // Notify the pro that their cover is live. The DB recompute trigger on
+    // insurance_policies will flip professionals.verification → 'verified'
+    // automatically when the 3-of-3 gate is satisfied.
+    if (autoApprove) {
+      await notifyVerificationEvent({
+        professionalId: userId,
+        event: "insurance.auto_approved",
+        policyId: row?.id ?? null,
+        context: {
+          expiry_date: data.expiry_date,
+          insured_name: insuredName,
+          reason: autoApproveReason,
+        },
+        proName: proName ?? undefined,
+        alsoEmail: false,
+      });
+    }
+
     return row;
   });
+
+/**
+ * Allow-list of UK fitness-industry insurers we trust enough to auto-approve
+ * against (when every other signal also passes). Matched as a case-insensitive
+ * substring on the AI-extracted provider name OR the user-entered provider.
+ * Anything outside this list still goes to the admin queue.
+ */
+const ALLOWED_INSURERS = [
+  "insure4sport",
+  "westminster",
+  "protectivity",
+  "salon gold",
+  "insurance protector group",
+  "hiscox",
+  "markel",
+  "sportscover",
+  "towergate",
+  "fitpro",
+  "fitness industry education",
+  "insurefor",
+  "axa",
+] as const;
+
+function isAllowedInsurer(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const haystack = name.toLowerCase();
+  return ALLOWED_INSURERS.some((needle) => haystack.includes(needle));
+}
 
 
 
