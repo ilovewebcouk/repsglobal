@@ -379,7 +379,15 @@ export const Route = createFileRoute("/c/$slug")({
     </div>
   ),
   head: ({ params }) => {
-    const coach = COACHES[params.slug] ?? COACHES["james-wilson"];
+    const coach = COACHES[params.slug];
+    if (!coach) {
+      return {
+        meta: [
+          { title: "Coach not found | REPS" },
+          { name: "robots", content: "noindex,nofollow" },
+        ],
+      };
+    }
     const title = `${coach.name} — ${coach.role} | REPS`;
     const description = `${coach.promise} ${coach.subhead}`;
     return {
