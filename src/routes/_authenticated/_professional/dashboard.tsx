@@ -246,6 +246,7 @@ function DashboardPage() {
             <CpdMini
               qualUploaded={hasQualifications}
               uploadedAt={data?.profile?.cert_uploaded_at ?? null}
+              trust={hub.trust.data ?? null}
             />
             <ReviewsSnapshot kpis={reviewKpis} />
           </div>
