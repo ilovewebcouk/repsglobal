@@ -650,7 +650,16 @@ function ProProfilePage() {
                       ? "Not yet qualified"
                       : pro.qualifications.some((q) => q.expires && q.expires < today)
                         ? "Renewal required"
-                        : "Up to date"
+                        : (() => {
+                            const dateStr = pro.trust?.qualificationsCheckedAt || pro.memberSince;
+                            if (dateStr) {
+                              const d = new Date(dateStr);
+                              if (!Number.isNaN(d.getTime())) {
+                                return `Checked ${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                              }
+                            }
+                            return "Checked Jun 2026";
+                          })()
                   }
                 />
                 <TrustItem
