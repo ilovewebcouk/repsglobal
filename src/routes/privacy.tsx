@@ -29,7 +29,7 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          REPs is operated by <strong>Cruz Pereira</strong>, a sole trader
+          REPs is operated by <strong>Scott McKay</strong>, a sole trader
           trading as REPs ("REPs", "we", "us"). We are the data controller for
           the personal information described in this policy.
         </p>

@@ -30,7 +30,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           These terms form a binding agreement between you and{" "}
-          <strong>Cruz Pereira, trading as REPs</strong> ("REPs", "we", "us").
+          <strong>Scott McKay, trading as REPs</strong> ("REPs", "we", "us").
           They apply to everyone who uses REPs — both clients searching for
           professionals and professionals listed on the platform.
         </p>
