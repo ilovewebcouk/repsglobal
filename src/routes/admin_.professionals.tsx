@@ -139,7 +139,7 @@ const PROFESSION_OPTIONS = [
 
 const PLAN_OPTIONS: { value: "free" | "verified" | "pro" | "studio"; label: string }[] = [
   { value: "free", label: "Free" },
-  { value: "verified", label: "Verified" },
+  { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
 ];
@@ -163,7 +163,7 @@ function statusClass(s: AdminProRow["status"]) {
 }
 
 const PLAN_LABEL: Record<AdminProRow["plan"], string> = {
-  free: "Free", verified: "Verified", pro: "Pro", studio: "Studio",
+  free: "Free", verified: "Core", pro: "Pro", studio: "Studio",
 };
 
 function planClass(p: AdminProRow["plan"]) {

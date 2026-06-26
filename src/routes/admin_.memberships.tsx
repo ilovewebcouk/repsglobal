@@ -162,7 +162,7 @@ function KpiRow({
         sub={
           loading || !data
             ? "—"
-            : `Verified · Pro · Studio${
+            : `Core · Pro · Studio${
                 (data.verifiedScheduled ?? 0) > 0
                   ? ` (incl. ${data.verifiedScheduled} scheduled)`
                   : ""
@@ -240,7 +240,7 @@ function TierCardRow({ data, loading }: { data?: MembershipMetrics; loading: boo
   return (
     <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
       <TierCard
-        title="Verified"
+        title="Core"
         price="£99/year"
         icon={<BadgeCheck className="h-4 w-4 text-reps-orange" />}
         count={verifiedCount}
