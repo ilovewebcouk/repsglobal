@@ -847,6 +847,37 @@ function AdminVerificationPage() {
                   onReject={() => { setCertOpen(false); decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap }); }}
                   onRequestChanges={() => { setCertOpen(false); decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap }); }}
                 />
+
+                <Dialog open={revokeOpen} onOpenChange={(o) => { setRevokeOpen(o); if (!o) setRevokeReason(""); }}>
+                  <DialogContent className="border-reps-border bg-reps-ink text-white">
+                    <DialogHeader>
+                      <DialogTitle>Revoke approved qualification?</DialogTitle>
+                      <DialogDescription className="text-white/65">
+                        This deletes any titles granted from &ldquo;{sub.qualification}&rdquo; for{" "}
+                        {prof?.full_name || "this pro"}. Reason is recorded permanently and shown to the pro.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Textarea
+                      placeholder="Reason for revoking (min 8 chars)"
+                      value={revokeReason}
+                      onChange={(e) => setRevokeReason(e.target.value)}
+                      rows={3}
+                    />
+                    <DialogFooter>
+                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => setRevokeOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={busy || revokeReason.trim().length < 8}
+                        onClick={handleRevoke}
+                        className="bg-red-500 text-white hover:bg-red-600"
+                      >
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Revoke"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </>
             );
           })()}
