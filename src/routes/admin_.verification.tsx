@@ -638,11 +638,19 @@ function AdminVerificationPage() {
                     const ocrHolder = (sub as { ai_extraction?: { holder_name?: string | null } | null }).ai_extraction?.holder_name
                       ?? sub.holder_name ?? null;
                     const links = buildAwardingBodyVerifyLinks({ slug, qualNumber: qualNo, certNumber: certNo, learnerNumber: learnerNo });
-                    const profileName = prof?.full_name ?? null;
-                    const nameMismatch = !!(ocrHolder && profileName && ocrHolder.trim().toLowerCase() !== profileName.trim().toLowerCase());
+                    // Prefer the Stripe-verified legal name (locked after ID approval) over the editable profile name.
+                    const identityName = (pro as { identity_verified_name?: string | null } | null)?.identity_verified_name ?? null;
+                    const refName = identityName ?? prof?.full_name ?? null;
+                    const nameMismatch = !!(ocrHolder && refName && ocrHolder.trim().toLowerCase() !== refName.trim().toLowerCase());
                     const certExpired = (sub as { expiry_date?: string | null }).expiry_date
                       ? new Date((sub as { expiry_date?: string | null }).expiry_date!).getTime() < Date.now()
                       : false;
+                    const regRecord = (sub as { regulator_record?: { title?: string | null; awardingOrganisation?: string | null; level?: string | null; status?: string | null } | null }).regulator_record ?? null;
+                    const trustOfqual = (sub as { trust_signals?: { ofqual?: { awarding_body_match?: boolean; title_match?: boolean; is_live?: boolean; found?: boolean; rechecked_at?: string } } | null }).trust_signals?.ofqual ?? null;
+                    const hasOfqualQual = !!qualNo && /^\d{3}\/\d{4}\/[A-Z0-9]$/i.test(qualNo);
+                    const ofqualDetailsUrl = qualNo
+                      ? `https://register.ofqual.gov.uk/Qualification/Details/${encodeURIComponent(qualNo)}`
+                      : null;
                     const qualPill = certExpired
                       ? { tone: "fail" as const, label: "Certificate expired" }
                       : nameMismatch
@@ -661,19 +669,87 @@ function AdminVerificationPage() {
                             {certNo && <div><span className="text-white/45">Cert no.</span> · <span className="font-mono">{certNo}</span></div>}
                             {titleLabel && <div className="sm:col-span-2"><span className="text-white/45">If approved → unlocks title</span> · {titleLabel}</div>}
                           </div>
+
+                          {/* Ofqual record panel — only when we have a qual number in the right format */}
+                          {hasOfqualQual && (
+                            <div className="mt-3 rounded-[10px] border border-white/10 bg-white/[0.03] p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="text-[10.5px] uppercase tracking-wide text-white/55">
+                                  Ofqual register · <span className="font-mono text-white/75">{qualNo}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  {ofqualDetailsUrl && (
+                                    <a
+                                      href={ofqualDetailsUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 rounded-[6px] border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10.5px] text-white/80 hover:bg-white/[0.08]"
+                                    >
+                                      <ExternalLink className="h-3 w-3" /> Open
+                                    </a>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => recheckMutation.mutate(sub.id)}
+                                    disabled={recheckMutation.isPending}
+                                    className="inline-flex items-center gap-1 rounded-[6px] border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10.5px] text-white/80 hover:bg-white/[0.08] disabled:opacity-50"
+                                  >
+                                    {recheckMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+                                    Re-check
+                                  </button>
+                                </div>
+                              </div>
+                              {regRecord ? (
+                                <>
+                                  <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
+                                    {regRecord.title && (
+                                      <div><dt className="inline text-white/45">Title</dt> · <dd className="inline text-white/85">{regRecord.title}</dd></div>
+                                    )}
+                                    {regRecord.awardingOrganisation && (
+                                      <div><dt className="inline text-white/45">Awarding org</dt> · <dd className="inline text-white/85">{regRecord.awardingOrganisation}</dd></div>
+                                    )}
+                                    {regRecord.level && (
+                                      <div><dt className="inline text-white/45">Level</dt> · <dd className="inline text-white/85">{regRecord.level}</dd></div>
+                                    )}
+                                    {regRecord.status && (
+                                      <div><dt className="inline text-white/45">Status</dt> · <dd className="inline text-white/85">{regRecord.status}</dd></div>
+                                    )}
+                                  </dl>
+                                  {trustOfqual && (
+                                    <div className="mt-2 flex flex-wrap gap-1.5 text-[10.5px]">
+                                      <SubCheckChip ok={!!trustOfqual.awarding_body_match} label="Body match" />
+                                      <SubCheckChip ok={!!trustOfqual.title_match} label="Title match" />
+                                      <SubCheckChip ok={!!trustOfqual.is_live} label="Status live" />
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="mt-2 text-[11.5px] text-white/55">
+                                  Not yet fetched, or qualification number not found on the Ofqual register. Use Re-check to retry.
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           {ocrHolder && (
                             <div className={`mt-2 rounded-[8px] border px-2.5 py-2 text-[11.5px] ${nameMismatch ? "border-amber-400/30 bg-amber-500/5 text-amber-100/85" : "border-emerald-400/20 bg-emerald-500/5 text-emerald-100/85"}`}>
                               <div className="flex items-center gap-1.5 font-semibold">
                                 {nameMismatch ? <AlertTriangle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                                 Holder on cert: {ocrHolder}
                               </div>
-                              {profileName && (
-                                <div className="opacity-70">Profile name: {profileName}{nameMismatch ? " — review carefully" : " — matches"}</div>
+                              {refName && (
+                                <div className="opacity-70">
+                                  {identityName ? "ID-verified name" : "Profile name"}: {refName}{nameMismatch ? " — review carefully" : " — matches"}
+                                </div>
                               )}
                             </div>
                           )}
+
+                          <div className="pt-2 text-[11px] text-white/45">
+                            Ofqual confirms the qualification exists. The awarding body confirms this learner holds it — use the link below.
+                          </div>
                           {(links.length > 0 || !sub.regulator_verified) && (
-                            <div className="pt-2">
+                            <div className="pt-1">
                               <div className="text-[10.5px] uppercase tracking-wide text-white/45">Verify on</div>
                               <div className="mt-1 flex flex-wrap gap-1.5">
                                 {links.map((l) => (
@@ -726,6 +802,7 @@ function AdminVerificationPage() {
                     );
                   })()}
                 </PCard>
+
 
                 {/* ── DECISION ───────────────────────────────────────── */}
                 {isFinal ? (
