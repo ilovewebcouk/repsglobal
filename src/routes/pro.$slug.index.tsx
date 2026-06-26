@@ -292,11 +292,8 @@ function badgeFor(awardingBody: string | null, slug: string | null): string {
 
 function proFromDb(row: NonNullable<DbPro>): Pro {
   const template = PROS["james-carter"];
-  const verifiedFallback = row.trust?.verified
-    ? "REPS Verified Professional"
-    : "REPS Professional";
   const professionLabel =
-    getProfessionLabel(row.primary_profession) ?? verifiedFallback;
+    getProfessionLabel(row.primary_profession) ?? "Fitness Professional";
   const memberSince = row.member_since ? new Date(row.member_since) : null;
   const years = memberSince
     ? Math.max(
