@@ -362,9 +362,9 @@ function LocationLanding() {
     staleTime: 60 * 60_000,
   });
   const livePros = featuredResult?.pros ?? [];
-  const featured: FeaturedPro[] = livePros.length
-    ? livePros.slice(0, 4).map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]))
-    : FEATURED.slice(0, 4);
+  const featured: FeaturedPro[] = livePros
+    .slice(0, 4)
+    .map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]));
 
   const professionSlugs = loc.professions.map((p) => p.slug);
   const { data: liveCounts } = useQuery({
@@ -536,11 +536,23 @@ function LocationLanding() {
             See all {cityCountLabel} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p) => (
-            <FeaturedProCard key={p.name} pro={p} />
-          ))}
-        </div>
+        {featured.length > 0 ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p) => (
+              <FeaturedProCard key={p.name} pro={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-[18px] border border-reps-border bg-white px-6 py-10 text-center">
+            <p className="text-[14px] text-reps-muted-light">
+              We're onboarding verified professionals in {loc.name} now. Check back soon — or{" "}
+              <Link to="/find-a-professional" search={{ city: loc.name }} className="font-semibold text-reps-orange hover:text-reps-orange-dark">
+                browse the full directory
+              </Link>
+              .
+            </p>
+          </div>
+        )}
       </section>
 
       {/* Areas */}
