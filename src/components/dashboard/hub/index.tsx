@@ -378,7 +378,7 @@ export function NeedsAttention({
 export function CompletenessCard({ profile }: { profile: DashboardProfile | null }) {
   const { pct, checklist } = profileCompleteness(profile);
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader title="Profile completeness" icon={Sparkles} />
       <div className="flex items-center gap-4">
         <Ring value={pct} />
@@ -389,7 +389,7 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
           </p>
         </div>
       </div>
-      <ul className="mt-4 flex flex-col gap-1.5">
+      <ul className="mt-4 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
         {checklist.map((c) => (
           <li
             key={c.label}
