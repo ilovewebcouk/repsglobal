@@ -157,7 +157,7 @@ function DashboardPage() {
             tierLabel={tierLabel}
             isPublished={isPublished}
             slug={slug}
-            isVerified={isVerified}
+            trust={hub.trust.data ?? null}
           />
 
           {/* ROW 2 — KPI strip */}
