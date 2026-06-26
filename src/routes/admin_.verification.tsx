@@ -485,7 +485,7 @@ function AdminVerificationPage() {
                           variant="subtle"
                           size="sm"
                           disabled={busy}
-                          onClick={handleRevoke}
+                          onClick={() => { setRevokeReason(""); setRevokeOpen(true); }}
                           className="border-red-400/40 text-red-300 hover:border-red-300 hover:text-red-200"
                         >
                           Revoke
