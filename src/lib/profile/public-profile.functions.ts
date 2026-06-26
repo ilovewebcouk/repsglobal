@@ -137,7 +137,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
 
     const { data: proExtra } = await supabaseAdmin
       .from("professionals")
-      .select("verification, identity_status, insurance_valid_until")
+      .select("verification, identity_status, insurance_valid_until, identity_verified_at")
       .eq("id", r.id)
       .maybeSingle();
 
