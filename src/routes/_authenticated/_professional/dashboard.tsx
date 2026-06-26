@@ -215,7 +215,7 @@ function DashboardPage() {
                 insuranceExpired={insuranceExpired}
                 profilePct={profilePct}
                 isPublished={isPublished}
-                isVerified={isVerified}
+                trust={hub.trust.data ?? null}
               />
             </div>
             <div className="xl:col-span-4">
