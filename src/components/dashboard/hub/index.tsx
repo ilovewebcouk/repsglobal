@@ -1470,7 +1470,7 @@ export function NeedsAttentionHero(props: {
             </div>
           </div>
           <div className="shrink-0 lg:pl-4">
-            <DashboardButton asChild size="md" variant={hero.tone === "orange" || hero.tone === "danger" ? "primary" : "secondary"}>
+            <DashboardButton asChild size="md" variant={hero.tone === "orange" || hero.tone === "danger" ? "primary" : "subtle"}>
               <Link to={hero.to as any}>
                 {hero.cta}
                 <ChevronRight className="ml-1 size-4" />
