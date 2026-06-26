@@ -1,6 +1,8 @@
+import * as React from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useSessionUser } from "@/hooks/use-session-user";
 import { getShopFrontBySlug, type ServiceDTO, type ShopFrontDTO } from "@/lib/shop-front/shop-front.functions";
 import {
   ArrowRight,
