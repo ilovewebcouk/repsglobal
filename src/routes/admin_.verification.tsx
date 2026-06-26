@@ -870,6 +870,34 @@ function DocChip({ children, onClick }: { children: React.ReactNode; onClick: ()
   );
 }
 
+type StepPill = { tone: "ok" | "warn" | "fail" | "miss"; label: string };
+
+function StepHeader({ num, title, pill }: { num: number; title: string; pill: StepPill }) {
+  const tone =
+    pill.tone === "ok" ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+    : pill.tone === "warn" ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+    : pill.tone === "fail" ? "border-red-400/30 bg-red-500/15 text-red-300"
+    : "border-white/15 bg-white/5 text-white/55";
+  const icon =
+    pill.tone === "ok" ? <CheckCircle2 className="h-3.5 w-3.5" />
+    : pill.tone === "fail" ? <XCircle className="h-3.5 w-3.5" />
+    : pill.tone === "warn" ? <AlertTriangle className="h-3.5 w-3.5" />
+    : <Clock className="h-3.5 w-3.5" />;
+  return (
+    <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.06] text-[11px] font-bold text-white/70">
+          {num}
+        </span>
+        <h4 className="font-display text-[15px] font-bold text-white">{title}</h4>
+      </div>
+      <span className={`inline-flex items-center gap-1 rounded-[8px] border px-2 py-0.5 text-[11px] font-semibold ${tone}`}>
+        {icon} {pill.label}
+      </span>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Identity tab — admin index of all identity_documents                       */
 /* -------------------------------------------------------------------------- */
