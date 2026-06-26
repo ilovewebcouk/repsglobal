@@ -1244,3 +1244,351 @@ export const HubLoader = () => (
     <Loader2 className="size-5 animate-spin" />
   </div>
 );
+
+/* ================================================================== */
+/* v2 — Editorial dashboard (Verified)                                */
+/* Superhuman prioritisation · Linear polish · Notion calm hierarchy  */
+/* ================================================================== */
+
+/* ---------- NeedsAttentionHero ------------------------------------ */
+
+type HeroAttention = {
+  key: string;
+  icon: React.ComponentType<{ className?: string }>;
+  tone: "orange" | "warn" | "danger" | "neutral";
+  eyebrow: string;
+  title: string;
+  detail: string;
+  to: string;
+  cta: string;
+};
+
+function buildAttentionQueue(input: {
+  unreadEnquiries: number;
+  pendingReviewReplies: number;
+  unreadSupport: number;
+  insuranceExpiringDays: number | null;
+  insuranceExpired: boolean;
+  profilePct: number;
+  isPublished: boolean;
+  isVerified: boolean;
+  hasServices: boolean;
+  reviewsCount: number;
+}): HeroAttention[] {
+  const q: HeroAttention[] = [];
+  const {
+    unreadEnquiries, pendingReviewReplies, unreadSupport,
+    insuranceExpiringDays, insuranceExpired, profilePct,
+    isPublished, isVerified, hasServices, reviewsCount,
+  } = input;
+
+  if (insuranceExpired) q.push({
+    key: "insurance-expired", icon: AlertTriangle, tone: "danger",
+    eyebrow: "Action required",
+    title: "Your insurance has expired",
+    detail: "Upload your renewed certificate to keep your Insured layer and stay live on REPS.",
+    to: "/dashboard/verification", cta: "Upload renewal",
+  });
+  if (unreadEnquiries > 0) q.push({
+    key: "enquiries", icon: Inbox, tone: "orange",
+    eyebrow: "New enquiry",
+    title: unreadEnquiries === 1 ? "1 new enquiry awaiting reply" : `${unreadEnquiries} new enquiries awaiting reply`,
+    detail: "Quick replies win more bookings. Open your inbox and respond now.",
+    to: "/dashboard/enquiries", cta: "Open inbox",
+  });
+  if (insuranceExpiringDays !== null && insuranceExpiringDays <= 30) q.push({
+    key: "insurance-soon", icon: AlertTriangle, tone: "warn",
+    eyebrow: "Coming up",
+    title: `Insurance expires in ${insuranceExpiringDays} ${insuranceExpiringDays === 1 ? "day" : "days"}`,
+    detail: "Upload your renewed certificate so your Insured layer never lapses.",
+    to: "/dashboard/verification", cta: "Update insurance",
+  });
+  if (pendingReviewReplies > 0) q.push({
+    key: "reviews", icon: Star, tone: "neutral",
+    eyebrow: "Engagement",
+    title: pendingReviewReplies === 1 ? "1 review needs a reply" : `${pendingReviewReplies} reviews need a reply`,
+    detail: "Replying shows prospects you're engaged — and it lifts your profile in search.",
+    to: "/dashboard/reviews", cta: "Reply",
+  });
+  if (!isVerified) q.push({
+    key: "verify", icon: ShieldCheck, tone: "warn",
+    eyebrow: "Earn your badge",
+    title: "Complete your verification",
+    detail: "Identity, insurance and qualifications unlock your REPS Verified badge.",
+    to: "/dashboard/verification", cta: "Verify",
+  });
+  if (!isPublished) q.push({
+    key: "publish", icon: ShieldCheck, tone: "warn",
+    eyebrow: "Almost there",
+    title: "Your listing is still a draft",
+    detail: "Publish to appear in the REPS directory and start receiving enquiries.",
+    to: "/dashboard/profile", cta: "Publish profile",
+  });
+  if (!hasServices && isPublished) q.push({
+    key: "services", icon: Sparkles, tone: "neutral",
+    eyebrow: "Set up",
+    title: "Add your first service",
+    detail: "Tell prospects exactly what you offer — sessions, packages, online coaching.",
+    to: "/dashboard/services", cta: "Add a service",
+  });
+  if (reviewsCount === 0 && isPublished) q.push({
+    key: "first-review", icon: Star, tone: "neutral",
+    eyebrow: "Build trust",
+    title: "Request your first review",
+    detail: "One real review can lift conversion. Ask a client you've recently worked with.",
+    to: "/dashboard/reviews", cta: "Request a review",
+  });
+  if (profilePct < 100) q.push({
+    key: "profile", icon: Sparkles, tone: "neutral",
+    eyebrow: "Polish",
+    title: `Your profile is ${profilePct}% complete`,
+    detail: "A complete profile ranks higher and earns more enquiries.",
+    to: "/dashboard/profile", cta: "Finish profile",
+  });
+  if (unreadSupport > 0) q.push({
+    key: "support", icon: MessageCircle, tone: "neutral",
+    eyebrow: "Support",
+    title: unreadSupport === 1 ? "1 support reply waiting" : `${unreadSupport} support replies waiting`,
+    detail: "REPS Support replied to your ticket.",
+    to: "/dashboard/support", cta: "View",
+  });
+
+  return q;
+}
+
+export function NeedsAttentionHero(props: {
+  unreadEnquiries: number;
+  pendingReviewReplies: number;
+  unreadSupport: number;
+  insuranceExpiringDays: number | null;
+  insuranceExpired: boolean;
+  profilePct: number;
+  isPublished: boolean;
+  trust: TrustState | null | undefined;
+  hasServices: boolean;
+  reviewsCount: number;
+  publicUrl: string | null;
+}) {
+  const isVerified =
+    !!props.trust && props.trust.ticks.identity && props.trust.ticks.insurance && props.trust.ticks.qualifications;
+
+  const queue = buildAttentionQueue({ ...props, isVerified });
+  const [copied, setCopied] = React.useState(false);
+  const onCopy = async () => {
+    if (!props.publicUrl) return;
+    try {
+      await navigator.clipboard.writeText(window.location.origin + props.publicUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch { /* noop */ }
+  };
+
+  /* All caught up — share-your-profile state */
+  if (queue.length === 0) {
+    return (
+      <PPanel className="relative overflow-hidden p-6 sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.10),transparent_60%)]" aria-hidden />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4 sm:items-center">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-[12px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+              <CheckCircle2 className="size-6" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-300/85">All caught up</p>
+              <h2 className="mt-1 font-display text-[22px] font-semibold leading-tight text-white sm:text-[26px]">
+                Your profile is live — share it today
+              </h2>
+              <p className="mt-1.5 max-w-[52ch] text-[14px] text-white/65">
+                The fastest path to your first enquiry is sending your REPS link to a past client, your IG bio or a local noticeboard.
+              </p>
+            </div>
+          </div>
+          {props.publicUrl ? (
+            <div className="flex shrink-0 items-center gap-2">
+              <DashboardButton size="md" variant="ghost" onClick={onCopy}>
+                {copied ? (<><BadgeCheck className="mr-1.5 size-4 text-emerald-400" /> Copied</>) : (<><Copy className="mr-1.5 size-4" /> Copy link</>)}
+              </DashboardButton>
+              <DashboardButton asChild size="md" variant="primary">
+                <Link to={props.publicUrl as any} target="_blank">
+                  View public profile <ExternalLink className="ml-1.5 size-4" />
+                </Link>
+              </DashboardButton>
+            </div>
+          ) : null}
+        </div>
+      </PPanel>
+    );
+  }
+
+  const hero = queue[0];
+  const rest = queue.slice(1, 4);
+  const Icon = hero.icon;
+  const toneRing =
+    hero.tone === "orange"
+      ? "bg-[radial-gradient(circle_at_top_left,rgba(255,122,0,0.16),transparent_55%)]"
+      : hero.tone === "danger"
+        ? "bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.16),transparent_55%)]"
+        : hero.tone === "warn"
+          ? "bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.14),transparent_55%)]"
+          : "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_55%)]";
+  const toneIcon =
+    hero.tone === "orange"
+      ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+      : hero.tone === "danger"
+        ? "border-red-400/30 bg-red-500/15 text-red-300"
+        : hero.tone === "warn"
+          ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+          : "border-white/12 bg-white/[0.05] text-white/80";
+  const toneEyebrow =
+    hero.tone === "orange"
+      ? "text-reps-orange"
+      : hero.tone === "danger"
+        ? "text-red-300"
+        : hero.tone === "warn"
+          ? "text-amber-300"
+          : "text-white/55";
+
+  return (
+    <PPanel className="relative overflow-hidden p-6 sm:p-8">
+      <div className={cn("pointer-events-none absolute inset-0", toneRing)} aria-hidden />
+      <div className="relative flex flex-col gap-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-[12px] border [&_svg]:size-6", toneIcon)}>
+              <Icon />
+            </span>
+            <div className="min-w-0">
+              <p className={cn("text-[11px] font-semibold uppercase tracking-[0.12em]", toneEyebrow)}>
+                {hero.eyebrow}
+              </p>
+              <h2 className="mt-1 font-display text-[22px] font-semibold leading-tight text-white sm:text-[26px]">
+                {hero.title}
+              </h2>
+              <p className="mt-1.5 max-w-[60ch] text-[14px] leading-relaxed text-white/65">
+                {hero.detail}
+              </p>
+            </div>
+          </div>
+          <div className="shrink-0 lg:pl-4">
+            <DashboardButton asChild size="md" variant={hero.tone === "orange" || hero.tone === "danger" ? "primary" : "subtle"}>
+              <Link to={hero.to as any}>
+                {hero.cta}
+                <ChevronRight className="ml-1 size-4" />
+              </Link>
+            </DashboardButton>
+          </div>
+        </div>
+
+        {rest.length > 0 ? (
+          <div className="border-t border-white/8 pt-4">
+            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
+              Also waiting
+            </p>
+            <ul className="flex flex-col divide-y divide-white/5">
+              {rest.map((item) => {
+                const I = item.icon;
+                return (
+                  <li key={item.key}>
+                    <Link
+                      to={item.to as any}
+                      className="group flex items-center gap-3 py-2.5 text-[13px] text-white/70 hover:text-white"
+                    >
+                      <I className="size-3.5 shrink-0 text-white/45 group-hover:text-white/70" />
+                      <span className="min-w-0 flex-1 truncate font-medium text-white/85">{item.title}</span>
+                      <span className="hidden text-[12px] text-white/55 group-hover:text-reps-orange sm:inline">{item.cta}</span>
+                      <ChevronRight className="size-3.5 shrink-0 text-white/35 group-hover:text-reps-orange" />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </PPanel>
+  );
+}
+
+/* ---------- KpiStrip (4 max, hidden when all zero) ---------------- */
+
+export function KpiStrip({
+  enqStats,
+  reviewKpis,
+  discoverability,
+}: {
+  enqStats: { this_month_count: number; unread: number } | undefined;
+  reviewKpis: ReviewKpis | undefined;
+  discoverability: DiscoverabilityKpis | null | undefined;
+}) {
+  const enquiries30 = enqStats?.this_month_count ?? 0;
+  const reviews30 = reviewKpis?.last_30d_count ?? 0;
+  const views30 = discoverability?.views_30d ?? 0;
+  const impressions30 = discoverability?.impressions_30d ?? 0;
+  const anyData = enquiries30 + reviews30 + views30 + impressions30 > 0;
+
+  if (!anyData) {
+    return (
+      <div className="flex items-center gap-3 rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/20 px-4 py-3 text-[13px] text-white/55">
+        <Eye className="size-4 shrink-0 text-white/40" />
+        <span className="flex-1">Tracking starts the moment your first visitor lands. Enquiries, reviews, views and impressions will appear here as they grow.</span>
+      </div>
+    );
+  }
+
+  const dPct = discoverability?.views_delta_pct ?? null;
+  const viewsDelta =
+    dPct === null ? "vs prior 30d"
+    : dPct === 0 ? "no change vs prior 30d"
+    : `${dPct > 0 ? "+" : ""}${dPct}% vs prior 30d`;
+  const viewsTrend: "up" | "down" | "flat" = dPct == null ? "flat" : dPct > 0 ? "up" : dPct < 0 ? "down" : "flat";
+
+  const tiles = [
+    {
+      label: "New enquiries", value: enquiries30, delta: enqStats?.unread ? `${enqStats.unread} unread` : "last 30 days",
+      trend: (enqStats?.unread ?? 0) > 0 ? ("up" as const) : ("flat" as const), icon: Inbox,
+    },
+    {
+      label: "Reviews", value: reviews30,
+      delta: reviewKpis && reviewKpis.review_count > 0 ? `${reviewKpis.avg_rating.toFixed(1)}★ avg · ${reviewKpis.review_count} total` : "last 30 days",
+      trend: reviews30 > 0 ? ("up" as const) : ("flat" as const), icon: Star,
+    },
+    { label: "Profile views", value: views30, delta: viewsDelta, trend: viewsTrend, icon: Eye },
+    {
+      label: "Search impressions", value: impressions30,
+      delta: discoverability?.avg_position != null ? `Avg position #${discoverability.avg_position}` : "last 30 days",
+      trend: "flat" as const, icon: SearchIcon,
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {tiles.map((t) => <KpiStripTile key={t.label} {...t} />)}
+    </div>
+  );
+}
+
+function KpiStripTile({
+  label, value, delta, trend, icon: Icon,
+}: {
+  label: string; value: number; delta: string; trend: "up" | "down" | "flat";
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  const display = useCountUp(value);
+  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : null;
+  const trendCls = trend === "up" ? "text-emerald-300" : "text-white/55";
+  return (
+    <div className="rounded-[16px] border border-reps-border bg-reps-panel p-4">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">{label}</span>
+        <Icon className="h-4 w-4 text-white/45" />
+      </div>
+      <div className="mt-2 font-display text-[26px] font-bold leading-none tabular-nums text-white">
+        {display}
+      </div>
+      <div className={cn("mt-2 flex items-center gap-1 text-[12px] font-medium", trendCls)}>
+        {TrendIcon ? <TrendIcon className="h-3.5 w-3.5" /> : null}
+        <span className="truncate">{delta}</span>
+      </div>
+    </div>
+  );
+}

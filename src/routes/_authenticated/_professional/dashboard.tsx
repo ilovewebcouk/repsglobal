@@ -2,14 +2,12 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Inbox, MessageCircleQuestion, Star } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { DashboardButton } from "@/components/dashboard/ui";
-import { KpiTile } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { TIERS } from "@/lib/billing";
 import { getDashboardStatus } from "@/lib/dashboard/dashboard.functions";
@@ -21,8 +19,8 @@ import {
   ActivityTimeline,
   CompletenessCard,
   CpdMini,
-  DiscoverabilityStrip,
-  NeedsAttention,
+  KpiStrip,
+  NeedsAttentionHero,
   ProUpsellStrip,
   ReviewsSnapshot,
   ServicesStrip,
@@ -71,7 +69,7 @@ function DashboardPage() {
 
   const subTier = data?.subscription?.tier ?? "free";
   const hasPaidTier = subTier === "verified" || subTier === "pro" || subTier === "studio";
-  
+
   const isPublished = data?.profile?.is_published ?? false;
   const hasProAccess = data?.entitlement.hasProAccess ?? false;
   const slug = data?.profile?.slug ?? null;
@@ -97,6 +95,11 @@ function DashboardPage() {
   const enqStats = hub.enqStats.data;
   const profilePct = hub.profile.data ? profileCompleteness(hub.profile.data).pct : 0;
   const reviewKpis = hub.reviewKpis.data;
+  const services = hub.shopFront.data?.services ?? [];
+  const enquiries = hub.enquiries.data ?? [];
+  const reviews = hub.reviews.data ?? [];
+  const hasActivity = enquiries.length + reviews.length > 0;
+  const publicUrl = slug ? `/pro/${slug}` : null;
 
   const greeting = useGreeting();
 
@@ -105,7 +108,7 @@ function DashboardPage() {
       role="trainer"
       active="Dashboard"
       title={`${greeting}, ${firstName}`}
-      subtitle={hasProAccess ? "Your business overview." : "Your REPS command center."}
+      subtitle="Your REPS public presence — at a glance."
       tier={tier}
       member={{
         name: memberName,
@@ -120,17 +123,14 @@ function DashboardPage() {
           </DashboardButton>
         </div>
       }
-
     >
       {status.isLoading ? (
-        <div className="flex flex-col gap-4">
-          <Skeleton className="h-[110px] w-full rounded-[22px]" />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-[100px] rounded-[16px]" />
-            ))}
+        <div className="flex flex-col gap-5">
+          <Skeleton className="h-[120px] w-full rounded-[22px]" />
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+            <Skeleton className="h-[260px] rounded-[22px] xl:col-span-8" />
+            <Skeleton className="h-[260px] rounded-[22px] xl:col-span-4" />
           </div>
-          <Skeleton className="h-[260px] w-full rounded-[22px]" />
         </div>
       ) : status.isError ? (
         <Alert className="border-reps-border bg-reps-panel">
@@ -142,8 +142,8 @@ function DashboardPage() {
           </AlertDescription>
         </Alert>
       ) : (
-        <div className="flex flex-col gap-4">
-          {/* ROW 1 — Welcome */}
+        <div className="flex flex-col gap-5">
+          {/* 1 — Profile status (hero) */}
           <WelcomeBanner
             name={memberName}
             avatarUrl={data?.identity?.avatar_url}
@@ -152,68 +152,13 @@ function DashboardPage() {
             isPublished={isPublished}
             slug={slug}
             trust={hub.trust.data ?? null}
+            dailyViews={hub.discoverability.data?.daily_views ?? null}
           />
 
-          {/* ROW 2 — KPI strip */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <KpiTile
-              label="New enquiries"
-              value={enqStats && enqStats.this_month_count > 0 ? String(enqStats.this_month_count) : "0"}
-              delta={
-                enqStats && enqStats.unread > 0
-                  ? `${enqStats.unread} unread`
-                  : "this month"
-              }
-              trend={enqStats && enqStats.unread > 0 ? "up" : "flat"}
-              icon={Inbox}
-            />
-            <KpiTile
-              label="Reply rate (30d)"
-              value={enqStats?.reply_rate_pct != null ? `${enqStats.reply_rate_pct}%` : "—"}
-              delta={
-                enqStats?.reply_time_avg_hours != null
-                  ? `${enqStats.reply_time_avg_hours.toFixed(1)}h avg`
-                  : "reply to see stats"
-              }
-              icon={MessageCircleQuestion}
-            />
-            <KpiTile
-              label="Avg rating"
-              value={
-                reviewKpis && reviewKpis.review_count > 0
-                  ? reviewKpis.avg_rating.toFixed(1)
-                  : "—"
-              }
-              delta={
-                reviewKpis && reviewKpis.review_count > 0
-                  ? `${reviewKpis.review_count} total`
-                  : "request your first"
-              }
-              icon={Star}
-            />
-            <KpiTile
-              label="Last 30 days"
-              value={reviewKpis && reviewKpis.last_30d_count > 0 ? String(reviewKpis.last_30d_count) : "0"}
-              delta={
-                reviewKpis && reviewKpis.last_30d_count > 0
-                  ? `${reviewKpis.last_30d_avg.toFixed(1)} avg`
-                  : "no new reviews"
-              }
-              trend={reviewKpis && reviewKpis.last_30d_count > 0 ? "up" : "flat"}
-              icon={Star}
-            />
-          </div>
-
-          {/* ROW 2b — Discoverability (views / impressions / position / CTR) */}
-          <DiscoverabilityStrip
-            data={hub.discoverability.data ?? null}
-            isLoading={hub.discoverability.isLoading}
-          />
-
-          {/* Merged row — Needs Attention + Activity (left) | Completeness + Verification (right) */}
-          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
-            <div className="flex flex-col gap-4 xl:col-span-8">
-              <NeedsAttention
+          {/* 2 — Main fold: Needs Attention (left, hero) + Trust rail (right) */}
+          <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-12">
+            <div className="flex flex-col gap-5 xl:col-span-8">
+              <NeedsAttentionHero
                 unreadEnquiries={enqStats?.unread ?? 0}
                 pendingReviewReplies={hub.pendingReviewReplies}
                 unreadSupport={hub.supportUnread}
@@ -222,43 +167,43 @@ function DashboardPage() {
                 profilePct={profilePct}
                 isPublished={isPublished}
                 trust={hub.trust.data ?? null}
+                hasServices={services.length > 0}
+                reviewsCount={reviewKpis?.review_count ?? 0}
+                publicUrl={publicUrl}
               />
-              {hub.enquiries.isLoading || hub.reviews.isLoading ? (
-                <Skeleton className="h-[260px] w-full rounded-[22px]" />
-              ) : (
-                <ActivityTimeline
-                  enquiries={hub.enquiries.data ?? []}
-                  reviews={hub.reviews.data ?? []}
-                />
-              )}
+
+              {/* KPI strip — hidden entirely when all zero */}
+              <KpiStrip
+                enqStats={enqStats}
+                reviewKpis={reviewKpis}
+                discoverability={hub.discoverability.data ?? null}
+              />
             </div>
-            <div className="flex flex-col gap-4 xl:col-span-4">
+
+            {/* Trust rail */}
+            <aside className="flex flex-col gap-5 xl:col-span-4">
               <CompletenessCard profile={hub.profile.data ?? null} />
               <VerificationStatusCard trust={hub.trust.data ?? null} />
-            </div>
+              {(reviewKpis?.review_count ?? 0) > 0 ? (
+                <ReviewsSnapshot kpis={reviewKpis} />
+              ) : null}
+              {(hub.trust.data?.qualifications.count ?? 0) > 0 || hasQualifications ? (
+                <CpdMini
+                  qualUploaded={hasQualifications}
+                  uploadedAt={data?.profile?.cert_uploaded_at ?? null}
+                  trust={hub.trust.data ?? null}
+                />
+              ) : null}
+            </aside>
           </div>
 
+          {/* 3 — Lower sections (only when there's something real to show) */}
+          {services.length > 0 ? <ServicesStrip services={services} /> : null}
+          {hasActivity ? (
+            <ActivityTimeline enquiries={enquiries} reviews={reviews} />
+          ) : null}
 
-          {/* Row 5 — CPD + Reviews snapshot */}
-          <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
-            <div className="xl:col-span-8">
-              <CpdMini
-                qualUploaded={hasQualifications}
-                uploadedAt={data?.profile?.cert_uploaded_at ?? null}
-                trust={hub.trust.data ?? null}
-              />
-            </div>
-            <div className="xl:col-span-4">
-              <ReviewsSnapshot kpis={reviewKpis} />
-            </div>
-          </div>
-
-
-
-          {/* ROW 6 — Services */}
-          <ServicesStrip services={hub.shopFront.data?.services ?? []} />
-
-          {/* ROW 7 — Pro upsell (Verified only) */}
+          {/* 4 — Quiet Pro upsell (Verified only) */}
           {!hasProAccess ? <ProUpsellStrip /> : null}
         </div>
       )}
