@@ -1038,6 +1038,13 @@ export function useHubData(enabled: boolean) {
     queryFn: () => fetchTrust(),
     enabled,
   });
+  const discoverability = useQuery({
+    queryKey: ["my-discoverability-kpis"],
+    queryFn: () => fetchDiscoverability(),
+    enabled,
+    staleTime: 60_000,
+  });
+
 
 
   const reviewsUnread = useReviewsUnread({ enabled });
