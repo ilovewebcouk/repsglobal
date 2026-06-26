@@ -1,0 +1,1 @@
+SELECT public.recompute_pro_verification('5c543d9e-d325-46dd-8fde-895de1358214'::uuid);

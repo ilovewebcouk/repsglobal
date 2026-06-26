@@ -193,7 +193,7 @@ export function NeedsAttention({
   insuranceExpired,
   profilePct,
   isPublished,
-  isVerified,
+  trust,
 }: {
   unreadEnquiries: number;
   pendingReviewReplies: number;
@@ -202,8 +202,12 @@ export function NeedsAttention({
   insuranceExpired: boolean;
   profilePct: number;
   isPublished: boolean;
-  isVerified: boolean;
+  trust: TrustState | null | undefined;
 }) {
+  // Single source of truth — same 3-of-3 ticks the header badge uses.
+  const isVerified =
+    !!trust && trust.ticks.identity && trust.ticks.insurance && trust.ticks.qualifications;
+
   const items: Attention[] = [];
 
   if (unreadEnquiries > 0) {
