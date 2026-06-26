@@ -1,162 +1,57 @@
+## QA: Where the "missing" profiles went
 
-# Help Center — Stripe Docs-tier
+### Headline numbers (live from the DB right now)
 
-The goal: the best help center in the fitness-platform space. Public-first (SEO + pre-signup trust), authenticated-aware (deep-links into the real dashboard), and anchored by a flagship **Verification** page that doubles as a sales asset.
+| Bucket | Count |
+|---|---:|
+| `bd_member_seed` rows (original scrape) | **390** |
+| `professionals` rows total | **402** (390 seed + 12 new signups/admin/demo) |
+| `is_published = true` AND `bd_seed_thin = false` → visible on directory | **225** |
+| `bd_seed_thin = true` (hidden migrated shells) | **167** |
+| `bd_seed_thin = false` but `is_published = false` | **10** |
+| Verified | **9** |
 
-## Information architecture
+So nothing has been deleted. **225 is exactly the public-facing slice**: `is_published = true AND bd_seed_thin = false`. The other 165 thin shells are still in the database, but hidden from public pages by design.
 
-Public URL: `/help` (footer-linked, also linked from `/standards`, `/pricing`, `/for-professionals`, `/verification` badges).
+### Why 167 profiles are still flagged `bd_seed_thin = true`
 
-```
-/help                              Landing: search, top tasks, categories, status
-/help/verification                 FLAGSHIP long-form (anchor of the whole hub)
-/help/$category                    Category index (e.g. /help/getting-started)
-/help/$category/$slug              Article
-```
+`bd_seed_thin` was added as a gate so a migrated profile only goes public once it has enough content to look credible. The trigger `tg_clear_bd_seed_thin` flips it to `false` automatically as soon as the row gets any of: a bio, a headline, an `identity_status = 'approved'`, or an avatar.
 
-Categories (Verified-tier scope only; Pro/Studio deferred):
+Joining the 167 thin rows back to their `bd_member_seed` source explains why the trigger never fired:
 
-1. **Getting started** — sign up, choose Verified, complete profile, go live
-2. **Verification** — identity, qualifications, insurance, renewals, what fails and why
-3. **Your public profile** — slug, photo, services, locations, in-person vs online
-4. **Enquiries & reviews** — receiving enquiries, replying, review requests, replies, removals
-5. **Account & billing** — Stripe billing, change plan, cancel, invoices, GDPR
-6. **Trust & safety** — code of conduct, complaints, removal grounds (mirrors `/standards`)
-7. **Troubleshooting** — sign-in, email delivery, photo uploads, QR upload, badge not showing
+- **0 / 167** have any `about_me` text in the source scrape
+- **0 / 167** have any usable photo (147 = `photo_status: missing`, 20 = `rejected`)
+- **0 / 167** have been recropped
+- They were imported as **name + slug shells** only — there's literally nothing to promote them with
 
-Pro/Studio-only articles are written but tagged `tier: pro` and hidden from nav until launch (so we don't double the work later).
+So this isn't a bug or data loss. It's the gate working: BetterDoctor never had usable copy or a usable photo for these 167 members, so they were imported as shells and parked behind `bd_seed_thin = true` until either (a) the trainer claims and fills them in, or (b) we manually fill them.
 
-## The flagship: `/help/verification`
+### Why this is a problem worth fixing
 
-This is the page nobody else has. It does the heavy lifting for SEO, sales, and support deflection.
+- Pricing / launch story says "390 trainers already on the platform"
+- Public directory only surfaces 225, so the platform looks thinner than it is
+- City pages (e.g. London Featured = 0 right now in the network logs) feel empty
+- Currently the only path out of "thin" is the trainer claiming their profile — which won't happen before launch
 
-Sections:
-1. **Hero** — "How REPs verifies professionals" + live SLA pill ("avg verification time, last 30 days: 18h" — pulled from `identity_verifications` / `qualifications` timestamps via a server fn).
-2. **The three checks** — Identity, Qualifications, Insurance. Each with: what we check, what we accept, what we reject, how long it takes, how often it's re-checked, the badge it unlocks.
-3. **Accepted awarding bodies matrix** — table by profession (PT, Group Ex, S&C, Nutritionist, Yoga, Pilates) × level (L2/L3/L4) with Ofqual status. Replaces the vague language on `/standards`.
-4. **What a good vs rejected document looks like** — annotated screenshot pairs (real dashboard, redacted).
-5. **The reviewer's checklist** — actual admin checklist published transparently. This is the Stripe-docs move nobody else makes.
-6. **Renewals & expiry** — insurance auto-reminder cadence, qual re-verify triggers.
-7. **Appeals** — how to challenge a rejection, SLA, who reviews.
-8. **FAQ** (FAQPage JSON-LD).
-9. **CTA strip** — "Start verification" (authed → `/dashboard/verification`) / "Create account" (unauthed → `/signup`).
+### Options I can implement next (pick one or combine)
 
-## Article anatomy (every article)
+1. **AI-generate a starter bio + headline for the 167 thin rows**
+   Use Lovable AI Gateway (Gemini) with: name, city, what we know from `services_text` / `credentials` / `experience` if present, plus a "generic-but-credible" template. Marks them as AI-drafted (admin-flagged) so trainers can edit on claim. Trigger then auto-flips them off `bd_seed_thin`. Net effect: directory grows from 225 → ~390.
 
-- Breadcrumb + category chip
-- Title (H1) + 1-line summary
-- **Last reviewed** date + author byline ("Reviewed by Scott McKay")
-- **Applies to** chip row (Verified / Pro / Studio)
-- TOC (sticky on desktop)
-- Body: MDX-style sections, callouts (`Note`, `Warning`, `Tip`), annotated screenshots
-- **Deep-link action button** when applicable — e.g. an article about uploading insurance has a "Open insurance upload" button that, when signed in, navigates to `/dashboard/verification` and opens the dialog; when signed out, prompts sign-in then resumes
-- "Was this helpful? 👍 / 👎" → writes to `help_article_feedback` (anon-allowed, rate-limited)
-- "Still stuck? Contact support" → opens `/dashboard/support/new` (authed) or `/contact` (anon)
-- Related articles (same category + tag overlap)
-- JSON-LD: `Article` + `BreadcrumbList`; FAQ sections additionally emit `FAQPage`
+2. **Generate stock-style avatars for the 147 missing-photo rows**
+   Same idea but for the photo. Cheaper alternative: a tasteful initial/monogram avatar (no AI image cost) so they at least render.
 
-## Cmd-K command palette (the differentiator)
+3. **Lower the gate**
+   Decide that "name + city + profession" is enough to be listed, and drop the `bd_seed_thin` filter from the public search (still keep on `is_published`). Fastest, no content work, but the listings will look bare without a bio/photo and we'd be undoing the original quality bar.
 
-Mount globally (public + dashboard). Trigger: `Cmd/Ctrl+K`, plus a search input on `/help`.
+4. **Manual triage queue in admin**
+   Add `/admin/seed-shells` listing all 167 with a "Generate AI starter / Hide permanently / Unpublish" action per row. Slowest, highest control, no surprises.
 
-Two result types:
-- **Articles** — fuzzy match on title, summary, tags, body
-- **Actions** (authed only) — e.g. "Upload insurance", "Request a review", "Edit public profile", "Open my support tickets". Selecting routes to the page and triggers the dialog/action.
+5. **Do nothing — accept that the number is 225 until trainers claim**
+   Then the "390" marketing number should be updated to "225 live, 165 pre-claim".
 
-Built with `cmdk` + a tiny pre-built search index generated at build time from MDX frontmatter (no server search needed at launch; Algolia later if volume warrants).
+### My recommendation
 
-## Search (non-palette)
+Combine **#1 + #2 + #4**: run AI-drafted bio + monogram avatar across the 167 in a one-off backfill (gated to admin trigger), surface every result in an admin moderation queue (#4) so I can approve before they go public. That gets us back to ~390 visible, keeps quality control, and doesn't require trainers to do anything.
 
-`/help` page has a prominent search input that opens the palette. The palette also accepts `?q=` so links like `/help?q=insurance` are shareable.
-
-## Authoring model
-
-Articles live as **MDX files** in `src/content/help/$category/$slug.mdx` with typed frontmatter:
-
-```yaml
-title: How to upload your insurance certificate
-summary: Accepted formats, file size, and what we check.
-category: verification
-tier: [verified, pro, studio]
-lastReviewed: 2026-06-26
-author: Scott McKay
-tags: [insurance, upload, qr]
-deepLink: { label: "Open insurance upload", to: "/dashboard/verification", action: "open-insurance-dialog" }
-related: [verification/what-insurance-we-accept, troubleshooting/upload-fails]
-```
-
-A build-time loader (Vite `import.meta.glob`) produces a typed manifest used by routes, the palette index, and sitemap.
-
-## Screenshots
-
-I generate them by driving Playwright against the live dashboard at `localhost:8080`, capturing element shots (not full page), then annotating with a small `<Annotated>` MDX component (numbered pins + caption list). Stored under `src/content/help/_screenshots/`. The dashboard pages I'll capture for v1: `/dashboard/verification` (all 3 stages), upload-certificate dialog (file + QR tabs), insurance upload, public-profile editor, enquiries inbox, review-reply UI, support new-ticket form.
-
-## SEO
-
-- `head()` per route: title, description, og:title/description/url, canonical
-- Article: `Article` + `BreadcrumbList` JSON-LD
-- FAQ blocks: `FAQPage` JSON-LD
-- `HowTo` JSON-LD on step-by-step articles (e.g. "How to verify your identity")
-- Sitemap entries auto-added from the MDX manifest
-- Footer link added; Standards page cross-links into `/help/verification`; `/for-professionals`, `/pricing`, `/signup` link to relevant articles
-
-## Trust signals on every page
-
-- "Last reviewed {date}" stamp (real, from frontmatter)
-- Author byline
-- Helpful-vote count once we have data (hidden until n≥10)
-- Live SLA pill on the verification flagship
-
-## Dashboard mirror
-
-`/dashboard/help` is a thin shell that embeds the same MDX content but:
-- Pre-fills user context (no "if you're signed in…" branches)
-- Adds in-app "Open this in the dashboard" deep links inline
-- Adds a footer "Contact support" that opens the ticket form pre-tagged with the article slug (so support knows what the user was reading)
-
-## Phasing
-
-**Phase A (this build, ~3 days):**
-- Routing, layout, palette, MDX pipeline, search index, JSON-LD, sitemap, footer link
-- Flagship `/help/verification` written + screenshotted
-- 12 Verified-tier articles (Getting started ×3, Verification ×4, Public profile ×2, Enquiries/reviews ×2, Account ×1)
-- Helpful-vote table + RPC
-- Dashboard mirror at `/dashboard/help`
-
-**Phase B (follow-up):**
-- Remaining ~20 articles, plus Pro/Studio-tier articles authored-but-hidden
-- Live SLA pill data wiring
-- Algolia (only if search volume justifies)
-
-## Files I'll create / change
-
-- `src/routes/help.tsx` (layout)
-- `src/routes/help.index.tsx` (landing)
-- `src/routes/help.verification.tsx` (flagship — bespoke layout, not MDX)
-- `src/routes/help.$category.index.tsx`
-- `src/routes/help.$category.$slug.tsx`
-- `src/routes/_authenticated/_professional/dashboard_.help.tsx` (+ children)
-- `src/content/help/**/*.mdx` (articles)
-- `src/content/help/_screenshots/**/*.png`
-- `src/lib/help/manifest.ts` (build-time MDX loader + typed index)
-- `src/components/help/` — `HelpLayout`, `ArticleLayout`, `HelpSearch`, `CommandPalette`, `Annotated`, `Callout`, `DeepLinkButton`, `HelpfulVote`, `TocSidebar`, `RelatedArticles`
-- `src/components/marketing/PublicFooter.tsx` (add `/help` link)
-- Migration: `help_article_feedback` table + RLS + GRANTs
-- Server fns: `recordHelpfulVote`, `getVerificationSla` (flagship pill)
-- Sitemap generator: include help routes
-- Install: `cmdk`, `@mdx-js/rollup`, `@mdx-js/react`, `remark-gfm`, `rehype-slug`, `rehype-autolink-headings`
-
-## What I'm explicitly NOT doing in Phase A
-
-- AI answer search (RAG over articles) — defer; static search is enough at our volume
-- Algolia — defer; build-time index handles it
-- Multi-language — defer
-- Pro/Studio articles surfaced in nav — written but tier-gated
-- Video walkthroughs — slots reserved in the flagship, content added post-launch
-
-## Acceptance bar
-
-- A new trainer can go from `/help` → understand verification → start the flow in under 60 seconds, signed out or in
-- Every article ranks-eligible (unique title/description, JSON-LD, canonical, in sitemap)
-- `Cmd+K` from any public or dashboard page jumps to article OR triggers a dashboard action
-- Flagship `/help/verification` is good enough to link from `/pricing` as proof
+Want me to proceed with that combo, or pick a different option?
