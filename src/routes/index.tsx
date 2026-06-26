@@ -309,6 +309,7 @@ function HomeV2() {
       </section>
 
       {/* ============ FEATURED PROFESSIONALS — product first ============ */}
+      {hasFeatured && (
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="flex items-end justify-between gap-4">
