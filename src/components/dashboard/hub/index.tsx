@@ -608,7 +608,7 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
               </div>
               {!done ? (
                 <DashboardBadge
-                  variant={r.status.tone === "fail" ? "danger" : r.status.tone === "warn" ? "warn" : "muted"}
+                  variant={r.status.tone === "fail" ? "danger" : r.status.tone === "warn" ? "warn" : "neutral"}
                   className="shrink-0"
                 >
                   {r.status.label}
