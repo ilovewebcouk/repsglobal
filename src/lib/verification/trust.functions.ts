@@ -8,7 +8,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
-import { TITLES } from "@/lib/cpd/titles-catalog";
+import { TITLES, filterVisibleTitles, isTitleSlug } from "@/lib/cpd/titles-catalog";
 
 export type TrustState = {
   identity: {
