@@ -22,12 +22,19 @@ export const getVerifiedProCount = createServerFn({ method: "GET" })
         },
       },
     );
+    const { data: fvRows, error: fvErr } = await supabase.rpc(
+      "list_fully_verified_pro_ids",
+    );
+    if (fvErr) throw new Error(fvErr.message);
+    const ids = ((fvRows ?? []) as Array<string | { id?: string }>)
+      .map((r) => (typeof r === "string" ? r : (r?.id ?? "")))
+      .filter(Boolean);
+    if (ids.length === 0) return { count: 0 };
     const { count, error } = await supabase
       .from("professionals")
       .select("id", { count: "exact", head: true })
       .eq("primary_profession", data.profession)
-      .eq("verification", "verified")
-      .eq("identity_status", "approved");
+      .in("id", ids);
     if (error) throw new Error(error.message);
     return { count: count ?? 0 };
   });
