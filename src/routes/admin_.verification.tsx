@@ -447,7 +447,7 @@ function AdminVerificationPage() {
             else if (!id.selfie_path && (id as { vendor?: string | null }).vendor !== "stripe") missing.push("selfie");
             if (!ins) missing.push("insurance");
 
-            const canApprovePro = !!id && !!ins && gates.hardPassed;
+            // (canApprovePro removed — verification is now decoupled from subscription tier.)
             const isApproved = subStatus === "approved";
             const isFinal = subStatus === "approved" || subStatus === "rejected";
             const overrideOk = overrideReason.trim().length >= 8;
@@ -1016,7 +1016,7 @@ function AdminVerificationPage() {
                     return url;
                   }}
                   busy={busy}
-                  onApprove={() => { setCertOpen(false); decideMutation.mutate({ decision: "approved", unlocked_tier: canApprovePro ? "pro" : "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null }); }}
+                  onApprove={() => { setCertOpen(false); decideMutation.mutate({ decision: "approved", unlocked_tier: "verified", gates_snapshot: gatesSnap, override_reason: overrideReason.trim() || null }); }}
                   onReject={() => { setCertOpen(false); decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap }); }}
                   onRequestChanges={() => { setCertOpen(false); decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap }); }}
                 />
