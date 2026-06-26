@@ -1062,6 +1062,7 @@ export function useHubData(enabled: boolean) {
     reviews,
     shopFront,
     trust,
+    discoverability,
     reviewsUnread: reviewsUnread.unread,
     supportUnread: supportUnread.unread,
     pendingReviewReplies,
