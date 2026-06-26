@@ -1,9 +1,7 @@
-// Shared pricing data for /pricing and /for-professionals.
-// Single source of truth — no duplication across routes.
-//
-// REPS 3-tier ladder: Verified / Pro / Studio. The current Pro tier is what
-// was previously called Business (same price, same features, same Founding
-// lock). The old £29 Pro tier and the Free tier are retired.
+// REPS 3-tier ladder: Core / Pro / Studio. The Core tier (internal key
+// "verified") gets you on the public register with a credential check;
+// trust is earned separately via the 3-step verification (Identity +
+// Insurance + Qualification) which lights up the "REPS Verified" badge.
 
 export type Billing = "monthly" | "annual";
 
@@ -26,13 +24,14 @@ export type PlanCard = {
 
 export const PLANS: PlanCard[] = [
   {
-    tier: "Verified",
+    tier: "Core",
     tierKey: "verified",
-    desc: "Monetise your professional trust.",
-    cta: "Get verified",
+    desc: "Get on the register. Earn the REPS Verified badge.",
+    cta: "Join Core",
     ctaHref: "/signup",
     features: [
-      "Verified badge",
+      "Public listing on the REPS register",
+      "Earn the REPS Verified badge (Identity + Insurance + Qualification)",
       "Credentials displayed",
       "Reviews enabled",
       "Enhanced directory profile",
@@ -53,7 +52,7 @@ export const PLANS: PlanCard[] = [
     featured: true,
     waitlist: true,
     features: [
-      "Everything in Verified",
+      "Everything in Core",
       "Personalised shop-front page (/c/your-name)",
       "Leads CRM & client management",
       "Bookings, calendar & payments",
@@ -192,7 +191,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
 ];
 
 export const TIER_META: Record<TierKey, { label: string; price: string }> = {
-  verified: { label: "Verified", price: "£99/yr" },
+  verified: { label: "Core", price: "£99/yr" },
   pro: { label: "Pro", price: "£59/mo" },
   studio: { label: "Studio", price: "£149/mo" },
 };
@@ -200,11 +199,11 @@ export const TIER_META: Record<TierKey, { label: string; price: string }> = {
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "When does Pro launch?",
-    a: "Pro is waitlist-only right now. Join the Pro waitlist and you'll be first in when it opens — at founding pricing, locked for the lifetime of your subscription. Verified is live today, and Studio is also waitlist-only.",
+    a: "Pro is waitlist-only right now. Join the Pro waitlist and you'll be first in when it opens — at founding pricing, locked for the lifetime of your subscription. Core is live today, and Studio is also waitlist-only.",
   },
   {
-    q: "What's the difference between Verified and Pro?",
-    a: "Verified is about trust and visibility — credentials, reviews, enhanced directory profile. Pro adds the full operating system to run your practice: bookings, CRM, programmes, advanced nutrition and check-ins, messaging, automations and AI across the platform.",
+    q: "What's the difference between Core and Pro?",
+    a: "Core gets you on the public register with a credential check, plus reviews, enquiries and an enhanced directory profile. The REPS Verified badge (Identity + Insurance + Qualification) is earned separately and shown on every Core, Pro and Studio profile. Pro adds the full operating system to run your practice: bookings, CRM, programmes, advanced nutrition and check-ins, messaging, automations and AI across the platform.",
   },
   {
     q: "How does verification work?",
@@ -212,7 +211,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Does REPS take a commission on bookings?",
-    a: "No. REPS does not charge a booking commission or per-booking fee. You pay for your tier (Verified, Pro or Studio) and keep what your clients pay you. Standard payment-processor fees from your payment provider still apply on whatever checkout you use.",
+    a: "No. REPS does not charge a booking commission or per-booking fee. You pay for your tier (Core, Pro or Studio) and keep what your clients pay you. Standard payment-processor fees from your payment provider still apply on whatever checkout you use.",
   },
   {
     q: "Will founding pricing stay forever?",
@@ -220,7 +219,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are planned?",
-    a: "Verified is billed annually at £99. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
+    a: "Core is billed annually at £99. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",

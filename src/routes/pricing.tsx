@@ -11,16 +11,16 @@ import { PricingCompare } from"@/components/pricing/PricingCompare";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title:"Pricing — Verified, Pro, Studio · REPS" },
+      { title:"Pricing — Core, Pro, Studio · REPS" },
       {
         name:"description",
         content:
-"Verified £99/yr is live. Pro Founding £59/mo and Studio are waitlist-only.",
+"Core £99/yr is live. Pro Founding £59/mo and Studio are waitlist-only.",
       },
       { property:"og:title", content:"REPS pricing" },
       {
         property:"og:description",
-        content:"Verified to be trusted. Pro to run your practice. Studio to scale your team.",
+        content:"Core to get listed. Pro to run your practice. Studio to scale your team.",
       },
       { property:"og:url", content:"https://repsglobal.lovable.app/pricing" },
     ],
@@ -45,7 +45,7 @@ function PricingPage() {
             <Sparkles className="h-3.5 w-3.5 text-reps-orange" /> Pricing
           </span>
           <h1 className="mx-auto mt-5 max-w-[820px] font-display text-[40px] font-bold leading-tight text-white lg:text-[56px]">
-            Verified to be trusted.
+            Core to get listed.
             <br />
             <span className="text-reps-orange">Pro to run your practice. Studio to scale.</span>
           </h1>
@@ -74,7 +74,7 @@ function PricingPage() {
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[14px] text-white/65">
               Visibility, operations, coaching, REPS AI, growth and admin — side by side
-              across Verified, Pro and Studio.
+              across Core, Pro and Studio.
             </p>
           </div>
           <div className="mt-10">
