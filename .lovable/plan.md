@@ -1,65 +1,82 @@
-## Dashboard 10/10 pass
+## What we're building
 
-Goal: kill dead space, make empty states feel intentional, rebalance columns, and add one signature moment + motion polish. UI-only — no schema or logic changes.
+A complete rebuild of `/dashboard` for the Verified tier. The brief is no longer "fitness SaaS analytics dashboard" — it's a **calm daily command centre for the trainer's public presence on REPs**. Superhuman prioritisation, Linear dark polish, Notion/Things hierarchy, Stripe-level card craft. The first question it answers is: *"What needs my attention today?"*
 
-### 1. KPI consolidation (top fold)
-- Collapse the two 4-tile rows into **one 4-tile row** that adapts to data:
-  - Tile 1: **Enquiries (30d)** — always shown.
-  - Tile 2: **Reviews · rating** — count + avg star.
-  - Tile 3: **Profile views (30d)** with delta — empty copy if no history.
-  - Tile 4: **Search impressions** big, **avg position** as caption.
-- Fold Reply rate, CTR, Last-30-days reviews into hover/secondary text on the related tile or a "Discoverability detail" link.
-- Replace every `—` with human empty copy ("No data yet · check back after your first enquiry").
+Empty-state is the default state — most Verified members will land here with zeros. The dashboard must never look broken, dead, or padded with skeletons. We hide what hasn't been earned.
 
-### 2. Left column shrink-to-fit
-- `NeedsAttention`: when items.length ≤ 1, render as a **slim 56px row** (icon + text + Reply CTA), no card chrome.
-- `ActivityTimeline`: same slim-row pattern when events.length ≤ 2; full card only at 3+ events.
+## New page structure (replaces current 8-tile + dual-rail grid)
 
-### 3. Column rebalance
-- Move **Education & CPD** out of the bottom row into the **right rail under Verification** (paired trust block).
-- Promote **Reviews snapshot** into the **left column under Activity** (it's an action surface).
-- Net: left = action/activity; right = trust/identity. Column bottoms within ~60px.
+```text
+┌───────────────────────────────────────────────────────────┐
+│ 1.  PROFILE STATUS CARD  (full width, hero)               │
+│     photo · name · Verified badge · Core plan             │
+│     headline · Live on REPS · Copy link · View profile    │
+│     Request a review                                      │
+├──────────────────────────────────┬────────────────────────┤
+│ 2.  NEEDS ATTENTION TODAY        │ 4.  TRUST RAIL         │
+│     ONE card, ONE primary CTA    │     · Completeness     │
+│     rotates state:               │     · Verification 3/3 │
+│     - 1 review needs a reply     │     · Reviews summary  │
+│     - Add your first service     │     · CPD status       │
+│     - Request your first review  │                        │
+│     - Insurance expires soon     │                        │
+│     - Add a profile photo        │                        │
+│     - Profile live — share it    │                        │
+│                                  │                        │
+│ 3.  KPI STRIP (max 4, earned)    │                        │
+│     Enquiries · Reviews ·        │                        │
+│     Views · Impressions          │                        │
+│     Tiles only appear once data  │                        │
+│     exists; otherwise collapsed  │                        │
+├──────────────────────────────────┴────────────────────────┤
+│ 5.  LOWER SECTIONS (stacked, only if real)                │
+│     Education & CPD                                       │
+│     Reviews                                               │
+│     Services                                              │
+│     Recent activity (hidden if empty)                     │
+├───────────────────────────────────────────────────────────┤
+│ 6.  Upgrade to Pro card (footer, quiet)                   │
+└───────────────────────────────────────────────────────────┘
+```
 
-### 4. Verification card slim mode
-- When 3/3 verified, collapse to one line: "✓ Identity, insurance, qualifications verified · Insurance valid to 1 Apr 2027" with "Manage" chevron. Expand only if something is incomplete or expiring within 60 days.
+## Design language
 
-### 5. Services empty banner
-- Keep the slim 56px banner — move it **directly under the KPI strip**, above NeedsAttention.
+- **Hierarchy:** one hero moment (Needs Attention) — everything else is supporting. No equal-weight grids.
+- **Spacing:** generous. Stripe-level card padding (24–32px), 24px gutters, no cramped 8/4 split.
+- **KPIs:** 4 max, each tile shows value + 14d sparkline OR a one-line "first 30 days" coaching hint when zero. Never a bare "—".
+- **Orange:** restricted to the single primary CTA inside Needs Attention + the hero "View public profile" button. Nothing else.
+- **Emerald:** Verified ticks + "Live on REPS" dot only.
+- **Cards:** flat, no shadows on buttons, `rounded-[18px]` standard / `rounded-[22px]` hero per the locked radius scale.
+- **Motion:** subtle staggered fade-up on mount (Linear-style), count-up on KPIs once data exists, no decorative animation.
 
-### 6. Pro upsell placement
-- Pin `ProUpsellStrip` directly under the profile header card (between header and KPIs) on Core plan. Removes the orphaned bottom strip.
+## Onboarding-first behaviour (day-one trainer)
 
-### 7. Copy + chrome nits
-- "1 review need a response" → "1 review needs a reply".
-- Remove the "Dashboard" pill from the orange impersonation banner.
-- Tighten Recent activity subtitle to "Last 10 events".
+| Card | Has data | No data |
+|---|---|---|
+| Profile status | normal | normal |
+| Needs Attention | rotates priorities | "Your profile is live — share it today" + Copy link CTA |
+| KPI strip | shows tiles with sparkline | **strip is hidden entirely**; replaced by single "Tracking starts when your first visitor lands" line |
+| Reviews / Activity / Services | shown if items exist | hidden, not skeleton-padded |
+| Trust rail | always shown | always shown (this is the point of Verified) |
 
-### 8. Signature moment — header sparkline
-- Replace the static "Your listing is live on REPS" line in the **profile header card** with a compact **14-day profile-views sparkline** (inline SVG, ~120×28px) sitting next to the live dot.
-- Hover: tooltip with date + view count.
-- Empty state: a flat dotted baseline with "Tracking views — first data point lands after your first visitor."
-- Single distinctive moment the eye lands on; nothing else on the page competes for that role.
+Result: a brand-new Verified trainer sees ~3 cards (profile, needs-attention, trust rail) — focused, intentional, never empty-feeling.
 
-### 9. Motion pass
-- **KPI count-ups**: numeric tiles animate from 0 to value over 600ms (`requestAnimationFrame`, ease-out). Skip if `prefers-reduced-motion`.
-- **NeedsAttention pulse**: when a new item arrives (count increases), the slim row pulses the emerald/orange dot for 2s using the existing `pulse` utility.
-- **Sparkline draw-in**: path uses `stroke-dasharray` + `stroke-dashoffset` to draw left→right over 700ms on mount.
-- **Optimistic Reply**: clicking the Reply CTA in NeedsAttention fades the row out (`animate-fade-out`) and immediately decrements the count; reconciles on server response and rolls back on error with a toast.
-- **Card entrance**: top-level dashboard cards stagger in with `animate-fade-in` at 0/60/120/180ms delays on first mount only (skip on route-internal refetches).
-- All motion respects `prefers-reduced-motion: reduce` — fall back to instant.
+## Files I'll touch
 
-### 10. Acceptance check
-Re-snapshot at 1564×1800 and verify:
-- No card in the top viewport shows more than one `—` or `0`.
-- Left and right column bottoms within 60px of each other.
-- No card has >120px of empty interior padding.
-- Sparkline renders (with empty state when data absent).
-- Count-ups, pulse, draw-in, and optimistic Reply all behave; reduced-motion users see instant states.
-- Token compliance: no raw hex, button shadows, or banned radii.
+- `src/routes/_authenticated/_professional/dashboard.tsx` — full layout rewrite
+- `src/components/dashboard/hub/index.tsx` — strip down to: `WelcomeBanner` (kept, tightened), `NeedsAttentionHero` (new, replaces current `NeedsAttention`), `KpiStrip` (new, ≤4, conditional), `TrustRail` (recomposes existing `CompletenessCard` + `VerificationStatusCard` + `ReviewsSnapshot` + `CpdMini`)
+- Delete/retire: `DiscoverabilityStrip` (folded into KPI strip), `ActivityTimeline` (only renders when ≥1 event), the second 8-tile KPI row, stacked-rail layout
+- `src/components/dashboard/hub/HeaderSparkline.tsx` — keep, reused inside KPI tiles
+- No DB changes. No new server functions. Discoverability tables stay as-is.
 
-### Files I'll touch
-- `src/components/dashboard/hub/index.tsx` — KPI consolidation, slim variants, Verification slim mode, copy fixes, count-up + pulse + optimistic Reply.
-- `src/components/dashboard/hub/HeaderSparkline.tsx` *(new)* — inline SVG sparkline with draw-in animation and tooltip.
-- `src/lib/discoverability/kpis.functions.ts` — extend existing query to return a 14-day daily-views series (already aggregating from `profile_view_events`, no new table).
-- `src/routes/_authenticated/_professional/dashboard.tsx` — re-layout (CPD → right, Reviews → left, ServicesStrip + ProUpsellStrip into eye-path), stagger-in classes.
-- No new DB tables, no new server endpoints beyond extending the existing KPI function's return shape.
+## Out of scope (explicit)
+
+- Pro / Studio / Admin dashboards (Verified only this pass)
+- Public profile, enquire, coach shop-front (all locked)
+- Any business-logic / billing / verification changes
+
+## Quality bar
+
+Before saying done: side-by-side screenshot vs current, day-one (zero data) AND populated states both checked, no orange outside the two allowed spots, no `rounded-xl/2xl/3xl`, no shadows on buttons, audit script green.
+
+Used the **redesign** skill to pin taste before building, and **reps-build-compliance** as the post-flight gate.
