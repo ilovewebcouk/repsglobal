@@ -62,6 +62,68 @@ import {
   getDiscoverabilityKpis,
   type DiscoverabilityKpis,
 } from "@/lib/discoverability/kpis.functions";
+import { HeaderSparkline } from "./HeaderSparkline";
+
+/* ------------------------------------------------------------------ */
+/* Motion helpers                                                     */
+/* ------------------------------------------------------------------ */
+
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduce(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduce(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduce;
+}
+
+function useCountUp(target: number, duration = 600) {
+  const reduce = usePrefersReducedMotion();
+  const [value, setValue] = React.useState(reduce ? target : 0);
+  React.useEffect(() => {
+    if (reduce || target === 0) {
+      setValue(target);
+      return;
+    }
+    if (typeof window === "undefined") {
+      setValue(target);
+      return;
+    }
+    const start = performance.now();
+    let raf = 0;
+    const step = (t: number) => {
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, reduce]);
+  return value;
+}
+
+function usePulseOnIncrease(value: number, duration = 2000) {
+  const prev = React.useRef(value);
+  const [pulse, setPulse] = React.useState(false);
+  React.useEffect(() => {
+    if (value > prev.current) {
+      setPulse(true);
+      const t = window.setTimeout(() => setPulse(false), duration);
+      return () => window.clearTimeout(t);
+    }
+    prev.current = value;
+  }, [value, duration]);
+  React.useEffect(() => {
+    prev.current = value;
+  }, [value]);
+  return pulse;
+}
+
 
 /* ------------------------------------------------------------------ */
 /* Welcome banner                                                     */
@@ -75,6 +137,7 @@ export function WelcomeBanner({
   isPublished,
   slug,
   trust,
+  dailyViews,
 }: {
   name: string;
   avatarUrl: string | null | undefined;
@@ -83,7 +146,9 @@ export function WelcomeBanner({
   isPublished: boolean;
   slug: string | null | undefined;
   trust: TrustState | null | undefined;
+  dailyViews?: Array<{ date: string; count: number }> | null;
 }) {
+
   const initials = name
     .split(" ")
     .map((s) => s[0])
@@ -142,22 +207,27 @@ export function WelcomeBanner({
             {headline ? (
               <p className="mt-1 truncate text-[13px] text-white/55">{headline}</p>
             ) : null}
-            <div className="mt-2 flex items-center gap-2 text-[12px] text-white/65">
-              <span
-                className={cn(
-                  "inline-block size-2 rounded-full",
-                  isPublished ? "bg-emerald-400" : "bg-amber-400",
-                )}
-                aria-hidden
-              />
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-white/65">
+              <span className="inline-flex items-center gap-2">
+                <span
+                  className={cn(
+                    "inline-block size-2 rounded-full",
+                    isPublished ? "bg-emerald-400" : "bg-amber-400",
+                  )}
+                  aria-hidden
+                />
+                {isPublished ? "Live on REPS" : "Draft — complete your profile to go live"}
+              </span>
               {isPublished ? (
-                <span>Your listing is live on REPS</span>
-              ) : (
-                <span>Draft — complete your profile to go live</span>
-              )}
+                <>
+                  <span className="hidden h-3 w-px bg-white/10 sm:inline-block" aria-hidden />
+                  <HeaderSparkline data={dailyViews ?? null} />
+                </>
+              ) : null}
             </div>
           </div>
         </div>
+
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {publicUrl ? (
@@ -272,7 +342,7 @@ export function NeedsAttention({
       key: "reviews",
       icon: Star,
       tone: "neutral",
-      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review" : "reviews"} need a response`,
+      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review needs" : "reviews need"} a reply`,
       detail: "Replies show prospects you're engaged.",
       to: "/dashboard/reviews",
       cta: "Reply",
@@ -325,6 +395,61 @@ export function NeedsAttention({
 
 
   const visible = items.slice(0, 6);
+  const pulse = usePulseOnIncrease(visible.length);
+  const [dismissed, setDismissed] = React.useState<Set<string>>(() => new Set());
+  const liveItems = visible.filter((i) => !dismissed.has(i.key));
+
+  // Slim mode (≤1 item, never an empty card). When 0 items, show a quiet "all caught up" row.
+  if (liveItems.length <= 1) {
+    if (liveItems.length === 0) {
+      return (
+        <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft/30 px-4 py-3 text-[13px] text-white/70">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+            <CheckCircle2 className="size-3.5" />
+          </span>
+          <span className="flex-1">All caught up — we'll surface enquiries, reviews and renewals here as they land.</span>
+        </div>
+      );
+    }
+    const item = liveItems[0];
+    const Icon = item.icon;
+    return (
+      <Link
+        to={item.to as any}
+        onClick={() => setDismissed((s) => new Set(s).add(item.key))}
+        className="group flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft/40 px-4 py-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+      >
+        <span
+          className={cn(
+            "flex size-7 shrink-0 items-center justify-center rounded-[10px] border [&_svg]:size-3.5",
+            item.tone === "orange"
+              ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+              : item.tone === "danger"
+                ? "border-red-400/30 bg-red-500/15 text-red-300"
+                : item.tone === "warn"
+                  ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                  : item.tone === "success"
+                    ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                    : "border-white/12 bg-white/[0.04] text-white/70",
+            pulse && "animate-[hub-pulse_1.6s_ease-in-out_2]",
+          )}
+        >
+          <Icon />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-medium text-white">{item.title}</p>
+          {item.detail ? (
+            <p className="truncate text-[12px] text-white/55">{item.detail}</p>
+          ) : null}
+        </div>
+        <span className="inline-flex items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange">
+          {item.cta}
+          <ChevronRight className="size-3.5" />
+        </span>
+        <style>{`@keyframes hub-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,122,0,0); } 50% { box-shadow: 0 0 0 4px rgba(255,122,0,0.35); } }`}</style>
+      </Link>
+    );
+  }
 
   return (
     <PPanel className="flex flex-col p-5">
@@ -333,52 +458,42 @@ export function NeedsAttention({
         description="Live signals from across your dashboard."
         icon={CheckCircle2}
       />
-      {visible.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <CheckCircle2 />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            Nothing needs your attention right now. We'll surface enquiries, reviews
-            and renewals here as they come in.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {visible.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.key}>
-                <Link
-                  to={item.to as any}
-                  className="group flex items-center gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 p-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+      <ul className="flex flex-col gap-2">
+        {liveItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <li key={item.key}>
+              <Link
+                to={item.to as any}
+                onClick={() => setDismissed((s) => new Set(s).add(item.key))}
+                className="group flex items-center gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 p-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+              >
+                <DashboardBadge
+                  variant={item.tone}
+                  className="size-7 justify-center rounded-[10px] p-0 [&_svg]:size-3.5"
                 >
-                  <DashboardBadge
-                    variant={item.tone}
-                    className="size-7 justify-center rounded-[10px] p-0 [&_svg]:size-3.5"
-                  >
-                    <Icon />
-                  </DashboardBadge>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-white">{item.title}</p>
-                    {item.detail ? (
-                      <p className="truncate text-[12px] text-white/55">{item.detail}</p>
-                    ) : null}
-                  </div>
-                  <span className="hidden items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange sm:inline-flex">
-                    {item.cta}
-                    <ChevronRight className="size-3.5" />
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  <Icon />
+                </DashboardBadge>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-medium text-white">{item.title}</p>
+                  {item.detail ? (
+                    <p className="truncate text-[12px] text-white/55">{item.detail}</p>
+                  ) : null}
+                </div>
+                <span className="hidden items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange sm:inline-flex">
+                  {item.cta}
+                  <ChevronRight className="size-3.5" />
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </PPanel>
   );
 }
+
+
 
 
 /* ------------------------------------------------------------------ */
@@ -497,27 +612,18 @@ export function ActivityTimeline({
     return e.sort((a, b) => +new Date(b.at) - +new Date(a.at)).slice(0, 10);
   }, [enquiries, reviews]);
 
-  return (
-    <PPanel className="flex flex-col p-5">
-
-      <SectionHeader
-        title="Recent activity"
-        description="The last 10 events across enquiries and reviews."
-        icon={Sparkles}
-      />
-      {events.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <DashboardEmpty>
-            <DashboardEmptyIcon>
-              <Sparkles />
-            </DashboardEmptyIcon>
-            <DashboardEmptyTitle>No activity yet</DashboardEmptyTitle>
-            <DashboardEmptyDescription>
-              When clients enquire or leave reviews, you'll see the activity stream here.
-            </DashboardEmptyDescription>
-          </DashboardEmpty>
-        </div>
-      ) : (
+  // Slim mode for sparse states (0–2 events) — no card chrome.
+  if (events.length === 0) {
+    return (
+      <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft/30 px-4 py-3 text-[13px] text-white/65">
+        <Sparkles className="size-4 shrink-0 text-white/45" />
+        <span className="flex-1">No activity yet — enquiries and reviews will appear here as they land.</span>
+      </div>
+    );
+  }
+  if (events.length <= 2) {
+    return (
+      <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft/30 p-1.5">
         <ul className="flex flex-col">
           {events.map((ev, i) => {
             const Icon = ev.icon;
@@ -526,7 +632,7 @@ export function ActivityTimeline({
                 <Link
                   to={ev.to as any}
                   className={cn(
-                    "flex items-center gap-3 py-2.5 text-[13px] text-white/70 hover:text-white",
+                    "flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] text-white/70 hover:bg-reps-panel-soft hover:text-white",
                     i < events.length - 1 && "border-b border-reps-border/60",
                   )}
                 >
@@ -539,10 +645,42 @@ export function ActivityTimeline({
             );
           })}
         </ul>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <PPanel className="flex flex-col p-5">
+      <SectionHeader
+        title="Recent activity"
+        description="Last 10 events"
+        icon={Sparkles}
+      />
+      <ul className="flex flex-col">
+        {events.map((ev, i) => {
+          const Icon = ev.icon;
+          return (
+            <li key={ev.key}>
+              <Link
+                to={ev.to as any}
+                className={cn(
+                  "flex items-center gap-3 py-2.5 text-[13px] text-white/70 hover:text-white",
+                  i < events.length - 1 && "border-b border-reps-border/60",
+                )}
+              >
+                <Icon className="size-3.5 shrink-0 text-white/45" />
+                <span className="flex-1 truncate">{ev.text}</span>
+                <time className="shrink-0 text-[11px] text-white/45">{relTime(ev.at)}</time>
+                <ArrowUpRight className="size-3.5 shrink-0 text-white/35" />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </PPanel>
   );
 }
+
 
 function relTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -628,6 +766,37 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     { label: "Insurance on file", status: insuranceRow, detail: insuranceDetail },
     { label: "Qualifications", status: qualificationsRowFinal },
   ];
+  const allDone = rows.every((r) => r.status.tone === "ok");
+  const insuranceExpiringSoon =
+    insStatus === "active" && trust?.insurance.expiryDate
+      ? (new Date(trust.insurance.expiryDate).getTime() - Date.now()) / 86_400_000 < 60
+      : false;
+
+  // Slim mode when everything is verified and nothing expires within 60 days.
+  if (allDone && !insuranceExpiringSoon) {
+    const expiry = trust?.insurance.expiryDate ? fmtDate(trust.insurance.expiryDate) : null;
+    return (
+      <Link
+        to="/dashboard/verification"
+        className="group flex items-center gap-3 rounded-[16px] border border-emerald-400/25 bg-emerald-500/[0.06] px-4 py-3 transition-colors hover:border-emerald-400/45 hover:bg-emerald-500/[0.10]"
+      >
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+          <ShieldCheck className="size-3.5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-medium text-white">REPS Verified · 3 of 3 checks complete</p>
+          <p className="truncate text-[11.5px] text-white/55">
+            Identity, qualifications, insurance{expiry ? ` · insurance valid to ${expiry}` : ""}
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-emerald-300">
+          Manage
+          <ChevronRight className="size-3.5" />
+        </span>
+      </Link>
+    );
+  }
+
   return (
     <PPanel className="flex flex-col p-5">
       <SectionHeader title="Verification" icon={ShieldCheck} />
@@ -673,6 +842,7 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     </PPanel>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Reviews snapshot                                                   */

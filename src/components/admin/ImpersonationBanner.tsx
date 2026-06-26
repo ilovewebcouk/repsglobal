@@ -1,7 +1,7 @@
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
-import { X, Eye, LayoutDashboard } from 'lucide-react';
+import { X, Eye } from 'lucide-react';
 import {
   getImpersonationStatus,
   stopImpersonation,
@@ -35,25 +35,18 @@ export function ImpersonationBanner() {
           <span className="opacity-80"> · started {fmtTime(data.startedAt)} · expires {fmtTime(data.endsAt)}</span>
         </span>
       </div>
-      <div className="flex items-center gap-2">
-        <Link
-          to="/dashboard"
-          className="flex h-7 items-center gap-1.5 rounded-[8px] bg-white/15 px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
-        >
-          <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
-        </Link>
-        <button
-          type="button"
-          onClick={async () => {
-            await stopFn();
-            await qc.invalidateQueries();
-            navigate({ to: '/admin/professionals' });
-          }}
-          className="flex h-7 items-center gap-1.5 rounded-[8px] bg-white/15 px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
-        >
-          <X className="h-3.5 w-3.5" /> Exit view
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={async () => {
+          await stopFn();
+          await qc.invalidateQueries();
+          navigate({ to: '/admin/professionals' });
+        }}
+        className="flex h-7 items-center gap-1.5 rounded-[8px] bg-white/15 px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
+      >
+        <X className="h-3.5 w-3.5" /> Exit view
+      </button>
     </div>
   );
 }
+
