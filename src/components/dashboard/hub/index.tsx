@@ -1390,7 +1390,7 @@ export function NeedsAttentionHero(props: {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.10),transparent_60%)]" aria-hidden />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4 sm:items-center">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-[12px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
               <CheckCircle2 className="size-6" />
             </span>
             <div className="min-w-0">
@@ -1454,7 +1454,7 @@ export function NeedsAttentionHero(props: {
       <div className="relative flex flex-col gap-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
-            <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-[14px] border [&_svg]:size-6", toneIcon)}>
+            <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-[12px] border [&_svg]:size-6", toneIcon)}>
               <Icon />
             </span>
             <div className="min-w-0">
