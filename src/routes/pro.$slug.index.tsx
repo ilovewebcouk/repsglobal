@@ -665,7 +665,20 @@ function ProProfilePage() {
                 <TrustItem
                   icon={Umbrella}
                   title="Professional Indemnity"
-                  sub="Active until 12 Dec 2025"
+                  sub={
+                    pro.trust?.insuranceExpiry
+                      ? (() => {
+                          const d = new Date(pro.trust.insuranceExpiry);
+                          if (!Number.isNaN(d.getTime())) {
+                            const day = d.getUTCDate();
+                            const month = MONTHS_SHORT[d.getUTCMonth()];
+                            const year = d.getUTCFullYear();
+                            return `Active until ${day} ${month} ${year}`;
+                          }
+                          return "Active";
+                        })()
+                      : "No active insurance"
+                  }
                 />
                 <TrustItem
                   icon={GraduationCap}
