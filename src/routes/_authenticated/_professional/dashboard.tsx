@@ -21,6 +21,7 @@ import {
   ActivityTimeline,
   CompletenessCard,
   CpdMini,
+  DiscoverabilityStrip,
   NeedsAttention,
   ProUpsellStrip,
   ReviewsSnapshot,
