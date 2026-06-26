@@ -84,9 +84,16 @@ export function WelcomeBanner({
 
   const publicUrl = slug ? `/pro/${slug}` : null;
 
-  const copyUrl = React.useCallback(() => {
+  const [copied, setCopied] = React.useState(false);
+  const copyUrl = React.useCallback(async () => {
     if (!publicUrl) return;
-    void navigator.clipboard.writeText(window.location.origin + publicUrl);
+    try {
+      await navigator.clipboard.writeText(window.location.origin + publicUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* ignore */
+    }
   }, [publicUrl]);
 
   // Single source of truth for the badge: 3-of-3 trust state, not the tier.
