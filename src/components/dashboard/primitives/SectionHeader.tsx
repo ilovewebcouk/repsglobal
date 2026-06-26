@@ -16,14 +16,19 @@ export type SectionHeaderProps = {
  */
 export function SectionHeader({ title, description, icon: Icon, action, className }: SectionHeaderProps) {
   return (
-    <div className={cn("mb-3 flex items-start justify-between gap-3", className)}>
+    <div
+      className={cn(
+        "mb-4 flex items-start justify-between gap-3 border-b border-reps-border/50 pb-3",
+        className,
+      )}
+    >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           {Icon ? <Icon className="h-4 w-4 text-white/70" /> : null}
-          <h2 className="font-display text-[15px] font-semibold text-white">{title}</h2>
+          <h2 className="font-display text-[15px] font-semibold leading-tight text-white">{title}</h2>
         </div>
         {description ? (
-          <p className="mt-1 text-[12px] text-white/55">{description}</p>
+          <p className="mt-1 text-[12px] leading-snug text-white/55">{description}</p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
