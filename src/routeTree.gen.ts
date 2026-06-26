@@ -54,7 +54,6 @@ import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
-import { Route as HelpCategoryRouteImport } from './routes/help.$category'
 import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
 import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
 import { Route as FeaturesShopFrontRouteImport } from './routes/features.shop-front'
@@ -84,6 +83,7 @@ import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
+import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
@@ -356,11 +356,6 @@ const InLocationRoute = InLocationRouteImport.update({
   path: '/in/$location',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HelpCategoryRoute = HelpCategoryRouteImport.update({
-  id: '/help/$category',
-  path: '/help/$category',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const GymsSlugRoute = GymsSlugRouteImport.update({
   id: '/gyms/$slug',
   path: '/gyms/$slug',
@@ -507,6 +502,11 @@ const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProSlugRoute,
 } as any)
+const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
+  id: '/help/$category/',
+  path: '/help/$category/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
   path: '/u/insurance/$sessionId',
@@ -533,9 +533,9 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpCategorySlugRoute = HelpCategorySlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => HelpCategoryRoute,
+  id: '/help/$category/$slug',
+  path: '/help/$category/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   id: '/checkout/credits/return',
@@ -841,7 +841,6 @@ export interface FileRoutesByFullPath {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
-  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -864,6 +863,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -962,7 +962,6 @@ export interface FileRoutesByTo {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
-  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -984,6 +983,7 @@ export interface FileRoutesByTo {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/help/$category': typeof HelpCategoryIndexRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -1084,7 +1084,6 @@ export interface FileRoutesById {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
-  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
@@ -1108,6 +1107,7 @@ export interface FileRoutesById {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -1208,7 +1208,6 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
-    | '/help/$category'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1231,6 +1230,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/help/$category/'
     | '/pro/$slug/'
     | '/checkout/credits'
     | '/dashboard/syncing'
@@ -1329,7 +1329,6 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
-    | '/help/$category'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1351,6 +1350,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/help/$category'
     | '/pro/$slug'
     | '/checkout/credits'
     | '/dashboard/syncing'
@@ -1450,7 +1450,6 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
-    | '/help/$category'
     | '/in/$location'
     | '/portal_/check-ins'
     | '/portal_/messages'
@@ -1474,6 +1473,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/help/$category/'
     | '/pro/$slug/'
     | '/_authenticated/_professional/checkout_/credits'
     | '/_authenticated/_professional/dashboard/syncing'
@@ -1574,7 +1574,6 @@ export interface RootRouteChildren {
   FeaturesShopFrontRoute: typeof FeaturesShopFrontRoute
   FeaturesVisibilityRoute: typeof FeaturesVisibilityRoute
   GymsSlugRoute: typeof GymsSlugRoute
-  HelpCategoryRoute: typeof HelpCategoryRouteWithChildren
   InLocationRoute: typeof InLocationRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
@@ -1589,9 +1588,11 @@ export interface RootRouteChildren {
   HelpIndexRoute: typeof HelpIndexRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
+  HelpCategorySlugRoute: typeof HelpCategorySlugRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
+  HelpCategoryIndexRoute: typeof HelpCategoryIndexRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicHooksSupportAutoCloseRoute: typeof ApiPublicHooksSupportAutoCloseRoute
@@ -1920,13 +1921,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InLocationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/help/$category': {
-      id: '/help/$category'
-      path: '/help/$category'
-      fullPath: '/help/$category'
-      preLoaderRoute: typeof HelpCategoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/gyms/$slug': {
       id: '/gyms/$slug'
       path: '/gyms/$slug'
@@ -2130,6 +2124,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProSlugIndexRouteImport
       parentRoute: typeof ProSlugRoute
     }
+    '/help/$category/': {
+      id: '/help/$category/'
+      path: '/help/$category'
+      fullPath: '/help/$category/'
+      preLoaderRoute: typeof HelpCategoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
       path: '/u/insurance/$sessionId'
@@ -2167,10 +2168,10 @@ declare module '@tanstack/react-router' {
     }
     '/help/$category/$slug': {
       id: '/help/$category/$slug'
-      path: '/$slug'
+      path: '/help/$category/$slug'
       fullPath: '/help/$category/$slug'
       preLoaderRoute: typeof HelpCategorySlugRouteImport
-      parentRoute: typeof HelpCategoryRoute
+      parentRoute: typeof rootRouteImport
     }
     '/checkout/credits/return': {
       id: '/checkout/credits/return'
@@ -2626,18 +2627,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface HelpCategoryRouteChildren {
-  HelpCategorySlugRoute: typeof HelpCategorySlugRoute
-}
-
-const HelpCategoryRouteChildren: HelpCategoryRouteChildren = {
-  HelpCategorySlugRoute: HelpCategorySlugRoute,
-}
-
-const HelpCategoryRouteWithChildren = HelpCategoryRoute._addFileChildren(
-  HelpCategoryRouteChildren,
-)
-
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -2713,7 +2702,6 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesShopFrontRoute: FeaturesShopFrontRoute,
   FeaturesVisibilityRoute: FeaturesVisibilityRoute,
   GymsSlugRoute: GymsSlugRoute,
-  HelpCategoryRoute: HelpCategoryRouteWithChildren,
   InLocationRoute: InLocationRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,
@@ -2728,9 +2716,11 @@ const rootRouteChildren: RootRouteChildren = {
   HelpIndexRoute: HelpIndexRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
+  HelpCategorySlugRoute: HelpCategorySlugRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
+  HelpCategoryIndexRoute: HelpCategoryIndexRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,

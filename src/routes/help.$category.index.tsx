@@ -7,7 +7,7 @@ import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebro
 import { getCategory, HELP_CATEGORIES } from "@/content/help/categories";
 import { getArticlesByCategory } from "@/content/help/registry";
 
-export const Route = createFileRoute("/help/$category")({
+export const Route = createFileRoute("/help/$category/")({
   loader: ({ params }) => {
     const category = getCategory(params.category);
     if (!category) throw notFound();
