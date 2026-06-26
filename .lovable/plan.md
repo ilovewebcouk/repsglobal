@@ -1,61 +1,39 @@
-## Goal
+## Diagnosis
 
-Strip everything demo-flavoured from the public live site, but keep the two locked mock-up pages reachable by admin (`cruz.pt@icloud.com`) at their existing URLs so you always have a reference of "the perfect page":
+Those names are not coming from the React page mock data. They are real rows currently published in the backend:
 
-- `/pro/james-carter` — Verified PT profile mock-up (fixture)
-- `/c/james-wilson` — Pro-tier coach shop-front mock-up (fixture)
+- `james.wilson@demo.repsuk.org` → James Wilson
+- `sophie.taylor@demo.repsuk.org` → Sophie Taylor
+- `liam.roberts@demo.repsuk.org` → Liam Roberts
+- `priya.sharma@demo.repsuk.org` → Priya Sharma
+- `daniel.hughes@demo.repsuk.org` → Daniel Hughes
+- `emily.carter@demo.repsuk.org` → Emily Carter
+- `marcus.lee@demo.repsuk.org` → Marcus Lee
+- `hannah.thompson@demo.repsuk.org` → Hannah Thompson
 
-Everything else demo/seed gets pulled from public surfaces. Nothing about the locked visual designs of those two pages changes.
+They were seeded by older demo migrations and have `is_published = true` and `bd_seed_thin = false`, so the directory query quite correctly still shows them.
 
----
+## Plan
 
-## 1. Admin-gate the two demo fixture pages
+1. **Unpublish the seeded demo professionals in the backend**
+   - Set these `@demo.repsuk.org` professional rows to `is_published = false`.
+   - Mark them as `bd_seed_thin = true` as a belt-and-braces exclusion so existing public directory filters also reject them.
+   - Keep the rows/accounts rather than hard-deleting, so any internal references do not break.
 
-In `src/routes/pro.$slug.index.tsx` and `src/routes/c.$slug.tsx`:
+2. **Keep the James Wilson shop-front fixture/admin mock intact**
+   - Do not delete the hardcoded `/c/james-wilson` fixture.
+   - Keep it noindex/admin-gated as already planned, so it remains available only as an internal mock-up.
 
-- When the requested slug is a **fixture-only slug** (`james-carter` / `james-wilson`) AND there is no matching real DB row, run an admin check (`has_role(auth.uid(), 'admin')`) in the loader.
-- Non-admin (incl. signed-out): throw `notFound()` so the public sees the standard 404.
-- Admin: render the fixture page exactly as today (locked design untouched).
-- Also emit `<meta name="robots" content="noindex,nofollow">` via `head()` on these fixture renders so they never get indexed.
-- Remove the silent `?? PROS["james-carter"]` / `?? COACHES["james-wilson"]` fallbacks for *unknown* slugs — unknown slugs without a DB row should `notFound()`, not impersonate James.
+3. **Add a code-level safety guard**
+   - Update public directory/featured queries to also exclude demo emails where possible, not just `bd_seed_thin`.
+   - This prevents future accidental reseeds from leaking back into `/find-a-professional`.
 
-## 2. Hide BD seed / unclaimed pros from public listings
+4. **Clean remaining public demo surfaces separately if needed**
+   - Profession pages, city pages, About, and Reviews still contain hardcoded demo names in their own local fallback/marketing arrays.
+   - This plan focuses on the directory issue you’re seeing now. After this, we can do a second pass to remove/hide those from the other public pages too.
 
-BD-seed rows (`professionals.bd_seed_thin = true`) currently appear in directory search, city pages, profession pages, and can hit the featured rail. Hide them everywhere public:
+## Validation
 
-- `src/lib/directory/search.functions.ts` — add `.eq("bd_seed_thin", false)` to the public search query (and any city/profession derivatives).
-- `src/lib/directory/featured.functions.ts` — exclude `bd_seed_thin = true` from `getFeaturedPros` and the global featured-ID set (hero rail already excludes them).
-- Direct `/pro/<bd-slug>` URLs keep working (so claim flows still resolve) but are noindex'd until claimed — flip `head()` to noindex when `bd_seed_thin && identity_status !== 'approved'`.
+After implementation, check `/find-a-professional` again and confirm none of these names appear in the results list:
 
-## 3. Replace hardcoded demo content on public pages
-
-- **Homepage `src/routes/index.tsx`**:
-  - Delete the `FALLBACK_FEATURED` array. When `liveFeatured` is empty, render nothing (or a minimal placeholder card slot) instead of fake James/Sophie/Daniel/Laura.
-  - Replace the `outcomes` testimonial block (James/Sophie/Daniel quotes) with a neutral "Featured stories — coming soon" empty-state, or remove the section entirely until real stories exist. Pick the empty-state.
-- **`src/routes/reviews.tsx`** — the page is built from a hardcoded `MOCK_REVIEWS` array (James Wilson, Sophie Taylor, Liam Roberts, Laura Bennett). Either:
-  - (a) replace with a query against approved DB reviews, or
-  - (b) gate the whole route admin-only (since there are no real public reviews yet).
-  Recommended: **(b) admin-gate** for now — quickest, no public exposure. Re-open when real review volume exists.
-- **Marketing pages** (`features.visibility.tsx`, `features.shop-front.tsx`, `features.operations.tsx`, `for-professionals.tsx`, `features.coaching.tsx`, `dev.section-library.tsx`, `cpd-legacy.tsx`, `home-legacy.tsx`, `TestimonialFeature.tsx`, `components/features/feature-content.tsx`, `InteractiveMocks.tsx`) — these are **internal references to the locked mock-ups** (iframes / AnnotatedMock / testimonial avatars pointing to James Carter / James Wilson). They are the canonical product screenshots and stay, since they are art direction, not "demo data on the live platform". No change.
-
-## 4. Demo dashboard / portal routes
-
-- `src/routes/dashboard-demo.tsx` and `src/routes/portal_.*.tsx` — keep, but ensure they're admin-only or already behind `/portal` (client-portal demo). Confirm and gate if exposed.
-
-## 5. Audit & cleanup
-
-- Run a final `rg` for hardcoded `Sophie Williams`, `Daniel Roberts`, `Laura Mitchell`, `Liam Roberts`, `Sophie Taylor`, `Laura Bennett` on **public** routes — remove from public surfaces, leave inside marketing mock-up references (the locked screenshots above).
-- Verify directory + city + profession + homepage rails return 0 rows when DB has no verified pros (acceptable empty state).
-
----
-
-## What stays untouched
-
-- `src/routes/pro.$slug.index.tsx` and `src/routes/c.$slug.tsx` visual layouts (locked mock-ups).
-- Marketing-page iframes/screenshots that point at the two James pages — they're the product screenshots.
-- BD seed table itself (data preserved, just hidden publicly).
-- Stripe / billing / verification logic.
-
-## Open question
-
-The `reviews.tsx` route in §3 — confirm you're happy with **admin-gate the whole `/reviews` page** rather than rewiring it to real DB reviews now. Otherwise I'll do option (a) and only show approved reviews from the DB.
+`Marcus Lee`, `Emily Carter`, `Priya Sharma`, `James Wilson`, `Daniel Hughes`, `Liam Roberts`, `Sophie Taylor`, `Hannah Thompson`.
