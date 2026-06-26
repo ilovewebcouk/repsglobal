@@ -162,8 +162,13 @@ export async function lookupOfqualQualification(
   const titleMatch =
     !!submission.qualification && !!record.title && titleSimilarity(submission.qualification, record.title) >= 0.6;
 
+  // "Live" for our purposes means the qualification exists on the register and
+  // wasn't withdrawn before certification — historic statuses like "No longer
+  // awarded" are still valid evidence that a learner earned it during its
+  // operational window. Only flag genuinely invalid states.
   const isLive =
-    !record.status || /live|available|active|operational/i.test(record.status);
+    !record.status || !/withdrawn|removed|expired|invalid/i.test(record.status);
+
 
   return {
     found,
