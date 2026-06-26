@@ -279,7 +279,10 @@ function AdminVerificationPage() {
               <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-white/5 text-white/70">
                 <t.icon className="h-4 w-4" />
               </span>
-            </div>
+      </div>
+
+      <DriftChip />
+
           </PCard>
         ))}
       </div>
