@@ -43,6 +43,11 @@ export type UnlockedTitlesResult = {
   /** Catalog titles the pro has NOT earned yet — for the roadmap. */
   locked: Array<{ title_slug: TitleSlug; label: string; tier: 1 | 2 | 3; earnedBy: string }>;
   primary_title_slug: TitleSlug | null;
+  secondary_title_slug: TitleSlug | null;
+  /** Granted titles after supersession filtering — what the public sees. */
+  visible_title_slugs: TitleSlug[];
+  /** Granted titles hidden by a higher one the pro also holds. */
+  hidden_by_supersession: Array<{ slug: TitleSlug; label: string; coveredBy: TitleSlug; coveredByLabel: string }>;
 };
 
 export const myUnlockedTitles = createServerFn({ method: "GET" })
