@@ -284,7 +284,7 @@ function AdminVerificationPage() {
 
       {/* Top-level tab toggle */}
       <div className="mt-6 inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
-        {(["qualifications", "identity"] as const).map((t) => (
+        {(["qualifications", "identity", "insurance"] as const).map((t) => (
           <button
             key={t}
             onClick={() => { setTopTab(t); setSelectedId(null); }}
@@ -292,7 +292,7 @@ function AdminVerificationPage() {
               topTab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
             }`}
           >
-            {t === "qualifications" ? "Qualifications" : "Identity checks"}
+            {t === "qualifications" ? "Qualifications" : t === "identity" ? "Identity checks" : "Insurance"}
           </button>
         ))}
       </div>
@@ -300,6 +300,10 @@ function AdminVerificationPage() {
       {topTab === "identity" ? (
         <div className="mt-4">
           <AdminIdentityTab signUrl={signUrl} adminOverride={adminOverrideIdentity} />
+        </div>
+      ) : topTab === "insurance" ? (
+        <div className="mt-4">
+          <AdminInsuranceTab />
         </div>
       ) : (
       <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
