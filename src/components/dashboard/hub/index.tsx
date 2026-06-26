@@ -1001,6 +1001,7 @@ export function useHubData(enabled: boolean) {
   const fetchReviews = useServerFn(listMyReviews);
   const fetchShopFront = useServerFn(getMyShopFront);
   const fetchTrust = useServerFn(getTrustState);
+  const fetchDiscoverability = useServerFn(getDiscoverabilityKpis);
 
   const profile = useQuery({
     queryKey: ["my-dashboard-profile"],
