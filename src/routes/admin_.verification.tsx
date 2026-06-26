@@ -161,6 +161,9 @@ function AdminVerificationPage() {
     setNote("");
     setOverrideReason("");
     setChecks({});
+    setManualQualConfirmed(false);
+    setRevokeOpen(false);
+    setRevokeReason("");
     try {
       await claim({ data: { id } });
     } catch {
