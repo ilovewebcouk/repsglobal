@@ -617,9 +617,9 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     { label: "Qualifications", status: qualificationsRowFinal },
   ];
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader title="Verification" icon={ShieldCheck} />
-      <ul className="flex flex-col gap-2.5">
+      <ul className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1">
         {rows.map((r) => {
           const done = r.status.tone === "ok";
           return (
