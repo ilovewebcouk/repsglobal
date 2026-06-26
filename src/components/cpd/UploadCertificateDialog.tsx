@@ -119,6 +119,58 @@ export function UploadCertificateDialog({
     setExpiryDate("");
     setCertNumber("");
     setHolderName("");
+    setTab("upload");
+    setSessionId(null);
+    setSessionExpiresAt(null);
+  };
+
+  // Build the absolute mobile URL once we have a session id.
+  const mobileUrl = useMemo(() => {
+    if (!sessionId) return null;
+    if (typeof window === "undefined") return null;
+    return `${window.location.origin}/u/cpd/${sessionId}`;
+  }, [sessionId]);
+
+  // Poll session status when QR tab is active.
+  const sessionPoll = useQuery({
+    queryKey: ["cert-upload-session", sessionId],
+    queryFn: () => getSession({ data: { id: sessionId! } }),
+    enabled: Boolean(sessionId) && tab === "qr" && step === "pick",
+    refetchInterval: 2000,
+  });
+
+  // When a mobile upload arrives, pull it down and run the same extract flow.
+  useEffect(() => {
+    if (!sessionId) return;
+    const row = sessionPoll.data;
+    if (!row || row.status !== "uploaded") return;
+    (async () => {
+      setStep("extracting");
+      try {
+        const payload = await fetchPayload({ data: { session_id: sessionId } });
+        const synth = new File(
+          [dataUrlToBlob(payload.file_data_url)],
+          payload.filename,
+          { type: payload.file_data_url.match(/^data:([^;]+);/)?.[1] ?? "application/octet-stream" },
+        );
+        await markConsumed({ data: { id: sessionId } });
+        await handlePickFile(synth);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to fetch upload");
+        setStep("pick");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionPoll.data?.status, sessionId]);
+
+  const startQrSession = async () => {
+    try {
+      const s = await createSession({ data: undefined });
+      setSessionId(s.id);
+      setSessionExpiresAt(s.expires_at);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not start session");
+    }
   };
 
   const handleClose = (v: boolean) => {
