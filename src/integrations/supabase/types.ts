@@ -3692,6 +3692,7 @@ export type Database = {
         Args: { _token: string }
         Returns: undefined
       }
+      mark_verification_notifications_read: { Args: never; Returns: number }
       move_to_dlq: {
         Args: {
           dlq_name: string
