@@ -220,7 +220,45 @@ function LayerChip({
 function QualificationsCard({ trust }: { trust: TrustState | undefined }) {
   const count = trust?.qualifications.count ?? 0;
   const titles = trust?.qualifications.titles ?? [];
+  const pending = trust?.qualifications.pendingCount ?? 0;
+  const changes = trust?.qualifications.changesRequestedCount ?? 0;
+  const rejected = trust?.qualifications.rejectedCount ?? 0;
   const earned = count > 0;
+
+  // Status pill — approved beats pending beats changes_requested beats rejected.
+  let pill: { label: string; cls: string };
+  let subline: string;
+  if (earned) {
+    pill = {
+      label: "Verified",
+      cls: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+    };
+    subline = `${count} approved qualification${count === 1 ? "" : "s"} — managed in Education & CPD.`;
+  } else if (pending > 0) {
+    pill = {
+      label: "Pending review",
+      cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+    };
+    subline = `${pending} certificate${pending === 1 ? "" : "s"} with the REPS team — usually reviewed within 1 working day.`;
+  } else if (changes > 0) {
+    pill = {
+      label: "Changes requested",
+      cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+    };
+    subline = "Admin asked for more info on your certificate — open CPD to respond.";
+  } else if (rejected > 0) {
+    pill = {
+      label: "Rejected",
+      cls: "border-rose-400/30 bg-rose-500/15 text-rose-300",
+    };
+    subline = "Your last certificate wasn't accepted. Upload a fresh one in Education & CPD.";
+  } else {
+    pill = {
+      label: "Not started",
+      cls: "border-white/12 bg-white/[0.05] text-white/60",
+    };
+    subline = "Upload your first certificate in Education & CPD. Approval unlocks your profession title.";
+  }
 
   return (
     <section
@@ -231,21 +269,11 @@ function QualificationsCard({ trust }: { trust: TrustState | undefined }) {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="font-display text-[15px] font-semibold text-white">Qualifications</h2>
-            {earned ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
-                Verified
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-2 py-0.5 text-[10px] font-semibold text-white/60">
-                Not started
-              </span>
-            )}
+            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${pill.cls}`}>
+              {pill.label}
+            </span>
           </div>
-          <p className="mt-0.5 text-[12px] text-white/55">
-            {earned
-              ? `${count} approved qualification${count === 1 ? "" : "s"} — managed in Education & CPD.`
-              : "Upload your first certificate in Education & CPD. Approval unlocks your profession title."}
-          </p>
+          <p className="mt-0.5 text-[12px] text-white/55">{subline}</p>
         </div>
         <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/60">
           03
