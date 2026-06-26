@@ -122,8 +122,23 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     if (data.specialism) qb = qb.contains("specialisms", [data.specialism]);
     if (data.online === true) qb = qb.eq("online_available", true);
     if (data.in_person === true) qb = qb.eq("in_person_available", true);
+    // Fully-verified id set: identity approved + verification approved + active in-date insurance.
+    // Used both for the "verified only" filter chip and the verifiedRank sort key,
+    // so the directory always agrees with the public-profile badge rule.
+    const { data: fullyVerifiedRows } = await supabaseAdmin.rpc(
+      "list_fully_verified_pro_ids",
+    );
+    const fullyVerifiedIds = new Set<string>(
+      ((fullyVerifiedRows ?? []) as Array<string | { id?: string }>).map((r) =>
+        typeof r === "string" ? r : (r?.id ?? ""),
+      ).filter(Boolean),
+    );
     if (data.verified === true) {
-      qb = qb.eq("verification", "verified").eq("identity_status", "approved");
+      const ids = Array.from(fullyVerifiedIds);
+      if (ids.length === 0) {
+        return { rows: [], total: 0, page, pageSize };
+      }
+      qb = qb.in("id", ids);
     }
     if (data.featured === true) {
       const { getFeaturedProIds } = await import("./featured.functions");
@@ -236,7 +251,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         const row = r as { id: string; quality_score: number | null; verification: string | null; updated_at: string | null };
         const c = origin ? coordById.get(row.id) : undefined;
         const d = origin && c ? haversineMi(origin, c) : Number.POSITIVE_INFINITY;
-        const verifiedRank = row.verification === "verified" ? 1 : 0;
+        const verifiedRank = fullyVerifiedIds.has(row.id) ? 1 : 0;
         const paidRank = paidTierById.get(row.id) ?? 0;
         const quality = row.quality_score ?? 0;
         return {

@@ -106,16 +106,25 @@ async function fetchFeaturedPool(
 ): Promise<{ pool: FeaturedProRow[]; paidCount: number; backfillUsed: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  // Featured rail stays strict: published + verified only. We do NOT filter on
-  // bd_seed_thin here either — a verified pro isn't thin by definition, and
-  // every published pro deserves to be reachable from the directory.
+  // Featured rail stays strict: published + fully verified (ID + qualification +
+  // active in-date insurance). We do NOT filter on bd_seed_thin here either —
+  // a fully-verified pro isn't thin by definition.
+  const { data: fvRows } = await supabaseAdmin.rpc(
+    "list_fully_verified_pro_ids",
+  );
+  const fullyVerifiedIds = ((fvRows ?? []) as Array<string | { id?: string }>)
+    .map((r) => (typeof r === "string" ? r : (r?.id ?? "")))
+    .filter(Boolean);
+  if (fullyVerifiedIds.length === 0) {
+    return { pool: [], paidCount: 0, backfillUsed: false };
+  }
   let qb = supabaseAdmin
     .from("professionals")
     .select(
       "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
     )
     .eq("is_published", true)
-    .eq("verification", "verified");
+    .in("id", fullyVerifiedIds);
 
   if (scope === "city" && value) qb = qb.ilike("city", `%${value}%`);
   if (scope === "profession" && value) qb = qb.eq("primary_profession", value);
