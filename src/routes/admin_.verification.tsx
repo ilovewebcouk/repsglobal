@@ -443,7 +443,8 @@ function AdminVerificationPage() {
             const titleLabel = getTitleLabel(sub.derived_title_slug ?? null);
             const missing: ("identity" | "selfie" | "insurance" | "cert")[] = [];
             if (!id) missing.push("identity");
-            else if (!id.selfie_path) missing.push("selfie");
+            // Stripe Identity captures doc + selfie in the same session — no separate selfie_path is stored.
+            else if (!id.selfie_path && (id as { vendor?: string | null }).vendor !== "stripe") missing.push("selfie");
             if (!ins) missing.push("insurance");
 
             const canApprovePro = !!id && !!ins && gates.hardPassed;
@@ -608,7 +609,7 @@ function AdminVerificationPage() {
                         <StepHeader num={2} title="Insurance" pill={insPill} />
                         {!ins ? (
                           <p className="text-[12px] text-white/55">
-                            No insurance on file. Required for the Pro tier (Verified can be approved without).
+                            No insurance on file. You can still approve — insurance is tracked separately and the pro will be nudged to upload.
                           </p>
                         ) : (
                           <>
