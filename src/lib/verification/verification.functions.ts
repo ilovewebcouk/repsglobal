@@ -341,6 +341,29 @@ export const reviewVerification = createServerFn({ method: "POST" })
         .eq("id", sub.professional_id);
     }
 
+    // Bell + email for the trainer on every review outcome.
+    try {
+      const { notifyVerificationEvent } = await import("./notifications.functions");
+      const event =
+        data.decision === "approved"
+          ? "qualification.approved"
+          : data.decision === "rejected"
+            ? "qualification.rejected"
+            : "qualification.changes_requested";
+      await notifyVerificationEvent({
+        professionalId: sub.professional_id,
+        event,
+        context: {
+          submission_id: sub.id,
+          qualification: (sub as { qualification?: string | null }).qualification ?? null,
+          admin_note: data.admin_note ?? null,
+        },
+        alsoEmail: false,
+      });
+    } catch (e) {
+      console.error("[reviewVerification] notify failed", (e as Error).message);
+    }
+
     return { ok: true };
   });
 
