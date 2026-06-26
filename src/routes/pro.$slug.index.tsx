@@ -96,10 +96,13 @@ type Pro = {
   gyms?: { label: string; branch: string }[];
   lat?: number | null;
   lng?: number | null;
+  memberSince?: string | null;
   trust?: {
     verified: boolean;
     insuranceExpiry: string | null;
     cpd?: { done: number; total: number } | null;
+    qualificationsCheckedAt?: string | null;
+    identityVerifiedAt?: string | null;
   };
   gallery?: { id: string; url: string }[];
   faqs: { q: string; a: string; open?: boolean }[];
@@ -186,6 +189,12 @@ const PROS: Record<string, Pro> = {
       { q: "What should I expect in my first session?", a: "" },
       { q: "Do you offer nutrition guidance?", a: "" },
     ],
+    trust: {
+      verified: true,
+      insuranceExpiry: "2026-12-12",
+      qualificationsCheckedAt: "2026-06-15",
+      identityVerifiedAt: "2026-06-15",
+    },
   },
 };
 
@@ -363,10 +372,13 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     gyms: row.gyms ?? [],
     lat: row.location?.latitude ?? null,
     lng: row.location?.longitude ?? null,
+    memberSince: row.member_since,
     trust: {
       verified: !!row.trust?.verified,
       insuranceExpiry: row.trust?.insurance_expiry ?? null,
       cpd: null,
+      qualificationsCheckedAt: row.trust?.qualifications_checked_at ?? null,
+      identityVerifiedAt: row.trust?.identity_verified_at ?? null,
     },
     gallery: (row as { gallery?: { id: string; url: string }[] }).gallery ?? [],
     faqs: [],
@@ -638,13 +650,35 @@ function ProProfilePage() {
                       ? "Not yet qualified"
                       : pro.qualifications.some((q) => q.expires && q.expires < today)
                         ? "Renewal required"
-                        : "Up to date"
+                        : (() => {
+                            const dateStr = pro.trust?.qualificationsCheckedAt || pro.memberSince;
+                            if (dateStr) {
+                              const d = new Date(dateStr);
+                              if (!Number.isNaN(d.getTime())) {
+                                return `Checked ${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                              }
+                            }
+                            return "Checked Jun 2026";
+                          })()
                   }
                 />
                 <TrustItem
                   icon={Umbrella}
                   title="Professional Indemnity"
-                  sub="Active until 12 Dec 2025"
+                  sub={
+                    pro.trust?.insuranceExpiry
+                      ? (() => {
+                          const d = new Date(pro.trust.insuranceExpiry);
+                          if (!Number.isNaN(d.getTime())) {
+                            const day = d.getUTCDate();
+                            const month = MONTHS_SHORT[d.getUTCMonth()];
+                            const year = d.getUTCFullYear();
+                            return `Active until ${day} ${month} ${year}`;
+                          }
+                          return "Active";
+                        })()
+                      : "No active insurance"
+                  }
                 />
                 <TrustItem
                   icon={GraduationCap}

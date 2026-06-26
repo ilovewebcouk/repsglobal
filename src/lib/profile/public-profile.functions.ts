@@ -101,7 +101,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     const { data: qualRows } = await supabaseAdmin
       .from("verification_submissions")
       .select(
-        "id, awarding_body, awarding_body_slug, qualification, qualification_number, issue_date, year, expiry_date, regulator_verified",
+        "id, awarding_body, awarding_body_slug, qualification, qualification_number, issue_date, year, expiry_date, regulator_verified, reviewed_at",
       )
       .eq("professional_id", r.id)
       .eq("status", "approved")
@@ -137,7 +137,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
 
     const { data: proExtra } = await supabaseAdmin
       .from("professionals")
-      .select("verification, identity_status, insurance_valid_until")
+      .select("verification, identity_status, insurance_valid_until, identity_verified_at")
       .eq("id", r.id)
       .maybeSingle();
 
@@ -204,6 +204,10 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
           proExtra?.identity_status === "approved",
         insurance_expiry:
           insuranceRow?.expiry_date ?? proExtra?.insurance_valid_until ?? null,
+        identity_verified_at: proExtra?.identity_verified_at ?? null,
+        qualifications_checked_at: qualRows && qualRows.length > 0 
+          ? qualRows.find(q => q.reviewed_at)?.reviewed_at || qualRows[0].reviewed_at || null 
+          : null,
       },
     };
   });
