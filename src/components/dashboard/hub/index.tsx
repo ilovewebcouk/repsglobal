@@ -687,10 +687,19 @@ export function ReviewsSnapshot({ kpis }: { kpis: ReviewKpis | undefined }) {
 export function CpdMini({
   qualUploaded,
   uploadedAt,
+  trust,
 }: {
   qualUploaded: boolean;
   uploadedAt: string | null;
+  trust?: TrustState | null;
 }) {
+  const approvedCount = trust?.qualifications.count ?? 0;
+  const pendingCount = trust?.qualifications.pendingCount ?? 0;
+  const titles = trust?.qualifications.titles ?? [];
+  const latestAt = trust?.qualifications.latestApprovedAt ?? uploadedAt ?? null;
+  const hasApproved = approvedCount > 0;
+  const showUploaded = hasApproved || qualUploaded;
+
   return (
     <PCard>
       <SectionHeader
@@ -703,18 +712,35 @@ export function CpdMini({
         }
       />
       <div className="flex items-center gap-4">
-        <Ring value={qualUploaded ? 100 : 0} />
-        <div className="min-w-0">
+        <Ring value={showUploaded ? 100 : 0} />
+        <div className="min-w-0 flex-1">
           <p className="font-display text-[18px] font-semibold text-white">
-            {qualUploaded ? "Qualifications uploaded" : "No certificates yet"}
+            {hasApproved
+              ? `${approvedCount} approved qualification${approvedCount === 1 ? "" : "s"}`
+              : showUploaded
+                ? "Qualifications uploaded"
+                : "No certificates yet"}
           </p>
           <p className="text-[12px] text-white/55">
-            {qualUploaded && uploadedAt
-              ? `Last update ${new Date(uploadedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+            {latestAt
+              ? `Last update ${new Date(latestAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
               : "Add certificates to earn the Qualified layer."}
+            {pendingCount > 0 ? ` · ${pendingCount} pending review` : ""}
           </p>
         </div>
       </div>
+      {titles.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {titles.map((t) => (
+            <span
+              key={t}
+              className="inline-flex items-center rounded-md border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[11.5px] font-medium text-emerald-300"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      ) : null}
     </PCard>
   );
 }
