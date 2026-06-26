@@ -48,6 +48,15 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+function dataUrlToBlob(dataUrl: string): Blob {
+  const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) return new Blob();
+  const [, mime, b64] = m;
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+
 function confidenceLabel(c: number | null | undefined): { label: string; tone: string } {
   const v = c ?? 0;
   if (v >= 0.85) return { label: `High (${Math.round(v * 100)}%)`, tone: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300" };
