@@ -56,6 +56,9 @@ function dataUrlToBlob(dataUrl: string): Blob {
   const arr = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
   return new Blob([arr], { type: mime });
+}
+
+
 
 function confidenceLabel(c: number | null | undefined): { label: string; tone: string } {
   const v = c ?? 0;
