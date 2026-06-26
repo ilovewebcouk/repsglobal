@@ -33,6 +33,14 @@ import { DashboardTextarea as Textarea } from "@/components/dashboard/ui/textare
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 
 import { CertDrawer } from "@/components/verification/CertDrawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import {
   claimVerification,
