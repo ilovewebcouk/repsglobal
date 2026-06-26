@@ -18,6 +18,7 @@ export type VerificationEvent =
   | "insurance.rejected_expired"
   | "insurance.flagged_low_cover"
   | "insurance.flagged_name_mismatch"
+  | "insurance.auto_approved"
   | "insurance.renewal_due"
   | "insurance.renewal_lapsed"
   | "verification.blocked_by_insurance"
@@ -144,6 +145,8 @@ function titleFor(event: VerificationEvent, threshold?: number | null) {
       return "Insurance cover below £1m";
     case "insurance.flagged_name_mismatch":
       return "Insurance name doesn't match ID";
+    case "insurance.auto_approved":
+      return "Insurance approved";
     case "insurance.renewal_due":
       return threshold && threshold > 0
         ? `Insurance renewal due in ${threshold} day${threshold === 1 ? "" : "s"}`
