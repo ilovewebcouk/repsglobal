@@ -553,7 +553,7 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
   const insStatus = trust?.insurance.status ?? "none";
   const insuranceRow: RowStatus =
     insStatus === "active"
-      ? { tone: "ok", label: "Active" }
+      ? { tone: "ok", label: "In date" }
       : insStatus === "pending"
         ? { tone: "warn", label: "In review" }
         : insStatus === "expired"
@@ -565,12 +565,14 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     insStatus === "active" && trust?.insurance.expiryDate
       ? `Valid until ${fmtDate(trust.insurance.expiryDate)}`
       : insStatus === "expired" && trust?.insurance.expiryDate
-        ? `Expired ${fmtDate(trust.insurance.expiryDate)} — upload renewal`
-        : insStatus === "pending"
-          ? "Admin is reviewing your certificate"
-          : insStatus === "rejected"
-            ? "Rejected — see email for reason"
-            : undefined;
+        ? `Lapsed ${fmtDate(trust.insurance.expiryDate)} — upload a renewed certificate`
+        : insStatus === "expired"
+          ? "Your certificate has lapsed — upload a renewed one"
+          : insStatus === "pending"
+            ? "Admin is reviewing your certificate"
+            : insStatus === "rejected"
+              ? "Rejected — upload a new certificate"
+              : undefined;
 
   // Qualifications — driven by approved verification_submissions count, not row existence.
   const qualCount = trust?.qualifications.count ?? 0;
