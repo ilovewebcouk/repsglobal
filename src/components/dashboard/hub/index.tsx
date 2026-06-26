@@ -800,6 +800,23 @@ export function CpdMini({
 
 export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
   const top = services.slice(0, 4);
+  if (top.length === 0) {
+    return (
+      <Link
+        to="/dashboard/services"
+        className="group flex items-center justify-between gap-3 rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/30 px-4 py-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft/60"
+      >
+        <div className="flex items-center gap-3 text-[13px] text-white/70">
+          <Sparkles className="size-4 text-white/45" />
+          <span>Add at least one service so clients know what to book.</span>
+        </div>
+        <span className="inline-flex items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange">
+          Add a service
+          <ChevronRight className="size-3.5" />
+        </span>
+      </Link>
+    );
+  }
   return (
     <PPanel className="p-5">
       <SectionHeader
@@ -812,40 +829,29 @@ export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
           </DashboardButton>
         }
       />
-      {top.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <Sparkles />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>No services yet</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            Add at least one service so clients know what to book.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {top.map((s) => (
-            <div
-              key={s.id}
-              className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4"
-            >
-              <p className="truncate text-[13.5px] font-semibold text-white">{s.title}</p>
-              <p className="mt-1 text-[12px] text-white/55">
-                {s.price_pence != null
-                  ? `£${(s.price_pence / 100).toFixed(0)}`
-                  : (s.price_label ?? "Price on enquiry")}
-                {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
-              </p>
-              {!s.is_published ? (
-                <DashboardBadge variant="warn" className="mt-2">Draft</DashboardBadge>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {top.map((s) => (
+          <div
+            key={s.id}
+            className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4"
+          >
+            <p className="truncate text-[13.5px] font-semibold text-white">{s.title}</p>
+            <p className="mt-1 text-[12px] text-white/55">
+              {s.price_pence != null
+                ? `£${(s.price_pence / 100).toFixed(0)}`
+                : (s.price_label ?? "Price on enquiry")}
+              {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
+            </p>
+            {!s.is_published ? (
+              <DashboardBadge variant="warn" className="mt-2">Draft</DashboardBadge>
+            ) : null}
+          </div>
+        ))}
+      </div>
     </PPanel>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Pro upsell strip                                                   */
