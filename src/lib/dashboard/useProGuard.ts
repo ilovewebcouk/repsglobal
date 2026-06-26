@@ -23,7 +23,7 @@ export function useProGuard(featureLabel: string): boolean {
   React.useEffect(() => {
     if (!isVerified) return;
     toast(`${featureLabel} is a Pro feature`, {
-      description: "Upgrade to Pro to unlock this page.",
+      description: "Pro is launching soon — join the Pro waitlist.",
     });
     void navigate({ to: "/dashboard" });
   }, [isVerified, featureLabel, navigate]);

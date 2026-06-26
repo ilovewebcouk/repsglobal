@@ -159,7 +159,7 @@ function ShopFrontEditorPage() {
       subtitle={
         isPro
           ? "Full shop-front editor — services, pricing and branding."
-          : "Verified Lite — share a clean public page. Upgrade to Pro to add services and branding."
+          : "Verified Lite — share a clean public page. Pro is launching soon — join the waitlist to add services and branding."
       }
       actions={
         <div className="flex items-center gap-2">

@@ -401,10 +401,10 @@ export function DashboardSidebar({
         {role === "trainer" && tier === "verified" && !id.isImpersonating ? (
           <>
             <Button asChild className="justify-between group-data-[collapsible=icon]:hidden">
-              <Link to="/pricing">
+              <Link to="/contact">
                 <span className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" />
-                  Upgrade to Pro
+                  Join Pro waitlist
                 </span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -412,10 +412,10 @@ export function DashboardSidebar({
             <Button
               asChild
               size="icon"
-              aria-label="Upgrade to Pro"
+              aria-label="Join Pro waitlist"
               className="hidden size-9 group-data-[collapsible=icon]:flex"
             >
-              <Link to="/pricing">
+              <Link to="/contact">
                 <Sparkles className="h-4 w-4" />
               </Link>
             </Button>

@@ -111,6 +111,11 @@ export const Route = createFileRoute("/signup")({
       throw redirect({ to: "/pricing" });
     }
 
+    // Pro is waitlist-only pre-launch — bounce ?tier=pro signups to the contact/waitlist page.
+    if (search.tier === "pro") {
+      throw redirect({ to: "/contact" });
+    }
+
     // Orphaned-account recovery: if the user is already signed in we skip the
     // form entirely. If they already paid, send them to the dashboard. If not,
     // kick checkout immediately — the only reason they're here is to pay.

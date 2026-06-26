@@ -45,7 +45,7 @@ const FALLBACK: UpgradeCopy = {
   title: "Pro feature",
   feature: "This is a Pro feature",
   description:
-    "Upgrade to Pro to unlock the full REPs workspace — leads, bookings, clients, programs, payments and more.",
+    "Pro is launching soon. Join the Pro waitlist to be first in — leads, bookings, clients, programs, payments and more.",
   bullets: [
     "Lead inbox & enquiry routing",
     "Bookings, deposits & payments",

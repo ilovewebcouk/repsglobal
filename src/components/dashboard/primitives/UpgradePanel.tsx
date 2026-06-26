@@ -10,9 +10,9 @@ export type UpgradePanelProps = {
   description: string;
   /** 3–6 short bullet points of what's included on Pro. */
   bullets?: string[];
-  /** CTA label, defaults to "Upgrade to Pro". */
+  /** CTA label, defaults to "Join Pro waitlist". */
   ctaLabel?: string;
-  /** Where the CTA goes, defaults to /pricing. */
+  /** Where the CTA goes, defaults to /contact (Pro waitlist). */
   ctaTo?: string;
 };
 
@@ -24,8 +24,8 @@ export function UpgradePanel({
   feature,
   description,
   bullets,
-  ctaLabel = "Upgrade to Pro",
-  ctaTo = "/pricing",
+  ctaLabel = "Join Pro waitlist",
+  ctaTo = "/contact",
 }: UpgradePanelProps) {
   return (
     <div className="mx-auto flex w-full max-w-[680px] flex-col items-start gap-6 rounded-[22px] border border-reps-border bg-reps-panel p-8">

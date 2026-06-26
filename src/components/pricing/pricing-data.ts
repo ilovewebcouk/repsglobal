@@ -47,10 +47,11 @@ export const PLANS: PlanCard[] = [
     tier: "Pro",
     tierKey: "pro",
     desc: "Run and scale your whole coaching practice.",
-    cta: "Start 30-day free trial",
-    ctaHref: "/signup",
+    cta: "Join Pro waitlist",
+    ctaHref: "/contact",
     founding: true,
     featured: true,
+    waitlist: true,
     features: [
       "Everything in Verified",
       "Personalised shop-front page (/c/your-name)",
@@ -63,8 +64,8 @@ export const PLANS: PlanCard[] = [
       "Enhanced directory placement",
     ],
     pricing: {
-      monthly: { price: "£59", was: "£79", period: "per month", meta: "Billed monthly after 30-day trial" },
-      annual: { price: "£49", was: "£66", period: "per month", meta: "£590 billed yearly · 2 months free" },
+      monthly: { price: "£59", was: "£79", period: "per month", meta: "Founding price · waitlist only" },
+      annual: { price: "£49", was: "£66", period: "per month", meta: "£590 billed yearly · waitlist only" },
     },
   },
   {
@@ -103,9 +104,8 @@ export const COMPARE_GROUPS: CompareGroup[] = [
   {
     title: "Billing",
     rows: [
-      { label: "Live offer", verified: "£99/year", pro: "£59/month or £590/year", studio: "£149/month or £1,490/year · waitlist" },
-      { label: "30-day free trial", verified: false, pro: true, studio: false },
-      { label: "Charge today", verified: "£99", pro: "£0", studio: "—" },
+      { label: "Live offer", verified: "£99/year", pro: "£59/month or £590/year · waitlist", studio: "£149/month or £1,490/year · waitlist" },
+      { label: "Charge today", verified: "£99", pro: "—", studio: "—" },
     ],
   },
   {
@@ -199,8 +199,8 @@ export const TIER_META: Record<TierKey, { label: string; price: string }> = {
 
 export const FAQ: { q: string; a: string }[] = [
   {
-    q: "Is there a free trial?",
-    a: "Yes — Pro includes a 30-day free trial. You pay £0 today and you can cancel anytime before day 30 to avoid the first charge. Verified does not include a trial, and Studio is waitlist-only.",
+    q: "When does Pro launch?",
+    a: "Pro is waitlist-only right now. Join the Pro waitlist and you'll be first in when it opens — at founding pricing, locked for the lifetime of your subscription. Verified is live today, and Studio is also waitlist-only.",
   },
   {
     q: "What's the difference between Verified and Pro?",
@@ -216,14 +216,14 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Will founding pricing stay forever?",
-    a: "Yes. Founding member pricing on Pro is locked for the lifetime of your subscription — but it's only available before public launch and to a limited number of professionals.",
+    a: "Yes. Founding member pricing on Pro is locked for the lifetime of your subscription — but it's only available before public launch and to a limited number of professionals on the waitlist.",
   },
   {
-    q: "Which billing periods are available?",
-    a: "Verified is billed annually at £99. Pro is available monthly at £59 or annually at £590, with the annual option saving two months. Both Pro options include the 30-day free trial. Studio is planned at £149 monthly or £1,490 annually and remains waitlist-only.",
+    q: "Which billing periods are planned?",
+    a: "Verified is billed annually at £99. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",
-    a: "Yes. You can manage or cancel an active membership from your dashboard. Pro trial members can cancel before day 30 to prevent the first charge.",
+    a: "Yes. You can manage or cancel an active membership from your dashboard at any time.",
   },
 ];

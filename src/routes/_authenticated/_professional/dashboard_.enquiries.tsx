@@ -196,8 +196,8 @@ function EnquiriesInboxPage() {
             </div>
           </div>
           <Button asChild className="h-9 shrink-0 gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover">
-            <Link to="/pricing">
-              Upgrade to Pro
+            <Link to="/contact">
+              Join Pro waitlist
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
