@@ -25,7 +25,7 @@ export const LAUNCH_AT_UTC = new Date("2026-06-26T23:00:00.000Z");
  */
 export const LEGACY_HONOUR_CUTOFF = new Date("2026-06-14T17:24:51.000Z");
 
-export const LAUNCH_GATE_ENABLED = true;
+export const LAUNCH_GATE_ENABLED = false;
 
 /**
  * Preview unlock — lets a known person bypass the coming-soon gate to browse
