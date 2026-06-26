@@ -1336,3 +1336,258 @@ function AdminIdentityTab({
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Admin · Insurance review tab                                               */
+/* -------------------------------------------------------------------------- */
+
+type InsuranceStatusFilter = "pending" | "active" | "rejected" | "expired";
+const INSURANCE_LABEL: Record<InsuranceStatusFilter, string> = {
+  pending: "Pending",
+  active: "Active",
+  rejected: "Rejected",
+  expired: "Expired",
+};
+
+type InsuranceRow = {
+  id: string;
+  professional_id: string;
+  provider: string | null;
+  policy_number: string | null;
+  cover_amount_gbp: number | null;
+  start_date: string | null;
+  expiry_date: string;
+  doc_path: string;
+  status: string;
+  insured_name: string | null;
+  name_match: boolean | null;
+  ai_checked_at: string | null;
+  ai_extraction: Record<string, unknown> | null;
+  trust_signals: Record<string, unknown> | null;
+  admin_note: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+  professional: { full_name: string | null; display_name: string | null } | null;
+};
+
+function AdminInsuranceTab() {
+  const qc = useQueryClient();
+  const fetchList = useServerFn(listInsurancePolicies);
+  const decide = useServerFn(reviewInsurance);
+  const recheck = useServerFn(recheckInsuranceAi);
+  const signUrl = useServerFn(getDocSignedUrl);
+
+  const [status, setStatus] = useState<InsuranceStatusFilter>("pending");
+  const [search, setSearch] = useState("");
+  const [target, setTarget] = useState<{ id: string; decision: "approved" | "rejected" } | null>(null);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const query = useQuery({
+    queryKey: ["admin-insurance", status],
+    queryFn: () => fetchList({ data: { statuses: [status] } }),
+    refetchInterval: status === "pending" ? 30_000 : false,
+  });
+
+  const rows = useMemo(() => {
+    const list = (query.data ?? []) as InsuranceRow[];
+    if (!search.trim()) return list;
+    const q = search.toLowerCase();
+    return list.filter(
+      (r) =>
+        (r.professional?.display_name ?? r.professional?.full_name ?? "").toLowerCase().includes(q) ||
+        (r.provider ?? "").toLowerCase().includes(q) ||
+        (r.insured_name ?? "").toLowerCase().includes(q),
+    );
+  }, [query.data, search]);
+
+  const openDoc = async (path: string) => {
+    try {
+      const { url } = await signUrl({ data: { bucket: "insurance-docs", path } });
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Could not open document");
+    }
+  };
+
+  const doRecheck = async (id: string) => {
+    setBusy(id);
+    try {
+      await recheck({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["admin-insurance"] });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Re-check failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const submitDecision = async () => {
+    if (!target) return;
+    if (target.decision === "rejected" && note.trim().length < 4) return;
+    setBusy(target.id);
+    try {
+      await decide({ data: { id: target.id, decision: target.decision, admin_note: note.trim() || null } });
+      qc.invalidateQueries({ queryKey: ["admin-insurance"] });
+      setTarget(null);
+      setNote("");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Decision failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <PPanel className="p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1">
+          {(Object.keys(INSURANCE_LABEL) as InsuranceStatusFilter[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className={`rounded-[8px] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                status === s ? "bg-reps-orange text-white" : "bg-white/5 text-white/60 hover:text-white"
+              }`}
+            >
+              {INSURANCE_LABEL[s]}
+            </button>
+          ))}
+        </div>
+        <div className="relative sm:w-64">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+          <Input
+            placeholder="Search name, insurer…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+      </div>
+
+      <p className="mt-3 rounded-[8px] border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/55">
+        AI pre-checks every policy on upload. Items below either failed an auto-approval gate
+        (name match, insurer allow-list, cover amount, confidence) or the AI was skipped.
+      </p>
+
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full text-left text-[12px]">
+          <thead className="text-[10.5px] uppercase tracking-wide text-white/45">
+            <tr>
+              <th className="pb-2 pr-3">Professional</th>
+              <th className="pb-2 pr-3">Insurer</th>
+              <th className="pb-2 pr-3">Cover</th>
+              <th className="pb-2 pr-3">Expiry</th>
+              <th className="pb-2 pr-3">AI signals</th>
+              <th className="pb-2 pr-3">Uploaded</th>
+              <th className="pb-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-reps-border text-white/80">
+            {query.isLoading && (
+              <tr><td colSpan={7} className="py-6 text-center text-white/55">Loading…</td></tr>
+            )}
+            {!query.isLoading && rows.length === 0 && (
+              <tr><td colSpan={7} className="py-6 text-center text-white/55">No {INSURANCE_LABEL[status].toLowerCase()} policies.</td></tr>
+            )}
+            {rows.map((r) => {
+              const ts = (r.trust_signals ?? {}) as Record<string, unknown>;
+              const conf = typeof ts.ai_confidence === "number" ? ts.ai_confidence : null;
+              const nameScore = typeof ts.name_score === "number" ? ts.name_score : null;
+              const aiSkipped = ts.ai === "skipped";
+              const cover = r.cover_amount_gbp ? `£${r.cover_amount_gbp.toLocaleString()}` : "—";
+              const name = r.professional?.display_name || r.professional?.full_name || "Unnamed";
+              return (
+                <tr key={r.id}>
+                  <td className="py-2 pr-3">
+                    <div className="font-semibold text-white">{name}</div>
+                    {r.insured_name && (
+                      <div className="text-[10.5px] text-white/50">
+                        Insured: {r.insured_name}
+                        {r.name_match === false && <span className="ml-1 text-amber-300">· name mismatch</span>}
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-2 pr-3">{r.provider ?? "—"}</td>
+                  <td className="py-2 pr-3">{cover}</td>
+                  <td className="py-2 pr-3" title={absoluteDateTime(r.expiry_date)}>{r.expiry_date}</td>
+                  <td className="py-2 pr-3 text-[10.5px] text-white/60">
+                    {aiSkipped ? (
+                      <span className="text-amber-300">AI skipped</span>
+                    ) : (
+                      <span>
+                        {conf != null && <>conf {(conf * 100).toFixed(0)}%</>}
+                        {nameScore != null && <> · name {(nameScore * 100).toFixed(0)}%</>}
+                        {ts.low_cover === true && <span className="ml-1 text-amber-300">· low cover</span>}
+                        {ts.provider_known === false && <span className="ml-1 text-amber-300">· unknown insurer</span>}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-2 pr-3 text-white/55" title={absoluteDateTime(r.created_at)}>
+                    {new Date(r.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
+                  </td>
+                  <td className="py-2">
+                    <div className="flex flex-wrap gap-1">
+                      <Button size="sm" variant="subtle" onClick={() => openDoc(r.doc_path)}>
+                        <FileText className="mr-1 size-3.5" /> View
+                      </Button>
+                      <Button size="sm" variant="subtle" disabled={busy === r.id} onClick={() => doRecheck(r.id)}>
+                        {busy === r.id ? <Loader2 className="size-3.5 animate-spin" /> : "Re-check AI"}
+                      </Button>
+                      {r.status !== "active" && (
+                        <Button size="sm" variant="subtle" onClick={() => { setTarget({ id: r.id, decision: "approved" }); setNote(""); }}>
+                          Approve
+                        </Button>
+                      )}
+                      {r.status !== "rejected" && (
+                        <Button size="sm" variant="subtle" onClick={() => { setTarget({ id: r.id, decision: "rejected" }); setNote(""); }}>
+                          Reject
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Dialog open={!!target} onOpenChange={(o) => { if (!o) { setTarget(null); setNote(""); } }}>
+        <DialogContent className="border-reps-border bg-reps-ink text-white">
+          <DialogHeader>
+            <DialogTitle>
+              {target?.decision === "approved" ? "Approve insurance policy" : "Reject insurance policy"}
+            </DialogTitle>
+            <DialogDescription className="text-white/65">
+              {target?.decision === "approved"
+                ? "Marks the policy as active. The professional will be notified and verification will be recomputed."
+                : "Sends a rejection notice. Provide a clear reason — the trainer will see this."}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder={target?.decision === "approved" ? "Optional note (audit log)" : "Reason (required, min 4 chars)"}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={3}
+          />
+          <DialogFooter>
+            <Button variant="subtle" size="sm" disabled={busy !== null} onClick={() => setTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={busy !== null || (target?.decision === "rejected" && note.trim().length < 4)}
+              onClick={submitDecision}
+              className="bg-reps-orange text-white hover:bg-reps-orange-hover"
+            >
+              {busy !== null ? <Loader2 className="size-3.5 animate-spin" /> : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PPanel>
+  );
+}
+
+
