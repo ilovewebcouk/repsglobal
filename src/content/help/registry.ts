@@ -1,4 +1,4 @@
-import type { HelpArticle } from "./types";
+import type { HelpArticle, HelpArticleSummary } from "./types";
 import { article as gettingStartedSetup } from "./articles/getting-started-setup";
 import { article as gettingStartedFreeVerified } from "./articles/getting-started-free-verified";
 import { article as verificationOverview } from "./articles/verification-overview";
@@ -55,22 +55,23 @@ export function getArticle(category: string, slug: string): HelpArticle | undefi
   return HELP_ARTICLES.find((a) => a.category === category && a.slug === slug);
 }
 
-export function getArticlesByCategory(category: string): HelpArticle[] {
-  return HELP_ARTICLES.filter((a) => a.category === category && !a.hidden);
+export function getArticlesByCategory(category: string): HelpArticleSummary[] {
+  return getArticleSummaries().filter((a) => a.category === category);
 }
 
-export function getRelated(article: HelpArticle): HelpArticle[] {
+export function getRelated(article: HelpArticle): HelpArticleSummary[] {
   if (!article.related?.length) return [];
+  const summaries = getArticleSummaries();
   return article.related
     .map((id) => {
       const [category, slug] = id.split("/");
-      return HELP_ARTICLES.find((a) => a.category === category && a.slug === slug);
+      return summaries.find((a) => a.category === category && a.slug === slug);
     })
-    .filter((x): x is HelpArticle => Boolean(x));
+    .filter((x): x is HelpArticleSummary => Boolean(x));
 }
 
 /** Lightweight client-safe summaries (no Body) for search/index */
-export function getArticleSummaries() {
+export function getArticleSummaries(): HelpArticleSummary[] {
   return HELP_ARTICLES.filter((a) => !a.hidden).map((a) => {
     const { Body: _Body, ...rest } = a;
     return rest;
