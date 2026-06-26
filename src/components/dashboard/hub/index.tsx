@@ -766,6 +766,37 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     { label: "Insurance on file", status: insuranceRow, detail: insuranceDetail },
     { label: "Qualifications", status: qualificationsRowFinal },
   ];
+  const allDone = rows.every((r) => r.status.tone === "ok");
+  const insuranceExpiringSoon =
+    insStatus === "active" && trust?.insurance.expiryDate
+      ? (new Date(trust.insurance.expiryDate).getTime() - Date.now()) / 86_400_000 < 60
+      : false;
+
+  // Slim mode when everything is verified and nothing expires within 60 days.
+  if (allDone && !insuranceExpiringSoon) {
+    const expiry = trust?.insurance.expiryDate ? fmtDate(trust.insurance.expiryDate) : null;
+    return (
+      <Link
+        to="/dashboard/verification"
+        className="group flex items-center gap-3 rounded-[16px] border border-emerald-400/25 bg-emerald-500/[0.06] px-4 py-3 transition-colors hover:border-emerald-400/45 hover:bg-emerald-500/[0.10]"
+      >
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+          <ShieldCheck className="size-3.5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-medium text-white">REPS Verified · 3 of 3 checks complete</p>
+          <p className="truncate text-[11.5px] text-white/55">
+            Identity, qualifications, insurance{expiry ? ` · insurance valid to ${expiry}` : ""}
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-emerald-300">
+          Manage
+          <ChevronRight className="size-3.5" />
+        </span>
+      </Link>
+    );
+  }
+
   return (
     <PPanel className="flex flex-col p-5">
       <SectionHeader title="Verification" icon={ShieldCheck} />
@@ -811,6 +842,7 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     </PPanel>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Reviews snapshot                                                   */
