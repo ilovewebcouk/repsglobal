@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
-import type { HelpArticle } from "@/content/help/types";
+import type { HelpArticleSummary } from "@/content/help/types";
 
-export function RelatedArticles({ items }: { items: HelpArticle[] }) {
+export function RelatedArticles({ items }: { items: HelpArticleSummary[] }) {
   if (!items.length) return null;
   return (
     <section className="mt-14">

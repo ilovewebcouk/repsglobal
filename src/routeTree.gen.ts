@@ -43,6 +43,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as HelpIndexRouteImport } from './routes/help.index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
@@ -84,6 +85,7 @@ import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
+import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
@@ -301,6 +303,11 @@ const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   path: '/resources/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HelpIndexRoute = HelpIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HelpRoute,
+} as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
   id: '/resources/$slug',
   path: '/resources/$slug',
@@ -506,6 +513,11 @@ const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ProSlugRoute,
+} as any)
+const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HelpCategoryRoute,
 } as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
@@ -854,6 +866,7 @@ export interface FileRoutesByFullPath {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
@@ -864,6 +877,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -921,7 +935,6 @@ export interface FileRoutesByTo {
   '/find-a-professional': typeof FindAProfessionalRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
   '/portal': typeof PortalRoute
@@ -963,7 +976,6 @@ export interface FileRoutesByTo {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
-  '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
@@ -974,6 +986,7 @@ export interface FileRoutesByTo {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/help': typeof HelpIndexRoute
   '/resources': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
@@ -984,6 +997,7 @@ export interface FileRoutesByTo {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/help/$category': typeof HelpCategoryIndexRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -1097,6 +1111,7 @@ export interface FileRoutesById {
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
@@ -1108,6 +1123,7 @@ export interface FileRoutesById {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
@@ -1221,6 +1237,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/r/$token'
     | '/resources/$slug'
+    | '/help/'
     | '/resources/'
     | '/dashboard'
     | '/dashboard/design-kit'
@@ -1231,6 +1248,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/help/$category/'
     | '/pro/$slug/'
     | '/checkout/credits'
     | '/dashboard/syncing'
@@ -1288,7 +1306,6 @@ export interface FileRouteTypes {
     | '/find-a-professional'
     | '/for-professionals'
     | '/forgot-password'
-    | '/help'
     | '/home-legacy'
     | '/how-it-works'
     | '/portal'
@@ -1330,7 +1347,6 @@ export interface FileRouteTypes {
     | '/features/shop-front'
     | '/features/visibility'
     | '/gyms/$slug'
-    | '/help/$category'
     | '/in/$location'
     | '/portal/check-ins'
     | '/portal/messages'
@@ -1341,6 +1357,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/r/$token'
     | '/resources/$slug'
+    | '/help'
     | '/resources'
     | '/dashboard'
     | '/dashboard/design-kit'
@@ -1351,6 +1368,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/help/$category'
     | '/pro/$slug'
     | '/checkout/credits'
     | '/dashboard/syncing'
@@ -1463,6 +1481,7 @@ export interface FileRouteTypes {
     | '/professions/$profession'
     | '/r/$token'
     | '/resources/$slug'
+    | '/help/'
     | '/resources/'
     | '/_authenticated/_professional/_pro'
     | '/_authenticated/_professional/dashboard'
@@ -1474,6 +1493,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/help/$category/'
     | '/pro/$slug/'
     | '/_authenticated/_professional/checkout_/credits'
     | '/_authenticated/_professional/dashboard/syncing'
@@ -1842,6 +1862,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResourcesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/help/': {
+      id: '/help/'
+      path: '/'
+      fullPath: '/help/'
+      preLoaderRoute: typeof HelpIndexRouteImport
+      parentRoute: typeof HelpRoute
+    }
     '/resources/$slug': {
       id: '/resources/$slug'
       path: '/resources/$slug'
@@ -2128,6 +2155,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pro/$slug/'
       preLoaderRoute: typeof ProSlugIndexRouteImport
       parentRoute: typeof ProSlugRoute
+    }
+    '/help/$category/': {
+      id: '/help/$category/'
+      path: '/'
+      fullPath: '/help/$category/'
+      preLoaderRoute: typeof HelpCategoryIndexRouteImport
+      parentRoute: typeof HelpCategoryRoute
     }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
@@ -2627,10 +2661,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface HelpCategoryRouteChildren {
   HelpCategorySlugRoute: typeof HelpCategorySlugRoute
+  HelpCategoryIndexRoute: typeof HelpCategoryIndexRoute
 }
 
 const HelpCategoryRouteChildren: HelpCategoryRouteChildren = {
   HelpCategorySlugRoute: HelpCategorySlugRoute,
+  HelpCategoryIndexRoute: HelpCategoryIndexRoute,
 }
 
 const HelpCategoryRouteWithChildren = HelpCategoryRoute._addFileChildren(
@@ -2639,10 +2675,12 @@ const HelpCategoryRouteWithChildren = HelpCategoryRoute._addFileChildren(
 
 interface HelpRouteChildren {
   HelpCategoryRoute: typeof HelpCategoryRouteWithChildren
+  HelpIndexRoute: typeof HelpIndexRoute
 }
 
 const HelpRouteChildren: HelpRouteChildren = {
   HelpCategoryRoute: HelpCategoryRouteWithChildren,
+  HelpIndexRoute: HelpIndexRoute,
 }
 
 const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
