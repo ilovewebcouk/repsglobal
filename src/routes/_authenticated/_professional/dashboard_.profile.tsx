@@ -633,7 +633,7 @@ function VerificationStatusPill() {
   });
   const completed = data?.completedCount ?? 0;
   const allDone = completed === 3;
-  const profession = data?.qualifications.titles?.[0] ?? null;
+  const profession = data?.qualifications.primaryTitle ?? data?.qualifications.titles?.[0] ?? null;
 
   return (
     <Link
