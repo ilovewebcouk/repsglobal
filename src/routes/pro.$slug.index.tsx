@@ -682,8 +682,8 @@ function ProProfilePage() {
                 />
                 <TrustItem
                   icon={GraduationCap}
-                  title="CPD Compliant"
-                  sub="18 / 20 pts this cycle"
+                  title="CPD tracking"
+                  sub="Coming soon"
                   info
                 />
               </div>
