@@ -405,6 +405,21 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       };
     });
 
+    // Fire-and-forget: record search appearances for the displayed page.
+    // Only when there's a meaningful query/profession/city — skip the
+    // un-narrowed default browse to avoid noise.
+    if (decorated.length && (data.q || data.profession || data.city)) {
+      const events = decorated.map((r, i) => ({
+        professional_id: r.id,
+        position: offset + i + 1,
+        page,
+        query: data.q ?? null,
+        profession_slug: data.profession ?? null,
+        location_slug: data.city ?? null,
+      }));
+      void supabaseAdmin.from("search_appearance_events").insert(events).then(() => {});
+    }
+
     return { rows: decorated, total, page, pageSize };
   });
 
