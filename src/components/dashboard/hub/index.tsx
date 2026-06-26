@@ -892,6 +892,104 @@ export function ProUpsellStrip() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Discoverability strip — views, impressions, position, CTR (30d)    */
+/* ------------------------------------------------------------------ */
+
+export function DiscoverabilityStrip({
+  data,
+  isLoading,
+}: {
+  data: DiscoverabilityKpis | null | undefined;
+  isLoading?: boolean;
+}) {
+  const tiles: Array<{
+    label: string;
+    value: string;
+    delta: string;
+    trend: "up" | "down" | "flat";
+    icon: React.ComponentType<{ className?: string }>;
+  }> = React.useMemo(() => {
+    if (!data) {
+      return [
+        { label: "Profile views", value: "0", delta: "last 30 days", trend: "flat", icon: Eye },
+        { label: "Search impressions", value: "0", delta: "last 30 days", trend: "flat", icon: SearchIcon },
+        { label: "Avg search position", value: "—", delta: "no data yet", trend: "flat", icon: TrendingUp },
+        { label: "CTR", value: "—", delta: "views ÷ impressions", trend: "flat", icon: MousePointerClick },
+      ];
+    }
+    const dPct = data.views_delta_pct;
+    const deltaCopy =
+      dPct === null
+        ? "vs prior 30d"
+        : dPct === 0
+          ? "no change vs prior 30d"
+          : `${dPct > 0 ? "+" : ""}${dPct}% vs prior 30d`;
+    const deltaTrend: "up" | "down" | "flat" = dPct == null ? "flat" : dPct > 0 ? "up" : dPct < 0 ? "down" : "flat";
+    return [
+      {
+        label: "Profile views",
+        value: String(data.views_30d),
+        delta: deltaCopy,
+        trend: deltaTrend,
+        icon: Eye,
+      },
+      {
+        label: "Search impressions",
+        value: String(data.impressions_30d),
+        delta: "last 30 days",
+        trend: "flat",
+        icon: SearchIcon,
+      },
+      {
+        label: "Avg search position",
+        value: data.avg_position != null ? `#${data.avg_position}` : "—",
+        delta: data.avg_position != null ? "lower is better" : "no impressions yet",
+        trend: "flat",
+        icon: TrendingUp,
+      },
+      {
+        label: "CTR",
+        value: data.ctr_pct != null ? `${data.ctr_pct}%` : "—",
+        delta: "views ÷ impressions",
+        trend: "flat",
+        icon: MousePointerClick,
+      },
+    ];
+  }, [data]);
+
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {tiles.map((t) => {
+        const Icon = t.icon;
+        const TrendIcon = t.trend === "up" ? TrendingUp : t.trend === "down" ? TrendingDown : null;
+        const trendCls =
+          t.trend === "up" ? "text-emerald-300" : "text-white/55";
+        return (
+          <div
+            key={t.label}
+            className="rounded-[16px] border border-reps-border bg-reps-panel p-4"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
+                {t.label}
+              </span>
+              <Icon className="h-4 w-4 text-white/45" />
+            </div>
+            <div className="mt-2 font-display text-[24px] font-bold leading-none text-white">
+              {isLoading && !data ? "—" : t.value}
+            </div>
+            <div className={cn("mt-2 flex items-center gap-1 text-[12px] font-medium", trendCls)}>
+              {TrendIcon ? <TrendIcon className="h-3.5 w-3.5" /> : null}
+              <span>{t.delta}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Hub data hook                                                      */
 /* ------------------------------------------------------------------ */
 
