@@ -24,7 +24,7 @@ const META_TITLE = "REPS Help Centre — Verification, profiles, reviews";
 const META_DESC =
   "Everything you need to set up your REPS profile, get verified, and run your listing. Built for professionals on the Verified tier.";
 
-export const Route = createFileRoute("/help")({
+export const Route = createFileRoute("/help/")({
   head: () => ({
     meta: [
       { title: META_TITLE },
