@@ -691,3 +691,96 @@ export const revokeQualification = createServerFn({ method: "POST" })
   });
 
 
+
+/* -------------------------------------------------------------------------- */
+/* Re-check Ofqual on demand (admin)                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Force a fresh Ofqual register lookup for an existing submission, bypassing
+ * the 7-day cache. Updates `regulator_verified`, `regulator_record`, and the
+ * `trust_signals.ofqual` block in place and returns the new state so the
+ * admin UI can repaint without a full page reload.
+ *
+ * Admin-only. Never throws on Ofqual outage — returns the previous cached
+ * record if the live fetch fails.
+ */
+export const recheckOfqualForSubmission = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ submission_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { lookupOfqualQualification } = await import("@/lib/cpd/ofqual.server");
+
+    const { data: sub, error } = await supabaseAdmin
+      .from("verification_submissions")
+      .select(
+        "id, qualification, qualification_number, awarding_body, awarding_body_slug, regulator_verified, regulator_record, trust_signals",
+      )
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!sub) throw new Error("Submission not found");
+
+    const row = sub as {
+      qualification: string | null;
+      qualification_number: string | null;
+      awarding_body: string | null;
+      awarding_body_slug: string | null;
+      regulator_verified: boolean | null;
+      regulator_record: unknown;
+      trust_signals: Record<string, unknown> | null;
+    };
+
+    if (!row.qualification_number) {
+      return {
+        ok: false as const,
+        reason: "no_qualification_number",
+        regulator_verified: !!row.regulator_verified,
+        record: row.regulator_record ?? null,
+      };
+    }
+
+    const result = await lookupOfqualQualification(
+      row.qualification_number,
+      {
+        awardingBody: row.awarding_body,
+        awardingBodySlug: row.awarding_body_slug,
+        qualification: row.qualification,
+      },
+      { force: true },
+    );
+
+    const regulatorVerified =
+      result.found && !!result.matches && result.matches.awardingBody && result.matches.title && result.matches.isLive;
+
+    const trustSignals: Record<string, unknown> = { ...(row.trust_signals ?? {}) };
+    trustSignals.ofqual = result.found
+      ? {
+          found: true,
+          awarding_body_match: result.matches?.awardingBody ?? false,
+          title_match: result.matches?.title ?? false,
+          is_live: result.matches?.isLive ?? false,
+          rechecked_at: new Date().toISOString(),
+        }
+      : { found: false, rechecked_at: new Date().toISOString() };
+
+    await supabaseAdmin
+      .from("verification_submissions")
+      .update({
+        regulator_verified: regulatorVerified,
+        regulator_record: (result.record as unknown) as never,
+        trust_signals: trustSignals as never,
+      } as never)
+      .eq("id", data.submission_id);
+
+    return {
+      ok: true as const,
+      regulator_verified: regulatorVerified,
+      record: result.record,
+      matches: result.matches ?? null,
+    };
+  });
