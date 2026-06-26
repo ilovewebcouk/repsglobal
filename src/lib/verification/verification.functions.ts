@@ -511,7 +511,7 @@ export const getReviewWorkspace = createServerFn({ method: "POST" })
     const [proR, profileR, identityR, insuranceR, historyR] = await Promise.all([
       supabaseAdmin
         .from("professionals")
-        .select("id, city, primary_profession, primary_title_slug, verification, slug")
+        .select("id, city, primary_profession, primary_title_slug, verification, slug, identity_verified_name")
         .eq("id", pid)
         .maybeSingle(),
       supabaseAdmin.from("profiles").select("id, full_name, avatar_url").eq("id", pid).maybeSingle(),
