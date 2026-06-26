@@ -166,7 +166,11 @@ type HomeFeaturedCard = {
   image: string;
   online?: boolean;
   slug?: string;
+  identityStatus?: string | null;
+  verification?: string | null;
+  tier?: "studio" | "pro" | "verified" | "free" | null;
 };
+
 
 const FALLBACK_FEATURED: HomeFeaturedCard[] = [
   { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
