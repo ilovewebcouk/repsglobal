@@ -1,29 +1,44 @@
-## Plan: Cinematic client photos for homepage Outcomes
+## Goal
 
-Replace the three trainer-style portraits in the "Outcomes" section on `/` with cinematic, editorial photos of the **clients** referenced in each testimonial. Keep all copy unchanged.
+Pro tier isn't launching yet, so every public/dashboard CTA that nudges users to buy Pro should behave the same as Studio: a "Join Pro waitlist" button that routes to `/contact`. Backend Pro access, admin tier management, and the existing Pro-tier trainer's dashboards stay exactly as they are.
 
-### Photo briefs
+## Changes
 
-1. **Mark, 38 — "Down 12kg in 6 months"**
-   Lean, post-transformation everyday man (late 30s, British, short hair) photographed mid-morning in a clean modern gym in fitted t-shirt and joggers, hands on hips, catching breath after a session. Soft directional window light, shallow depth of field, warm filmic grade. Confident but not posed — looks like a real client, not a model.
+### 1. Pricing page (`src/components/pricing/pricing-data.ts` + `PricingPlans.tsx`)
+- Pro card: `cta: "Join Pro waitlist"`, mark `waitlist: true`, `ctaHref: "/contact"`.
+- Drop the founding-trial meta line on the Pro card (`Billed monthly after 30-day trial` → `Founding price · waitlist only`); annual meta similarly tagged as waitlist.
+- Page hero subtitle (`src/routes/pricing.tsx` line 18): replace "Pro Founding £59/mo with a 30-day free trial" with "Pro Founding £59/mo — waitlist open."
+- Comparison table row "Live offer" Pro cell → "£59/month or £590/year · waitlist".
+- FAQ entries that mention the 30-day trial (lines 203, 223) reworded: Pro is waitlist-only at founding price; no trial copy.
+- `PricingPlans.tsx`: no logic change needed — existing `if (p.waitlist) navigate /contact` branch already handles it once Pro is flagged.
 
-2. **Priya, 34 — "Back to running pain-free" (post-natal)**
-   British-South-Asian woman, mid-30s, in running kit on a quiet UK park path at golden hour, mid-stride or paused with hands on knees smiling. Soft sun flare, blurred autumn trees behind, editorial running-magazine feel. Strong but warm — post-natal return-to-fitness energy.
+### 2. Signup route (`src/routes/signup.tsx`)
+- If `?tier=pro`, redirect to `/contact` (waitlist) instead of rendering the Pro signup flow.
+- Verified signup flow stays unchanged.
+- Remove the "30-day free trial" meta line from the Pro plan summary (kept for reference if someone is sent there directly via admin).
 
-3. **Tom, 29 — "Deadlift PB +40kg"**
-   Late-20s British man, athletic build, chalked hands, setting up over a loaded barbell in a dim strength gym. Low-key dramatic lighting, rim light catching shoulders, focused expression looking down at the bar. Editorial strength-training feel — gritty, cinematic, not gym-bro.
+### 3. Dashboard "Upgrade to Pro" surfaces → "Join Pro waitlist"
+All copy + link swaps; gating logic untouched.
+- `src/components/dashboard/DashboardSidebar.tsx` (lines 407, 415): label + aria-label → "Join Pro waitlist"; link → `/contact`.
+- `src/components/dashboard/primitives/UpgradePanel.tsx`: default `ctaLabel` → "Join Pro waitlist"; default href → `/contact`.
+- `src/components/dashboard/PaymentsSettingsTab.tsx` (line 82): "Upgrade to Pro to take payments" → "Pro is coming soon — join the Pro waitlist".
+- `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` (line 162): "Upgrade to Pro to add services…" → "Pro is launching soon — join the waitlist to add services and branding."
+- `src/routes/_authenticated/_professional/dashboard_.enquiries.tsx` (line 200): button copy → "Join Pro waitlist", link → `/contact`.
+- `src/routes/_authenticated/_professional/_pro/route.tsx` (line 48): description → "Pro is launching soon. Join the Pro waitlist to be first in." (this is the wall non-Pro users see when they try a `_pro` route).
+- `src/lib/dashboard/useProGuard.ts` (line 26): toast description → "Pro is launching soon — join the Pro waitlist."
+- `src/components/account/UserAccountMenu.tsx` (line 220): label → "Join Pro waitlist", link → `/contact`.
 
-### Execution
+### 4. Contact form (`src/components/contact/ContactForm.tsx`)
+- Reason option `upgrade`: relabel from "Upgrade to Pro or Studio" → "Join Pro or Studio waitlist".
+- Same swap in `src/routes/api/public/support/contact-form.ts` (line 64) so labels stay aligned for inbound routing.
 
-- Generate three 1024×1280 (4:5 portrait) images with `imagegen--generate_image` model `standard`, saved to `src/assets/outcomes/`:
-  - `outcome-mark.jpg`
-  - `outcome-priya.jpg`
-  - `outcome-tom.jpg`
-- These are **clients**, not REPS professionals — **no REPS wordmark** on clothing (the wordmark rule applies only to trainer/coach imagery).
-- Wire into `src/routes/index.tsx` Outcomes section, replacing the current three image sources. Keep all text, badges, names, and "with [Trainer]" lines untouched.
-- Keep existing card layout, radius, orange tag pill, and typography exactly as locked.
+### 5. What we deliberately don't change
+- `src/lib/billing.ts` Stripe price IDs, `auth.tsx` `tier=pro` validation, all `_pro` route logic, admin memberships KPIs, admin invite plan label, and any `tier === "pro"` permission check. The existing Pro-tier trainer keeps full Pro dashboards.
+- Admin can still grant Pro via the existing admin invite/impersonation flows.
+- Resources / competitor editorial copy (`src/lib/resources.ts`, `src/data/competitor-*`) — out of scope for this pass.
 
-### Out of scope
-- No copy changes.
-- No layout / card-component changes.
-- No changes to other sections.
+## QA after build
+- `/pricing`: Pro card shows "Join Pro waitlist", clicks land on `/contact`. Studio unchanged.
+- Logged in as a non-Pro trainer: sidebar, enquiries upsell, shop-front empty state, account menu all say "Join Pro waitlist" and route to `/contact`.
+- Logged in as the existing Pro-tier trainer: full Pro dashboard still loads (no waitlist CTA visible — they're already Pro).
+- `/signup?tier=pro` redirects to `/contact`. `/signup?tier=verified` still works.
