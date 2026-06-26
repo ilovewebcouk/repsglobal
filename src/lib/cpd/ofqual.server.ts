@@ -2,7 +2,7 @@
 // Ofqual register. Uses a Postgres-backed 7-day cache to avoid hammering
 // gov.uk on every submission view.
 
-import { OFQUAL_QUAL_NO_REGEX } from "./awarding-bodies";
+import { OFQUAL_QUAL_NO_REGEX, matchesAwardingBody } from "./awarding-bodies";
 
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
