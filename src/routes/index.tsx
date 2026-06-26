@@ -614,15 +614,7 @@ function HomeHeroAvatars() {
   const pool: HeroAvatar[] = data ?? [];
 
   if (pool.length < 4) {
-    return (
-      <div className="flex items-center -space-x-3">
-        {FALLBACK_AVATARS.map((a, i) => (
-          <span key={i} className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black">
-            <img src={a.src} alt={a.alt} className="h-full w-full object-cover" />
-          </span>
-        ))}
-      </div>
-    );
+    return null;
   }
 
   // Server already shuffles per request; just take the first four.
