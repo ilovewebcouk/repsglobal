@@ -1392,12 +1392,16 @@ export type Database = {
       insurance_policies: {
         Row: {
           admin_note: string | null
+          ai_checked_at: string | null
+          ai_extraction: Json | null
           cover_amount_gbp: number | null
           created_at: string
           doc_path: string
           expiry_date: string
           file_sha256: string | null
           id: string
+          insured_name: string | null
+          name_match: boolean | null
           policy_number: string | null
           professional_id: string
           provider: string
@@ -1405,16 +1409,21 @@ export type Database = {
           reviewed_by: string | null
           start_date: string | null
           status: string
+          trust_signals: Json | null
           updated_at: string
         }
         Insert: {
           admin_note?: string | null
+          ai_checked_at?: string | null
+          ai_extraction?: Json | null
           cover_amount_gbp?: number | null
           created_at?: string
           doc_path: string
           expiry_date: string
           file_sha256?: string | null
           id?: string
+          insured_name?: string | null
+          name_match?: boolean | null
           policy_number?: string | null
           professional_id: string
           provider: string
@@ -1422,16 +1431,21 @@ export type Database = {
           reviewed_by?: string | null
           start_date?: string | null
           status?: string
+          trust_signals?: Json | null
           updated_at?: string
         }
         Update: {
           admin_note?: string | null
+          ai_checked_at?: string | null
+          ai_extraction?: Json | null
           cover_amount_gbp?: number | null
           created_at?: string
           doc_path?: string
           expiry_date?: string
           file_sha256?: string | null
           id?: string
+          insured_name?: string | null
+          name_match?: boolean | null
           policy_number?: string | null
           professional_id?: string
           provider?: string
@@ -1439,6 +1453,7 @@ export type Database = {
           reviewed_by?: string | null
           start_date?: string | null
           status?: string
+          trust_signals?: Json | null
           updated_at?: string
         }
         Relationships: [
@@ -3168,6 +3183,61 @@ export type Database = {
           },
         ]
       }
+      verification_notifications: {
+        Row: {
+          context: Json | null
+          created_at: string
+          event: string
+          id: string
+          policy_id: string | null
+          professional_id: string
+          read_at: string | null
+          threshold_days: number | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          event: string
+          id?: string
+          policy_id?: string | null
+          professional_id: string
+          read_at?: string | null
+          threshold_days?: number | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          event?: string
+          id?: string
+          policy_id?: string | null
+          professional_id?: string
+          read_at?: string | null
+          threshold_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_notifications_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_notifications_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_notifications_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       verification_renewal_nudges: {
         Row: {
           id: string
@@ -3595,6 +3665,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      insurance_check_renewals: { Args: never; Returns: number }
       is_coach_of: {
         Args: { _client_id: string; _pro_id: string }
         Returns: boolean
@@ -3634,6 +3705,7 @@ export type Database = {
         Args: { _token: string }
         Returns: undefined
       }
+      mark_verification_notifications_read: { Args: never; Returns: number }
       move_to_dlq: {
         Args: {
           dlq_name: string

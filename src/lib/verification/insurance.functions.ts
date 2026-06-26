@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { nameSimilarity, INSURANCE_MIN_COVER_GBP } from "@/lib/verification/cross-checks";
+import { notifyVerificationEvent } from "@/lib/verification/notifications.functions";
 
 const insuranceInput = z.object({
   provider: z.string().min(2).max(160),
@@ -20,7 +22,121 @@ export const saveInsurance = createServerFn({ method: "POST" })
     if (!data.doc_path.startsWith(`${userId}/`)) {
       throw new Error("Forbidden: doc_path does not belong to you");
     }
+
+    // --- Hard reject: certificate is already expired before we even save -----
+    // (Mirrors the admin warning. Faster signal to the trainer than "submitted
+    //  → admin sees expired → emails you back".)
+    const expiryMs = new Date(`${data.expiry_date}T23:59:59`).getTime();
+    if (Number.isFinite(expiryMs) && expiryMs < Date.now()) {
+      // Best-effort notification — they should hear about this in the bell too.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: prof } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name, display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
+      await notifyVerificationEvent({
+        professionalId: userId,
+        event: "insurance.rejected_expired",
+        context: { expiry_date: data.expiry_date, doc_path: data.doc_path },
+        proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+        alsoEmail: true,
+      });
+      throw new Error(
+        `This certificate expired on ${data.expiry_date}. Please upload your current renewed policy.`,
+      );
+    }
+
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
+
+    // --- AI cross-check on the uploaded certificate -------------------------
+    // Best-effort: if AI is unavailable we still persist the row, but with
+    // trust_signals.ai = "skipped" so admins can see the gap.
+    let aiExtraction: InsuranceExtractionResult | null = null;
+    let trustSignals: Record<string, unknown> = {};
+    let insuredName: string | null = null;
+    let nameMatch: boolean | null = null;
+    try {
+      const ai = await runInsuranceAiFromPath(data.doc_path, userId);
+      aiExtraction = ai;
+      insuredName = ai.insured_name ?? null;
+
+      // Pull the verified legal name (locked at ID approval) to score against.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: pro } = await supabaseAdmin
+        .from("professionals")
+        .select("identity_verified_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const proAny = pro as { identity_verified_name?: string | null } | null;
+      const { data: prof } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name, display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
+      const identityName =
+        proAny?.identity_verified_name ?? profAny?.full_name ?? profAny?.display_name ?? null;
+
+      const nameScore =
+        insuredName && identityName ? nameSimilarity(insuredName, identityName) : null;
+      nameMatch = nameScore === null ? null : nameScore >= 0.85;
+
+      const expiryMismatch =
+        ai.expiry_date && ai.expiry_date !== data.expiry_date;
+
+      const lowCover =
+        typeof ai.cover_amount_gbp === "number"
+          ? ai.cover_amount_gbp < INSURANCE_MIN_COVER_GBP()
+          : (data.cover_amount_gbp ?? 0) < INSURANCE_MIN_COVER_GBP();
+
+      trustSignals = {
+        ai: "ok",
+        ai_confidence: ai.confidence ?? null,
+        name_score: nameScore,
+        name_match: nameMatch,
+        expiry_mismatch: expiryMismatch || false,
+        low_cover: lowCover,
+        ai_extracted: {
+          provider: ai.provider,
+          cover_amount_gbp: ai.cover_amount_gbp,
+          expiry_date: ai.expiry_date,
+          insured_name: insuredName,
+        },
+      };
+
+      // Soft flags — don't block the save, but raise bell + email so the pro
+      // can fix it before an admin sees it.
+      if (lowCover) {
+        await notifyVerificationEvent({
+          professionalId: userId,
+          event: "insurance.flagged_low_cover",
+          context: {
+            expiry_date: data.expiry_date,
+            cover_amount_gbp: ai.cover_amount_gbp ?? data.cover_amount_gbp ?? 0,
+          },
+          proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+          alsoEmail: true,
+        });
+      }
+      if (nameMatch === false) {
+        await notifyVerificationEvent({
+          professionalId: userId,
+          event: "insurance.flagged_name_mismatch",
+          context: {
+            insured_name: insuredName,
+            identity_name: identityName,
+          },
+          proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+          alsoEmail: true,
+        });
+      }
+    } catch (e) {
+      trustSignals = { ai: "skipped", ai_error: (e as Error).message };
+    }
+
+
     const { data: row, error } = await supabase
       .from("insurance_policies")
       .insert({
@@ -32,12 +148,19 @@ export const saveInsurance = createServerFn({ method: "POST" })
         expiry_date: data.expiry_date,
         doc_path: data.doc_path,
         status: "pending",
+        ai_extraction: (aiExtraction ?? null) as never,
+        ai_checked_at: aiExtraction ? new Date().toISOString() : null,
+        trust_signals: trustSignals as never,
+        insured_name: insuredName,
+        name_match: nameMatch,
       } as never)
       .select("id, status, expiry_date, created_at")
       .single();
     if (error) throw new Error(error.message);
     return row;
   });
+
+
 
 export const myInsurance = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -206,6 +329,26 @@ async function runInsuranceAi(
     };
   }
 }
+
+/** Internal helper — download a stored insurance certificate and run AI on it. */
+async function runInsuranceAiFromPath(docPath: string, userId: string): Promise<InsuranceExtractionResult> {
+  if (!docPath.startsWith(`${userId}/`)) throw new Error("Forbidden");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: blob, error } = await supabaseAdmin.storage
+    .from("insurance-docs")
+    .download(docPath);
+  if (error || !blob) throw new Error(error?.message ?? "File not found");
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  let bin = "";
+  for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+  const b64 = btoa(bin);
+  const mime = blob.type || "application/octet-stream";
+  const dataUrl = `data:${mime};base64,${b64}`;
+  const filename = docPath.split("/").pop() ?? "insurance";
+  return runInsuranceAi(dataUrl, filename);
+}
+
+
 
 export const extractInsuranceFromDoc = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

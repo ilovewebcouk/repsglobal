@@ -1,62 +1,90 @@
-## What I'll change (admin verification → Step 3 Qualification)
+## Goal
 
-Goal: stop hiding what we already know, fix the body-name false-negatives, and let the reviewer trigger a fresh lookup on the spot.
+Lift insurance verification to the same AI-assisted standard as qualifications, and close the trainer-notification gap so a pro is never left with a silent "stuck" verification.
 
-### 1. Show the actual Ofqual record (not just a green/amber pill)
-Today we fetch and store the full record in `verification_submissions.regulator_record` but render only `regulator_verified ? "Ofqual-listed" : "Manual check"`. I'll surface a compact panel under the qualification block:
+For Jordan's case specifically: he should have been told the moment he uploaded the expired certificate; failing that, he should be told the moment an admin opens his case and can't verify; failing that, a scheduled renewal nudge should reach him before expiry.
 
-```
-Ofqual register · 601/4534/8
-Title              Level 3 Diploma in Personal Training
-Awarding org       Innovate Awarding Organisation Limited
-Level              Level 3
-Status             Available to learners
-Body match         ✓     Title match  ✓     Status live  ✓
-                                              [ Open on Ofqual ↗ ]
-```
+## Brutal-honest current state (for context, not action)
 
-Three sub-checks rendered individually so reviewer can see *why* it's amber instead of guessing.
+- AI extraction exists on both insurance and qualifications (Gemini 2.5 Pro).
+- Qualifications also have Ofqual cross-check, name-match, AI persisted on the row.
+- Insurance has none of: persistence, expiry guard, low-cover guard, name-match, trainer notification, renewal nudge.
+- No trainer-facing notification fires when verification is blocked.
 
-### 2. Fix awarding-body matching (alias table + slug-first)
-The current substring compare is the only reason recognised bodies (Innovate, IAO, Active IQ Ltd, NCFE-CACHE, YMCA Awards Ltd, etc.) get flagged "Manual check". I'll:
+## Scope
 
-- Extend `src/lib/cpd/awarding-bodies.ts` with an alias map: `slug → string[]` of accepted Ofqual `OrganisationName` variants (and reverse acronyms like IAO ↔ Innovate Awarding).
-- In `lookupOfqualQualification`, match by **slug + alias list first**, fall back to bidirectional substring. Single source of truth used by both the live lookup and the admin pill.
+### 1. Insurance: persist AI signals on the row
 
-### 3. Add a "Re-check Ofqual now" button (admin)
-A small button next to the Ofqual panel that calls a new authenticated server function `recheckOfqualForSubmission({ submissionId })`:
+Migration on `insurance_policies`:
+- `ai_extraction jsonb` — full Gemini result + confidence
+- `ai_checked_at timestamptz`
+- `trust_signals jsonb` — `{ expired, expires_soon, low_cover, name_match, provider_known }`
+- `insured_name text` — extracted name on the certificate
+- `name_match boolean` — comparison to `professionals.identity_verified_name`
 
-- Admin-only (verified via `has_role`).
-- Bypasses the 7-day cache (force refetch).
-- Updates `regulator_verified`, `regulator_record`, and `trust_signals.ofqual` on the row.
-- Returns the new state so the panel updates without a page reload.
+No new tables. Existing RLS already covers admin + owner reads.
 
-Covers (a) Ofqual was down at upload time, (b) the qualification number was edited later, (c) admin wants the freshest data before approving.
+### 2. Insurance: run AI at submit time and act on it
 
-### 4. Better Ofqual link
-Today we link to `Search?Query=…`. When we have the qual number we'll link straight to the canonical qualification page: `https://register.ofqual.gov.uk/Qualification/Details/{qn}` (with the search link as fallback for non-Ofqual numbers).
+Refactor `saveInsurance` (`src/lib/verification/insurance.functions.ts`):
+- After upload, call `runInsuranceAi(...)` server-side (don't trust client-supplied fields blindly).
+- Compute trust signals:
+  - `expired` = `expiry_date < today`
+  - `expires_soon` = within 30 days
+  - `low_cover` = `cover_amount_gbp < 1_000_000` (industry minimum £1m PL)
+  - `name_match` = fuzzy-match `insured_name` vs `identity_verified_name` (reuse cert helper)
+  - `provider_known` = provider name in a small allow-list (Insure4Sport / Hiscox / Westminster / Protectivity / Tribe / Fitpro / Sportscover etc.)
+- **If `expired`**: reject the save with a clear error (`"Certificate expired on {date} — please upload your current cover."`). Trainer sees the message inline; nothing is written to `insurance_policies`.
+- **Otherwise**: persist row with `ai_extraction`, `trust_signals`, `insured_name`, `name_match`, `ai_checked_at`.
 
-### 5. Holder name cross-check uses identity-verified name
-`cpd.functions.ts` already compares `holder_name` vs `identity_verified_name`, but the admin Step 3 panel compares OCR holder vs **profile** name (which can be edited and is locked only after ID approval). I'll switch the admin panel comparison to `identity_verified_name` when present, falling back to profile name — same logic as the upload path, so the green "matches" badge is meaningful.
+Admin verification page (Step 2) reads the new fields and shows the same chip pattern as the Ofqual panel:
+- Green: "AI: provider verified · £5m cover · name matches"
+- Amber: "AI: name mismatch — printed as {insured_name}"
+- Red: "AI: cover below £1m" / "AI: expires in 6 days"
 
-### 6. Keep cert-number lookup honest
-Cert-number-level verification (was this specific certificate issued to this person?) cannot be automated for most UK awarding bodies — they don't expose public learner-record APIs. I'll **not** pretend to verify it. Instead the deep-link strip stays, plus a one-line explainer so reviewers understand the split:
+### 3. Qualifications: surface AI on the admin card
 
-> *Ofqual confirms the qualification exists. The awarding body confirms this learner holds it — use the link below.*
+Already extracted, already persisted — just bring its summary chips alongside the Ofqual chips already shown. No DB work.
 
-### 7. Small cleanup
-- Cache write also when `record===null` (already done) but add `last_error` column so repeated 5xx are visible to admin.
-- Threshold tweak: title similarity from 0.5 → 0.6 to cut false positives.
+### 4. Trainer notifications (bell + email)
 
-## Technical details
+New helper `notifyVerificationEvent(proId, event)` writing to existing notification rails. Events:
 
-Files touched:
-- `src/lib/cpd/ofqual.server.ts` — alias-aware body matching, force-refresh flag.
-- `src/lib/cpd/awarding-bodies.ts` — `OFQUAL_BODY_ALIASES: Record<slug, string[]>`.
-- `src/lib/verification/verification.functions.ts` — new `recheckOfqualForSubmission` server fn (admin-gated).
-- `src/routes/admin_.verification.tsx` Step 3 block — render record panel, sub-checks, re-check button, fixed link, identity-name compare.
-- `src/components/verification/CertDrawer.tsx` — same record panel for consistency.
+| Event | Trigger | Bell + Email |
+|---|---|---|
+| `insurance.rejected_expired` | Server rejects an expired upload at submit | ✅ |
+| `insurance.flagged` | Row saved with red trust signals (low cover / name mismatch) | ✅ |
+| `insurance.expires_soon` | Cron at 60/30/7/0 days before expiry (once per threshold; uses `verification_renewal_nudges` table already in DB) | ✅ |
+| `qualification.flagged` | Submission saved with `name_mismatch` or Ofqual `not-found` | ✅ |
+| `verification.blocked_by_insurance` | Admin opens a case where ID + qual pass but insurance missing/expired → auto-fire once per pro per 14 days | ✅ |
 
-No DB migration required (record already in `regulator_record`). Optional follow-up: add `ofqual_cache.last_error text` column if we want surfaced error reasons — flag and I'll include it.
+Bell uses existing review/support notification table pattern (`review_notifications`-style). Email uses the existing `contact-autoresponse` pipeline with two new React Email templates: `verification-blocked.tsx` and `verification-renewal-due.tsx`. Copy matches the standardised tone we shipped for review removals.
 
-No UX/data changes for Pros — this is admin-side clarity + accuracy only.
+### 5. Renewal cron
+
+Single pg_cron job daily at 09:00 UTC calling a new SQL function `insurance_check_renewals()` which:
+- Scans `insurance_policies` where `status = 'active'`
+- Computes days-to-expiry; inserts into `verification_renewal_nudges` for thresholds not yet sent
+- Enqueues an email per insert via `enqueue_email('transactional', ...)` (existing pgmq queue)
+- Idempotent via the existing `verification_renewal_nudges` primary key
+
+### 6. Admin verification UX (small)
+
+In `src/routes/admin_.verification.tsx` Step 2:
+- New "Nudge trainer to renew" button (visible when insurance is expired or within 14 days) → calls `notifyVerificationEvent(proId, 'verification.blocked_by_insurance')` on demand. Disabled-and-greyed for 14 days after firing.
+- Status banner at the top of the page: "Blocked: insurance expired on {date}. Trainer was notified {relative time}." So you can always see whether the trainer knows.
+
+## Out of scope
+
+- Re-architecting Stripe Identity (already works).
+- Changing the public "REPS Verified" badge rule (stays ID + qual + in-date insurance).
+- Auto-approving insurance without admin sign-off. AI accelerates; humans still confirm.
+- Buying insurance through REPs / partnerships.
+
+## Acceptance
+
+- Pro uploads an expired certificate → save fails inline with a clear message; no row is created; nothing for admin to do.
+- Pro uploads a valid certificate with £500k cover → row saved, AI flag visible to admin, pro receives "your cover is below the industry minimum" email.
+- 30 / 7 / 0 days before expiry, pro receives a renewal reminder email and a bell notification — exactly once per threshold.
+- Admin opens Jordan's case today → can hit "Nudge trainer to renew", which sends the email + bell; banner records the nudge.
+- All three gates green → existing approve button works unchanged.

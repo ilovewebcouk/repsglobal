@@ -59,6 +59,7 @@ import {
   adminOverrideIdentity,
 } from "@/lib/verification/identity.functions";
 import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
+import { adminNudgeInsuranceRenewal } from "@/lib/verification/notifications.functions";
 import { runCrossChecks, evaluateGates, type CheckStatus } from "@/lib/verification/cross-checks";
 import { buildAwardingBodyVerifyLinks } from "@/lib/verification/awarding-body-verify";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
@@ -112,6 +113,10 @@ function AdminVerificationPage() {
   const remind = useServerFn(sendVerificationReminder);
   const signUrl = useServerFn(getDocSignedUrl);
   const recheckOfqual = useServerFn(recheckOfqualForSubmission);
+  const nudgeRenewal = useServerFn(adminNudgeInsuranceRenewal);
+  const nudgeRenewalMutation = useMutation({
+    mutationFn: (professional_id: string) => nudgeRenewal({ data: { professional_id } }),
+  });
 
   const [topTab, setTopTab] = useState<TopTab>("qualifications");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -616,9 +621,60 @@ function AdminVerificationPage() {
                             <div className="mt-3 flex flex-wrap gap-1.5">
                               {ins.doc_path && <DocChip onClick={() => openDoc("insurance-docs", ins.doc_path!)}>View certificate</DocChip>}
                             </div>
+                            {(() => {
+                              const ts = (ins as { trust_signals?: { ai?: string; ai_confidence?: number | null; name_match?: boolean | null; name_score?: number | null; expiry_mismatch?: boolean; low_cover?: boolean; ai_extracted?: { expiry_date?: string | null; cover_amount_gbp?: number | null; insured_name?: string | null } } | null }).trust_signals ?? null;
+                              if (!ts) return null;
+                              const chips: Array<{ tone: "ok" | "warn" | "fail" | "info"; label: string }> = [];
+                              if (ts.ai === "ok") {
+                                chips.push({ tone: "info", label: `AI checked${typeof ts.ai_confidence === "number" ? ` · ${(ts.ai_confidence * 100).toFixed(0)}%` : ""}` });
+                              } else if (ts.ai === "skipped") {
+                                chips.push({ tone: "warn", label: "AI check skipped" });
+                              }
+                              if (ts.name_match === true) chips.push({ tone: "ok", label: "Name matches ID" });
+                              else if (ts.name_match === false) chips.push({ tone: "fail", label: `Name mismatch${ts.ai_extracted?.insured_name ? ` · "${ts.ai_extracted.insured_name}"` : ""}` });
+                              if (ts.expiry_mismatch) chips.push({ tone: "warn", label: `AI saw expiry ${ts.ai_extracted?.expiry_date ?? "?"}` });
+                              if (ts.low_cover) chips.push({ tone: "warn", label: "Cover < £1m" });
+                              if (chips.length === 0) return null;
+                              return (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {chips.map((c, i) => (
+                                    <span
+                                      key={i}
+                                      className={`rounded-[6px] px-1.5 py-0.5 text-[10.5px] font-medium ${
+                                        c.tone === "ok"
+                                          ? "bg-emerald-500/15 text-emerald-300"
+                                          : c.tone === "warn"
+                                            ? "bg-amber-500/15 text-amber-300"
+                                            : c.tone === "fail"
+                                              ? "bg-red-500/15 text-red-300"
+                                              : "bg-white/10 text-white/75"
+                                      }`}
+                                    >
+                                      {c.label}
+                                    </span>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                             {insExpired && (
                               <div className="mt-3 rounded-[8px] border border-red-400/30 bg-red-500/10 px-2.5 py-2 text-[11.5px] text-red-200">
-                                Policy expired on {ins.expiry_date}. Cannot approve as Pro — request a renewed certificate, or approve at Verified only.
+                                <div>Policy expired on {ins.expiry_date}. Cannot verify until a current certificate is on file.</div>
+                                {pro?.id && (
+                                  <div className="mt-2">
+                                    <Button
+                                      size="sm"
+                                      variant="subtle"
+                                      onClick={() => nudgeRenewalMutation.mutate(pro.id)}
+                                      disabled={nudgeRenewalMutation.isPending || nudgeRenewalMutation.isSuccess}
+                                    >
+                                      {nudgeRenewalMutation.isSuccess
+                                        ? "Reminder sent ✓"
+                                        : nudgeRenewalMutation.isPending
+                                          ? "Sending…"
+                                          : "Nudge trainer to renew"}
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </>
@@ -627,6 +683,7 @@ function AdminVerificationPage() {
                     );
                   })()}
                 </PCard>
+
 
                 {/* ── STEP 3 · QUALIFICATION ─────────────────────────── */}
                 <PCard>
