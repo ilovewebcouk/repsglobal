@@ -64,7 +64,7 @@ export function WelcomeBanner({
   tierLabel,
   isPublished,
   slug,
-  isVerified,
+  trust,
 }: {
   name: string;
   avatarUrl: string | null | undefined;
@@ -72,7 +72,7 @@ export function WelcomeBanner({
   tierLabel: string;
   isPublished: boolean;
   slug: string | null | undefined;
-  isVerified: boolean;
+  trust: TrustState | null | undefined;
 }) {
   const initials = name
     .split(" ")
@@ -89,6 +89,10 @@ export function WelcomeBanner({
     void navigator.clipboard.writeText(window.location.origin + publicUrl);
   }, [publicUrl]);
 
+  // Single source of truth for the badge: 3-of-3 trust state, not the tier.
+  const fullyVerified =
+    !!trust && trust.ticks.identity && trust.ticks.insurance && trust.ticks.qualifications;
+
   return (
     <PPanel className="p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -100,16 +104,23 @@ export function WelcomeBanner({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate font-display text-[20px] font-semibold text-white">
                 {name}
               </h1>
-              <DashboardBadge variant="orange">{tierLabel}</DashboardBadge>
-              {isVerified ? (
-                <DashboardBadge variant="success">
-                  <BadgeCheck /> Verified
-                </DashboardBadge>
-              ) : null}
+              {fullyVerified ? (
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                  <BadgeCheck className="size-3" />
+                  REPS Verified
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/60">
+                  Unverified
+                </span>
+              )}
+              <span className="inline-flex items-center rounded-full border border-reps-border bg-reps-panel-soft/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/55">
+                {tierLabel} plan
+              </span>
             </div>
             {headline ? (
               <p className="mt-1 truncate text-[13px] text-white/55">{headline}</p>
