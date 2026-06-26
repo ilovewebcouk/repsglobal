@@ -1,84 +1,62 @@
-## Admin Verification — QA pass + simplification
+## What I'll change (admin verification → Step 3 Qualification)
 
-### What's wrong today (Jordon Gumbley case)
+Goal: stop hiding what we already know, fix the body-name false-negatives, and let the reviewer trigger a fresh lookup on the spot.
 
-Looking at `src/routes/admin_.verification.tsx` against the screenshot:
+### 1. Show the actual Ofqual record (not just a green/amber pill)
+Today we fetch and store the full record in `verification_submissions.regulator_record` but render only `regulator_verified ? "Ofqual-listed" : "Manual check"`. I'll surface a compact panel under the qualification block:
 
-1. **Three competing summaries.** Identity / Insurance / Qualification cards say one thing, then "Cross-checks" repeats half of it, then "Gates" repeats it again with a different visual. The reviewer can't tell which is the source of truth.
-2. **Insurance shows "pending" but isn't reviewable in this screen.** The card only displays the data; there is no "approve / reject insurance" action, and the failing gate ("Insurance current — Expired") is buried at the bottom in Gates. Jordon's policy expires 2026‑04‑01, which is what's blocking Pro, but the UI never says that plainly next to Insurance.
-3. **Qualification "Manual" is a dead end.** The card shows the qual + an Ofqual Register link + an awarding‑body link, but doesn't tell the reviewer *what to do* ("open the awarding body site, confirm the cert number, tick this box"). The big "Review certificate" button opens a drawer with another copy of the cross‑checks.
-4. **Approve fails with a `window.alert`.** When the Ofqual gate is failing, clicking Approve throws a blocking browser alert ("Cannot approve — failing checks… Provide an override reason ≥8 chars"). The override input only appears *after* you read the alert. That's the "funny little box" the user described.
-5. **Identity tab is a totally separate table** with its own approve/reject flow that uses `window.prompt` for the reason. Two different review UIs for one person.
-6. **Decision bar has 4 buttons** ("Request changes", "Reject", "Approve as Pro", "Approve as Verified") whose enable/disable rules depend on hidden gate logic. Reviewer can't predict which will be active.
-
-### Goal
-
-One linear, opinionated review screen per professional: **ID → Insurance → Qualification → Decision.** Each step shows status, the evidence, the failing reasons, and an inline action. No browser alerts. No duplicated cross‑check grids.
-
-### New layout (right‑hand workspace)
-
-```text
-┌─ Jordon Gumbley · Telford · SLA 22h left ──────────── [Close] ┐
-│                                                                │
-│  STEP 1 · IDENTITY                       [✓ Approved — Stripe] │
-│  Name JORDON GUMBLEY · DOB — · Doc —                           │
-│  [ Open in Stripe ↗ ]   [ Override → reject ]                  │
-│                                                                │
-│  STEP 2 · INSURANCE                     [✗ Expired 2026-04-01] │
-│  Insure4Sport · £1.5m · Policy 14S792365                       │
-│  [ View certificate ↗ ]                                        │
-│  ⚠ Cannot approve as Pro — policy expired.                     │
-│  [ Request new certificate ]   [ Mark approved (override) ]    │
-│                                                                │
-│  STEP 3 · QUALIFICATION                       [⚠ Manual check] │
-│  IAO Level 3 Diploma in Fitness Instructing and PT             │
-│  Innovate Awarding · Qual 601/3866/X · Cert 00168459           │
-│  OCR holder: Jordon Gumbley  ✓ matches profile                 │
-│  Verify on: [ Ofqual Register ↗ ] [ Innovate Awarding ↗ ]      │
-│  [ Open certificate ↗ ]                                        │
-│  ☐ I've confirmed this certificate on the awarding body site   │
-│                                                                │
-│  ── DECISION ────────────────────────────────────────────────  │
-│  Will approve at: PRO (ID ✓ · Insurance ✗ · Qual confirmed)    │
-│  Reviewer notes [                                            ] │
-│  Override reason (only shown when something is failing)        │
-│  [ Request changes ]  [ Reject ]   [ Approve ▾ ]               │
-│                                          ├ Approve as Pro      │
-│                                          └ Approve as Verified │
-└────────────────────────────────────────────────────────────────┘
+```
+Ofqual register · 601/4534/8
+Title              Level 3 Diploma in Personal Training
+Awarding org       Innovate Awarding Organisation Limited
+Level              Level 3
+Status             Available to learners
+Body match         ✓     Title match  ✓     Status live  ✓
+                                              [ Open on Ofqual ↗ ]
 ```
 
-Key UX rules:
+Three sub-checks rendered individually so reviewer can see *why* it's amber instead of guessing.
 
-- **One status pill per step**, derived from the same `evaluateGates` output we already compute. No second "Gates" card.
-- **Failing gate text rendered inline under the relevant step**, in plain English ("Policy expired 2026‑04‑01", "Awarding body not on Ofqual register").
-- **Manual qualification = one explicit confirm checkbox.** Ticking it acts as the override and prefills the override reason ("Confirmed on Innovate Awarding site, cert 00168459"). Reviewer can edit before submitting.
-- **No `window.alert` / `window.prompt` anywhere.** Override + revoke reasons become inline `Textarea`s with character counter, validated before the mutation runs.
-- **Single Approve button with a dropdown** for Pro vs Verified — disabled state has a tooltip explaining exactly which step is failing.
-- **Identity tab folds into the main case view.** The standalone `AdminIdentityTab` table stays as a filter ("show me only people with pending ID"), but clicking a row opens the same per‑pro workspace so admins never juggle two flows.
+### 2. Fix awarding-body matching (alias table + slug-first)
+The current substring compare is the only reason recognised bodies (Innovate, IAO, Active IQ Ltd, NCFE-CACHE, YMCA Awards Ltd, etc.) get flagged "Manual check". I'll:
 
-### Files to change
+- Extend `src/lib/cpd/awarding-bodies.ts` with an alias map: `slug → string[]` of accepted Ofqual `OrganisationName` variants (and reverse acronyms like IAO ↔ Innovate Awarding).
+- In `lookupOfqualQualification`, match by **slug + alias list first**, fall back to bidirectional substring. Single source of truth used by both the live lookup and the admin pill.
 
-- `src/routes/admin_.verification.tsx`
-  - Extract the right‑hand workspace into `<CaseWorkspace />` (same file, cleaner JSX).
-  - Replace `Identity` + `Insurance` + `Qualification` + `Cross-checks` + `Gates` cards with three `<ReviewStep />` cards that own their own status, evidence, override hook.
-  - Replace alerts/prompts with inline form state (`overrideReason`, `manualQualConfirmed`, `revokeReason`).
-  - Collapse the decision bar to: `Request changes` · `Reject` · `Approve ▾`.
-- `src/components/verification/CertDrawer.tsx`
-  - Trim drawer to: doc viewer + name‑match line + Approve/Reject. Remove the second cross‑check grid (it's already on the case view now).
-- No DB / server‑fn changes. `reviewVerification` already accepts `override_reason`, so the new checkbox + textarea just feed the same field.
+### 3. Add a "Re-check Ofqual now" button (admin)
+A small button next to the Ofqual panel that calls a new authenticated server function `recheckOfqualForSubmission({ submissionId })`:
 
-### Out of scope for this pass
+- Admin-only (verified via `has_role`).
+- Bypasses the 7-day cache (force refetch).
+- Updates `regulator_verified`, `regulator_record`, and `trust_signals.ofqual` on the row.
+- Returns the new state so the panel updates without a page reload.
 
-- Insurance approval flow as a first‑class object (currently insurance status is a read of `insurance_policies`; making admins approve/reject individual policies is a separate scope).
-- Changing the SLA, queue stats, or claim/release logic.
-- Identity provider integrations (Stripe webhook auto‑approval stays as is).
+Covers (a) Ofqual was down at upload time, (b) the qualification number was edited later, (c) admin wants the freshest data before approving.
 
-### Verification after build
+### 4. Better Ofqual link
+Today we link to `Search?Query=…`. When we have the qual number we'll link straight to the canonical qualification page: `https://register.ofqual.gov.uk/Qualification/Details/{qn}` (with the search link as fallback for non-Ofqual numbers).
 
-1. Load `/admin/verification`, open Jordon Gumbley.
-2. Confirm 3 steps render with correct pills (ID ✓, Insurance ✗ expired, Qual ⚠ manual).
-3. Try Approve without ticking the manual‑qual checkbox → button disabled with tooltip.
-4. Tick the checkbox → override reason auto‑fills, "Approve as Verified" enables (insurance still blocks Pro).
-5. Type a reviewer note + submit → no `window.alert`, mutation succeeds, queue refreshes.
-6. Open the Identity tab → clicking a row opens the same workspace, not a separate dialog.
+### 5. Holder name cross-check uses identity-verified name
+`cpd.functions.ts` already compares `holder_name` vs `identity_verified_name`, but the admin Step 3 panel compares OCR holder vs **profile** name (which can be edited and is locked only after ID approval). I'll switch the admin panel comparison to `identity_verified_name` when present, falling back to profile name — same logic as the upload path, so the green "matches" badge is meaningful.
+
+### 6. Keep cert-number lookup honest
+Cert-number-level verification (was this specific certificate issued to this person?) cannot be automated for most UK awarding bodies — they don't expose public learner-record APIs. I'll **not** pretend to verify it. Instead the deep-link strip stays, plus a one-line explainer so reviewers understand the split:
+
+> *Ofqual confirms the qualification exists. The awarding body confirms this learner holds it — use the link below.*
+
+### 7. Small cleanup
+- Cache write also when `record===null` (already done) but add `last_error` column so repeated 5xx are visible to admin.
+- Threshold tweak: title similarity from 0.5 → 0.6 to cut false positives.
+
+## Technical details
+
+Files touched:
+- `src/lib/cpd/ofqual.server.ts` — alias-aware body matching, force-refresh flag.
+- `src/lib/cpd/awarding-bodies.ts` — `OFQUAL_BODY_ALIASES: Record<slug, string[]>`.
+- `src/lib/verification/verification.functions.ts` — new `recheckOfqualForSubmission` server fn (admin-gated).
+- `src/routes/admin_.verification.tsx` Step 3 block — render record panel, sub-checks, re-check button, fixed link, identity-name compare.
+- `src/components/verification/CertDrawer.tsx` — same record panel for consistency.
+
+No DB migration required (record already in `regulator_record`). Optional follow-up: add `ofqual_cache.last_error text` column if we want surfaced error reasons — flag and I'll include it.
+
+No UX/data changes for Pros — this is admin-side clarity + accuracy only.
