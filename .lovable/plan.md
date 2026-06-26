@@ -1,63 +1,86 @@
-# Verification gating + onboarding prompt
+## Goal
 
-Front-load the three-step trust flow (Identity → Qualifications → Insurance) for every professional, including existing accounts.
+Two related improvements on the verification surface:
 
-## Behaviour
+1. **Add QR upload to certificates** — mirror the insurance "Scan with phone" flow so trainers can photograph a certificate on their phone and have it land back in the desktop dialog automatically.
+2. **Polish pass on the 3-stage verification page** (`/dashboard/verification`) — tighten copy, spacing, status states, and consistency between the three stages (Identity / Insurance / Qualifications).
 
-**Hard gate — Identity**
-- Until `trustState.identity.status === "approved"`, the entire `/dashboard/*` subtree is replaced by a full-screen "Verify your identity" wall.
-- Wall offers two states:
-  - **Not started / rejected / needs_more_info** → primary CTA "Start ID check" launches the existing identity flow on `/dashboard/verification#identity`.
-  - **Pending** (submitted, in review) → "We're reviewing your ID — usually under 24h." CTA: contact support. No bypass.
-- Allow-list of routes that remain accessible while gated: `/dashboard/verification`, `/dashboard/settings` (billing/account only), `/dashboard/support`, `/dashboard/syncing`. Everything else (enquiries, profile editor, services, shop-front, reviews, CPD, etc.) is replaced by the wall.
-- Admin impersonation bypasses the gate (so admins can still view-as).
-- Public profile `is_published` stays false while identity is not approved (already enforced by existing logic — verify, no change needed).
+---
 
-**Soft gate — Qualifications + Insurance**
-- Once identity is approved, dashboard unlocks fully.
-- A **dismissible** `VerificationPromptDialog` appears on every login until `trustState.completedCount === 3`:
-  - 3 numbered rows mirroring `VerificationCard` (Identity ✓ locked-green, Qualifications, Insurance) with per-row status pill and CTA.
-  - "Remind me later" closes for the current tab session (sessionStorage key `reps.verify-prompt.dismissed.<userId>`).
-  - Reappears on next login / next tab.
-  - Suppressed entirely when all 3 are green.
-- `VerificationCard` stays pinned at top of `/dashboard` (already present) — no change to its placement.
+## Part 1 — QR upload for certificates
 
-## Implementation
+Today, `UploadCertificateDialog` only accepts a direct file pick. Insurance already has a working two-tab pattern (`Upload file` / `Scan with phone`) backed by a short-lived upload session row + a public `/u/insurance/$sessionId` page + polling. We mirror that exactly for certificates.
 
-### 1. Shared gate hook
-`src/lib/verification/useIdentityGate.ts` — wraps `getTrustState`, returns `{ status, isGated, isPending }`. `isGated = status !== "approved"`.
+**New backend (one migration + server fns):**
+- New table `certificate_upload_sessions` (id, user_id, status `pending|uploaded|consumed|expired`, doc_path, filename, expires_at, created_at). Mirrors `insurance_upload_sessions`. RLS: owner can read; the public upload page uses a session-id-scoped RPC, not direct table access. Standard GRANTs.
+- Server fns in `src/lib/cpd/cpd.functions.ts`:
+  - `createCertUploadSession` (auth) → returns `{ id, expires_at }`, 10-min expiry.
+  - `getCertUploadSession` (auth, owner-only) → polled by dialog.
+  - `markCertUploadConsumed` (auth, owner-only).
+  - `uploadCertFromSession` (public, session-id-scoped) → accepts file bytes from the phone page, writes to existing `cpd-certificates` bucket under a session-scoped path, flips status to `uploaded`.
 
-### 2. Full-screen wall component
-`src/components/dashboard/verification/IdentityGateWall.tsx` — uses dashboard tokens (dark, `bg-reps-panel`, `border-reps-border`, `DashboardButton` primary). Renders inside `DashboardShell` so sidebar/topbar stay visible (user can sign out, reach support, billing).
+**New public route:**
+- `src/routes/u.cpd.$sessionId.tsx` — mobile-first single-purpose page: "Take a photo or upload your certificate". Same UX as `u.insurance.$sessionId.tsx`. Validates session is still `pending` and unexpired before showing the picker. No auth required (session id is the capability).
 
-### 3. Wire the gate in `_professional/route.tsx`
-- In `beforeLoad`, after the existing paid-tier check, fetch `getTrustState` (server-side, already auth-middleware'd).
-- Return `identityGated: boolean` and `identityStatus` on the route context.
-- Skip when `isImpersonating`.
-- Do NOT redirect — child routes read context and render the wall themselves (so the URL stays intact and the allow-list works).
+**Dialog changes (`src/components/cpd/UploadCertificateDialog.tsx`):**
+- Wrap the current "pick file" panel in shadcn `Tabs` with two triggers: `Upload file` (existing) and `Scan with phone` (new), exactly matching `InsuranceUploadDialog`.
+- QR tab renders `QRCodeSVG` (already in deps) pointing at `${origin}/u/cpd/${sessionId}`.
+- Poll `getCertUploadSession` every 2s while the QR tab is open; on `uploaded`, advance to the existing `extracting` step and run the same `extractCertificateFields` → `confirm` flow.
+- Show session expiry time under the QR. Reset session id on dialog close.
 
-### 4. Per-route enforcement
-Create `src/components/dashboard/verification/withIdentityGate.tsx` — a small wrapper that reads route context and:
-- Renders children if `!identityGated` or current route is on the allow-list.
-- Otherwise renders `<IdentityGateWall />` inside the same `DashboardShell` the route would have used.
+No change to the confirm/submit step — the file just enters the pipeline from a different source.
 
-Apply to every gated route component (`dashboard.tsx`, `dashboard_.enquiries.tsx`, `dashboard_.profile.tsx`, `dashboard_.services.tsx`, `dashboard_.shop-front.tsx`, `dashboard_.reviews.tsx`, `dashboard_.cpd.tsx`, all `_pro/*` routes). Mechanical wrap — one line per file.
+---
 
-### 5. Onboarding dialog
-`src/components/dashboard/verification/VerificationPromptDialog.tsx` — uses `Dialog` from `src/components/dashboard/ui/dialog.tsx`. Reuses `VerificationCard`'s `deriveSteps` logic so the two stay in sync.
+## Part 2 — Polish pass on `/dashboard/verification`
 
-Mount once in `_professional/route.tsx` component (next to `<Outlet />`), gated on:
-- identity approved
-- `completedCount < 3`
-- not in sessionStorage dismissed set for this user
+Goals: make the three stages feel like one coherent ladder, tighten status states, and fix the small inconsistencies that have accumulated.
 
-### 6. Existing-user coverage
-No data migration needed — the gate evaluates `trustState` live, so any pre-existing account without an approved identity hits the wall on next page load.
+**Page header (`dashboard_.verification.tsx`):**
+- Tighten subtitle to one sentence; remove duplicate "trust layer" wording that already lives in `TrustBlock`.
+- Show a single progress chip strip (Identity · Insurance · Qualifications) with consistent earned/pending/action states using the locked emerald-only-for-status tokens (`border-emerald-400/30 bg-emerald-500/15 text-emerald-300`). Pending = amber; action-needed = white/15 ghost; never decorative colour.
+- Add a top-right `Step X of 3 complete` count for at-a-glance progress.
 
-## Out of scope
-- Changing the actual identity submission flow (Stripe Identity / doc upload) — already shipped.
-- Email nudges to dormant un-verified users (separate campaign).
-- Changing `is_published` logic.
+**Per-stage cards (in `TrustBlock`):**
+- Normalise the three section headers to the same shape: number chip · title · status badge · short helper line. Today Identity and Insurance differ slightly from Qualifications.
+- Standardise the empty-state CTA wording:
+  - Identity: "Verify your identity" (unchanged hard-gate copy)
+  - Insurance: "Upload insurance"
+  - Qualifications: "Add a certificate"
+- For pending states, show the same "In review — usually within 24h" line across all three.
+- For approved states, show `Verified · <date>` consistently.
+- Pull the "Scan with phone" affordance into the Qualifications card empty-state helper text ("…or scan it with your phone — we'll read it for you"), matching the existing Insurance copy.
 
-## Open question
-Should `/dashboard/profile` be in the allow-list? Argument for: pros want to draft bio/photos while ID is in review. Argument against: keeps the funnel single-minded. **Recommendation: NOT in allow-list** — drafting before ID approval is low-value and dilutes the gate. Confirm before I build.
+**Spacing + radii:**
+- Audit and normalise: large stage panels = 22px, inner status/info strips = 16px, badges = pill. Replace any stray `rounded-xl/2xl` per the locked radius rule.
+- Vertical rhythm between the three stage cards: consistent `gap-4`.
+
+**Copy:**
+- Remove the "earn your REPS credential" line if it duplicates the page subtitle.
+- Make sure no banned phrases ("booking fee", "UK", "CIMSPA", "flat plan") have crept in.
+
+**Out of scope (explicit):**
+- No change to identity hard-gate logic (already shipped).
+- No change to the verification prompt dialog.
+- No change to admin moderation pages.
+- No change to public profile rendering of trust ticks.
+
+---
+
+## Technical notes
+
+- Reuse `qrcode.react` (already a dep — used by insurance).
+- Reuse the `cpd-certificates` storage bucket; just add a `sessions/<sessionId>/` path prefix for QR-originated uploads, then move/copy into the user's normal path on `consume` (same trick used for insurance).
+- Session expiry = 10 minutes, matching insurance.
+- Migration includes the four-step pattern: `CREATE TABLE` → `GRANT` (authenticated + service_role; no anon) → `ENABLE RLS` → `CREATE POLICY` (owner read, owner update on consume; insert via SECURITY DEFINER RPC).
+- Polish work is presentation-only — no business logic changes outside the new QR pipeline.
+
+---
+
+## Deliverables
+
+1. Migration: `certificate_upload_sessions` + grants + RLS.
+2. `src/lib/cpd/cpd.functions.ts` — 4 new server fns.
+3. `src/routes/u.cpd.$sessionId.tsx` — public phone upload page.
+4. `src/components/cpd/UploadCertificateDialog.tsx` — Tabs + QR panel + polling.
+5. `src/routes/_authenticated/_professional/dashboard_.verification.tsx` + `src/components/dashboard/verification/TrustBlock.tsx` — polish pass per above.
