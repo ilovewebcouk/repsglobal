@@ -520,7 +520,7 @@ function AdminVerificationPage() {
                     <div className="flex items-center gap-2">
                       {isApproved && (
                         <Button
-                          variant="subtle"
+                          variant="outline"
                           size="sm"
                           disabled={busy}
                           onClick={() => { setRevokeReason(""); setRevokeOpen(true); }}
@@ -529,7 +529,7 @@ function AdminVerificationPage() {
                           Revoke
                         </Button>
                       )}
-                      <Button variant="subtle" size="sm" onClick={closeCase}>Close</Button>
+                      <Button variant="outline" size="sm" onClick={closeCase}>Close</Button>
                     </div>
                   </div>
                   {isApproved && (
@@ -707,7 +707,7 @@ function AdminVerificationPage() {
                                   <div className="mt-2">
                                     <Button
                                       size="sm"
-                                      variant="subtle"
+                                      variant="outline"
                                       onClick={() => nudgeRenewalMutation.mutate(pro.id)}
                                       disabled={nudgeRenewalMutation.isPending || nudgeRenewalMutation.isSuccess}
                                     >
@@ -871,7 +871,7 @@ function AdminVerificationPage() {
                           <div className="pt-2">
                             <Button
                               size="sm"
-                              variant="subtle"
+                              variant="outline"
                               onClick={() => setCertOpen(true)}
                               className="w-full sm:w-auto"
                             >
@@ -956,7 +956,7 @@ function AdminVerificationPage() {
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       {missing.length > 0 && (
                         <Button
-                          variant="subtle"
+                          variant="outline"
                           size="sm"
                           disabled={busy}
                           onClick={() => remind({ data: { professional_id: pro!.id, missing } }).then(() => alert("Reminder sent")).catch((e: Error) => alert(e.message))}
@@ -965,10 +965,10 @@ function AdminVerificationPage() {
                         </Button>
                       )}
                       <div className="flex-1" />
-                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
+                      <Button variant="outline" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
                         Request changes
                       </Button>
-                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
+                      <Button variant="outline" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
                         Reject
                       </Button>
                       <Button
@@ -1051,7 +1051,7 @@ function AdminVerificationPage() {
                       rows={3}
                     />
                     <DialogFooter>
-                      <Button variant="subtle" size="sm" disabled={busy} onClick={() => setRevokeOpen(false)}>
+                      <Button variant="outline" size="sm" disabled={busy} onClick={() => setRevokeOpen(false)}>
                         Cancel
                       </Button>
                       <Button
@@ -1289,13 +1289,13 @@ function AdminIdentityTab({
                 <td className="py-2">
                   <div className="flex flex-wrap gap-1">
                     {r.status !== "approved" && (
-                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "approved")}>Approve</Button>
+                      <Button size="sm" variant="outline" onClick={() => doOverride(r.id, "approved")}>Approve</Button>
                     )}
                     {r.status !== "rejected" && (
-                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "rejected")}>Reject</Button>
+                      <Button size="sm" variant="outline" onClick={() => doOverride(r.id, "rejected")}>Reject</Button>
                     )}
                     {r.status !== "needs_more_info" && (
-                      <Button size="sm" variant="subtle" onClick={() => doOverride(r.id, "needs_more_info")}>Needs info</Button>
+                      <Button size="sm" variant="outline" onClick={() => doOverride(r.id, "needs_more_info")}>Needs info</Button>
                     )}
                   </div>
                 </td>
@@ -1323,7 +1323,7 @@ function AdminIdentityTab({
             rows={3}
           />
           <DialogFooter>
-            <Button variant="subtle" size="sm" disabled={overrideBusy} onClick={() => setOverrideTarget(null)}>
+            <Button variant="outline" size="sm" disabled={overrideBusy} onClick={() => setOverrideTarget(null)}>
               Cancel
             </Button>
             <Button
@@ -1533,19 +1533,19 @@ function AdminInsuranceTab() {
                   </td>
                   <td className="py-2">
                     <div className="flex flex-wrap gap-1">
-                      <Button size="sm" variant="subtle" onClick={() => openDoc(r.doc_path)}>
+                      <Button size="sm" variant="outline" onClick={() => openDoc(r.doc_path)}>
                         <FileText className="mr-1 size-3.5" /> View
                       </Button>
-                      <Button size="sm" variant="subtle" disabled={busy === r.id} onClick={() => doRecheck(r.id)}>
+                      <Button size="sm" variant="outline" disabled={busy === r.id} onClick={() => doRecheck(r.id)}>
                         {busy === r.id ? <Loader2 className="size-3.5 animate-spin" /> : "Re-check AI"}
                       </Button>
                       {r.status !== "active" && (
-                        <Button size="sm" variant="subtle" onClick={() => { setTarget({ id: r.id, decision: "approved" }); setNote(""); }}>
+                        <Button size="sm" variant="outline" onClick={() => { setTarget({ id: r.id, decision: "approved" }); setNote(""); }}>
                           Approve
                         </Button>
                       )}
                       {r.status !== "rejected" && (
-                        <Button size="sm" variant="subtle" onClick={() => { setTarget({ id: r.id, decision: "rejected" }); setNote(""); }}>
+                        <Button size="sm" variant="outline" onClick={() => { setTarget({ id: r.id, decision: "rejected" }); setNote(""); }}>
                           Reject
                         </Button>
                       )}
@@ -1577,7 +1577,7 @@ function AdminInsuranceTab() {
             rows={3}
           />
           <DialogFooter>
-            <Button variant="subtle" size="sm" disabled={busy !== null} onClick={() => setTarget(null)}>
+            <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => setTarget(null)}>
               Cancel
             </Button>
             <Button
@@ -1681,7 +1681,7 @@ function DriftChip() {
                       <td className="px-3 py-2 text-right">
                         <Button
                           size="sm"
-                          variant="subtle"
+                          variant="outline"
                           disabled={fixMutation.isPending}
                           onClick={() => fixMutation.mutate(r.professional_id)}
                         >
