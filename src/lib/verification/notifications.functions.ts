@@ -1,14 +1,17 @@
 /**
- * Verification notifications — bell + email rail for ID / qualification / insurance
- * gating events. Sits alongside review_notifications and support unread but is
- * scoped to the trainer's own verification lifecycle (and admin nudges).
+ * Verification notifications — bell + email rail for the trainer's verification
+ * lifecycle (insurance gating, renewal nudges). Sits alongside review and
+ * support unread feeds.
  *
  * Table: public.verification_notifications
- *   (recipient_user_id, professional_id, event, policy_id, threshold_days, payload, read_at)
+ *   columns: id, professional_id, event, policy_id, threshold_days, context (jsonb), read_at
+ *
+ * Recipient = the pro themselves. (`professional_id` is the user id.) Admin
+ * actions like "nudge to renew" insert with the pro as the target.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 
 export type VerificationEvent =
@@ -30,32 +33,41 @@ export interface VerificationNotificationItem {
 }
 
 interface InsertParams {
-  recipientUserId: string;
   professionalId: string;
   event: VerificationEvent;
   policyId?: string | null;
   thresholdDays?: number | null;
-  payload?: Record<string, unknown>;
+  context?: Record<string, unknown>;
+  recipientEmail?: string | null;
+  proName?: string | null;
+  alsoEmail?: boolean;
+}
+
+async function lookupProEmail(professionalId: string): Promise<string | null> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.auth.admin.getUserById(professionalId);
+    return data?.user?.email ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**
  * Server-internal helper — insert a notification idempotently and (best-effort)
  * fire the matching transactional email. Safe to call from other server fns.
  */
-export async function notifyVerificationEvent(
-  params: InsertParams & { recipientEmail?: string | null; proName?: string | null; alsoEmail?: boolean },
-) {
+export async function notifyVerificationEvent(params: InsertParams) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { error } = await supabaseAdmin
     .from("verification_notifications")
     .upsert(
       {
-        recipient_user_id: params.recipientUserId,
         professional_id: params.professionalId,
         event: params.event,
         policy_id: params.policyId ?? null,
         threshold_days: params.thresholdDays ?? null,
-        payload: params.payload ?? {},
+        context: (params.context ?? {}) as never,
       } as never,
       {
         onConflict: "professional_id,event,policy_id,threshold_days",
@@ -63,11 +75,12 @@ export async function notifyVerificationEvent(
       },
     );
   if (error) {
-    // Log and keep going — bell is best-effort, we still want the email.
     console.error("[verification.notify] insert failed", error.message);
   }
 
-  if (!params.alsoEmail || !params.recipientEmail) return;
+  if (!params.alsoEmail) return;
+  const email = params.recipientEmail ?? (await lookupProEmail(params.professionalId));
+  if (!email) return;
 
   try {
     if (
@@ -86,15 +99,15 @@ export async function notifyVerificationEvent(
               : "missing";
       await sendTransactionalEmailServer({
         templateName: "insurance-blocked",
-        recipientEmail: params.recipientEmail,
+        recipientEmail: email,
         idempotencyKey: `verif:${params.professionalId}:${params.event}:${params.policyId ?? "none"}`,
         templateData: {
           proName: params.proName ?? undefined,
           reason,
-          expiryDate: (params.payload?.expiry_date as string | undefined) ?? null,
-          insuredName: (params.payload?.insured_name as string | undefined) ?? null,
-          identityName: (params.payload?.identity_name as string | undefined) ?? null,
-          coverGbp: (params.payload?.cover_amount_gbp as number | undefined) ?? null,
+          expiryDate: (params.context?.expiry_date as string | undefined) ?? null,
+          insuredName: (params.context?.insured_name as string | undefined) ?? null,
+          identityName: (params.context?.identity_name as string | undefined) ?? null,
+          coverGbp: (params.context?.cover_amount_gbp as number | undefined) ?? null,
           dashboardUrl: "https://repsuk.org/dashboard/verification",
         },
       });
@@ -105,11 +118,11 @@ export async function notifyVerificationEvent(
       const days = params.thresholdDays ?? 0;
       await sendTransactionalEmailServer({
         templateName: "insurance-renewal-due",
-        recipientEmail: params.recipientEmail,
+        recipientEmail: email,
         idempotencyKey: `verif:${params.professionalId}:${params.event}:${params.policyId ?? "none"}:${days}`,
         templateData: {
           proName: params.proName ?? undefined,
-          expiryDate: (params.payload?.expiry_date as string | undefined) ?? "soon",
+          expiryDate: (params.context?.expiry_date as string | undefined) ?? "soon",
           daysLeft: days,
           dashboardUrl: "https://repsuk.org/dashboard/verification",
         },
@@ -145,27 +158,27 @@ export const listMyVerificationNotifications = createServerFn({ method: "POST" }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("verification_notifications")
-      .select("id, event, threshold_days, payload, created_at")
-      .eq("recipient_user_id", context.userId)
+      .select("id, event, threshold_days, context, created_at")
+      .eq("professional_id", context.userId)
       .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(30);
     if (error) throw error;
-    const rows = (data ?? []) as Array<{
+    const rows = (data ?? []) as unknown as Array<{
       id: string;
       event: VerificationEvent;
       threshold_days: number | null;
-      payload: Record<string, unknown> | null;
+      context: Record<string, unknown> | null;
       created_at: string;
     }>;
     return {
       items: rows.map((r) => {
         const title = titleFor(r.event, r.threshold_days);
-        const payload = r.payload ?? {};
+        const ctx = r.context ?? {};
         const preview =
-          (payload.message as string | undefined) ??
-          (payload.expiry_date
-            ? `Expiry on file: ${payload.expiry_date as string}`
+          (ctx.message as string | undefined) ??
+          (ctx.expiry_date
+            ? `Expiry on file: ${ctx.expiry_date as string}`
             : "Open your verification dashboard for details.");
         return {
           key: `verif:${r.id}`,
@@ -183,10 +196,11 @@ export const listMyVerificationNotifications = createServerFn({ method: "POST" }
 export const markAllVerificationNotificationsRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
-    const { error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("verification_notifications")
       .update({ read_at: new Date().toISOString() } as never)
-      .eq("recipient_user_id", context.userId)
+      .eq("professional_id", context.userId)
       .is("read_at", null);
     if (error) throw error;
     return { ok: true };
@@ -194,7 +208,8 @@ export const markAllVerificationNotificationsRead = createServerFn({ method: "PO
 
 /**
  * Admin action — send a "please renew your insurance" nudge to a pro.
- * Adds a bell entry + email. Idempotent within the same calendar day per pro.
+ * Adds a bell entry + email. Bucketed by threshold so repeated clicks for the
+ * same window don't spam.
  */
 export const adminNudgeInsuranceRenewal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
@@ -212,9 +227,11 @@ export const adminNudgeInsuranceRenewal = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: prof } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, display_name, email")
+      .select("id, full_name, display_name")
       .eq("id", data.professional_id)
       .maybeSingle();
+    const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
+
     const { data: ins } = await supabaseAdmin
       .from("insurance_policies")
       .select("id, expiry_date")
@@ -222,27 +239,21 @@ export const adminNudgeInsuranceRenewal = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+    const insAny = ins as { id?: string; expiry_date?: string | null } | null;
 
-    const expiry = ins?.expiry_date as string | undefined;
+    const expiry = insAny?.expiry_date ?? null;
     const daysLeft = expiry
       ? Math.round((new Date(expiry).getTime() - Date.now()) / 86_400_000)
       : 0;
-
-    // Bucket today (or expired) into a stable threshold so re-clicks don't spam.
     const threshold = daysLeft <= 0 ? 0 : daysLeft <= 7 ? 7 : daysLeft <= 30 ? 30 : 60;
 
     await notifyVerificationEvent({
-      recipientUserId: data.professional_id,
       professionalId: data.professional_id,
       event: daysLeft <= 0 ? "insurance.renewal_lapsed" : "insurance.renewal_due",
-      policyId: (ins?.id as string | undefined) ?? null,
+      policyId: insAny?.id ?? null,
       thresholdDays: threshold,
-      payload: { expiry_date: expiry ?? null, nudged_by: context.userId },
-      recipientEmail: (prof?.email as string | undefined) ?? null,
-      proName:
-        (prof?.display_name as string | undefined) ??
-        (prof?.full_name as string | undefined) ??
-        undefined,
+      context: { expiry_date: expiry, nudged_by: context.userId },
+      proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
       alsoEmail: true,
     });
 
