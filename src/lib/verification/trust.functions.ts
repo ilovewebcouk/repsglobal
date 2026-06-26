@@ -28,8 +28,11 @@ export type TrustState = {
     changesRequestedCount: number;
     rejectedCount: number;
     titles: string[];
+    /** The pro's chosen primary title label (falls back to first approved). */
+    primaryTitle: string | null;
     latestApprovedAt: string | null;
   };
+
   ticks: { identity: boolean; insurance: boolean; qualifications: boolean };
   completedCount: 0 | 1 | 2 | 3;
 };
@@ -44,9 +47,10 @@ export const getTrustState = createServerFn({ method: "GET" })
     const [{ data: pro }, { data: ins }, { data: subs }, { data: proTitles }] = await Promise.all([
       supabase
         .from("professionals")
-        .select("identity_verified_name, identity_verified_at, identity_status")
+        .select("identity_verified_name, identity_verified_at, identity_status, primary_title_slug")
         .eq("id", userId)
         .maybeSingle(),
+
       supabase
         .from("insurance_policies")
         .select("status, provider, cover_amount_gbp, expiry_date")
@@ -65,8 +69,9 @@ export const getTrustState = createServerFn({ method: "GET" })
     ]);
 
     const proRow = pro as
-      | { identity_verified_name: string | null; identity_verified_at: string | null; identity_status: string | null }
+      | { identity_verified_name: string | null; identity_verified_at: string | null; identity_status: string | null; primary_title_slug: string | null }
       | null;
+
     const insRow = ins as
       | { status: string | null; provider: string | null; cover_amount_gbp: number | null; expiry_date: string | null }
       | null;
@@ -101,9 +106,20 @@ export const getTrustState = createServerFn({ method: "GET" })
         .sort()
         .at(-1) ?? null;
 
-    const titleLabels = ((proTitles ?? []) as Array<{ title_slug: string }>)
+    const approvedTitleRows = (proTitles ?? []) as Array<{ title_slug: string }>;
+    const titleLabels = approvedTitleRows
       .map((r) => TITLES.find((t) => t.slug === r.title_slug)?.label)
       .filter((x): x is string => !!x);
+
+    // Prefer the pro's chosen primary title (if still approved); otherwise
+    // fall back to the first approved title label.
+    const primarySlug = proRow?.primary_title_slug ?? null;
+    const primaryStillApproved =
+      primarySlug && approvedTitleRows.some((r) => r.title_slug === primarySlug);
+    const primaryTitle = primaryStillApproved
+      ? TITLES.find((t) => t.slug === primarySlug)?.label ?? null
+      : titleLabels[0] ?? null;
+
 
     const qualTick = approvedCount > 0;
 
@@ -128,6 +144,8 @@ export const getTrustState = createServerFn({ method: "GET" })
         changesRequestedCount,
         rejectedCount,
         titles: titleLabels,
+        primaryTitle,
+
         latestApprovedAt,
       },
       ticks,
