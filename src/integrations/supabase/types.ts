@@ -2271,6 +2271,7 @@ export type Database = {
           primary_title_slug: string | null
           quality_score: number
           reps_level: Database["public"]["Enums"]["reps_level"] | null
+          secondary_title_slug: string | null
           slug: string | null
           social_instagram: string | null
           social_linkedin: string | null
@@ -2321,6 +2322,7 @@ export type Database = {
           primary_title_slug?: string | null
           quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
+          secondary_title_slug?: string | null
           slug?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
@@ -2371,6 +2373,7 @@ export type Database = {
           primary_title_slug?: string | null
           quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
+          secondary_title_slug?: string | null
           slug?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null

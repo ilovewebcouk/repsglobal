@@ -47,6 +47,13 @@ export type TitleEntry = {
     | "yoga-teacher";
   /** If true, REPs must verify against an external register before granting. */
   requiresRegisterVerification?: boolean;
+  /**
+   * Titles this one fully covers. When the pro also holds any of these,
+   * they are HIDDEN from display surfaces (picker, badge, profile,
+   * shop-front) but kept in `pro_titles`. Pure data — drives
+   * `filterVisibleTitles()`.
+   */
+  supersedes?: TitleSlug[];
   /** Plain-English "how to earn this title" line shown in the locked roadmap. */
   earnedBy: string;
 };
@@ -74,6 +81,7 @@ export const TITLES: TitleEntry[] = [
     label: "Personal Trainer",
     tier: 3,
     professionSlug: "personal-trainer",
+    supersedes: ["fitness-instructor", "group-fitness-instructor"],
     description: "Qualified to design and deliver 1-to-1 personal training programmes.",
     earnedBy: "Upload a Level 3 Diploma or Certificate in Personal Training.",
   },
@@ -100,6 +108,7 @@ export const TITLES: TitleEntry[] = [
     label: "Advanced Personal Trainer",
     tier: 2,
     professionSlug: "personal-trainer",
+    supersedes: ["personal-trainer", "fitness-instructor", "group-fitness-instructor"],
     description: "Level 4 personal trainer with a recognised specialism (e.g. lower back, GP referral, obesity).",
     earnedBy: "Hold a Level 3 PT plus a Level 4 specialism (lower back, GP referral, obesity, etc.).",
   },
@@ -108,6 +117,7 @@ export const TITLES: TitleEntry[] = [
     label: "Strength Coach",
     tier: 2,
     professionSlug: "strength-coach",
+    supersedes: ["fitness-instructor"],
     description: "Qualified to plan and deliver strength & conditioning programmes for general clients and athletes.",
     earnedBy: "Upload a Level 4 Strength & Conditioning qualification or a BSc in S&C.",
   },
@@ -127,6 +137,7 @@ export const TITLES: TitleEntry[] = [
     tier: 1,
     professionSlug: "strength-coach",
     requiresRegisterVerification: true,
+    supersedes: ["strength-coach", "fitness-instructor"],
     description: "UKSCA-Accredited S&C Coach — the gold standard for strength & conditioning in the UK.",
     earnedBy: "Verified entry on the UKSCA ASCC register (admin-verified).",
   },
@@ -136,6 +147,7 @@ export const TITLES: TitleEntry[] = [
     tier: 1,
     professionSlug: "nutritionist",
     requiresRegisterVerification: true,
+    supersedes: ["nutrition-coach"],
     description: "Registered with the Association for Nutrition (UKVRN). Qualified to give evidence-based nutrition advice.",
     earnedBy: "Verified entry on the AfN UK Voluntary Register of Nutritionists (admin-verified).",
   },
@@ -145,6 +157,7 @@ export const TITLES: TitleEntry[] = [
     tier: 1,
     professionSlug: "nutritionist",
     requiresRegisterVerification: true,
+    supersedes: ["nutrition-coach", "registered-nutritionist"],
     description: "Statutorily regulated by the HCPC. The only nutrition professionals qualified to diagnose and treat diet-related disease.",
     earnedBy: "Verified HCPC Dietitian registration (admin-verified).",
   },
@@ -179,4 +192,53 @@ export function pickHighestTitle(slugs: string[]): TitleSlug | null {
     if (!best || t.tier < best.tier) best = t;
   }
   return (best?.slug as TitleSlug) ?? null;
+}
+
+/**
+ * Filter granted titles down to those that should be displayed.
+ * A title is hidden when another granted title's `supersedes` list
+ * contains it (e.g. PT supersedes Fitness Instructor). Pure.
+ */
+export function filterVisibleTitles(granted: readonly string[]): TitleSlug[] {
+  const validGranted: TitleSlug[] = [];
+  const seen = new Set<string>();
+  for (const s of granted) {
+    if (seen.has(s)) continue;
+    if (isTitleSlug(s)) {
+      seen.add(s);
+      validGranted.push(s as TitleSlug);
+    }
+  }
+  const supersededSet = new Set<TitleSlug>();
+  for (const slug of validGranted) {
+    const sup = BY_SLUG[slug]?.supersedes ?? [];
+    for (const s of sup) supersededSet.add(s);
+  }
+  return validGranted.filter((s) => !supersededSet.has(s));
+}
+
+/**
+ * Return the slugs in `granted` that are hidden by supersession, along
+ * with the slug that covers each one. Used in the UI to explain why a
+ * title disappeared from the picker.
+ */
+export function getSupersededTitles(
+  granted: readonly string[],
+): Array<{ slug: TitleSlug; coveredBy: TitleSlug }> {
+  const validGranted: TitleSlug[] = [];
+  for (const s of granted) {
+    if (isTitleSlug(s)) validGranted.push(s as TitleSlug);
+  }
+  const out: Array<{ slug: TitleSlug; coveredBy: TitleSlug }> = [];
+  for (const slug of validGranted) {
+    for (const other of validGranted) {
+      if (other === slug) continue;
+      const sup = BY_SLUG[other]?.supersedes ?? [];
+      if (sup.includes(slug)) {
+        out.push({ slug, coveredBy: other });
+        break;
+      }
+    }
+  }
+  return out;
 }

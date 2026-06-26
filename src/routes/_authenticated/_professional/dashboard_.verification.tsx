@@ -88,7 +88,7 @@ function VerificationPage() {
     qualifications: !!t?.ticks.qualifications,
   });
   const completed = t?.completedCount ?? 0;
-  const profession = t?.qualifications.primaryTitle ?? t?.qualifications.titles?.[0] ?? null;
+  const profession = t?.qualifications.professionLabel ?? t?.qualifications.primaryTitle ?? t?.qualifications.titles?.[0] ?? null;
 
   return (
     <DashboardShell

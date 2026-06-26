@@ -8,7 +8,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
-import { TITLES } from "@/lib/cpd/titles-catalog";
+import { TITLES, filterVisibleTitles, isTitleSlug } from "@/lib/cpd/titles-catalog";
 
 export type TrustState = {
   identity: {
@@ -27,9 +27,14 @@ export type TrustState = {
     pendingCount: number;
     changesRequestedCount: number;
     rejectedCount: number;
+    /** Visible (post-supersession) title labels, primary first then secondary. */
     titles: string[];
-    /** The pro's chosen primary title label (falls back to first approved). */
+    /** The pro's chosen primary title label (falls back to highest-tier visible). */
     primaryTitle: string | null;
+    /** Optional second title shown alongside primary, when the pro picked one. */
+    secondaryTitle: string | null;
+    /** Joined "Primary & Secondary" — convenient for badge subtitles. */
+    professionLabel: string | null;
     latestApprovedAt: string | null;
   };
 
@@ -47,7 +52,7 @@ export const getTrustState = createServerFn({ method: "GET" })
     const [{ data: pro }, { data: ins }, { data: subs }, { data: proTitles }] = await Promise.all([
       supabase
         .from("professionals")
-        .select("identity_verified_name, identity_verified_at, identity_status, primary_title_slug")
+        .select("identity_verified_name, identity_verified_at, identity_status, primary_title_slug, secondary_title_slug")
         .eq("id", userId)
         .maybeSingle(),
 
@@ -69,7 +74,13 @@ export const getTrustState = createServerFn({ method: "GET" })
     ]);
 
     const proRow = pro as
-      | { identity_verified_name: string | null; identity_verified_at: string | null; identity_status: string | null; primary_title_slug: string | null }
+      | {
+          identity_verified_name: string | null;
+          identity_verified_at: string | null;
+          identity_status: string | null;
+          primary_title_slug: string | null;
+          secondary_title_slug: string | null;
+        }
       | null;
 
     const insRow = ins as
@@ -107,19 +118,45 @@ export const getTrustState = createServerFn({ method: "GET" })
         .at(-1) ?? null;
 
     const approvedTitleRows = (proTitles ?? []) as Array<{ title_slug: string }>;
-    const titleLabels = approvedTitleRows
-      .map((r) => TITLES.find((t) => t.slug === r.title_slug)?.label)
+    const grantedSlugs = approvedTitleRows.map((r) => r.title_slug);
+    const visibleSlugs = filterVisibleTitles(grantedSlugs);
+    const labelFor = (slug: string | null): string | null =>
+      slug ? TITLES.find((t) => t.slug === slug)?.label ?? null : null;
+
+    // Primary: pro's chosen slug if still earned + visible, else highest-tier
+    // visible title (first item — filterVisibleTitles preserves insertion order
+    // but we sort visibleSlugs by tier for the fallback).
+    const visibleByTier = [...visibleSlugs].sort((a, b) => {
+      const ta = TITLES.find((t) => t.slug === a)?.tier ?? 3;
+      const tb = TITLES.find((t) => t.slug === b)?.tier ?? 3;
+      return ta - tb;
+    });
+
+    const storedPrimary = proRow?.primary_title_slug ?? null;
+    const storedSecondary = proRow?.secondary_title_slug ?? null;
+
+    const primarySlug =
+      storedPrimary && isTitleSlug(storedPrimary) && visibleSlugs.includes(storedPrimary)
+        ? storedPrimary
+        : visibleByTier[0] ?? null;
+    const secondarySlug =
+      storedSecondary && isTitleSlug(storedSecondary) && visibleSlugs.includes(storedSecondary) && storedSecondary !== primarySlug
+        ? storedSecondary
+        : null;
+
+    const primaryTitle = labelFor(primarySlug);
+    const secondaryTitle = labelFor(secondarySlug);
+    const professionLabel = [primaryTitle, secondaryTitle].filter(Boolean).join(" & ") || null;
+
+    // Visible titles, primary first, then secondary, then the rest.
+    const orderedVisible = [
+      ...(primarySlug ? [primarySlug] : []),
+      ...(secondarySlug ? [secondarySlug] : []),
+      ...visibleSlugs.filter((s) => s !== primarySlug && s !== secondarySlug),
+    ];
+    const titleLabels = orderedVisible
+      .map((s) => labelFor(s))
       .filter((x): x is string => !!x);
-
-    // Prefer the pro's chosen primary title (if still approved); otherwise
-    // fall back to the first approved title label.
-    const primarySlug = proRow?.primary_title_slug ?? null;
-    const primaryStillApproved =
-      primarySlug && approvedTitleRows.some((r) => r.title_slug === primarySlug);
-    const primaryTitle = primaryStillApproved
-      ? TITLES.find((t) => t.slug === primarySlug)?.label ?? null
-      : titleLabels[0] ?? null;
-
 
     const qualTick = approvedCount > 0;
 
@@ -145,7 +182,8 @@ export const getTrustState = createServerFn({ method: "GET" })
         rejectedCount,
         titles: titleLabels,
         primaryTitle,
-
+        secondaryTitle,
+        professionLabel,
         latestApprovedAt,
       },
       ticks,
