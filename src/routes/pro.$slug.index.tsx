@@ -100,6 +100,8 @@ type Pro = {
     verified: boolean;
     insuranceExpiry: string | null;
     cpd?: { done: number; total: number } | null;
+    qualificationsCheckedAt?: string | null;
+    identityVerifiedAt?: string | null;
   };
   gallery?: { id: string; url: string }[];
   faqs: { q: string; a: string; open?: boolean }[];
