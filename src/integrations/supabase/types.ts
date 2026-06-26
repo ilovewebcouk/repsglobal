@@ -1212,6 +1212,36 @@ export type Database = {
         }
         Relationships: []
       }
+      help_article_feedback: {
+        Row: {
+          anon_id: string | null
+          article_slug: string
+          created_at: string
+          id: string
+          user_agent: string | null
+          user_id: string | null
+          vote: number
+        }
+        Insert: {
+          anon_id?: string | null
+          article_slug: string
+          created_at?: string
+          id?: string
+          user_agent?: string | null
+          user_id?: string | null
+          vote: number
+        }
+        Update: {
+          anon_id?: string | null
+          article_slug?: string
+          created_at?: string
+          id?: string
+          user_agent?: string | null
+          user_id?: string | null
+          vote?: number
+        }
+        Relationships: []
+      }
       identity_documents: {
         Row: {
           admin_note: string | null
