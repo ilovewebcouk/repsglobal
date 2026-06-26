@@ -132,9 +132,16 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     let query = supabaseAdmin
       .from('professionals')
       .select(
-        'id, slug, city, primary_profession, verification, is_published, created_at, member_since, suspended_at, suspension_reason',
+        'id, slug, city, primary_profession, verification, is_published, created_at, member_since, suspended_at, suspension_reason, is_demo',
         { count: 'exact' }
       );
+
+    // Demos tab shows only fake/demo records; every other tab excludes them.
+    if (data.tab === 'demos') {
+      query = query.eq('is_demo', true);
+    } else {
+      query = query.eq('is_demo', false);
+    }
 
     switch (data.tab) {
       case 'verified':   query = query.eq('verification', 'verified').eq('is_published', true); break;
