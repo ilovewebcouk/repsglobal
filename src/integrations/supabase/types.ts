@@ -3599,6 +3599,8 @@ export type Database = {
         Args: { _client_id: string; _pro_id: string }
         Returns: boolean
       }
+      is_pro_fully_verified: { Args: { _pro_id: string }; Returns: boolean }
+      list_fully_verified_pro_ids: { Args: never; Returns: string[] }
       list_my_unread_support_tickets: {
         Args: never
         Returns: {
