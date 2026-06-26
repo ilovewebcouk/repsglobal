@@ -4,7 +4,7 @@
  * Single source of truth for Stripe price IDs and tier metadata.
  * Used by checkout edge function + onboarding UI.
  *
- * Verified  £99/yr  — public verified profile + credential check
+ * Core      £99/yr  — public listing + credential check (internal key still "verified")
  * Pro       £59/mo  (Founding pricing — locked for life for early sign-ups)
  * Studio    Coming soon (multi-seat / facility tier)
  */
@@ -39,13 +39,13 @@ export const VERIFIED_LEGACY_PRICE_LOOKUP = "verified_legacy_annual";
 export const TIERS: Record<TierKey, TierConfig> = {
   verified: {
     key: "verified",
-    label: "Verified",
+    label: "Core",
     priceLabel: "£99",
     intervalLabel: "per year",
     stripePriceId: "verified_annual",
     stripeProductId: "verified",
     blurb:
-      "Public verified profile, credential check, listing on the global register.",
+      "Public profile, credential check, listing on the global register.",
   },
   pro: {
     key: "pro",
@@ -56,7 +56,7 @@ export const TIERS: Record<TierKey, TierConfig> = {
     stripeProductId: "pro_founding",
     isFounding: true,
     blurb:
-      "Everything in Verified plus shop-front, bookings, payments, client records, growth and operations tooling.",
+      "Everything in Core plus shop-front, bookings, payments, client records, growth and operations tooling.",
   },
   studio: {
     key: "studio",
