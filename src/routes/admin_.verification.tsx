@@ -431,14 +431,12 @@ function AdminVerificationPage() {
             const gatesSnap = { hardPassed: gates.hardPassed, blockingReasons: gates.blockingReasons, hardGates: gates.hardGates, softGates: gates.softGates };
 
             const handleRevoke = async () => {
-              const reason = window.prompt(
-                "Reason for revoking this approved qualification (required, min 8 chars). This will delete any titles granted from this certificate.",
-              );
-              if (!reason || reason.trim().length < 8) return;
-              if (!window.confirm(`Revoke "${sub.qualification}" for ${prof?.full_name || "this pro"}?`)) return;
+              if (revokeReason.trim().length < 8) return;
               setBusy(true);
               try {
-                await revoke({ data: { submission_id: sub.id, reason: reason.trim() } });
+                await revoke({ data: { submission_id: sub.id, reason: revokeReason.trim() } });
+                setRevokeOpen(false);
+                setRevokeReason("");
                 setSelectedId(null);
                 qc.invalidateQueries({ queryKey: ["admin-verifications"] });
                 qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
