@@ -676,14 +676,14 @@ export const revokeQualification = createServerFn({ method: "POST" })
       .eq("status", "approved");
 
     if (!stillApproved || stillApproved === 0) {
+      // Clear the primary title and let the recompute trigger reconcile both
+      // `verification` and `verification_status` from the live 3-pillar check.
+      // Never write the columns directly — that's the historical drift route.
       await supabaseAdmin
         .from("professionals")
-        .update({
-          verification: "unverified",
-          verification_status: "unverified",
-          primary_title_slug: null,
-        } as never)
+        .update({ primary_title_slug: null } as never)
         .eq("id", proId);
+      await supabaseAdmin.rpc("recompute_pro_verification", { _pro_id: proId } as never);
     } else if (revokedSlugs.length > 0) {
       // Still has other approvals, but the primary title may have been one of
       // the revoked ones. If so, clear it — the pro can re-pick from what's left.
@@ -700,6 +700,7 @@ export const revokeQualification = createServerFn({ method: "POST" })
           .update({ primary_title_slug: null } as never)
           .eq("id", proId);
       }
+      await supabaseAdmin.rpc("recompute_pro_verification", { _pro_id: proId } as never);
     }
 
     return { ok: true, revoked_titles: revokedSlugs };
