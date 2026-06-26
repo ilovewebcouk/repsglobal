@@ -453,11 +453,34 @@ function ProProfilePage() {
 
   // Fixture pages (james-carter) are admin-only mock-up references — gated
   // client-side so SSR always renders a neutral skeleton (no leak via SEO).
-  const { isAdmin, isLoading: authLoading } = useSessionUser();
+  const session = useSessionUser();
+  const { isAdmin, isLoading: authLoading } = session;
+  const viewerId = session.userId ?? null;
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fire-and-forget discoverability ping: real DB profiles only, browser
+  // only, and not when the viewer is the pro themselves or an admin.
+  const recordView = useServerFn(recordProfileView);
+  const proId = db?.id ?? null;
+  React.useEffect(() => {
+    if (!mounted || !proId || isFixture) return;
+    if (viewerId && viewerId === proId) return;
+    if (isAdmin) return;
+    let host: string | null = null;
+    if (typeof document !== "undefined" && document.referrer) {
+      try {
+        host = new URL(document.referrer).host;
+      } catch {
+        host = null;
+      }
+    }
+    void recordView({
+      data: { professional_id: proId, source: "public_profile", referrer_host: host },
+    }).catch(() => {});
+  }, [mounted, proId, isFixture, viewerId, isAdmin, recordView]);
 
   if (isFixture) {
     if (!mounted || authLoading) {
