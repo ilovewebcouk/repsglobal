@@ -208,6 +208,7 @@ function AdminVerificationPage() {
       setNote("");
       setOverrideReason("");
       setChecks({});
+      setManualQualConfirmed(false);
       qc.invalidateQueries({ queryKey: ["admin-verifications"] });
       qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
     },
