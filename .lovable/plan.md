@@ -1,39 +1,22 @@
-## Diagnosis
+## Plan: Disable the coming-soon gate (keep the page for later reuse)
 
-Those names are not coming from the React page mock data. They are real rows currently published in the backend:
+### Change
 
-- `james.wilson@demo.repsuk.org` → James Wilson
-- `sophie.taylor@demo.repsuk.org` → Sophie Taylor
-- `liam.roberts@demo.repsuk.org` → Liam Roberts
-- `priya.sharma@demo.repsuk.org` → Priya Sharma
-- `daniel.hughes@demo.repsuk.org` → Daniel Hughes
-- `emily.carter@demo.repsuk.org` → Emily Carter
-- `marcus.lee@demo.repsuk.org` → Marcus Lee
-- `hannah.thompson@demo.repsuk.org` → Hannah Thompson
+In `src/lib/launch.ts`, flip:
 
-They were seeded by older demo migrations and have `is_published = true` and `bd_seed_thin = false`, so the directory query quite correctly still shows them.
+```ts
+export const LAUNCH_GATE_ENABLED = false;
+```
 
-## Plan
+That's the single switch. Every visitor will hit the real site immediately; no redirect to `/coming-soon`.
 
-1. **Unpublish the seeded demo professionals in the backend**
-   - Set these `@demo.repsuk.org` professional rows to `is_published = false`.
-   - Mark them as `bd_seed_thin = true` as a belt-and-braces exclusion so existing public directory filters also reject them.
-   - Keep the rows/accounts rather than hard-deleting, so any internal references do not break.
+### What we keep
 
-2. **Keep the James Wilson shop-front fixture/admin mock intact**
-   - Do not delete the hardcoded `/c/james-wilson` fixture.
-   - Keep it noindex/admin-gated as already planned, so it remains available only as an internal mock-up.
+- `/coming-soon` route file stays in place and remains directly reachable.
+- `LAUNCH_AT_UTC`, `PREVIEW_UNLOCK_CODE`, `isAllowlistedPath`, etc. all stay so we can flip the flag back to `true` later (maintenance, future relaunch, scheduled downtime) with zero rebuild work.
+- No database, no component deletions, no route removals.
 
-3. **Add a code-level safety guard**
-   - Update public directory/featured queries to also exclude demo emails where possible, not just `bd_seed_thin`.
-   - This prevents future accidental reseeds from leaking back into `/find-a-professional`.
+### Validation
 
-4. **Clean remaining public demo surfaces separately if needed**
-   - Profession pages, city pages, About, and Reviews still contain hardcoded demo names in their own local fallback/marketing arrays.
-   - This plan focuses on the directory issue you’re seeing now. After this, we can do a second pass to remove/hide those from the other public pages too.
-
-## Validation
-
-After implementation, check `/find-a-professional` again and confirm none of these names appear in the results list:
-
-`Marcus Lee`, `Emily Carter`, `Priya Sharma`, `James Wilson`, `Daniel Hughes`, `Liam Roberts`, `Sophie Taylor`, `Hannah Thompson`.
+- Hard refresh `/`, `/find-a-professional`, `/pro/...` while signed out → real site loads (no redirect).
+- Visit `/coming-soon` directly → page still renders, so we can link to it manually if needed.
