@@ -1,68 +1,111 @@
-# Deep QA: Why `professionals.verification_status` drifted from `professionals.verification`
+# Two display titles with supersession (Option A: hide, don't revoke)
 
-This is a separate pass from the demo-pros cleanup. Goal: find every way the two columns can disagree and close each gap, so the "Needs your attention" patch isn't just a band-aid.
+## Goal
 
-## What's there today
+A Pro can display **up to two titles** on their public profile and shop-front. The **highest-tier title leads** (default), with optional manual reorder. Titles that are **superseded by another granted title** are hidden from the display picker but **kept in `pro_titles`** (reversible if the higher cert ever lapses).
 
-Two columns on `professionals`, two different enums:
-- `verification` — enum `verification_status` (`pending | verified | rejected | suspended`) — treated as canonical, drives the public REPS Verified badge via `is_pro_fully_verified()`.
-- `verification_status` — enum `verification_state` (`unverified | pending | verified | ...`) — a denormalised cache the dashboard / Needs-Attention / dashboard-profile read.
+Jordon's outcome: picker offers **Personal Trainer** + **Nutrition Coach** only. Fitness Instructor stays in the DB (superseded by PT) but is hidden everywhere — picker, badge, shop-front, profile.
 
-Sync mechanism:
-- `recompute_pro_verification(pro_id)` recomputes from the 3 pillars and writes both columns.
-- Fired by triggers on `verification_submissions` (status change), `insurance_policies` (status / expiry_date change), and `professionals` (identity_status change).
-- Current drift count in prod: 0 (after the last backfill) — but the conditions that caused it are still live.
+## What we're building
 
-## Root causes of drift (ranked by blast radius)
+### 1. Supersession as catalog data (not hand-coded cases)
 
-1. **Insurance expiry is time-based, not event-based.** A policy with `status='active'` and `expiry_date = yesterday` makes `is_pro_fully_verified` return false the moment the clock ticks past midnight — but no row changes, so no trigger fires. Both columns silently lie until the next manual write. This is the systemic leak.
-2. **Two enums for one concept.** `verification_status` (enum) and `verification_state` (enum) have overlapping but non-identical values (`unverified` exists on one, not the other). Any code that maps between them is a drift opportunity. `recompute_pro_verification` has to literal-cast both — easy to update one branch and forget the other.
-3. **The "not fully verified" branch in `recompute_pro_verification` is asymmetric.** It only collapses to `pending` when `verification` is currently `verified` or NULL. If `verification = 'rejected'` and `verification_status = 'pending'` (or vice versa), the function leaves them mismatched on purpose to "preserve" rejected/suspended — but it never re-aligns the cache to match.
-4. **Direct writes bypass recompute.** `revokeQualification` writes both columns to `'unverified'` directly (verification.functions.ts ~L682). Any future admin path that updates only one column (e.g. a manual "suspend") will drift instantly because the recompute trigger only fires on `identity_status` updates, not on `verification` updates.
-5. **No trigger on `identity_documents`.** The self-trigger fires on `professionals.identity_status`, which is set by app code after an identity decision. If a script or admin SQL touches `identity_documents.status` directly and forgets to mirror it to `professionals.identity_status`, the cache is stale until the next pillar change.
-6. **UI read the cache, badge read live ticks.** Hub's "Complete your verification" task read `verification_status` while the public badge derived from `is_pro_fully_verified`. Drift was invisible to admins until a pro complained — already patched, kept here for completeness.
-7. **No backfill discipline.** When `verification_status` was first added, there was no migration that ran `recompute_pro_verification` for every pro. Same risk every time we change `is_pro_fully_verified` logic — last week's change to the 3-pillar gate is exactly that scenario.
+Add a `supersedes: TitleSlug[]` field to each entry in `src/lib/cpd/titles-catalog.ts`. One-time rules:
 
-## Fix plan
+- `personal-trainer` supersedes `["fitness-instructor", "group-fitness-instructor"]`
+- `advanced-personal-trainer` supersedes `["personal-trainer", "fitness-instructor", "group-fitness-instructor"]`
+- `strength-coach` supersedes `["fitness-instructor"]` (NOT PT — different scope)
+- `accredited-sc-coach` supersedes `["strength-coach"]`
+- `nutrition-coach` supersedes `[]` (different family — additive)
+- `registered-nutritionist` supersedes `["nutrition-coach"]`
+- `registered-dietitian` supersedes `["nutrition-coach", "registered-nutritionist"]`
+- `pilates-instructor`, `yoga-teacher` supersede `[]`
 
-### Pass A — eliminate the two-column problem at the source
+Helper in the same file:
 
-- Make `verification_status` a generated / derived value, not a separately-written cache:
-  - Option 1 (preferred): keep both columns but **remove every direct write to `verification_status` from app code**. Only `recompute_pro_verification` may write it. Update `revokeQualification` and any future admin code to call the recompute RPC instead of updating columns inline.
-  - Option 2 (later, bigger): drop `verification_status` entirely; replace reads with a `v_professional_verification` view that returns the live 3-pillar status. Out of scope for this pass — flagged as follow-up.
+```ts
+export function filterVisibleTitles(granted: TitleSlug[]): TitleSlug[]
+```
 
-### Pass B — close the insurance-expiry leak
+Returns granted minus any slug that appears in another granted slug's `supersedes` list. Pure, deterministic, unit-testable.
 
-- Add a daily `pg_cron` job that runs `recompute_pro_verification` for every pro with an `insurance_policies` row whose `expiry_date` crossed `CURRENT_DATE` in the last 24h, plus any pro currently marked `verification='verified'` whose insurance is now stale. Cheap (<400 pros) and idempotent.
-- Add a guard inside `is_pro_fully_verified` already covers the read side; this fixes the write side so badges/UI/SEO don't lag.
+### 2. Database: store the display picks
 
-### Pass C — make `recompute_pro_verification` symmetric and idempotent
+New column `professionals.secondary_title_slug TEXT NULL` (existing `primary_title_slug` already covers slot 1). Migration adds the column + a CHECK that `secondary_title_slug != primary_title_slug` when both are set.
 
-- Rewrite the "not fully verified" branch so both columns always agree afterwards (no "preserve rejected on one column only" logic). The canonical mapping becomes:
-  - `verification='verified'`  ↔ `verification_status='verified'`
-  - `verification='rejected'`  ↔ `verification_status='unverified'` (cache enum has no 'rejected')
-  - `verification='suspended'` ↔ `verification_status='unverified'`
-  - everything else            ↔ both = `pending`
-- Add a check at the bottom of the function: if the two columns still disagree after the update, log to `admin_audit_log` so we see future drift instead of swallowing it.
+No new tables. No data migration needed — column defaults to NULL; UI auto-derives defaults on first read.
 
-### Pass D — trigger coverage
+### 3. Display-titles derivation (single source of truth)
 
-- Add an `AFTER UPDATE OF verification` trigger on `professionals` that calls recompute. Stops manual SQL / future admin paths from desyncing by writing only one column.
-- Add `AFTER INSERT OR UPDATE OF status ON identity_documents` → recompute, as belt-and-braces for the `identity_documents`-but-not-`professionals.identity_status` scenario.
+New helper in `src/lib/cpd/titles.functions.ts`:
 
-### Pass E — one-shot backfill + drift monitor
+```ts
+getDisplayTitles(): Promise<{ primary: TitleSlug | null; secondary: TitleSlug | null; visibleGranted: TitleSlug[] }>
+```
 
-- Migration runs `SELECT recompute_pro_verification(id) FROM professionals` once to align every row against the current `is_pro_fully_verified` logic.
-- Add a SECURITY DEFINER RPC `audit_verification_drift()` that returns rows where the two columns disagree OR where `verification='verified'` but `is_pro_fully_verified(id)=false`. Surface the count on `/admin/verification` as a small chip ("0 drift" / "N drift — review"); clicking opens the affected list.
+Logic:
+1. Load `pro_titles` (all granted) + `professionals.primary_title_slug` + `secondary_title_slug`.
+2. `visibleGranted = filterVisibleTitles(granted)`.
+3. If stored `primary` is in `visibleGranted` → use it; else fall back to **highest-tier** entry of `visibleGranted` (tier 1 beats 2 beats 3; ties broken by catalog order).
+4. If stored `secondary` is in `visibleGranted` and ≠ primary → use it; else `null` (don't auto-pick — let the user opt in to a second title).
 
-## Out of scope (flag for later)
+This is what `trust.functions.ts`, shop-front, public profile, and the badge all consume.
 
-- Collapsing the two enums into one — requires touching every read site and a careful enum migration; worth doing once Pass A has run for a couple of weeks with zero drift events logged.
-- Replacing `verification_status` with a view — same reason, follow-up.
+### 4. UI: rebuild `EarnedTitlePicker`
+
+Current picker is single-select for primary only. New layout:
+
+```text
+Your displayed titles                    [ Save ]
+─────────────────────────────────────────────────
+Slot 1 — Primary           [ Personal Trainer ▾ ]
+Slot 2 — Secondary         [ Nutrition Coach ▾ ] [×]
+                           [ + Add a second title ]
+
+Hidden because a higher qualification covers them:
+  • Fitness Instructor — covered by Personal Trainer
+```
+
+- Both dropdowns list only `visibleGranted`.
+- Slot 2 options exclude whatever's in Slot 1.
+- "Hidden" list explains supersession so the trainer understands why FI disappeared.
+- Save writes both `primary_title_slug` and `secondary_title_slug` via a new `setDisplayTitles` server fn.
+
+### 5. Consumers updated to render two titles
+
+- **`trust.functions.ts`** — return `{ primaryTitle, secondaryTitle, titles: visibleLabels }` instead of just `primaryTitle`. `titles[]` becomes the supersession-filtered list (used by `CpdMini`'s checked list).
+- **Verified badge** (`/pro/$slug` + shop-front header) — subtitle reads `"Verified · Insured · Personal Trainer & Nutrition Coach"` when secondary set, else single title.
+- **`CpdMini`** in dashboard hub — headline counts `visibleGranted.length` titles; pinned-Primary list shows Primary + Secondary (badged) on top, remaining visible titles below.
+- **Shop-front `/c/$slug`** — hero subtitle uses primary + secondary join.
+- **Search / directory cards** — already use `primary_title_slug` only; no change for slot 1, but card chips should reflect filtered list (small follow-up).
+
+### 6. Self-healing on grant/revoke
+
+Extend the existing `verification.functions.ts` flow that already clears `primary_title_slug` when its grant is removed:
+
+- When a new title is granted, do NOT auto-shuffle the user's chosen slots — if a higher-tier title arrives, leave their current pick alone but surface a one-time dashboard nudge ("You're now qualified as Advanced PT — want to display it?").
+- When a grant is revoked, clear the affected slot (existing behaviour for primary; mirror for secondary).
+- Supersession only ever **hides** — it never deletes the `pro_titles` row.
+
+## Out of scope
+
+- Allowing more than 2 display titles.
+- Auto-promoting a newly higher-tier title without user consent.
+- Changing the rules engine (`title-rules.ts`) — supersession lives at the display layer only; grants still reflect actual qualifications held.
+- Editorial rewrites of profession landing pages.
 
 ## Technical notes
 
-- All SQL changes ship as a single migration (functions + triggers + cron job + backfill).
-- Cron job uses the existing `pg_cron` extension; schedule `0 1 * * *` (01:00 UTC daily). Idempotent recompute means missed runs self-heal next night.
-- `audit_verification_drift()` is admin-only (gated via `has_role(auth.uid(),'admin')`).
-- No changes to public-facing UI, tokens, or radii — backend + admin chip only.
+Files touched:
+
+- `src/lib/cpd/titles-catalog.ts` — add `supersedes` + `filterVisibleTitles()`.
+- `src/lib/cpd/titles.functions.ts` — add `getDisplayTitles`, `setDisplayTitles`.
+- `src/lib/verification/trust.functions.ts` — expose `secondaryTitle` + filtered `titles[]`.
+- `src/lib/verification/verification.functions.ts` — mirror existing primary-clear logic for secondary on revoke.
+- `src/components/profile/EarnedTitlePicker.tsx` — two-slot picker + hidden list.
+- `src/components/cpd/EarnedTitlesPanel.tsx`, `src/components/dashboard/hub/index.tsx` (CpdMini) — render two titles.
+- `src/routes/pro.$slug.index.tsx` + Verified badge component — render two-title subtitle.
+- `src/lib/shop-front/shop-front.functions.ts` + `/c/$slug` route — include secondary in hero/header.
+- One migration: `ALTER TABLE professionals ADD COLUMN secondary_title_slug TEXT NULL` + CHECK.
+
+No schema changes to `pro_titles`. No backfill needed. Locked screens (homepage, /pro, /c, /in/*, /professions/*) keep their layouts — only the title subtitle string changes.
