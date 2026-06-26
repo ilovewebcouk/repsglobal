@@ -1,113 +1,65 @@
-## Goal
+## Dashboard 10/10 pass
 
-Get the dashboard from 7.5/10 → world-class by fixing the four issues the screenshot exposed:
+Goal: kill dead space, make empty states feel intentional, rebalance columns, and add one signature moment + motion polish. UI-only — no schema or logic changes.
 
-1. Left-column dead space
-2. Missing discoverability metrics (the data trainers actually care about)
-3. Orange-CTA overload
-4. Chrome polish
+### 1. KPI consolidation (top fold)
+- Collapse the two 4-tile rows into **one 4-tile row** that adapts to data:
+  - Tile 1: **Enquiries (30d)** — always shown.
+  - Tile 2: **Reviews · rating** — count + avg star.
+  - Tile 3: **Profile views (30d)** with delta — empty copy if no history.
+  - Tile 4: **Search impressions** big, **avg position** as caption.
+- Fold Reply rate, CTR, Last-30-days reviews into hover/secondary text on the related tile or a "Discoverability detail" link.
+- Replace every `—` with human empty copy ("No data yet · check back after your first enquiry").
 
-## 1. Kill left-column dead space
+### 2. Left column shrink-to-fit
+- `NeedsAttention`: when items.length ≤ 1, render as a **slim 56px row** (icon + text + Reply CTA), no card chrome.
+- `ActivityTimeline`: same slim-row pattern when events.length ≤ 2; full card only at 3+ events.
 
-**The diagnosis:** stacking Completeness + Verification in the right rail forced the left column (Needs Attention + Activity) to stretch to match. With sparse data (1 attention item, 1 activity event), Jordon's dashboard shows ~480px of empty card territory. The previous fix structurally solved the *Verification* dead space and recreated it on the left.
+### 3. Column rebalance
+- Move **Education & CPD** out of the bottom row into the **right rail under Verification** (paired trust block).
+- Promote **Reviews snapshot** into the **left column under Activity** (it's an action surface).
+- Net: left = action/activity; right = trust/identity. Column bottoms within ~60px.
 
-**The fix:** stop forcing parity between columns. Let each card size to its content with a sensible cap, and use the rest of the space productively.
+### 4. Verification card slim mode
+- When 3/3 verified, collapse to one line: "✓ Identity, insurance, qualifications verified · Insurance valid to 1 Apr 2027" with "Manage" chevron. Expand only if something is incomplete or expiring within 60 days.
 
-Changes in `src/routes/_authenticated/_professional/dashboard.tsx`:
+### 5. Services empty banner
+- Keep the slim 56px banner — move it **directly under the KPI strip**, above NeedsAttention.
 
-- Drop `items-stretch` on the merged grid row → use `items-start`.
-- Right column stays stacked (Completeness + Verification), natural height.
-- Left column: Needs Attention sizes to content (no flex-1 fill). Activity sizes to content with a max-height cap (~480px) and internal scroll.
-- When BOTH cards on the left are sparse (≤2 items combined), render a single merged card `RecentSignals` that shows attention items first, then activity, in one timeline — kills the empty-row problem for new trainers.
+### 6. Pro upsell placement
+- Pin `ProUpsellStrip` directly under the profile header card (between header and KPIs) on Core plan. Removes the orphaned bottom strip.
 
-Changes in `src/components/dashboard/hub/index.tsx`:
+### 7. Copy + chrome nits
+- "1 review need a response" → "1 review needs a reply".
+- Remove the "Dashboard" pill from the orange impersonation banner.
+- Tighten Recent activity subtitle to "Last 10 events".
 
-- `NeedsAttention`: remove `min-h-0 flex-1` from the inner `<ul>`. List sizes to content. Keep scroll for >6 items.
-- `ActivityTimeline`: same — content-sized list with `max-h-[420px] overflow-y-auto`.
-- Add new export `RecentSignals` that merges attention items + activity events into one timeline view, used when sparse.
+### 8. Signature moment — header sparkline
+- Replace the static "Your listing is live on REPS" line in the **profile header card** with a compact **14-day profile-views sparkline** (inline SVG, ~120×28px) sitting next to the live dot.
+- Hover: tooltip with date + view count.
+- Empty state: a flat dotted baseline with "Tracking views — first data point lands after your first visitor."
+- Single distinctive moment the eye lands on; nothing else on the page competes for that role.
 
-## 2. Add discoverability metrics — biggest content win
+### 9. Motion pass
+- **KPI count-ups**: numeric tiles animate from 0 to value over 600ms (`requestAnimationFrame`, ease-out). Skip if `prefers-reduced-motion`.
+- **NeedsAttention pulse**: when a new item arrives (count increases), the slim row pulses the emerald/orange dot for 2s using the existing `pulse` utility.
+- **Sparkline draw-in**: path uses `stroke-dasharray` + `stroke-dashoffset` to draw left→right over 700ms on mount.
+- **Optimistic Reply**: clicking the Reply CTA in NeedsAttention fades the row out (`animate-fade-out`) and immediately decrements the count; reconciles on server response and rolls back on error with a toast.
+- **Card entrance**: top-level dashboard cards stagger in with `animate-fade-in` at 0/60/120/180ms delays on first mount only (skip on route-internal refetches).
+- All motion respects `prefers-reduced-motion: reduce` — fall back to instant.
 
-**The diagnosis:** REPs is a discovery platform. The current KPI strip (Enquiries / Reply Rate / Avg Rating / Last 30d reviews) is all *response* data — none of it answers "am I being found?", which is question #1 for every trainer.
+### 10. Acceptance check
+Re-snapshot at 1564×1800 and verify:
+- No card in the top viewport shows more than one `—` or `0`.
+- Left and right column bottoms within 60px of each other.
+- No card has >120px of empty interior padding.
+- Sparkline renders (with empty state when data absent).
+- Count-ups, pulse, draw-in, and optimistic Reply all behave; reduced-motion users see instant states.
+- Token compliance: no raw hex, button shadows, or banned radii.
 
-**The fix:** add a new `Discoverability` row directly under the KPI strip with 4 tiles:
-
-```text
-Profile views (30d) │ Search appearances │ Top profession rank │ Click-through rate
-       1,247        │        342          │      #4 in Telford   │       12.4%
-       ↑ 18% vs prev│  ↑ 24 vs prev       │  Personal Trainer    │   above avg
-```
-
-**Data foundation (new — needs DB work):**
-
-- New table `public.profile_view_events`: `id, professional_id, viewed_at, source (search|profession|city|direct|referral), viewer_session_id, ip_hash`.
-- New table `public.search_appearance_events`: `id, professional_id, appeared_at, query_type (search|profession|city), result_position`.
-- Server function `getDiscoverabilityKpis` returning 30d totals + previous-period delta + rank.
-- Tracking calls added to:
-  - `src/routes/pro.$slug.index.tsx` loader (record view)
-  - `src/lib/directory/search.functions.ts` (record appearances for top N results)
-  - `src/routes/in.$location.tsx` and `src/routes/professions.$profession.tsx` (record appearances)
-
-**Until data accumulates (caveat):** brand-new accounts will see "Tracking from today" placeholder copy instead of zero values, so it doesn't look broken.
-
-New file: `src/components/dashboard/hub/DiscoverabilityStrip.tsx` rendering 4 KpiTiles with sparkline support.
-
-## 3. Reserve orange for primary CTAs only
-
-**The diagnosis:** I counted 8 orange elements competing in one viewport. Orange becomes wallpaper instead of a signal.
-
-**The rule going forward:** max 2 orange CTAs per viewport, reserved for the single most important action.
-
-Changes:
-
-- Top-right `Request a review` → stays orange (primary growth action)
-- Top-right `View public profile` → ghost/outline (it's a navigation, not an action)
-- Identity card `View public profile` → REMOVE (duplicate)
-- Identity card `Copy link` → relabel to `Copy profile link` and demote to ghost
-- `Reply` in Needs Attention → demote to ghost (`text-reps-orange` link style only)
-- `Manage verification` / `Edit profile` / `Open CPD` / `All reviews` → all demoted to ghost
-- `See Pro features` in upsell strip → stays orange (it's an upsell — meant to convert)
-- `Core` pill next to `REPS Verified` → mute to neutral border/text-white/60
-
-Net result: orange remains on `Request a review`, the upsell `See Pro features` button, and active state highlights only. Everything else uses ghost/outline.
-
-## 4. Chrome polish
-
-- **"No services yet"**: collapse the 240px empty card to a 64px banner with inline `Add your first service →` button. Only inflate to a rich empty state when the trainer has clicked Add and abandoned.
-- **`Reply rate (30d)` tile with no data**: instead of em-dash, show "Tracks once you receive enquiries" — turns dead tile into onboarding copy.
-- **Duplicate `View public profile` button**: removed (see section 3).
-- **Page end on upsell**: add a small `What's next` footer card under the upsell with 3 contextual quick-links (e.g. "Request reviews from past clients", "Add 3 services to your shop-front", "Refresh your headline") — closes the page on action, not on sales.
-- **`Core` pill**: muted neutral (`border-reps-border bg-reps-panel-soft text-white/60`) so `REPS Verified` is the only badge competing for the eye.
-
-## Files touched
-
-```text
-src/routes/_authenticated/_professional/dashboard.tsx     (layout + new rows)
-src/components/dashboard/hub/index.tsx                    (card sizing fixes, ghost-ify CTAs, banner)
-src/components/dashboard/hub/DiscoverabilityStrip.tsx     (NEW)
-src/components/dashboard/hub/RecentSignals.tsx            (NEW — merged sparse view)
-src/components/dashboard/hub/WhatsNextCard.tsx            (NEW — page-end footer)
-src/lib/discoverability/discoverability.functions.ts      (NEW — getDiscoverabilityKpis server fn)
-src/routes/pro.$slug.index.tsx                            (tracking call in loader)
-src/lib/directory/search.functions.ts                     (search appearance tracking)
-src/routes/in.$location.tsx                               (appearance tracking)
-src/routes/professions.$profession.tsx                    (appearance tracking)
-supabase/migrations/<timestamp>_add_discoverability_tracking.sql  (NEW tables + RLS + indexes)
-```
-
-## Out of scope
-
-- KPI strip styling (stays); we ADD a discoverability row, not replace the existing one
-- Sidebar nav
-- Welcome banner
-- Identity / Verification / Education & CPD / Reviews card internals (already polished)
-- Mobile-specific layout work (this pass is desktop; mobile inherits via the existing breakpoint stack)
-
-## Order of execution
-
-1. Layout fix (no DB) — kills dead space in one edit
-2. Chrome polish (no DB) — quick visual wins
-3. Orange-CTA demotion (no DB) — single sweep across card files
-4. Discoverability migration + tracking calls + server fn + UI (the heavy lift)
-
-Steps 1-3 land first as one batch; step 4 follows so you can review the layout before we commit to the data plumbing.
+### Files I'll touch
+- `src/components/dashboard/hub/index.tsx` — KPI consolidation, slim variants, Verification slim mode, copy fixes, count-up + pulse + optimistic Reply.
+- `src/components/dashboard/hub/HeaderSparkline.tsx` *(new)* — inline SVG sparkline with draw-in animation and tooltip.
+- `src/lib/discoverability/kpis.functions.ts` — extend existing query to return a 14-day daily-views series (already aggregating from `profile_view_events`, no new table).
+- `src/routes/_authenticated/_professional/dashboard.tsx` — re-layout (CPD → right, Reviews → left, ServicesStrip + ProUpsellStrip into eye-path), stagger-in classes.
+- No new DB tables, no new server endpoints beyond extending the existing KPI function's return shape.
