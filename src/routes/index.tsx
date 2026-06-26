@@ -199,6 +199,9 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
     image: r.avatar_url ?? fallbackImg,
     online: !r.in_person_available && Boolean(r.online_available),
     slug: r.slug,
+    identityStatus: r.identity_status,
+    verification: r.verification,
+    tier: r.tier,
   };
 }
 
