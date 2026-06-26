@@ -487,24 +487,26 @@ export function ActivityTimeline({
   }, [enquiries, reviews]);
 
   return (
-    <PPanel className="p-5">
+    <PPanel className="flex h-full flex-col p-5">
       <SectionHeader
         title="Recent activity"
         description="The last 10 events across enquiries and reviews."
         icon={Sparkles}
       />
       {events.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <Sparkles />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>No activity yet</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            When clients enquire or leave reviews, you'll see the activity stream here.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
+        <div className="flex flex-1 items-center justify-center">
+          <DashboardEmpty>
+            <DashboardEmptyIcon>
+              <Sparkles />
+            </DashboardEmptyIcon>
+            <DashboardEmptyTitle>No activity yet</DashboardEmptyTitle>
+            <DashboardEmptyDescription>
+              When clients enquire or leave reviews, you'll see the activity stream here.
+            </DashboardEmptyDescription>
+          </DashboardEmpty>
+        </div>
       ) : (
-        <ul className="flex flex-col">
+        <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
           {events.map((ev, i) => {
             const Icon = ev.icon;
             return (
