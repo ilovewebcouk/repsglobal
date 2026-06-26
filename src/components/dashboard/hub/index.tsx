@@ -735,7 +735,7 @@ export function CpdMini({
       : null;
 
   return (
-    <PCard>
+    <PCard className="flex h-full flex-col">
       <SectionHeader
         title="Education & CPD"
         icon={GraduationCap}
@@ -763,7 +763,7 @@ export function CpdMini({
         </div>
       </div>
       {orderedTitles.length > 0 ? (
-        <ul className="mt-4 divide-y divide-white/5 rounded-[12px] border border-white/8 bg-white/[0.02]">
+        <ul className="mt-4 flex min-h-0 flex-1 flex-col divide-y divide-white/5 overflow-y-auto rounded-[12px] border border-white/8 bg-white/[0.02]">
           {orderedTitles.map((t) => {
             const isPrimary = t === primaryTitle;
             const isSecondary = !isPrimary && t === secondaryTitle;
@@ -784,7 +784,9 @@ export function CpdMini({
             );
           })}
         </ul>
-      ) : null}
+      ) : (
+        <div className="mt-4 flex-1" />
+      )}
     </PCard>
   );
 }
