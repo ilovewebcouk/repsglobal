@@ -581,8 +581,9 @@ export const submitInsuranceFromMobile = createServerFn({ method: "POST" })
 /* Admin: insurance review queue                                              */
 /* -------------------------------------------------------------------------- */
 
-async function assertAdmin(supabase: { rpc: (fn: never, args: never) => Promise<{ data: unknown }> }, userId: string) {
-  const { data } = await supabase.rpc("has_role" as never, { _user_id: userId, _role: "admin" } as never);
+async function assertAdmin(supabase: unknown, userId: string) {
+  const sb = supabase as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> };
+  const { data } = await sb.rpc("has_role", { _user_id: userId, _role: "admin" });
   if (!data) throw new Error("Forbidden");
 }
 
