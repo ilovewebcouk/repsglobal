@@ -20,7 +20,10 @@ export type VerificationEvent =
   | "insurance.flagged_name_mismatch"
   | "insurance.renewal_due"
   | "insurance.renewal_lapsed"
-  | "verification.blocked_by_insurance";
+  | "verification.blocked_by_insurance"
+  | "qualification.approved"
+  | "qualification.rejected"
+  | "qualification.changes_requested";
 
 export interface VerificationNotificationItem {
   key: string;
@@ -149,6 +152,12 @@ function titleFor(event: VerificationEvent, threshold?: number | null) {
       return "Insurance has lapsed";
     case "verification.blocked_by_insurance":
       return "Verification blocked — insurance needed";
+    case "qualification.approved":
+      return "Qualification approved";
+    case "qualification.rejected":
+      return "Qualification rejected";
+    case "qualification.changes_requested":
+      return "Qualification needs changes";
   }
 }
 
