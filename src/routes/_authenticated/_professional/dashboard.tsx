@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Inbox, MessageCircleQuestion, Star } from "lucide-react";
+import { Inbox, MessageCircleQuestion, Star } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -114,19 +114,12 @@ function DashboardPage() {
       }}
       actions={
         <div className="flex items-center gap-2">
-          {slug ? (
-            <DashboardButton asChild size="sm" variant="ghost">
-              <Link to="/pro/$slug" params={{ slug }} target="_blank">
-                View public profile
-                <ExternalLink className="ml-1.5 size-4" />
-              </Link>
-            </DashboardButton>
-          ) : null}
           <DashboardButton asChild size="sm" variant="primary">
             <Link to="/dashboard/reviews">Request a review</Link>
           </DashboardButton>
         </div>
       }
+
     >
       {status.isLoading ? (
         <div className="flex flex-col gap-4">
@@ -164,8 +157,12 @@ function DashboardPage() {
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <KpiTile
               label="New enquiries"
-              value={enqStats ? String(enqStats.this_month_count) : "—"}
-              delta={enqStats ? `${enqStats.unread} unread` : undefined}
+              value={enqStats && enqStats.this_month_count > 0 ? String(enqStats.this_month_count) : "0"}
+              delta={
+                enqStats && enqStats.unread > 0
+                  ? `${enqStats.unread} unread`
+                  : "this month"
+              }
               trend={enqStats && enqStats.unread > 0 ? "up" : "flat"}
               icon={Inbox}
             />
@@ -175,7 +172,7 @@ function DashboardPage() {
               delta={
                 enqStats?.reply_time_avg_hours != null
                   ? `${enqStats.reply_time_avg_hours.toFixed(1)}h avg`
-                  : undefined
+                  : "reply to see stats"
               }
               icon={MessageCircleQuestion}
             />
@@ -187,13 +184,15 @@ function DashboardPage() {
                   : "—"
               }
               delta={
-                reviewKpis ? `${reviewKpis.review_count} total` : undefined
+                reviewKpis && reviewKpis.review_count > 0
+                  ? `${reviewKpis.review_count} total`
+                  : "request your first"
               }
               icon={Star}
             />
             <KpiTile
               label="Last 30 days"
-              value={reviewKpis ? String(reviewKpis.last_30d_count) : "—"}
+              value={reviewKpis && reviewKpis.last_30d_count > 0 ? String(reviewKpis.last_30d_count) : "0"}
               delta={
                 reviewKpis && reviewKpis.last_30d_count > 0
                   ? `${reviewKpis.last_30d_avg.toFixed(1)} avg`
@@ -204,8 +203,9 @@ function DashboardPage() {
             />
           </div>
 
+
           {/* Merged row — Needs Attention + Activity (left) | Completeness + Verification (right) */}
-          <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
             <div className="flex flex-col gap-4 xl:col-span-8">
               <NeedsAttention
                 unreadEnquiries={enqStats?.unread ?? 0}
@@ -231,6 +231,7 @@ function DashboardPage() {
               <VerificationStatusCard trust={hub.trust.data ?? null} />
             </div>
           </div>
+
 
           {/* Row 5 — CPD + Reviews snapshot */}
           <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">

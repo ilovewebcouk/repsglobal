@@ -225,28 +225,6 @@ export function NeedsAttention({
 
   const items: Attention[] = [];
 
-  if (unreadEnquiries > 0) {
-    items.push({
-      key: "enquiries",
-      icon: Inbox,
-      tone: "orange",
-      title: `${unreadEnquiries} new ${unreadEnquiries === 1 ? "enquiry" : "enquiries"} awaiting reply`,
-      detail: "Reply from your inbox to keep response time strong.",
-      to: "/dashboard/enquiries",
-      cta: "Open",
-    });
-  }
-  if (pendingReviewReplies > 0) {
-    items.push({
-      key: "reviews",
-      icon: Star,
-      tone: "orange",
-      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review" : "reviews"} need a response`,
-      detail: "Replies show prospects you're engaged.",
-      to: "/dashboard/reviews",
-      cta: "Reply",
-    });
-  }
   if (insuranceExpired) {
     items.push({
       key: "insurance-expired",
@@ -268,26 +246,37 @@ export function NeedsAttention({
       cta: "Update",
     });
   }
+  if (unreadEnquiries > 0) {
+    items.push({
+      key: "enquiries",
+      icon: Inbox,
+      tone: "orange",
+      title: `${unreadEnquiries} new ${unreadEnquiries === 1 ? "enquiry" : "enquiries"} awaiting reply`,
+      detail: "Reply from your inbox to keep response time strong.",
+      to: "/dashboard/enquiries",
+      cta: "Open",
+    });
+  }
+  if (pendingReviewReplies > 0) {
+    items.push({
+      key: "reviews",
+      icon: Star,
+      tone: "neutral",
+      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review" : "reviews"} need a response`,
+      detail: "Replies show prospects you're engaged.",
+      to: "/dashboard/reviews",
+      cta: "Reply",
+    });
+  }
   if (!isVerified) {
     items.push({
       key: "verify",
       icon: ShieldCheck,
-      tone: "orange",
+      tone: "warn",
       title: "Complete your verification",
       detail: "Identity, insurance and qualifications unlock your REPS Verified badge.",
       to: "/dashboard/verification",
       cta: "Verify",
-    });
-  }
-  if (profilePct < 100) {
-    items.push({
-      key: "profile",
-      icon: Sparkles,
-      tone: "neutral",
-      title: `Your profile is ${profilePct}% complete`,
-      detail: "A complete profile ranks higher and gets more enquiries.",
-      to: "/dashboard/profile",
-      cta: "Polish",
     });
   }
   if (!isPublished) {
@@ -299,6 +288,17 @@ export function NeedsAttention({
       detail: "Publish to appear on the REPS directory.",
       to: "/dashboard/profile",
       cta: "Publish",
+    });
+  }
+  if (profilePct < 100) {
+    items.push({
+      key: "profile",
+      icon: Sparkles,
+      tone: "neutral",
+      title: `Your profile is ${profilePct}% complete`,
+      detail: "A complete profile ranks higher and gets more enquiries.",
+      to: "/dashboard/profile",
+      cta: "Polish",
     });
   }
   if (unreadSupport > 0) {
@@ -313,30 +313,29 @@ export function NeedsAttention({
     });
   }
 
+
   const visible = items.slice(0, 6);
 
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
       <SectionHeader
         title="Needs your attention"
         description="Live signals from across your dashboard."
         icon={CheckCircle2}
       />
       {visible.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <DashboardEmpty>
-            <DashboardEmptyIcon>
-              <CheckCircle2 />
-            </DashboardEmptyIcon>
-            <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
-            <DashboardEmptyDescription>
-              Nothing needs your attention right now. We'll surface enquiries, reviews
-              and renewals here as they come in.
-            </DashboardEmptyDescription>
-          </DashboardEmpty>
-        </div>
+        <DashboardEmpty>
+          <DashboardEmptyIcon>
+            <CheckCircle2 />
+          </DashboardEmptyIcon>
+          <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
+          <DashboardEmptyDescription>
+            Nothing needs your attention right now. We'll surface enquiries, reviews
+            and renewals here as they come in.
+          </DashboardEmptyDescription>
+        </DashboardEmpty>
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
+        <ul className="flex flex-col gap-2">
           {visible.map((item) => {
             const Icon = item.icon;
             return (
@@ -371,6 +370,7 @@ export function NeedsAttention({
   );
 }
 
+
 /* ------------------------------------------------------------------ */
 /* Profile completeness card                                          */
 /* ------------------------------------------------------------------ */
@@ -378,7 +378,8 @@ export function NeedsAttention({
 export function CompletenessCard({ profile }: { profile: DashboardProfile | null }) {
   const { pct, checklist } = profileCompleteness(profile);
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
+
       <SectionHeader title="Profile completeness" icon={Sparkles} />
       <div className="flex items-center gap-4">
         <Ring value={pct} />
@@ -389,7 +390,7 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
           </p>
         </div>
       </div>
-      <ul className="mt-4 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
+      <ul className="mt-4 flex flex-col gap-1.5">
         {checklist.map((c) => (
           <li
             key={c.label}
@@ -487,7 +488,8 @@ export function ActivityTimeline({
   }, [enquiries, reviews]);
 
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
+
       <SectionHeader
         title="Recent activity"
         description="The last 10 events across enquiries and reviews."
@@ -506,7 +508,7 @@ export function ActivityTimeline({
           </DashboardEmpty>
         </div>
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
+        <ul className="flex flex-col">
           {events.map((ev, i) => {
             const Icon = ev.icon;
             return (
@@ -518,7 +520,7 @@ export function ActivityTimeline({
                     i < events.length - 1 && "border-b border-reps-border/60",
                   )}
                 >
-                  <Icon className="size-3.5 shrink-0 text-reps-orange" />
+                  <Icon className="size-3.5 shrink-0 text-white/45" />
                   <span className="flex-1 truncate">{ev.text}</span>
                   <time className="shrink-0 text-[11px] text-white/45">{relTime(ev.at)}</time>
                   <ArrowUpRight className="size-3.5 shrink-0 text-white/35" />
@@ -617,9 +619,10 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     { label: "Qualifications", status: qualificationsRowFinal },
   ];
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
       <SectionHeader title="Verification" icon={ShieldCheck} />
-      <ul className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1">
+      <ul className="flex flex-col gap-2.5">
+
         {rows.map((r) => {
           const done = r.status.tone === "ok";
           return (
@@ -797,6 +800,23 @@ export function CpdMini({
 
 export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
   const top = services.slice(0, 4);
+  if (top.length === 0) {
+    return (
+      <Link
+        to="/dashboard/services"
+        className="group flex items-center justify-between gap-3 rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/30 px-4 py-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft/60"
+      >
+        <div className="flex items-center gap-3 text-[13px] text-white/70">
+          <Sparkles className="size-4 text-white/45" />
+          <span>Add at least one service so clients know what to book.</span>
+        </div>
+        <span className="inline-flex items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange">
+          Add a service
+          <ChevronRight className="size-3.5" />
+        </span>
+      </Link>
+    );
+  }
   return (
     <PPanel className="p-5">
       <SectionHeader
@@ -809,40 +829,29 @@ export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
           </DashboardButton>
         }
       />
-      {top.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <Sparkles />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>No services yet</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            Add at least one service so clients know what to book.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {top.map((s) => (
-            <div
-              key={s.id}
-              className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4"
-            >
-              <p className="truncate text-[13.5px] font-semibold text-white">{s.title}</p>
-              <p className="mt-1 text-[12px] text-white/55">
-                {s.price_pence != null
-                  ? `£${(s.price_pence / 100).toFixed(0)}`
-                  : (s.price_label ?? "Price on enquiry")}
-                {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
-              </p>
-              {!s.is_published ? (
-                <DashboardBadge variant="warn" className="mt-2">Draft</DashboardBadge>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {top.map((s) => (
+          <div
+            key={s.id}
+            className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4"
+          >
+            <p className="truncate text-[13.5px] font-semibold text-white">{s.title}</p>
+            <p className="mt-1 text-[12px] text-white/55">
+              {s.price_pence != null
+                ? `£${(s.price_pence / 100).toFixed(0)}`
+                : (s.price_label ?? "Price on enquiry")}
+              {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
+            </p>
+            {!s.is_published ? (
+              <DashboardBadge variant="warn" className="mt-2">Draft</DashboardBadge>
+            ) : null}
+          </div>
+        ))}
+      </div>
     </PPanel>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Pro upsell strip                                                   */
