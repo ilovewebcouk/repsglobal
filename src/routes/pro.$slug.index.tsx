@@ -369,6 +369,8 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       verified: !!row.trust?.verified,
       insuranceExpiry: row.trust?.insurance_expiry ?? null,
       cpd: null,
+      qualificationsCheckedAt: row.trust?.qualifications_checked_at ?? null,
+      identityVerifiedAt: row.trust?.identity_verified_at ?? null,
     },
     gallery: (row as { gallery?: { id: string; url: string }[] }).gallery ?? [],
     faqs: [],
