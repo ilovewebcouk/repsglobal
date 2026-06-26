@@ -360,9 +360,9 @@ function HomeV2() {
                 mode,
                 tags: [],
                 image: p.image,
-                identityStatus: "approved",
-                verification: "verified",
-                tier: "verified",
+                identityStatus: p.identityStatus ?? null,
+                verification: p.verification ?? null,
+                tier: p.tier ?? null,
               };
               return (
                 <div key={p.name} className="w-[78%] shrink-0 snap-center sm:w-auto">
