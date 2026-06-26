@@ -718,9 +718,9 @@ export function ProUpsellStrip() {
             in-app messaging — every Pro feature, no add-ons.
           </p>
         </div>
-        <Button asChild size="sm" className="shrink-0 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange/90">
+        <DashboardButton asChild size="sm" variant="primary" className="shrink-0">
           <Link to="/pricing">See Pro features</Link>
-        </Button>
+        </DashboardButton>
       </div>
     </PPanel>
   );
