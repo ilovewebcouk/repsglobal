@@ -281,7 +281,7 @@ function AdminVerificationPage() {
               </span>
       </div>
 
-      <DriftChip />
+      
 
           </PCard>
         ))}
