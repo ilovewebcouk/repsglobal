@@ -193,3 +193,52 @@ export function pickHighestTitle(slugs: string[]): TitleSlug | null {
   }
   return (best?.slug as TitleSlug) ?? null;
 }
+
+/**
+ * Filter granted titles down to those that should be displayed.
+ * A title is hidden when another granted title's `supersedes` list
+ * contains it (e.g. PT supersedes Fitness Instructor). Pure.
+ */
+export function filterVisibleTitles(granted: readonly string[]): TitleSlug[] {
+  const validGranted: TitleSlug[] = [];
+  const seen = new Set<string>();
+  for (const s of granted) {
+    if (seen.has(s)) continue;
+    if (isTitleSlug(s)) {
+      seen.add(s);
+      validGranted.push(s as TitleSlug);
+    }
+  }
+  const supersededSet = new Set<TitleSlug>();
+  for (const slug of validGranted) {
+    const sup = BY_SLUG[slug]?.supersedes ?? [];
+    for (const s of sup) supersededSet.add(s);
+  }
+  return validGranted.filter((s) => !supersededSet.has(s));
+}
+
+/**
+ * Return the slugs in `granted` that are hidden by supersession, along
+ * with the slug that covers each one. Used in the UI to explain why a
+ * title disappeared from the picker.
+ */
+export function getSupersededTitles(
+  granted: readonly string[],
+): Array<{ slug: TitleSlug; coveredBy: TitleSlug }> {
+  const validGranted: TitleSlug[] = [];
+  for (const s of granted) {
+    if (isTitleSlug(s)) validGranted.push(s as TitleSlug);
+  }
+  const out: Array<{ slug: TitleSlug; coveredBy: TitleSlug }> = [];
+  for (const slug of validGranted) {
+    for (const other of validGranted) {
+      if (other === slug) continue;
+      const sup = BY_SLUG[other]?.supersedes ?? [];
+      if (sup.includes(slug)) {
+        out.push({ slug, coveredBy: other });
+        break;
+      }
+    }
+  }
+  return out;
+}
