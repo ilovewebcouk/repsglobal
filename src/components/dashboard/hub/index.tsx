@@ -49,6 +49,7 @@ import {
   type ReviewKpis,
 } from "@/lib/reviews/reviews.functions";
 import { getMyShopFront, type ServiceDTO } from "@/lib/shop-front/shop-front.functions";
+import { getTrustState, type TrustState } from "@/lib/verification/trust.functions";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import { useMySupportUnread } from "@/hooks/useMySupportUnread";
 
@@ -513,53 +514,109 @@ function relTime(iso: string) {
 /* Verification status card                                           */
 /* ------------------------------------------------------------------ */
 
-export function VerificationStatusCard({
-  isVerified,
-  hasInsurance,
-  hasQualifications,
-  insuranceUntil,
-}: {
-  isVerified: boolean;
-  hasInsurance: boolean;
-  hasQualifications: boolean;
-  insuranceUntil: string | null;
-}) {
-  const rows = [
-    { label: "Identity verified", done: isVerified },
-    {
-      label: "Insurance on file",
-      done: hasInsurance,
-      detail: insuranceUntil
-        ? `Valid until ${new Date(insuranceUntil).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-        : undefined,
-    },
-    { label: "Qualifications", done: hasQualifications },
+type StatusTone = "ok" | "warn" | "fail" | "muted";
+type RowStatus = { tone: StatusTone; label: string };
+
+function fmtDate(d: string | null | undefined) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+export function VerificationStatusCard({ trust }: { trust: TrustState | null | undefined }) {
+  // Identity — driven by professionals.identity_status (Stripe webhook source of truth).
+  const idStatus = trust?.identity.status ?? "none";
+  const identityRow: RowStatus =
+    idStatus === "approved"
+      ? { tone: "ok", label: "Verified" }
+      : idStatus === "pending"
+        ? { tone: "warn", label: "In review" }
+        : idStatus === "rejected"
+          ? { tone: "fail", label: "Rejected" }
+          : idStatus === "needs_more_info"
+            ? { tone: "warn", label: "More info needed" }
+            : idStatus === "expired"
+              ? { tone: "fail", label: "Expired" }
+              : { tone: "muted", label: "Not started" };
+
+  // Insurance — driven by insurance_policies.status + expiry comparison.
+  const insStatus = trust?.insurance.status ?? "none";
+  const insuranceRow: RowStatus =
+    insStatus === "active"
+      ? { tone: "ok", label: "Active" }
+      : insStatus === "pending"
+        ? { tone: "warn", label: "In review" }
+        : insStatus === "expired"
+          ? { tone: "fail", label: "Expired" }
+          : insStatus === "rejected"
+            ? { tone: "fail", label: "Rejected" }
+            : { tone: "muted", label: "Not started" };
+  const insuranceDetail =
+    insStatus === "active" && trust?.insurance.expiryDate
+      ? `Valid until ${fmtDate(trust.insurance.expiryDate)}`
+      : insStatus === "expired" && trust?.insurance.expiryDate
+        ? `Expired ${fmtDate(trust.insurance.expiryDate)} — upload renewal`
+        : insStatus === "pending"
+          ? "Admin is reviewing your certificate"
+          : insStatus === "rejected"
+            ? "Rejected — see email for reason"
+            : undefined;
+
+  // Qualifications — driven by approved verification_submissions count, not row existence.
+  const qualCount = trust?.qualifications.count ?? 0;
+  const qualificationsRow: RowStatus =
+    qualCount > 0
+      ? { tone: "ok", label: `${qualCount} approved` }
+      : { tone: "warn", label: "In review" };
+  // If nothing has ever been submitted, show "Not started" instead of "In review".
+  // We can't tell from TrustState alone whether a submission exists, so fall back to
+  // generic "In review" only when at least one tick is in flight elsewhere — otherwise
+  // just show muted.
+  const anyActivity = idStatus !== "none" || insStatus !== "none";
+  const qualificationsRowFinal: RowStatus =
+    qualCount === 0 && !anyActivity ? { tone: "muted", label: "Not started" } : qualificationsRow;
+
+  const rows: Array<{ label: string; status: RowStatus; detail?: string }> = [
+    { label: "Identity verified", status: identityRow },
+    { label: "Insurance on file", status: insuranceRow, detail: insuranceDetail },
+    { label: "Qualifications", status: qualificationsRowFinal },
   ];
   return (
     <PPanel className="p-5">
       <SectionHeader title="Verification" icon={ShieldCheck} />
       <ul className="flex flex-col gap-2.5">
-        {rows.map((r) => (
-          <li key={r.label} className="flex items-center gap-3">
-            <span
-              className={cn(
-                "flex size-7 shrink-0 items-center justify-center rounded-[8px] border",
-                r.done
-                  ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                  : "border-reps-border bg-reps-panel-soft/40 text-white/45",
-              )}
-            >
-              {r.done ? <CheckCircle2 className="size-3.5" /> : <span className="size-2 rounded-full bg-white/30" />}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-medium text-white">{r.label}</p>
-              {r.detail ? <p className="text-[11.5px] text-white/55">{r.detail}</p> : null}
-            </div>
-            {!r.done ? (
-              <DashboardBadge variant="warn" className="shrink-0">Pending</DashboardBadge>
-            ) : null}
-          </li>
-        ))}
+        {rows.map((r) => {
+          const done = r.status.tone === "ok";
+          return (
+            <li key={r.label} className="flex items-center gap-3">
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-[8px] border",
+                  done
+                    ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                    : r.status.tone === "fail"
+                      ? "border-red-400/30 bg-red-500/15 text-red-300"
+                      : r.status.tone === "warn"
+                        ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                        : "border-reps-border bg-reps-panel-soft/40 text-white/45",
+                )}
+              >
+                {done ? <CheckCircle2 className="size-3.5" /> : <span className="size-2 rounded-full bg-current" />}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-medium text-white">{r.label}</p>
+                {r.detail ? <p className="text-[11.5px] text-white/55">{r.detail}</p> : null}
+              </div>
+              {!done ? (
+                <DashboardBadge
+                  variant={r.status.tone === "fail" ? "danger" : r.status.tone === "warn" ? "warn" : "muted"}
+                  className="shrink-0"
+                >
+                  {r.status.label}
+                </DashboardBadge>
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
       <DashboardButton asChild size="sm" variant="ghost" className="mt-4 w-full">
         <Link to="/dashboard/verification">Manage verification</Link>
