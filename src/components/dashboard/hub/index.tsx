@@ -395,6 +395,61 @@ export function NeedsAttention({
 
 
   const visible = items.slice(0, 6);
+  const pulse = usePulseOnIncrease(visible.length);
+  const [dismissed, setDismissed] = React.useState<Set<string>>(() => new Set());
+  const liveItems = visible.filter((i) => !dismissed.has(i.key));
+
+  // Slim mode (≤1 item, never an empty card). When 0 items, show a quiet "all caught up" row.
+  if (liveItems.length <= 1) {
+    if (liveItems.length === 0) {
+      return (
+        <div className="flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft/30 px-4 py-3 text-[13px] text-white/70">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-[10px] border border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+            <CheckCircle2 className="size-3.5" />
+          </span>
+          <span className="flex-1">All caught up — we'll surface enquiries, reviews and renewals here as they land.</span>
+        </div>
+      );
+    }
+    const item = liveItems[0];
+    const Icon = item.icon;
+    return (
+      <Link
+        to={item.to as any}
+        onClick={() => setDismissed((s) => new Set(s).add(item.key))}
+        className="group flex items-center gap-3 rounded-[16px] border border-reps-border bg-reps-panel-soft/40 px-4 py-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+      >
+        <span
+          className={cn(
+            "flex size-7 shrink-0 items-center justify-center rounded-[10px] border [&_svg]:size-3.5",
+            item.tone === "orange"
+              ? "border-reps-orange-border bg-reps-orange-soft text-reps-orange"
+              : item.tone === "danger"
+                ? "border-red-400/30 bg-red-500/15 text-red-300"
+                : item.tone === "warn"
+                  ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                  : item.tone === "success"
+                    ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                    : "border-white/12 bg-white/[0.04] text-white/70",
+            pulse && "animate-[hub-pulse_1.6s_ease-in-out_2]",
+          )}
+        >
+          <Icon />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-medium text-white">{item.title}</p>
+          {item.detail ? (
+            <p className="truncate text-[12px] text-white/55">{item.detail}</p>
+          ) : null}
+        </div>
+        <span className="inline-flex items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange">
+          {item.cta}
+          <ChevronRight className="size-3.5" />
+        </span>
+        <style>{`@keyframes hub-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,122,0,0); } 50% { box-shadow: 0 0 0 4px rgba(255,122,0,0.35); } }`}</style>
+      </Link>
+    );
+  }
 
   return (
     <PPanel className="flex flex-col p-5">
@@ -403,52 +458,42 @@ export function NeedsAttention({
         description="Live signals from across your dashboard."
         icon={CheckCircle2}
       />
-      {visible.length === 0 ? (
-        <DashboardEmpty>
-          <DashboardEmptyIcon>
-            <CheckCircle2 />
-          </DashboardEmptyIcon>
-          <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
-          <DashboardEmptyDescription>
-            Nothing needs your attention right now. We'll surface enquiries, reviews
-            and renewals here as they come in.
-          </DashboardEmptyDescription>
-        </DashboardEmpty>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {visible.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.key}>
-                <Link
-                  to={item.to as any}
-                  className="group flex items-center gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 p-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+      <ul className="flex flex-col gap-2">
+        {liveItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <li key={item.key}>
+              <Link
+                to={item.to as any}
+                onClick={() => setDismissed((s) => new Set(s).add(item.key))}
+                className="group flex items-center gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 p-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+              >
+                <DashboardBadge
+                  variant={item.tone}
+                  className="size-7 justify-center rounded-[10px] p-0 [&_svg]:size-3.5"
                 >
-                  <DashboardBadge
-                    variant={item.tone}
-                    className="size-7 justify-center rounded-[10px] p-0 [&_svg]:size-3.5"
-                  >
-                    <Icon />
-                  </DashboardBadge>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-white">{item.title}</p>
-                    {item.detail ? (
-                      <p className="truncate text-[12px] text-white/55">{item.detail}</p>
-                    ) : null}
-                  </div>
-                  <span className="hidden items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange sm:inline-flex">
-                    {item.cta}
-                    <ChevronRight className="size-3.5" />
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  <Icon />
+                </DashboardBadge>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-medium text-white">{item.title}</p>
+                  {item.detail ? (
+                    <p className="truncate text-[12px] text-white/55">{item.detail}</p>
+                  ) : null}
+                </div>
+                <span className="hidden items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange sm:inline-flex">
+                  {item.cta}
+                  <ChevronRight className="size-3.5" />
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </PPanel>
   );
 }
+
+
 
 
 /* ------------------------------------------------------------------ */
