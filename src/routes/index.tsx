@@ -188,7 +188,7 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_LABEL_HOME[r.primary_profession] ?? "Professional") : "Professional";
+  const role = r.primary_profession ? (PROFESSION_LABEL_HOME[r.primary_profession] ?? "Fitness Professional") : "Fitness Professional";
   return {
     name: r.full_name,
     role,
