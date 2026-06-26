@@ -19,6 +19,8 @@ export type VerificationEvent =
   | "insurance.flagged_low_cover"
   | "insurance.flagged_name_mismatch"
   | "insurance.auto_approved"
+  | "insurance.approved"
+  | "insurance.rejected"
   | "insurance.renewal_due"
   | "insurance.renewal_lapsed"
   | "verification.blocked_by_insurance"
