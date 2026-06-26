@@ -378,7 +378,8 @@ export function NeedsAttention({
 export function CompletenessCard({ profile }: { profile: DashboardProfile | null }) {
   const { pct, checklist } = profileCompleteness(profile);
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
+
       <SectionHeader title="Profile completeness" icon={Sparkles} />
       <div className="flex items-center gap-4">
         <Ring value={pct} />
@@ -389,7 +390,7 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
           </p>
         </div>
       </div>
-      <ul className="mt-4 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
+      <ul className="mt-4 flex flex-col gap-1.5">
         {checklist.map((c) => (
           <li
             key={c.label}
@@ -487,7 +488,8 @@ export function ActivityTimeline({
   }, [enquiries, reviews]);
 
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
+
       <SectionHeader
         title="Recent activity"
         description="The last 10 events across enquiries and reviews."
@@ -506,7 +508,7 @@ export function ActivityTimeline({
           </DashboardEmpty>
         </div>
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
+        <ul className="flex flex-col">
           {events.map((ev, i) => {
             const Icon = ev.icon;
             return (
@@ -518,7 +520,7 @@ export function ActivityTimeline({
                     i < events.length - 1 && "border-b border-reps-border/60",
                   )}
                 >
-                  <Icon className="size-3.5 shrink-0 text-reps-orange" />
+                  <Icon className="size-3.5 shrink-0 text-white/45" />
                   <span className="flex-1 truncate">{ev.text}</span>
                   <time className="shrink-0 text-[11px] text-white/45">{relTime(ev.at)}</time>
                   <ArrowUpRight className="size-3.5 shrink-0 text-white/35" />
@@ -617,9 +619,10 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
     { label: "Qualifications", status: qualificationsRowFinal },
   ];
   return (
-    <PPanel className="flex h-full flex-col p-5">
+    <PPanel className="flex flex-col p-5">
       <SectionHeader title="Verification" icon={ShieldCheck} />
-      <ul className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1">
+      <ul className="flex flex-col gap-2.5">
+
         {rows.map((r) => {
           const done = r.status.tone === "ok";
           return (
