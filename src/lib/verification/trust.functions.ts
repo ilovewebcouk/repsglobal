@@ -69,8 +69,9 @@ export const getTrustState = createServerFn({ method: "GET" })
     ]);
 
     const proRow = pro as
-      | { identity_verified_name: string | null; identity_verified_at: string | null; identity_status: string | null }
+      | { identity_verified_name: string | null; identity_verified_at: string | null; identity_status: string | null; primary_title_slug: string | null }
       | null;
+
     const insRow = ins as
       | { status: string | null; provider: string | null; cover_amount_gbp: number | null; expiry_date: string | null }
       | null;
