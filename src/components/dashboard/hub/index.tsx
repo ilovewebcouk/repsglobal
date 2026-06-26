@@ -58,6 +58,11 @@ import { getTrustState, type TrustState } from "@/lib/verification/trust.functio
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import { useMySupportUnread } from "@/hooks/useMySupportUnread";
 
+import {
+  getDiscoverabilityKpis,
+  type DiscoverabilityKpis,
+} from "@/lib/discoverability/kpis.functions";
+
 /* ------------------------------------------------------------------ */
 /* Welcome banner                                                     */
 /* ------------------------------------------------------------------ */
