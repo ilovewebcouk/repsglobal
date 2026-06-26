@@ -1,104 +1,197 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { PublicHeader } from "@/components/public/PublicHeader";
+import { LegalLayout, type LegalSection } from "@/components/legal/LegalLayout";
+
+const CANONICAL = "https://repsuk.org/cookies";
+const META_TITLE = "Cookie Policy — REPs";
+const META_DESC =
+  "How REPs uses cookies and similar technologies, what categories we use, and how to manage your preferences.";
+const LAST_UPDATED = "26 June 2026";
 
 export const Route = createFileRoute("/cookies")({
   head: () => ({
     meta: [
-      { title: "Cookie policy — REPS" },
-      { name: "description", content: "How REPS uses cookies and similar technologies, and how to manage your preferences." },
-      { property: "og:title", content: "Cookie policy — REPS" },
-      { property: "og:description", content: "Cookie categories and preferences for REPS." },
+      { title: META_TITLE },
+      { name: "description", content: META_DESC },
+      { property: "og:title", content: META_TITLE },
+      { property: "og:description", content: META_DESC },
+      { property: "og:url", content: CANONICAL },
+      { property: "og:type", content: "website" },
     ],
+    links: [{ rel: "canonical", href: CANONICAL }],
   }),
   component: CookiesPage,
 });
 
-const CATEGORIES: { name: string; required: boolean; purpose: string; examples: string }[] = [
-  { name: "Essential", required: true, purpose: "Authentication, security and load balancing. The platform cannot function without these.", examples: "reps_session, csrf_token, cf_clearance" },
-  { name: "Functional", required: false, purpose: "Remember preferences such as language, region and saved professionals.", examples: "reps_locale, reps_saved_pros" },
-  { name: "Analytics", required: false, purpose: "Help us understand how the platform is used so we can improve it. Aggregated, not used to identify you.", examples: "_ga, posthog_id" },
-  { name: "Marketing", required: false, purpose: "Used to measure the performance of REPS ad campaigns and to suggest relevant content.", examples: "_fbp, _gcl_au" },
+const CATEGORIES: {
+  name: string;
+  required: boolean;
+  purpose: string;
+  examples: string;
+}[] = [
+  {
+    name: "Essential",
+    required: true,
+    purpose:
+      "Authentication, security and load balancing. The platform cannot function without these.",
+    examples: "reps_session, csrf_token",
+  },
+  {
+    name: "Functional",
+    required: false,
+    purpose:
+      "Remember preferences such as language, region and saved professionals.",
+    examples: "reps_locale, reps_saved_pros",
+  },
+  {
+    name: "Analytics",
+    required: false,
+    purpose:
+      "Help us understand how the platform is used so we can improve it. Aggregated, not used to identify you.",
+    examples: "Anonymous usage IDs",
+  },
+  {
+    name: "Marketing",
+    required: false,
+    purpose:
+      "Measure the performance of REPs campaigns and surface relevant content.",
+    examples: "Campaign attribution IDs",
+  },
+];
+
+function CookieTable() {
+  return (
+    <div className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
+      <div className="hidden grid-cols-[140px_1fr_180px_120px] gap-4 border-b border-reps-border bg-reps-panel/80 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55 lg:grid">
+        <span>Category</span>
+        <span>Purpose</span>
+        <span>Examples</span>
+        <span>Status</span>
+      </div>
+      <ul>
+        {CATEGORIES.map((cat, i) => (
+          <li
+            key={cat.name}
+            className={`grid gap-2 px-5 py-5 lg:grid-cols-[140px_1fr_180px_120px] lg:items-start lg:gap-4 ${
+              i > 0 ? "border-t border-reps-border" : ""
+            }`}
+          >
+            <span className="font-display text-[15px] font-semibold text-white">
+              {cat.name}
+            </span>
+            <span className="text-[14px] leading-relaxed text-white/75">
+              {cat.purpose}
+            </span>
+            <span className="text-[13px] text-white/60">{cat.examples}</span>
+            <span>
+              <span
+                className={
+                  cat.required
+                    ? "inline-flex items-center rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-orange"
+                    : "inline-flex items-center rounded-full border border-reps-border bg-reps-ink px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/70"
+                }
+              >
+                {cat.required ? "Always on" : "Optional"}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const SECTIONS: LegalSection[] = [
+  {
+    id: "what-cookies-are",
+    title: "What cookies are",
+    body: (
+      <>
+        <p>
+          Cookies are small text files stored on your device when you visit a
+          website. We use cookies and similar technologies (such as
+          localStorage and pixel tags) to keep you signed in, remember your
+          preferences and understand how REPs is used.
+        </p>
+        <p>
+          This page explains what we use and how to control it. You can change
+          your preferences at any time.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "categories",
+    title: "Categories we use",
+    body: (
+      <>
+        <p>
+          We group cookies into four categories. Only "Essential" cookies are
+          always on — the rest are optional.
+        </p>
+        <CookieTable />
+      </>
+    ),
+  },
+  {
+    id: "managing",
+    title: "Managing your preferences",
+    body: (
+      <>
+        <p>
+          You can manage non-essential cookies through our in-app preferences
+          (coming soon) or directly through your browser settings. Most
+          browsers let you block or delete cookies and warn you before they're
+          set.
+        </p>
+        <p>
+          Blocking essential cookies will prevent core features — such as
+          signing in — from working.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "third-party",
+    title: "Third-party cookies",
+    body: (
+      <p>
+        Some pages embed services from third parties — for example, our
+        analytics provider and our payments processor at checkout. These
+        providers may set their own cookies under their own policies. We never
+        share personal data with third parties for their own marketing
+        without your consent.
+      </p>
+    ),
+  },
+  {
+    id: "changes",
+    title: "Changes to this policy",
+    body: (
+      <p>
+        We may update this policy as the platform evolves. The "Last updated"
+        date at the top of this page always reflects the current version.
+      </p>
+    ),
+  },
+  {
+    id: "contact",
+    title: "How to contact us",
+    body: (
+      <p>
+        Email <a href="mailto:support@repsuk.org">support@repsuk.org</a> with
+        any question about cookies or this policy.
+      </p>
+    ),
+  },
 ];
 
 function CookiesPage() {
   return (
-    <div className="min-h-screen bg-reps-warm-white text-reps-charcoal">
-      <div className="bg-reps-ink text-reps-text">
-        <PublicHeader variant="solid" />
-        <div className="mx-auto max-w-[1320px] px-6 pb-14 pt-10 lg:px-10">
-          <span className="inline-flex items-center rounded-full bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-reps-orange">
-            Legal
-          </span>
-          <h1 className="mt-4 font-display text-[44px] font-bold leading-[1.05] tracking-[-0.02em] text-white lg:text-[52px]">
-            Cookie policy
-          </h1>
-          <p className="mt-4 max-w-[760px] text-[15px] leading-relaxed text-white/70">
-            REPS uses cookies and similar technologies to keep you signed in, remember your
-            preferences, and understand how the platform is used. You're in control — manage your
-            preferences below.
-          </p>
-          <p className="mt-5 text-[12px] uppercase tracking-[0.08em] text-white/45">
-            Last updated · 31 May 2026
-          </p>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-[1100px] px-6 py-16 lg:px-10">
-        <div className="overflow-hidden rounded-[18px] border border-reps-stone bg-white">
-          <table className="w-full text-[13px]">
-            <thead className="bg-reps-ivory text-left text-[11px] uppercase tracking-[0.08em] text-reps-muted-light">
-              <tr>
-                <th className="px-5 py-3 font-semibold">Category</th>
-                <th className="px-5 py-3 font-semibold">Purpose</th>
-                <th className="px-5 py-3 font-semibold">Examples</th>
-                <th className="px-5 py-3 font-semibold">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {CATEGORIES.map((c) => (
-                <tr key={c.name} className="border-t border-reps-stone align-top">
-                  <td className="px-5 py-4 font-display text-[14px] font-semibold text-reps-charcoal">{c.name}</td>
-                  <td className="px-5 py-4 text-reps-charcoal/80">{c.purpose}</td>
-                  <td className="px-5 py-4 font-mono text-[12px] text-reps-muted-light">{c.examples}</td>
-                  <td className="px-5 py-4">
-                    {c.required ? (
-                      <span className="inline-flex h-6 items-center rounded-full bg-reps-charcoal/10 px-2.5 text-[11px] font-semibold text-reps-charcoal">
-                        Always on
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        className="inline-flex h-7 w-12 items-center rounded-full bg-reps-orange p-0.5 shadow-none"
-                        aria-label={`Toggle ${c.name} cookies`}
-                      >
-                        <span className="ml-auto h-6 w-6 rounded-full bg-white" />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-reps-stone bg-reps-ivory p-5">
-          <p className="max-w-[600px] text-[13px] text-reps-charcoal/80">
-            Changes apply across all your REPS sessions. Essential cookies cannot be disabled because
-            the platform needs them to keep you signed in securely.
-          </p>
-          <div className="flex gap-2">
-            <button className="inline-flex h-10 items-center rounded-[10px] border border-reps-stone bg-white px-4 text-[13px] font-semibold text-reps-charcoal shadow-none hover:bg-reps-ivory">
-              Reject optional
-            </button>
-            <button className="inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-hover">
-              Save preferences
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <PublicFooter />
-    </div>
+    <LegalLayout
+      title="Cookie Policy"
+      lede="How REPs uses cookies and similar technologies, and how you can control them."
+      lastUpdated={LAST_UPDATED}
+      sections={SECTIONS}
+    />
   );
 }
