@@ -112,6 +112,9 @@ function AdminVerificationPage() {
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [certOpen, setCertOpen] = useState(false);
+  const [manualQualConfirmed, setManualQualConfirmed] = useState(false);
+  const [revokeOpen, setRevokeOpen] = useState(false);
+  const [revokeReason, setRevokeReason] = useState("");
 
   const listing = useQuery({
     queryKey: ["admin-verifications", statusFilter],
