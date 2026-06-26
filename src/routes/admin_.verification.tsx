@@ -619,6 +619,35 @@ function AdminVerificationPage() {
                               <div><span className="text-white/45">Policy</span> · {ins.policy_number || "—"}</div>
                               <div><span className="text-white/45">Expires</span> · {ins.expiry_date}</div>
                             </div>
+                            {(() => {
+                              const insured = (ins as { insured_name?: string | null }).insured_name ?? null;
+                              const nameMatchVal = (ins as { name_match?: boolean | null }).name_match ?? null;
+                              const idName = (pro as { identity_verified_name?: string | null } | null)?.identity_verified_name ?? null;
+                              const refName = idName ?? prof?.full_name ?? null;
+                              const tone: "ok" | "warn" | "fail" =
+                                nameMatchVal === true ? "ok" : nameMatchVal === false ? "fail" : "warn";
+                              const toneCls =
+                                tone === "ok"
+                                  ? "border-emerald-400/30 bg-emerald-500/5 text-emerald-100/85"
+                                  : tone === "fail"
+                                    ? "border-red-400/30 bg-red-500/10 text-red-200"
+                                    : "border-amber-400/30 bg-amber-500/5 text-amber-100/85";
+                              return (
+                                <div className={`mt-2 rounded-[8px] border px-2.5 py-2 text-[11.5px] ${toneCls}`}>
+                                  <div className="font-semibold">
+                                    {insured
+                                      ? `Insured name: ${insured}`
+                                      : "Insured name: not extracted — verify manually on certificate"}
+                                  </div>
+                                  {refName && (
+                                    <div className="opacity-70">
+                                      {idName ? "ID-verified name" : "Profile name"}: {refName}
+                                      {nameMatchVal === true ? " — matches" : nameMatchVal === false ? " — MISMATCH, review carefully" : ""}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             <div className="mt-3 flex flex-wrap gap-1.5">
                               {ins.doc_path && <DocChip onClick={() => openDoc("insurance-docs", ins.doc_path!)}>View certificate</DocChip>}
                             </div>
