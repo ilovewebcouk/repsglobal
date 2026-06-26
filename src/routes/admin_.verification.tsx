@@ -113,6 +113,10 @@ function AdminVerificationPage() {
   const remind = useServerFn(sendVerificationReminder);
   const signUrl = useServerFn(getDocSignedUrl);
   const recheckOfqual = useServerFn(recheckOfqualForSubmission);
+  const nudgeRenewal = useServerFn(adminNudgeInsuranceRenewal);
+  const nudgeRenewalMutation = useMutation({
+    mutationFn: (professional_id: string) => nudgeRenewal({ data: { professional_id } }),
+  });
 
   const [topTab, setTopTab] = useState<TopTab>("qualifications");
   const [selectedId, setSelectedId] = useState<string | null>(null);
