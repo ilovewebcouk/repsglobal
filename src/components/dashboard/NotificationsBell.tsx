@@ -186,14 +186,22 @@ export function NotificationsBell() {
             <ul className="divide-y divide-reps-border">
               {visible.map((item) => {
                 const href =
-                  item.kind === "review"
-                    ? "/admin/reviews"
-                    : item.kind === "support-admin"
-                      ? "/admin/support"
-                      : "/dashboard/support";
+                  item.kind === "verification"
+                    ? item.href
+                    : item.kind === "review"
+                      ? "/admin/reviews"
+                      : item.kind === "support-admin"
+                        ? "/admin/support"
+                        : "/dashboard/support";
                 const showTicket =
                   (item.kind === "support-admin" || item.kind === "support-mine") &&
                   item.ticketNumber;
+                const iconWrapClass =
+                  item.kind === "verification"
+                    ? "bg-red-500/15 text-red-300"
+                    : item.kind === "review"
+                      ? "bg-amber-500/15 text-amber-300"
+                      : "bg-reps-orange/15 text-reps-orange";
                 return (
                   <li key={item.key}>
                     <Link
@@ -202,13 +210,11 @@ export function NotificationsBell() {
                       className="flex gap-3 px-4 py-3 transition-colors hover:bg-reps-panel-soft"
                     >
                       <div
-                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] ${
-                          item.kind === "review"
-                            ? "bg-amber-500/15 text-amber-300"
-                            : "bg-reps-orange/15 text-reps-orange"
-                        }`}
+                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] ${iconWrapClass}`}
                       >
-                        {item.kind === "review" ? (
+                        {item.kind === "verification" ? (
+                          <ShieldAlert className="h-3.5 w-3.5" />
+                        ) : item.kind === "review" ? (
                           <Star className="h-3.5 w-3.5" />
                         ) : (
                           <Mail className="h-3.5 w-3.5" />
