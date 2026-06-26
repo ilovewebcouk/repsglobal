@@ -904,9 +904,7 @@ function AdminVerificationPage() {
                     <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-display text-[14px] font-bold text-white">Decision</h4>
                       <span className="text-[11px] text-white/55">
-                        Will approve at: <span className="font-semibold text-white">{canApprovePro ? "Pro" : "Verified"}</span>
-                        {!canApprovePro && ins && " (insurance issue blocks Pro)"}
-                        {!canApprovePro && !ins && " (no insurance on file)"}
+                        Will mark as: <span className="font-semibold text-white">Verified</span>
                       </span>
                     </div>
 
@@ -964,14 +962,14 @@ function AdminVerificationPage() {
                         disabled={busy || !approveAllowed}
                         onClick={() => decideMutation.mutate({
                           decision: "approved",
-                          unlocked_tier: canApprovePro ? "pro" : "verified",
+                          unlocked_tier: "verified",
                           gates_snapshot: gatesSnap,
                           override_reason: overrideReason.trim() || null,
                         })}
                         className="bg-reps-orange text-white hover:bg-reps-orange-hover disabled:opacity-50"
-                        title={approveAllowed ? `Approve as ${canApprovePro ? "Pro" : "Verified"}` : `Failing: ${gates.blockingReasons.join(", ")}`}
+                        title={approveAllowed ? "Approve & verify" : `Failing: ${gates.blockingReasons.join(", ")}`}
                       >
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : `Approve as ${canApprovePro ? "Pro" : "Verified"}`}
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve & verify"}
                       </Button>
                     </div>
                   </PCard>
