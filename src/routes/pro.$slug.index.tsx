@@ -188,6 +188,12 @@ const PROS: Record<string, Pro> = {
       { q: "What should I expect in my first session?", a: "" },
       { q: "Do you offer nutrition guidance?", a: "" },
     ],
+    trust: {
+      verified: true,
+      insuranceExpiry: "2026-12-12",
+      qualificationsCheckedAt: "2026-06-15",
+      identityVerifiedAt: "2026-06-15",
+    },
   },
 };
 
