@@ -204,6 +204,10 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
           proExtra?.identity_status === "approved",
         insurance_expiry:
           insuranceRow?.expiry_date ?? proExtra?.insurance_valid_until ?? null,
+        identity_verified_at: proExtra?.identity_verified_at ?? null,
+        qualifications_checked_at: qualRows && qualRows.length > 0 
+          ? qualRows.find(q => q.reviewed_at)?.reviewed_at || qualRows[0].reviewed_at || null 
+          : null,
       },
     };
   });
