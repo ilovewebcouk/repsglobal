@@ -42,7 +42,7 @@ export function IdentityGateWall({ status }: { status: Status }) {
   );
 
   return (
-    <DashboardShell role="trainer" tier={tier} active="dashboard" title="Verify your identity" subtitle="Required before your dashboard unlocks">
+    <DashboardShell role="trainer" tier={tier} active="Verification" title="Verify your identity" subtitle="Required before your dashboard unlocks">
       <div className="flex min-h-[60vh] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-xl rounded-[22px] border border-reps-border bg-reps-panel p-8 text-center shadow-[0_24px_60px_-30px_rgba(0,0,0,0.7)] sm:p-10">
           <div className={`mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full border ${accentCls}`}>
