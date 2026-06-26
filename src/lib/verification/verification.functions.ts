@@ -676,28 +676,36 @@ export const revokeQualification = createServerFn({ method: "POST" })
       .eq("status", "approved");
 
     if (!stillApproved || stillApproved === 0) {
-      // Clear the primary title and let the recompute trigger reconcile both
+      // Clear the primary + secondary titles and let the recompute trigger reconcile both
       // `verification` and `verification_status` from the live 3-pillar check.
       // Never write the columns directly — that's the historical drift route.
       await supabaseAdmin
         .from("professionals")
-        .update({ primary_title_slug: null } as never)
+        .update({ primary_title_slug: null, secondary_title_slug: null } as never)
         .eq("id", proId);
       await supabaseAdmin.rpc("recompute_pro_verification", { _pro_id: proId } as never);
     } else if (revokedSlugs.length > 0) {
-      // Still has other approvals, but the primary title may have been one of
-      // the revoked ones. If so, clear it — the pro can re-pick from what's left.
+      // Still has other approvals, but the primary or secondary title may have
+      // been one of the revoked ones. If so, clear those slots — the pro can
+      // re-pick from what's left.
       const { data: proRow } = await supabaseAdmin
         .from("professionals")
-        .select("primary_title_slug")
+        .select("primary_title_slug, secondary_title_slug")
         .eq("id", proId)
         .maybeSingle();
-      const currentPrimary =
-        (proRow as { primary_title_slug?: string | null } | null)?.primary_title_slug ?? null;
-      if (currentPrimary && revokedSlugs.includes(currentPrimary)) {
+      const proCols =
+        (proRow as { primary_title_slug?: string | null; secondary_title_slug?: string | null } | null) ?? null;
+      const updates: { primary_title_slug?: null; secondary_title_slug?: null } = {};
+      if (proCols?.primary_title_slug && revokedSlugs.includes(proCols.primary_title_slug)) {
+        updates.primary_title_slug = null;
+      }
+      if (proCols?.secondary_title_slug && revokedSlugs.includes(proCols.secondary_title_slug)) {
+        updates.secondary_title_slug = null;
+      }
+      if (Object.keys(updates).length > 0) {
         await supabaseAdmin
           .from("professionals")
-          .update({ primary_title_slug: null } as never)
+          .update(updates as never)
           .eq("id", proId);
       }
       await supabaseAdmin.rpc("recompute_pro_verification", { _pro_id: proId } as never);
