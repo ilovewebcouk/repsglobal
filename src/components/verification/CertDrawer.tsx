@@ -34,13 +34,6 @@ export type CertDrawerData = {
   professional_name?: string | null;
 };
 
-const STATUS_DOT: Record<CheckStatus, string> = {
-  pass: "bg-emerald-400",
-  warn: "bg-amber-400",
-  fail: "bg-red-500",
-  pending: "bg-white/30",
-  skip: "bg-white/15",
-};
 
 type Props = {
   open: boolean;
