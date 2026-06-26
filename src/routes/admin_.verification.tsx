@@ -649,8 +649,9 @@ function AdminVerificationPage() {
                     const trustOfqual = (sub as { trust_signals?: { ofqual?: { awarding_body_match?: boolean; title_match?: boolean; is_live?: boolean; found?: boolean; rechecked_at?: string } } | null }).trust_signals?.ofqual ?? null;
                     const hasOfqualQual = !!qualNo && /^\d{3}\/\d{4}\/[A-Z0-9]$/i.test(qualNo);
                     const ofqualDetailsUrl = qualNo
-                      ? `https://register.ofqual.gov.uk/Qualification/Details/${encodeURIComponent(qualNo)}`
+                      ? `https://find-a-qualification.services.ofqual.gov.uk/qualifications/${encodeURIComponent(qualNo.replace(/\//g, ""))}`
                       : null;
+
                     const qualPill = certExpired
                       ? { tone: "fail" as const, label: "Certificate expired" }
                       : nameMismatch
