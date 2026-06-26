@@ -330,6 +330,23 @@ async function runInsuranceAi(
   }
 }
 
+/** Internal helper — download a stored insurance certificate and run AI on it. */
+async function runInsuranceAiFromPath(docPath: string, userId: string): Promise<InsuranceExtractionResult> {
+  if (!docPath.startsWith(`${userId}/`)) throw new Error("Forbidden");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: blob, error } = await supabaseAdmin.storage
+    .from("insurance-docs")
+    .download(docPath);
+  if (error || !blob) throw new Error(error?.message ?? "File not found");
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  let bin = "";
+  for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+  const b64 = btoa(bin);
+  const mime = blob.type || "application/octet-stream";
+  const dataUrl = `data:${mime};base64,${b64}`;
+  const filename = docPath.split("/").pop() ?? "insurance";
+  return runInsuranceAi(dataUrl, filename);
+
 export const extractInsuranceFromDoc = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
