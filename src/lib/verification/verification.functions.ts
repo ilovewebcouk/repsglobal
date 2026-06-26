@@ -809,3 +809,49 @@ export const recheckOfqualForSubmission = createServerFn({ method: "POST" })
       matches: result.matches ?? null,
     };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Verification column drift audit (admin)                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Returns professionals whose `verification` / `verification_status` cache
+ * columns disagree, or whose canonical `verification='verified'` flag no
+ * longer matches the live 3-pillar `is_pro_fully_verified()` check.
+ *
+ * Surfaces as a small chip on `/admin/verification` — count should be 0.
+ */
+export const auditVerificationDrift = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { data, error } = await context.supabase.rpc("audit_verification_drift");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{
+      professional_id: string;
+      slug: string | null;
+      verification: string;
+      verification_status: string;
+      fully_verified: boolean;
+      reason: string;
+    }>;
+  });
+
+/**
+ * Force-recompute a single professional's verification columns from the
+ * live 3-pillar check. Used by the drift-fix button on `/admin/verification`.
+ */
+export const recomputeProVerification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ professional_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("recompute_pro_verification", {
+      _pro_id: data.professional_id,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
