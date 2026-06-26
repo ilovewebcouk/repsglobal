@@ -15,7 +15,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
-import { TITLES, isTitleSlug, type TitleSlug } from "./titles-catalog";
+import {
+  TITLES,
+  isTitleSlug,
+  filterVisibleTitles,
+  getSupersededTitles,
+  pickHighestTitle,
+  type TitleSlug,
+} from "./titles-catalog";
 import { deriveTitlesForSubmission, type RulesOutput } from "./title-rules";
 
 /* -------------------------------------------------------------------------- */
