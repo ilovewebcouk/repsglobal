@@ -347,6 +347,23 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       console.warn("[deleteMyAccount] stripe lookup failed", e);
     }
 
+    // GDPR erasure: anonymise PII in tables not covered by auth.users FK
+    // cascade (enquiries, reviews, support_messages, support_tickets,
+    // lead_activity) and drop any storage objects under <userId>/.
+    try {
+      const { error: eraseErr } = await supabaseAdmin.rpc("erase_user_pii", {
+        _user_id: userId,
+      });
+      if (eraseErr) {
+        console.error("[deleteMyAccount] erase_user_pii failed", eraseErr);
+        throw new Error("Erasure failed — account not deleted. Please contact support.");
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.includes("Erasure failed")) throw e;
+      console.error("[deleteMyAccount] erase_user_pii threw", e);
+      throw new Error("Erasure failed — account not deleted. Please contact support.");
+    }
+
     // Auth user delete cascades via FKs.
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw error;
