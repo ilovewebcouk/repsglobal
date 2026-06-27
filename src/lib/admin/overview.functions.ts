@@ -95,7 +95,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     // -------------------------------------------------------------------
     const { data: subsRaw, error: subsErr } = await supabase
       .from("subscriptions")
-      .select("id, user_id, tier, status, current_period_end, created_at, environment");
+      .select("id, user_id, tier, status, current_period_end, created_at, environment, cancel_at_period_end");
     if (subsErr) throw subsErr;
 
     const { data: legacyLinksAll } = await supabase
@@ -248,6 +248,30 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       revBuckets.set(key, (revBuckets.get(key) ?? 0) + payment.amount);
     }
 
+    // Net standalone refund events from the revenue window.
+    // `charge.succeeded` rows above only net refunds that already existed at
+    // capture time; refunds issued LATER (cross-window) arrive as separate
+    // `charge.refunded` events and must be subtracted here.
+    const { data: refundsRaw } = await supabase
+      .from("payment_events")
+      .select("stripe_event_id, payload, created_at")
+      .eq("event_type", "charge.refunded")
+      .gte("created_at", data.from)
+      .lt("created_at", data.to);
+    const seenRefunds = new Set<string>();
+    for (const ev of refundsRaw ?? []) {
+      if (ev.stripe_event_id && seenRefunds.has(ev.stripe_event_id)) continue;
+      if (ev.stripe_event_id) seenRefunds.add(ev.stripe_event_id);
+      const payload = (ev.payload ?? {}) as Record<string, unknown>;
+      const eventData = (payload.data ?? {}) as Record<string, unknown>;
+      const obj = (eventData.object ?? {}) as Record<string, unknown>;
+      const refunded = typeof obj.amount_refunded === "number" ? obj.amount_refunded : 0;
+      if (!refunded || !ev.created_at) continue;
+      revenuePence = Math.max(0, revenuePence - refunded);
+      const key = londonDayKey(ev.created_at);
+      revBuckets.set(key, Math.max(0, (revBuckets.get(key) ?? 0) - refunded));
+    }
+
     // -------------------------------------------------------------------
     // KPI 3 — Projected Cash Due (forecast horizon window)
     // -------------------------------------------------------------------
@@ -267,6 +291,9 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     for (const s of (subsRaw ?? []).filter(isActiveSubscription)) {
       if (!s.current_period_end || !s.user_id) continue;
+      // Forecast = cash we EXPECT to receive. Subs scheduled to cancel at
+      // period end will NOT renew, so they must not inflate the forecast.
+      if ((s as { cancel_at_period_end?: boolean | null }).cancel_at_period_end === true) continue;
       const t = new Date(s.current_period_end).getTime();
       if (t < fcastFrom || t >= fcastTo) continue;
       const amount = TIER_RENEWAL_PENCE[s.tier!] ?? 0;
