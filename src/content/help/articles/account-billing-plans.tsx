@@ -5,21 +5,21 @@ export const article: HelpArticle = {
   slug: "plans-and-pricing",
   category: "account-billing",
   title: "Plans and pricing",
-  summary: "Verified is free during launch. Pro and Studio are waitlisted.",
+  summary: "Core is open at £99/year. Pro and Studio are waitlisted.",
   tier: ["verified"],
   lastReviewed: "2026-06-26",
   author: "REPS Team",
-  tags: ["pricing", "plans", "billing", "verified", "pro", "studio"],
+  tags: ["pricing", "plans", "billing", "core", "pro", "studio"],
   Body: () => (
     <>
       <p>
-        REPS has three tiers — Verified, Pro and Studio. Verified is the only tier currently
+        REPS has three tiers — Core, Pro and Studio. Core is the only tier currently
         open; Pro and Studio are on a waitlist while we finish them.
       </p>
-      <h2 id="verified">Verified — free</h2>
+      <h2 id="core">Core — £99/year</h2>
       <p>
-        Free during launch. Includes a public profile, verified badge, enquiry inbox and review
-        collection. No card required.
+        Public profile, verified badge once your 3-pillar verification is complete, enquiry
+        inbox and review collection. Billed annually.
       </p>
       <h2 id="pro">Pro — waitlist</h2>
       <p>
