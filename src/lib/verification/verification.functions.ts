@@ -583,10 +583,11 @@ export const sendVerificationReminder = createServerFn({ method: "POST" })
     const email = u?.user?.email;
     if (!email) throw new Error("No email on file");
     const { data: pro } = await supabaseAdmin
-      .from("professionals")
-      .select("display_name")
-      .eq("user_id", data.professional_id)
+      .from("profiles")
+      .select("display_name, full_name")
+      .eq("id", data.professional_id)
       .maybeSingle();
+    const proName = pro?.display_name ?? pro?.full_name ?? null;
     const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
     await sendTransactionalEmailServer({
       templateName: "verification-reminder",
