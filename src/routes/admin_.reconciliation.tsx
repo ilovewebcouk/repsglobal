@@ -244,11 +244,7 @@ function ErrorBox({ e }: { e: unknown }) {
 // Revenue table
 // ---------------------------------------------------------------------------
 
-function RevenueTable({
-  data,
-}: {
-  data: NonNullable<ReturnType<typeof getRevenueReconciliation> extends Promise<infer T> ? T : never>;
-}) {
+function RevenueTable({ data }: { data: RevenueReportDTO }) {
   if (data.groups.length === 0) {
     return (
       <div className="py-6 text-center text-white/55 text-[12px]">
