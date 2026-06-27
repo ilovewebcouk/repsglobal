@@ -57,9 +57,8 @@ export const listPaymentFailedSubs = createServerFn({ method: "GET" })
       )
       .in("status", [...FAILED_STATUSES])
       .eq("environment", "live");
-
-      .eq("environment", "live");
     if (error) throw new Error(error.message);
+
 
     const rows = (subs ?? []) as Array<{
       user_id: string;
