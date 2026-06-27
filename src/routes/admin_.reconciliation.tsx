@@ -182,6 +182,9 @@ function ReconciliationPage() {
             <a href="#registrations" className="text-white/70 hover:text-white">
               Registrations
             </a>
+            <a href="#growth" className="text-white/70 hover:text-white">
+              Net growth
+            </a>
           </div>
         </PCard>
 
