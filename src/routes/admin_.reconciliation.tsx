@@ -286,27 +286,28 @@ function ReconciliationPage() {
           </PCard>
         </section>
 
-        {/* ---- Members --------------------------------------------------- */}
+        {/* ---- Active Paying Members ------------------------------------ */}
         <section id="members" className="scroll-mt-24">
           <PCard>
             <SectionHeader
-              title="Membership reconciliation"
+              title="Active members reconciliation"
               total={
                 members.data
-                  ? `${members.data.total_members} dashboard total`
+                  ? `${members.data.counts.final_active_members.toLocaleString()} active`
                   : "loading…"
               }
-              sub="Counts every distinct user whose live subscription is active or trialing in verified/pro/studio."
+              sub="Canonical Active Paying Member collection from src/lib/members/active-paying-member.ts. Unions live Stripe subscriptions, legacy_stripe_link, and bd_member_seed; deduplicates by user_id → claimed_user_id → email → bd_member_id. This number must match the Active Members tile on /admin exactly."
             />
             {members.isLoading ? (
               <Loading />
             ) : members.error ? (
               <ErrorBox e={members.error} />
             ) : members.data ? (
-              <MembersTable rows={members.data.rows} total={members.data.total_members} />
+              <ActiveMembersView data={members.data} />
             ) : null}
           </PCard>
         </section>
+
 
         {/* ---- Registrations -------------------------------------------- */}
         <section id="registrations" className="scroll-mt-24">
