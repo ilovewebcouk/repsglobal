@@ -627,14 +627,19 @@ export interface ForecastReportDTO {
 
 export const getForecastReconciliation = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<ForecastReportDTO> => {
+  .validator(ForecastInput)
+  .handler(async ({ context, data }): Promise<ForecastReportDTO> => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
 
-    const fcast = forecastWindowFor("next_30d", );
+    const fcast = forecastWindowFor(data.horizon as ForecastHorizon, {
+      from: data.from,
+      to: data.to,
+    });
     const fromMs = new Date(fcast.from).getTime();
     const toMs = new Date(fcast.to).getTime();
-    const LEGACY_AMOUNT = TIER_RENEWAL_PENCE["verified"];
+    const LEGACY_AMOUNT = LEGACY_AMOUNT_PENCE;
+
 
     // ---- Subscriptions ------------------------------------------------------
     const { data: subsRaw, error: sErr } = await supabase
