@@ -376,7 +376,7 @@ function MembersTable({
   rows,
   total,
 }: {
-  rows: Awaited<ReturnType<typeof getMembershipReconciliation>>["rows"];
+  rows: MemberReportDTO["rows"];
   total: number;
 }) {
   return (
