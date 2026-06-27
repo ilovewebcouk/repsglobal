@@ -157,7 +157,11 @@ function AdminTeamPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex">
-                                <Button variant="outline" size="sm" disabled className="opacity-60">
+                                <Button
+                                  size="sm"
+                                  disabled
+                                  className="border border-red-500/20 bg-red-500/5 text-red-300/60"
+                                >
                                   <Trash2 className="size-3.5" />
                                   Remove
                                 </Button>
@@ -166,7 +170,11 @@ function AdminTeamPage() {
                             <TooltipContent>You can't remove your own admin access — ask another admin.</TooltipContent>
                           </Tooltip>
                         ) : (
-                          <Button variant="outline" size="sm" onClick={() => setConfirmRow(r)}>
+                          <Button
+                            size="sm"
+                            onClick={() => setConfirmRow(r)}
+                            className="border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200"
+                          >
                             <Trash2 className="size-3.5" />
                             Remove
                           </Button>
