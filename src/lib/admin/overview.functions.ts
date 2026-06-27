@@ -129,8 +129,15 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     }
 
     const nowIso = new Date().toISOString();
+    // Exclude "ghost" subscriptions: rows whose user_id no longer exists in
+    // auth.users (account deleted but Stripe sub never cancelled). They would
+    // otherwise inflate Active Members by 1 per orphan.
+    const subsFiltered = ((subsRaw ?? []) as Array<Record<string, unknown>>).filter((s) => {
+      const uid = (s.user_id as string | null) ?? null;
+      return !uid || authEmailById.has(uid);
+    });
     const activeCollection = buildActivePayingMemberCollection({
-      subs: ((subsRaw ?? []) as Array<Record<string, unknown>>).map((s) => ({
+      subs: subsFiltered.map((s) => ({
         id: String(s.id),
         user_id: (s.user_id as string | null) ?? null,
         tier: (s.tier as string | null) ?? null,

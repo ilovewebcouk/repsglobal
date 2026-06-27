@@ -1085,8 +1085,13 @@ export const getActiveMembersReconciliation = createServerFn({ method: "GET" })
     }
 
     const nowIso = new Date().toISOString();
+    // Exclude ghost subs (user deleted from auth.users but Stripe sub remains).
+    const subsFiltered = ((subsRes.data ?? []) as Array<Record<string, unknown>>).filter((s) => {
+      const uid = (s.user_id as string | null) ?? null;
+      return !uid || authEmailById.has(uid);
+    });
     const result = buildActivePayingMemberCollection({
-      subs: ((subsRes.data ?? []) as Array<Record<string, unknown>>).map((s) => ({
+      subs: subsFiltered.map((s) => ({
         id: String(s.id),
         user_id: (s.user_id as string | null) ?? null,
         tier: (s.tier as string | null) ?? null,
