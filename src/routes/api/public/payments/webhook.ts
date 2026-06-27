@@ -660,13 +660,18 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     const { data: profile } = await supabaseAdmin
                       .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                     const graceEnd = new Date(Date.now() + 14 * 86400000);
+                    const invAmt = ((invoice as unknown as { amount_due?: number }).amount_due ?? 0) / 100;
+                    const invAmount = invAmt > 0 ? `£${invAmt.toFixed(invAmt % 1 === 0 ? 0 : 2)}` : "£99";
+                    const invTier = subId
+                      ? (((await stripe.subscriptions.retrieve(subId)).metadata?.tier as string) ?? "verified")
+                      : "verified";
                     await mintAndEmailRenewalToken({
                       userId, email, purpose: "payment_failed",
                       templateName: "renewal-payment-failed",
-                      intendedTier: "verified",
+                      intendedTier: invTier,
                       templateData: {
                         proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
-                        amount: "£99",
+                        amount: invAmount,
                         graceEndDate: graceEnd.toLocaleDateString("en-GB", {
                           day: "numeric", month: "long", year: "numeric",
                         }),
