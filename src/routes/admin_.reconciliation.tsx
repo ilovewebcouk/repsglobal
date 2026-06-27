@@ -28,6 +28,14 @@ import {
   type GrowthReportDTO,
   type ActiveMembersReportDTO,
 } from "@/lib/admin/reconciliation.functions";
+import {
+  listPaymentFailedSubs,
+  recoverPaymentFailedSub,
+  type PaymentFailedSubRow,
+} from "@/lib/admin/payment-recovery.functions";
+import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 import {
   FORECAST_HORIZON_OPTIONS,
@@ -145,6 +153,13 @@ function ReconciliationPage() {
     queryFn: () => growthFn({ data: { from: range.from, to: range.to } }),
   });
 
+  const paymentFailedFn = useServerFn(listPaymentFailedSubs);
+  const paymentFailed = useQuery({
+    queryKey: ["admin-recon", "payment-failed"],
+    queryFn: () => paymentFailedFn(),
+  });
+
+
 
   return (
     <DashboardShell
@@ -181,11 +196,15 @@ function ReconciliationPage() {
             <a href="#members" className="text-white/70 hover:text-white">
               Members
             </a>
+            <a href="#payment-failed" className="text-white/70 hover:text-white">
+              Payment failed
+            </a>
             <a href="#registrations" className="text-white/70 hover:text-white">
               Registrations
             </a>
             <a href="#growth" className="text-white/70 hover:text-white">
               Net growth
+
             </a>
           </div>
         </PCard>
@@ -308,8 +327,30 @@ function ReconciliationPage() {
           </PCard>
         </section>
 
+        {/* ---- Payment failed / incomplete ------------------------------ */}
+        <section id="payment-failed" className="scroll-mt-24">
+          <PCard>
+            <SectionHeader
+              title="Payment failed / incomplete"
+              total={
+                paymentFailed.data
+                  ? `${paymentFailed.data.length} subs needing recovery`
+                  : "loading…"
+              }
+              sub="Live Stripe subscriptions stuck in incomplete / past_due / unpaid. These members were charged but the payment failed — they silently drop out of the Active Members count. Use 'Send recovery email' to enrol them in the churn lifecycle and mint a single-use card-update link."
+            />
+            {paymentFailed.isLoading ? (
+              <Loading />
+            ) : paymentFailed.error ? (
+              <ErrorBox e={paymentFailed.error} />
+            ) : paymentFailed.data ? (
+              <PaymentFailedTable rows={paymentFailed.data} />
+            ) : null}
+          </PCard>
+        </section>
 
         {/* ---- Registrations -------------------------------------------- */}
+
         <section id="registrations" className="scroll-mt-24">
           <PCard>
             <SectionHeader
@@ -987,6 +1028,110 @@ function GrowthTables({ data }: { data: GrowthReportDTO }) {
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentFailedTable({ rows }: { rows: PaymentFailedSubRow[] }) {
+  const qc = useQueryClient();
+  const recoverFn = useServerFn(recoverPaymentFailedSub);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  if (rows.length === 0) {
+    return (
+      <div className="mt-4 rounded-[14px] border border-emerald-400/30 bg-emerald-500/10 p-4 text-[13px] text-emerald-200">
+        No subscriptions stuck in incomplete / past_due / unpaid. Every paying member is fully active.
+      </div>
+    );
+  }
+
+  async function send(userId: string, tier: string) {
+    setBusyId(userId);
+    setMsg(null);
+    try {
+      const t = (tier === "pro" ? "pro" : "verified") as "verified" | "pro";
+      const r = await recoverFn({ data: { user_id: userId, intended_tier: t } });
+      setMsg(r.ok ? "Sent recovery email and enrolled in churn lifecycle." : `Failed: ${(r as { error?: string }).error ?? "unknown"}`);
+      await qc.invalidateQueries({ queryKey: ["admin-recon", "payment-failed"] });
+    } catch (e) {
+      setMsg(`Failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div className="mt-4 space-y-3">
+      {msg ? (
+        <div className="rounded-[10px] border border-white/15 bg-white/5 p-3 text-[12px] text-white/80">{msg}</div>
+      ) : null}
+      <div className="overflow-x-auto">
+        <table className="w-full text-[13px]">
+          <thead className="text-left text-white/55">
+            <tr>
+              <th className="py-2 pr-4">Member</th>
+              <th className="py-2 pr-4">Status</th>
+              <th className="py-2 pr-4">Tier</th>
+              <th className="py-2 pr-4">Churn</th>
+              <th className="py-2 pr-4">Nudges</th>
+              <th className="py-2 pr-4">Stripe</th>
+              <th className="py-2 pr-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.user_id} className="border-t border-white/10">
+                <td className="py-2 pr-4">
+                  <div className="font-medium text-white">{r.full_name ?? "—"}</div>
+                  <div className="text-[11px] text-white/55">{r.email ?? r.user_id}</div>
+                  {r.is_legacy_migration ? (
+                    <Badge className="mt-1 border-amber-400/40 bg-amber-400/10 text-amber-200">BD migration</Badge>
+                  ) : null}
+                </td>
+                <td className="py-2 pr-4">
+                  <Badge className="border-rose-400/40 bg-rose-500/10 text-rose-200">{r.status}</Badge>
+                </td>
+                <td className="py-2 pr-4 text-white/80">{r.tier ?? "—"}</td>
+                <td className="py-2 pr-4 text-white/80">{r.churn_stage ?? "—"}</td>
+                <td className="py-2 pr-4 text-white/80">
+                  {r.nudge_count}
+                  {r.last_nudge_at ? (
+                    <span className="ml-1 text-[11px] text-white/45">{fmtDateTime(r.last_nudge_at)}</span>
+                  ) : null}
+                  {r.renewal_token_active ? (
+                    <Badge className="ml-2 border-emerald-400/30 bg-emerald-500/15 text-emerald-200">token live</Badge>
+                  ) : null}
+                </td>
+                <td className="py-2 pr-4">
+                  {r.stripe_customer_id ? (
+                    <a
+                      href={`https://dashboard.stripe.com/customers/${r.stripe_customer_id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-reps-orange underline"
+                    >
+                      open
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="py-2 pr-4 text-right">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busyId === r.user_id}
+                    onClick={() => send(r.user_id, r.tier ?? "verified")}
+                  >
+                    {busyId === r.user_id ? "Sending…" : "Send recovery email"}
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

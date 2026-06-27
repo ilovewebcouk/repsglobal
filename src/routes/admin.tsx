@@ -1,8 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { requireRole } from "@/lib/route-gates";
+import { listPaymentFailedSubs } from "@/lib/admin/payment-recovery.functions";
+
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PeriodSelector } from "@/components/admin/PeriodSelector";
@@ -145,6 +148,7 @@ function AdminDashboardPage() {
       actions={<PeriodSelector value={period} />}
     >
       <div className="space-y-6">
+        <PaymentFailedBanner />
         <OverviewKpis data={data} fcastHorizon={fcast} />
         <RevenueAndMembership data={data} periodLabel={periodLabel} />
         <RegistrationsAndSpecialisms />
@@ -152,6 +156,27 @@ function AdminDashboardPage() {
         <PlatformBreakdown />
         <TopProsTable />
       </div>
+
     </DashboardShell>
+  );
+}
+
+function PaymentFailedBanner() {
+  const fn = useServerFn(listPaymentFailedSubs);
+  const q = useQuery({
+    queryKey: ["admin-overview", "payment-failed-count"],
+    queryFn: () => fn(),
+    staleTime: 60_000,
+  });
+  const count = q.data?.length ?? 0;
+  if (!q.data || count === 0) return null;
+  return (
+    <div className="rounded-[14px] border border-rose-400/40 bg-rose-500/10 p-4 text-[13px] text-rose-100">
+      <strong>{count}</strong> subscription{count === 1 ? "" : "s"} stuck in payment-failed / incomplete — these members are silently missing from Active Members.{" "}
+      <Link to="/admin/reconciliation" hash="payment-failed" className="underline">
+        Review and recover
+      </Link>
+      .
+    </div>
   );
 }
