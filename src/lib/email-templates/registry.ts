@@ -23,6 +23,9 @@ import { template as reviewReply } from './review-reply'
 import { template as reviewRemoved } from './review-removed'
 import { template as insuranceBlocked } from './insurance-blocked'
 import { template as insuranceRenewalDue } from './insurance-renewal-due'
+import { template as renewalCardNeeded } from './renewal-card-needed'
+import { template as renewalPaymentFailed } from './renewal-payment-failed'
+import { template as winbackLapsed } from './winback-lapsed'
 
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
@@ -40,6 +43,9 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'review-removed': reviewRemoved,
   'insurance-blocked': insuranceBlocked,
   'insurance-renewal-due': insuranceRenewalDue,
+  'renewal-card-needed': renewalCardNeeded,
+  'renewal-payment-failed': renewalPaymentFailed,
+  'winback-lapsed': winbackLapsed,
 }
 
 
