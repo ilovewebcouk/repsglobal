@@ -95,7 +95,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     // -------------------------------------------------------------------
     const { data: subsRaw, error: subsErr } = await supabase
       .from("subscriptions")
-      .select("id, user_id, tier, status, current_period_end, created_at, environment");
+      .select("id, user_id, tier, status, current_period_end, created_at, environment, cancel_at_period_end");
     if (subsErr) throw subsErr;
 
     const { data: legacyLinksAll } = await supabase
@@ -267,6 +267,9 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     for (const s of (subsRaw ?? []).filter(isActiveSubscription)) {
       if (!s.current_period_end || !s.user_id) continue;
+      // Forecast = cash we EXPECT to receive. Subs scheduled to cancel at
+      // period end will NOT renew, so they must not inflate the forecast.
+      if ((s as { cancel_at_period_end?: boolean | null }).cancel_at_period_end === true) continue;
       const t = new Date(s.current_period_end).getTime();
       if (t < fcastFrom || t >= fcastTo) continue;
       const amount = TIER_RENEWAL_PENCE[s.tier!] ?? 0;

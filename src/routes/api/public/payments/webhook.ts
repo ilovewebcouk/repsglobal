@@ -522,6 +522,48 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     _source_event: event.type,
                     _metadata: { subscription_id: sub.id },
                   } as never);
+                } else if (sub.status === "past_due" || sub.status === "unpaid") {
+                  // Subscription transitioned to past_due — enrol in recovery
+                  // (parallel to invoice.payment_failed; idempotent via
+                  // enter_churn_stage + dedupe on recent nudges).
+                  await supabaseAdmin.rpc("enter_churn_stage" as never, {
+                    _user_id: userId, _stage: "at_risk",
+                    _reason: `Subscription status ${sub.status}`,
+                    _source_event: event.type,
+                    _metadata: { subscription_id: sub.id, status: sub.status },
+                  } as never);
+                  try {
+                    const { mintAndEmailRenewalToken } = await import("@/lib/churn/lifecycle.functions");
+                    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+                    const email = authUser?.user?.email ?? null;
+                    if (email) {
+                      // Throttle: skip if already nudged in last 3 days
+                      const { data: existing } = await supabaseAdmin
+                        .from("churn_lifecycle").select("last_nudge_at")
+                        .eq("user_id", userId).maybeSingle();
+                      const recent = existing?.last_nudge_at
+                        && (Date.now() - new Date(existing.last_nudge_at as string).getTime()) < 3 * 86400000;
+                      if (!recent) {
+                        const { data: profile } = await supabaseAdmin
+                          .from("profiles").select("full_name").eq("id", userId).maybeSingle();
+                        const graceEnd = new Date(Date.now() + 14 * 86400000);
+                        await mintAndEmailRenewalToken({
+                          userId, email, purpose: "payment_failed",
+                          templateName: "renewal-payment-failed",
+                          intendedTier: (sub.metadata?.tier as string) ?? "verified",
+                          templateData: {
+                            proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
+                            amount: "£99",
+                            graceEndDate: graceEnd.toLocaleDateString("en-GB", {
+                              day: "numeric", month: "long", year: "numeric",
+                            }),
+                          },
+                        });
+                      }
+                    }
+                  } catch (e) {
+                    console.warn("[churn] past_due email failed:", e);
+                  }
                 } else if (sub.status === "active" || sub.status === "trialing") {
                   await supabaseAdmin.rpc("enter_churn_stage" as never, {
                     _user_id: userId, _stage: "active",
