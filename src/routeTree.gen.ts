@@ -108,7 +108,6 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/public/support/contact-form'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
-import { Route as ApiPublicHooksSupportAutoCloseRouteImport } from './routes/api/public/hooks/support-auto-close'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
 import { Route as ApiPublicHooksLifecycleCronRouteImport } from './routes/api/public/hooks/lifecycle-cron'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
@@ -644,12 +643,6 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksSupportAutoCloseRoute =
-  ApiPublicHooksSupportAutoCloseRouteImport.update({
-    id: '/api/public/hooks/support-auto-close',
-    path: '/api/public/hooks/support-auto-close',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksSendScheduledCampaignsRoute =
   ApiPublicHooksSendScheduledCampaignsRouteImport.update({
     id: '/api/public/hooks/send-scheduled-campaigns',
@@ -949,7 +942,6 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
-  '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1076,7 +1068,6 @@ export interface FileRoutesByTo {
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
-  '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1211,7 +1202,6 @@ export interface FileRoutesById {
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
-  '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/support/contact-form': typeof ApiPublicSupportContactFormRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1344,7 +1334,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
-    | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
@@ -1471,7 +1460,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
-    | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
@@ -1605,7 +1593,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
-    | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
     | '/api/public/support/contact-form'
     | '/lovable/email/queue/process'
@@ -1718,7 +1705,6 @@ export interface RootRouteChildren {
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicHooksLifecycleCronRoute: typeof ApiPublicHooksLifecycleCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
-  ApiPublicHooksSupportAutoCloseRoute: typeof ApiPublicHooksSupportAutoCloseRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicSupportContactFormRoute: typeof ApiPublicSupportContactFormRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -2422,13 +2408,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/support-auto-close': {
-      id: '/api/public/hooks/support-auto-close'
-      path: '/api/public/hooks/support-auto-close'
-      fullPath: '/api/public/hooks/support-auto-close'
-      preLoaderRoute: typeof ApiPublicHooksSupportAutoCloseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/send-scheduled-campaigns': {
       id: '/api/public/hooks/send-scheduled-campaigns'
       path: '/api/public/hooks/send-scheduled-campaigns'
@@ -2949,7 +2928,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksLifecycleCronRoute: ApiPublicHooksLifecycleCronRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
-  ApiPublicHooksSupportAutoCloseRoute: ApiPublicHooksSupportAutoCloseRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicSupportContactFormRoute: ApiPublicSupportContactFormRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
