@@ -88,14 +88,19 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     // count_confirmed_professionals — i.e. they have a non-demo professionals
     // row AND an email-confirmed auth user. Subtracting every admin role
     // would under-count when an admin has no pro row (e.g. Scott).
-    const { data: adminPros } = adminIds.size
-      ? await supabaseAdmin
-          .from('professionals')
-          .select('id, verification, is_demo, auth_user:auth_users!inner(email_confirmed_at)')
-          .in('id', Array.from(adminIds))
-      : { data: [] as Array<{ id: string; verification: string | null; is_demo: boolean | null; auth_user: { email_confirmed_at: string | null } | null }> };
-    const adminProRows = ((adminPros ?? []) as Array<{ id: string; verification: string | null; is_demo: boolean | null; auth_user: { email_confirmed_at: string | null } | null }>)
-      .filter(r => !r.is_demo && r.auth_user?.email_confirmed_at);
+    const adminProsRaw = adminIds.size
+      ? (await supabaseAdmin.from('professionals').select('id, verification, is_demo').in('id', Array.from(adminIds))).data ?? []
+      : [];
+    const candidateIds = (adminProsRaw as Array<{ id: string; is_demo: boolean | null }>)
+      .filter(r => !r.is_demo)
+      .map(r => r.id);
+    const confirmedAdminIds = new Set<string>();
+    for (const id of candidateIds) {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(id);
+      if (u?.user?.email_confirmed_at) confirmedAdminIds.add(id);
+    }
+    const adminProRows = (adminProsRaw as Array<{ id: string; verification: string | null; is_demo: boolean | null }>)
+      .filter(r => confirmedAdminIds.has(r.id));
     const adminProCount = adminProRows.length;
     const adminVerifiedCount = adminProRows.filter(r => r.verification === 'verified').length;
 
