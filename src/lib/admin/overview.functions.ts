@@ -102,38 +102,73 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     if (payErr) throw payErr;
 
     const seenEvents = new Set<string>();
-    let revenuePence = 0;
-    const revBuckets = new Map<string, number>();
+    const moneyByPayment = new Map<
+      string,
+      { amount: number; createdAt: string; rank: number }
+    >();
+
+    const asString = (value: unknown) =>
+      typeof value === "string" && value.length > 0 ? value : null;
+
     for (const ev of paymentsRaw ?? []) {
       if (ev.stripe_event_id && seenEvents.has(ev.stripe_event_id)) continue;
       if (ev.stripe_event_id) seenEvents.add(ev.stripe_event_id);
+
       const payload = (ev.payload ?? {}) as Record<string, unknown>;
-      // Stripe events are stored verbatim — the money lives at
-      // payload.data.object.amount_paid (invoices) / .amount (charges).
-      const data = (payload.data ?? {}) as Record<string, unknown>;
-      const obj = ((data.object ?? {}) as Record<string, unknown>);
-      // Stripe fires BOTH charge.succeeded and invoice.payment_succeeded for
-      // a subscription invoice — same money, two events. Count the invoice
-      // event for any invoiced payment, and only count standalone charges
-      // (no associated invoice) on the charge.succeeded rail.
-      if (ev.event_type === "charge.succeeded" && obj.invoice) continue;
+      const eventData = (payload.data ?? {}) as Record<string, unknown>;
+      const obj = (eventData.object ?? {}) as Record<string, unknown>;
+
       let amount =
         typeof obj.amount_paid === "number"
-          ? (obj.amount_paid as number)
+          ? obj.amount_paid
           : typeof obj.amount === "number"
-            ? (obj.amount as number)
+            ? obj.amount
             : 0;
-      // Net out refunds on charge.succeeded so the tile stays honest.
+
+      // Net out refunds on standalone charge rows. For subscription payments
+      // where Stripe also sends invoice.payment_succeeded, the invoice row is
+      // the canonical payment row and this charge row is only used for de-dupe.
       if (ev.event_type === "charge.succeeded") {
         if (obj.refunded === true) amount = 0;
         else if (typeof obj.amount_refunded === "number") {
-          amount = Math.max(0, amount - (obj.amount_refunded as number));
+          amount = Math.max(0, amount - obj.amount_refunded);
         }
       }
-      if (!amount) continue;
-      revenuePence += amount;
-      const key = londonDayKey(ev.created_at!);
-      revBuckets.set(key, (revBuckets.get(key) ?? 0) + amount);
+      if (!amount || !ev.created_at) continue;
+
+      const objectId = asString(obj.id);
+      const paymentIntent = asString(obj.payment_intent);
+      const chargeId =
+        asString(obj.charge) ??
+        (ev.event_type === "charge.succeeded" ? objectId : null);
+      const paymentKey = paymentIntent
+        ? `pi:${paymentIntent}`
+        : chargeId
+          ? `charge:${chargeId}`
+          : objectId
+            ? `object:${objectId}`
+            : `event:${ev.stripe_event_id ?? ev.created_at}`;
+
+      // Prefer invoice rows for subscription payments because they carry the
+      // customer/user attribution and billing reason. Charge rows stay counted
+      // when they are genuinely standalone.
+      const rank = ev.event_type === "invoice.payment_succeeded" ? 1 : 2;
+      const previous = moneyByPayment.get(paymentKey);
+      if (!previous || rank < previous.rank) {
+        moneyByPayment.set(paymentKey, {
+          amount,
+          createdAt: ev.created_at,
+          rank,
+        });
+      }
+    }
+
+    let revenuePence = 0;
+    const revBuckets = new Map<string, number>();
+    for (const payment of moneyByPayment.values()) {
+      revenuePence += payment.amount;
+      const key = londonDayKey(payment.createdAt);
+      revBuckets.set(key, (revBuckets.get(key) ?? 0) + payment.amount);
     }
 
     // 3) Forecast — active subs renewing in next 30 days, plus approved migration charges.
