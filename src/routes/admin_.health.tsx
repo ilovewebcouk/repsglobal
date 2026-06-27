@@ -34,6 +34,7 @@ function thresholdFor(key: keyof PlatformHealthSnapshot, value: number): Severit
     case "queue_transactional":
     case "queue_auth": return value < 50 ? "ok" : value < 500 ? "warn" : "crit";
     case "dlq_emails_7d": return value === 0 ? "ok" : value < 10 ? "warn" : "crit";
+    case "dlq_webhook_events_7d": return value === 0 ? "ok" : "crit";
     case "orphan_subscriptions": return value === 0 ? "ok" : "warn";
     case "stuck_payment_events": return value === 0 ? "ok" : "crit";
     case "failed_payments_active": return value === 0 ? "ok" : value < 10 ? "warn" : "crit";
@@ -109,6 +110,7 @@ function HealthPage() {
               <StatTile label="Transactional queue" value={data.queue_transactional} sev={thresholdFor("queue_transactional", data.queue_transactional)} />
               <StatTile label="Auth email queue" value={data.queue_auth} sev={thresholdFor("queue_auth", data.queue_auth)} />
               <StatTile label="Email DLQ (7d)" value={data.dlq_emails_7d} sev={thresholdFor("dlq_emails_7d", data.dlq_emails_7d)} />
+              <StatTile label="Webhook DLQ (7d)" value={data.dlq_webhook_events_7d} sev={thresholdFor("dlq_webhook_events_7d", data.dlq_webhook_events_7d)} hint="Stripe events that exhausted retries" />
               <StatTile label="Suppressions (7d)" value={data.suppressions_7d} sev={thresholdFor("suppressions_7d", data.suppressions_7d)} hint="bounces + complaints" />
             </div>
 
