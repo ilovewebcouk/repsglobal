@@ -34,16 +34,15 @@ export interface PaymentFailedSubRow {
   renewal_token_active: boolean;
 }
 
-async function assertAdmin(context: {
-  supabase: { rpc: (n: string, p: object) => Promise<{ data: unknown }> };
-  userId: string;
-}) {
-  const { data: isAdmin } = await context.supabase.rpc("has_role", {
+async function assertAdmin(context: { supabase: unknown; userId: string }) {
+  const supa = context.supabase as { rpc: (n: string, p: object) => Promise<{ data: unknown }> };
+  const { data: isAdmin } = await supa.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
-  } as never);
+  });
   if (!isAdmin) throw new Error("Forbidden");
 }
+
 
 export const listPaymentFailedSubs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
