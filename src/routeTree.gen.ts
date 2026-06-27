@@ -84,6 +84,7 @@ import { Route as AdminMembershipsRouteImport } from './routes/admin_.membership
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
+import { Route as AdminChurnRouteImport } from './routes/admin_.churn'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
@@ -512,6 +513,11 @@ const AdminCpdRoute = AdminCpdRouteImport.update({
   path: '/admin/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminChurnRoute = AdminChurnRouteImport.update({
+  id: '/admin_/churn',
+  path: '/admin/churn',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCampaignsRoute = AdminCampaignsRouteImport.update({
   id: '/admin_/campaigns',
   path: '/admin/campaigns',
@@ -847,6 +853,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/churn': typeof AdminChurnRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
@@ -972,6 +979,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/churn': typeof AdminChurnRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
@@ -1098,6 +1106,7 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
   '/admin_/campaigns': typeof AdminCampaignsRoute
+  '/admin_/churn': typeof AdminChurnRoute
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
@@ -1227,6 +1236,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/verify-email'
     | '/admin/campaigns'
+    | '/admin/churn'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
@@ -1352,6 +1362,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/verify-email'
     | '/admin/campaigns'
+    | '/admin/churn'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
@@ -1477,6 +1488,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/_authenticated/_professional'
     | '/admin_/campaigns'
+    | '/admin_/churn'
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/gyms'
@@ -1606,6 +1618,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   AdminCampaignsRoute: typeof AdminCampaignsRoute
+  AdminChurnRoute: typeof AdminChurnRoute
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
@@ -2187,6 +2200,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/cpd'
       fullPath: '/admin/cpd'
       preLoaderRoute: typeof AdminCpdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/churn': {
+      id: '/admin_/churn'
+      path: '/admin/churn'
+      fullPath: '/admin/churn'
+      preLoaderRoute: typeof AdminChurnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/campaigns': {
@@ -2796,6 +2816,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   AdminCampaignsRoute: AdminCampaignsRoute,
+  AdminChurnRoute: AdminChurnRoute,
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
