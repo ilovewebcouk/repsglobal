@@ -292,7 +292,7 @@ export const runLegacyRenewalBatch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z
-      .object({ environment: z.enum(["sandbox", "live"]).default("live"), limit: z.number().int().min(1).max(200).default(50) })
+      .object({ environment: z.enum(["sandbox", "live"]).default("live"), limit: z.number().int().min(1).max(1000).default(50) })
       .parse(input),
   )
   .handler(async ({ data, context }): Promise<LegacyRenewalResult> => {
