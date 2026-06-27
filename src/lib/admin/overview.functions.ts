@@ -258,7 +258,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       fcastBuckets.set(key, (fcastBuckets.get(key) ?? 0) + amount);
     };
 
-    for (const s of subs) {
+    for (const s of (subsRaw ?? []).filter(isActiveSubscription)) {
       if (!s.current_period_end || !s.user_id) continue;
       const t = new Date(s.current_period_end).getTime();
       if (t < fcastFrom || t >= fcastTo) continue;
@@ -267,6 +267,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       addForecast(s.current_period_end, amount);
       countedUsers.add(s.user_id);
     }
+
 
     const { data: seeds } = await supabase
       .from("bd_member_seed")
