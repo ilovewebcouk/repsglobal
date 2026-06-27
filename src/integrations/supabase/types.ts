@@ -2395,6 +2395,54 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_view_events: {
+        Row: {
+          created_at: string
+          id: number
+          professional_id: string
+          referrer_host: string | null
+          source: string | null
+          user_agent: string | null
+          viewer_ip_hash: string | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          professional_id: string
+          referrer_host?: string | null
+          source?: string | null
+          user_agent?: string | null
+          viewer_ip_hash?: string | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          professional_id?: string
+          referrer_host?: string | null
+          source?: string | null
+          user_agent?: string | null
+          viewer_ip_hash?: string | null
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_view_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_view_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_is_ai_generated: boolean
@@ -2699,6 +2747,54 @@ export type Database = {
           },
           {
             foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      search_appearance_events: {
+        Row: {
+          created_at: string
+          id: number
+          location_slug: string | null
+          page: number | null
+          position: number | null
+          profession_slug: string | null
+          professional_id: string
+          query: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          location_slug?: string | null
+          page?: number | null
+          position?: number | null
+          profession_slug?: string | null
+          professional_id: string
+          query?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          location_slug?: string | null
+          page?: number | null
+          position?: number | null
+          profession_slug?: string | null
+          professional_id?: string
+          query?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_appearance_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "search_appearance_events_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "v_identity_review_queue"
