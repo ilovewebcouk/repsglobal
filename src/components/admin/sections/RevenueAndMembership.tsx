@@ -85,7 +85,11 @@ export function RevenueAndMembership({
             {data.totalMembers.toLocaleString()}
           </span>
           <span className="text-[12px] text-white/55">
-            {data.totalMembersDelta > 0 ? `+${data.totalMembersDelta} this period` : "No change"}
+            {data.netMemberGrowth > 0
+              ? `+${data.netMemberGrowth} net this period`
+              : data.netMemberGrowth < 0
+                ? `${data.netMemberGrowth} net this period`
+                : "No change this period"}
           </span>
         </div>
         <div className="mt-4">

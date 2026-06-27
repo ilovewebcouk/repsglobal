@@ -10,19 +10,37 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { forecastWindow } from "./overview-period";
+import { forecastWindowFor } from "./overview-period";
+import {
+  ACTIVE_STATUSES,
+  COUNTED_TIERS,
+  TIER_RANK,
+  TIER_RENEWAL_PENCE,
+  LEGACY_AMOUNT_PENCE,
+  TERMINAL_CHURN_STAGES,
+  asString,
+  type ForecastHorizon,
+} from "./metrics-definitions";
 
 const Input = z.object({
   from: z.string(),
   to: z.string(),
 });
 
-// Mirror src/lib/admin/overview.functions.ts (TIER_RENEWAL_PENCE).
-const TIER_RENEWAL_PENCE: Record<string, number> = {
-  verified: 9900,
-  pro: 5900,
-  studio: 14900,
-};
+const ForecastInput = z.object({
+  horizon: z
+    .enum([
+      "remaining_this_month",
+      "next_month",
+      "next_30d",
+      "current_quarter",
+      "current_year",
+      "custom",
+    ])
+    .default("next_30d"),
+  from: z.string().optional(),
+  to: z.string().optional(),
+});
 
 // ---- Shared types -----------------------------------------------------------
 
@@ -102,11 +120,8 @@ export interface RegistrationReportDTO {
 
 // ---- Helpers (mirror overview.functions.ts) --------------------------------
 
-const ACTIVE_STATUSES = ["active", "trialing"];
-const COUNTED_TIERS = ["verified", "pro", "studio"];
+const asNumber_ = null; // placeholder removed below
 
-const asString = (v: unknown) =>
-  typeof v === "string" && v.length > 0 ? v : null;
 
 const asNumber = (v: unknown) => (typeof v === "number" ? v : null);
 
@@ -361,8 +376,8 @@ export const getMembershipReconciliation = createServerFn({ method: "GET" })
     for (const s of subsRaw ?? []) {
       const liveAndActive =
         s.environment === "live" &&
-        ACTIVE_STATUSES.includes(s.status ?? "") &&
-        COUNTED_TIERS.includes(s.tier ?? "");
+        (ACTIVE_STATUSES as readonly string[]).includes(s.status ?? "") &&
+        (COUNTED_TIERS as readonly string[]).includes(s.tier ?? "");
       if (!liveAndActive || !s.user_id) continue;
       const currentWinTier = winningTierByUser.get(s.user_id);
       if (
@@ -400,9 +415,9 @@ export const getMembershipReconciliation = createServerFn({ method: "GET" })
       let reason: string | null = null;
       if (s.environment !== "live")
         reason = `environment="${s.environment}" (dashboard requires "live")`;
-      else if (!ACTIVE_STATUSES.includes(s.status ?? ""))
+      else if (!(ACTIVE_STATUSES as readonly string[]).includes(s.status ?? ""))
         reason = `status="${s.status}" (dashboard requires active or trialing)`;
-      else if (!COUNTED_TIERS.includes(s.tier ?? ""))
+      else if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? ""))
         reason = `tier="${s.tier}" (dashboard counts only verified/pro/studio)`;
       else if (winnerByUser.get(s.user_id ?? "") !== s.id)
         reason = `superseded by another live+active subscription for the same user (winner: ${winnerByUser.get(s.user_id ?? "") ?? "n/a"})`;
@@ -456,7 +471,7 @@ export const getRegistrationsReconciliation = createServerFn({ method: "GET" })
     const firstPaidAt = new Map<string, string>();
     for (const s of subsRaw ?? []) {
       if (s.environment !== "live") continue;
-      if (!COUNTED_TIERS.includes(s.tier ?? "")) continue;
+      if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? "")) continue;
       if (!s.user_id || !s.created_at) continue;
       const prev = firstPaidAt.get(s.user_id);
       if (
@@ -612,14 +627,19 @@ export interface ForecastReportDTO {
 
 export const getForecastReconciliation = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<ForecastReportDTO> => {
+  .inputValidator((d: unknown) => ForecastInput.parse(d))
+  .handler(async ({ context, data }): Promise<ForecastReportDTO> => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
 
-    const fcast = forecastWindow();
+    const fcast = forecastWindowFor(data.horizon as ForecastHorizon, {
+      from: data.from,
+      to: data.to,
+    });
     const fromMs = new Date(fcast.from).getTime();
     const toMs = new Date(fcast.to).getTime();
-    const LEGACY_AMOUNT = TIER_RENEWAL_PENCE["verified"];
+    const LEGACY_AMOUNT = LEGACY_AMOUNT_PENCE;
+
 
     // ---- Subscriptions ------------------------------------------------------
     const { data: subsRaw, error: sErr } = await supabase
@@ -650,13 +670,13 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
     const countedUsers = new Set<string>();
     const countedMembers = new Set<string>();
 
-    const subs: ForecastSubRow[] = (subsRaw ?? []).map((s) => {
+    const subs: ForecastSubRow[] = (subsRaw ?? []).map((s: any) => {
       let reason: string | null = null;
       if (s.environment !== "live")
         reason = `environment="${s.environment}" (forecast requires "live")`;
-      else if (!ACTIVE_STATUSES.includes(s.status ?? ""))
+      else if (!(ACTIVE_STATUSES as readonly string[]).includes(s.status ?? ""))
         reason = `status="${s.status}" (forecast requires active or trialing)`;
-      else if (!COUNTED_TIERS.includes(s.tier ?? ""))
+      else if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? ""))
         reason = `tier="${s.tier}" (forecast counts only verified/pro/studio)`;
       else if (!s.current_period_end)
         reason = "current_period_end is null (no renewal date to schedule)";
@@ -716,7 +736,7 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       .order("access_expires_at", { ascending: true });
     if (lErr) throw lErr;
 
-    const links: ForecastLegacyLinkRow[] = (linksRaw ?? []).map((l) => {
+    const links: ForecastLegacyLinkRow[] = (linksRaw ?? []).map((l: any) => {
       const memberKey = l.bd_member_id != null ? String(l.bd_member_id) : null;
       const seed = memberKey ? seedByMember.get(memberKey) : null;
       const uid = seed?.claimed_user_id ?? null;
@@ -819,5 +839,183 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       subs,
       links,
       seeds,
+    };
+  });
+
+// =============================================================================
+// Net Member Growth reconciliation
+// =============================================================================
+
+export interface GrowthJoinedRow {
+  user_id: string;
+  email: string | null;
+  first_paid_subscription_at: string | null;
+  tier: string | null;
+  included_in_joined: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface GrowthChurnedRow {
+  user_id: string;
+  email: string | null;
+  stage: string | null;
+  entered_at: string | null;
+  included_in_churned: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface GrowthReportDTO {
+  period: { from: string; to: string };
+  joined_total: number;
+  churned_total: number;
+  net_growth: number;
+  joined: GrowthJoinedRow[];
+  churned: GrowthChurnedRow[];
+}
+
+export const getGrowthReconciliation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => Input.parse(d))
+  .handler(async ({ data, context }): Promise<GrowthReportDTO> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const fromMs = new Date(data.from).getTime();
+    const toMs = new Date(data.to).getTime();
+
+    // Email map (auth admin paged listing — same pattern as elsewhere here).
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const emailByUser = new Map<string, string | null>();
+    let page = 1;
+    while (page < 50) {
+      const { data: users, error: uErr } =
+        await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (uErr) break;
+      for (const u of users.users) {
+        if (u.email) emailByUser.set(u.id, u.email);
+      }
+      if (users.users.length < 200) break;
+      page += 1;
+    }
+
+    // Joined — first paid subscription per user (mirror overview).
+    const { data: subsRaw, error: sErr } = await supabase
+      .from("subscriptions")
+      .select("user_id, tier, environment, created_at");
+    if (sErr) throw sErr;
+
+    const firstByUser = new Map<
+      string,
+      { tier: string | null; created_at: string | null }
+    >();
+    for (const s of subsRaw ?? []) {
+      if (s.environment !== "live") continue;
+      if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? "")) continue;
+      if (!s.user_id || !s.created_at) continue;
+      const prev = firstByUser.get(s.user_id);
+      if (
+        !prev ||
+        !prev.created_at ||
+        new Date(s.created_at).getTime() < new Date(prev.created_at).getTime()
+      ) {
+        firstByUser.set(s.user_id, { tier: s.tier, created_at: s.created_at });
+      }
+    }
+
+    const joined: GrowthJoinedRow[] = [];
+    let joinedCount = 0;
+    for (const [uid, v] of firstByUser.entries()) {
+      const t = v.created_at ? new Date(v.created_at).getTime() : NaN;
+      let reason: string | null = null;
+      if (!v.created_at) reason = "no created_at on first paid subscription";
+      else if (t < fromMs)
+        reason = `joined ${v.created_at} — before window start ${data.from}`;
+      else if (t >= toMs)
+        reason = `joined ${v.created_at} — at/after window end ${data.to}`;
+      const included = reason === null;
+      if (included) joinedCount += 1;
+      joined.push({
+        user_id: uid,
+        email: emailByUser.get(uid) ?? null,
+        first_paid_subscription_at: v.created_at,
+        tier: v.tier,
+        included_in_joined: included,
+        exclusion_reason: reason,
+      });
+    }
+
+    // Churned — latest churn_lifecycle stage per user.
+    const { data: churnRows } = await supabase
+      .from("churn_lifecycle")
+      .select("user_id, stage, entered_at");
+    const latestByUser = new Map<
+      string,
+      { stage: string | null; entered_at: string | null }
+    >();
+    for (const c of churnRows ?? []) {
+      if (!c.user_id || !c.entered_at) continue;
+      const prev = latestByUser.get(c.user_id);
+      if (
+        !prev ||
+        !prev.entered_at ||
+        new Date(c.entered_at).getTime() > new Date(prev.entered_at).getTime()
+      ) {
+        latestByUser.set(c.user_id, {
+          stage: (c.stage as string) ?? null,
+          entered_at: (c.entered_at as string) ?? null,
+        });
+      }
+    }
+
+    const churned: GrowthChurnedRow[] = [];
+    let churnedCount = 0;
+    for (const [uid, v] of latestByUser.entries()) {
+      let reason: string | null = null;
+      if (!v.stage || !(TERMINAL_CHURN_STAGES as readonly string[]).includes(v.stage))
+        reason = `stage="${v.stage}" — not a terminal churn stage (${TERMINAL_CHURN_STAGES.join(", ")})`;
+      else if (!v.entered_at) reason = "no entered_at timestamp";
+      else {
+        const t = new Date(v.entered_at).getTime();
+        if (t < fromMs)
+          reason = `entered_at ${v.entered_at} — before window start ${data.from}`;
+        else if (t >= toMs)
+          reason = `entered_at ${v.entered_at} — at/after window end ${data.to}`;
+      }
+      const included = reason === null;
+      if (included) churnedCount += 1;
+      churned.push({
+        user_id: uid,
+        email: emailByUser.get(uid) ?? null,
+        stage: v.stage,
+        entered_at: v.entered_at,
+        included_in_churned: included,
+        exclusion_reason: reason,
+      });
+    }
+
+    joined.sort((a, b) => {
+      if (a.included_in_joined !== b.included_in_joined)
+        return a.included_in_joined ? -1 : 1;
+      return (
+        (b.first_paid_subscription_at ?? "").localeCompare(
+          a.first_paid_subscription_at ?? "",
+        )
+      );
+    });
+    churned.sort((a, b) => {
+      if (a.included_in_churned !== b.included_in_churned)
+        return a.included_in_churned ? -1 : 1;
+      return (b.entered_at ?? "").localeCompare(a.entered_at ?? "");
+    });
+
+    return {
+      period: { from: data.from, to: data.to },
+      joined_total: joinedCount,
+      churned_total: churnedCount,
+      net_growth: joinedCount - churnedCount,
+      joined,
+      churned,
     };
   });

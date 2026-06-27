@@ -20,12 +20,26 @@ import {
   getMembershipReconciliation,
   getRegistrationsReconciliation,
   getForecastReconciliation,
+  getGrowthReconciliation,
   type RevenueRow,
   type RevenueReportDTO,
   type MemberReportDTO,
   type RegistrationReportDTO,
   type ForecastReportDTO,
+  type GrowthReportDTO,
 } from "@/lib/admin/reconciliation.functions";
+import {
+  FORECAST_HORIZON_OPTIONS,
+  type ForecastHorizon,
+} from "@/lib/admin/metrics-definitions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useNavigate } from "@tanstack/react-router";
 
 const searchSchema = z.object({
   period: fallback(
@@ -44,6 +58,19 @@ const searchSchema = z.object({
   ).default("yesterday"),
   from: z.string().optional(),
   to: z.string().optional(),
+  fcast: fallback(
+    z.enum([
+      "remaining_this_month",
+      "next_month",
+      "next_30d",
+      "current_quarter",
+      "current_year",
+      "custom",
+    ]),
+    "next_30d",
+  ).default("next_30d"),
+  fcastFrom: z.string().optional(),
+  fcastTo: z.string().optional(),
 });
 
 export const Route = createFileRoute("/admin_/reconciliation")({
@@ -81,7 +108,8 @@ function fmtDateTime(iso: string | null | undefined) {
 }
 
 function ReconciliationPage() {
-  const { period, from, to } = Route.useSearch();
+  const { period, from, to, fcast, fcastFrom, fcastTo } = Route.useSearch();
+  const navigate = useNavigate({ from: "/admin/reconciliation" });
   const range = resolvePeriod(period, { from, to });
   const periodLabel =
     PERIOD_OPTIONS.find((o) => o.value === period)?.label ?? period;
@@ -90,6 +118,7 @@ function ReconciliationPage() {
   const memFn = useServerFn(getMembershipReconciliation);
   const regFn = useServerFn(getRegistrationsReconciliation);
   const fcastFn = useServerFn(getForecastReconciliation);
+  const growthFn = useServerFn(getGrowthReconciliation);
 
   const revenue = useQuery({
     queryKey: ["admin-recon", "revenue", range.from, range.to],
@@ -104,8 +133,15 @@ function ReconciliationPage() {
     queryFn: () => regFn({ data: { from: range.from, to: range.to } }),
   });
   const forecast = useQuery({
-    queryKey: ["admin-recon", "forecast"],
-    queryFn: () => fcastFn(),
+    queryKey: ["admin-recon", "forecast", fcast, fcastFrom ?? "", fcastTo ?? ""],
+    queryFn: () =>
+      fcastFn({
+        data: { horizon: fcast, from: fcastFrom, to: fcastTo },
+      }),
+  });
+  const growth = useQuery({
+    queryKey: ["admin-recon", "growth", range.from, range.to],
+    queryFn: () => growthFn({ data: { from: range.from, to: range.to } }),
   });
 
   return (
@@ -146,6 +182,9 @@ function ReconciliationPage() {
             <a href="#registrations" className="text-white/70 hover:text-white">
               Registrations
             </a>
+            <a href="#growth" className="text-white/70 hover:text-white">
+              Net growth
+            </a>
           </div>
         </PCard>
 
@@ -173,14 +212,45 @@ function ReconciliationPage() {
         {/* ---- Forecast -------------------------------------------------- */}
         <section id="forecast" className="scroll-mt-24">
           <PCard>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="text-[11px] uppercase tracking-[0.14em] text-white/45">
+                Forecast horizon (independent of historical period)
+              </div>
+              <Select
+                value={fcast}
+                onValueChange={(v) =>
+                  navigate({
+                    search: (prev: Record<string, unknown>) => ({
+                      ...prev,
+                      fcast: v as ForecastHorizon,
+                    }),
+                  })
+                }
+              >
+                <SelectTrigger className="h-7 w-[180px] rounded-[6px] border border-white/10 bg-white/[0.03] px-2 text-[12px] text-white/75">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-[10px]">
+                  {FORECAST_HORIZON_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value} className="text-[12px]">
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <SectionHeader
-              title="Forecast revenue reconciliation"
+              title="Projected cash due reconciliation"
               total={
                 forecast.data
                   ? `${fmtPounds(forecast.data.total_forecast_pence)} dashboard total`
                   : "loading…"
               }
-              sub="Projected cash due in the next 30 days. Two sources: (1) active live subscriptions whose current_period_end falls inside the window — billed at the fixed tier renewal price; (2) bd_migration rows with status seeded/pending whose bd_renewal_date falls inside the window — billed at bd_price_pence, or the tier renewal price if bd_price_pence is null. Stripe is NOT called; this is a deterministic projection from local state only."
+              sub={
+                forecast.data
+                  ? `Window: ${forecast.data.window.from} → ${forecast.data.window.to}. Three sources, deduplicated: (1) active live subscriptions due to renew; (2) legacy_stripe_link.access_expires_at within window; (3) bd_member_seed.bd_next_due_date within window. Stripe is not called.`
+                  : "Independent horizon — never reuses the historical period."
+              }
             />
             {forecast.isLoading ? (
               <Loading />
@@ -188,6 +258,28 @@ function ReconciliationPage() {
               <ErrorBox e={forecast.error} />
             ) : forecast.data ? (
               <ForecastTables data={forecast.data} />
+            ) : null}
+          </PCard>
+        </section>
+
+        {/* ---- Net Member Growth ---------------------------------------- */}
+        <section id="growth" className="scroll-mt-24">
+          <PCard>
+            <SectionHeader
+              title="Net member growth reconciliation"
+              total={
+                growth.data
+                  ? `${growth.data.net_growth >= 0 ? "+" : ""}${growth.data.net_growth} net · ${growth.data.joined_total} joined · ${growth.data.churned_total} churned`
+                  : "loading…"
+              }
+              sub="Joined = users whose FIRST live paid subscription was created inside the window. Churned = users whose latest churn_lifecycle stage entered a terminal state (lapsed/dormant) inside the window. Net = joined − churned."
+            />
+            {growth.isLoading ? (
+              <Loading />
+            ) : growth.error ? (
+              <ErrorBox e={growth.error} />
+            ) : growth.data ? (
+              <GrowthTables data={growth.data} />
             ) : null}
           </PCard>
         </section>
@@ -706,6 +798,114 @@ function ForecastTables({ data }: { data: ForecastReportDTO }) {
           value={fmtPounds(data.total_forecast_pence)}
           accent
         />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Net Member Growth tables
+// ---------------------------------------------------------------------------
+
+function GrowthTables({ data }: { data: GrowthReportDTO }) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="mb-2 text-[12px] text-white/55">
+          Joined inside window ({data.joined_total} included)
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12px]">
+            <thead className="text-left text-white/45">
+              <tr>
+                <th className="py-2 pr-3 font-medium">User</th>
+                <th className="py-2 pr-3 font-medium">First paid sub</th>
+                <th className="py-2 pr-3 font-medium">Tier</th>
+                <th className="py-2 pr-3 font-medium">Counted?</th>
+                <th className="py-2 font-medium">Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.joined.map((r) => (
+                <tr key={`j-${r.user_id}`} className="border-t border-white/5">
+                  <td className="py-2 pr-3 text-white/80">
+                    {r.email ?? r.user_id}
+                  </td>
+                  <td className="py-2 pr-3 text-white/70">
+                    {fmtDateTime(r.first_paid_subscription_at)}
+                  </td>
+                  <td className="py-2 pr-3 text-white/70">{r.tier ?? "—"}</td>
+                  <td className="py-2 pr-3">
+                    {r.included_in_joined ? (
+                      <Badge className="bg-reps-green/15 text-reps-green">Yes</Badge>
+                    ) : (
+                      <Badge className="bg-white/10 text-white/55">No</Badge>
+                    )}
+                  </td>
+                  <td className="py-2 text-white/55">
+                    {r.exclusion_reason ?? "—"}
+                  </td>
+                </tr>
+              ))}
+              {data.joined.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-white/55">
+                    No paid subscriptions on record.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-2 text-[12px] text-white/55">
+          Churned inside window ({data.churned_total} included)
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12px]">
+            <thead className="text-left text-white/45">
+              <tr>
+                <th className="py-2 pr-3 font-medium">User</th>
+                <th className="py-2 pr-3 font-medium">Stage</th>
+                <th className="py-2 pr-3 font-medium">Entered at</th>
+                <th className="py-2 pr-3 font-medium">Counted?</th>
+                <th className="py-2 font-medium">Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.churned.map((r) => (
+                <tr key={`c-${r.user_id}`} className="border-t border-white/5">
+                  <td className="py-2 pr-3 text-white/80">
+                    {r.email ?? r.user_id}
+                  </td>
+                  <td className="py-2 pr-3 text-white/70">{r.stage ?? "—"}</td>
+                  <td className="py-2 pr-3 text-white/70">
+                    {fmtDateTime(r.entered_at)}
+                  </td>
+                  <td className="py-2 pr-3">
+                    {r.included_in_churned ? (
+                      <Badge className="bg-reps-orange/15 text-reps-orange">Yes</Badge>
+                    ) : (
+                      <Badge className="bg-white/10 text-white/55">No</Badge>
+                    )}
+                  </td>
+                  <td className="py-2 text-white/55">
+                    {r.exclusion_reason ?? "—"}
+                  </td>
+                </tr>
+              ))}
+              {data.churned.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-white/55">
+                    No churn_lifecycle records yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
