@@ -53,8 +53,12 @@ function AdminTeamPage() {
     if (!email.trim()) return;
     setBusy(true);
     try {
-      await runGrant({ data: { email: email.trim() } });
-      toast.success(`${email.trim()} is now an admin.`);
+      const res = await runGrant({ data: { email: email.trim() } });
+      toast.success(
+        res?.invited
+          ? `Invite sent to ${email.trim()}. They'll become an admin as soon as they accept.`
+          : `${email.trim()} is now an admin.`,
+      );
       setEmail("");
       await refresh();
     } catch (e) {
