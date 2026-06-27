@@ -572,11 +572,15 @@ function ForecastTables({ data }: { data: ForecastReportDTO }) {
 
       <div>
         <div className="mb-2 text-[13px] font-semibold text-white">
-          bd_migration scheduled renewals (status seeded/pending)
+          Legacy Stripe links renewing in window
         </div>
-        {data.migrations.length === 0 ? (
+        <div className="mb-2 text-[11px] text-white/55">
+          Source the renewal cron uses to charge £{(data.legacy_amount_pence / 100).toFixed(0)} on
+          access_expires_at. Deduped against active subscriptions.
+        </div>
+        {data.links.length === 0 ? (
           <div className="py-3 text-[12px] text-white/55">
-            No bd_migration rows considered.
+            No legacy_stripe_link rows considered.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -584,34 +588,32 @@ function ForecastTables({ data }: { data: ForecastReportDTO }) {
               <thead className="text-left text-white/55">
                 <tr>
                   <th className="py-2 pr-3">In?</th>
-                  <th className="py-2 pr-3">Migration id</th>
-                  <th className="py-2 pr-3">Status</th>
-                  <th className="py-2 pr-3">Target tier</th>
-                  <th className="py-2 pr-3">bd_renewal_date</th>
-                  <th className="py-2 pr-3 text-right">bd_price</th>
+                  <th className="py-2 pr-3">Email</th>
+                  <th className="py-2 pr-3">bd_member_id</th>
+                  <th className="py-2 pr-3">stripe_customer_id</th>
+                  <th className="py-2 pr-3">access_expires_at</th>
                   <th className="py-2 pr-3 text-right">Forecast</th>
                   <th className="py-2 pr-3">Reason</th>
                 </tr>
               </thead>
               <tbody>
-                {data.migrations.map((r) => (
+                {data.links.map((r, i) => (
                   <tr
-                    key={r.id}
+                    key={`${r.bd_member_id ?? "x"}-${i}`}
                     className={`border-t border-white/5 ${r.included_in_forecast ? "" : "text-white/40"}`}
                   >
                     <td className="py-2 pr-3">
                       {r.included_in_forecast ? "✓" : "✕"}
                     </td>
-                    <td className="py-2 pr-3 font-mono text-[10px]">{r.id}</td>
-                    <td className="py-2 pr-3">{r.status}</td>
-                    <td className="py-2 pr-3">{r.target_tier ?? "—"}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">
-                      {fmtDateTime(r.bd_renewal_date)}
+                    <td className="py-2 pr-3">{r.email ?? "—"}</td>
+                    <td className="py-2 pr-3 font-mono text-[10px]">
+                      {r.bd_member_id ?? "—"}
                     </td>
-                    <td className="py-2 pr-3 text-right">
-                      {r.bd_price_pence == null
-                        ? "—"
-                        : fmtPounds(r.bd_price_pence)}
+                    <td className="py-2 pr-3 font-mono text-[10px]">
+                      {r.stripe_customer_id ?? "—"}
+                    </td>
+                    <td className="py-2 pr-3 whitespace-nowrap">
+                      {fmtDateTime(r.access_expires_at)}
                     </td>
                     <td className="py-2 pr-3 text-right font-semibold">
                       {fmtPounds(r.forecast_amount_pence)}
@@ -627,14 +629,77 @@ function ForecastTables({ data }: { data: ForecastReportDTO }) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[12px]">
+      <div>
+        <div className="mb-2 text-[13px] font-semibold text-white">
+          BD member seeds (unlinked anniversaries)
+        </div>
+        <div className="mb-2 text-[11px] text-white/55">
+          Catches members whose anniversary falls in the window but who aren't
+          already counted via an active subscription or legacy Stripe link.
+        </div>
+        {data.seeds.length === 0 ? (
+          <div className="py-3 text-[12px] text-white/55">
+            No bd_member_seed rows considered.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12px]">
+              <thead className="text-left text-white/55">
+                <tr>
+                  <th className="py-2 pr-3">In?</th>
+                  <th className="py-2 pr-3">Email</th>
+                  <th className="py-2 pr-3">bd_member_id</th>
+                  <th className="py-2 pr-3">claimed_user_id</th>
+                  <th className="py-2 pr-3">bd_next_due_date</th>
+                  <th className="py-2 pr-3 text-right">Forecast</th>
+                  <th className="py-2 pr-3">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.seeds.map((r, i) => (
+                  <tr
+                    key={`${r.bd_member_id ?? "x"}-${i}`}
+                    className={`border-t border-white/5 ${r.included_in_forecast ? "" : "text-white/40"}`}
+                  >
+                    <td className="py-2 pr-3">
+                      {r.included_in_forecast ? "✓" : "✕"}
+                    </td>
+                    <td className="py-2 pr-3">{r.email ?? "—"}</td>
+                    <td className="py-2 pr-3 font-mono text-[10px]">
+                      {r.bd_member_id ?? "—"}
+                    </td>
+                    <td className="py-2 pr-3 font-mono text-[10px]">
+                      {r.claimed_user_id ?? "—"}
+                    </td>
+                    <td className="py-2 pr-3 whitespace-nowrap">
+                      {fmtDateTime(r.bd_next_due_date)}
+                    </td>
+                    <td className="py-2 pr-3 text-right font-semibold">
+                      {fmtPounds(r.forecast_amount_pence)}
+                    </td>
+                    <td className="py-2 pr-3 text-white/55">
+                      {r.exclusion_reason ?? ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-[12px]">
         <Footer
           label="Subscriptions subtotal"
           value={fmtPounds(data.subs_total_pence)}
         />
         <Footer
-          label="bd_migration subtotal"
-          value={fmtPounds(data.migrations_total_pence)}
+          label="Legacy links subtotal"
+          value={fmtPounds(data.links_total_pence)}
+        />
+        <Footer
+          label="Seeds subtotal"
+          value={fmtPounds(data.seeds_total_pence)}
         />
         <Footer
           label="Forecast total"
