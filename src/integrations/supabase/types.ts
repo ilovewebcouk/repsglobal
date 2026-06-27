@@ -620,6 +620,48 @@ export type Database = {
           },
         ]
       }
+      churn_lifecycle: {
+        Row: {
+          created_at: string
+          entered_at: string
+          id: string
+          last_nudge_at: string | null
+          metadata: Json
+          nudge_count: number
+          reason: string | null
+          source_event: string | null
+          stage: Database["public"]["Enums"]["churn_stage"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entered_at?: string
+          id?: string
+          last_nudge_at?: string | null
+          metadata?: Json
+          nudge_count?: number
+          reason?: string | null
+          source_event?: string | null
+          stage?: Database["public"]["Enums"]["churn_stage"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entered_at?: string
+          id?: string
+          last_nudge_at?: string | null
+          metadata?: Json
+          nudge_count?: number
+          reason?: string | null
+          source_event?: string | null
+          stage?: Database["public"]["Enums"]["churn_stage"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_invites: {
         Row: {
           accepted_at: string | null
@@ -2623,6 +2665,42 @@ export type Database = {
           },
         ]
       }
+      renewal_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          intended_tier: string
+          metadata: Json
+          purpose: Database["public"]["Enums"]["renewal_token_purpose"]
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          intended_tier?: string
+          metadata?: Json
+          purpose: Database["public"]["Enums"]["renewal_token_purpose"]
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          intended_tier?: string
+          metadata?: Json
+          purpose?: Database["public"]["Enums"]["renewal_token_purpose"]
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       review_notifications: {
         Row: {
           created_at: string
@@ -3771,6 +3849,26 @@ export type Database = {
         Returns: undefined
       }
       compute_pro_quality_score: { Args: { _pro_id: string }; Returns: number }
+      consume_renewal_token: {
+        Args: { _token_hash: string }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          intended_tier: string
+          metadata: Json
+          purpose: Database["public"]["Enums"]["renewal_token_purpose"]
+          token_hash: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "renewal_tokens"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       convert_lead_to_client: { Args: { _enquiry_id: string }; Returns: string }
       count_confirmed_pro_signups: {
         Args: { _since: string; _until?: string }
@@ -3795,6 +3893,34 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      enter_churn_stage: {
+        Args: {
+          _metadata?: Json
+          _reason?: string
+          _source_event?: string
+          _stage: Database["public"]["Enums"]["churn_stage"]
+          _user_id: string
+        }
+        Returns: {
+          created_at: string
+          entered_at: string
+          id: string
+          last_nudge_at: string | null
+          metadata: Json
+          nudge_count: number
+          reason: string | null
+          source_event: string | null
+          stage: Database["public"]["Enums"]["churn_stage"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "churn_lifecycle"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       fan_out_review_notifications: {
         Args: { _professional_id: string; _review_id: string }
@@ -3886,6 +4012,7 @@ export type Database = {
         Returns: boolean
       }
       is_pro_fully_verified: { Args: { _pro_id: string }; Returns: boolean }
+      is_pro_hidden_by_churn: { Args: { _user_id: string }; Returns: boolean }
       list_fully_verified_pro_ids: { Args: never; Returns: string[] }
       list_my_unread_support_tickets: {
         Args: never
@@ -3921,6 +4048,33 @@ export type Database = {
         Returns: undefined
       }
       mark_verification_notifications_read: { Args: never; Returns: number }
+      mint_renewal_token: {
+        Args: {
+          _intended_tier?: string
+          _metadata?: Json
+          _purpose: Database["public"]["Enums"]["renewal_token_purpose"]
+          _token_hash: string
+          _ttl_days?: number
+          _user_id: string
+        }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          intended_tier: string
+          metadata: Json
+          purpose: Database["public"]["Enums"]["renewal_token_purpose"]
+          token_hash: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "renewal_tokens"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -3929,6 +4083,26 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      peek_renewal_token: {
+        Args: { _token_hash: string }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          intended_tier: string
+          metadata: Json
+          purpose: Database["public"]["Enums"]["renewal_token_purpose"]
+          token_hash: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "renewal_tokens"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
@@ -3943,6 +4117,7 @@ export type Database = {
         Returns: undefined
       }
       recompute_verification_daily_sweep: { Args: never; Returns: number }
+      record_churn_nudge: { Args: { _user_id: string }; Returns: undefined }
       refresh_pro_quality_score: {
         Args: { _pro_id: string }
         Returns: undefined
@@ -4027,6 +4202,13 @@ export type Database = {
         | "bounced"
         | "complained"
         | "replied"
+      churn_stage:
+        | "active"
+        | "at_risk"
+        | "grace"
+        | "lapsed"
+        | "recovered"
+        | "dormant"
       coach_client_status: "active" | "paused" | "ended"
       invite_status: "pending" | "accepted" | "expired" | "revoked"
       invite_trigger_reason:
@@ -4045,6 +4227,7 @@ export type Database = {
         | "trial_booked"
         | "converted"
         | "lost"
+      renewal_token_purpose: "card_needed" | "payment_failed" | "reactivate"
       reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
       roster_status: "prospect" | "confirmed" | "active" | "archived"
       sex_at_birth: "female" | "male" | "prefer_not_to_say"
@@ -4231,6 +4414,14 @@ export const Constants = {
         "complained",
         "replied",
       ],
+      churn_stage: [
+        "active",
+        "at_risk",
+        "grace",
+        "lapsed",
+        "recovered",
+        "dormant",
+      ],
       coach_client_status: ["active", "paused", "ended"],
       invite_status: ["pending", "accepted", "expired", "revoked"],
       invite_trigger_reason: [
@@ -4251,6 +4442,7 @@ export const Constants = {
         "converted",
         "lost",
       ],
+      renewal_token_purpose: ["card_needed", "payment_failed", "reactivate"],
       reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],
       roster_status: ["prospect", "confirmed", "active", "archived"],
       sex_at_birth: ["female", "male", "prefer_not_to_say"],

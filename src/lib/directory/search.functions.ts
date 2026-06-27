@@ -118,6 +118,18 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     // professional appears in the directory, including legacy-imported shells
     // with no bio or photo (monogram avatar fallback handles missing photos).
     // Demo/fixture pros (is_demo = true) are excluded — admin-only.
+    // Hide churned profiles (stage 'lapsed' or 'dormant'). Admin still sees
+    // them everywhere else; this is the public-facing register filter.
+    const { data: hiddenChurnRows } = await supabaseAdmin
+      .from("churn_lifecycle")
+      .select("user_id")
+      .in("stage", ["lapsed", "dormant"]);
+    const hiddenChurnIds = ((hiddenChurnRows ?? []) as Array<{ user_id: string }>)
+      .map((r) => r.user_id);
+    if (hiddenChurnIds.length > 0) {
+      qb = qb.not("id", "in", `(${hiddenChurnIds.join(",")})`);
+    }
+
 
     if (data.city) qb = qb.ilike("city", `%${data.city}%`);
     if (data.profession) qb = qb.eq("primary_profession", data.profession);

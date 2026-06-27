@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   Apple,
   AreaChart,
   Briefcase,
@@ -145,6 +146,7 @@ export const ADMIN_NAV = [
     title: "Platform",
     items: [
       { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
+      { icon: AlertCircle, label: "Churn", to: "/admin/churn" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
