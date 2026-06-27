@@ -15,6 +15,7 @@ export type PlatformHealthSnapshot = {
   queue_transactional: number;
   queue_auth: number;
   dlq_emails_7d: number;
+  dlq_webhook_events_7d: number;
   suppressions_7d: number;
   orphan_subscriptions: number;
   stuck_payment_events: number;

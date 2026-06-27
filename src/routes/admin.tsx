@@ -194,6 +194,7 @@ const CRIT = {
   dlq_emails_7d: 10,
   orphan_subscriptions: 1,
   stuck_payment_events: 1,
+  dlq_webhook_events_7d: 1,
   failed_payments_active: 1,
 } as const;
 const WARN = {
@@ -220,6 +221,7 @@ function PlatformHealthBanner() {
   if (d.dlq_emails_7d >= CRIT.dlq_emails_7d) crits.push(`${d.dlq_emails_7d} emails in DLQ`);
   if (d.orphan_subscriptions >= CRIT.orphan_subscriptions) crits.push(`${d.orphan_subscriptions} orphan subscription${d.orphan_subscriptions === 1 ? "" : "s"}`);
   if (d.stuck_payment_events >= CRIT.stuck_payment_events) crits.push(`${d.stuck_payment_events} stuck payment_events`);
+  if (d.dlq_webhook_events_7d >= CRIT.dlq_webhook_events_7d) crits.push(`${d.dlq_webhook_events_7d} webhook event${d.dlq_webhook_events_7d === 1 ? "" : "s"} dead-lettered`);
   if (d.failed_payments_active >= CRIT.failed_payments_active) crits.push(`${d.failed_payments_active} failed payment${d.failed_payments_active === 1 ? "" : "s"}`);
 
   const warns: string[] = [];
