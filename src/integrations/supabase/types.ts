@@ -2101,11 +2101,13 @@ export type Database = {
       payment_events: {
         Row: {
           created_at: string
+          dead_lettered_at: string | null
           event_type: string
           id: string
           payload: Json
           processed_at: string | null
           processing_error: string | null
+          retry_count: number
           stripe_customer_id: string | null
           stripe_event_id: string | null
           stripe_subscription_id: string | null
@@ -2113,11 +2115,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          dead_lettered_at?: string | null
           event_type: string
           id?: string
           payload: Json
           processed_at?: string | null
           processing_error?: string | null
+          retry_count?: number
           stripe_customer_id?: string | null
           stripe_event_id?: string | null
           stripe_subscription_id?: string | null
@@ -2125,11 +2129,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          dead_lettered_at?: string | null
           event_type?: string
           id?: string
           payload?: Json
           processed_at?: string | null
           processing_error?: string | null
+          retry_count?: number
           stripe_customer_id?: string | null
           stripe_event_id?: string | null
           stripe_subscription_id?: string | null
