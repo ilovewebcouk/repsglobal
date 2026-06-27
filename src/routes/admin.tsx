@@ -182,3 +182,67 @@ function PaymentFailedBanner() {
     </div>
   );
 }
+
+// ---- Platform health banner ----
+// Pings `/admin/health`'s snapshot RPC every 60s and flashes red when any signal
+// crosses the `crit` threshold (cron failures, stuck queues, DLQ, orphan subs,
+// stuck payment_events, failed payments). Amber for warnings.
+const CRIT = {
+  cron_failures_24h: 1,
+  queue_transactional: 200,
+  queue_auth: 200,
+  dlq_emails_7d: 10,
+  orphan_subscriptions: 1,
+  stuck_payment_events: 1,
+  failed_payments_active: 1,
+} as const;
+const WARN = {
+  queue_transactional: 50,
+  queue_auth: 50,
+  dlq_emails_7d: 1,
+  suppressions_7d: 25,
+} as const;
+
+function PlatformHealthBanner() {
+  const fn = useServerFn(getPlatformHealth);
+  const q = useQuery({
+    queryKey: ["admin-overview", "platform-health"],
+    queryFn: () => fn(),
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  });
+  if (!q.data) return null;
+  const d = q.data;
+  const crits: string[] = [];
+  if (d.cron_failures_24h >= CRIT.cron_failures_24h) crits.push(`${d.cron_failures_24h} cron failure${d.cron_failures_24h === 1 ? "" : "s"} in 24h`);
+  if (d.queue_transactional >= CRIT.queue_transactional) crits.push(`${d.queue_transactional} transactional emails queued`);
+  if (d.queue_auth >= CRIT.queue_auth) crits.push(`${d.queue_auth} auth emails queued`);
+  if (d.dlq_emails_7d >= CRIT.dlq_emails_7d) crits.push(`${d.dlq_emails_7d} emails in DLQ`);
+  if (d.orphan_subscriptions >= CRIT.orphan_subscriptions) crits.push(`${d.orphan_subscriptions} orphan subscription${d.orphan_subscriptions === 1 ? "" : "s"}`);
+  if (d.stuck_payment_events >= CRIT.stuck_payment_events) crits.push(`${d.stuck_payment_events} stuck payment_events`);
+  if (d.failed_payments_active >= CRIT.failed_payments_active) crits.push(`${d.failed_payments_active} failed payment${d.failed_payments_active === 1 ? "" : "s"}`);
+
+  const warns: string[] = [];
+  if (!crits.length) {
+    if (d.queue_transactional >= WARN.queue_transactional) warns.push(`${d.queue_transactional} transactional emails queued`);
+    if (d.queue_auth >= WARN.queue_auth) warns.push(`${d.queue_auth} auth emails queued`);
+    if (d.dlq_emails_7d >= WARN.dlq_emails_7d) warns.push(`${d.dlq_emails_7d} emails in DLQ`);
+    if (d.suppressions_7d >= WARN.suppressions_7d) warns.push(`${d.suppressions_7d} suppressions in 7d`);
+  }
+
+  if (!crits.length && !warns.length) return null;
+
+  const isCrit = crits.length > 0;
+  const items = isCrit ? crits : warns;
+  const cls = isCrit
+    ? "border-rose-400/40 bg-rose-500/10 text-rose-100"
+    : "border-amber-400/40 bg-amber-500/10 text-amber-100";
+  const label = isCrit ? "Platform health: critical" : "Platform health: warning";
+
+  return (
+    <div className={`rounded-[14px] border p-4 text-[13px] ${cls}`}>
+      <strong>{label}</strong> — {items.join(" · ")}.{" "}
+      <Link to="/admin/health" className="underline">Open Platform Health</Link>.
+    </div>
+  );
+}
