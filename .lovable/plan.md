@@ -1,89 +1,49 @@
+## Why the forecast misses BD migration renewals
 
-# Admin Reconciliation Page
+The current forecast in `src/lib/admin/overview.functions.ts` reads from `bd_migration` and filters on `bd_renewal_date` + `bd_price_pence`. I queried the table:
 
-Goal: stop guessing. Build a read-only admin page that shows the exact rows behind each KPI on `/admin`, grouped and annotated, so any number can be traced to source data. No KPI logic changes in this task.
+- 390 rows, all `status = 'seeded'`
+- `bd_renewal_date` is **NULL on all 390**
+- `bd_price_pence` is **NULL on all 390**
 
-## Route
+So the `if (!m.bd_renewal_date) continue;` short-circuits every row and the forecast contribution is always £0. The migration table was never the source of truth for renewal anchors — it's a workflow ledger. The real anchors live elsewhere:
 
-- New file: `src/routes/_authenticated/_admin/admin_.reconciliation.tsx`
-- URL: `/admin/reconciliation?period=...`
-- Reuses the same `period` selector and `overview-period.ts` boundaries as `/admin` so reconciliation always matches what the dashboard shows.
-- Admin-gated via existing `_admin` layout (`has_role(admin)`).
-- Linked from each KPI tile on `/admin` with a small "Reconcile →" link that deep-links to the relevant section (`#revenue`, `#members`, `#registrations`). No KPI math changes — only an anchor link is added.
+- `legacy_stripe_link.access_expires_at` — 13 rows fall in the next 30 days. This is what the renewal job in `stripe-linking.functions.ts` already uses to trigger a £99 charge.
+- `bd_member_seed.bd_next_due_date` — 28 rows fall in the next 30 days. Used as the anchor for seeds not yet linked to a Stripe customer.
 
-## Data source
+## What to change
 
-New server functions in `src/lib/admin/reconciliation.functions.ts` (protected by `requireSupabaseAuth` + admin check). These run the **same SQL shape** the dashboard uses for filtering windows, but return **row-level data plus the dashboard's decision** for each row, never recomputed totals from a parallel formula.
+Single, contained edit to the forecast block (no other KPI math touched).
 
-Approach: import the existing helpers from `src/lib/admin/overview.functions.ts` where possible, or replicate the exact filter predicates verbatim and mark each row with `included_in_total` + `exclusion_reason` based on those predicates. Totals shown at the bottom are a `SUM` over `included_in_total = true` rows — if it disagrees with `/admin`, that is the bug surfaced (not fixed here).
+### 1. `src/lib/admin/overview.functions.ts` (forecast section, ~lines 190-204)
 
-## Sections
+Replace the `bd_migration` query with this rollup, applied in order so each member is counted exactly once:
 
-### 1. Revenue reconciliation (`#revenue`)
+1. **Active `subscriptions`** with `current_period_end` in the next 30 days — unchanged, already correct.
+2. **`legacy_stripe_link`** rows where `access_expires_at` is in the window AND the user does **not** already have an active subscription captured in step 1. Amount = `TIER_RENEWAL_PENCE['verified']` (£99) — the price the renewal job actually charges. Track which `user_id` / `email` we've already counted in a `Set`.
+3. **`bd_member_seed`** rows where `bd_next_due_date` is in the window AND the seed's email/member is not already counted in step 1 or 2. Amount = £99. This catches members who haven't been linked to a Stripe customer yet but whose anniversary still falls in the window.
 
-Query `payment_events` in window, join nothing (payload is JSON). For each row return:
+Bucket each contribution into `fcastBuckets` using the renewal date so the Forecast sparkline / chart picks it up.
 
-- `id`, `stripe_event_id`, `event_type`, `processed_at`, `created_at`
-- `payload.data.object.customer` → `customer_id`
-- `payload.data.object.subscription` → `subscription_id`
-- `payload.data.object.invoice` or `.id` (for invoice events) → `invoice_id`
-- `payload.data.object.payment_intent` → `payment_intent`
-- `payload.data.object.charge` or `.id` (for charge events) → `charge_id`
-- `livemode`, `currency`, `amount_paid`, `amount`, `amount_refunded`, `refunded`
-- `calculated_amount_used_by_dashboard` (pence/£ the dashboard de-dup map ended up using)
-- `included_in_total` (boolean)
-- `exclusion_reason` (e.g. `"duplicate of invoice X (charge.succeeded skipped)"`, `"livemode=false"`, `"refunded"`, `"non-revenue event_type"`, `"outside window"`)
+### 2. `src/lib/admin/reconciliation.functions.ts` `getForecastReconciliation` (~lines 600-735)
 
-UI: shadcn `Table` grouped by **dedupe key** (`pi:<id>` / `charge:<id>` / `object:<id>` — same keys the dashboard uses). Each group has a header row showing the chosen canonical event and the £ that contributed. Duplicates render greyed-out with the exclusion reason.
+Mirror the same three-source logic so `/admin/reconciliation#forecast` shows exactly what the KPI tile sums:
 
-Footer row:
-- Raw event count in window
-- Distinct `stripe_event_id` count
-- Total revenue used by dashboard (£)
+- Keep the existing Subscriptions table.
+- Replace the `bd_migration` table with two new tables: **Legacy Stripe links** (columns: email, customer id, access_expires_at, amount, included/excluded, reason) and **BD member seeds** (columns: email, bd_next_due_date, claimed_user_id, amount, included/excluded, reason).
+- Common exclusion reasons to surface: `no renewal date`, `outside window`, `already counted via active subscription`, `already counted via legacy_stripe_link`.
+- Update `total_forecast_pence` to sum subs + links + seeds.
 
-Jordon Gumbley's £99 will appear as a group containing his `invoice.payment_succeeded` (canonical, £99) and `charge.succeeded` (excluded, reason: "deduped: same payment_intent as invoice").
+### 3. UI
 
-### 2. Membership reconciliation (`#members`)
+`src/routes/admin_.reconciliation.tsx` `ForecastTables`: render the two replacement tables and update the section description to say the forecast draws from active subs + legacy Stripe links + unlinked seeds (not `bd_migration`).
 
-Query `subscriptions` with the same predicates the Total Members KPI uses. For each row return:
+## Out of scope
 
-- user id, `email` (from `profiles` / `auth.users`)
-- subscription `id`, `tier`, `status`, livemode/environment
-- `created_at`, `current_period_end`, `cancel_at_period_end`, `cancelled_at`
-- `included_in_member_count`, `exclusion_reason` (e.g. `"status=canceled"`, `"livemode=false"`, `"churn_lifecycle stage=lapsed"`)
+- No change to revenue-received, registrations, or membership KPIs.
+- No change to the renewal cron job itself — only the forecast read path.
+- Not back-filling `bd_migration.bd_renewal_date` / `bd_price_pence`; that table stays a workflow ledger.
 
-shadcn `Table` with status badge column. Footer shows final member total.
+## Expected result
 
-### 3. Registration reconciliation (`#registrations`)
-
-For every profile/user considered for the New Registrations KPI in window:
-
-- `email`
-- `profiles.created_at`
-- `auth.users.email_confirmed_at`
-- first `subscriptions.created_at` (if any)
-- `included_in_registration_count`, `exclusion_reason` (e.g. `"no paid subscription in window"`, `"email_confirmed_at outside window"`, `"demo account"`)
-
-Footer shows final registration total.
-
-## Constraints
-
-- **No edits** to `src/lib/admin/overview.functions.ts`, `overview-period.ts`, dashboard components, or any KPI calculation.
-- Reconciliation rows derive `included_in_total` / `exclusion_reason` by **calling or mirroring** the dashboard predicates — never a new ad-hoc formula.
-- If totals at the bottom of any section disagree with `/admin`, the page renders a red banner: *"Dashboard says £X, reconciliation says £Y — discrepancy at <predicate>. Recommended fix: <one-line code change>"*. No code change applied.
-- Read-only. No mutations, no Stripe API calls.
-
-## Acceptance checklist
-
-- Page loads at `/admin/reconciliation?period=yesterday` for admins only.
-- Revenue section answers: why total is £X, which payments compose it, why Jordon is in/out.
-- Members section answers: why total is X, which subs are in/out and why.
-- Registrations section answers: why total is X, which users are in/out and why.
-- Every excluded row has a non-empty `exclusion_reason`.
-- KPI tiles on `/admin` have a "Reconcile →" anchor link (the only change to existing dashboard code).
-
-## Files
-
-- ADD `src/routes/_authenticated/_admin/admin_.reconciliation.tsx`
-- ADD `src/lib/admin/reconciliation.functions.ts`
-- EDIT `src/components/admin/overview/*` (KPI tiles only) to add anchor links — no math changes.
+After the change, the Yesterday/L7D/L30D Forecast tile for the next 30-day window should jump from £0 (BD contribution) to roughly **£99 × ~28 unique members ≈ £2,772** in BD-derived forecast revenue on top of any active-sub renewals, and `/admin/reconciliation#forecast` will list every one of those rows with its date and inclusion reason.
