@@ -1,0 +1,1 @@
+UPDATE public.payment_events SET processed_at = now(), processing_error = NULL WHERE id = '599affb6-dabd-4cd8-924f-5d7dffd707ef';

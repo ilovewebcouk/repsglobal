@@ -491,7 +491,27 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "customer.subscription.updated":
             case "customer.subscription.deleted": {
               const sub = event.data.object as Stripe.Subscription;
-              userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+              try {
+                userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+              } catch (err) {
+                // For .deleted events we soft-handle "no REPS user" — the
+                // Stripe customer was never linked to anyone in our DB
+                // (e.g. legacy product, test customer), so there is nothing
+                // to remove. Mark processed instead of leaving a permanent
+                // processing_error.
+                if (
+                  event.type === "customer.subscription.deleted" &&
+                  err instanceof Error &&
+                  err.message.startsWith("No REPS user found")
+                ) {
+                  console.warn(
+                    `[webhook] subscription.deleted no-op: ${err.message} (sub ${sub.id})`,
+                  );
+                  userId = null;
+                  break;
+                }
+                throw err;
+              }
               // Churn lifecycle hooks
               if (userId) {
                 const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -512,6 +532,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               }
               break;
             }
+
             case "invoice.payment_succeeded":
             case "invoice.payment_failed": {
               const invoice = event.data.object as Stripe.Invoice;

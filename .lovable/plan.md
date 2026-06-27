@@ -1,36 +1,37 @@
+## What I found
 
-## What's wrong
+You deleted Stripe subscription `sub_1S6JUDAP31Yc4cJjY9uIY8Mv` (customer `cus_QqEMmtM3pkdUET`) at 14:54 today. The webhook arrived but failed:
 
-1. **Remove button is invisible.** The "Actions" cell uses `<Button variant="outline" size="sm">` on the dark panel — it renders as a near-blank pill. You can't see the icon or label.
-2. **Grant admin wrongly requires an existing REPS account.** The handler does `auth.admin.listUsers` and throws `No REPS account found…` if the email isn't already registered. Admins are platform staff, not customers — they shouldn't have to sign up as a pro first.
+> `processing_error: No REPS user found for Stripe customer cus_QqEMmtM3pkdUET`
 
-## Fix
+That subscription is a legacy **£250/yr** plan on product `prod_Qrf1TGAhkKjUHL` — **not** one of our current Verified £99 / Pro £59 / Studio products. The customer has:
 
-### 1. Remove button visibility (`src/routes/admin_.team.tsx`)
-- Swap the row action from `variant="outline"` to a clearly destructive style: red text + subtle red border/hover (`border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200`).
-- Keep the same disabled-with-tooltip treatment for the self row, but use the same red token at reduced opacity so the column visually reads as an action.
+- no row in `subscriptions`
+- no row in `legacy_stripe_link`
+- no `metadata.reps_user_id`
+- no email match in `auth.users`
 
-### 2. Grant admin to any email (`src/lib/admin/team.functions.ts`)
-Rewrite `grantAdmin` so it works whether or not the email already exists:
+So it was **never an active REPS member in our database**. The counts on `/admin` are unaffected — Active Members is still **392** and Active Professionals is still **391**. The 1-row gap I described in the previous turn (one ghost sub on the Members side + one over-subtracted admin on the Professionals side) is unchanged.
 
-- Look the email up via `auth.admin.listUsers` (same pagination as today).
-- **If found** → insert `user_roles` row as today (idempotent on the unique key).
-- **If not found** → call `supabaseAdmin.auth.admin.inviteUserByEmail(email, { redirectTo: '<origin>/auth/callback' })`. Use the returned `user.id`, then insert `user_roles` row for that id. Result: the moment they accept the invite and set a password, they're already an admin.
-- Audit log entry records `admin.grant` with `{ invited: true|false, email }` so we can tell new invites apart from promotions.
-- Update the error message: only throw when the invite itself fails (e.g. invalid email, suppressed address).
+In other words: the delete worked correctly in the sense that there was nothing here to remove. The numbers don't match yet because the underlying drift is the gap I already identified, not this Stripe deletion.
 
-### 3. UI copy + state (`src/routes/admin_.team.tsx`)
-- Helper text under "Grant admin": replace "The person must already have a REPS account…" with "Enter their email. If they don't have a REPS account yet, we'll send them an invite to set a password."
-- Toast on success: if the server returns `{ invited: true }`, show "Invite sent to {email}. They'll become an admin as soon as they accept."; otherwise keep the existing "{email} is now an admin."
-- Invited-but-not-yet-accepted admins will appear in the Current admins table with `email` set and `fullName: null` — that already renders correctly via the monogram + "—" fallback. No extra UI needed for v1; we can add a "Pending invite" badge later if you want.
+## What to fix
 
-## Technical notes
+The handler should not treat "deleted subscription for an unknown customer" as a hard error. Right now it leaves a permanent `processing_error` row and would re-noise the webhook recovery dashboard on every future orphan deletion.
 
-- `inviteUserByEmail` creates an `auth.users` row immediately with `email_confirmed_at = null` until they accept. The `user_roles` insert keys off that id, so the role is live the instant they confirm.
-- `redirectTo` must be a same-origin public URL; using `${request origin}/auth/callback` matches the existing OAuth pattern. We'll read origin from `getRequestHeader('origin')` inside the handler with a sensible fallback to `process.env.SITE_URL` if set.
-- No DB migration required — `user_roles` already accepts any `auth.users.id`.
-- No change to `revokeAdmin`, the list query, or the existing `/admin/professionals` admin-exclusion logic.
+### Code change
+- `src/routes/api/public/payments/webhook.ts` — in the `customer.subscription.deleted` case, if `resolveUserId()` returns null:
+  - swallow the throw,
+  - mark `payment_events.processed_at = now()` with `processing_error = null`,
+  - record a short note in the event row's `payload`-adjacent log (or just leave a `console.warn`) so it shows up as "no-op: customer not linked to a REPS user".
+  - skip the `enter_churn_stage` call.
+- Keep `customer.subscription.created` / `.updated` strict — those still legitimately need a resolved user, and the resolver ladder we shipped covers them.
 
-## Files changed
-- `src/routes/admin_.team.tsx` — destructive Remove button styling, updated helper copy + toast.
-- `src/lib/admin/team.functions.ts` — `grantAdmin` now invites unknown emails and returns `{ invited }`.
+### What this does NOT change
+- The 392 vs 391 gap (separate cleanup — happy to do that as its own pass when you want).
+- Any other webhook path.
+- The resolver ladder.
+
+After the fix, the failed event at 14:54 will be re-marked as processed (one-line UPDATE in the same migration / a one-off button on `/admin/webhook-recovery`).
+
+Want me to ship just the deletion-handler hardening, or bundle in the 392 vs 391 reconciliation at the same time?
