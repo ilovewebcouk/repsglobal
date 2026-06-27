@@ -10,19 +10,37 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { forecastWindow } from "./overview-period";
+import { forecastWindowFor } from "./overview-period";
+import {
+  ACTIVE_STATUSES,
+  COUNTED_TIERS,
+  TIER_RANK,
+  TIER_RENEWAL_PENCE,
+  LEGACY_AMOUNT_PENCE,
+  TERMINAL_CHURN_STAGES,
+  asString,
+  type ForecastHorizon,
+} from "./metrics-definitions";
 
 const Input = z.object({
   from: z.string(),
   to: z.string(),
 });
 
-// Mirror src/lib/admin/overview.functions.ts (TIER_RENEWAL_PENCE).
-const TIER_RENEWAL_PENCE: Record<string, number> = {
-  verified: 9900,
-  pro: 5900,
-  studio: 14900,
-};
+const ForecastInput = z.object({
+  horizon: z
+    .enum([
+      "remaining_this_month",
+      "next_month",
+      "next_30d",
+      "current_quarter",
+      "current_year",
+      "custom",
+    ])
+    .default("next_30d"),
+  from: z.string().optional(),
+  to: z.string().optional(),
+});
 
 // ---- Shared types -----------------------------------------------------------
 
