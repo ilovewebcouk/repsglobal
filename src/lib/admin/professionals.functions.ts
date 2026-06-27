@@ -11,7 +11,7 @@ export type AdminProRow = {
   professionSlug: string | null;
   plan: 'free' | 'verified' | 'pro' | 'studio';
   planMrrPence: number;
-  status: 'verified' | 'pending' | 'flagged' | 'suspended' | 'admin';
+  status: 'verified' | 'pending' | 'flagged' | 'suspended';
   rating: number | null;
   clients: number;
   joined: string;
@@ -69,7 +69,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     // shells from `generateLink({ type: 'invite' })` are excluded).
     // "Active" = confirmed signed-up members, regardless of publish status,
     // so the Verified subtext "N of M" shares the same denominator.
-    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, paidRes] = await Promise.all([
+    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, paidRes, adminRolesRes] = await Promise.all([
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false }),
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30 }),
@@ -79,13 +79,27 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
         .select('user_id, tier, status')
         .in('status', ['active', 'trialing'])
         .neq('tier', 'free'),
+      supabaseAdmin.from('user_roles').select('user_id').eq('role', 'admin'),
     ]);
 
-    const activeCount = (activeRes.data as number | null) ?? 0;
-    const verifiedCount = (verifiedRes.data as number | null) ?? 0;
+    const adminIds = new Set(((adminRolesRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
+    // KPIs exclude platform admins so the totals match the Professionals list.
+    const { data: adminPros } = adminIds.size
+      ? await supabaseAdmin.from('professionals').select('id, verification').in('id', Array.from(adminIds))
+      : { data: [] as Array<{ id: string; verification: string | null }> };
+    const adminProRows = (adminPros ?? []) as Array<{ id: string; verification: string | null }>;
+    const adminProCount = adminProRows.length;
+    const adminVerifiedCount = adminProRows.filter(r => r.verification === 'verified').length;
+
+    const activeCount = Math.max(0, ((activeRes.data as number | null) ?? 0) - adminProCount);
+    const verifiedCount = Math.max(0, ((verifiedRes.data as number | null) ?? 0) - adminVerifiedCount);
     const signups = (signups30Res.data as number | null) ?? 0;
     const prevSignups = (signupsPrev30Res.data as number | null) ?? 0;
-    const paidCount = new Set(((paidRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id)).size;
+    const paidCount = new Set(
+      ((paidRes.data ?? []) as Array<{ user_id: string }>)
+        .filter(r => !adminIds.has(r.user_id))
+        .map(r => r.user_id),
+    ).size;
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
 
     return {
@@ -177,15 +191,20 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     // Filter to professionals whose auth user is email-confirmed (actually
     // signed up). Invited-but-unaccepted shells from `generateLink({ type:
     // 'invite' })` are hidden — they are not members yet.
-    const { data: confirmedRows, error: confirmedErr } = await supabaseAdmin
-      .rpc('get_confirmed_professional_ids', { _ids: allIds });
-    if (confirmedErr) throw confirmedErr;
-    const confirmedSet = new Set(((confirmedRows ?? []) as string[]).map(String));
-    const ids = allIds.filter(id => confirmedSet.has(id));
+    // Also exclude platform admins — they're managed at /admin/team.
+    const [confirmedRes, adminRoleRes] = await Promise.all([
+      supabaseAdmin.rpc('get_confirmed_professional_ids', { _ids: allIds }),
+      supabaseAdmin.from('user_roles').select('user_id').eq('role', 'admin'),
+    ]);
+    if (confirmedRes.error) throw confirmedRes.error;
+    if (adminRoleRes.error) throw adminRoleRes.error;
+    const confirmedSet = new Set(((confirmedRes.data ?? []) as string[]).map(String));
+    const adminIdSet = new Set(((adminRoleRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
+    const ids = allIds.filter(id => confirmedSet.has(id) && !adminIdSet.has(id));
     if (ids.length === 0) {
       return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
     }
-    const prosFiltered = (pros ?? []).filter(p => confirmedSet.has(p.id));
+    const prosFiltered = (pros ?? []).filter(p => confirmedSet.has(p.id) && !adminIdSet.has(p.id));
 
     // Chunk `.in('id', ids)` to keep request URLs under the edge worker URL
     // length limit. A single 400+ UUID list overflows and the request fails
@@ -206,7 +225,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return out;
     }
 
-    const [profilesData, subsData, reviewsData, ccData, adminRolesData, paymentsData, bdSeedData] = await Promise.all([
+    const [profilesData, subsData, reviewsData, ccData, paymentsData, bdSeedData] = await Promise.all([
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
       fetchAll<{ user_id: string; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
@@ -215,8 +234,6 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', c).eq('status', 'published')),
       fetchAll<{ professional_id: string; status: string }>((c) =>
         supabaseAdmin.from('coach_client').select('professional_id, status').in('professional_id', c).eq('status', 'active')),
-      fetchAll<{ user_id: string }>((c) =>
-        supabaseAdmin.from('user_roles').select('user_id').in('user_id', c).eq('role', 'admin')),
       fetchAll<{ user_id: string | null; amount_pence: number; refunded_amount_pence: number; status: string }>((c) =>
         supabaseAdmin
           .from('legacy_stripe_payments')
@@ -231,7 +248,6 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
           .not('claimed_user_id', 'is', null)
           .not('bd_next_due_date', 'is', null)),
     ]);
-    const adminSet = new Set(adminRolesData.map((r) => r.user_id));
     const bdDueMap = new Map<string, string>();
     for (const r of bdSeedData) {
       if (r.claimed_user_id && r.bd_next_due_date) bdDueMap.set(r.claimed_user_id, r.bd_next_due_date);
@@ -273,8 +289,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const tier = (subMap.get(p.id) ?? 'free') as AdminProRow['plan'];
       const ra = ratingAcc.get(p.id);
       const status: AdminProRow['status'] =
-        adminSet.has(p.id) ? 'admin'
-        : p.is_published === false && p.suspended_at ? 'suspended'
+        p.is_published === false && p.suspended_at ? 'suspended'
         : p.verification === 'verified' && p.is_published ? 'verified'
         : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';

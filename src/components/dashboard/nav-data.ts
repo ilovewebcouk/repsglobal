@@ -149,6 +149,7 @@ export const ADMIN_NAV = [
       { icon: AlertCircle, label: "Churn", to: "/admin/churn" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
+      { icon: ShieldCheck, label: "Team", to: "/admin/team" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
     ],
   },

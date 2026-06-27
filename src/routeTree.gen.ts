@@ -75,6 +75,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminWebhookRecoveryRouteImport } from './routes/admin_.webhook-recovery'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
+import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
@@ -468,6 +469,11 @@ const AdminWebhookRecoveryRoute = AdminWebhookRecoveryRouteImport.update({
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
   id: '/admin_/verification',
   path: '/admin/verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTeamRoute = AdminTeamRouteImport.update({
+  id: '/admin_/team',
+  path: '/admin/team',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSupportRoute = AdminSupportRouteImport.update({
@@ -877,6 +883,7 @@ export interface FileRoutesByFullPath {
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
+  '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/admin/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
@@ -1005,6 +1012,7 @@ export interface FileRoutesByTo {
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
+  '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/admin/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
@@ -1134,6 +1142,7 @@ export interface FileRoutesById {
   '/admin_/reviews': typeof AdminReviewsRoute
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
+  '/admin_/team': typeof AdminTeamRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/admin_/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
@@ -1266,6 +1275,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/admin/settings'
     | '/admin/support'
+    | '/admin/team'
     | '/admin/verification'
     | '/admin/webhook-recovery'
     | '/c/$slug'
@@ -1394,6 +1404,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/admin/settings'
     | '/admin/support'
+    | '/admin/team'
     | '/admin/verification'
     | '/admin/webhook-recovery'
     | '/c/$slug'
@@ -1522,6 +1533,7 @@ export interface FileRouteTypes {
     | '/admin_/reviews'
     | '/admin_/settings'
     | '/admin_/support'
+    | '/admin_/team'
     | '/admin_/verification'
     | '/admin_/webhook-recovery'
     | '/c/$slug'
@@ -1654,6 +1666,7 @@ export interface RootRouteChildren {
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
+  AdminTeamRoute: typeof AdminTeamRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   AdminWebhookRecoveryRoute: typeof AdminWebhookRecoveryRoute
   CSlugRoute: typeof CSlugRoute
@@ -2163,6 +2176,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/verification'
       fullPath: '/admin/verification'
       preLoaderRoute: typeof AdminVerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/team': {
+      id: '/admin_/team'
+      path: '/admin/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AdminTeamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/support': {
@@ -2868,6 +2888,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
+  AdminTeamRoute: AdminTeamRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   AdminWebhookRecoveryRoute: AdminWebhookRecoveryRoute,
   CSlugRoute: CSlugRoute,
