@@ -3,21 +3,31 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   enumerateDays,
-  forecastWindow,
+  forecastWindowFor,
   londonDayKey,
 } from "./overview-period";
-
-// Pence per tier per renewal cycle — used for forecast only.
-// Mirrors src/lib/billing.ts pricing (Verified £99/yr, Pro £59/mo, Studio £149/mo).
-const TIER_RENEWAL_PENCE: Record<string, number> = {
-  verified: 9900,
-  pro: 5900,
-  studio: 14900,
-};
+import {
+  ACTIVE_STATUSES,
+  COUNTED_TIERS,
+  TIER_RANK,
+  TIER_RENEWAL_PENCE,
+  LEGACY_AMOUNT_PENCE,
+  COUNTED_PAYMENT_EVENT_TYPES,
+  TERMINAL_CHURN_STAGES,
+  asString,
+  type ForecastHorizon,
+} from "./metrics-definitions";
 
 const Input = z.object({
+  // Historical window — drives Active Members, Revenue Received,
+  // Net Member Growth, and all actuals charts.
   from: z.string(),
   to: z.string(),
+  // Forecast horizon window — drives Projected Cash Due only.
+  // MUST be passed separately so the two windows can never silently
+  // share a date range.
+  forecastFrom: z.string().optional(),
+  forecastTo: z.string().optional(),
 });
 
 type DayPoint = { day: string; value: number };
@@ -25,22 +35,33 @@ type DayPoint = { day: string; value: number };
 export interface AdminOverviewDTO {
   period: { from: string; to: string };
   forecast: { from: string; to: string };
-  // KPI totals
+
+  // KPI 1 — Active Members
   totalMembers: number;
-  totalMembersDelta: number; // net change across period (joined - exited within window)
+  joinedInPeriod: number;
+  churnedInPeriod: number;
+
+  // KPI 2 — Revenue Received
   revenuePence: number;
+
+  // KPI 3 — Projected Cash Due (independent horizon)
   forecastPence: number;
+
+  // KPI 4 — Net Member Growth (joinedInPeriod - churnedInPeriod)
+  netMemberGrowth: number;
+
+  // Demoted from headline tile to supporting info
   newRegistrations: number;
-  // Series (null when empty so the UI hides sparklines)
-  membersSeries: DayPoint[] | null;       // cumulative active members per day
-  revenueSeries: DayPoint[] | null;       // £ received per day (pence)
-  signupsSeries: DayPoint[] | null;       // confirmed signups per day
-  forecastSeries: DayPoint[] | null;      // projected cash due per day (pence)
+
+  // Series for sparklines / supporting charts
+  membersSeries: DayPoint[] | null;
+  revenueSeries: DayPoint[] | null;
+  signupsSeries: DayPoint[] | null;
+  forecastSeries: DayPoint[] | null;
+  churnSeries: DayPoint[] | null;
+
   mix: { verified: number; pro: number; studio: number };
 }
-
-const ACTIVE_STATUSES = ["active", "trialing"];
-const COUNTED_TIERS = ["verified", "pro", "studio"];
 
 export const getAdminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -55,9 +76,16 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     });
     if (!isAdmin) throw new Error("Forbidden");
 
-    const fcast = forecastWindow();
+    // Forecast window defaults to "Next 30 days" when not provided —
+    // matches the previous behaviour. It is ALWAYS distinct from the
+    // historical window.
+    const fcast = data.forecastFrom && data.forecastTo
+      ? { from: data.forecastFrom, to: data.forecastTo }
+      : forecastWindowFor("next_30d");
 
-    // 1) All live, counted subscriptions (single query, then aggregate in TS).
+    // -------------------------------------------------------------------
+    // KPI 1 — Active Members (point-in-time)
+    // -------------------------------------------------------------------
     const { data: subsRaw, error: subsErr } = await supabase
       .from("subscriptions")
       .select("user_id, tier, status, current_period_end, created_at, environment");
@@ -65,17 +93,15 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const subs = (subsRaw ?? []).filter(
       (s) =>
         s.environment === "live" &&
-        ACTIVE_STATUSES.includes(s.status ?? "") &&
-        COUNTED_TIERS.includes(s.tier ?? ""),
+        (ACTIVE_STATUSES as readonly string[]).includes(s.status ?? "") &&
+        (COUNTED_TIERS as readonly string[]).includes(s.tier ?? ""),
     );
 
-    // De-dupe per user_id, prefer pro > studio > verified for mix accounting.
-    const tierRank: Record<string, number> = { studio: 3, pro: 2, verified: 1 };
     const perUser = new Map<string, { tier: string; created_at: string; current_period_end: string | null }>();
     for (const s of subs) {
       if (!s.user_id) continue;
       const prev = perUser.get(s.user_id);
-      if (!prev || (tierRank[s.tier ?? ""] ?? 0) > (tierRank[prev.tier] ?? 0)) {
+      if (!prev || (TIER_RANK[s.tier ?? ""] ?? 0) > (TIER_RANK[prev.tier] ?? 0)) {
         perUser.set(s.user_id, {
           tier: s.tier!,
           created_at: s.created_at!,
@@ -92,11 +118,13 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       else if (v.tier === "studio") mix.studio += 1;
     }
 
-    // 2) Revenue received in period — from payment_events (admin-readable).
+    // -------------------------------------------------------------------
+    // KPI 2 — Revenue Received (historical window)
+    // -------------------------------------------------------------------
     const { data: paymentsRaw, error: payErr } = await supabase
       .from("payment_events")
       .select("stripe_event_id, event_type, payload, created_at")
-      .in("event_type", ["invoice.payment_succeeded", "charge.succeeded"])
+      .in("event_type", Array.from(COUNTED_PAYMENT_EVENT_TYPES))
       .gte("created_at", data.from)
       .lt("created_at", data.to);
     if (payErr) throw payErr;
@@ -106,9 +134,6 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       string,
       { amount: number; createdAt: string; rank: number }
     >();
-
-    const asString = (value: unknown) =>
-      typeof value === "string" && value.length > 0 ? value : null;
 
     for (const ev of paymentsRaw ?? []) {
       if (ev.stripe_event_id && seenEvents.has(ev.stripe_event_id)) continue;
@@ -125,9 +150,6 @@ export const getAdminOverview = createServerFn({ method: "GET" })
             ? obj.amount
             : 0;
 
-      // Net out refunds on standalone charge rows. For subscription payments
-      // where Stripe also sends invoice.payment_succeeded, the invoice row is
-      // the canonical payment row and this charge row is only used for de-dupe.
       if (ev.event_type === "charge.succeeded") {
         if (obj.refunded === true) amount = 0;
         else if (typeof obj.amount_refunded === "number") {
@@ -149,9 +171,6 @@ export const getAdminOverview = createServerFn({ method: "GET" })
             ? `object:${objectId}`
             : `event:${ev.stripe_event_id ?? ev.created_at}`;
 
-      // Prefer invoice rows for subscription payments because they carry the
-      // customer/user attribution and billing reason. Charge rows stay counted
-      // when they are genuinely standalone.
       const rank = ev.event_type === "invoice.payment_succeeded" ? 1 : 2;
       const previous = moneyByPayment.get(paymentKey);
       if (!previous || rank < previous.rank) {
@@ -171,13 +190,9 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       revBuckets.set(key, (revBuckets.get(key) ?? 0) + payment.amount);
     }
 
-    // 3) Forecast — three sources, deduped by user_id (or bd_member_id for
-    // legacy rows not yet linked to a Supabase user):
-    //   a) Active counted subscriptions whose current_period_end is in window.
-    //   b) legacy_stripe_link rows whose access_expires_at is in window — the
-    //      same anchor the renewal cron uses to charge £99.
-    //   c) bd_member_seed rows whose bd_next_due_date is in window, for
-    //      members not yet covered by (a) or (b).
+    // -------------------------------------------------------------------
+    // KPI 3 — Projected Cash Due (forecast horizon window)
+    // -------------------------------------------------------------------
     const fcastFrom = new Date(fcast.from).getTime();
     const fcastTo = new Date(fcast.to).getTime();
     let forecastPence = 0;
@@ -202,12 +217,13 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       countedUsers.add(s.user_id);
     }
 
-    // Seeds index — used to resolve legacy_stripe_link → claimed_user_id and
-    // to dedupe pass (c) against passes (a)/(b).
     const { data: seeds } = await supabase
       .from("bd_member_seed")
       .select("bd_member_id, claimed_user_id, bd_next_due_date");
-    const seedByMember = new Map<string, { claimed_user_id: string | null; bd_next_due_date: string | null }>();
+    const seedByMember = new Map<
+      string,
+      { claimed_user_id: string | null; bd_next_due_date: string | null }
+    >();
     for (const s of seeds ?? []) {
       if (s.bd_member_id != null) {
         seedByMember.set(String(s.bd_member_id), {
@@ -217,9 +233,6 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       }
     }
 
-    const LEGACY_AMOUNT = TIER_RENEWAL_PENCE["verified"];
-
-    // (b) legacy_stripe_link
     const { data: links } = await supabase
       .from("legacy_stripe_link")
       .select("bd_member_id, access_expires_at")
@@ -232,31 +245,34 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       const uid = seed?.claimed_user_id ?? null;
       if (uid && countedUsers.has(uid)) continue;
       if (memberKey && countedMembers.has(memberKey)) continue;
-      addForecast(l.access_expires_at as string, LEGACY_AMOUNT);
+      addForecast(l.access_expires_at as string, LEGACY_AMOUNT_PENCE);
       if (uid) countedUsers.add(uid);
       if (memberKey) countedMembers.add(memberKey);
     }
 
-    // (c) bd_member_seed
     for (const [memberId, seed] of seedByMember) {
       if (!seed.bd_next_due_date) continue;
       const t = new Date(seed.bd_next_due_date).getTime();
       if (t < fcastFrom || t >= fcastTo) continue;
       if (seed.claimed_user_id && countedUsers.has(seed.claimed_user_id)) continue;
       if (countedMembers.has(memberId)) continue;
-      addForecast(seed.bd_next_due_date, LEGACY_AMOUNT);
+      addForecast(seed.bd_next_due_date, LEGACY_AMOUNT_PENCE);
       if (seed.claimed_user_id) countedUsers.add(seed.claimed_user_id);
       countedMembers.add(memberId);
     }
 
-    // 4) New registrations — first paid subscription per user, created in window.
-    // (Email-confirmed-only invites without a paid sub don't move the needle here.)
+    // -------------------------------------------------------------------
+    // KPI 4 — Net Member Growth (historical window)
+    // Joined = first paid sub `created_at` per user inside window.
+    // Churned = users whose latest churn_lifecycle row is in a terminal
+    //   stage AND entered that stage inside the window.
+    // -------------------------------------------------------------------
     const sigBuckets = new Map<string, number>();
     let newRegistrations = 0;
     const firstSubAt = new Map<string, string>();
     for (const s of subsRaw ?? []) {
       if (s.environment !== "live") continue;
-      if (!COUNTED_TIERS.includes(s.tier ?? "")) continue;
+      if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? "")) continue;
       if (!s.user_id || !s.created_at) continue;
       const prev = firstSubAt.get(s.user_id);
       if (!prev || new Date(s.created_at).getTime() < new Date(prev).getTime()) {
@@ -265,34 +281,69 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     }
     const fromMs = new Date(data.from).getTime();
     const toMs = new Date(data.to).getTime();
+    let joinedInPeriod = 0;
     for (const ts of firstSubAt.values()) {
       const t = new Date(ts).getTime();
       if (t < fromMs || t >= toMs) continue;
-      newRegistrations += 1;
+      joinedInPeriod += 1;
       const key = londonDayKey(ts);
       sigBuckets.set(key, (sigBuckets.get(key) ?? 0) + 1);
     }
+    // Registrations and Joined are the same definition (first paid sub
+    // in window) — we expose both keys so the UI can demote Registrations
+    // without changing meaning.
+    newRegistrations = joinedInPeriod;
 
-    // 5) Members series — cumulative active members joined-by-day (best-effort
-    // using subscription.created_at as the join timestamp; this stays
-    // self-consistent without a historical state table).
+    // Churned — keep latest stage per user.
+    const { data: churnRows } = await supabase
+      .from("churn_lifecycle")
+      .select("user_id, stage, entered_at");
+    const latestChurnByUser = new Map<
+      string,
+      { stage: string; entered_at: string }
+    >();
+    for (const c of churnRows ?? []) {
+      if (!c.user_id || !c.entered_at) continue;
+      const prev = latestChurnByUser.get(c.user_id);
+      if (
+        !prev ||
+        new Date(c.entered_at).getTime() > new Date(prev.entered_at).getTime()
+      ) {
+        latestChurnByUser.set(c.user_id, {
+          stage: c.stage as string,
+          entered_at: c.entered_at as string,
+        });
+      }
+    }
+    let churnedInPeriod = 0;
+    const churnBuckets = new Map<string, number>();
+    for (const c of latestChurnByUser.values()) {
+      if (!(TERMINAL_CHURN_STAGES as readonly string[]).includes(c.stage)) continue;
+      const t = new Date(c.entered_at).getTime();
+      if (t < fromMs || t >= toMs) continue;
+      churnedInPeriod += 1;
+      const key = londonDayKey(c.entered_at);
+      churnBuckets.set(key, (churnBuckets.get(key) ?? 0) + 1);
+    }
+    const netMemberGrowth = joinedInPeriod - churnedInPeriod;
+
+    // -------------------------------------------------------------------
+    // Series scaffolding
+    // -------------------------------------------------------------------
     const days = enumerateDays(data.from, data.to);
     const joinsByDay = new Map<string, number>();
     for (const v of perUser.values()) {
       const key = londonDayKey(v.created_at);
       joinsByDay.set(key, (joinsByDay.get(key) ?? 0) + 1);
     }
-    // Members at start of period = total - (joins inside period)
-    let joinsInPeriod = 0;
-    for (const d of days) joinsInPeriod += joinsByDay.get(d) ?? 0;
-    let running = totalMembers - joinsInPeriod;
+    let joinsBefore = 0;
+    for (const d of days) joinsBefore += joinsByDay.get(d) ?? 0;
+    let running = totalMembers - joinsBefore;
     const membersSeries: DayPoint[] = days.map((d) => {
       running += joinsByDay.get(d) ?? 0;
       return { day: d, value: running };
     });
-    const totalMembersDelta = joinsInPeriod; // net joins approximation
 
-    // Build day-aligned series, replacing all-zero series with null so UI can hide.
     const revenueSeriesArr: DayPoint[] = days.map((d) => ({
       day: d,
       value: revBuckets.get(d) ?? 0,
@@ -300,6 +351,10 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const signupsSeriesArr: DayPoint[] = days.map((d) => ({
       day: d,
       value: sigBuckets.get(d) ?? 0,
+    }));
+    const churnSeriesArr: DayPoint[] = days.map((d) => ({
+      day: d,
+      value: churnBuckets.get(d) ?? 0,
     }));
     const forecastDays = enumerateDays(fcast.from, fcast.to);
     const forecastSeriesArr: DayPoint[] = forecastDays.map((d) => ({
@@ -313,7 +368,9 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       period: { from: data.from, to: data.to },
       forecast: { from: fcast.from, to: fcast.to },
       totalMembers,
-      totalMembersDelta,
+      joinedInPeriod,
+      churnedInPeriod,
+      netMemberGrowth,
       revenuePence,
       forecastPence,
       newRegistrations,
@@ -321,6 +378,10 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       revenueSeries: hasData(revenueSeriesArr) ? revenueSeriesArr : null,
       signupsSeries: hasData(signupsSeriesArr) ? signupsSeriesArr : null,
       forecastSeries: hasData(forecastSeriesArr) ? forecastSeriesArr : null,
+      churnSeries: hasData(churnSeriesArr) ? churnSeriesArr : null,
       mix,
     };
   });
+
+// Re-export horizon type for convenience.
+export type { ForecastHorizon } from "./metrics-definitions";
