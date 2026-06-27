@@ -55,7 +55,9 @@ export const listPaymentFailedSubs = createServerFn({ method: "GET" })
       .select(
         "user_id, stripe_customer_id, stripe_subscription_id, status, tier, current_period_end, updated_at, metadata, environment",
       )
-      .in("status", FAILED_STATUSES as unknown as string[])
+      .in("status", [...FAILED_STATUSES])
+      .eq("environment", "live");
+
       .eq("environment", "live");
     if (error) throw new Error(error.message);
 
