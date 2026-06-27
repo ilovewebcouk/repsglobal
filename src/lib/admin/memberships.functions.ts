@@ -50,7 +50,7 @@ export type TierBreakdown = {
   tier: Tier;
   active: number;
   trialing: number;
-  scheduled: number; // Verified-only: migrated members with no Stripe sub yet
+  scheduled: number; // Core-only: migrated members with no Stripe sub yet
 };
 
 export type PaymentListItem = {
@@ -341,7 +341,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     }));
 
     const distribution = [
-      { label: "Verified", count: verifiedActive + verifiedScheduledCount, tone: "verified" as const },
+      { label: "Core", count: verifiedActive + verifiedScheduledCount, tone: "verified" as const },
       { label: "Pro", count: tierMap.pro.active + tierMap.pro.trialing, tone: "pro" as const },
       { label: "Studio", count: tierMap.studio.active + tierMap.studio.trialing, tone: "studio" as const },
     ].filter((d) => d.count > 0);

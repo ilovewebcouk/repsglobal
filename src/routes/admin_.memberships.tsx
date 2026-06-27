@@ -433,7 +433,7 @@ function ForecastChartPanel({ data, loading }: { data?: RevenueForecast; loading
                             </span>
                           </div>
                           <div className="my-1 h-px bg-white/10" />
-                          <Row label="Verified" v={p.verified} dotClass="bg-reps-orange" />
+                          <Row label="Core" v={p.verified} dotClass="bg-reps-orange" />
                           <Row label="Pro" v={p.pro} dotClass="bg-white/55" />
                           <Row label="Studio" v={p.studio} dotClass="bg-emerald-400" />
                         </div>
@@ -545,7 +545,7 @@ function MonthlyForecastTable({
             <TableHeader>
               <TableRow className="border-reps-border hover:bg-transparent">
                 <TableHead className="text-white/55">Month</TableHead>
-                <TableHead className="text-right text-white/55">Verified</TableHead>
+                <TableHead className="text-right text-white/55">Core</TableHead>
                 <TableHead className="text-right text-white/55">Pro</TableHead>
                 <TableHead className="text-right text-white/55">Studio</TableHead>
                 <TableHead className="text-right text-white/55">Total</TableHead>
@@ -734,7 +734,7 @@ function PastDuePanel({ data, loading }: { data?: MembershipMetrics; loading: bo
 }
 
 function tierLabel(t: string) {
-  if (t === "verified") return "Verified";
+  if (t === "verified") return "Core";
   if (t === "pro") return "Pro";
   if (t === "studio") return "Studio";
   return t;

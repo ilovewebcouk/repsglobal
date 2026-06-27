@@ -62,7 +62,7 @@ const INBOXES: { value: Inbox; label: string; email: string }[] = [
 
 const TIERS: { value: Tier; label: string }[] = [
   { value: "free", label: "Unverified" },
-  { value: "verified", label: "Verified" },
+  { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
 ];

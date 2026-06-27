@@ -11,7 +11,7 @@
  *                            with manual fallback.
  *   - `InsuranceProfileCard` numbered profile card (step 06) — public liability.
  *
- * No "Verified vs Pro" copy. No "What you unlock". Qualifications is NOT
+ * No "Core vs Pro" copy. No "What you unlock". Qualifications is NOT
  * editable here — its status mirrors what Education & CPD says.
  */
 

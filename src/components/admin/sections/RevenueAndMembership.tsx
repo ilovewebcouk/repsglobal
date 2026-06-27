@@ -59,7 +59,7 @@ export function RevenueAndMembership({
   periodLabel: string;
 }) {
   const mixData = [
-    { tier: "Verified", value: data.mix.verified },
+    { tier: "Core", value: data.mix.verified },
     { tier: "Pro", value: data.mix.pro },
     { tier: "Studio", value: data.mix.studio },
   ];

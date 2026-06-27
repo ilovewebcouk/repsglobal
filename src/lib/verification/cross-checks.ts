@@ -275,7 +275,7 @@ export function evaluateGates(input: GatesInput): GatesResult {
       id: "insurance_missing",
       label: "Insurance missing (Pro tier needs it)",
       passed: false,
-      detail: "Verified tier OK without",
+      detail: "Core tier OK without",
     });
   }
 

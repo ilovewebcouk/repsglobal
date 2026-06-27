@@ -1,6 +1,6 @@
 /**
  * Daily cron: pick up legacy_stripe_link rows whose access has expired and
- * create their Verified £99/yr subscription on the existing Stripe customer.
+ * create their Core £99/yr subscription on the existing Stripe customer.
  *
  * Triggered by pg_cron via net.http_post with the Supabase anon key in the
  * `apikey` header (see `/api/public/*` convention). No body params required.

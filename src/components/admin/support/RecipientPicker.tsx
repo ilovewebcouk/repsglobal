@@ -230,7 +230,7 @@ function TierChip({
       </Badge>
     );
   }
-  const label = tier === "verified" ? "Verified" : tier === "pro" ? "Pro" : "Studio";
+  const label = tier === "verified" ? "Core" : tier === "pro" ? "Pro" : "Studio";
   return (
     <Badge
       variant="outline"

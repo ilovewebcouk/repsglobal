@@ -39,7 +39,7 @@ export type FeaturePageProps = {
 
 const TIER_LABELS: Record<string, string> = {
   free: "Free",
-  verified: "Verified",
+  verified: "Core",
   pro: "Pro",
   business: "Business",
   studio: "Studio",

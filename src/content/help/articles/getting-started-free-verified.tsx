@@ -4,12 +4,12 @@ import type { HelpArticle } from "../types";
 export const article: HelpArticle = {
   slug: "free-vs-verified",
   category: "getting-started",
-  title: "Free vs Verified — what's the difference?",
-  summary: "Verified is free during launch and is the minimum bar to appear in REPS search.",
+  title: "What you get on Core",
+  summary: "Core (£99/year) is the foundation tier and the minimum bar to appear in REPS search.",
   tier: ["verified"],
   lastReviewed: "2026-06-26",
   author: "REPS Team",
-  tags: ["plans", "verified", "free"],
+  tags: ["plans", "core", "verified"],
   related: [
     "verification/how-verification-works",
     "account-billing/plans-and-pricing",
@@ -17,11 +17,11 @@ export const article: HelpArticle = {
   Body: () => (
     <>
       <p>
-        Every professional on REPS is on one of three tiers: <strong>Verified</strong>,{" "}
-        <strong>Pro</strong> or <strong>Studio</strong>. Verified is the foundation — it's free
-        during launch and is the only tier that puts a verified badge on your profile.
+        Every professional on REPS is on one of three tiers: <strong>Core</strong>,{" "}
+        <strong>Pro</strong> or <strong>Studio</strong>. Core is the foundation — it's the only
+        tier that puts a verified badge on your profile once your three pillars are approved.
       </p>
-      <h2 id="what-verified-includes">What Verified includes</h2>
+      <h2 id="what-core-includes">What Core includes</h2>
       <ul>
         <li>A public profile at <code>reps.org/pro/your-slug</code></li>
         <li>Verified badge once identity, qualifications and insurance are approved</li>
@@ -31,14 +31,15 @@ export const article: HelpArticle = {
       </ul>
       <h2 id="what-it-doesnt-include">What it doesn't include</h2>
       <p>
-        Verified does not include the Pro analytics suite, ranking boosts, lead routing or the
+        Core does not include the Pro analytics suite, ranking boosts, lead routing or the
         Studio multi-coach features. Those are on the Pro and Studio tiers — both currently
         waitlisted while we polish them.
       </p>
-      <Callout tone="note" title="Why is Verified free?">
-        Trust scales when the bar to be on the register is low and the bar to be{" "}
-        <em>verified</em> is high. We'd rather have every legitimate professional in the country
-        on REPS than gate the basics behind a paywall.
+      <Callout tone="note" title="Why £99/year?">
+        Core covers the cost of verifying your identity, qualifications and insurance every
+        year, and keeping you on a register the public actively searches. It's deliberately
+        priced so every legitimate professional can be on REPS without the Pro suite getting
+        in the way.
       </Callout>
     </>
   ),

@@ -7,7 +7,7 @@
  *      upsert a row in legacy_stripe_link. NO subscription created today.
  *
  *   2. runLegacyRenewalBatch — for each legacy_stripe_link row whose
- *      access_expires_at has passed, create a Verified £99/yr subscription
+ *      access_expires_at has passed, create a Core £99/yr subscription
  *      on that customer. If a default payment method exists, Stripe charges
  *      it. If not, the subscription is created with collection_method=
  *      send_invoice so nothing fails; status flips to awaiting_payment_method
@@ -277,7 +277,7 @@ export const linkLegacyStripeCustomers = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pass 2 — Renew due rows onto Verified £99/yr.
+// Pass 2 — Renew due rows onto Core £99/yr.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type LegacyRenewalResult = {
