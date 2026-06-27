@@ -21,6 +21,13 @@ import {
   asString,
   type ForecastHorizon,
 } from "./metrics-definitions";
+import {
+  buildActivePayingMemberCollection,
+  type ActiveMemberCounts,
+  type ActiveMemberRawRow,
+  type ActivePayingMember,
+} from "@/lib/members/active-paying-member";
+
 
 const Input = z.object({
   from: z.string(),
