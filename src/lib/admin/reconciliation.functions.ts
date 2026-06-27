@@ -334,112 +334,13 @@ export const getRevenueReconciliation = createServerFn({ method: "GET" })
   });
 
 // =============================================================================
-// Membership reconciliation
+// Membership reconciliation — REMOVED (E-DRIFT-2)
+// The legacy `getMembershipReconciliation` server fn was dead code with a
+// drifted algorithm (no FK to auth.users, ignored canonical Active Paying
+// Member rules). Membership drift is now surfaced via
+// getReconciliationOverview, which shares the exact rules used by the
+// renewal engine and the Platform Overview tiles.
 // =============================================================================
-
-export const getMembershipReconciliation = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<MemberReportDTO> => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
-
-    const { data: subsRaw, error } = await supabase
-      .from("subscriptions")
-      .select(
-        "id, user_id, tier, status, environment, created_at, current_period_end, cancel_at_period_end, updated_at, metadata",
-      )
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-
-    // Replay dashboard membership predicates exactly.
-    // 1) environment === 'live'
-    // 2) status in ACTIVE_STATUSES
-    // 3) tier in COUNTED_TIERS
-    // 4) one user per user_id; tier rank pro > studio > verified (matches getAdminOverview)
-    const tierRank: Record<string, number> = {
-      studio: 3,
-      pro: 2,
-      verified: 1,
-    };
-
-    // First pass — figure out which (user_id) wins so we can mark losers.
-    const winnerByUser = new Map<string, string>(); // user_id -> winning subscription id
-    const winningTierByUser = new Map<string, string>();
-    for (const s of subsRaw ?? []) {
-      const liveAndActive =
-        s.environment === "live" &&
-        (ACTIVE_STATUSES as readonly string[]).includes(s.status ?? "") &&
-        (COUNTED_TIERS as readonly string[]).includes(s.tier ?? "");
-      if (!liveAndActive || !s.user_id) continue;
-      const currentWinTier = winningTierByUser.get(s.user_id);
-      if (
-        !currentWinTier ||
-        (tierRank[s.tier ?? ""] ?? 0) > (tierRank[currentWinTier] ?? 0)
-      ) {
-        winnerByUser.set(s.user_id, s.id);
-        winningTierByUser.set(s.user_id, s.tier!);
-      }
-    }
-
-    // Lookup emails via admin client (admin-only page).
-    const { supabaseAdmin } = await import(
-      "@/integrations/supabase/client.server"
-    );
-    const userIds = Array.from(
-      new Set((subsRaw ?? []).map((s) => s.user_id).filter(Boolean) as string[]),
-    );
-    const emailByUser = new Map<string, string>();
-    // Batch via auth admin API (paged).
-    let page = 1;
-    while (page < 50) {
-      const { data: users, error: uErr } =
-        await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
-      if (uErr) break;
-      for (const u of users.users) {
-        if (u.email) emailByUser.set(u.id, u.email);
-      }
-      if (users.users.length < 200) break;
-      page += 1;
-    }
-
-    const rows: MemberRow[] = (subsRaw ?? []).map((s) => {
-      let included = false;
-      let reason: string | null = null;
-      if (s.environment !== "live")
-        reason = `environment="${s.environment}" (dashboard requires "live")`;
-      else if (!(ACTIVE_STATUSES as readonly string[]).includes(s.status ?? ""))
-        reason = `status="${s.status}" (dashboard requires active or trialing)`;
-      else if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? ""))
-        reason = `tier="${s.tier}" (dashboard counts only verified/pro/studio)`;
-      else if (winnerByUser.get(s.user_id ?? "") !== s.id)
-        reason = `superseded by another live+active subscription for the same user (winner: ${winnerByUser.get(s.user_id ?? "") ?? "n/a"})`;
-      else included = true;
-
-      const meta = (s.metadata ?? {}) as Record<string, unknown>;
-      const cancelledAt =
-        asString(meta.cancelled_at) ?? asString(meta.canceled_at);
-
-      return {
-        user_id: s.user_id ?? "",
-        email: emailByUser.get(s.user_id ?? "") ?? null,
-        subscription_id: s.id,
-        tier: s.tier,
-        status: s.status,
-        environment: s.environment,
-        created_at: s.created_at,
-        current_period_end: s.current_period_end,
-        cancel_at_period_end: s.cancel_at_period_end,
-        cancelled_at: cancelledAt,
-        included_in_member_count: included,
-        exclusion_reason: reason,
-      };
-    });
-
-    return {
-      total_members: winnerByUser.size,
-      rows,
-    };
-  });
 
 // =============================================================================
 // Registrations reconciliation
