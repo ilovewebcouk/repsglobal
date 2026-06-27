@@ -137,6 +137,9 @@ function ReconciliationPage() {
             <a href="#revenue" className="text-white/70 hover:text-white">
               Revenue
             </a>
+            <a href="#forecast" className="text-white/70 hover:text-white">
+              Forecast
+            </a>
             <a href="#members" className="text-white/70 hover:text-white">
               Members
             </a>
