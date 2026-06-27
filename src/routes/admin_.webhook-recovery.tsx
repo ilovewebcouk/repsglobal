@@ -1,17 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { requireRole } from "@/lib/route-gates";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard } from "@/components/dashboard/primitives";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   diagnoseWebhookFailures,
   type DiagnosisRow,
   type LookupAttempt,
   type ResolverStep,
 } from "@/lib/admin/webhook-recovery.functions";
+import {
+  dryRunReplayWebhookFailures,
+  type ReplayRow,
+} from "@/lib/admin/webhook-replay.functions";
 
 export const Route = createFileRoute("/admin_/webhook-recovery")({
   ssr: false,
