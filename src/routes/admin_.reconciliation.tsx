@@ -19,6 +19,9 @@ import {
   getMembershipReconciliation,
   getRegistrationsReconciliation,
   type RevenueRow,
+  type RevenueReportDTO,
+  type MemberReportDTO,
+  type RegistrationReportDTO,
 } from "@/lib/admin/reconciliation.functions";
 
 const searchSchema = z.object({
