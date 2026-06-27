@@ -69,7 +69,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     // shells from `generateLink({ type: 'invite' })` are excluded).
     // "Active" = confirmed signed-up members, regardless of publish status,
     // so the Verified subtext "N of M" shares the same denominator.
-    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, paidRes] = await Promise.all([
+    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, paidRes, adminRolesRes] = await Promise.all([
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false }),
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30 }),
@@ -79,13 +79,27 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
         .select('user_id, tier, status')
         .in('status', ['active', 'trialing'])
         .neq('tier', 'free'),
+      supabaseAdmin.from('user_roles').select('user_id').eq('role', 'admin'),
     ]);
 
-    const activeCount = (activeRes.data as number | null) ?? 0;
-    const verifiedCount = (verifiedRes.data as number | null) ?? 0;
+    const adminIds = new Set(((adminRolesRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
+    // KPIs exclude platform admins so the totals match the Professionals list.
+    const { data: adminPros } = adminIds.size
+      ? await supabaseAdmin.from('professionals').select('id, verification').in('id', Array.from(adminIds))
+      : { data: [] as Array<{ id: string; verification: string | null }> };
+    const adminProRows = (adminPros ?? []) as Array<{ id: string; verification: string | null }>;
+    const adminProCount = adminProRows.length;
+    const adminVerifiedCount = adminProRows.filter(r => r.verification === 'verified').length;
+
+    const activeCount = Math.max(0, ((activeRes.data as number | null) ?? 0) - adminProCount);
+    const verifiedCount = Math.max(0, ((verifiedRes.data as number | null) ?? 0) - adminVerifiedCount);
     const signups = (signups30Res.data as number | null) ?? 0;
     const prevSignups = (signupsPrev30Res.data as number | null) ?? 0;
-    const paidCount = new Set(((paidRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id)).size;
+    const paidCount = new Set(
+      ((paidRes.data ?? []) as Array<{ user_id: string }>)
+        .filter(r => !adminIds.has(r.user_id))
+        .map(r => r.user_id),
+    ).size;
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
 
     return {
