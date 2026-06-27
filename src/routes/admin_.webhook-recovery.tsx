@@ -301,6 +301,13 @@ function AdminWebhookRecoveryPage() {
         >
           Step 3 — Dry-run replay
         </Button>
+        <Button
+          variant={tab === "live" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setTab("live")}
+        >
+          Step 4 — Live replay
+        </Button>
       </div>
 
       {tab === "diagnosis" && (
