@@ -140,7 +140,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const { data: migs } = await supabase
       .from("bd_migration")
       .select("bd_renewal_date, status, target_tier, bd_price_pence")
-      .in("status", ["ready", "approved", "future_due"] as string[]);
+      .in("status", ["seeded", "pending"]);
     for (const m of migs ?? []) {
       if (!m.bd_renewal_date) continue;
       const t = new Date(m.bd_renewal_date).getTime();
