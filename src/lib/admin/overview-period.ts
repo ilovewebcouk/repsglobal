@@ -129,6 +129,80 @@ export function forecastWindow(now: Date = new Date()): PeriodRange {
   };
 }
 
+// Forecast horizon (independent of the historical period selector).
+// MUST NOT share its window with revenue/members/growth KPIs.
+import type { ForecastHorizon } from "./metrics-definitions";
+
+export function forecastWindowFor(
+  horizon: ForecastHorizon,
+  custom?: { from?: string; to?: string },
+  now: Date = new Date(),
+): PeriodRange {
+  const today = londonParts(now);
+  const todayStart = londonMidnightUtc(today.year, today.month, today.day);
+  const fromNowIso = now.toISOString();
+  switch (horizon) {
+    case "next_30d":
+      return {
+        from: fromNowIso,
+        to: addDays(todayStart, 30).toISOString(),
+        label: "Next 30 days",
+      };
+    case "remaining_this_month": {
+      const nextMonth =
+        today.month === 12
+          ? londonMidnightUtc(today.year + 1, 1, 1)
+          : londonMidnightUtc(today.year, today.month + 1, 1);
+      return {
+        from: fromNowIso,
+        to: nextMonth.toISOString(),
+        label: "Remaining this month",
+      };
+    }
+    case "next_month": {
+      const nextMonthStart =
+        today.month === 12
+          ? londonMidnightUtc(today.year + 1, 1, 1)
+          : londonMidnightUtc(today.year, today.month + 1, 1);
+      const monthAfter =
+        today.month >= 11
+          ? londonMidnightUtc(today.year + 1, today.month - 10, 1)
+          : londonMidnightUtc(today.year, today.month + 2, 1);
+      return {
+        from: nextMonthStart.toISOString(),
+        to: monthAfter.toISOString(),
+        label: "Next month",
+      };
+    }
+    case "current_quarter": {
+      const qStartMonth = Math.floor((today.month - 1) / 3) * 3 + 1;
+      const qEndMonth = qStartMonth + 3;
+      const end =
+        qEndMonth > 12
+          ? londonMidnightUtc(today.year + 1, qEndMonth - 12, 1)
+          : londonMidnightUtc(today.year, qEndMonth, 1);
+      return {
+        from: fromNowIso,
+        to: end.toISOString(),
+        label: "Current quarter",
+      };
+    }
+    case "current_year": {
+      const end = londonMidnightUtc(today.year + 1, 1, 1);
+      return {
+        from: fromNowIso,
+        to: end.toISOString(),
+        label: "Current year",
+      };
+    }
+    case "custom": {
+      const from = custom?.from ?? fromNowIso;
+      const to = custom?.to ?? addDays(todayStart, 30).toISOString();
+      return { from, to, label: "Custom range" };
+    }
+  }
+}
+
 // Enumerate London-civil days in [from, to) for series scaffolding.
 export function enumerateDays(fromIso: string, toIso: string): string[] {
   const fromD = new Date(fromIso);
