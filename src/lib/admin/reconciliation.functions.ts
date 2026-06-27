@@ -736,7 +736,7 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       .order("access_expires_at", { ascending: true });
     if (lErr) throw lErr;
 
-    const links: ForecastLegacyLinkRow[] = (linksRaw ?? []).map((l) => {
+    const links: ForecastLegacyLinkRow[] = (linksRaw ?? []).map((l: any) => {
       const memberKey = l.bd_member_id != null ? String(l.bd_member_id) : null;
       const seed = memberKey ? seedByMember.get(memberKey) : null;
       const uid = seed?.claimed_user_id ?? null;
