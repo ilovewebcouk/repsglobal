@@ -96,12 +96,14 @@ export const listPaymentFailedSubs = createServerFn({ method: "GET" })
     const profilesMap = new Map(
       (profiles ?? []).map((p: { id: string; full_name: string | null }) => [p.id, p.full_name]),
     );
-    const legacyMap = new Map(
-      (legacyLinks ?? []).map((l: { stripe_customer_id: string; last_attempt_at: string | null }) => [
-        l.stripe_customer_id,
-        l.last_attempt_at,
-      ]),
-    );
+    const legacyMap = new Map<string, string | null>();
+    for (const l of (legacyLinks ?? []) as Array<{
+      stripe_customer_id: string | null;
+      last_attempt_at: string | null;
+    }>) {
+      if (l.stripe_customer_id) legacyMap.set(l.stripe_customer_id, l.last_attempt_at);
+    }
+
     const churnMap = new Map(
       (churn ?? []).map((c: { user_id: string; stage: string; last_nudge_at: string | null; nudge_count: number }) => [
         c.user_id,
