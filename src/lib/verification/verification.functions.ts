@@ -582,13 +582,18 @@ export const sendVerificationReminder = createServerFn({ method: "POST" })
     const { data: u } = await supabaseAdmin.auth.admin.getUserById(data.professional_id);
     const email = u?.user?.email;
     if (!email) throw new Error("No email on file");
-    await supabaseAdmin.rpc("enqueue_email", {
-      queue_name: "transactional",
-      payload: {
-        template: "verification_reminder",
-        to: email,
-        data: { missing: data.missing },
-      },
+    const { data: pro } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, full_name")
+      .eq("id", data.professional_id)
+      .maybeSingle();
+    const proName = pro?.display_name ?? pro?.full_name ?? null;
+    const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+    await sendTransactionalEmailServer({
+      templateName: "verification-reminder",
+      recipientEmail: email,
+      idempotencyKey: `verification-reminder:${data.professional_id}:${new Date().toISOString().slice(0, 10)}`,
+      templateData: { proName, missing: data.missing },
     });
     return { ok: true };
   });

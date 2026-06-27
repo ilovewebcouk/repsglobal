@@ -37,6 +37,19 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       const offer = getCheckoutOffer(tier, period);
       if (!offer) throw new Error("This billing option is not available");
 
+      // Pro waitlist gate (server-side enforcement). UI hides this path, but
+      // the endpoint must also reject direct POSTs from non-admin users.
+      if (tier === "pro") {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+          _user_id: userId,
+          _role: "admin",
+        });
+        if (!isAdmin) {
+          return { error: "Pro is not yet available. Join the waitlist and we'll email you when it launches." };
+        }
+      }
+
       const { createStripeClient, resolvePriceByLookupKey, getCheckoutOrigin, getStripeErrorMessage } =
         await import("./stripe.server");
       const stripe = createStripeClient(environment);

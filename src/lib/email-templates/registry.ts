@@ -26,6 +26,9 @@ import { template as insuranceRenewalDue } from './insurance-renewal-due'
 import { template as renewalCardNeeded } from './renewal-card-needed'
 import { template as renewalPaymentFailed } from './renewal-payment-failed'
 import { template as winbackLapsed } from './winback-lapsed'
+import { template as verificationReminder } from './verification-reminder'
+import { template as purchaseConfirmation } from './purchase-confirmation'
+import { template as cancellationConfirmation } from './cancellation-confirmation'
 
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
@@ -46,6 +49,9 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'renewal-card-needed': renewalCardNeeded,
   'renewal-payment-failed': renewalPaymentFailed,
   'winback-lapsed': winbackLapsed,
+  'verification-reminder': verificationReminder,
+  'purchase-confirmation': purchaseConfirmation,
+  'cancellation-confirmation': cancellationConfirmation,
 }
 
 

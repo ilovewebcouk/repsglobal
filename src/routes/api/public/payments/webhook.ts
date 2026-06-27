@@ -484,6 +484,37 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 const subId = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
                 const sub = await stripe.subscriptions.retrieve(subId);
                 userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+                // Purchase confirmation (welcome) email — idempotent on the session id.
+                try {
+                  if (userId) {
+                    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+                    const email = authUser?.user?.email ?? null;
+                    if (email) {
+                      const { data: profile } = await supabaseAdmin
+                        .from("profiles").select("display_name, full_name").eq("id", userId).maybeSingle();
+                      const item = sub.items.data[0];
+                      const tier = (sub.metadata?.tier as string) ?? "verified";
+                      const tierLabel = tier === "pro" ? "REPS Pro" : tier === "studio" ? "REPS Studio" : "REPS Core";
+                      const interval = item?.price.recurring?.interval ?? null;
+                      const periodText = interval === "year" ? "/year" : interval === "month" ? "/month" : "";
+                      const amount = (item?.price.unit_amount ?? 0) / 100;
+                      const amountText = amount > 0 ? `£${amount.toFixed(amount % 1 === 0 ? 0 : 2)}` : undefined;
+                      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+                      await sendTransactionalEmailServer({
+                        templateName: "purchase-confirmation",
+                        recipientEmail: email,
+                        idempotencyKey: `purchase-confirmation:${session.id}`,
+                        templateData: {
+                          proName: (profile?.display_name ?? profile?.full_name ?? "").toString().split(" ")[0] || null,
+                          tierLabel, amountText, periodText,
+                        },
+                      });
+                    }
+                  }
+                } catch (e) {
+                  console.warn("[email] purchase confirmation failed:", e);
+                }
               }
               break;
             }
@@ -522,6 +553,31 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     _source_event: event.type,
                     _metadata: { subscription_id: sub.id },
                   } as never);
+                  // Cancellation confirmation email — idempotent on sub id.
+                  try {
+                    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+                    const email = authUser?.user?.email ?? null;
+                    if (email) {
+                      const { data: profile } = await supabaseAdmin
+                        .from("profiles").select("display_name, full_name").eq("id", userId).maybeSingle();
+                      const tier = (sub.metadata?.tier as string) ?? "verified";
+                      const tierLabel = tier === "pro" ? "REPS Pro" : tier === "studio" ? "REPS Studio" : "REPS Core";
+                      const endsAtTs = (sub as unknown as { current_period_end?: number }).current_period_end;
+                      const endsAt = endsAtTs ? new Date(endsAtTs * 1000).toISOString() : undefined;
+                      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+                      await sendTransactionalEmailServer({
+                        templateName: "cancellation-confirmation",
+                        recipientEmail: email,
+                        idempotencyKey: `cancellation-confirmation:${sub.id}`,
+                        templateData: {
+                          proName: (profile?.display_name ?? profile?.full_name ?? "").toString().split(" ")[0] || null,
+                          tierLabel, endsAt,
+                        },
+                      });
+                    }
+                  } catch (e) {
+                    console.warn("[email] cancellation confirmation failed:", e);
+                  }
                 } else if (sub.status === "past_due" || sub.status === "unpaid") {
                   // Subscription transitioned to past_due — enrol in recovery
                   // (parallel to invoice.payment_failed; idempotent via
@@ -547,13 +603,16 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                         const { data: profile } = await supabaseAdmin
                           .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                         const graceEnd = new Date(Date.now() + 14 * 86400000);
+                        const subItem = sub.items.data[0];
+                        const subAmt = (subItem?.price.unit_amount ?? 0) / 100;
+                        const subAmount = subAmt > 0 ? `£${subAmt.toFixed(subAmt % 1 === 0 ? 0 : 2)}` : "£99";
                         await mintAndEmailRenewalToken({
                           userId, email, purpose: "payment_failed",
                           templateName: "renewal-payment-failed",
                           intendedTier: (sub.metadata?.tier as string) ?? "verified",
                           templateData: {
                             proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
-                            amount: "£99",
+                            amount: subAmount,
                             graceEndDate: graceEnd.toLocaleDateString("en-GB", {
                               day: "numeric", month: "long", year: "numeric",
                             }),
@@ -601,13 +660,18 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     const { data: profile } = await supabaseAdmin
                       .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                     const graceEnd = new Date(Date.now() + 14 * 86400000);
+                    const invAmt = ((invoice as unknown as { amount_due?: number }).amount_due ?? 0) / 100;
+                    const invAmount = invAmt > 0 ? `£${invAmt.toFixed(invAmt % 1 === 0 ? 0 : 2)}` : "£99";
+                    const invTier = subId
+                      ? (((await stripe.subscriptions.retrieve(subId)).metadata?.tier as string) ?? "verified")
+                      : "verified";
                     await mintAndEmailRenewalToken({
                       userId, email, purpose: "payment_failed",
                       templateName: "renewal-payment-failed",
-                      intendedTier: "verified",
+                      intendedTier: invTier,
                       templateData: {
                         proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
-                        amount: "£99",
+                        amount: invAmount,
                         graceEndDate: graceEnd.toLocaleDateString("en-GB", {
                           day: "numeric", month: "long", year: "numeric",
                         }),
