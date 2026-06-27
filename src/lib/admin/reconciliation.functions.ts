@@ -841,3 +841,181 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       seeds,
     };
   });
+
+// =============================================================================
+// Net Member Growth reconciliation
+// =============================================================================
+
+export interface GrowthJoinedRow {
+  user_id: string;
+  email: string | null;
+  first_paid_subscription_at: string | null;
+  tier: string | null;
+  included_in_joined: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface GrowthChurnedRow {
+  user_id: string;
+  email: string | null;
+  stage: string | null;
+  entered_at: string | null;
+  included_in_churned: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface GrowthReportDTO {
+  period: { from: string; to: string };
+  joined_total: number;
+  churned_total: number;
+  net_growth: number;
+  joined: GrowthJoinedRow[];
+  churned: GrowthChurnedRow[];
+}
+
+export const getGrowthReconciliation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => Input.parse(d))
+  .handler(async ({ data, context }): Promise<GrowthReportDTO> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const fromMs = new Date(data.from).getTime();
+    const toMs = new Date(data.to).getTime();
+
+    // Email map
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { data: emailRowsRaw } = await supabaseAdmin
+      .schema("admin_helpers")
+      .from("auth_user_directory")
+      .select("user_id, email");
+    const emailRows = (emailRowsRaw ?? []) as Array<{
+      user_id: string | null;
+      email: string | null;
+    }>;
+    const emailByUser = new Map<string, string | null>();
+    for (const e of emailRows) {
+      if (e.user_id) emailByUser.set(e.user_id, e.email);
+    }
+
+    // Joined — first paid subscription per user (mirror overview).
+    const { data: subsRaw, error: sErr } = await supabase
+      .from("subscriptions")
+      .select("user_id, tier, environment, created_at");
+    if (sErr) throw sErr;
+
+    const firstByUser = new Map<
+      string,
+      { tier: string | null; created_at: string | null }
+    >();
+    for (const s of subsRaw ?? []) {
+      if (s.environment !== "live") continue;
+      if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? "")) continue;
+      if (!s.user_id || !s.created_at) continue;
+      const prev = firstByUser.get(s.user_id);
+      if (
+        !prev ||
+        !prev.created_at ||
+        new Date(s.created_at).getTime() < new Date(prev.created_at).getTime()
+      ) {
+        firstByUser.set(s.user_id, { tier: s.tier, created_at: s.created_at });
+      }
+    }
+
+    const joined: GrowthJoinedRow[] = [];
+    let joinedCount = 0;
+    for (const [uid, v] of firstByUser.entries()) {
+      const t = v.created_at ? new Date(v.created_at).getTime() : NaN;
+      let reason: string | null = null;
+      if (!v.created_at) reason = "no created_at on first paid subscription";
+      else if (t < fromMs)
+        reason = `joined ${v.created_at} — before window start ${data.from}`;
+      else if (t >= toMs)
+        reason = `joined ${v.created_at} — at/after window end ${data.to}`;
+      const included = reason === null;
+      if (included) joinedCount += 1;
+      joined.push({
+        user_id: uid,
+        email: emailByUser.get(uid) ?? null,
+        first_paid_subscription_at: v.created_at,
+        tier: v.tier,
+        included_in_joined: included,
+        exclusion_reason: reason,
+      });
+    }
+
+    // Churned — latest churn_lifecycle stage per user.
+    const { data: churnRows } = await supabase
+      .from("churn_lifecycle")
+      .select("user_id, stage, entered_at");
+    const latestByUser = new Map<
+      string,
+      { stage: string | null; entered_at: string | null }
+    >();
+    for (const c of churnRows ?? []) {
+      if (!c.user_id || !c.entered_at) continue;
+      const prev = latestByUser.get(c.user_id);
+      if (
+        !prev ||
+        !prev.entered_at ||
+        new Date(c.entered_at).getTime() > new Date(prev.entered_at).getTime()
+      ) {
+        latestByUser.set(c.user_id, {
+          stage: (c.stage as string) ?? null,
+          entered_at: (c.entered_at as string) ?? null,
+        });
+      }
+    }
+
+    const churned: GrowthChurnedRow[] = [];
+    let churnedCount = 0;
+    for (const [uid, v] of latestByUser.entries()) {
+      let reason: string | null = null;
+      if (!v.stage || !(TERMINAL_CHURN_STAGES as readonly string[]).includes(v.stage))
+        reason = `stage="${v.stage}" — not a terminal churn stage (${TERMINAL_CHURN_STAGES.join(", ")})`;
+      else if (!v.entered_at) reason = "no entered_at timestamp";
+      else {
+        const t = new Date(v.entered_at).getTime();
+        if (t < fromMs)
+          reason = `entered_at ${v.entered_at} — before window start ${data.from}`;
+        else if (t >= toMs)
+          reason = `entered_at ${v.entered_at} — at/after window end ${data.to}`;
+      }
+      const included = reason === null;
+      if (included) churnedCount += 1;
+      churned.push({
+        user_id: uid,
+        email: emailByUser.get(uid) ?? null,
+        stage: v.stage,
+        entered_at: v.entered_at,
+        included_in_churned: included,
+        exclusion_reason: reason,
+      });
+    }
+
+    joined.sort((a, b) => {
+      if (a.included_in_joined !== b.included_in_joined)
+        return a.included_in_joined ? -1 : 1;
+      return (
+        (b.first_paid_subscription_at ?? "").localeCompare(
+          a.first_paid_subscription_at ?? "",
+        )
+      );
+    });
+    churned.sort((a, b) => {
+      if (a.included_in_churned !== b.included_in_churned)
+        return a.included_in_churned ? -1 : 1;
+      return (b.entered_at ?? "").localeCompare(a.entered_at ?? "");
+    });
+
+    return {
+      period: { from: data.from, to: data.to },
+      joined_total: joinedCount,
+      churned_total: churnedCount,
+      net_growth: joinedCount - churnedCount,
+      joined,
+      churned,
+    };
+  });
