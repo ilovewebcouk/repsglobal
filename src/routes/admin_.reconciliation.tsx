@@ -592,7 +592,7 @@ function ActiveMembersView({ data }: { data: ActiveMembersReportDTO }) {
                 (r.included_in_total ? "primary" : "");
               return (
                 <tr
-                  key={`${r.source}:${r.source_id}`}
+                  key={`${r.source}:${r.source_row_id}`}
                   className={`border-t border-white/5 ${
                     r.included_in_total ? "" : "text-white/40"
                   }`}
@@ -604,12 +604,12 @@ function ActiveMembersView({ data }: { data: ActiveMembersReportDTO }) {
                   <td className="py-2 pr-3">
                     <div>{r.email ?? "—"}</div>
                     <div className="font-mono text-[10px] text-white/45">
-                      {r.user_id ?? r.bd_member_id ?? r.source_id}
+                      {r.user_id ?? r.bd_member_id ?? r.source_row_id}
                     </div>
                   </td>
                   <td className="py-2 pr-3">{r.tier ?? "—"}</td>
                   <td className="py-2 pr-3 whitespace-nowrap">
-                    {r.status_or_expiry ?? "—"}
+                    {r.status_or_window ?? "—"}
                   </td>
                   <td className="py-2 pr-3 font-mono text-[10px]">
                     {r.merged_into_member_id ?? ""}
