@@ -108,7 +108,8 @@ function fmtDateTime(iso: string | null | undefined) {
 }
 
 function ReconciliationPage() {
-  const { period, from, to } = Route.useSearch();
+  const { period, from, to, fcast, fcastFrom, fcastTo } = Route.useSearch();
+  const navigate = useNavigate({ from: "/admin/reconciliation" });
   const range = resolvePeriod(period, { from, to });
   const periodLabel =
     PERIOD_OPTIONS.find((o) => o.value === period)?.label ?? period;
@@ -117,6 +118,7 @@ function ReconciliationPage() {
   const memFn = useServerFn(getMembershipReconciliation);
   const regFn = useServerFn(getRegistrationsReconciliation);
   const fcastFn = useServerFn(getForecastReconciliation);
+  const growthFn = useServerFn(getGrowthReconciliation);
 
   const revenue = useQuery({
     queryKey: ["admin-recon", "revenue", range.from, range.to],
@@ -131,8 +133,15 @@ function ReconciliationPage() {
     queryFn: () => regFn({ data: { from: range.from, to: range.to } }),
   });
   const forecast = useQuery({
-    queryKey: ["admin-recon", "forecast"],
-    queryFn: () => fcastFn(),
+    queryKey: ["admin-recon", "forecast", fcast, fcastFrom ?? "", fcastTo ?? ""],
+    queryFn: () =>
+      fcastFn({
+        data: { horizon: fcast, from: fcastFrom, to: fcastTo },
+      }),
+  });
+  const growth = useQuery({
+    queryKey: ["admin-recon", "growth", range.from, range.to],
+    queryFn: () => growthFn({ data: { from: range.from, to: range.to } }),
   });
 
   return (
