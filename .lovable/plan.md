@@ -1,106 +1,108 @@
-## Goal
+# Admin Overview — real data KPIs + charts
 
-Two things, one system:
+Rebuild `/admin` Platform Overview so the four KPI cards, the period selector, the sparklines and the charts all read from local synced tables. No Stripe API calls on render, no mock numbers.
 
-1. **Plan A — rescue the 27 "blocked" BD members** who have no Stripe customer when their anniversary lands.
-2. **Generalised churn recovery** — anyone whose subscription lapses (failed card, cancelled, BD anniversary with no card, voluntary cancel) gets a structured, automated win-back flow instead of silently disappearing.
+## 1. Period selector
 
-Both share the same plumbing: a token-gated `/renew/$token` page, a small "lifecycle" cron, and 3 transactional email templates. Build once, reuse.
+Replace the static `RangePill` with a real shadcn `Select` (+ inline `Calendar` popover for custom range), values:
 
----
+- today, yesterday, last_7d, last_30d (default), mtd, prev_month, qtd, ytd, custom
 
-## Part 1 — Rescue the 27 blocked rows (Plan A)
+Period bounds computed in **Europe/London** (helper in `src/lib/admin/overview-period.ts` using `Intl.DateTimeFormat` offsets — no new deps).
 
-### Flow
+State stored as a URL search param via `validateSearch` on `src/routes/admin.tsx` so it survives reload and is server-readable for the loader.
 
-1. Daily cron scans `bd_member_seed` where `migration_status = 'blocked'` AND `access_expires_at` is within the next 14 days AND no `stripe_customer_id`.
-2. For each, mint a single-use signed token (random 32-byte, hashed in DB, 30-day expiry) and email them: *"Your REPs membership renews on {date} — add a card to continue at £99/yr."* with a one-tap link to `/renew/$token`.
-3. `/renew/$token` validates the token, shows their name + plan + price, launches Stripe Checkout in `setup` mode to capture a card.
-4. On successful Checkout: server fn creates the Stripe customer, attaches the payment method as default, creates the £99/yr subscription, links `legacy_stripe_link` row, marks `bd_member_seed.migration_status = 'renewed'`, and sends the existing Verified welcome email.
-5. Re-nudge schedule: T-14d, T-7d, T-1d, T+1d (grace), T+7d (final). After T+7d with no action → mark `migration_status = 'lapsed'` and stop emailing.
+## 2. Server function: `getAdminOverview`
 
-### Why this and not auto-create-customer
-Avoids 27 ghost Stripe customers, preserves correct Verified onboarding UX, no surprise invoices.
+New file `src/lib/admin/overview.functions.ts`, single `createServerFn` with `requireSupabaseAuth` + admin role check (mirrors existing admin fns). Input: `{ from: string, to: string }`. Returns one DTO used by the whole page.
 
----
+### KPI definitions (local data only)
 
-## Part 2 — Generalised churn recovery (everyone, not just the 27)
-
-### Triggers we catch
-
-| Trigger | Detection | Action |
+| KPI | Source | Rule |
 |---|---|---|
-| Stripe `invoice.payment_failed` (smart retries exhausted) | Existing webhook | Enter "dunning" lifecycle |
-| Stripe `customer.subscription.deleted` | Existing webhook | Enter "voluntary churn" lifecycle |
-| BD anniversary, has `stripe_customer_id` but no active sub | Daily cron | Enter "renewal needed" lifecycle |
-| BD anniversary, no `stripe_customer_id` (the 27) | Daily cron | Enter "card needed" lifecycle (= Plan A) |
+| **Total members** | `subscriptions` | `environment = 'live'` AND `status IN ('active','trialing')` AND `tier IN ('verified','pro','studio')`. "Core scheduled" = rows where `cancel_at_period_end = false` and `current_period_end > now()` (already covered by active). One row per `user_id` (DISTINCT). Excludes sandbox, canceled, incomplete, past_due-without-period, deleted users (LEFT JOIN profiles, drop nulls). |
+| **Revenue received** | `payment_events` where `event_type IN ('invoice.payment_succeeded','charge.succeeded')` and `processed_at` (fallback `created_at`) inside period. Sum `payload->>'amount_paid'` (invoice) or `payload->>'amount'` (charge), pence → £. De-dupe by `stripe_event_id`. |
+| **Forecast revenue (next 30d)** | `subscriptions` active/trialing with `current_period_end` in `[now, now+30d]` + price lookup from `src/lib/billing.ts` tier→amount. Plus `bd_migration` / scheduled renewal rows with `scheduled_charge_at` in window and `status` in approved/ready states. |
+| **New registrations** | `profiles` joined to `auth.users` via a **SECURITY DEFINER RPC** `count_confirmed_signups(from, to)` returning daily buckets + total. Uses `email_confirmed_at IS NOT NULL AND email_confirmed_at BETWEEN from AND to`. Excludes invite shells (no confirmation). |
 
-### Lifecycle stages (stored on a new lightweight `churn_lifecycle` row)
+### Net change (Total members)
 
+`members_at(to) - members_at(from)` using `subscriptions.created_at` ≤ boundary AND (canceled_at IS NULL OR canceled_at > boundary). Approximation acceptable; if status history isn't tracked, fall back to `+N joined this period` derived from `created_at` deltas and flag in code comment.
+
+### Daily series (for sparklines + charts)
+
+Returned alongside totals:
+
+- `members_series`: cumulative active members by day across period
+- `revenue_series`: £ received per day in period
+- `signups_series`: confirmed signups per day in period
+- `forecast_series`: £ due per day for next 30 days (always 30d, ignores period)
+- `mix`: `{ verified, pro, studio }` current counts
+
+If a series has zero non-null data points, return `null` so the UI hides the sparkline.
+
+## 3. UI changes
+
+`src/components/admin/sections/OverviewKpis.tsx` — rewrite:
+
+- Accept `data` prop from loader (no more hardcoded values).
+- Tiles: Total members, Revenue received, Forecast revenue, New registrations.
+- Subtexts as spec'd ("Verified, Pro and Studio", "Selected period", "Next 30 days", "Confirmed signups").
+- Net change chip uses `trend` + signed delta; hidden when period is "today" and delta is 0.
+- Sparkline: replace hand-rolled SVG with shadcn `ChartContainer` + Recharts `AreaChart` (h-10, no axes, no tooltip). Hidden when series is null/empty.
+
+`src/components/admin/sections/RevenueAndMembership.tsx` — rewrite as four real shadcn charts:
+
+1. **Member growth** — `AreaChart` cumulative members + bar overlay of new signups (or 2 stacked charts).
+2. **Revenue received** — `BarChart` £/day for selected period.
+3. **Forecast revenue (next 30d)** — `BarChart` £/day, labelled "Next 30 days · projected cash due".
+4. **Member mix** — small `BarChart` (horizontal) of Verified/Pro/Studio current counts. Link "View full forecast →" to `/admin/memberships`.
+
+All charts use `accessibilityLayer`, `ChartTooltip`/`ChartTooltipContent`, `var(--chart-1..4)` colors, fixed heights (`h-[220px]`).
+
+Remove `RegistrationsAndSpecialisms`, `PlatformBreakdown`, `TopProsTable` from `/admin` page render path **only if** they also use fake data — to confirm during build; out of scope to rewrite this turn, leave them in place but flag.
+
+## 4. Route wiring
+
+`src/routes/admin.tsx`:
+
+- Add `validateSearch` for `{ period, from?, to? }`.
+- Add `loaderDeps` + `loader` calling `getAdminOverview` via `ensureQueryData`.
+- Component uses `useSuspenseQuery` to read the DTO and passes slices into `OverviewKpis` / chart sections.
+- Replace `<RangePill />` actions slot with new `<PeriodSelector />` (writes to URL via `useNavigate`).
+
+shadcn `chart` component: already present at `src/components/ui/chart.tsx` (verify in build; install via `bunx shadcn@latest add chart` only if missing).
+
+## 5. Migration
+
+One migration:
+
+```sql
+create or replace function public.count_confirmed_signups(_from timestamptz, _to timestamptz)
+returns table(day date, signups int, total int)
+language sql security definer set search_path = public as $$
+  with rows as (
+    select date_trunc('day', u.email_confirmed_at at time zone 'Europe/London')::date as day
+    from auth.users u
+    where u.email_confirmed_at is not null
+      and u.email_confirmed_at >= _from and u.email_confirmed_at < _to
+  )
+  select day, count(*)::int as signups, sum(count(*)) over ()::int as total
+  from rows group by day order by day;
+$$;
+grant execute on function public.count_confirmed_signups(timestamptz, timestamptz) to authenticated;
 ```
-active → at_risk → grace → lapsed → recovered | dormant
-```
 
-- `at_risk`: card declined / cancellation scheduled / anniversary approaching. Send "action needed" email + show in-app banner.
-- `grace`: subscription ended but we keep profile published for 14 days. Sticky dashboard banner + 2 emails (day 1, day 7).
-- `lapsed`: profile hidden from public search (admin still sees it), Verified badge removed, **single** monthly win-back email for 3 months, then stop.
-- `recovered`: came back via `/renew/$token` or new Checkout → restore prior tier, log to audit.
-- `dormant`: no action after 3 months → stop emailing, leave in admin only.
+(Caller-side admin role check still gates exposure; function only reads aggregate counts, no PII.)
 
-### Single shared `/renew/$token` page
+## 6. Acceptance report (delivered after build)
 
-Handles all four triggers above. Token payload encodes `{ user_id, intended_plan, source }` so the same page works for "add a card" (Plan A) and "update a card" (dunning) and "reactivate" (lapsed).
+Will report: live numbers, exact filters used, which sparklines hid due to no data, shadcn components used, confirmation no Stripe SDK calls / no Stripe writes added.
 
-### Admin surface
+## Technical notes
 
-New `/admin/churn` tab on the existing migration admin page:
-- KPIs: at_risk / grace / lapsed / recovered (last 30d).
-- Per-row: who, why, last email sent, days in stage, manual "send nudge now" + "mark recovered" actions.
-- Filter for the original 27 cohort.
-
----
-
-## What gets built
-
-### Database (1 migration)
-- `churn_lifecycle` table: `user_id`, `stage`, `reason`, `entered_at`, `last_nudge_at`, `nudge_count`, `source_event`, `metadata jsonb`. RLS: admin read, service_role write.
-- `renewal_tokens` table: `token_hash`, `user_id`, `purpose`, `expires_at`, `consumed_at`. RLS: admin read only; service_role write; validation via SECURITY DEFINER RPC.
-- Helper RPCs: `mint_renewal_token`, `consume_renewal_token`, `enter_churn_stage`.
-- Add `lapsed` filter to existing public search (hide lapsed pros, same way demos are hidden).
-
-### Server functions / routes
-- `src/lib/churn/lifecycle.functions.ts` — stage transitions, token mint, nudge dispatch.
-- `src/lib/billing/renew.functions.ts` — `startRenewalCheckout({ token })`, `completeRenewalCheckout({ session_id })`.
-- `src/routes/_public/renew.$token.tsx` — public token-gated page (noindex), no auth required.
-- `src/routes/api/public/hooks/lifecycle-cron.ts` — daily cron entry point (anniversary scan + nudge dispatch + lapse transitions).
-- Extend existing Stripe webhook at `src/routes/api/public/hooks/stripe.ts` to call `enter_churn_stage` on `invoice.payment_failed` and `customer.subscription.deleted`.
-
-### Emails (3 new templates, all using existing `sendTransactionalEmailServer`)
-- `renewal-card-needed` (Plan A primary)
-- `renewal-payment-failed` (dunning)
-- `winback-lapsed` (3-month monthly cadence)
-
-All link to `/renew/$token`. No marketing tone — strictly transactional ("your account", "your renewal").
-
-### Cron
-- Single daily job at 09:00 UK calling `/api/public/hooks/lifecycle-cron` (apikey header). Idempotent — safe to re-run.
-
-### Admin UI
-- `/admin/churn` tab with the KPIs + table described above.
-- Add a "Lifecycle" chip to existing admin professional rows so churn state is visible from `/admin/professionals` too.
-
----
-
-## What I am NOT doing
-
-- No auto-creating Stripe customers without consent (rejects Option B from earlier).
-- No SMS / push — email-only first pass.
-- No changing the existing renewal cron logic for the 356 healthy `future_due` rows; they keep renewing normally.
-- No re-running launch-day billing.
-- No marketing/upsell content in any of these emails.
-
----
-
-## Open question before I build
-
-**Grace period length** — I've planned 14 days of "keep profile published after sub ends" as a default. Some platforms do 0 (cut instantly), some do 30. **What do you want — 0 / 7 / 14 / 30 days?** This is the only product decision I need; everything else is mechanical.
+- No new npm deps.
+- All work behind `requireSupabaseAuth` + `has_role('admin')`; no service-role reads needed (subscriptions/payment_events are admin-readable via existing RLS — verify during build, otherwise route through the existing admin RPC pattern).
+- Forecast uses `src/lib/billing.ts` price catalog — single source of truth.
+- Period boundaries always passed as ISO strings; conversion to Europe/London handled in helper, not in SQL, to keep RLS predicates index-friendly.
+- Files touched: `src/routes/admin.tsx`, `src/components/admin/sections/OverviewKpis.tsx`, `src/components/admin/sections/RevenueAndMembership.tsx`. New: `src/lib/admin/overview.functions.ts`, `src/lib/admin/overview-period.ts`, `src/components/admin/PeriodSelector.tsx`, one migration.
