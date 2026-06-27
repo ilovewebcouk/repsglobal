@@ -1,106 +1,94 @@
-## The actual problem (brutal honest truth)
+# Phase 2 — Production Readiness Remediation
 
-Raheela isn't a "signed up, never paid" account. She's a **launch-day churned member with a failed payment that nobody got told about**. The dashboard hid that.
+The audit scored REPS **58/100**. Below is the sequenced fix plan. Nothing new gets built until these land. Each block is independently shippable and verifiable.
 
-### What I found in the database
+---
 
-| Field | Value |
-|---|---|
-| BD member ID | 705 (legacy £34/yr, joined 2024-10-02) |
-| Renewal ran today | 27 Jun 2026 05:37 UTC — created `sub_1Tmow2AP31Yc4cJj822tte4r` for £99/yr |
-| Stripe events received | `customer.subscription.created`, `invoice.payment_failed`, `charge.failed` (your `pi_3Tmow3AP31Yc4cJj25ioNNNi`) |
-| Resulting `subscriptions` row | `tier=free`, `status=incomplete`, current_period_end=27 Jun 2027 |
-| `churn_lifecycle` row | **none** |
-| `renewal_tokens` row | **none** |
-| Recovery email sent | **none** |
+## P0 — Money & customers leaking (ship this week)
 
-She failed the predicate `tier ∈ {verified,pro,studio} AND status ∈ {active,trialing}`, so she vanished from "Active Members" silently. No nudge, no flag, no email.
+### 1. Schedule the three missing cron jobs
+Without these, churn/dunning, insurance renewals, and credit refills simply don't run.
+- `lifecycle-cron` → daily 06:00 UTC → `POST /api/public/hooks/lifecycle-cron`
+- `insurance_check_renewals` → daily 07:00 UTC
+- `run_monthly_credit_refills` → 1st of month 02:00 UTC
 
-Across all 7 migrated BD members the breakdown is **6 active/verified, 1 incomplete/free (Raheela)** — launch day actually lost one customer and the system never told you.
+Verify with `SELECT * FROM cron.job` + a manual trigger of each, inspect `cron.job_run_details`.
 
-## Two bugs to fix, not one
+### 2. Payment-failure → churn enrolment in the webhook
+In `src/routes/api/public/payments/webhook.ts`, on `invoice.payment_failed` AND `customer.subscription.updated → past_due`:
+- upsert `churn_lifecycle` (`stage='payment_failed'`)
+- mint `renewal_tokens` row
+- send `renewal-card-update` email (existing template)
+- idempotent on `stripe_event_id`
 
-### Bug 1 — payment-failed migrations aren't enrolled in churn recovery
+Backfill Raheela today with a one-off admin action.
 
-`src/routes/api/public/payments/webhook.ts` handles `invoice.payment_failed`, but for a brand-new migration sub whose first invoice fails, it doesn't:
-- insert a `churn_lifecycle` row with stage `payment_failed`
-- mint a `renewal_tokens` row
-- send the win-back / card-update email
+### 3. Revenue & forecast KPI correctness
+- Net refunds from MTD/YTD revenue tiles in `src/lib/admin/overview.functions.ts`
+- Exclude `cancel_at_period_end = true` subs from forward forecast
+- Add a unit-level reconciliation test that compares Stripe `balance_transactions` total to the dashboard figure for a known day.
 
-**Fix:** in the `invoice.payment_failed` handler, when the sub originates from `metadata.reps_legacy_migration='true'` OR when there's a matching `legacy_stripe_link` for the customer, enrol the user into `churn_lifecycle` (`stage='payment_failed'`, `reason='migration_first_invoice_failed'`), mint a single-use renewal token, and send `renewal-card-update` email. Reuse the existing pipeline — no new template.
+---
 
-Apply the same routing to any future `invoice.payment_failed` on an `active` sub (state change to `past_due`) so this never happens again.
+## P1 — Data integrity & access (next)
 
-**Backfill:** insert Raheela into `churn_lifecycle` + mint her token + send the email today.
+### 4. Subscriptions → auth.users integrity
+- Add a nightly reconciliation query that surfaces ghost subs (already shipped in `/admin/reconciliation`).
+- Add a Postgres trigger on `subscriptions` insert/update that sets `status='ghost'` when `user_id` is not in `auth.users`, so they never silently count.
+- Do NOT add a hard FK to `auth.users` (Supabase rule) — use the trigger instead.
 
-### Bug 2 — the dashboard hides churned/incomplete members
+### 5. `has_role` RPC grant audit
+Confirm `GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO authenticated` is present. Add a migration if missing. Add a smoke test that hits an admin-only route as a non-admin and expects 403.
 
-Right now an incomplete sub or a failed-payment sub disappears. It should be visible and named.
+### 6. GDPR erasure completeness
+Extend the account-deletion server fn to also wipe PII from the four trailing tables identified in audit section D (enquiries, reviews author fields, support_messages, lead_activity). Add a test that asserts `count(*) = 0` for the deleted user across all PII tables.
 
-`/admin` tile becomes one canonical number — **Active REPS Professionals** — with three sub-counters that explain every gap.
+---
 
-> An **Active REPS Professional** = confirmed `auth.users` + non-demo `professionals` row + active paid membership (sub OR legacy OR BD) + not a platform admin.
+## P2 — Email pipeline & enforcement
 
-Sub-line: `391 paying · 1 payment failed · 0 ghost subs`
+### 7. Fix verification email queue name
+In `src/lib/.../verification.functions.ts` change PGMQ queue from `transactional` → `transactional_emails`. Send a real verification email end-to-end on staging to confirm.
 
-### `/admin/reconciliation` — four drift panels
+### 8. Missing confirmation emails
+Add three templates and wire triggers:
+- `purchase-confirmation` (after `checkout.session.completed`)
+- `cancellation-confirmation` (after `subscription.updated → cancel_at_period_end=true`)
+- `refund-confirmation` (after `charge.refunded`)
 
-1. **Payment failed / churning** — subs in `incomplete` / `past_due`, plus anyone in `churn_lifecycle` with stage `payment_failed`. Shows last attempt, days since failure, whether a recovery email was sent, "Resend card-update email" + "Open in Stripe" actions. Raheela goes here.
-2. **Profiles not paying** — confirmed pros with no active membership AND no failed-payment history. (Today: 0 once Raheela moves to panel 1.)
-3. **Paying without a profile** — active members whose user has no `professionals` row. (Today: 0.)
-4. **Ghost Stripe subscriptions** — active/trialing sub whose `user_id` doesn't exist in `auth.users`. (Today: 1, going to 0 when you delete `cruz.pt+pro@icloud.com`.)
+### 9. Server-side waitlist / tier enforcement
+In `createCheckoutSession`, reject `tier='pro'` unless the caller is on the Pro Founding allow-list OR Pro is publicly open. Today the UI is the only gate.
 
-Every panel's row count reconstructs every number on the platform. No mystery off-by-ones.
+---
 
-### Code changes
+## P3 — Observability before wider launch
+
+### 10. Reconciliation dashboard hardening
+- The 4 reconciliation panels (`Payment failed / Profiles not paying / Paying without profile / Ghost subs`) become the canonical "everything adds up" view.
+- Add a daily Slack/email digest from `lifecycle-cron` summarising drift counts so silent regressions can't hide.
+- Add a `/admin/health` page that surfaces: last cron run per job, DLQ depth, suppression count delta, webhook error rate (last 24h).
+
+---
+
+## Sequencing & sign-off
 
 ```text
-src/routes/api/public/payments/webhook.ts
-  + on invoice.payment_failed and customer.subscription.updated→past_due:
-    – upsert churn_lifecycle (stage='payment_failed', reason, source_event)
-    – mint renewal_tokens row
-    – send renewal-card-update email (existing template)
-    – idempotent on stripe_event_id
-
-src/lib/members/active-paying-member.ts
-  + buildActiveRepsProfessionalSet()
-    intersects paying collection with confirmed non-demo professionals,
-    excludes admins. Returns { professionals, drift: {
-    paymentFailed[], profilesNotPaying[], payingWithoutProfile[],
-    ghostSubs[] } }
-
-src/lib/admin/overview.functions.ts
-  – totalMembers = buildActivePayingMemberCollection(...)
-  + activePros + drift counts from buildActiveRepsProfessionalSet
-
-src/lib/admin/professionals.functions.ts
-  – "confirmed pros minus admins" arithmetic
-  + activeCount from buildActiveRepsProfessionalSet
-  + status pills on rows: "Payment failed" / "Not paying"
-
-src/lib/admin/reconciliation.functions.ts
-  + getRepsProfessionalReconciliation() returns four drift arrays
-  + resendCardUpdateEmail({ user_id }) server action
-
-src/routes/admin.tsx
-  + rename tile + 3 sub-counters (clickable into reconciliation tabs)
-
-src/routes/admin_.reconciliation.tsx
-  + four tabs: Payment failed / Profiles not paying / Paying without profile / Ghost subs
-  + per-row actions (resend email, open in Stripe)
-
-migration: backfill_raheela_into_churn.sql
-  + insert one churn_lifecycle row + mint renewal_token for user
-    a6719a71-86ff-415d-b738-898b06b63052
-  + call sendTransactionalEmailServer('renewal-card-update', ...)
-    via a one-off admin action (not in the migration itself)
+Week 1   P0 (#1, #2, #3)         → re-run audit on revenue/churn lifecycles
+Week 2   P1 (#4, #5, #6)         → re-run audit on data integrity + auth
+Week 3   P2 (#7, #8, #9)         → end-to-end email smoke tests
+Week 4   P3 (#10) + final pass   → re-score audit; target ≥ 90/100 before wider launch
 ```
 
-### After ship + your Stripe deletion of `cruz.pt+pro@icloud.com`
+Exit criteria for wider launch:
+- All 10 items shipped + verified in production.
+- Audit re-run scores ≥ 90/100.
+- 7 consecutive days with zero unexplained drift in the 4 reconciliation panels.
+- Every Stripe webhook event in the last 7 days has a matching downstream side-effect log.
 
-- `/admin` tile: **391 Active REPS Professionals** · `391 paying · 1 payment failed · 0 ghost subs`
-- Raheela appears under "Payment failed" with `invoice.payment_failed @ 05:37 UTC today`, a "Send card-update email" button, and a Stripe deep-link
-- She receives the same renewal-card-update email the system sends to your 27 "blocked" rows
-- From now on, every failed launch-day or future renewal payment is auto-enrolled in churn recovery the moment Stripe sends `invoice.payment_failed`
+## Technical notes
+- No schema changes required beyond #4 (trigger) and #6 (deletion fn). No table renames.
+- All cron jobs registered via `supabase--insert` per the schedule-jobs guide using `apikey` header (not a custom shared secret).
+- All new code paths idempotent on `stripe_event_id` / `idempotencyKey`.
+- Locked Phase 1 visuals are not touched — admin/reconciliation UI already exists; we're only adding the health page and digest.
 
-No customer ever silently disappears from a count again.
+Approve and I'll start with P0 #1 (cron schedules) and #2 (webhook payment-failed routing) in parallel.
