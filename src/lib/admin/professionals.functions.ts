@@ -211,7 +211,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return out;
     }
 
-    const [profilesData, subsData, reviewsData, ccData, adminRolesData, paymentsData, bdSeedData] = await Promise.all([
+    const [profilesData, subsData, reviewsData, ccData, paymentsData, bdSeedData] = await Promise.all([
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
       fetchAll<{ user_id: string; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
@@ -220,8 +220,6 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', c).eq('status', 'published')),
       fetchAll<{ professional_id: string; status: string }>((c) =>
         supabaseAdmin.from('coach_client').select('professional_id, status').in('professional_id', c).eq('status', 'active')),
-      fetchAll<{ user_id: string }>((c) =>
-        supabaseAdmin.from('user_roles').select('user_id').in('user_id', c).eq('role', 'admin')),
       fetchAll<{ user_id: string | null; amount_pence: number; refunded_amount_pence: number; status: string }>((c) =>
         supabaseAdmin
           .from('legacy_stripe_payments')
@@ -236,7 +234,6 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
           .not('claimed_user_id', 'is', null)
           .not('bd_next_due_date', 'is', null)),
     ]);
-    const adminSet = new Set(adminRolesData.map((r) => r.user_id));
     const bdDueMap = new Map<string, string>();
     for (const r of bdSeedData) {
       if (r.claimed_user_id && r.bd_next_due_date) bdDueMap.set(r.claimed_user_id, r.bd_next_due_date);
@@ -278,8 +275,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const tier = (subMap.get(p.id) ?? 'free') as AdminProRow['plan'];
       const ra = ratingAcc.get(p.id);
       const status: AdminProRow['status'] =
-        adminSet.has(p.id) ? 'admin'
-        : p.is_published === false && p.suspended_at ? 'suspended'
+        p.is_published === false && p.suspended_at ? 'suspended'
         : p.verification === 'verified' && p.is_published ? 'verified'
         : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';
