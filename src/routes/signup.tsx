@@ -240,6 +240,11 @@ function SignupPage() {
         await continueAfterAuth(data.user.id);
       } else {
         setInfo("Check your inbox to verify, then we'll bring you back to checkout.");
+        navigate({
+          to: "/verify-email",
+          search: { email: email.trim(), redirect: redirectPath },
+          replace: true,
+        });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";
