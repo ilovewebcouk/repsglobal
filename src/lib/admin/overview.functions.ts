@@ -173,7 +173,9 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const sigBuckets = new Map<string, number>();
     let newRegistrations = 0;
     const firstSubAt = new Map<string, string>();
-    for (const s of subs) {
+    for (const s of subsRaw ?? []) {
+      if (s.environment !== "live") continue;
+      if (!COUNTED_TIERS.includes(s.tier ?? "")) continue;
       if (!s.user_id || !s.created_at) continue;
       const prev = firstSubAt.get(s.user_id);
       if (!prev || new Date(s.created_at).getTime() < new Date(prev).getTime()) {
