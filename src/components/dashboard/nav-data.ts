@@ -1,4 +1,5 @@
 import {
+  Activity,
   AlertCircle,
   Apple,
   AreaChart,
@@ -150,6 +151,7 @@ export const ADMIN_NAV = [
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
       { icon: ShieldCheck, label: "Team", to: "/admin/team" },
+      { icon: Activity, label: "Health", to: "/admin/health" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
     ],
   },
