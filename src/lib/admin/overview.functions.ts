@@ -85,38 +85,91 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     // -------------------------------------------------------------------
     // KPI 1 — Active Members (point-in-time)
+    //
+    // Canonical Active Paying Member model — unions Stripe subs,
+    // legacy_stripe_link, and bd_member_seed and dedupes to one survivor
+    // per person. See `src/lib/members/active-paying-member.ts`.
     // -------------------------------------------------------------------
     const { data: subsRaw, error: subsErr } = await supabase
       .from("subscriptions")
-      .select("user_id, tier, status, current_period_end, created_at, environment");
+      .select("id, user_id, tier, status, current_period_end, created_at, environment");
     if (subsErr) throw subsErr;
-    const subs = (subsRaw ?? []).filter(
-      (s) =>
-        s.environment === "live" &&
-        (ACTIVE_STATUSES as readonly string[]).includes(s.status ?? "") &&
-        (COUNTED_TIERS as readonly string[]).includes(s.tier ?? ""),
-    );
 
-    const perUser = new Map<string, { tier: string; created_at: string; current_period_end: string | null }>();
-    for (const s of subs) {
-      if (!s.user_id) continue;
-      const prev = perUser.get(s.user_id);
-      if (!prev || (TIER_RANK[s.tier ?? ""] ?? 0) > (TIER_RANK[prev.tier] ?? 0)) {
-        perUser.set(s.user_id, {
-          tier: s.tier!,
-          created_at: s.created_at!,
-          current_period_end: s.current_period_end,
-        });
+    const { data: legacyLinksAll } = await supabase
+      .from("legacy_stripe_link")
+      .select("bd_member_id, email, claimed_user_id, access_expires_at, created_at, stripe_customer_id");
+
+    const { data: bdSeedsAll } = await supabase
+      .from("bd_member_seed")
+      .select("bd_member_id, email, claimed_user_id, bd_next_due_date, bd_signup_date");
+
+    // Email lookup for subs → email (used for cross-source dedupe).
+    const authEmailById = new Map<string, string>();
+    try {
+      const { supabaseAdmin } = await import(
+        "@/integrations/supabase/client.server"
+      );
+      let page = 1;
+      while (page < 50) {
+        const { data: users, error: uErr } =
+          await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+        if (uErr) break;
+        for (const u of users.users) {
+          if (u.email) authEmailById.set(u.id, u.email.toLowerCase());
+        }
+        if (users.users.length < 200) break;
+        page += 1;
       }
+    } catch {
+      // Email lookup is a best-effort enrichment for dedupe — collection
+      // still works without it (subs vs bd will fall through to bd_member_id).
     }
 
-    const totalMembers = perUser.size;
-    const mix = { verified: 0, pro: 0, studio: 0 };
-    for (const v of perUser.values()) {
-      if (v.tier === "verified") mix.verified += 1;
-      else if (v.tier === "pro") mix.pro += 1;
-      else if (v.tier === "studio") mix.studio += 1;
-    }
+    const nowIso = new Date().toISOString();
+    const activeCollection = buildActivePayingMemberCollection({
+      subs: (subsRaw ?? []).map((s) => ({
+        id: s.id,
+        user_id: s.user_id ?? null,
+        tier: s.tier ?? null,
+        status: s.status ?? null,
+        environment: s.environment ?? null,
+        created_at: s.created_at ?? null,
+        current_period_end: s.current_period_end ?? null,
+      })),
+      legacyLinks: (legacyLinksAll ?? []).map((l) => ({
+        bd_member_id: (l as { bd_member_id: number | string | null })
+          .bd_member_id,
+        email: (l as { email?: string | null }).email ?? null,
+        claimed_user_id: (l as { claimed_user_id?: string | null })
+          .claimed_user_id ?? null,
+        access_expires_at: (l as { access_expires_at: string | null })
+          .access_expires_at,
+        created_at: (l as { created_at?: string | null }).created_at ?? null,
+        stripe_customer_id: (l as { stripe_customer_id?: string | null })
+          .stripe_customer_id ?? null,
+      })),
+      bdSeeds: (bdSeedsAll ?? []).map((b) => ({
+        bd_member_id: (b as { bd_member_id: number | string | null })
+          .bd_member_id,
+        email: (b as { email?: string | null }).email ?? null,
+        claimed_user_id: (b as { claimed_user_id?: string | null })
+          .claimed_user_id ?? null,
+        bd_next_due_date: (b as { bd_next_due_date: string | null })
+          .bd_next_due_date,
+        bd_signup_date: (b as { bd_signup_date?: string | null })
+          .bd_signup_date ?? null,
+      })),
+      authEmailById,
+      nowIso,
+    });
+
+    const totalMembers = activeCollection.counts.final_active_members;
+    const mix = {
+      verified: activeCollection.counts.by_tier.verified,
+      pro: activeCollection.counts.by_tier.pro,
+      studio: activeCollection.counts.by_tier.studio,
+    };
+
 
     // -------------------------------------------------------------------
     // KPI 2 — Revenue Received (historical window)
