@@ -327,8 +327,30 @@ function ReconciliationPage() {
           </PCard>
         </section>
 
+        {/* ---- Payment failed / incomplete ------------------------------ */}
+        <section id="payment-failed" className="scroll-mt-24">
+          <PCard>
+            <SectionHeader
+              title="Payment failed / incomplete"
+              total={
+                paymentFailed.data
+                  ? `${paymentFailed.data.length} subs needing recovery`
+                  : "loading…"
+              }
+              sub="Live Stripe subscriptions stuck in incomplete / past_due / unpaid. These members were charged but the payment failed — they silently drop out of the Active Members count. Use 'Send recovery email' to enrol them in the churn lifecycle and mint a single-use card-update link."
+            />
+            {paymentFailed.isLoading ? (
+              <Loading />
+            ) : paymentFailed.error ? (
+              <ErrorBox e={paymentFailed.error} />
+            ) : paymentFailed.data ? (
+              <PaymentFailedTable rows={paymentFailed.data} />
+            ) : null}
+          </PCard>
+        </section>
 
         {/* ---- Registrations -------------------------------------------- */}
+
         <section id="registrations" className="scroll-mt-24">
           <PCard>
             <SectionHeader
