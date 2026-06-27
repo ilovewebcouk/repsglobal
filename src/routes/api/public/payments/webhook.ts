@@ -417,6 +417,24 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "customer.subscription.deleted": {
               const sub = event.data.object as Stripe.Subscription;
               userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+              // Churn lifecycle hooks
+              if (userId) {
+                const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                if (event.type === "customer.subscription.deleted") {
+                  await supabaseAdmin.rpc("enter_churn_stage" as never, {
+                    _user_id: userId, _stage: "grace",
+                    _reason: "Stripe subscription deleted",
+                    _source_event: event.type,
+                    _metadata: { subscription_id: sub.id },
+                  } as never);
+                } else if (sub.status === "active" || sub.status === "trialing") {
+                  await supabaseAdmin.rpc("enter_churn_stage" as never, {
+                    _user_id: userId, _stage: "active",
+                    _reason: "Active subscription",
+                    _source_event: event.type,
+                  } as never);
+                }
+              }
               break;
             }
             case "invoice.payment_succeeded":
@@ -427,6 +445,40 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               if (subId) {
                 const sub = await stripe.subscriptions.retrieve(subId);
                 userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+              }
+              if (userId && event.type === "invoice.payment_failed") {
+                const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                await supabaseAdmin.rpc("enter_churn_stage" as never, {
+                  _user_id: userId, _stage: "at_risk",
+                  _reason: "Invoice payment failed",
+                  _source_event: event.type,
+                  _metadata: { invoice_id: invoice.id },
+                } as never);
+                // Fire dunning email
+                try {
+                  const { mintAndEmailRenewalToken } = await import("@/lib/churn/lifecycle.functions");
+                  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+                  const email = authUser?.user?.email ?? null;
+                  if (email) {
+                    const { data: profile } = await supabaseAdmin
+                      .from("profiles").select("full_name").eq("id", userId).maybeSingle();
+                    const graceEnd = new Date(Date.now() + 14 * 86400000);
+                    await mintAndEmailRenewalToken({
+                      userId, email, purpose: "payment_failed",
+                      templateName: "renewal-payment-failed",
+                      intendedTier: "verified",
+                      templateData: {
+                        proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
+                        amount: "£99",
+                        graceEndDate: graceEnd.toLocaleDateString("en-GB", {
+                          day: "numeric", month: "long", year: "numeric",
+                        }),
+                      },
+                    });
+                  }
+                } catch (e) {
+                  console.warn("[churn] payment_failed email failed:", e);
+                }
               }
               break;
             }
