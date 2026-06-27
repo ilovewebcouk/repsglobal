@@ -883,21 +883,21 @@ export const getGrowthReconciliation = createServerFn({ method: "GET" })
     const fromMs = new Date(data.from).getTime();
     const toMs = new Date(data.to).getTime();
 
-    // Email map
+    // Email map (auth admin paged listing — same pattern as elsewhere here).
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
-    const { data: emailRowsRaw } = await supabaseAdmin
-      .schema("admin_helpers")
-      .from("auth_user_directory")
-      .select("user_id, email");
-    const emailRows = (emailRowsRaw ?? []) as Array<{
-      user_id: string | null;
-      email: string | null;
-    }>;
     const emailByUser = new Map<string, string | null>();
-    for (const e of emailRows) {
-      if (e.user_id) emailByUser.set(e.user_id, e.email);
+    let page = 1;
+    while (page < 50) {
+      const { data: users, error: uErr } =
+        await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (uErr) break;
+      for (const u of users.users) {
+        if (u.email) emailByUser.set(u.id, u.email);
+      }
+      if (users.users.length < 200) break;
+      page += 1;
     }
 
     // Joined — first paid subscription per user (mirror overview).
