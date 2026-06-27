@@ -88,9 +88,10 @@ export const grantAdmin = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const { getRequestHeader } = await import('@tanstack/react-start/server');
 
-    // Look up the user. listUsers supports a filter via the Auth Admin API.
-    // For small REPS user base we paginate up to a few pages.
+    // Look up the user. Admins are platform staff — they may not be REPS
+    // members, so if no auth.users row exists yet we invite them by email.
     let foundId: string | null = null;
     let page = 1;
     const perPage = 1000;
@@ -102,8 +103,20 @@ export const grantAdmin = createServerFn({ method: 'POST' })
       if (!list || list.users.length < perPage) break;
       page++;
     }
+
+    let invited = false;
     if (!foundId) {
-      throw new Error(`No REPS account found for ${data.email}. The person must sign up first, then you can grant admin.`);
+      const origin = getRequestHeader('origin') ?? process.env.SITE_URL ?? null;
+      const redirectTo = origin ? `${origin}/auth/callback` : undefined;
+      const { data: invite, error: invErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+        data.email,
+        redirectTo ? { redirectTo } : undefined,
+      );
+      if (invErr || !invite?.user?.id) {
+        throw new Error(invErr?.message ?? `Could not send invite to ${data.email}.`);
+      }
+      foundId = invite.user.id;
+      invited = true;
     }
 
     const { error: insErr } = await supabaseAdmin
@@ -119,10 +132,10 @@ export const grantAdmin = createServerFn({ method: 'POST' })
       _action: 'admin.grant',
       _target_table: 'user_roles',
       _target_id: foundId,
-      _after_state: { role: 'admin', email: data.email },
+      _after_state: { role: 'admin', email: data.email, invited },
     });
 
-    return { ok: true, userId: foundId };
+    return { ok: true, userId: foundId, invited };
   });
 
 export const revokeAdmin = createServerFn({ method: 'POST' })
