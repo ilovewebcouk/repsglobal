@@ -108,12 +108,23 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       if (ev.stripe_event_id && seenEvents.has(ev.stripe_event_id)) continue;
       if (ev.stripe_event_id) seenEvents.add(ev.stripe_event_id);
       const payload = (ev.payload ?? {}) as Record<string, unknown>;
-      const amount =
-        typeof payload.amount_paid === "number"
-          ? payload.amount_paid
-          : typeof payload.amount === "number"
-            ? payload.amount
+      // Stripe events are stored verbatim — the money lives at
+      // payload.data.object.amount_paid (invoices) / .amount (charges).
+      const data = (payload.data ?? {}) as Record<string, unknown>;
+      const obj = ((data.object ?? {}) as Record<string, unknown>);
+      let amount =
+        typeof obj.amount_paid === "number"
+          ? (obj.amount_paid as number)
+          : typeof obj.amount === "number"
+            ? (obj.amount as number)
             : 0;
+      // Net out refunds on charge.succeeded so the tile stays honest.
+      if (ev.event_type === "charge.succeeded") {
+        if (obj.refunded === true) amount = 0;
+        else if (typeof obj.amount_refunded === "number") {
+          amount = Math.max(0, amount - (obj.amount_refunded as number));
+        }
+      }
       if (!amount) continue;
       revenuePence += amount;
       const key = londonDayKey(ev.created_at!);
