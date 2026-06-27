@@ -21,6 +21,13 @@ import {
   asString,
   type ForecastHorizon,
 } from "./metrics-definitions";
+import {
+  buildActivePayingMemberCollection,
+  type ActiveMemberCounts,
+  type ActiveMemberRawRow,
+  type ActivePayingMember,
+} from "@/lib/members/active-paying-member";
+
 
 const Input = z.object({
   from: z.string(),
@@ -1017,5 +1024,104 @@ export const getGrowthReconciliation = createServerFn({ method: "GET" })
       net_growth: joinedCount - churnedCount,
       joined,
       churned,
+    };
+  });
+
+// =============================================================================
+// Active Paying Members reconciliation
+//
+// Uses the canonical model from `src/lib/members/active-paying-member.ts`.
+// The summary numbers here MUST equal the Active Members tile on /admin —
+// both surfaces consume the same `buildActivePayingMemberCollection` output.
+// =============================================================================
+
+export interface ActiveMembersReportDTO {
+  counts: ActiveMemberCounts;
+  members: ActivePayingMember[];
+  rawRows: ActiveMemberRawRow[];
+  generated_at: string;
+}
+
+export const getActiveMembersReconciliation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<ActiveMembersReportDTO> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const [subsRes, linksRes, seedsRes] = await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select(
+          "id, user_id, tier, status, environment, created_at, current_period_end",
+        ),
+      supabase
+        .from("legacy_stripe_link")
+        .select(
+          "bd_member_id, email, access_expires_at, created_at, stripe_customer_id",
+        ),
+      supabase
+        .from("bd_member_seed")
+        .select(
+          "bd_member_id, email, claimed_user_id, bd_next_due_date, legacy_signup_at",
+        ),
+    ]);
+    if (subsRes.error) throw subsRes.error;
+
+    // Build the auth.users -> email lookup (best-effort).
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const authEmailById = new Map<string, string>();
+    let page = 1;
+    while (page < 50) {
+      const { data: users, error: uErr } =
+        await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (uErr) break;
+      for (const u of users.users) {
+        if (u.email) authEmailById.set(u.id, u.email.toLowerCase());
+      }
+      if (users.users.length < 200) break;
+      page += 1;
+    }
+
+    const nowIso = new Date().toISOString();
+    const result = buildActivePayingMemberCollection({
+      subs: ((subsRes.data ?? []) as Array<Record<string, unknown>>).map((s) => ({
+        id: String(s.id),
+        user_id: (s.user_id as string | null) ?? null,
+        tier: (s.tier as string | null) ?? null,
+        status: (s.status as string | null) ?? null,
+        environment: (s.environment as string | null) ?? null,
+        created_at: (s.created_at as string | null) ?? null,
+        current_period_end: (s.current_period_end as string | null) ?? null,
+      })),
+      legacyLinks: ((linksRes.data ?? []) as Array<Record<string, unknown>>).map(
+        (l) => ({
+          bd_member_id: (l.bd_member_id as number | string | null) ?? null,
+          email: (l.email as string | null) ?? null,
+          claimed_user_id: null,
+          access_expires_at: (l.access_expires_at as string | null) ?? null,
+          created_at: (l.created_at as string | null) ?? null,
+          stripe_customer_id: (l.stripe_customer_id as string | null) ?? null,
+        }),
+      ),
+      bdSeeds: ((seedsRes.data ?? []) as Array<Record<string, unknown>>).map(
+        (b) => ({
+          bd_member_id: (b.bd_member_id as number | string | null) ?? null,
+          email: (b.email as string | null) ?? null,
+          claimed_user_id: (b.claimed_user_id as string | null) ?? null,
+          bd_next_due_date: (b.bd_next_due_date as string | null) ?? null,
+          bd_signup_date: (b.legacy_signup_at as string | null) ?? null,
+        }),
+      ),
+      authEmailById,
+      nowIso,
+    });
+
+    return {
+      counts: result.counts,
+      members: result.members,
+      rawRows: result.rawRows,
+      generated_at: nowIso,
     };
   });

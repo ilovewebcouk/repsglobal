@@ -334,21 +334,41 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
     legacyPrice = null;
   }
 
+  // Pull candidate rows. We then filter them through the SHARED
+  // `isActiveLegacyLink` predicate (from src/lib/members/active-paying-member)
+  // and renew ONLY rows that are NOT currently active — guaranteeing the
+  // renewal engine and the /admin Active Members tile can never disagree
+  // about who is "still active". This is the single source of truth.
+  const { isActiveLegacyLink } = await import(
+    "@/lib/members/active-paying-member"
+  );
+  const nowIso = new Date().toISOString();
+
   const { data: due } = await supabaseAdmin
     .from("legacy_stripe_link")
-    .select("bd_member_id,email,stripe_customer_id,access_expires_at,eligible_for_legacy_price")
+    .select(
+      "bd_member_id,email,stripe_customer_id,access_expires_at,eligible_for_legacy_price",
+    )
     .eq("migration_status", "ready")
     .not("stripe_customer_id", "is", null)
     .lte("access_expires_at", new Date().toISOString())
     .limit(limit);
 
-  const rows = (due ?? []) as {
+  const rows = ((due ?? []) as {
     bd_member_id: number;
     email: string;
     stripe_customer_id: string;
     access_expires_at: string;
     eligible_for_legacy_price: boolean | null;
-  }[];
+  }[]).filter(
+    (r) =>
+      !isActiveLegacyLink(
+        { bd_member_id: r.bd_member_id, access_expires_at: r.access_expires_at },
+        nowIso,
+      ),
+  );
+
+
 
   // Pull admin cohort overrides for the rows we're about to process.
   // Explicit overrides take priority over the computed BD-join-date logic.

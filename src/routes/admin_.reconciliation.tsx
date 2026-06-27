@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -17,17 +17,18 @@ import {
 } from "@/lib/admin/overview-period";
 import {
   getRevenueReconciliation,
-  getMembershipReconciliation,
   getRegistrationsReconciliation,
   getForecastReconciliation,
   getGrowthReconciliation,
+  getActiveMembersReconciliation,
   type RevenueRow,
   type RevenueReportDTO,
-  type MemberReportDTO,
   type RegistrationReportDTO,
   type ForecastReportDTO,
   type GrowthReportDTO,
+  type ActiveMembersReportDTO,
 } from "@/lib/admin/reconciliation.functions";
+
 import {
   FORECAST_HORIZON_OPTIONS,
   type ForecastHorizon,
@@ -115,7 +116,7 @@ function ReconciliationPage() {
     PERIOD_OPTIONS.find((o) => o.value === period)?.label ?? period;
 
   const revFn = useServerFn(getRevenueReconciliation);
-  const memFn = useServerFn(getMembershipReconciliation);
+  const memFn = useServerFn(getActiveMembersReconciliation);
   const regFn = useServerFn(getRegistrationsReconciliation);
   const fcastFn = useServerFn(getForecastReconciliation);
   const growthFn = useServerFn(getGrowthReconciliation);
@@ -125,7 +126,7 @@ function ReconciliationPage() {
     queryFn: () => revFn({ data: { from: range.from, to: range.to } }),
   });
   const members = useQuery({
-    queryKey: ["admin-recon", "members"],
+    queryKey: ["admin-recon", "active-members"],
     queryFn: () => memFn(),
   });
   const regs = useQuery({
@@ -143,6 +144,7 @@ function ReconciliationPage() {
     queryKey: ["admin-recon", "growth", range.from, range.to],
     queryFn: () => growthFn({ data: { from: range.from, to: range.to } }),
   });
+
 
   return (
     <DashboardShell
@@ -284,27 +286,28 @@ function ReconciliationPage() {
           </PCard>
         </section>
 
-        {/* ---- Members --------------------------------------------------- */}
+        {/* ---- Active Paying Members ------------------------------------ */}
         <section id="members" className="scroll-mt-24">
           <PCard>
             <SectionHeader
-              title="Membership reconciliation"
+              title="Active members reconciliation"
               total={
                 members.data
-                  ? `${members.data.total_members} dashboard total`
+                  ? `${members.data.counts.final_active_members.toLocaleString()} active`
                   : "loading…"
               }
-              sub="Counts every distinct user whose live subscription is active or trialing in verified/pro/studio."
+              sub="Canonical Active Paying Member collection from src/lib/members/active-paying-member.ts. Unions live Stripe subscriptions, legacy_stripe_link, and bd_member_seed; deduplicates by user_id → claimed_user_id → email → bd_member_id. This number must match the Active Members tile on /admin exactly."
             />
             {members.isLoading ? (
               <Loading />
             ) : members.error ? (
               <ErrorBox e={members.error} />
             ) : members.data ? (
-              <MembersTable rows={members.data.rows} total={members.data.total_members} />
+              <ActiveMembersView data={members.data} />
             ) : null}
           </PCard>
         </section>
+
 
         {/* ---- Registrations -------------------------------------------- */}
         <section id="registrations" className="scroll-mt-24">
@@ -494,61 +497,139 @@ function Footer({
 }
 
 // ---------------------------------------------------------------------------
-// Members table
+// Active Paying Members view
 // ---------------------------------------------------------------------------
 
-function MembersTable({
-  rows,
-  total,
-}: {
-  rows: MemberReportDTO["rows"];
-  total: number;
-}) {
+function ActiveMembersView({ data }: { data: ActiveMembersReportDTO }) {
+  const c = data.counts;
+  const lines: Array<[string, number]> = [
+    ["Stripe subscriptions", c.stripe_subscriptions],
+    ["Legacy members", c.legacy_members],
+    ["BD migrated members", c.bd_migrated_members],
+
+    ["Duplicates removed", c.duplicates_removed],
+    ["Final Active Members", c.final_active_members],
+  ];
+  const [sourceFilter, setSourceFilter] = useState<
+    "all" | "subscription" | "legacy_link" | "bd_seed"
+  >("all");
+  const [showExcluded, setShowExcluded] = useState(true);
+
+  const rows = data.rawRows.filter((r) => {
+    if (sourceFilter !== "all" && r.source !== sourceFilter) return false;
+    if (!showExcluded && !r.included_in_total) return false;
+    return true;
+  });
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      <div className="rounded-md border border-white/10 bg-white/[0.02] p-4 font-mono text-[13px] text-white/85">
+        {lines.map(([label, val], i) => (
+          <div
+            key={label}
+            className={`flex items-baseline justify-between gap-4 ${
+              i === lines.length - 1
+                ? "mt-2 border-t border-white/10 pt-2 text-white"
+                : ""
+            }`}
+          >
+            <span>{label}</span>
+            <span className="tabular-nums">{val.toLocaleString()}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 text-[12px]">
+        <span className="text-white/55">Filter:</span>
+        {(
+          [
+            ["all", "All sources"],
+            ["subscription", "Subscriptions"],
+            ["legacy_link", "Legacy links"],
+            ["bd_seed", "BD seeds"],
+          ] as const
+        ).map(([val, label]) => (
+          <button
+            key={val}
+            onClick={() => setSourceFilter(val)}
+            className={`rounded border px-2 py-1 ${
+              sourceFilter === val
+                ? "border-white/30 bg-white/10 text-white"
+                : "border-white/10 text-white/60 hover:text-white"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <label className="ml-auto flex items-center gap-2 text-white/65">
+          <input
+            type="checkbox"
+            checked={showExcluded}
+            onChange={(e) => setShowExcluded(e.target.checked)}
+          />
+          Show excluded rows
+        </label>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-[12px]">
           <thead className="text-left text-white/55">
             <tr>
               <th className="py-2 pr-3">In?</th>
-              <th className="py-2 pr-3">Email</th>
+              <th className="py-2 pr-3">Source</th>
+              <th className="py-2 pr-3">Identity</th>
               <th className="py-2 pr-3">Tier</th>
-              <th className="py-2 pr-3">Status</th>
-              <th className="py-2 pr-3">Env</th>
-              <th className="py-2 pr-3">Created</th>
-              <th className="py-2 pr-3">Current period end</th>
-              <th className="py-2 pr-3">Cancel at end?</th>
-              <th className="py-2 pr-3">Subscription</th>
+              <th className="py-2 pr-3">Status / Expiry</th>
+              <th className="py-2 pr-3">Merged into</th>
               <th className="py-2 pr-3">Reason</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr
-                key={r.subscription_id}
-                className={`border-t border-white/5 ${r.included_in_member_count ? "" : "text-white/40"}`}
-              >
-                <td className="py-2 pr-3">
-                  {r.included_in_member_count ? "✓" : "✕"}
-                </td>
-                <td className="py-2 pr-3">{r.email ?? "—"}</td>
-                <td className="py-2 pr-3">{r.tier}</td>
-                <td className="py-2 pr-3">{r.status}</td>
-                <td className="py-2 pr-3">{r.environment}</td>
-                <td className="py-2 pr-3 whitespace-nowrap">{fmtDateTime(r.created_at)}</td>
-                <td className="py-2 pr-3 whitespace-nowrap">{fmtDateTime(r.current_period_end)}</td>
-                <td className="py-2 pr-3">{r.cancel_at_period_end ? "yes" : "no"}</td>
-                <td className="py-2 pr-3 font-mono text-[10px]">{r.subscription_id}</td>
-                <td className="py-2 pr-3 text-white/55">{r.exclusion_reason ?? ""}</td>
-              </tr>
-            ))}
+            {rows.map((r) => {
+              const reason =
+                r.exclusion_reason ??
+                r.merge_reason ??
+                (r.included_in_total ? "primary" : "");
+              return (
+                <tr
+                  key={`${r.source}:${r.source_row_id}`}
+                  className={`border-t border-white/5 ${
+                    r.included_in_total ? "" : "text-white/40"
+                  }`}
+                >
+                  <td className="py-2 pr-3">
+                    {r.included_in_total ? "✓" : "✕"}
+                  </td>
+                  <td className="py-2 pr-3">{r.source}</td>
+                  <td className="py-2 pr-3">
+                    <div>{r.email ?? "—"}</div>
+                    <div className="font-mono text-[10px] text-white/45">
+                      {r.user_id ?? r.bd_member_id ?? r.source_row_id}
+                    </div>
+                  </td>
+                  <td className="py-2 pr-3">{r.tier ?? "—"}</td>
+                  <td className="py-2 pr-3 whitespace-nowrap">
+                    {r.status_or_window ?? "—"}
+                  </td>
+                  <td className="py-2 pr-3 font-mono text-[10px]">
+                    {r.merged_into_member_id ?? ""}
+                  </td>
+                  <td className="py-2 pr-3 text-white/55">{reason}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
-      <Footer label="Total members" value={String(total)} accent />
+      <Footer
+        label="Final Active Members"
+        value={String(c.final_active_members)}
+        accent
+      />
     </div>
   );
 }
+
 
 // ---------------------------------------------------------------------------
 // Registrations table
