@@ -84,6 +84,7 @@ import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professi
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
+import { Route as AdminHealthRouteImport } from './routes/admin_.health'
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
@@ -516,6 +517,11 @@ const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   path: '/admin/memberships',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminHealthRoute = AdminHealthRouteImport.update({
+  id: '/admin_/health',
+  path: '/admin/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminGymsRoute = AdminGymsRouteImport.update({
   id: '/admin_/gyms',
   path: '/admin/gyms',
@@ -875,6 +881,7 @@ export interface FileRoutesByFullPath {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -1004,6 +1011,7 @@ export interface FileRoutesByTo {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -1134,6 +1142,7 @@ export interface FileRoutesById {
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
+  '/admin_/health': typeof AdminHealthRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/migration': typeof AdminMigrationRoute
   '/admin_/payments': typeof AdminPaymentsRoute
@@ -1267,6 +1276,7 @@ export interface FileRouteTypes {
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
+    | '/admin/health'
     | '/admin/memberships'
     | '/admin/migration'
     | '/admin/payments'
@@ -1396,6 +1406,7 @@ export interface FileRouteTypes {
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
+    | '/admin/health'
     | '/admin/memberships'
     | '/admin/migration'
     | '/admin/payments'
@@ -1525,6 +1536,7 @@ export interface FileRouteTypes {
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/gyms'
+    | '/admin_/health'
     | '/admin_/memberships'
     | '/admin_/migration'
     | '/admin_/payments'
@@ -1658,6 +1670,7 @@ export interface RootRouteChildren {
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
+  AdminHealthRoute: typeof AdminHealthRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminMigrationRoute: typeof AdminMigrationRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
@@ -2239,6 +2252,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/memberships'
       fullPath: '/admin/memberships'
       preLoaderRoute: typeof AdminMembershipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/health': {
+      id: '/admin_/health'
+      path: '/admin/health'
+      fullPath: '/admin/health'
+      preLoaderRoute: typeof AdminHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/gyms': {
@@ -2880,6 +2900,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
+  AdminHealthRoute: AdminHealthRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminMigrationRoute: AdminMigrationRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
