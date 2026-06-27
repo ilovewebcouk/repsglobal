@@ -466,3 +466,335 @@ function buildSubscriptionUpsert(
     environment: sub.livemode ? "live" : "sandbox",
   };
 }
+
+// =============================================================================
+// Step 4 — Live replay (idempotent writes)
+// =============================================================================
+//
+// Re-processes failed payment_events end-to-end:
+//   • Re-derives userId using the live resolver (incl. Step 4 legacy_stripe_link).
+//   • Retrieves the fresh Stripe subscription (the live handler already does
+//     this — we must too, so the upsert row matches what the live handler
+//     would have written).
+//   • Upserts `subscriptions` (idempotent on user_id+environment).
+//   • Calls `enter_churn_stage` RPC (active / grace / at_risk).
+//   • Clears processing_error / sets processed_at on payment_events.
+//
+// Idempotency:
+//   • subscriptions upsert is keyed on (user_id, environment) — re-running
+//     produces the same row.
+//   • enter_churn_stage is itself idempotent (the RPC no-ops if already in
+//     the target stage).
+//   • payment_events row is only mutated to clear the error + record user_id.
+//
+// Deliberately out of scope (per plan acceptance):
+//   • Outbound emails. The original failure window already ran (or didn't);
+//     replay must not re-mint renewal tokens or fire dunning email duplicates.
+//   • bd_member_seed.bd_next_due_date / legacy_stripe_link.last_paid_at —
+//     the canonical Active Paying Member model already counts these members
+//     once subscriptions rows exist. Forward billing cycles will advance
+//     these fields naturally.
+//   • Stripe customer metadata backfill — already wired into the LIVE
+//     resolver (Step 2 fix), so the next legitimate event will set it.
+
+import type Stripe from "stripe";
+import type { StripeEnv } from "@/lib/billing/stripe.server";
+
+export interface ReplayResultRow {
+  payment_event_id: string;
+  stripe_event_id: string | null;
+  event_type: string;
+  status: "ok" | "skipped" | "error";
+  resolved_user_id: string | null;
+  resolved_via: ResolverHit;
+  subscription_upserted: string | null;
+  churn_stage_set: "active" | "grace" | "at_risk" | null;
+  error: string | null;
+  notes: string[];
+}
+
+export interface ReplayResultDTO {
+  generated_at: string;
+  since: string;
+  total_failed_events: number;
+  ok: number;
+  skipped: number;
+  errored: number;
+  rows: ReplayResultRow[];
+}
+
+const ReplayInput = z.object({
+  since: z.string().datetime({ offset: true }).optional(),
+  confirm: z.literal("REPLAY"),
+});
+
+export const replayWebhookFailures = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: z.infer<typeof ReplayInput>) => ReplayInput.parse(d))
+  .handler(async ({ data, context }): Promise<ReplayResultDTO> => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { createStripeClient } = await import("@/lib/billing/stripe.server");
+
+    const since =
+      data.since ?? new Date(Date.now() - 7 * 86_400_000).toISOString();
+
+    const { data: events, error: eventsErr } = await supabaseAdmin
+      .from("payment_events")
+      .select(
+        "id, stripe_event_id, event_type, stripe_customer_id, stripe_subscription_id, payload, created_at",
+      )
+      .not("processing_error", "is", null)
+      .gte("created_at", since)
+      .order("created_at", { ascending: true });
+    if (eventsErr) throw new Error(eventsErr.message);
+
+    const failed = (events ?? []) as Array<{
+      id: string;
+      stripe_event_id: string | null;
+      event_type: string;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      payload: unknown;
+      created_at: string;
+    }>;
+
+    const results: ReplayResultRow[] = [];
+
+    for (const evt of failed) {
+      const row: ReplayResultRow = {
+        payment_event_id: evt.id,
+        stripe_event_id: evt.stripe_event_id,
+        event_type: evt.event_type,
+        status: "skipped",
+        resolved_user_id: null,
+        resolved_via: null,
+        subscription_upserted: null,
+        churn_stage_set: null,
+        error: null,
+        notes: [],
+      };
+
+      try {
+        const payload = evt.payload as {
+          livemode?: boolean;
+          data?: { object?: Record<string, unknown> };
+        };
+        const obj = payload?.data?.object ?? {};
+        const env: StripeEnv = payload?.livemode === false ? "sandbox" : "live";
+        const meta =
+          (obj.metadata as Record<string, string> | undefined) ?? {};
+        const metaUserId = meta.reps_user_id ?? null;
+        const customerId = evt.stripe_customer_id;
+
+        // ---- Resolve user via live ladder (DB-only steps; admin-side) ----
+        let userId: string | null = metaUserId;
+        let via: ResolverHit = metaUserId ? "metadata_reps_user_id" : null;
+        if (!userId && customerId) {
+          const { data: subHit } = await supabaseAdmin
+            .from("subscriptions")
+            .select("user_id")
+            .eq("stripe_customer_id", customerId)
+            .limit(1)
+            .maybeSingle();
+          if (subHit?.user_id) {
+            userId = subHit.user_id;
+            via = "subscriptions_stripe_customer_id";
+          }
+        }
+        if (!userId && customerId) {
+          const { data: link } = await supabaseAdmin
+            .from("legacy_stripe_link")
+            .select("bd_member_id")
+            .eq("stripe_customer_id", customerId)
+            .limit(1)
+            .maybeSingle();
+          if (link?.bd_member_id) {
+            const { data: seed } = await supabaseAdmin
+              .from("bd_member_seed")
+              .select("claimed_user_id")
+              .eq("bd_member_id", link.bd_member_id)
+              .limit(1)
+              .maybeSingle();
+            if (seed?.claimed_user_id) {
+              userId = seed.claimed_user_id;
+              via = "legacy_stripe_link";
+            }
+          }
+        }
+        row.resolved_user_id = userId;
+        row.resolved_via = via;
+
+        if (!userId) {
+          row.status = "skipped";
+          row.notes.push("Resolver returned null. Manual review required.");
+          results.push(row);
+          continue;
+        }
+
+        // ---- Re-process by event type -----------------------------------
+        const stripe = createStripeClient(env);
+        const isSubEvent =
+          evt.event_type === "customer.subscription.created" ||
+          evt.event_type === "customer.subscription.updated" ||
+          evt.event_type === "customer.subscription.deleted";
+        const isInvoiceEvent =
+          evt.event_type === "invoice.payment_succeeded" ||
+          evt.event_type === "invoice.payment_failed";
+
+        let liveSub: Stripe.Subscription | null = null;
+        if (isSubEvent) {
+          // Refetch (it's cheap and matches what the live handler does)
+          const subFromPayload = obj as { id?: string };
+          if (subFromPayload.id) {
+            liveSub = await stripe.subscriptions.retrieve(subFromPayload.id);
+          }
+        } else if (isInvoiceEvent) {
+          const inv = obj as {
+            subscription?: string | { id: string } | null;
+          };
+          const subRef = inv.subscription;
+          const subId =
+            typeof subRef === "string" ? subRef : subRef?.id ?? null;
+          if (subId) liveSub = await stripe.subscriptions.retrieve(subId);
+        }
+
+        if (liveSub) {
+          // ---- Upsert subscriptions row (mirrors upsertSubscriptionFromStripe) -
+          const subCustomerId =
+            typeof liveSub.customer === "string"
+              ? liveSub.customer
+              : liveSub.customer.id;
+          const item = liveSub.items.data[0];
+          const priceLookup =
+            item?.price.lookup_key ?? item?.price.id ?? null;
+          const lookup = priceLookup
+            ? lookupTierByPriceId(priceLookup)
+            : null;
+          const isLiveStatus = [
+            "active",
+            "trialing",
+            "past_due",
+            "unpaid",
+          ].includes(liveSub.status);
+          const cpe =
+            (liveSub as unknown as { current_period_end?: number })
+              .current_period_end ??
+            item?.current_period_end ??
+            null;
+
+          const upsertRow = {
+            user_id: userId,
+            stripe_customer_id: subCustomerId,
+            stripe_subscription_id: liveSub.id,
+            stripe_price_id: priceLookup,
+            tier: isLiveStatus && lookup ? lookup.tier : "free",
+            billing_period: isLiveStatus && lookup ? lookup.period : null,
+            status: liveSub.status,
+            current_period_end: cpe ? new Date(cpe * 1000).toISOString() : null,
+            cancel_at_period_end: liveSub.cancel_at_period_end ?? false,
+            is_founding: lookup?.founding ?? false,
+            migrated_from_bd: liveSub.metadata?.migrated_from === "bd",
+            metadata: liveSub.metadata as unknown as object,
+            environment: env,
+            updated_at: new Date().toISOString(),
+          };
+          const { error: upErr } = await supabaseAdmin
+            .from("subscriptions")
+            .upsert(upsertRow as never, {
+              onConflict: "user_id,environment",
+            });
+          if (upErr) throw new Error(`subscriptions upsert: ${upErr.message}`);
+          row.subscription_upserted = liveSub.id;
+
+          // ---- Churn lifecycle -----------------------------------------
+          if (evt.event_type === "customer.subscription.deleted") {
+            const { error: csErr } = await supabaseAdmin.rpc(
+              "enter_churn_stage" as never,
+              {
+                _user_id: userId,
+                _stage: "grace",
+                _reason: "Stripe subscription deleted (replay)",
+                _source_event: evt.event_type,
+                _metadata: { subscription_id: liveSub.id, replay: true },
+              } as never,
+            );
+            if (csErr) row.notes.push(`churn(grace): ${csErr.message}`);
+            else row.churn_stage_set = "grace";
+          } else if (
+            liveSub.status === "active" ||
+            liveSub.status === "trialing"
+          ) {
+            const { error: csErr } = await supabaseAdmin.rpc(
+              "enter_churn_stage" as never,
+              {
+                _user_id: userId,
+                _stage: "active",
+                _reason: "Active subscription (replay)",
+                _source_event: evt.event_type,
+              } as never,
+            );
+            if (csErr) row.notes.push(`churn(active): ${csErr.message}`);
+            else row.churn_stage_set = "active";
+          }
+          if (evt.event_type === "invoice.payment_failed") {
+            const { error: csErr } = await supabaseAdmin.rpc(
+              "enter_churn_stage" as never,
+              {
+                _user_id: userId,
+                _stage: "at_risk",
+                _reason: "Invoice payment failed (replay)",
+                _source_event: evt.event_type,
+                _metadata: { replay: true },
+              } as never,
+            );
+            if (csErr) row.notes.push(`churn(at_risk): ${csErr.message}`);
+            else row.churn_stage_set = "at_risk";
+            row.notes.push(
+              "Replay does NOT re-send the dunning email (would duplicate the original failure-window send).",
+            );
+          }
+        } else {
+          row.notes.push(
+            `No subscription to upsert (event type ${evt.event_type}).`,
+          );
+        }
+
+        // ---- Clear payment_events error ------------------------------------
+        const { error: clrErr } = await supabaseAdmin
+          .from("payment_events")
+          .update({
+            user_id: userId,
+            processed_at: new Date().toISOString(),
+            processing_error: null,
+          } as never)
+          .eq("id", evt.id);
+        if (clrErr) throw new Error(`payment_events clear: ${clrErr.message}`);
+
+        row.status = "ok";
+      } catch (err) {
+        row.status = "error";
+        row.error = err instanceof Error ? err.message : String(err);
+      }
+
+      results.push(row);
+    }
+
+    return {
+      generated_at: new Date().toISOString(),
+      since,
+      total_failed_events: results.length,
+      ok: results.filter((r) => r.status === "ok").length,
+      skipped: results.filter((r) => r.status === "skipped").length,
+      errored: results.filter((r) => r.status === "error").length,
+      rows: results,
+    };
+  });
+
