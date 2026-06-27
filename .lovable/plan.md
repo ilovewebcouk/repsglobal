@@ -1,69 +1,66 @@
-# BD Migration v7 — Launch Execution Plan
 
-Executes the locked dry-run v7 (`docs/10_phase2_migration_dry_run_v7_approved.md`, artifact `/mnt/documents/bd_migration_dry_run_v7.csv`) against **live Stripe**.
+## Brutal honest take
 
-## Pre-flight gates (must all be green before any Stripe write)
+You're right — the current dashboard reads as a stack of cards floating on a dark background, not a SaaS surface. Three concrete reasons:
 
-1. **Date/time**: ≥ 2026-06-26 00:00 BST. Refuse otherwise.
-2. **Environment**: live Stripe keys present (`STRIPE_SECRET_KEY` starts `sk_live_`), not test.
-3. **Final go**: Scott confirms in-chat ("go" / "proceed live").
-4. **Dry-run parity check**: re-run the v7 selector against `bd_member_seed` and assert totals match exactly — 6 honour_window, 1 anomaly_launch_charge, 383 future_due, 0 manual_review, 0 blocked, £303 total. Abort on any drift.
-5. **Idempotency guard**: each row carries a deterministic `migration_idempotency_key` (e.g. `bd-v7-<bd_id_or_email_hash>`); Stripe calls use it so a re-run cannot double-charge.
+1. **Rows don't equalise height.** Each `grid` row lets its two children size to content, so "Needs your attention" finishes early while "Profile completeness" keeps going — the gap is just exposed page background. Dribbble dashboards lock the row to the tallest sibling and let the shorter card breathe with internal padding (or scroll).
+2. **No internal scroll regions.** `Needs your attention` and `Recent activity` truncate by hard-coding 5/10 items into the DOM. There's nowhere for "more rows than fit" to live.
+3. **Rhythm is broken.** Row 5 (CPD + Reviews) is a different grid ratio (50/50) than rows 3–4 (66/33). The eye sees three different columns systems on one page.
 
-## Execution order
+## What to change
+
+Scope is presentational only — no data, no business logic. All work in `src/components/dashboard/hub/index.tsx` and `src/routes/_authenticated/_professional/dashboard.tsx`.
+
+### 1. Equal-height rows (the headline fix)
+
+Add `h-full` to every `PPanel` / `PCard` used inside a row, and `items-stretch` on the row grids. Wrap each grid cell so the card fills the cell:
 
 ```text
-Step 1 — Snapshot
-  └─ write bd_member_seed → bd_member_seed_pre_v7_snapshot (full table copy)
-
-Step 2 — Honour-window cohort (6 × £34 = £204)
-  ├─ ensure Stripe customer (find-or-create by canonical email)
-  ├─ create one-off £34 invoice + charge (idempotency key)
-  └─ create Stripe subscription schedule:
-       phase 1: £34 one-off already paid (anchor today)
-       phase 2: switch to REPs Verified £99/yr on next bd_next_due anniversary
-  → on success: bd_member_seed.migration_status = 'honoured', store stripe_customer_id / schedule_id
-
-Step 3 — Anomaly launch charge (1 × £99 = £99) — Raheela Khalid
-  ├─ ensure Stripe customer
-  ├─ create REPs Verified £99/yr subscription, billed immediately
-  └─ on success: migration_status = 'launched_verified'
-
-Step 4 — Future-due cohort (383 × £0)
-  └─ DB-only: stamp migration_status = 'future_due_scheduled', set bd_next_due anchor;
-     NO Stripe writes. Stripe subscription is created at their renewal date by the
-     existing legacy-renewal hook.
-
-Step 5 — Reconciliation
-  ├─ assert Stripe charges total = £303 (204 + 99)
-  ├─ assert every row in v7 CSV has a terminal migration_status
-  └─ write run report to /mnt/documents/bd_migration_v7_run_<timestamp>.csv
+Row 3 ─ Needs attention (8 cols) ──── Profile completeness (4 cols)  ← same height
+Row 4 ─ Recent activity  (8 cols) ──── Verification         (4 cols)  ← same height
+Row 5 ─ Education & CPD  (6 cols) ──── Reviews snapshot     (6 cols)  ← same height
 ```
 
-## Failure handling
+Each card becomes `flex flex-col` so the header sits at top, body fills, footer (if any) pins to bottom.
 
-- Per-row try/catch. A row failure marks `migration_status = 'failed'` with the Stripe error code, continues the batch, and surfaces in the run report.
-- Stripe idempotency keys mean a retry of a failed row is safe.
-- No row is ever charged twice for the same cohort key.
+### 2. Internal scroll for list bodies
 
-## Comms
+Inside `NeedsAttention`, `ActivityTimeline`, and `CpdMini`:
+- Header (icon + title + meta) stays fixed at top.
+- Body becomes `flex-1 min-h-0 overflow-y-auto pr-1` with a subtle scrollbar.
+- This is the answer to your CPD-vs-Reviews concern: if a trainer adds a 4th qualification, the CPD body scrolls inside its card — Reviews stays the same shape.
 
-- Honour-window (6): transactional email "Your £34 has been honoured — next renewal £99 on <date>" via existing `sendTransactionalEmailServer`.
-- Anomaly (1): "Welcome to REPs Verified — £99 charged today."
-- Future-due (383): no email at launch; existing renewal-reminder cadence handles them.
+### 3. Unify the row system
 
-## What does NOT change
+Promote row 5 from `lg:grid-cols-2` to the same `xl:grid-cols-12` 6/6 split so all three two-column rows share one column grid. The KPI strip stays full-width 4-up.
 
-- No Pro tier created. No lifetime cohort. No long-overdue cohort. No £34 renewable subs. Locked rules from v7 doc are binding.
+### 4. Minimum heights so empty cards don't collapse
 
-## Technical notes
+Set `min-h-[320px]` on rows 3 and 4, `min-h-[260px]` on row 5. Stops a brand-new account (no activity, no qualifications) from looking like a series of header strips.
 
-- Runner: a one-shot admin-only server function `runBdMigrationV7` (guarded by `has_role(auth.uid(),'admin')` AND a `LAUNCH_TOKEN` env var Scott pastes in to arm it). Not a public route.
-- Stripe price IDs read from `src/lib/billing.ts` (Verified £99/yr).
-- All writes wrapped in a per-row transaction; Stripe call first, DB stamp second.
+### 5. Card-level polish (small but compounding)
 
-## Open questions before I switch to build
+- Bump `PPanel` inner padding from `p-5` to `p-6` to match the breathing room you see in the Panze reference.
+- Add a subtle 1px inner highlight (`shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]`) so cards lift off the panel background — currently they're flat on flat.
+- Tighten `SectionHeader` line-height and add a hairline divider under it (`border-b border-reps-border/40 pb-3 mb-4`) so header and body read as distinct zones.
+- "Recent activity" footer (timestamp + chevron) sits on its own row with a top divider, not floating mid-card.
+- "Needs your attention" empty state: when there's nothing to do, show a single confident "You're all caught up" Empty primitive, not a blank panel.
 
-1. **Arming token**: do you want me to add a one-time `LAUNCH_TOKEN` env var you paste at run time, or gate purely on your admin user id + an in-app "Arm launch" button?
-2. **Run trigger**: kick off via an admin button in `/admin/migration`, or via a `curl` to the guarded server fn?
-3. **Email copy**: use the existing transactional template, or do you want to review/edit the two new templates (honour + welcome) before send?
+### 6. Hierarchy fixes spotted in QA
+
+- KPI tiles have no separator between value and delta — add `text-xs text-muted-foreground mt-1` so "0 unread" doesn't look like part of the number.
+- "Your services" empty state currently dominates a full-width card; reduce to `min-h-[180px]` and move "Manage services" into the empty state itself, not the header.
+- "Grow your business inside REPS" CTA: contain it to the column grid width (currently breaks the rhythm by spanning edge-to-edge) and reduce vertical padding by ~30%.
+
+### Technical notes
+
+- Equal-height via `h-full` on cards plus default `items-stretch` on CSS grid — no JS measuring, no `ResizeObserver`.
+- Scroll regions use `min-h-0` on the flex parent (required for `overflow-y-auto` inside flex column to actually clip).
+- All tokens stay semantic — no hardcoded colours added. Shadow uses an existing rgba pattern already in the file.
+- shadcn primitives used: `Empty` for caught-up state, `Separator` for in-card dividers, `ScrollArea` is intentionally **not** used (native overflow is lighter and matches the dark theme better here).
+
+### Out of scope (flag for separate pass)
+
+- Sidebar density and the empty `Account / Deliver` section labels — separate IA pass.
+- KPI tile redesign with sparklines — needs design directions.
+- Mobile breakpoints below `lg` — current request is desktop polish; mobile already stacks correctly.
