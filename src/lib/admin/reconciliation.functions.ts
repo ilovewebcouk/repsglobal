@@ -376,8 +376,8 @@ export const getMembershipReconciliation = createServerFn({ method: "GET" })
     for (const s of subsRaw ?? []) {
       const liveAndActive =
         s.environment === "live" &&
-        ACTIVE_STATUSES.includes(s.status ?? "") &&
-        COUNTED_TIERS.includes(s.tier ?? "");
+        (ACTIVE_STATUSES as readonly string[]).includes(s.status ?? "") &&
+        (COUNTED_TIERS as readonly string[]).includes(s.tier ?? "");
       if (!liveAndActive || !s.user_id) continue;
       const currentWinTier = winningTierByUser.get(s.user_id);
       if (
@@ -415,9 +415,9 @@ export const getMembershipReconciliation = createServerFn({ method: "GET" })
       let reason: string | null = null;
       if (s.environment !== "live")
         reason = `environment="${s.environment}" (dashboard requires "live")`;
-      else if (!ACTIVE_STATUSES.includes(s.status ?? ""))
+      else if (!(ACTIVE_STATUSES as readonly string[]).includes(s.status ?? ""))
         reason = `status="${s.status}" (dashboard requires active or trialing)`;
-      else if (!COUNTED_TIERS.includes(s.tier ?? ""))
+      else if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? ""))
         reason = `tier="${s.tier}" (dashboard counts only verified/pro/studio)`;
       else if (winnerByUser.get(s.user_id ?? "") !== s.id)
         reason = `superseded by another live+active subscription for the same user (winner: ${winnerByUser.get(s.user_id ?? "") ?? "n/a"})`;
@@ -471,7 +471,7 @@ export const getRegistrationsReconciliation = createServerFn({ method: "GET" })
     const firstPaidAt = new Map<string, string>();
     for (const s of subsRaw ?? []) {
       if (s.environment !== "live") continue;
-      if (!COUNTED_TIERS.includes(s.tier ?? "")) continue;
+      if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? "")) continue;
       if (!s.user_id || !s.created_at) continue;
       const prev = firstPaidAt.get(s.user_id);
       if (
@@ -631,7 +631,7 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
 
-    const fcast = forecastWindow();
+    const fcast = forecastWindowFor("next_30d", );
     const fromMs = new Date(fcast.from).getTime();
     const toMs = new Date(fcast.to).getTime();
     const LEGACY_AMOUNT = TIER_RENEWAL_PENCE["verified"];
@@ -669,9 +669,9 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       let reason: string | null = null;
       if (s.environment !== "live")
         reason = `environment="${s.environment}" (forecast requires "live")`;
-      else if (!ACTIVE_STATUSES.includes(s.status ?? ""))
+      else if (!(ACTIVE_STATUSES as readonly string[]).includes(s.status ?? ""))
         reason = `status="${s.status}" (forecast requires active or trialing)`;
-      else if (!COUNTED_TIERS.includes(s.tier ?? ""))
+      else if (!(COUNTED_TIERS as readonly string[]).includes(s.tier ?? ""))
         reason = `tier="${s.tier}" (forecast counts only verified/pro/studio)`;
       else if (!s.current_period_end)
         reason = "current_period_end is null (no renewal date to schedule)";
