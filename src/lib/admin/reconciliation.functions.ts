@@ -627,7 +627,7 @@ export interface ForecastReportDTO {
 
 export const getForecastReconciliation = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator(ForecastInput)
+  .inputValidator((d: unknown) => ForecastInput.parse(d))
   .handler(async ({ context, data }): Promise<ForecastReportDTO> => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
