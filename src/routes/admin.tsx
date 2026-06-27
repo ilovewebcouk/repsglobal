@@ -36,8 +36,8 @@ const searchSchema = z.object({
     ]),
     "last_30d",
   ).default("last_30d"),
-  from: fallback(z.string().optional(), undefined).default(undefined),
-  to: fallback(z.string().optional(), undefined).default(undefined),
+  from: z.string().optional(),
+  to: z.string().optional(),
 });
 
 function overviewQuery(period: PeriodKey, from?: string, to?: string) {
