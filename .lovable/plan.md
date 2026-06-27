@@ -1,72 +1,123 @@
+## Goal
 
-# Platform Overview — 4 Canonical KPIs
+Introduce **one canonical Active Paying Member model** used identically by the admin dashboard, the reconciliation page, and the legacy renewal engine. Stripe subscriptions are no longer the source of truth — they become one of three inputs to a shared, deduped collection.
 
-Move `/admin` from "metric dashboard" to "operational decision surface". Four KPIs, one definition each, one source of truth, one reconciliation table per KPI. Historical and forecast windows are kept strictly separate.
+## 1. New shared module — `src/lib/members/active-paying-member.ts`
 
-## 1. Canonical metric definitions (single source of truth)
+Single source of truth. Lives outside `/admin` so the renewal engine can import it without depending on dashboard code.
 
-Create `src/lib/admin/metrics-definitions.ts`. Every KPI calculation in overview AND reconciliation must import from this module — no duplicate logic anywhere.
+Exports:
 
-| KPI | Definition | Source of truth | Window |
-|---|---|---|---|
-| Active Members | Distinct `user_id` with a `subscriptions` row where `environment='live'`, `status IN ('active','trialing')`, `tier IN ('verified','pro','studio')`. Tier deduped by rank studio>pro>verified. | `subscriptions` | Point-in-time (now) + joins/churns within the selected historical window |
-| Revenue Received | Sum of pence for unique payments (deduped by `payment_intent` → `charge` → `object id`) from `payment_events`, preferring `invoice.payment_succeeded` over `charge.succeeded`. Refunds netted on standalone charges. | `payment_events` | Selected historical window |
-| Projected Cash Due | Three-source forecast (active subs `current_period_end`, then `legacy_stripe_link.access_expires_at`, then `bd_member_seed.bd_next_due_date`), deduped by user/member. Amount per row = production renewal engine's per-tier price. | `subscriptions` ∪ `legacy_stripe_link` ∪ `bd_member_seed` | **Independent forecast horizon** |
-| Net Member Growth | Joined − Churned in the selected historical window. Joined = first paid subscription `created_at` per user inside window. Churned = `churn_lifecycle` rows whose stage entered a terminal state (`churned`/`final`) inside window. | `subscriptions` (joins) + `churn_lifecycle` (churns) | Selected historical window |
+- **Predicates**
+  - `isActiveSubscription(sub)` — `environment === 'live'` AND `status ∈ {active, trialing}` AND `tier ∈ {verified, pro, studio}`.
+  - `isActiveLegacyLink(link, nowIso)` — `access_expires_at > nowIso`.
+  - `isActiveBdSeed(seed, nowIso)` — `bd_next_due_date > nowIso` (the same predicate the renewal engine already uses).
 
-All four definitions exported as pure functions that take the raw rows and a window, and return `{ value, supportingRows }`. Reconciliation tags each supportingRow with `included_in_total` and `exclusion_reason` exactly as today.
+- **Tier helpers**
+  - Re-export `TIER_RANK` (Studio > Pro > Verified) plus `tierForLegacy()` / `tierForBdSeed()` returning `'verified'`.
 
-## 2. Independent forecast horizon
+- **`buildActivePayingMemberCollection({ subs, legacyLinks, bdSeeds, authEmailById, nowIso })`** returning:
+  ```
+  {
+    members: ActivePayingMember[],
+    counts: {
+      stripe_subscriptions,
+      legacy_members,
+      bd_migrated_members,
+      duplicates_removed,
+      final_active_members,
+    },
+    rawRows: ActiveMemberRawRow[],
+  }
+  ```
 
-Top bar:
-- **Historical period selector** (existing): drives KPIs 1, 2, 4 and all charts that show actuals.
-- **Forecast horizon selector** (new, lives on the Projected Cash Due card only): `Remaining this month`, `Next month`, `Next 30 days`, `Current quarter`, `Current year`, `Custom`.
+### `ActivePayingMember` shape
 
-`overview-period.ts` gains a `forecastWindowFor(horizon)` helper. The historical `from/to` is never reused for forecast math — enforced by `getAdminOverview` accepting two distinct window params.
-
-## 3. KPI cards (new layout)
-
-```text
-┌──────────────────┬──────────────────┬──────────────────┬──────────────────┐
-│ Active Members   │ Revenue Received │ Projected Cash   │ Net Member Growth│
-│ 1,247            │ £12,480          │ Due              │ +34              │
-│ +34 net (period) │ (period)         │ £41,560          │ Joined 52        │
-│ ↳ Joined 52      │ Reconcile →      │ [horizon ▾]      │ Churned 18       │
-│ ↳ Churned 18     │                  │ Reconcile →      │ Reconcile →      │
-│ Reconcile →      │                  │                  │                  │
-└──────────────────┴──────────────────┴──────────────────┴──────────────────┘
+```
+{
+  id: string                 // stable: user_id > claimed_user_id > email > bd:<member_id>
+  primary_source: 'subscription' | 'legacy_link' | 'bd_seed'
+  sources: Array<{ source, source_row_id, tier }>
+  tier: 'verified' | 'pro' | 'studio'   // highest-rank wins
+  user_id: string | null
+  email: string | null
+  bd_member_id: string | null
+  earliest_activation_at: string        // min(sub.created_at, link.created_at, seed.bd_signup_date)
+  merge_reason: 'user_id' | 'claimed_user_id' | 'email' | 'bd_member_id' | null
+}
 ```
 
-Registrations is demoted: removed from headline tiles, kept as a small chart in the supporting section and exposed in the reconciliation page.
+### Dedupe ladder
 
-## 4. Reconciliation-first rollout (no calc changes until reconciliation proves the numbers)
+Walk subs → legacy_links → bd_seeds. For each candidate, look up survivors by, in order:
 
-Order of operations is strict:
+1. `user_id` (subs) / `claimed_user_id` (legacy, bd)
+2. lower-cased `email` (subs via `authEmailById`, legacy via `legacy_stripe_link.email`, bd via `bd_member_seed.email`)
+3. `bd_member_id` (legacy ↔ bd only)
 
-1. **Phase A — Reconciliation parity.** Refactor `reconciliation.functions.ts` to import from `metrics-definitions.ts`. Add Net Member Growth section (Joined table + Churned table, each with included/excluded rows and reasons). Verify on `/admin/reconciliation` that the four KPIs match the *current* overview byte-for-byte before touching the overview.
-2. **Phase B — Overview swap.** Change `getAdminOverview` to call the same `metrics-definitions.ts` functions. Numbers must not move. Swap the tile layout to the four canonical tiles. Move Registrations into the supporting charts block.
-3. **Phase C — Forecast horizon.** Add the horizon selector to the Projected Cash Due tile, plumb a second window through `getAdminOverview`, mirror it in reconciliation's Forecast section.
-4. **Phase D — Churn wiring.** Confirm `churn_lifecycle` terminal transitions are timestamped; if not, add a `churned_at` column (set by the existing stage trigger) so the Churned half of Net Member Growth is row-traceable.
+If matched → merge into existing survivor, record `merge_reason`, append to `sources`, upgrade `tier` if higher rank, keep earliest `earliest_activation_at`, and emit a `rawRow` with `merged_into_member_id` set.
+If no match → create new survivor.
 
-## Dashboard principles (enforced in code review)
+### `rawRows`
 
-- One canonical business definition — lives in `metrics-definitions.ts`.
-- One source of truth — listed in the table above.
-- One reconciliation table per KPI — Active Members, Revenue Received, Projected Cash Due (already exists), Net Member Growth (new).
-- Every number traceable — `included_in_total` + `exclusion_reason` on every supporting row.
-- No duplicate business logic — `getAdminOverview` and `getXxxReconciliation` both call the shared module; lint rule (or PR check) forbids re-implementing tier/price/window math elsewhere.
-- Historical and forecast windows never share the same selector.
+One row per input record (every sub, every link, every seed), tagged with:
+- `source`
+- `included_in_total: boolean`
+- `exclusion_reason: string | null` (e.g. `"subscription status=canceled"`, `"legacy_link access_expires_at in past"`, `"bd_next_due_date in past"`)
+- `merge_reason: string | null`
+- `merged_into_member_id: string | null`
+- `member_id: string | null` (the surviving member this row contributes to, if any)
 
-## Technical notes
+`counts.duplicates_removed = (active sub rows) + (active legacy rows) + (active bd rows) − final_active_members`.
 
-- `metrics-definitions.ts` is server-only logic but lives in `src/lib/admin/` (not `*.server.ts`) so both `overview.functions.ts` and `reconciliation.functions.ts` can import it. It contains no Supabase client — callers pass in already-fetched rows so the same pure functions power both endpoints.
-- Forecast horizon state is a URL search param on `/admin` (e.g. `?fcast=next_30d`), validated with `fallback(z.enum([...]), 'next_30d')`. The historical `period` param stays as-is.
-- Churn detection: `churn_lifecycle.stage` transitions to `churned`/`final` — add `churned_at timestamptz` if missing, populated by the existing stage-transition trigger. Until that exists, Net Member Growth's "Churned" half reads zero with a "data not yet wired" badge instead of guessing.
-- No new KPIs are added. Forecast Revenue is renamed to Projected Cash Due to match the operational framing.
-- Reconciliation deep-links from each tile (`/admin/reconciliation#active-members` etc.) — same pattern as today.
+## 2. Wire into admin overview
 
-## Out of scope
+`src/lib/admin/overview.functions.ts`:
 
-- New visualisations or charts beyond moving Registrations into the supporting block.
-- Changing the production renewal engine (forecast must mirror it, not modify it).
-- Cohort/LTV/MRR analytics — those are future, separate KPIs.
+- Fetch `subscriptions`, `legacy_stripe_link`, `bd_member_seed` plus an `auth.users` email map (admin client) — same `await import('@/integrations/supabase/client.server')` pattern already used in this file.
+- Call `buildActivePayingMemberCollection(...)`.
+- `totalMembers = counts.final_active_members`.
+- `mix` recomputes from `members[].tier`.
+- `membersSeries` keyed by `earliest_activation_at` per member (replaces the current subs-only `joinsByDay`). Forecast logic, revenue, joined/churned all unchanged.
+
+`src/lib/admin/metrics-definitions.ts` re-exports the predicates from `@/lib/members/active-paying-member` so existing imports keep working; internal duplication of the rules is removed.
+
+## 3. Wire into reconciliation
+
+`src/lib/admin/reconciliation.functions.ts`:
+
+- New `getActiveMembersReconciliation()` that runs the same fetch + `buildActivePayingMemberCollection` and returns `{ counts, members, rawRows }`.
+
+`src/routes/admin_.reconciliation.tsx`:
+
+- New **Active Members** section (first under `#members`) with:
+  - Summary lines:
+    - `Stripe subscriptions  …  X`
+    - `Legacy members        …  X`
+    - `BD migrated members   …  X`
+    - `Duplicates removed    …  X`
+    - `Final Active Members  …  X`
+  - Three tables grouped by source. Each row shows `included/excluded` badge, `exclusion_reason`, `merge_reason`, link to surviving `member_id`.
+- The "Final Active Members" number is asserted (visually) to equal the `/admin` Active Members tile.
+
+## 4. Wire into renewal engine
+
+`src/routes/api/public/hooks/legacy-renewal.ts`:
+
+- Replace its in-file "is this BD seed still active?" / "is this legacy link still active?" checks with `isActiveBdSeed` / `isActiveLegacyLink` imported from `@/lib/members/active-paying-member`.
+- No behaviour change — just unifies the predicate. The renewal engine and dashboard can no longer drift.
+
+## 5. Out of scope (explicitly unchanged)
+
+- Revenue Received, Projected Cash Due, Net Member Growth definitions and calculations.
+- Database schema (no migrations).
+- Renewal engine scheduling/cron behaviour.
+- Subscriptions/legacy_link/bd_seed table contents.
+
+## Acceptance
+
+1. `grep -r "ACTIVE_STATUSES\|isActiveSubscription\|bd_next_due_date" src` shows the predicates exist in exactly one implementation (the shared module); other files only import them.
+2. `/admin` Active Members KPI === `/admin/reconciliation` Final Active Members (asserted via Playwright screenshot).
+3. Reconciliation page lists every subscription / legacy_link / bd_seed row with included/excluded and merge reasons; sum check `(included subs) + (included legacy) + (included bd) − duplicates_removed = final`.
+4. Pick 3 users present in both `subscriptions` and `bd_member_seed` → each appears in exactly one survivor row; the other source rows show `merged_into_member_id` with the correct `merge_reason`.
+5. Renewal hook still passes its existing smoke test; revenue/forecast/growth numbers unchanged before/after.
