@@ -177,15 +177,20 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     // Filter to professionals whose auth user is email-confirmed (actually
     // signed up). Invited-but-unaccepted shells from `generateLink({ type:
     // 'invite' })` are hidden — they are not members yet.
-    const { data: confirmedRows, error: confirmedErr } = await supabaseAdmin
-      .rpc('get_confirmed_professional_ids', { _ids: allIds });
-    if (confirmedErr) throw confirmedErr;
-    const confirmedSet = new Set(((confirmedRows ?? []) as string[]).map(String));
-    const ids = allIds.filter(id => confirmedSet.has(id));
+    // Also exclude platform admins — they're managed at /admin/team.
+    const [confirmedRes, adminRoleRes] = await Promise.all([
+      supabaseAdmin.rpc('get_confirmed_professional_ids', { _ids: allIds }),
+      supabaseAdmin.from('user_roles').select('user_id').eq('role', 'admin'),
+    ]);
+    if (confirmedRes.error) throw confirmedRes.error;
+    if (adminRoleRes.error) throw adminRoleRes.error;
+    const confirmedSet = new Set(((confirmedRes.data ?? []) as string[]).map(String));
+    const adminIdSet = new Set(((adminRoleRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
+    const ids = allIds.filter(id => confirmedSet.has(id) && !adminIdSet.has(id));
     if (ids.length === 0) {
       return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
     }
-    const prosFiltered = (pros ?? []).filter(p => confirmedSet.has(p.id));
+    const prosFiltered = (pros ?? []).filter(p => confirmedSet.has(p.id) && !adminIdSet.has(p.id));
 
     // Chunk `.in('id', ids)` to keep request URLs under the edge worker URL
     // length limit. A single 400+ UUID list overflows and the request fails
