@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/public/hooks/legacy-renewal")({
             if (body.environment === "sandbox" || body.environment === "live") {
               environment = body.environment;
             }
-            if (typeof body.limit === "number" && body.limit > 0 && body.limit <= 200) {
+            if (typeof body.limit === "number" && body.limit > 0 && body.limit <= 1000) {
               limit = body.limit;
             }
           }
