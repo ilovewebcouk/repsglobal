@@ -84,10 +84,18 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
 
     const adminIds = new Set(((adminRolesRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
     // KPIs exclude platform admins so the totals match the Professionals list.
+    // Only subtract admins who are actually counted by
+    // count_confirmed_professionals — i.e. they have a non-demo professionals
+    // row AND an email-confirmed auth user. Subtracting every admin role
+    // would under-count when an admin has no pro row (e.g. Scott).
     const { data: adminPros } = adminIds.size
-      ? await supabaseAdmin.from('professionals').select('id, verification').in('id', Array.from(adminIds))
-      : { data: [] as Array<{ id: string; verification: string | null }> };
-    const adminProRows = (adminPros ?? []) as Array<{ id: string; verification: string | null }>;
+      ? await supabaseAdmin
+          .from('professionals')
+          .select('id, verification, is_demo, auth_user:auth_users!inner(email_confirmed_at)')
+          .in('id', Array.from(adminIds))
+      : { data: [] as Array<{ id: string; verification: string | null; is_demo: boolean | null; auth_user: { email_confirmed_at: string | null } | null }> };
+    const adminProRows = ((adminPros ?? []) as Array<{ id: string; verification: string | null; is_demo: boolean | null; auth_user: { email_confirmed_at: string | null } | null }>)
+      .filter(r => !r.is_demo && r.auth_user?.email_confirmed_at);
     const adminProCount = adminProRows.length;
     const adminVerifiedCount = adminProRows.filter(r => r.verification === 'verified').length;
 
