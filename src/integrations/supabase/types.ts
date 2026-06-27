@@ -3878,6 +3878,13 @@ export type Database = {
         Args: { _only_published?: boolean; _verification?: string }
         Returns: number
       }
+      count_confirmed_signups: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          day: string
+          signups: number
+        }[]
+      }
       credit_tier_policy: {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: {
