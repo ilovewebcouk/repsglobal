@@ -45,7 +45,7 @@ export const peekRenewalToken = createServerFn({ method: "POST" })
     if (!rows || (Array.isArray(rows) && rows.length === 0)) {
       return { ok: false, reason: "invalid" };
     }
-    const r = (Array.isArray(row) ? row[0] : row) as {
+    const r = (Array.isArray(rows) ? rows[0] : rows) as {
       user_id: string; purpose: TokenPurpose; intended_tier: string; expires_at: string;
     };
     // Best-effort name lookup
