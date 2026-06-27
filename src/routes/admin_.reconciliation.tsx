@@ -271,8 +271,8 @@ function RevenueTable({ data }: { data: RevenueReportDTO }) {
           </thead>
           <tbody>
             {data.groups.map((g) => (
-              <>
-                <tr key={`h-${g.payment_key}`} className="border-t border-white/10 bg-white/[0.02]">
+              <Fragment key={g.payment_key}>
+                <tr className="border-t border-white/10 bg-white/[0.02]">
                   <td colSpan={9} className="py-2 pr-3 text-[11px] text-white/55">
                     Group <code>{g.payment_key}</code> · canonical {fmtPounds(g.canonical_amount)}
                   </td>
@@ -280,7 +280,7 @@ function RevenueTable({ data }: { data: RevenueReportDTO }) {
                 {g.rows.map((r) => (
                   <RevenueRowView key={r.id} r={r} />
                 ))}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
