@@ -363,10 +363,11 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
   }[]).filter(
     (r) =>
       !isActiveLegacyLink(
-        { access_expires_at: r.access_expires_at },
+        { bd_member_id: r.bd_member_id, access_expires_at: r.access_expires_at },
         nowIso,
       ),
   );
+
 
 
   // Pull admin cohort overrides for the rows we're about to process.
