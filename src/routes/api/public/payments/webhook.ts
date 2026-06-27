@@ -115,10 +115,13 @@ async function resolveUserId(
   // 5. customer.email → auth.users (collision-guarded: exactly one match)
   const email = (stripeCustomerEmail ?? "").trim().toLowerCase();
   if (email) {
-    const { data: matches } = await supabaseAdmin.rpc("get_user_ids_by_email", {
+    const { data: matches } = await (supabaseAdmin.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: Array<{ user_id: string }> | null }>)("get_user_ids_by_email", {
       _email: email,
     });
-    const ids = (matches ?? []) as Array<{ user_id: string }>;
+    const ids = matches ?? [];
     if (ids.length === 1) {
       const userId = ids[0].user_id;
       await backfillStripeCustomerMetadata(stripe, customerId, userId);
