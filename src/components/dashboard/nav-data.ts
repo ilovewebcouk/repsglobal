@@ -1,4 +1,5 @@
 import {
+  Activity,
   AlertCircle,
   Apple,
   AreaChart,
