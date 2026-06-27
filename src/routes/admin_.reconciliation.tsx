@@ -89,6 +89,7 @@ function ReconciliationPage() {
   const revFn = useServerFn(getRevenueReconciliation);
   const memFn = useServerFn(getMembershipReconciliation);
   const regFn = useServerFn(getRegistrationsReconciliation);
+  const fcastFn = useServerFn(getForecastReconciliation);
 
   const revenue = useQuery({
     queryKey: ["admin-recon", "revenue", range.from, range.to],
@@ -101,6 +102,10 @@ function ReconciliationPage() {
   const regs = useQuery({
     queryKey: ["admin-recon", "regs", range.from, range.to],
     queryFn: () => regFn({ data: { from: range.from, to: range.to } }),
+  });
+  const forecast = useQuery({
+    queryKey: ["admin-recon", "forecast"],
+    queryFn: () => fcastFn(),
   });
 
   return (
