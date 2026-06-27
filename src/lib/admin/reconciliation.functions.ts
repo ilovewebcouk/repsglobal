@@ -89,25 +89,10 @@ export interface RevenueReportDTO {
   groups: RevenueGroup[];
 }
 
-export interface MemberRow {
-  user_id: string;
-  email: string | null;
-  subscription_id: string;
-  tier: string | null;
-  status: string | null;
-  environment: string | null;
-  created_at: string | null;
-  current_period_end: string | null;
-  cancel_at_period_end: boolean | null;
-  cancelled_at: string | null;
-  included_in_member_count: boolean;
-  exclusion_reason: string | null;
-}
-
-export interface MemberReportDTO {
-  total_members: number; // distinct users counted by dashboard
-  rows: MemberRow[];
-}
+// (Legacy MemberRow / MemberReportDTO + getMembershipReconciliation removed —
+// superseded by the canonical Active Paying Member model in
+// src/lib/members/active-paying-member.ts and the reconciliation surfaces
+// fed by getReconciliationOverview.)
 
 export interface RegistrationRow {
   user_id: string;
