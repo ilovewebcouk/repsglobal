@@ -7,9 +7,7 @@ import {
   londonDayKey,
 } from "./overview-period";
 import {
-  ACTIVE_STATUSES,
   COUNTED_TIERS,
-  TIER_RANK,
   TIER_RENEWAL_PENCE,
   LEGACY_AMOUNT_PENCE,
   COUNTED_PAYMENT_EVENT_TYPES,
@@ -17,6 +15,11 @@ import {
   asString,
   type ForecastHorizon,
 } from "./metrics-definitions";
+import {
+  buildActivePayingMemberCollection,
+  isActiveSubscription,
+} from "@/lib/members/active-paying-member";
+
 
 const Input = z.object({
   // Historical window — drives Active Members, Revenue Received,
