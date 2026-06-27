@@ -97,11 +97,11 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     const { data: legacyLinksAll } = await supabase
       .from("legacy_stripe_link")
-      .select("bd_member_id, email, claimed_user_id, access_expires_at, created_at, stripe_customer_id");
+      .select("bd_member_id, email, access_expires_at, created_at, stripe_customer_id");
 
     const { data: bdSeedsAll } = await supabase
       .from("bd_member_seed")
-      .select("bd_member_id, email, claimed_user_id, bd_next_due_date, bd_signup_date");
+      .select("bd_member_id, email, claimed_user_id, bd_next_due_date, legacy_signup_at");
 
     // Email lookup for subs → email (used for cross-source dedupe).
     const authEmailById = new Map<string, string>();
@@ -127,37 +127,31 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     const nowIso = new Date().toISOString();
     const activeCollection = buildActivePayingMemberCollection({
-      subs: (subsRaw ?? []).map((s) => ({
-        id: s.id,
-        user_id: s.user_id ?? null,
-        tier: s.tier ?? null,
-        status: s.status ?? null,
-        environment: s.environment ?? null,
-        created_at: s.created_at ?? null,
-        current_period_end: s.current_period_end ?? null,
+      subs: ((subsRaw ?? []) as Array<Record<string, unknown>>).map((s) => ({
+        id: String(s.id),
+        user_id: (s.user_id as string | null) ?? null,
+        tier: (s.tier as string | null) ?? null,
+        status: (s.status as string | null) ?? null,
+        environment: (s.environment as string | null) ?? null,
+        created_at: (s.created_at as string | null) ?? null,
+        current_period_end: (s.current_period_end as string | null) ?? null,
       })),
-      legacyLinks: (legacyLinksAll ?? []).map((l) => ({
-        bd_member_id: (l as { bd_member_id: number | string | null })
-          .bd_member_id,
-        email: (l as { email?: string | null }).email ?? null,
-        claimed_user_id: (l as { claimed_user_id?: string | null })
-          .claimed_user_id ?? null,
-        access_expires_at: (l as { access_expires_at: string | null })
-          .access_expires_at,
-        created_at: (l as { created_at?: string | null }).created_at ?? null,
-        stripe_customer_id: (l as { stripe_customer_id?: string | null })
-          .stripe_customer_id ?? null,
-      })),
-      bdSeeds: (bdSeedsAll ?? []).map((b) => ({
-        bd_member_id: (b as { bd_member_id: number | string | null })
-          .bd_member_id,
-        email: (b as { email?: string | null }).email ?? null,
-        claimed_user_id: (b as { claimed_user_id?: string | null })
-          .claimed_user_id ?? null,
-        bd_next_due_date: (b as { bd_next_due_date: string | null })
-          .bd_next_due_date,
-        bd_signup_date: (b as { bd_signup_date?: string | null })
-          .bd_signup_date ?? null,
+      legacyLinks: ((legacyLinksAll ?? []) as Array<Record<string, unknown>>).map(
+        (l) => ({
+          bd_member_id: (l.bd_member_id as number | string | null) ?? null,
+          email: (l.email as string | null) ?? null,
+          claimed_user_id: null, // legacy_stripe_link has no user_id column
+          access_expires_at: (l.access_expires_at as string | null) ?? null,
+          created_at: (l.created_at as string | null) ?? null,
+          stripe_customer_id: (l.stripe_customer_id as string | null) ?? null,
+        }),
+      ),
+      bdSeeds: ((bdSeedsAll ?? []) as Array<Record<string, unknown>>).map((b) => ({
+        bd_member_id: (b.bd_member_id as number | string | null) ?? null,
+        email: (b.email as string | null) ?? null,
+        claimed_user_id: (b.claimed_user_id as string | null) ?? null,
+        bd_next_due_date: (b.bd_next_due_date as string | null) ?? null,
+        bd_signup_date: (b.legacy_signup_at as string | null) ?? null,
       })),
       authEmailById,
       nowIso,
@@ -169,6 +163,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       pro: activeCollection.counts.by_tier.pro,
       studio: activeCollection.counts.by_tier.studio,
     };
+
 
 
     // -------------------------------------------------------------------
