@@ -3929,6 +3929,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      erase_user_pii: { Args: { _user_id: string }; Returns: Json }
       fan_out_review_notifications: {
         Args: { _professional_id: string; _review_id: string }
         Returns: undefined
