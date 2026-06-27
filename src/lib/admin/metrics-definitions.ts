@@ -10,16 +10,18 @@
 //   * Historical vs forecast windows are *never* shared.
 
 // --- Subscription predicates -------------------------------------------------
-export const ACTIVE_STATUSES = ["active", "trialing"] as const;
-export const COUNTED_TIERS = ["verified", "pro", "studio"] as const;
+// The canonical definitions live in `src/lib/members/active-paying-member.ts`.
+// Re-exported here so existing admin callers keep working without depending on
+// the dashboard layer for membership rules.
+export {
+  ACTIVE_SUBSCRIPTION_STATUSES as ACTIVE_STATUSES,
+  COUNTED_TIERS,
+  TIER_RANK,
+  isActiveSubscription,
+  isActiveLegacyLink,
+  isActiveBdSeed,
+} from "@/lib/members/active-paying-member";
 
-// Pro > Studio > Verified for "which sub represents the user"
-// (higher rank wins on dedupe). Matches historical overview behaviour.
-export const TIER_RANK: Record<string, number> = {
-  studio: 3,
-  pro: 2,
-  verified: 1,
-};
 
 // --- Renewal pricing (forecast only) ----------------------------------------
 // Pence per tier per renewal cycle. Mirrors src/lib/billing.ts.
