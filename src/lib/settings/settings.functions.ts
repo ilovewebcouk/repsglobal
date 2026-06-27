@@ -322,30 +322,60 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Best-effort: cancel any active Stripe subscription before deleting.
+    // Cancel any active Stripe subscription before deleting. We refuse to
+    // delete the account if Stripe rejects the cancel for any reason other
+    // than the subscription already being gone — otherwise billing silently
+    // continues against a deleted user (D-11.2).
     try {
       const { data: subs } = await supabaseAdmin
         .from("subscriptions")
-        .select("stripe_subscription_id, environment")
+        .select("stripe_subscription_id, environment, status")
         .eq("user_id", userId);
       if (subs && subs.length > 0) {
         const { createStripeClient } = await import("@/lib/billing/stripe.server");
+        const cancelFailures: string[] = [];
         for (const s of subs) {
-          const subRow = s as { stripe_subscription_id: string | null; environment: string | null };
+          const subRow = s as {
+            stripe_subscription_id: string | null;
+            environment: string | null;
+            status: string | null;
+          };
           if (!subRow.stripe_subscription_id) continue;
+          // Skip statuses that are already terminal in Stripe.
+          if (subRow.status && ["canceled", "incomplete_expired"].includes(subRow.status)) {
+            continue;
+          }
           const env = (subRow.environment === "live" ? "live" : "sandbox") as "live" | "sandbox";
           try {
             const stripe = createStripeClient(env);
             await stripe.subscriptions.cancel(subRow.stripe_subscription_id);
           } catch (e) {
-            // Swallow — Stripe will be cleaned up by Stripe TTL eventually.
-            console.warn("[deleteMyAccount] stripe cancel failed", e);
+            const err = e as { code?: string; statusCode?: number; message?: string };
+            // "resource_missing" / 404 means Stripe no longer has the sub — safe to ignore.
+            if (err?.code === "resource_missing" || err?.statusCode === 404) {
+              continue;
+            }
+            console.error(
+              "[deleteMyAccount] stripe cancel failed",
+              subRow.stripe_subscription_id,
+              err?.code,
+              err?.message,
+            );
+            cancelFailures.push(subRow.stripe_subscription_id);
           }
+        }
+        if (cancelFailures.length > 0) {
+          throw new Error(
+            "We couldn't cancel your active subscription with our payment provider. Please contact support so we can stop billing before deleting your account.",
+          );
         }
       }
     } catch (e) {
+      // Re-throw the user-facing message; swallow only unexpected lookup errors.
+      if (e instanceof Error && e.message.startsWith("We couldn't cancel")) throw e;
       console.warn("[deleteMyAccount] stripe lookup failed", e);
     }
+
 
     // GDPR erasure: anonymise PII in tables not covered by auth.users FK
     // cascade (enquiries, reviews, support_messages, support_tickets,
