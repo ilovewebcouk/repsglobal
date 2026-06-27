@@ -364,6 +364,32 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       throw new Error("Erasure failed — account not deleted. Please contact support.");
     }
 
+    // Drop the user's storage objects across every bucket where they upload.
+    // (auth.users cascade does NOT clean storage.objects.)
+    const buckets = [
+      "avatars",
+      "pro-photos",
+      "identity-docs",
+      "insurance-docs",
+      "verification-docs",
+      "support-attachments",
+      "cpd-certificates",
+    ];
+    await Promise.all(
+      buckets.map(async (bucket) => {
+        try {
+          const { data: files } = await supabaseAdmin.storage
+            .from(bucket)
+            .list(userId, { limit: 1000 });
+          if (!files || files.length === 0) return;
+          const paths = files.map((f) => `${userId}/${f.name}`);
+          await supabaseAdmin.storage.from(bucket).remove(paths);
+        } catch (e) {
+          console.warn(`[deleteMyAccount] storage cleanup failed for ${bucket}`, e);
+        }
+      }),
+    );
+
     // Auth user delete cascades via FKs.
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw error;
