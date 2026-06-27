@@ -60,7 +60,7 @@ export const sendProfessionalInvite = createServerFn({ method: 'POST' })
       templateData: {
         inviteeName: data.full_name ?? null,
         inviterName,
-        planLabel: data.plan === 'verified' ? 'Verified (£99/yr)' : 'Pro Founding (£59/mo)',
+        planLabel: data.plan === 'verified' ? 'Core (£99/yr)' : 'Pro Founding (£59/mo)',
         acceptUrl: inviteUrl,
       },
     });

@@ -461,7 +461,7 @@ function DiscoverySection() {
           <div className="space-y-4">
             {[
               { icon: Search, title:"Filter by what matters", body:"Location, profession, specialism, services offered, in-person vs online — not vanity metrics." },
-              { icon: ShieldCheck, title:"Verified-only by default", body:"Unverified accounts don't pollute the top of the page. You're not buried under noise." },
+              { icon: ShieldCheck, title:"Core-only by default", body:"Unverified accounts don't pollute the top of the page. You're not buried under noise." },
               { icon: Star, title:"Real-review ranking", body:"Reviews come from clients with a verified session record. They count toward how prospects rank you." },
               { icon: Tag, title:"Specialism-led shortlists", body:"Postnatal, rehab, strength, older adults — clients self-qualify before they enquire." },
             ].map(({ icon: Icon, title, body }) => (
@@ -664,7 +664,7 @@ function SegmentsSection() {
 }
 
 // -----------------------------------------------------------------------------
-// 8. Verified vs Pro
+// 8. Core vs Pro
 // -----------------------------------------------------------------------------
 
 function TierComparisonSection() {
@@ -672,14 +672,14 @@ function TierComparisonSection() {
     <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Verified vs Pro"
+          eyebrow="Core vs Pro"
           heading="Verified makes you visible. Pro turns visibility into a working business."
           lede="Visibility is included in every tier. Pro layers on the tools that convert an enquiry into a paying client."
         />
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           <TierCard
-            badge="Verified"
+            badge="Core"
             price="£99 / year"
             blurb="For professionals who want a trusted public register profile and enquiry inbox."
             cta={{ to:"/pricing", label:"Start with Verified" }}
@@ -698,7 +698,7 @@ function TierComparisonSection() {
             <div className="min-w-[420px]">
               <div className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
                 <span>Visibility capability</span>
-                <span className="text-center">Verified</span>
+                <span className="text-center">Core</span>
                 <span className="text-center">Pro</span>
               </div>
               {COMPARISON_ROWS.map((row, i) => (

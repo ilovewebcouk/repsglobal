@@ -15,7 +15,7 @@ export type AccountContext = {
   isAdmin: boolean;
   isProfessional: boolean;
   isClient: boolean;
-  /** Primary user-facing label, e.g. "Pro", "Verified", "Admin". */
+  /** Primary user-facing label, e.g. "Pro", "Core", "Admin". */
   roleLabel: string;
   avatarUrl: string | null;
   signOut: () => Promise<void>;
@@ -30,7 +30,7 @@ function labelForRole(role: AccountRole): string {
     case "pro":
       return "Pro";
     case "verified":
-      return "Verified";
+      return "Core";
     case "client":
       return "Client";
     default:

@@ -938,7 +938,7 @@ function UseCasesSection() {
 }
 
 // -----------------------------------------------------------------------------
-// 10. Verified vs Pro
+// 10. Core vs Pro
 // -----------------------------------------------------------------------------
 
 function TierComparisonSection() {
@@ -946,14 +946,14 @@ function TierComparisonSection() {
     <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Verified vs Pro"
+          eyebrow="Core vs Pro"
           heading="Verified gets you trusted. Pro grows the business behind the profile."
           lede="Growth is a Pro pillar. Verified gives you the public credibility, visibility and review collection. Pro adds the growth system — insights, retention signals, conversion data, referral prompts, reactivation queue and AI growth actions."
         />
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           <TierCard
-            badge="Verified"
+            badge="Core"
             price="£99 / year"
             blurb="Public verified profile, directory presence and review collection. No business dashboard, no conversion insights, no retention or growth tooling."
             cta={{ to: "/features/visibility", label: "See what Verified covers" }}
@@ -972,7 +972,7 @@ function TierComparisonSection() {
             <div className="min-w-[420px]">
               <div className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
                 <span>Growth capability</span>
-                <span className="text-center">Verified</span>
+                <span className="text-center">Core</span>
                 <span className="text-center">Pro</span>
               </div>
               {COMPARISON_ROWS.map((row, i) => (

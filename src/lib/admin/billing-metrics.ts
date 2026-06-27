@@ -31,7 +31,7 @@ export const TIER_CADENCE_MONTHS: Record<Tier, number> = {
 };
 
 export const TIER_LABEL: Record<Tier, string> = {
-  verified: "Verified",
+  verified: "Core",
   pro: "Pro",
   studio: "Studio",
 };

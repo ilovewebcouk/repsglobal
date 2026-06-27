@@ -953,7 +953,7 @@ function AiAssistSection() {
 }
 
 // -----------------------------------------------------------------------------
-// 15. Verified vs Pro
+// 15. Core vs Pro
 // -----------------------------------------------------------------------------
 
 function TierComparisonSection() {
@@ -961,14 +961,14 @@ function TierComparisonSection() {
     <section>
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Verified vs Pro"
+          eyebrow="Core vs Pro"
           heading="Verified makes you findable. Pro lets you deliver."
           lede="Coaching is a Pro pillar. Verified gives you a trusted public profile, reviews and visibility — the front-of-house. Pro adds the full delivery stack: programmes, nutrition, habits, check-ins, progress, messaging, client view, automations and AI assist."
         />
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           <TierCard
-            badge="Verified"
+            badge="Core"
             price="£99 / year"
             blurb="Public verified profile, directory presence, reviews and a basic enquiry inbox. No programme builder, nutrition, check-ins, progress tracking or client view."
             cta={{ to:"/features/visibility", label:"See what Verified covers" }}
@@ -987,7 +987,7 @@ function TierComparisonSection() {
             <div className="min-w-[420px]">
               <div className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
                 <span>Coaching capability</span>
-                <span className="text-center">Verified</span>
+                <span className="text-center">Core</span>
                 <span className="text-center">Pro</span>
               </div>
               {COMPARISON_ROWS.map((row, i) => (

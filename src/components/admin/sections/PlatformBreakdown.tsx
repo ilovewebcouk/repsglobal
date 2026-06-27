@@ -108,7 +108,7 @@ export function PlatformBreakdown() {
         <div className="grid grid-cols-[140px_1fr] items-center gap-4">
           <BreakdownDonut />
           <ul className="space-y-2.5 text-[12px]">
-            <BreakdownRowItem color="var(--reps-green)" label="Verified" count="18,542" pct="74.5%" />
+            <BreakdownRowItem color="var(--reps-green)" label="Core" count="18,542" pct="74.5%" />
             <BreakdownRowItem color="var(--reps-orange)" label="Pending" count="3,482" pct="14.0%" />
             <BreakdownRowItem color="var(--reps-red)" label="Suspended" count="1,852" pct="7.4%" />
             <BreakdownRowItem color="#5D6573" label="Expired" count="1,016" pct="4.1%" />
