@@ -1,49 +1,36 @@
-## Goal
 
-Stop showing admin accounts (Scott et al.) in the Professionals register, and give you a dedicated place to grant or revoke the admin role.
+## What's wrong
 
-## 1. Exclude admins from `/admin/professionals`
+1. **Remove button is invisible.** The "Actions" cell uses `<Button variant="outline" size="sm">` on the dark panel — it renders as a near-blank pill. You can't see the icon or label.
+2. **Grant admin wrongly requires an existing REPS account.** The handler does `auth.admin.listUsers` and throws `No REPS account found…` if the email isn't already registered. Admins are platform staff, not customers — they shouldn't have to sign up as a pro first.
 
-In `src/lib/admin/professionals.functions.ts → listProfessionals`:
+## Fix
 
-- After the existing `is_demo` + email-confirmed filter, fetch the admin `user_id`s once (`user_roles where role='admin'`) and drop those IDs from the result set in every tab.
-- Apply the same exclusion to `countProfessionals` / KPI helpers in the same file so the totals match the rows.
-- Remove the now-dead `'admin'` branch from the `status` mapping (admins never appear here anymore) and from the `AdminProRow` status union.
+### 1. Remove button visibility (`src/routes/admin_.team.tsx`)
+- Swap the row action from `variant="outline"` to a clearly destructive style: red text + subtle red border/hover (`border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200`).
+- Keep the same disabled-with-tooltip treatment for the self row, but use the same red token at reduced opacity so the column visually reads as an action.
 
-Result: Scott, and any future admin, never show up under any tab on `/admin/professionals` — including Demos.
+### 2. Grant admin to any email (`src/lib/admin/team.functions.ts`)
+Rewrite `grantAdmin` so it works whether or not the email already exists:
 
-## 2. New page: `/admin/team`
+- Look the email up via `auth.admin.listUsers` (same pagination as today).
+- **If found** → insert `user_roles` row as today (idempotent on the unique key).
+- **If not found** → call `supabaseAdmin.auth.admin.inviteUserByEmail(email, { redirectTo: '<origin>/auth/callback' })`. Use the returned `user.id`, then insert `user_roles` row for that id. Result: the moment they accept the invite and set a password, they're already an admin.
+- Audit log entry records `admin.grant` with `{ invited: true|false, email }` so we can tell new invites apart from promotions.
+- Update the error message: only throw when the invite itself fails (e.g. invalid email, suppressed address).
 
-Create `src/routes/admin_.team.tsx` (role-gated to `admin`, same pattern as `admin_.settings.tsx`) wired into the admin sidebar as **Team** under Settings.
-
-UI (single panel, dark dashboard styling matching other admin pages):
-
-- **Current admins** table: avatar, full name, email, "Admin since" date, Remove button.
-- **Add admin** row: email input + "Grant admin" button. On success the new admin appears at the top of the table.
-- Inline confirmation dialog on Remove. Self-removal is blocked with a tooltip ("You can't remove your own admin access — ask another admin").
-
-## 3. Backend: `src/lib/admin/team.functions.ts`
-
-Three admin-gated server functions, all using `supabaseAdmin` inside the handler and writing an entry to `admin_audit_log`:
-
-- `listAdmins()` → returns `[{ user_id, email, full_name, avatar_url, granted_at }]`. Joins `user_roles` (role='admin') → `auth.users` (email, created_at) → `profiles` (name/avatar). `granted_at` uses `user_roles.created_at` if present, otherwise `auth.users.created_at`.
-- `grantAdmin({ email })` → resolves the user via `supabaseAdmin.auth.admin` list/lookup, inserts `(user_id, 'admin')` into `user_roles` with `ON CONFLICT DO NOTHING`. Returns a clear error if no user exists with that email (no auto-invite in v1).
-- `revokeAdmin({ userId })` → refuses if `userId === context.userId`; otherwise deletes the `user_roles` row.
-
-All three call the existing `assertAdmin(context)` guard already used in `professionals.functions.ts`.
-
-## 4. Sidebar / nav
-
-Add a **Team** link in `DashboardShell` admin nav, grouped next to **Settings**. No other admin routes change.
-
-## Out of scope
-
-- No new roles (moderator, support, etc.) — admin-only management for now.
-- No email invite flow for non-existent users — that comes later if you want it. v1 requires the person to already have a REPS account; you grant admin to their existing user.
-- No changes to `/admin` KPIs beyond the Professionals total flowing through naturally from step 1.
+### 3. UI copy + state (`src/routes/admin_.team.tsx`)
+- Helper text under "Grant admin": replace "The person must already have a REPS account…" with "Enter their email. If they don't have a REPS account yet, we'll send them an invite to set a password."
+- Toast on success: if the server returns `{ invited: true }`, show "Invite sent to {email}. They'll become an admin as soon as they accept."; otherwise keep the existing "{email} is now an admin."
+- Invited-but-not-yet-accepted admins will appear in the Current admins table with `email` set and `fullName: null` — that already renders correctly via the monogram + "—" fallback. No extra UI needed for v1; we can add a "Pending invite" badge later if you want.
 
 ## Technical notes
 
-- Uses the existing `has_role` / `user_roles` model — no schema changes.
-- `admin_audit_log` already exists; `grant_admin` / `revoke_admin` actions are logged via the existing `log_admin_action` RPC.
-- Adds one new route file, one new functions file, and edits to `professionals.functions.ts` + `DashboardShell` nav.
+- `inviteUserByEmail` creates an `auth.users` row immediately with `email_confirmed_at = null` until they accept. The `user_roles` insert keys off that id, so the role is live the instant they confirm.
+- `redirectTo` must be a same-origin public URL; using `${request origin}/auth/callback` matches the existing OAuth pattern. We'll read origin from `getRequestHeader('origin')` inside the handler with a sensible fallback to `process.env.SITE_URL` if set.
+- No DB migration required — `user_roles` already accepts any `auth.users.id`.
+- No change to `revokeAdmin`, the list query, or the existing `/admin/professionals` admin-exclusion logic.
+
+## Files changed
+- `src/routes/admin_.team.tsx` — destructive Remove button styling, updated helper copy + toast.
+- `src/lib/admin/team.functions.ts` — `grantAdmin` now invites unknown emails and returns `{ invited }`.
