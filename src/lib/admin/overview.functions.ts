@@ -384,10 +384,12 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     // -------------------------------------------------------------------
     const days = enumerateDays(data.from, data.to);
     const joinsByDay = new Map<string, number>();
-    for (const v of perUser.values()) {
-      const key = londonDayKey(v.created_at);
+    for (const m of activeCollection.members) {
+      if (!m.earliest_activation_at) continue;
+      const key = londonDayKey(m.earliest_activation_at);
       joinsByDay.set(key, (joinsByDay.get(key) ?? 0) + 1);
     }
+
     let joinsBefore = 0;
     for (const d of days) joinsBefore += joinsByDay.get(d) ?? 0;
     let running = totalMembers - joinsBefore;
