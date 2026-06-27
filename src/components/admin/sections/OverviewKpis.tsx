@@ -63,7 +63,7 @@ function KpiTile({
   sub: string;
   series: { day: string; value: number }[] | null;
   id: string;
-  reconcileHash?: "revenue" | "members" | "registrations";
+  reconcileHash?: "revenue" | "members" | "registrations" | "forecast";
 }) {
   return (
     <AdminCard>
@@ -143,6 +143,7 @@ export function OverviewKpis({ data }: { data: AdminOverviewDTO }) {
         value={fmtPounds(data.forecastPence)}
         sub="Next 30 days"
         series={data.forecastSeries}
+        reconcileHash="forecast"
       />
       <KpiTile
         id="signups"

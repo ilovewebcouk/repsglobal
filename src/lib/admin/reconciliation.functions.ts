@@ -10,11 +10,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { forecastWindow } from "./overview-period";
 
 const Input = z.object({
   from: z.string(),
   to: z.string(),
 });
+
+// Mirror src/lib/admin/overview.functions.ts (TIER_RENEWAL_PENCE).
+const TIER_RENEWAL_PENCE: Record<string, number> = {
+  verified: 9900,
+  pro: 5900,
+  studio: 14900,
+};
 
 // ---- Shared types -----------------------------------------------------------
 
@@ -540,5 +548,194 @@ export const getRegistrationsReconciliation = createServerFn({ method: "GET" })
       period: { from: data.from, to: data.to },
       total_registrations: total,
       rows,
+    };
+  });
+
+// =============================================================================
+// Forecast revenue reconciliation
+// =============================================================================
+//
+// Mirrors getAdminOverview forecast logic:
+//   * Sum of active+counted subscriptions whose current_period_end falls in
+//     the next-30-days window [now, today+30 London midnight). Amount per
+//     sub = TIER_RENEWAL_PENCE[tier].
+//   * Plus bd_migration rows with status in ('seeded','pending') whose
+//     bd_renewal_date falls in the same window. Amount = bd_price_pence,
+//     fallback to TIER_RENEWAL_PENCE[target_tier].
+
+export interface ForecastSubRow {
+  user_id: string | null;
+  email: string | null;
+  subscription_id: string;
+  tier: string | null;
+  status: string | null;
+  environment: string | null;
+  current_period_end: string | null;
+  forecast_amount_pence: number;
+  included_in_forecast: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface ForecastMigrationRow {
+  id: string;
+  bd_renewal_date: string | null;
+  status: string | null;
+  target_tier: string | null;
+  bd_price_pence: number | null;
+  forecast_amount_pence: number;
+  included_in_forecast: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface ForecastReportDTO {
+  window: { from: string; to: string };
+  tier_pricing_pence: Record<string, number>;
+  total_forecast_pence: number;
+  subs_total_pence: number;
+  migrations_total_pence: number;
+  subs: ForecastSubRow[];
+  migrations: ForecastMigrationRow[];
+}
+
+export const getForecastReconciliation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<ForecastReportDTO> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const fcast = forecastWindow();
+    const fromMs = new Date(fcast.from).getTime();
+    const toMs = new Date(fcast.to).getTime();
+
+    // ---- Subscriptions ------------------------------------------------------
+    const { data: subsRaw, error: sErr } = await supabase
+      .from("subscriptions")
+      .select(
+        "id, user_id, tier, status, environment, current_period_end",
+      )
+      .order("current_period_end", { ascending: true });
+    if (sErr) throw sErr;
+
+    // Email lookup for context.
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const emailByUser = new Map<string, string>();
+    let page = 1;
+    while (page < 50) {
+      const { data: users, error: uErr } =
+        await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (uErr) break;
+      for (const u of users.users) {
+        if (u.email) emailByUser.set(u.id, u.email);
+      }
+      if (users.users.length < 200) break;
+      page += 1;
+    }
+
+    const subs: ForecastSubRow[] = (subsRaw ?? []).map((s) => {
+      let reason: string | null = null;
+      if (s.environment !== "live")
+        reason = `environment="${s.environment}" (forecast requires "live")`;
+      else if (!ACTIVE_STATUSES.includes(s.status ?? ""))
+        reason = `status="${s.status}" (forecast requires active or trialing)`;
+      else if (!COUNTED_TIERS.includes(s.tier ?? ""))
+        reason = `tier="${s.tier}" (forecast counts only verified/pro/studio)`;
+      else if (!s.current_period_end)
+        reason = "current_period_end is null (no renewal date to schedule)";
+      else {
+        const t = new Date(s.current_period_end).getTime();
+        if (t < fromMs || t >= toMs)
+          reason = `current_period_end ${s.current_period_end} is outside the next-30-day window`;
+      }
+      const amount =
+        reason === null ? TIER_RENEWAL_PENCE[s.tier ?? ""] ?? 0 : 0;
+      return {
+        user_id: s.user_id,
+        email: emailByUser.get(s.user_id ?? "") ?? null,
+        subscription_id: s.id,
+        tier: s.tier,
+        status: s.status,
+        environment: s.environment,
+        current_period_end: s.current_period_end,
+        forecast_amount_pence: amount,
+        included_in_forecast: reason === null && amount > 0,
+        exclusion_reason:
+          reason ??
+          (amount === 0
+            ? `no TIER_RENEWAL_PENCE mapping for tier="${s.tier}"`
+            : null),
+      };
+    });
+
+    // ---- bd_migration scheduled renewals ------------------------------------
+    const { data: migs, error: mErr } = await supabase
+      .from("bd_migration")
+      .select("id, bd_renewal_date, status, target_tier, bd_price_pence");
+    if (mErr) throw mErr;
+
+    const migrations: ForecastMigrationRow[] = (migs ?? []).map((m) => {
+      let reason: string | null = null;
+      if (!["seeded", "pending"].includes(m.status ?? ""))
+        reason = `status="${m.status}" (forecast counts only seeded/pending)`;
+      else if (!m.bd_renewal_date)
+        reason = "bd_renewal_date is null";
+      else {
+        const t = new Date(m.bd_renewal_date).getTime();
+        if (t < fromMs || t >= toMs)
+          reason = `bd_renewal_date ${m.bd_renewal_date} is outside the next-30-day window`;
+      }
+      const amount =
+        reason === null
+          ? m.bd_price_pence ??
+            TIER_RENEWAL_PENCE[m.target_tier ?? ""] ??
+            0
+          : 0;
+      return {
+        id: m.id,
+        bd_renewal_date: m.bd_renewal_date,
+        status: m.status,
+        target_tier: m.target_tier,
+        bd_price_pence: m.bd_price_pence,
+        forecast_amount_pence: amount,
+        included_in_forecast: reason === null && amount > 0,
+        exclusion_reason:
+          reason ??
+          (amount === 0
+            ? `no price (bd_price_pence null and no TIER_RENEWAL_PENCE for target_tier="${m.target_tier}")`
+            : null),
+      };
+    });
+
+    const subsTotal = subs.reduce(
+      (acc, r) => acc + (r.included_in_forecast ? r.forecast_amount_pence : 0),
+      0,
+    );
+    const migsTotal = migrations.reduce(
+      (acc, r) => acc + (r.included_in_forecast ? r.forecast_amount_pence : 0),
+      0,
+    );
+
+    // Sort: included first, then by date ascending.
+    const sortRows = <T extends { included_in_forecast: boolean }>(
+      arr: T[],
+      dateOf: (r: T) => string | null,
+    ) =>
+      arr.sort((a, b) => {
+        if (a.included_in_forecast !== b.included_in_forecast)
+          return a.included_in_forecast ? -1 : 1;
+        return (dateOf(a) ?? "").localeCompare(dateOf(b) ?? "");
+      });
+    sortRows(subs, (r) => r.current_period_end);
+    sortRows(migrations, (r) => r.bd_renewal_date);
+
+    return {
+      window: { from: fcast.from, to: fcast.to },
+      tier_pricing_pence: TIER_RENEWAL_PENCE,
+      total_forecast_pence: subsTotal + migsTotal,
+      subs_total_pence: subsTotal,
+      migrations_total_pence: migsTotal,
+      subs,
+      migrations,
     };
   });

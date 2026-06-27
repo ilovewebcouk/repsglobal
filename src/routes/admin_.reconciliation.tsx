@@ -19,10 +19,12 @@ import {
   getRevenueReconciliation,
   getMembershipReconciliation,
   getRegistrationsReconciliation,
+  getForecastReconciliation,
   type RevenueRow,
   type RevenueReportDTO,
   type MemberReportDTO,
   type RegistrationReportDTO,
+  type ForecastReportDTO,
 } from "@/lib/admin/reconciliation.functions";
 
 const searchSchema = z.object({
@@ -87,6 +89,7 @@ function ReconciliationPage() {
   const revFn = useServerFn(getRevenueReconciliation);
   const memFn = useServerFn(getMembershipReconciliation);
   const regFn = useServerFn(getRegistrationsReconciliation);
+  const fcastFn = useServerFn(getForecastReconciliation);
 
   const revenue = useQuery({
     queryKey: ["admin-recon", "revenue", range.from, range.to],
@@ -99,6 +102,10 @@ function ReconciliationPage() {
   const regs = useQuery({
     queryKey: ["admin-recon", "regs", range.from, range.to],
     queryFn: () => regFn({ data: { from: range.from, to: range.to } }),
+  });
+  const forecast = useQuery({
+    queryKey: ["admin-recon", "forecast"],
+    queryFn: () => fcastFn(),
   });
 
   return (
@@ -130,6 +137,9 @@ function ReconciliationPage() {
             <a href="#revenue" className="text-white/70 hover:text-white">
               Revenue
             </a>
+            <a href="#forecast" className="text-white/70 hover:text-white">
+              Forecast
+            </a>
             <a href="#members" className="text-white/70 hover:text-white">
               Members
             </a>
@@ -156,6 +166,28 @@ function ReconciliationPage() {
               <ErrorBox e={revenue.error} />
             ) : revenue.data ? (
               <RevenueTable data={revenue.data} />
+            ) : null}
+          </PCard>
+        </section>
+
+        {/* ---- Forecast -------------------------------------------------- */}
+        <section id="forecast" className="scroll-mt-24">
+          <PCard>
+            <SectionHeader
+              title="Forecast revenue reconciliation"
+              total={
+                forecast.data
+                  ? `${fmtPounds(forecast.data.total_forecast_pence)} dashboard total`
+                  : "loading…"
+              }
+              sub="Projected cash due in the next 30 days. Two sources: (1) active live subscriptions whose current_period_end falls inside the window — billed at the fixed tier renewal price; (2) bd_migration rows with status seeded/pending whose bd_renewal_date falls inside the window — billed at bd_price_pence, or the tier renewal price if bd_price_pence is null. Stripe is NOT called; this is a deterministic projection from local state only."
+            />
+            {forecast.isLoading ? (
+              <Loading />
+            ) : forecast.error ? (
+              <ErrorBox e={forecast.error} />
+            ) : forecast.data ? (
+              <ForecastTables data={forecast.data} />
             ) : null}
           </PCard>
         </section>
@@ -471,6 +503,145 @@ function RegistrationsTable({
         </table>
       </div>
       <Footer label="Total registrations" value={String(total)} accent />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Forecast tables
+// ---------------------------------------------------------------------------
+
+function ForecastTables({ data }: { data: ForecastReportDTO }) {
+  const tierLine = Object.entries(data.tier_pricing_pence)
+    .map(([t, p]) => `${t} ${fmtPounds(p)}`)
+    .join(" · ");
+  return (
+    <div className="space-y-6">
+      <div className="rounded-[10px] border border-white/10 bg-white/[0.02] p-3 text-[12px] text-white/70">
+        Window: <code>{data.window.from}</code> → <code>{data.window.to}</code>
+        <br />
+        Tier renewal pricing used: <span className="text-white">{tierLine}</span>
+      </div>
+
+      <div>
+        <div className="mb-2 text-[13px] font-semibold text-white">
+          Subscriptions renewing in window
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12px]">
+            <thead className="text-left text-white/55">
+              <tr>
+                <th className="py-2 pr-3">In?</th>
+                <th className="py-2 pr-3">Email</th>
+                <th className="py-2 pr-3">Tier</th>
+                <th className="py-2 pr-3">Status</th>
+                <th className="py-2 pr-3">Env</th>
+                <th className="py-2 pr-3">current_period_end</th>
+                <th className="py-2 pr-3 text-right">Forecast</th>
+                <th className="py-2 pr-3">Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.subs.map((r) => (
+                <tr
+                  key={r.subscription_id}
+                  className={`border-t border-white/5 ${r.included_in_forecast ? "" : "text-white/40"}`}
+                >
+                  <td className="py-2 pr-3">
+                    {r.included_in_forecast ? "✓" : "✕"}
+                  </td>
+                  <td className="py-2 pr-3">{r.email ?? "—"}</td>
+                  <td className="py-2 pr-3">{r.tier}</td>
+                  <td className="py-2 pr-3">{r.status}</td>
+                  <td className="py-2 pr-3">{r.environment}</td>
+                  <td className="py-2 pr-3 whitespace-nowrap">
+                    {fmtDateTime(r.current_period_end)}
+                  </td>
+                  <td className="py-2 pr-3 text-right font-semibold">
+                    {fmtPounds(r.forecast_amount_pence)}
+                  </td>
+                  <td className="py-2 pr-3 text-white/55">
+                    {r.exclusion_reason ?? ""}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-2 text-[13px] font-semibold text-white">
+          bd_migration scheduled renewals (status seeded/pending)
+        </div>
+        {data.migrations.length === 0 ? (
+          <div className="py-3 text-[12px] text-white/55">
+            No bd_migration rows considered.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12px]">
+              <thead className="text-left text-white/55">
+                <tr>
+                  <th className="py-2 pr-3">In?</th>
+                  <th className="py-2 pr-3">Migration id</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2 pr-3">Target tier</th>
+                  <th className="py-2 pr-3">bd_renewal_date</th>
+                  <th className="py-2 pr-3 text-right">bd_price</th>
+                  <th className="py-2 pr-3 text-right">Forecast</th>
+                  <th className="py-2 pr-3">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.migrations.map((r) => (
+                  <tr
+                    key={r.id}
+                    className={`border-t border-white/5 ${r.included_in_forecast ? "" : "text-white/40"}`}
+                  >
+                    <td className="py-2 pr-3">
+                      {r.included_in_forecast ? "✓" : "✕"}
+                    </td>
+                    <td className="py-2 pr-3 font-mono text-[10px]">{r.id}</td>
+                    <td className="py-2 pr-3">{r.status}</td>
+                    <td className="py-2 pr-3">{r.target_tier ?? "—"}</td>
+                    <td className="py-2 pr-3 whitespace-nowrap">
+                      {fmtDateTime(r.bd_renewal_date)}
+                    </td>
+                    <td className="py-2 pr-3 text-right">
+                      {r.bd_price_pence == null
+                        ? "—"
+                        : fmtPounds(r.bd_price_pence)}
+                    </td>
+                    <td className="py-2 pr-3 text-right font-semibold">
+                      {fmtPounds(r.forecast_amount_pence)}
+                    </td>
+                    <td className="py-2 pr-3 text-white/55">
+                      {r.exclusion_reason ?? ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[12px]">
+        <Footer
+          label="Subscriptions subtotal"
+          value={fmtPounds(data.subs_total_pence)}
+        />
+        <Footer
+          label="bd_migration subtotal"
+          value={fmtPounds(data.migrations_total_pence)}
+        />
+        <Footer
+          label="Forecast total"
+          value={fmtPounds(data.total_forecast_pence)}
+          accent
+        />
+      </div>
     </div>
   );
 }
