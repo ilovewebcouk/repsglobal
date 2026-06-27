@@ -58,6 +58,19 @@ const searchSchema = z.object({
   ).default("yesterday"),
   from: z.string().optional(),
   to: z.string().optional(),
+  fcast: fallback(
+    z.enum([
+      "remaining_this_month",
+      "next_month",
+      "next_30d",
+      "current_quarter",
+      "current_year",
+      "custom",
+    ]),
+    "next_30d",
+  ).default("next_30d"),
+  fcastFrom: z.string().optional(),
+  fcastTo: z.string().optional(),
 });
 
 export const Route = createFileRoute("/admin_/reconciliation")({
