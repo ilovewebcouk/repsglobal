@@ -116,7 +116,7 @@ function ReconciliationPage() {
     PERIOD_OPTIONS.find((o) => o.value === period)?.label ?? period;
 
   const revFn = useServerFn(getRevenueReconciliation);
-  const memFn = useServerFn(getMembershipReconciliation);
+  const memFn = useServerFn(getActiveMembersReconciliation);
   const regFn = useServerFn(getRegistrationsReconciliation);
   const fcastFn = useServerFn(getForecastReconciliation);
   const growthFn = useServerFn(getGrowthReconciliation);
@@ -126,7 +126,7 @@ function ReconciliationPage() {
     queryFn: () => revFn({ data: { from: range.from, to: range.to } }),
   });
   const members = useQuery({
-    queryKey: ["admin-recon", "members"],
+    queryKey: ["admin-recon", "active-members"],
     queryFn: () => memFn(),
   });
   const regs = useQuery({
@@ -144,6 +144,7 @@ function ReconciliationPage() {
     queryKey: ["admin-recon", "growth", range.from, range.to],
     queryFn: () => growthFn({ data: { from: range.from, to: range.to } }),
   });
+
 
   return (
     <DashboardShell
