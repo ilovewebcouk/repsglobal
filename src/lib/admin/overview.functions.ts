@@ -168,17 +168,26 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       fcastBuckets.set(key, (fcastBuckets.get(key) ?? 0) + amount);
     }
 
-    // 4) New registrations — confirmed signups (admin-only SECURITY DEFINER RPC).
-    const { data: signupsRaw, error: signupsErr } = await supabase.rpc(
-      "count_confirmed_signups",
-      { _from: data.from, _to: data.to },
-    );
-    if (signupsErr) throw signupsErr;
+    // 4) New registrations — first paid subscription per user, created in window.
+    // (Email-confirmed-only invites without a paid sub don't move the needle here.)
     const sigBuckets = new Map<string, number>();
     let newRegistrations = 0;
-    for (const row of (signupsRaw ?? []) as { day: string; signups: number }[]) {
-      sigBuckets.set(row.day, row.signups);
-      newRegistrations += row.signups;
+    const firstSubAt = new Map<string, string>();
+    for (const s of subs) {
+      if (!s.user_id || !s.created_at) continue;
+      const prev = firstSubAt.get(s.user_id);
+      if (!prev || new Date(s.created_at).getTime() < new Date(prev).getTime()) {
+        firstSubAt.set(s.user_id, s.created_at);
+      }
+    }
+    const fromMs = new Date(data.from).getTime();
+    const toMs = new Date(data.to).getTime();
+    for (const ts of firstSubAt.values()) {
+      const t = new Date(ts).getTime();
+      if (t < fromMs || t >= toMs) continue;
+      newRegistrations += 1;
+      const key = londonDayKey(ts);
+      sigBuckets.set(key, (sigBuckets.get(key) ?? 0) + 1);
     }
 
     // 5) Members series — cumulative active members joined-by-day (best-effort
