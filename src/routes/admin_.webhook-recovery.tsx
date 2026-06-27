@@ -165,8 +165,6 @@ function EventCard({ row }: { row: DiagnosisRow }) {
   );
 }
 
-function AdminWebhookRecoveryPage() {
-  const fn = useServerFn(diagnoseWebhookFailures);
 function ReplayRowCard({ row }: { row: ReplayRow }) {
   return (
     <PCard>
