@@ -10,11 +10,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { forecastWindow } from "./overview-period";
 
 const Input = z.object({
   from: z.string(),
   to: z.string(),
 });
+
+// Mirror src/lib/admin/overview.functions.ts (TIER_RENEWAL_PENCE).
+const TIER_RENEWAL_PENCE: Record<string, number> = {
+  verified: 9900,
+  pro: 5900,
+  studio: 14900,
+};
 
 // ---- Shared types -----------------------------------------------------------
 
