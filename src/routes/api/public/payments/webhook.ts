@@ -51,26 +51,101 @@ async function finalizeEventRow(rowId: string, opts: { userId: string | null; pr
     .eq("id", rowId);
 }
 
-async function resolveUserId(opts: { customerId?: string | null; metadataUserId?: string | null }, stripe: Stripe) {
+async function resolveUserId(
+  opts: { customerId?: string | null; metadataUserId?: string | null; customerEmail?: string | null },
+  stripe: Stripe,
+): Promise<string | null> {
+  // Ladder (existing order preserved; new steps appended):
+  // 1. event.metadata.reps_user_id
+  // 2. subscriptions.stripe_customer_id
+  // 3. Stripe customer.metadata.reps_user_id
+  // 4. legacy_stripe_link.stripe_customer_id → bd_member_seed.claimed_user_id   [NEW]
+  // 5. customer.email → auth.users (collision-guarded: must match seed)         [NEW]
+  // When 3/4/5 resolves a userId for a Stripe customer, backfill the
+  // Stripe customer metadata so step 3 short-circuits on future events.
   if (opts.metadataUserId) return opts.metadataUserId;
   if (!opts.customerId) return null;
+  const customerId = opts.customerId;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
+
+  // 2. existing subscription mapping
+  const { data: subRow } = await supabaseAdmin
     .from("subscriptions")
     .select("user_id")
-    .eq("stripe_customer_id", opts.customerId)
+    .eq("stripe_customer_id", customerId)
     .limit(1)
     .maybeSingle();
-  if (data?.user_id) return data.user_id;
+  if (subRow?.user_id) return subRow.user_id;
+
+  // 3. Stripe customer metadata
+  let stripeCustomerEmail: string | null = opts.customerEmail ?? null;
   try {
-    const customer = await stripe.customers.retrieve(opts.customerId);
+    const customer = await stripe.customers.retrieve(customerId);
     if (!customer.deleted) {
-      const meta = (customer as Stripe.Customer).metadata?.reps_user_id;
+      const c = customer as Stripe.Customer;
+      stripeCustomerEmail = stripeCustomerEmail ?? c.email ?? null;
+      const meta = c.metadata?.reps_user_id;
       if (meta) return meta;
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore — Stripe lookup is best-effort */
+  }
+
+  // 4. legacy_stripe_link → bd_member_seed.claimed_user_id
+  const { data: link } = await supabaseAdmin
+    .from("legacy_stripe_link")
+    .select("bd_member_id, email")
+    .eq("stripe_customer_id", customerId)
+    .limit(1)
+    .maybeSingle();
+  if (link?.bd_member_id) {
+    const { data: seed } = await supabaseAdmin
+      .from("bd_member_seed")
+      .select("claimed_user_id, email")
+      .eq("bd_member_id", link.bd_member_id)
+      .limit(1)
+      .maybeSingle();
+    if (seed?.claimed_user_id) {
+      await backfillStripeCustomerMetadata(stripe, customerId, seed.claimed_user_id);
+      return seed.claimed_user_id;
+    }
+    stripeCustomerEmail = stripeCustomerEmail ?? seed?.email ?? link.email ?? null;
+  }
+
+  // 5. customer.email → auth.users (collision-guarded: exactly one match)
+  const email = (stripeCustomerEmail ?? "").trim().toLowerCase();
+  if (email) {
+    const { data: matches } = await (supabaseAdmin.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: Array<{ user_id: string }> | null }>)("get_user_ids_by_email", {
+      _email: email,
+    });
+    const ids = matches ?? [];
+    if (ids.length === 1) {
+      const userId = ids[0].user_id;
+      await backfillStripeCustomerMetadata(stripe, customerId, userId);
+      return userId;
+    }
+  }
+
   return null;
 }
+
+async function backfillStripeCustomerMetadata(
+  stripe: Stripe,
+  customerId: string,
+  userId: string,
+): Promise<void> {
+  try {
+    await stripe.customers.update(customerId, {
+      metadata: { reps_user_id: userId },
+    });
+  } catch {
+    /* best-effort; resolver still returns the userId */
+  }
+}
+
 
 function periodEndIso(sub: Stripe.Subscription): string | null {
   const cpe =
