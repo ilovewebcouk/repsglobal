@@ -503,9 +503,10 @@ function Footer({
 function ActiveMembersView({ data }: { data: ActiveMembersReportDTO }) {
   const c = data.counts;
   const lines: Array<[string, number]> = [
-    ["Stripe subscriptions", c.source_totals.stripe_subscriptions],
-    ["Legacy members", c.source_totals.legacy_links],
-    ["BD migrated members", c.source_totals.bd_seeds],
+    ["Stripe subscriptions", c.stripe_subscriptions],
+    ["Legacy members", c.legacy_members],
+    ["BD migrated members", c.bd_migrated_members],
+
     ["Duplicates removed", c.duplicates_removed],
     ["Final Active Members", c.final_active_members],
   ];
