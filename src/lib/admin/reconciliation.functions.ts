@@ -555,13 +555,13 @@ export const getRegistrationsReconciliation = createServerFn({ method: "GET" })
 // Forecast revenue reconciliation
 // =============================================================================
 //
-// Mirrors getAdminOverview forecast logic:
-//   * Sum of active+counted subscriptions whose current_period_end falls in
-//     the next-30-days window [now, today+30 London midnight). Amount per
-//     sub = TIER_RENEWAL_PENCE[tier].
-//   * Plus bd_migration rows with status in ('seeded','pending') whose
-//     bd_renewal_date falls in the same window. Amount = bd_price_pence,
-//     fallback to TIER_RENEWAL_PENCE[target_tier].
+// Mirrors getAdminOverview forecast logic — three sources, deduped per
+// user_id / bd_member_id in this order:
+//   1. Active counted subscriptions, current_period_end in window.
+//   2. legacy_stripe_link rows, access_expires_at in window (renewal cron's
+//      anchor for the £99 charge).
+//   3. bd_member_seed rows, bd_next_due_date in window (catches unlinked
+//      anniversaries).
 
 export interface ForecastSubRow {
   user_id: string | null;
@@ -576,12 +576,22 @@ export interface ForecastSubRow {
   exclusion_reason: string | null;
 }
 
-export interface ForecastMigrationRow {
-  id: string;
-  bd_renewal_date: string | null;
-  status: string | null;
-  target_tier: string | null;
-  bd_price_pence: number | null;
+export interface ForecastLegacyLinkRow {
+  bd_member_id: string | null;
+  email: string | null;
+  stripe_customer_id: string | null;
+  access_expires_at: string | null;
+  claimed_user_id: string | null;
+  forecast_amount_pence: number;
+  included_in_forecast: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface ForecastSeedRow {
+  bd_member_id: string | null;
+  email: string | null;
+  claimed_user_id: string | null;
+  bd_next_due_date: string | null;
   forecast_amount_pence: number;
   included_in_forecast: boolean;
   exclusion_reason: string | null;
@@ -590,11 +600,14 @@ export interface ForecastMigrationRow {
 export interface ForecastReportDTO {
   window: { from: string; to: string };
   tier_pricing_pence: Record<string, number>;
+  legacy_amount_pence: number;
   total_forecast_pence: number;
   subs_total_pence: number;
-  migrations_total_pence: number;
+  links_total_pence: number;
+  seeds_total_pence: number;
   subs: ForecastSubRow[];
-  migrations: ForecastMigrationRow[];
+  links: ForecastLegacyLinkRow[];
+  seeds: ForecastSeedRow[];
 }
 
 export const getForecastReconciliation = createServerFn({ method: "GET" })
@@ -606,6 +619,7 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
     const fcast = forecastWindow();
     const fromMs = new Date(fcast.from).getTime();
     const toMs = new Date(fcast.to).getTime();
+    const LEGACY_AMOUNT = TIER_RENEWAL_PENCE["verified"];
 
     // ---- Subscriptions ------------------------------------------------------
     const { data: subsRaw, error: sErr } = await supabase
@@ -633,6 +647,9 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       page += 1;
     }
 
+    const countedUsers = new Set<string>();
+    const countedMembers = new Set<string>();
+
     const subs: ForecastSubRow[] = (subsRaw ?? []).map((s) => {
       let reason: string | null = null;
       if (s.environment !== "live")
@@ -650,6 +667,8 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       }
       const amount =
         reason === null ? TIER_RENEWAL_PENCE[s.tier ?? ""] ?? 0 : 0;
+      const included = reason === null && amount > 0;
+      if (included && s.user_id) countedUsers.add(s.user_id);
       return {
         user_id: s.user_id,
         email: emailByUser.get(s.user_id ?? "") ?? null,
@@ -659,7 +678,7 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
         environment: s.environment,
         current_period_end: s.current_period_end,
         forecast_amount_pence: amount,
-        included_in_forecast: reason === null && amount > 0,
+        included_in_forecast: included,
         exclusion_reason:
           reason ??
           (amount === 0
@@ -668,53 +687,112 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
       };
     });
 
-    // ---- bd_migration scheduled renewals ------------------------------------
-    const { data: migs, error: mErr } = await supabase
-      .from("bd_migration")
-      .select("id, bd_renewal_date, status, target_tier, bd_price_pence");
-    if (mErr) throw mErr;
-
-    const migrations: ForecastMigrationRow[] = (migs ?? []).map((m) => {
-      let reason: string | null = null;
-      if (!["seeded", "pending"].includes(m.status ?? ""))
-        reason = `status="${m.status}" (forecast counts only seeded/pending)`;
-      else if (!m.bd_renewal_date)
-        reason = "bd_renewal_date is null";
-      else {
-        const t = new Date(m.bd_renewal_date).getTime();
-        if (t < fromMs || t >= toMs)
-          reason = `bd_renewal_date ${m.bd_renewal_date} is outside the next-30-day window`;
+    // ---- Seed index (used for link → user resolution & seed pass) ----------
+    const { data: seedsRaw } = await supabase
+      .from("bd_member_seed")
+      .select("bd_member_id, email, claimed_user_id, bd_next_due_date");
+    const seedByMember = new Map<
+      string,
+      {
+        email: string | null;
+        claimed_user_id: string | null;
+        bd_next_due_date: string | null;
       }
-      const amount =
-        reason === null
-          ? m.bd_price_pence ??
-            TIER_RENEWAL_PENCE[m.target_tier ?? ""] ??
-            0
-          : 0;
+    >();
+    for (const s of seedsRaw ?? []) {
+      if (s.bd_member_id != null) {
+        seedByMember.set(String(s.bd_member_id), {
+          email: (s.email as string | null) ?? null,
+          claimed_user_id: (s.claimed_user_id as string | null) ?? null,
+          bd_next_due_date: (s.bd_next_due_date as string | null) ?? null,
+        });
+      }
+    }
+
+    // ---- Legacy Stripe links ------------------------------------------------
+    const { data: linksRaw, error: lErr } = await supabase
+      .from("legacy_stripe_link")
+      .select("bd_member_id, email, stripe_customer_id, access_expires_at")
+      .order("access_expires_at", { ascending: true });
+    if (lErr) throw lErr;
+
+    const links: ForecastLegacyLinkRow[] = (linksRaw ?? []).map((l) => {
+      const memberKey = l.bd_member_id != null ? String(l.bd_member_id) : null;
+      const seed = memberKey ? seedByMember.get(memberKey) : null;
+      const uid = seed?.claimed_user_id ?? null;
+      let reason: string | null = null;
+      if (!l.access_expires_at) reason = "access_expires_at is null";
+      else {
+        const t = new Date(l.access_expires_at).getTime();
+        if (t < fromMs || t >= toMs)
+          reason = `access_expires_at ${l.access_expires_at} is outside the next-30-day window`;
+      }
+      if (reason === null && uid && countedUsers.has(uid))
+        reason = `already counted via active subscription (user_id=${uid})`;
+      const included = reason === null;
+      const amount = included ? LEGACY_AMOUNT : 0;
+      if (included) {
+        if (uid) countedUsers.add(uid);
+        if (memberKey) countedMembers.add(memberKey);
+      }
       return {
-        id: m.id,
-        bd_renewal_date: m.bd_renewal_date,
-        status: m.status,
-        target_tier: m.target_tier,
-        bd_price_pence: m.bd_price_pence,
+        bd_member_id: memberKey,
+        email: (l.email as string | null) ?? seed?.email ?? null,
+        stripe_customer_id: (l.stripe_customer_id as string | null) ?? null,
+        access_expires_at: l.access_expires_at,
+        claimed_user_id: uid,
         forecast_amount_pence: amount,
-        included_in_forecast: reason === null && amount > 0,
-        exclusion_reason:
-          reason ??
-          (amount === 0
-            ? `no price (bd_price_pence null and no TIER_RENEWAL_PENCE for target_tier="${m.target_tier}")`
-            : null),
+        included_in_forecast: included,
+        exclusion_reason: reason,
       };
     });
 
-    const subsTotal = subs.reduce(
-      (acc, r) => acc + (r.included_in_forecast ? r.forecast_amount_pence : 0),
-      0,
+    // ---- BD member seeds ----------------------------------------------------
+    const seeds: ForecastSeedRow[] = Array.from(seedByMember.entries()).map(
+      ([memberKey, seed]) => {
+        let reason: string | null = null;
+        if (!seed.bd_next_due_date) reason = "bd_next_due_date is null";
+        else {
+          const t = new Date(seed.bd_next_due_date).getTime();
+          if (t < fromMs || t >= toMs)
+            reason = `bd_next_due_date ${seed.bd_next_due_date} is outside the next-30-day window`;
+        }
+        if (
+          reason === null &&
+          seed.claimed_user_id &&
+          countedUsers.has(seed.claimed_user_id)
+        )
+          reason = `already counted via active subscription (user_id=${seed.claimed_user_id})`;
+        if (reason === null && countedMembers.has(memberKey))
+          reason = `already counted via legacy_stripe_link (bd_member_id=${memberKey})`;
+        const included = reason === null;
+        const amount = included ? LEGACY_AMOUNT : 0;
+        if (included) {
+          if (seed.claimed_user_id) countedUsers.add(seed.claimed_user_id);
+          countedMembers.add(memberKey);
+        }
+        return {
+          bd_member_id: memberKey,
+          email: seed.email,
+          claimed_user_id: seed.claimed_user_id,
+          bd_next_due_date: seed.bd_next_due_date,
+          forecast_amount_pence: amount,
+          included_in_forecast: included,
+          exclusion_reason: reason,
+        };
+      },
     );
-    const migsTotal = migrations.reduce(
-      (acc, r) => acc + (r.included_in_forecast ? r.forecast_amount_pence : 0),
-      0,
-    );
+
+    const sum = <T extends { included_in_forecast: boolean; forecast_amount_pence: number }>(
+      arr: T[],
+    ) =>
+      arr.reduce(
+        (acc, r) => acc + (r.included_in_forecast ? r.forecast_amount_pence : 0),
+        0,
+      );
+    const subsTotal = sum(subs);
+    const linksTotal = sum(links);
+    const seedsTotal = sum(seeds);
 
     // Sort: included first, then by date ascending.
     const sortRows = <T extends { included_in_forecast: boolean }>(
@@ -727,15 +805,19 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
         return (dateOf(a) ?? "").localeCompare(dateOf(b) ?? "");
       });
     sortRows(subs, (r) => r.current_period_end);
-    sortRows(migrations, (r) => r.bd_renewal_date);
+    sortRows(links, (r) => r.access_expires_at);
+    sortRows(seeds, (r) => r.bd_next_due_date);
 
     return {
       window: { from: fcast.from, to: fcast.to },
       tier_pricing_pence: TIER_RENEWAL_PENCE,
-      total_forecast_pence: subsTotal + migsTotal,
+      legacy_amount_pence: LEGACY_AMOUNT,
+      total_forecast_pence: subsTotal + linksTotal + seedsTotal,
       subs_total_pence: subsTotal,
-      migrations_total_pence: migsTotal,
+      links_total_pence: linksTotal,
+      seeds_total_pence: seedsTotal,
       subs,
-      migrations,
+      links,
+      seeds,
     };
   });
