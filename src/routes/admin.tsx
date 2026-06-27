@@ -149,6 +149,7 @@ function AdminDashboardPage() {
       actions={<PeriodSelector value={period} />}
     >
       <div className="space-y-6">
+        <PlatformHealthBanner />
         <PaymentFailedBanner />
         <OverviewKpis data={data} fcastHorizon={fcast} />
         <RevenueAndMembership data={data} periodLabel={periodLabel} />
