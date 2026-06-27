@@ -202,7 +202,7 @@ function ServicesPage() {
                   <p className="mt-1 text-[13px] text-white/60">
                     Pro turns your listing into a full coach page — priced service packages,
                     "Most popular" highlight, online enquire / book / pay, and a guided client
-                    onboarding flow. Verified members appear in the directory; Pro members sell
+                    onboarding flow. Core members appear in the directory; Pro members sell
                     from it.
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-[13px] font-semibold">

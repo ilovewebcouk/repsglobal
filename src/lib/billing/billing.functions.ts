@@ -46,7 +46,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
       const submitMessage =
         tier === "verified"
-          ? "You're joining the REPs Verified register — qualified, insured, and publicly listed worldwide."
+          ? "You're joining the REPs Core register — qualified, insured, and publicly listed worldwide."
           : offer.trialDays > 0
             ? `£0 today. Your ${offer.trialDays}-day free Pro trial starts the moment you confirm. Cancel any time from your REPs dashboard.`
             : "You're starting REPs Pro — every feature in your tier is included, no paid add-ons.";

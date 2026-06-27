@@ -50,7 +50,7 @@ export type TierBreakdown = {
   tier: Tier;
   active: number;
   trialing: number;
-  scheduled: number; // Verified-only: migrated members with no Stripe sub yet
+  scheduled: number; // Core-only: migrated members with no Stripe sub yet
 };
 
 export type PaymentListItem = {

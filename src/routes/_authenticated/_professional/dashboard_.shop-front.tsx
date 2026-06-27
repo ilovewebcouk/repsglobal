@@ -62,7 +62,7 @@ function ShopFrontEditorPage() {
   const blocked = useProGuard("Shop-front");
   const tier = useTrainerTier();
 
-  // Verified members get the Lite shop-front; Pro/Studio get the full editor.
+  // Core members get the Lite shop-front; Pro/Studio get the full editor.
 
   const qc = useQueryClient();
   const fetchMine = useServerFn(getMyShopFront);

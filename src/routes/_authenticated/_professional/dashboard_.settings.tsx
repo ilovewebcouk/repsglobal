@@ -141,7 +141,7 @@ function SettingsPage() {
                 </span>
                 <div>
                   <div className="text-[13px] font-semibold text-white">
-                    {data.subscription.tier === "verified" && "REPs Verified · £99/year"}
+                    {data.subscription.tier === "verified" && "REPs Core · £99/year"}
                     {data.subscription.tier === "pro" && "REPs Pro"}
                     {data.subscription.tier === "studio" && "REPs Studio"}
                     {data.subscription.tier === "free" && "No active plan"}
@@ -474,7 +474,7 @@ function NotificationsTab({ data }: { data: SettingsBundle }) {
 function BillingTab({ data }: { data: SettingsBundle }) {
   const sub = data.subscription;
   const tierLabel =
-    sub.tier === "verified" ? "REPs Verified"
+    sub.tier === "verified" ? "REPs Core"
     : sub.tier === "pro" ? "REPs Pro"
     : sub.tier === "studio" ? "REPs Studio"
     : "No active plan";

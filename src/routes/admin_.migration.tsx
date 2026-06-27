@@ -680,7 +680,7 @@ function StripeLinkingPanel() {
             Legacy → Stripe linking
           </h2>
           <p className="text-[12px] text-white/55">
-            Match seed rows to existing Stripe customers, then renew them to Verified £99/yr as
+            Match seed rows to existing Stripe customers, then renew them to Core £99/yr as
             their current access expires. No emails sent.
           </p>
         </div>

@@ -281,7 +281,7 @@ const FAQS = [
   },
   {
     q: "Do I need CPD to stay verified?",
-    a: "Verified members are expected to maintain a current CPD record alongside insurance and qualifications. REPS makes it easy to log hours and surface them on your profile.",
+    a: "Core members are expected to maintain a current CPD record alongside insurance and qualifications. REPS makes it easy to log hours and surface them on your profile.",
   },
   {
     q: "Can clients see my qualifications?",
