@@ -1,30 +1,47 @@
+import { useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
-import { TrendingUp, Users, UserCheck, UserPlus, Wallet } from "lucide-react";
+import { Area, AreaChart } from "recharts";
+import { Users, Wallet, CalendarClock, UserPlus, TrendingUp } from "lucide-react";
 
 import { AdminCard } from "@/components/admin/AdminCard";
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import type { AdminOverviewDTO } from "@/lib/admin/overview.functions";
 
-function KpiSparkline() {
+function fmtPounds(pence: number) {
+  if (!pence) return "£0";
+  return "£" + Math.round(pence / 100).toLocaleString();
+}
+
+function Sparkline({
+  data,
+  id,
+}: {
+  data: { day: string; value: number }[];
+  id: string;
+}) {
+  const config = useMemo<ChartConfig>(
+    () => ({ value: { label: "Value", color: "var(--reps-orange)" } }),
+    [],
+  );
   return (
-    <svg viewBox="0 0 100 32" preserveAspectRatio="none" className="h-8 w-full" aria-hidden>
-      <defs>
-        <linearGradient id="kpiSpark" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0 24 L10 22 L20 23 L30 18 L40 20 L50 14 L60 17 L70 10 L80 13 L90 7 L100 9 L100 32 L0 32 Z"
-        fill="url(#kpiSpark)"
-      />
-      <path
-        d="M0 24 L10 22 L20 23 L30 18 L40 20 L50 14 L60 17 L70 10 L80 13 L90 7 L100 9"
-        fill="none"
-        stroke="var(--reps-orange)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <ChartContainer config={config} className="h-10 w-full">
+      <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id={`spark-${id}`} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke="var(--reps-orange)"
+          strokeWidth={1.5}
+          fill={`url(#spark-${id})`}
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ChartContainer>
   );
 }
 
@@ -34,16 +51,17 @@ function KpiTile({
   value,
   delta,
   sub,
-  trend = "up",
+  series,
+  id,
 }: {
   icon: LucideIcon;
   label: string;
   value: string;
-  delta: string;
+  delta?: { value: string; positive: boolean };
   sub: string;
-  trend?: "up" | "down";
+  series: { day: string; value: number }[] | null;
+  id: string;
 }) {
-  const color = trend === "up" ? "text-reps-green" : "text-reps-red";
   return (
     <AdminCard>
       <div className="flex items-start gap-3">
@@ -56,56 +74,67 @@ function KpiTile({
             <span className="font-display text-[26px] font-bold leading-none text-white">
               {value}
             </span>
-            <span className={`inline-flex items-center gap-1 text-[12px] font-semibold ${color}`}>
-              <TrendingUp className="h-3 w-3" /> {delta}
-            </span>
+            {delta ? (
+              <span
+                className={`inline-flex items-center gap-1 text-[12px] font-semibold ${delta.positive ? "text-reps-green" : "text-white/55"}`}
+              >
+                <TrendingUp className="h-3 w-3" /> {delta.value}
+              </span>
+            ) : null}
           </div>
           <div className="mt-1 text-[11px] text-white/45">{sub}</div>
         </div>
       </div>
-      <div className="mt-3">
-        <KpiSparkline />
-      </div>
+      {series && series.length > 1 ? (
+        <div className="mt-3">
+          <Sparkline data={series} id={id} />
+        </div>
+      ) : (
+        <div className="mt-3 h-10" aria-hidden />
+      )}
     </AdminCard>
   );
 }
 
-
-
-export function OverviewKpis() {
+export function OverviewKpis({ data }: { data: AdminOverviewDTO }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiTile
+        id="members"
         icon={Users}
-        label="Total Professionals"
-        value="24,892"
-        delta="12.4%"
-        sub="vs last 30 days 22,150"
-        trend="up"
+        label="Total members"
+        value={data.totalMembers.toLocaleString()}
+        delta={
+          data.totalMembersDelta > 0
+            ? { value: `+${data.totalMembersDelta} this period`, positive: true }
+            : undefined
+        }
+        sub="Verified, Pro and Studio"
+        series={data.membersSeries}
       />
       <KpiTile
-        icon={UserCheck}
-        label="Total Members"
-        value="156,783"
-        delta="8.7%"
-        sub="vs last 30 days 144,163"
-        trend="up"
-      />
-      <KpiTile
-        icon={UserPlus}
-        label="New Registrations"
-        value="1,842"
-        delta="15.3%"
-        sub="vs last 30 days 1,598"
-        trend="up"
-      />
-      <KpiTile
+        id="revenue"
         icon={Wallet}
-        label="Total Revenue"
-        value="£128,480"
-        delta="14.3%"
-        sub="vs last 30 days £112,480"
-        trend="up"
+        label="Revenue received"
+        value={fmtPounds(data.revenuePence)}
+        sub="Selected period"
+        series={data.revenueSeries}
+      />
+      <KpiTile
+        id="forecast"
+        icon={CalendarClock}
+        label="Forecast revenue"
+        value={fmtPounds(data.forecastPence)}
+        sub="Next 30 days"
+        series={data.forecastSeries}
+      />
+      <KpiTile
+        id="signups"
+        icon={UserPlus}
+        label="New registrations"
+        value={data.newRegistrations.toLocaleString()}
+        sub="Confirmed signups"
+        series={data.signupsSeries}
       />
     </div>
   );
