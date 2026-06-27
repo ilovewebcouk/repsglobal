@@ -209,14 +209,45 @@ function ReconciliationPage() {
         {/* ---- Forecast -------------------------------------------------- */}
         <section id="forecast" className="scroll-mt-24">
           <PCard>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="text-[11px] uppercase tracking-[0.14em] text-white/45">
+                Forecast horizon (independent of historical period)
+              </div>
+              <Select
+                value={fcast}
+                onValueChange={(v) =>
+                  navigate({
+                    search: (prev: Record<string, unknown>) => ({
+                      ...prev,
+                      fcast: v as ForecastHorizon,
+                    }),
+                  })
+                }
+              >
+                <SelectTrigger className="h-7 w-[180px] rounded-[6px] border border-white/10 bg-white/[0.03] px-2 text-[12px] text-white/75">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-[10px]">
+                  {FORECAST_HORIZON_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value} className="text-[12px]">
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <SectionHeader
-              title="Forecast revenue reconciliation"
+              title="Projected cash due reconciliation"
               total={
                 forecast.data
                   ? `${fmtPounds(forecast.data.total_forecast_pence)} dashboard total`
                   : "loading…"
               }
-              sub="Projected cash due in the next 30 days. Two sources: (1) active live subscriptions whose current_period_end falls inside the window — billed at the fixed tier renewal price; (2) bd_migration rows with status seeded/pending whose bd_renewal_date falls inside the window — billed at bd_price_pence, or the tier renewal price if bd_price_pence is null. Stripe is NOT called; this is a deterministic projection from local state only."
+              sub={
+                forecast.data
+                  ? `Window: ${forecast.data.window.from} → ${forecast.data.window.to}. Three sources, deduplicated: (1) active live subscriptions due to renew; (2) legacy_stripe_link.access_expires_at within window; (3) bd_member_seed.bd_next_due_date within window. Stripe is not called.`
+                  : "Independent horizon — never reuses the historical period."
+              }
             />
             {forecast.isLoading ? (
               <Loading />
@@ -224,6 +255,28 @@ function ReconciliationPage() {
               <ErrorBox e={forecast.error} />
             ) : forecast.data ? (
               <ForecastTables data={forecast.data} />
+            ) : null}
+          </PCard>
+        </section>
+
+        {/* ---- Net Member Growth ---------------------------------------- */}
+        <section id="growth" className="scroll-mt-24">
+          <PCard>
+            <SectionHeader
+              title="Net member growth reconciliation"
+              total={
+                growth.data
+                  ? `${growth.data.net_growth >= 0 ? "+" : ""}${growth.data.net_growth} net · ${growth.data.joined_total} joined · ${growth.data.churned_total} churned`
+                  : "loading…"
+              }
+              sub="Joined = users whose FIRST live paid subscription was created inside the window. Churned = users whose latest churn_lifecycle stage entered a terminal state (lapsed/dormant) inside the window. Net = joined − churned."
+            />
+            {growth.isLoading ? (
+              <Loading />
+            ) : growth.error ? (
+              <ErrorBox e={growth.error} />
+            ) : growth.data ? (
+              <GrowthTables data={growth.data} />
             ) : null}
           </PCard>
         </section>
