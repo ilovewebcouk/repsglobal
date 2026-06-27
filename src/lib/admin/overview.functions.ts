@@ -209,8 +209,8 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       .select("bd_member_id, claimed_user_id, bd_next_due_date");
     const seedByMember = new Map<string, { claimed_user_id: string | null; bd_next_due_date: string | null }>();
     for (const s of seeds ?? []) {
-      if (s.bd_member_id) {
-        seedByMember.set(s.bd_member_id, {
+      if (s.bd_member_id != null) {
+        seedByMember.set(String(s.bd_member_id), {
           claimed_user_id: (s.claimed_user_id as string | null) ?? null,
           bd_next_due_date: (s.bd_next_due_date as string | null) ?? null,
         });
@@ -227,13 +227,14 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       .gte("access_expires_at", new Date(fcastFrom).toISOString())
       .lt("access_expires_at", new Date(fcastTo).toISOString());
     for (const l of links ?? []) {
-      const seed = l.bd_member_id ? seedByMember.get(l.bd_member_id) : null;
+      const memberKey = l.bd_member_id != null ? String(l.bd_member_id) : null;
+      const seed = memberKey ? seedByMember.get(memberKey) : null;
       const uid = seed?.claimed_user_id ?? null;
       if (uid && countedUsers.has(uid)) continue;
-      if (l.bd_member_id && countedMembers.has(l.bd_member_id)) continue;
+      if (memberKey && countedMembers.has(memberKey)) continue;
       addForecast(l.access_expires_at as string, LEGACY_AMOUNT);
       if (uid) countedUsers.add(uid);
-      if (l.bd_member_id) countedMembers.add(l.bd_member_id);
+      if (memberKey) countedMembers.add(memberKey);
     }
 
     // (c) bd_member_seed
