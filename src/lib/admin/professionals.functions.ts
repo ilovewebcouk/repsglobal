@@ -76,7 +76,8 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since60, _until: since30 }),
       supabaseAdmin
         .from('subscriptions')
-        .select('user_id, tier, status')
+        .select('user_id, tier, status, environment')
+        .eq('environment', 'live')
         .in('status', ['active', 'trialing'])
         .neq('tier', 'free'),
       supabaseAdmin.from('user_roles').select('user_id').eq('role', 'admin'),
