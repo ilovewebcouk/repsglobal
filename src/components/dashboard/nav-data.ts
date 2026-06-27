@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   Apple,
   AreaChart,
   Briefcase,
