@@ -92,7 +92,7 @@ function AdminTeamPage() {
               <h2 className="font-display text-[16px] font-semibold text-white">Grant admin</h2>
             </div>
             <p className="mt-1 text-[13px] text-white/65">
-              The person must already have a REPS account. Enter the email they signed up with.
+              Enter their email. If they don't have a REPS account yet, we'll send them an invite to set a password.
             </p>
             <form onSubmit={handleGrant} className="mt-4 flex flex-col gap-3 sm:flex-row">
               <Input
