@@ -484,6 +484,37 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 const subId = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
                 const sub = await stripe.subscriptions.retrieve(subId);
                 userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+                // Purchase confirmation (welcome) email — idempotent on the session id.
+                try {
+                  if (userId) {
+                    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+                    const email = authUser?.user?.email ?? null;
+                    if (email) {
+                      const { data: profile } = await supabaseAdmin
+                        .from("profiles").select("display_name, full_name").eq("id", userId).maybeSingle();
+                      const item = sub.items.data[0];
+                      const tier = (sub.metadata?.tier as string) ?? "verified";
+                      const tierLabel = tier === "pro" ? "REPS Pro" : tier === "studio" ? "REPS Studio" : "REPS Core";
+                      const interval = item?.price.recurring?.interval ?? null;
+                      const periodText = interval === "year" ? "/year" : interval === "month" ? "/month" : "";
+                      const amount = (item?.price.unit_amount ?? 0) / 100;
+                      const amountText = amount > 0 ? `£${amount.toFixed(amount % 1 === 0 ? 0 : 2)}` : undefined;
+                      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+                      await sendTransactionalEmailServer({
+                        templateName: "purchase-confirmation",
+                        recipientEmail: email,
+                        idempotencyKey: `purchase-confirmation:${session.id}`,
+                        templateData: {
+                          proName: (profile?.display_name ?? profile?.full_name ?? "").toString().split(" ")[0] || null,
+                          tierLabel, amountText, periodText,
+                        },
+                      });
+                    }
+                  }
+                } catch (e) {
+                  console.warn("[email] purchase confirmation failed:", e);
+                }
               }
               break;
             }
