@@ -384,6 +384,57 @@ async function handleConnectChargeRefunded(charge: Stripe.Charge): Promise<void>
   } as never).eq("stripe_payment_intent_id", piId);
 }
 
+// Platform (non-Connect) charge.refunded: subscription / membership refund.
+// Revenue tiles already net refunds from payment_events; this stamps the
+// refund onto the originating subscription so admin views + the user record
+// reflect the refund state, and handles full vs partial.
+async function handlePlatformChargeRefunded(charge: Stripe.Charge, env: StripeEnv): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const customerId = typeof charge.customer === "string" ? charge.customer : charge.customer?.id ?? null;
+  if (!customerId) return;
+  const refunded = charge.amount_refunded ?? 0;
+  if (!refunded) return;
+  const isFull = refunded >= (charge.amount ?? 0);
+
+  // Find the most recent subscription for this customer in this env.
+  const { data: sub } = await supabaseAdmin
+    .from("subscriptions")
+    .select("id, user_id, metadata, status")
+    .eq("stripe_customer_id", customerId)
+    .eq("environment", env)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!sub) return;
+
+  const prev = ((sub as { metadata?: Record<string, unknown> }).metadata ?? {}) as Record<string, unknown>;
+  const refundHistory = Array.isArray(prev.refund_history) ? prev.refund_history : [];
+  const nextMetadata = {
+    ...prev,
+    last_refund_at: new Date().toISOString(),
+    last_refund_amount_pence: refunded,
+    last_refund_charge_id: charge.id,
+    last_refund_full: isFull,
+    refund_history: [
+      ...refundHistory,
+      {
+        at: new Date().toISOString(),
+        amount_pence: refunded,
+        full: isFull,
+        charge_id: charge.id,
+      },
+    ].slice(-20),
+  };
+  await supabaseAdmin
+    .from("subscriptions")
+    .update({ metadata: nextMetadata } as never)
+    .eq("id", (sub as { id: string }).id);
+
+  console.log(
+    `[payments-webhook] platform refund recorded: sub=${(sub as { id: string }).id} amount=${refunded} full=${isFull}`,
+  );
+}
+
 async function handleConnectDispute(dispute: Stripe.Dispute, eventType: string): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const piId = typeof dispute.payment_intent === "string" ? dispute.payment_intent : dispute.payment_intent?.id;
@@ -699,6 +750,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "charge.refunded": {
               const acctHeader = request.headers.get("stripe-account");
               if (acctHeader) await handleConnectChargeRefunded(event.data.object as Stripe.Charge);
+              else await handlePlatformChargeRefunded(event.data.object as Stripe.Charge, env);
               break;
             }
             case "charge.dispute.created":
