@@ -593,7 +593,7 @@ export const sendVerificationReminder = createServerFn({ method: "POST" })
       templateName: "verification-reminder",
       recipientEmail: email,
       idempotencyKey: `verification-reminder:${data.professional_id}:${new Date().toISOString().slice(0, 10)}`,
-      templateData: { proName: pro?.display_name ?? null, missing: data.missing },
+      templateData: { proName, missing: data.missing },
     });
     return { ok: true };
   });
