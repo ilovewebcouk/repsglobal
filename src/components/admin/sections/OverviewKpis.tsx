@@ -1,12 +1,30 @@
 import { useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Area, AreaChart } from "recharts";
-import { Users, Wallet, CalendarClock, UserPlus, TrendingUp } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import {
+  Users,
+  Wallet,
+  CalendarClock,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 import { AdminCard } from "@/components/admin/AdminCard";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { AdminOverviewDTO } from "@/lib/admin/overview.functions";
+import {
+  FORECAST_HORIZON_OPTIONS,
+  type ForecastHorizon,
+} from "@/lib/admin/metrics-definitions";
 
 function fmtPounds(pence: number) {
   if (!pence) return "£0";
@@ -16,27 +34,29 @@ function fmtPounds(pence: number) {
 function Sparkline({
   data,
   id,
+  color = "var(--reps-orange)",
 }: {
   data: { day: string; value: number }[];
   id: string;
+  color?: string;
 }) {
   const config = useMemo<ChartConfig>(
-    () => ({ value: { label: "Value", color: "var(--reps-orange)" } }),
-    [],
+    () => ({ value: { label: "Value", color } }),
+    [color],
   );
   return (
     <ChartContainer config={config} className="h-10 w-full">
       <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id={`spark-${id}`} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity={0} />
+            <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+            <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
         <Area
           type="monotone"
           dataKey="value"
-          stroke="var(--reps-orange)"
+          stroke={color}
           strokeWidth={1.5}
           fill={`url(#spark-${id})`}
           isAnimationActive={false}
@@ -46,24 +66,18 @@ function Sparkline({
   );
 }
 
-function KpiTile({
+function TileShell({
   icon: Icon,
   label,
-  value,
-  delta,
-  sub,
-  series,
-  id,
   reconcileHash,
+  headerRight,
+  children,
 }: {
   icon: LucideIcon;
   label: string;
-  value: string;
-  delta?: { value: string; positive: boolean };
-  sub: string;
-  series: { day: string; value: number }[] | null;
-  id: string;
-  reconcileHash?: "revenue" | "members" | "registrations" | "forecast";
+  reconcileHash?: "revenue" | "members" | "registrations" | "forecast" | "growth";
+  headerRight?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   return (
     <AdminCard>
@@ -74,87 +88,170 @@ function KpiTile({
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <div className="text-[12px] text-white/55">{label}</div>
-            {reconcileHash ? (
-              <Link
-                to="/admin/reconciliation"
-                hash={reconcileHash}
-                className="text-[10px] uppercase tracking-[0.14em] text-white/45 hover:text-reps-orange"
-              >
-                Reconcile →
-              </Link>
-            ) : null}
+            <div className="flex items-center gap-3">
+              {headerRight}
+              {reconcileHash ? (
+                <Link
+                  to="/admin/reconciliation"
+                  hash={reconcileHash}
+                  className="text-[10px] uppercase tracking-[0.14em] text-white/45 hover:text-reps-orange"
+                >
+                  Reconcile →
+                </Link>
+              ) : null}
+            </div>
           </div>
-          <div className="mt-1.5 flex items-baseline gap-2">
-            <span className="font-display text-[26px] font-bold leading-none text-white">
-              {value}
-            </span>
-            {delta ? (
-              <span
-                className={`inline-flex items-center gap-1 text-[12px] font-semibold ${delta.positive ? "text-reps-green" : "text-white/55"}`}
-              >
-                <TrendingUp className="h-3 w-3" /> {delta.value}
-              </span>
-            ) : null}
-          </div>
-          <div className="mt-1 text-[11px] text-white/45">{sub}</div>
+          {children}
         </div>
       </div>
-      {series && series.length > 1 ? (
-        <div className="mt-3">
-          <Sparkline data={series} id={id} />
-        </div>
-      ) : (
-        <div className="mt-3 h-10" aria-hidden />
-      )}
     </AdminCard>
   );
 }
 
-export function OverviewKpis({ data }: { data: AdminOverviewDTO }) {
+function ForecastHorizonSelector({ value }: { value: ForecastHorizon }) {
+  const navigate = useNavigate({ from: "/admin" });
+  return (
+    <Select
+      value={value}
+      onValueChange={(v) =>
+        navigate({
+          search: (prev: Record<string, unknown>) => ({
+            ...prev,
+            fcast: v as ForecastHorizon,
+          }),
+        })
+      }
+    >
+      <SelectTrigger className="h-6 w-[150px] rounded-[6px] border border-white/10 bg-white/[0.03] px-2 text-[11px] font-medium text-white/70 shadow-none">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="rounded-[10px]">
+        {FORECAST_HORIZON_OPTIONS.map((o) => (
+          <SelectItem key={o.value} value={o.value} className="text-[12px]">
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+export function OverviewKpis({
+  data,
+  fcastHorizon,
+}: {
+  data: AdminOverviewDTO;
+  fcastHorizon: ForecastHorizon;
+}) {
+  const net = data.netMemberGrowth;
+  const netPositive = net > 0;
+  const netNeutral = net === 0;
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiTile
-        id="members"
-        icon={Users}
-        label="Total members"
-        value={data.totalMembers.toLocaleString()}
-        delta={
-          data.totalMembersDelta > 0
-            ? { value: `+${data.totalMembersDelta} this period`, positive: true }
-            : undefined
-        }
-        sub="Verified, Pro and Studio"
-        series={data.membersSeries}
-        reconcileHash="members"
-      />
-      <KpiTile
-        id="revenue"
-        icon={Wallet}
-        label="Revenue received"
-        value={fmtPounds(data.revenuePence)}
-        sub="Selected period"
-        series={data.revenueSeries}
-        reconcileHash="revenue"
-      />
-      <KpiTile
-        id="forecast"
-        icon={CalendarClock}
-        label="Forecast revenue"
-        value={fmtPounds(data.forecastPence)}
-        sub="Next 30 days"
-        series={data.forecastSeries}
-        reconcileHash="forecast"
-      />
-      <KpiTile
-        id="signups"
-        icon={UserPlus}
-        label="New registrations"
-        value={data.newRegistrations.toLocaleString()}
-        sub="Confirmed signups"
-        series={data.signupsSeries}
-        reconcileHash="registrations"
-      />
+      {/* KPI 1 — Active Members */}
+      <TileShell icon={Users} label="Active members" reconcileHash="members">
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="font-display text-[26px] font-bold leading-none text-white">
+            {data.totalMembers.toLocaleString()}
+          </span>
+          {!netNeutral ? (
+            <span
+              className={`inline-flex items-center gap-1 text-[12px] font-semibold ${netPositive ? "text-reps-green" : "text-white/55"}`}
+            >
+              {netPositive ? (
+                <ArrowUpRight className="h-3 w-3" />
+              ) : (
+                <ArrowDownRight className="h-3 w-3" />
+              )}
+              {netPositive ? `+${net}` : net} net
+            </span>
+          ) : null}
+        </div>
+        <div className="mt-1 flex items-center gap-3 text-[11px] text-white/55">
+          <span>
+            Joined <span className="font-semibold text-white/80">{data.joinedInPeriod}</span>
+          </span>
+          <span className="text-white/20">·</span>
+          <span>
+            Churned <span className="font-semibold text-white/80">{data.churnedInPeriod}</span>
+          </span>
+        </div>
+        {data.membersSeries && data.membersSeries.length > 1 ? (
+          <div className="mt-3">
+            <Sparkline data={data.membersSeries} id="members" />
+          </div>
+        ) : (
+          <div className="mt-3 h-10" aria-hidden />
+        )}
+      </TileShell>
 
+      {/* KPI 2 — Revenue Received */}
+      <TileShell icon={Wallet} label="Revenue received" reconcileHash="revenue">
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="font-display text-[26px] font-bold leading-none text-white">
+            {fmtPounds(data.revenuePence)}
+          </span>
+        </div>
+        <div className="mt-1 text-[11px] text-white/45">Cash banked, selected period</div>
+        {data.revenueSeries && data.revenueSeries.length > 1 ? (
+          <div className="mt-3">
+            <Sparkline data={data.revenueSeries} id="revenue" />
+          </div>
+        ) : (
+          <div className="mt-3 h-10" aria-hidden />
+        )}
+      </TileShell>
+
+      {/* KPI 3 — Projected Cash Due (independent horizon) */}
+      <TileShell
+        icon={CalendarClock}
+        label="Projected cash due"
+        reconcileHash="forecast"
+        headerRight={<ForecastHorizonSelector value={fcastHorizon} />}
+      >
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="font-display text-[26px] font-bold leading-none text-white">
+            {fmtPounds(data.forecastPence)}
+          </span>
+        </div>
+        <div className="mt-1 text-[11px] text-white/45">
+          Scheduled renewals · separate from historical period
+        </div>
+        {data.forecastSeries && data.forecastSeries.length > 1 ? (
+          <div className="mt-3">
+            <Sparkline data={data.forecastSeries} id="forecast" color="var(--reps-blue)" />
+          </div>
+        ) : (
+          <div className="mt-3 h-10" aria-hidden />
+        )}
+      </TileShell>
+
+      {/* KPI 4 — Net Member Growth */}
+      <TileShell icon={TrendingUp} label="Net member growth" reconcileHash="growth">
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span
+            className={`font-display text-[26px] font-bold leading-none ${netPositive ? "text-reps-green" : net < 0 ? "text-white" : "text-white"}`}
+          >
+            {netPositive ? `+${net}` : net}
+          </span>
+        </div>
+        <div className="mt-1 flex items-center gap-3 text-[11px] text-white/55">
+          <span>
+            Joined <span className="font-semibold text-white/80">{data.joinedInPeriod}</span>
+          </span>
+          <span className="text-white/20">·</span>
+          <span>
+            Churned <span className="font-semibold text-white/80">{data.churnedInPeriod}</span>
+          </span>
+        </div>
+        {data.signupsSeries && data.signupsSeries.length > 1 ? (
+          <div className="mt-3">
+            <Sparkline data={data.signupsSeries} id="growth" color="var(--reps-green)" />
+          </div>
+        ) : (
+          <div className="mt-3 h-10" aria-hidden />
+        )}
+      </TileShell>
     </div>
   );
 }
