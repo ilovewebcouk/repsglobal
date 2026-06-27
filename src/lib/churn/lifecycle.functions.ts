@@ -41,7 +41,8 @@ export const peekRenewalToken = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const hash = await sha256Hex(data.token);
     const { data: row } = await supabaseAdmin.rpc("peek_renewal_token" as never, { _token_hash: hash } as never);
-    if (!row || (Array.isArray(row) && row.length === 0)) {
+    const rows = row as unknown;
+    if (!rows || (Array.isArray(rows) && rows.length === 0)) {
       return { ok: false, reason: "invalid" };
     }
     const r = (Array.isArray(row) ? row[0] : row) as {

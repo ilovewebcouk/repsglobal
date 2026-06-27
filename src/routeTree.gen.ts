@@ -45,6 +45,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as HelpIndexRouteImport } from './routes/help.index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
+import { Route as RenewCancelledRouteImport } from './routes/renew.cancelled'
+import { Route as RenewTokenRouteImport } from './routes/renew.$token'
 import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
@@ -103,6 +105,7 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksSupportAutoCloseRouteImport } from './routes/api/public/hooks/support-auto-close'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
+import { Route as ApiPublicHooksLifecycleCronRouteImport } from './routes/api/public/hooks/lifecycle-cron'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
@@ -311,6 +314,16 @@ const HelpIndexRoute = HelpIndexRouteImport.update({
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
   id: '/resources/$slug',
   path: '/resources/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RenewCancelledRoute = RenewCancelledRouteImport.update({
+  id: '/renew/cancelled',
+  path: '/renew/cancelled',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RenewTokenRoute = RenewTokenRouteImport.update({
+  id: '/renew/$token',
+  path: '/renew/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RTokenRoute = RTokenRouteImport.update({
@@ -613,6 +626,12 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
     path: '/api/public/hooks/send-scheduled-campaigns',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksLifecycleCronRoute =
+  ApiPublicHooksLifecycleCronRouteImport.update({
+    id: '/api/public/hooks/lifecycle-cron',
+    path: '/api/public/hooks/lifecycle-cron',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksLegacyRenewalRoute =
   ApiPublicHooksLegacyRenewalRouteImport.update({
     id: '/api/public/hooks/legacy-renewal',
@@ -865,6 +884,8 @@ export interface FileRoutesByFullPath {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
+  '/renew/$token': typeof RenewTokenRoute
+  '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
@@ -891,6 +912,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -985,6 +1007,8 @@ export interface FileRoutesByTo {
   '/portal/today': typeof PortalTodayRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
+  '/renew/$token': typeof RenewTokenRoute
+  '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/help': typeof HelpIndexRoute
   '/resources': typeof ResourcesIndexRoute
@@ -1010,6 +1034,7 @@ export interface FileRoutesByTo {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1110,6 +1135,8 @@ export interface FileRoutesById {
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
+  '/renew/$token': typeof RenewTokenRoute
+  '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
@@ -1137,6 +1164,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
+  '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/hooks/support-auto-close': typeof ApiPublicHooksSupportAutoCloseRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1236,6 +1264,8 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/r/$token'
+    | '/renew/$token'
+    | '/renew/cancelled'
     | '/resources/$slug'
     | '/help/'
     | '/resources/'
@@ -1262,6 +1292,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
@@ -1356,6 +1387,8 @@ export interface FileRouteTypes {
     | '/portal/today'
     | '/professions/$profession'
     | '/r/$token'
+    | '/renew/$token'
+    | '/renew/cancelled'
     | '/resources/$slug'
     | '/help'
     | '/resources'
@@ -1381,6 +1414,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
@@ -1480,6 +1514,8 @@ export interface FileRouteTypes {
     | '/pro/$slug'
     | '/professions/$profession'
     | '/r/$token'
+    | '/renew/$token'
+    | '/renew/cancelled'
     | '/resources/$slug'
     | '/help/'
     | '/resources/'
@@ -1507,6 +1543,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/api/public/hooks/legacy-renewal'
+    | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/hooks/support-auto-close'
     | '/api/public/payments/webhook'
@@ -1605,6 +1642,8 @@ export interface RootRouteChildren {
   ProSlugRoute: typeof ProSlugRouteWithChildren
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
   RTokenRoute: typeof RTokenRoute
+  RenewTokenRoute: typeof RenewTokenRoute
+  RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
@@ -1612,6 +1651,7 @@ export interface RootRouteChildren {
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
+  ApiPublicHooksLifecycleCronRoute: typeof ApiPublicHooksLifecycleCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicHooksSupportAutoCloseRoute: typeof ApiPublicHooksSupportAutoCloseRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -1874,6 +1914,20 @@ declare module '@tanstack/react-router' {
       path: '/resources/$slug'
       fullPath: '/resources/$slug'
       preLoaderRoute: typeof ResourcesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/renew/cancelled': {
+      id: '/renew/cancelled'
+      path: '/renew/cancelled'
+      fullPath: '/renew/cancelled'
+      preLoaderRoute: typeof RenewCancelledRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/renew/$token': {
+      id: '/renew/$token'
+      path: '/renew/$token'
+      fullPath: '/renew/$token'
+      preLoaderRoute: typeof RenewTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/r/$token': {
@@ -2280,6 +2334,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/send-scheduled-campaigns'
       fullPath: '/api/public/hooks/send-scheduled-campaigns'
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/lifecycle-cron': {
+      id: '/api/public/hooks/lifecycle-cron'
+      path: '/api/public/hooks/lifecycle-cron'
+      fullPath: '/api/public/hooks/lifecycle-cron'
+      preLoaderRoute: typeof ApiPublicHooksLifecycleCronRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/legacy-renewal': {
@@ -2771,6 +2832,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProSlugRoute: ProSlugRouteWithChildren,
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
   RTokenRoute: RTokenRoute,
+  RenewTokenRoute: RenewTokenRoute,
+  RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
@@ -2778,6 +2841,7 @@ const rootRouteChildren: RootRouteChildren = {
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
+  ApiPublicHooksLifecycleCronRoute: ApiPublicHooksLifecycleCronRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicHooksSupportAutoCloseRoute: ApiPublicHooksSupportAutoCloseRoute,
