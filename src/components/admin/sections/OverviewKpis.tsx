@@ -125,6 +125,7 @@ export function OverviewKpis({ data }: { data: AdminOverviewDTO }) {
         }
         sub="Verified, Pro and Studio"
         series={data.membersSeries}
+        reconcileHash="members"
       />
       <KpiTile
         id="revenue"
@@ -133,6 +134,7 @@ export function OverviewKpis({ data }: { data: AdminOverviewDTO }) {
         value={fmtPounds(data.revenuePence)}
         sub="Selected period"
         series={data.revenueSeries}
+        reconcileHash="revenue"
       />
       <KpiTile
         id="forecast"
@@ -149,7 +151,9 @@ export function OverviewKpis({ data }: { data: AdminOverviewDTO }) {
         value={data.newRegistrations.toLocaleString()}
         sub="Confirmed signups"
         series={data.signupsSeries}
+        reconcileHash="registrations"
       />
+
     </div>
   );
 }
