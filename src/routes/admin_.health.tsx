@@ -85,7 +85,7 @@ function HealthPage() {
   }
 
   return (
-    <DashboardShell>
+    <DashboardShell role="admin" active="Settings" title="Platform health" subtitle="Cron, queues, payments and subscription drift">
       <div className="mx-auto w-full max-w-6xl space-y-6 p-4 lg:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
