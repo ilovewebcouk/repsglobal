@@ -77,6 +77,7 @@ import { Route as AdminVerificationRouteImport } from './routes/admin_.verificat
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
+import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
@@ -478,6 +479,11 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   path: '/admin/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
+  id: '/admin_/reconciliation',
+  path: '/admin/reconciliation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProfessionalsRoute = AdminProfessionalsRouteImport.update({
   id: '/admin_/professionals',
   path: '/admin/professionals',
@@ -861,6 +867,7 @@ export interface FileRoutesByFullPath {
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
@@ -987,6 +994,7 @@ export interface FileRoutesByTo {
   '/admin/migration': typeof AdminMigrationRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
@@ -1114,6 +1122,7 @@ export interface FileRoutesById {
   '/admin_/migration': typeof AdminMigrationRoute
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
+  '/admin_/reconciliation': typeof AdminReconciliationRoute
   '/admin_/reviews': typeof AdminReviewsRoute
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
@@ -1244,6 +1253,7 @@ export interface FileRouteTypes {
     | '/admin/migration'
     | '/admin/payments'
     | '/admin/professionals'
+    | '/admin/reconciliation'
     | '/admin/reviews'
     | '/admin/settings'
     | '/admin/support'
@@ -1370,6 +1380,7 @@ export interface FileRouteTypes {
     | '/admin/migration'
     | '/admin/payments'
     | '/admin/professionals'
+    | '/admin/reconciliation'
     | '/admin/reviews'
     | '/admin/settings'
     | '/admin/support'
@@ -1496,6 +1507,7 @@ export interface FileRouteTypes {
     | '/admin_/migration'
     | '/admin_/payments'
     | '/admin_/professionals'
+    | '/admin_/reconciliation'
     | '/admin_/reviews'
     | '/admin_/settings'
     | '/admin_/support'
@@ -1626,6 +1638,7 @@ export interface RootRouteChildren {
   AdminMigrationRoute: typeof AdminMigrationRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
+  AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
@@ -2151,6 +2164,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/reviews'
       fullPath: '/admin/reviews'
       preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/reconciliation': {
+      id: '/admin_/reconciliation'
+      path: '/admin/reconciliation'
+      fullPath: '/admin/reconciliation'
+      preLoaderRoute: typeof AdminReconciliationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/professionals': {
@@ -2824,6 +2844,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminMigrationRoute: AdminMigrationRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
+  AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,

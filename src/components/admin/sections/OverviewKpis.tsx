@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Area, AreaChart } from "recharts";
 import { Users, Wallet, CalendarClock, UserPlus, TrendingUp } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { AdminCard } from "@/components/admin/AdminCard";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
