@@ -244,7 +244,11 @@ function ReplayRowCard({ row }: { row: ReplayRow }) {
 function AdminWebhookRecoveryPage() {
   const diagnoseFn = useServerFn(diagnoseWebhookFailures);
   const replayFn = useServerFn(dryRunReplayWebhookFailures);
-  const [tab, setTab] = useState<"diagnosis" | "replay">("diagnosis");
+  const liveReplayFn = useServerFn(replayWebhookFailures);
+  const [tab, setTab] = useState<"diagnosis" | "replay" | "live">("diagnosis");
+  const [liveResult, setLiveResult] = useState<ReplayResultDTO | null>(null);
+  const [liveRunning, setLiveRunning] = useState(false);
+  const [liveError, setLiveError] = useState<string | null>(null);
 
   const q = useQuery({
     queryKey: ["admin", "webhook-recovery", "diagnosis"],
@@ -255,6 +259,23 @@ function AdminWebhookRecoveryPage() {
     queryFn: () => replayFn({ data: {} }),
     enabled: tab === "replay",
   });
+
+  async function runLiveReplay() {
+    const confirmed = window.confirm(
+      "Step 4 — LIVE replay.\n\nThis will:\n  • Upsert subscriptions rows from Stripe\n  • Set churn lifecycle stages\n  • Clear processing_error on payment_events\n\nIt will NOT send emails or modify Stripe.\n\nProceed?",
+    );
+    if (!confirmed) return;
+    setLiveRunning(true);
+    setLiveError(null);
+    try {
+      const res = await liveReplayFn({ data: { confirm: "REPLAY" } });
+      setLiveResult(res);
+    } catch (e) {
+      setLiveError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLiveRunning(false);
+    }
+  }
 
   const data = q.data;
 
