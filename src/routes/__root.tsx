@@ -189,9 +189,17 @@ function RootComponent() {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      // Fire-and-forget welcome email on confirmed sign-in. Idempotent server-side
+      // via `welcome-signup:${userId}` key in email_send_log.
+      if (event === "SIGNED_IN") {
+        import("@/lib/email/welcome.functions")
+          .then(({ sendWelcomeEmailServerFn }) => sendWelcomeEmailServerFn())
+          .catch(() => {});
+      }
     });
     return () => subscription.unsubscribe();
   }, [router, queryClient]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
