@@ -170,6 +170,28 @@ function ReconciliationPage() {
           </PCard>
         </section>
 
+        {/* ---- Forecast -------------------------------------------------- */}
+        <section id="forecast" className="scroll-mt-24">
+          <PCard>
+            <SectionHeader
+              title="Forecast revenue reconciliation"
+              total={
+                forecast.data
+                  ? `${fmtPounds(forecast.data.total_forecast_pence)} dashboard total`
+                  : "loading…"
+              }
+              sub="Projected cash due in the next 30 days. Two sources: (1) active live subscriptions whose current_period_end falls inside the window — billed at the fixed tier renewal price; (2) bd_migration rows with status seeded/pending whose bd_renewal_date falls inside the window — billed at bd_price_pence, or the tier renewal price if bd_price_pence is null. Stripe is NOT called; this is a deterministic projection from local state only."
+            />
+            {forecast.isLoading ? (
+              <Loading />
+            ) : forecast.error ? (
+              <ErrorBox e={forecast.error} />
+            ) : forecast.data ? (
+              <ForecastTables data={forecast.data} />
+            ) : null}
+          </PCard>
+        </section>
+
         {/* ---- Members --------------------------------------------------- */}
         <section id="members" className="scroll-mt-24">
           <PCard>
