@@ -670,7 +670,7 @@ export const getForecastReconciliation = createServerFn({ method: "GET" })
     const countedUsers = new Set<string>();
     const countedMembers = new Set<string>();
 
-    const subs: ForecastSubRow[] = (subsRaw ?? []).map((s) => {
+    const subs: ForecastSubRow[] = (subsRaw ?? []).map((s: any) => {
       let reason: string | null = null;
       if (s.environment !== "live")
         reason = `environment="${s.environment}" (forecast requires "live")`;
