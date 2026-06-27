@@ -73,6 +73,7 @@ import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare
 import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as AdminWebhookRecoveryRouteImport } from './routes/admin_.webhook-recovery'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
@@ -457,6 +458,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
 const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
   path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWebhookRecoveryRoute = AdminWebhookRecoveryRouteImport.update({
+  id: '/admin_/webhook-recovery',
+  path: '/admin/webhook-recovery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
@@ -872,6 +878,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
+  '/admin/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -999,6 +1006,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/verification': typeof AdminVerificationRoute
+  '/admin/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -1127,6 +1135,7 @@ export interface FileRoutesById {
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/verification': typeof AdminVerificationRoute
+  '/admin_/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -1258,6 +1267,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/verification'
+    | '/admin/webhook-recovery'
     | '/c/$slug'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
@@ -1385,6 +1395,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/verification'
+    | '/admin/webhook-recovery'
     | '/c/$slug'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
@@ -1512,6 +1523,7 @@ export interface FileRouteTypes {
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/verification'
+    | '/admin_/webhook-recovery'
     | '/c/$slug'
     | '/checkout/return'
     | '/compare_/reps-vs-mypthub'
@@ -1643,6 +1655,7 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
+  AdminWebhookRecoveryRoute: typeof AdminWebhookRecoveryRoute
   CSlugRoute: typeof CSlugRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
@@ -2136,6 +2149,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$slug'
       fullPath: '/c/$slug'
       preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/webhook-recovery': {
+      id: '/admin_/webhook-recovery'
+      path: '/admin/webhook-recovery'
+      fullPath: '/admin/webhook-recovery'
+      preLoaderRoute: typeof AdminWebhookRecoveryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/verification': {
@@ -2849,6 +2869,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
+  AdminWebhookRecoveryRoute: AdminWebhookRecoveryRoute,
   CSlugRoute: CSlugRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
