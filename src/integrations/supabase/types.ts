@@ -3979,6 +3979,12 @@ export type Database = {
           status: string
         }[]
       }
+      get_user_ids_by_email: {
+        Args: { _email: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       grant_credit_topup: {
         Args: {
           _credits: number
