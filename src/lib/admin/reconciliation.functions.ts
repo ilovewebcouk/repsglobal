@@ -120,11 +120,8 @@ export interface RegistrationReportDTO {
 
 // ---- Helpers (mirror overview.functions.ts) --------------------------------
 
-const ACTIVE_STATUSES = ["active", "trialing"];
-const COUNTED_TIERS = ["verified", "pro", "studio"];
+const asNumber_ = null; // placeholder removed below
 
-const asString = (v: unknown) =>
-  typeof v === "string" && v.length > 0 ? v : null;
 
 const asNumber = (v: unknown) => (typeof v === "number" ? v : null);
 
