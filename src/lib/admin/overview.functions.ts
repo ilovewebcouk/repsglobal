@@ -112,6 +112,11 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       // payload.data.object.amount_paid (invoices) / .amount (charges).
       const data = (payload.data ?? {}) as Record<string, unknown>;
       const obj = ((data.object ?? {}) as Record<string, unknown>);
+      // Stripe fires BOTH charge.succeeded and invoice.payment_succeeded for
+      // a subscription invoice — same money, two events. Count the invoice
+      // event for any invoiced payment, and only count standalone charges
+      // (no associated invoice) on the charge.succeeded rail.
+      if (ev.event_type === "charge.succeeded" && obj.invoice) continue;
       let amount =
         typeof obj.amount_paid === "number"
           ? (obj.amount_paid as number)
