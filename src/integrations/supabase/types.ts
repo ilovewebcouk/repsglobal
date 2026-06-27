@@ -169,9 +169,18 @@ export type Database = {
           linkedin: string | null
           lon: number | null
           migration_canonical_stripe_customer_id: string | null
+          migration_charged_pence: number | null
           migration_cohort_override: string | null
           migration_cohort_reason: string | null
+          migration_error: string | null
+          migration_idempotency_key: string | null
+          migration_ran_at: string | null
           migration_review_resolved: boolean
+          migration_status: string | null
+          migration_stripe_customer_id: string | null
+          migration_stripe_invoice_id: string | null
+          migration_stripe_schedule_id: string | null
+          migration_stripe_subscription_id: string | null
           notes: string | null
           phone_raw: string | null
           profile_photo_reject_category: string | null
@@ -218,9 +227,18 @@ export type Database = {
           linkedin?: string | null
           lon?: number | null
           migration_canonical_stripe_customer_id?: string | null
+          migration_charged_pence?: number | null
           migration_cohort_override?: string | null
           migration_cohort_reason?: string | null
+          migration_error?: string | null
+          migration_idempotency_key?: string | null
+          migration_ran_at?: string | null
           migration_review_resolved?: boolean
+          migration_status?: string | null
+          migration_stripe_customer_id?: string | null
+          migration_stripe_invoice_id?: string | null
+          migration_stripe_schedule_id?: string | null
+          migration_stripe_subscription_id?: string | null
           notes?: string | null
           phone_raw?: string | null
           profile_photo_reject_category?: string | null
@@ -267,9 +285,18 @@ export type Database = {
           linkedin?: string | null
           lon?: number | null
           migration_canonical_stripe_customer_id?: string | null
+          migration_charged_pence?: number | null
           migration_cohort_override?: string | null
           migration_cohort_reason?: string | null
+          migration_error?: string | null
+          migration_idempotency_key?: string | null
+          migration_ran_at?: string | null
           migration_review_resolved?: boolean
+          migration_status?: string | null
+          migration_stripe_customer_id?: string | null
+          migration_stripe_invoice_id?: string | null
+          migration_stripe_schedule_id?: string | null
+          migration_stripe_subscription_id?: string | null
           notes?: string | null
           phone_raw?: string | null
           profile_photo_reject_category?: string | null
@@ -290,6 +317,30 @@ export type Database = {
           years_active?: string | null
           youtube?: string | null
           zip_code?: string | null
+        }
+        Relationships: []
+      }
+      bd_member_seed_pre_v7_snapshot: {
+        Row: {
+          bd_member_id: number | null
+          email: string | null
+          payload: Json
+          snapshot_at: string
+          snapshot_id: string
+        }
+        Insert: {
+          bd_member_id?: number | null
+          email?: string | null
+          payload: Json
+          snapshot_at?: string
+          snapshot_id?: string
+        }
+        Update: {
+          bd_member_id?: number | null
+          email?: string | null
+          payload?: Json
+          snapshot_at?: string
+          snapshot_id?: string
         }
         Relationships: []
       }
@@ -372,6 +423,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bd_migration_v7_run_log: {
+        Row: {
+          bd_member_id: number | null
+          charged_pence: number | null
+          cohort: string
+          email: string | null
+          error_message: string | null
+          id: string
+          idempotency_key: string | null
+          outcome: string
+          ran_at: string
+          ran_by: string | null
+          stripe_customer_id: string | null
+          stripe_invoice_id: string | null
+          stripe_schedule_id: string | null
+          stripe_subscription_id: string | null
+        }
+        Insert: {
+          bd_member_id?: number | null
+          charged_pence?: number | null
+          cohort: string
+          email?: string | null
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          outcome: string
+          ran_at?: string
+          ran_by?: string | null
+          stripe_customer_id?: string | null
+          stripe_invoice_id?: string | null
+          stripe_schedule_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Update: {
+          bd_member_id?: number | null
+          charged_pence?: number | null
+          cohort?: string
+          email?: string | null
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          outcome?: string
+          ran_at?: string
+          ran_by?: string | null
+          stripe_customer_id?: string | null
+          stripe_invoice_id?: string | null
+          stripe_schedule_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Relationships: []
       }
       bookings: {
         Row: {
