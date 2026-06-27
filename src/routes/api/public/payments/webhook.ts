@@ -770,15 +770,44 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
         await finalizeEventRow(rowId, { userId, processingError });
 
         if (processingError) {
-          return new Response(JSON.stringify({ received: true, error: processingError }), {
-            status: 500,
-            headers: { ...CORS, "Content-Type": "application/json" },
-          });
+          // B-02 dead-letter policy: increment retry_count; after 5 failed
+          // attempts, ack 200 ("dead-lettered") so Stripe stops retrying
+          // forever. Row remains flagged for the ops dashboard.
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: row } = await supabaseAdmin
+            .from("payment_events")
+            .select("retry_count")
+            .eq("id", rowId)
+            .maybeSingle();
+          const nextCount = ((row?.retry_count as number | null) ?? 0) + 1;
+          const DLQ_THRESHOLD = 5;
+          const deadLetter = nextCount >= DLQ_THRESHOLD;
+          await supabaseAdmin
+            .from("payment_events")
+            .update({
+              retry_count: nextCount,
+              dead_lettered_at: deadLetter ? new Date().toISOString() : null,
+            } as never)
+            .eq("id", rowId);
+          if (deadLetter) {
+            console.error(
+              `[payments-webhook] DEAD-LETTER event=${event.id} type=${event.type} attempts=${nextCount} error=${processingError}`,
+            );
+            return new Response(
+              JSON.stringify({ received: true, dead_lettered: true, attempts: nextCount }),
+              { status: 200, headers: { ...CORS, "Content-Type": "application/json" } },
+            );
+          }
+          return new Response(
+            JSON.stringify({ received: true, error: processingError, attempts: nextCount }),
+            { status: 500, headers: { ...CORS, "Content-Type": "application/json" } },
+          );
         }
         return new Response(JSON.stringify({ received: true }), {
           status: 200,
           headers: { ...CORS, "Content-Type": "application/json" },
         });
+
       },
     },
   },
