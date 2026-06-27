@@ -63,7 +63,7 @@ function KpiTile({
   sub: string;
   series: { day: string; value: number }[] | null;
   id: string;
-  reconcileHash?: "revenue" | "members" | "registrations";
+  reconcileHash?: "revenue" | "members" | "registrations" | "forecast";
 }) {
   return (
     <AdminCard>
