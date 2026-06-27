@@ -153,6 +153,13 @@ function ReconciliationPage() {
     queryFn: () => growthFn({ data: { from: range.from, to: range.to } }),
   });
 
+  const paymentFailedFn = useServerFn(listPaymentFailedSubs);
+  const paymentFailed = useQuery({
+    queryKey: ["admin-recon", "payment-failed"],
+    queryFn: () => paymentFailedFn(),
+  });
+
+
 
   return (
     <DashboardShell
