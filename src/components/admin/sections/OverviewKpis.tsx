@@ -54,6 +54,7 @@ function KpiTile({
   sub,
   series,
   id,
+  reconcileHash,
 }: {
   icon: LucideIcon;
   label: string;
@@ -62,6 +63,7 @@ function KpiTile({
   sub: string;
   series: { day: string; value: number }[] | null;
   id: string;
+  reconcileHash?: "revenue" | "members" | "registrations";
 }) {
   return (
     <AdminCard>
@@ -70,7 +72,18 @@ function KpiTile({
           <Icon className="h-[18px] w-[18px]" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[12px] text-white/55">{label}</div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[12px] text-white/55">{label}</div>
+            {reconcileHash ? (
+              <Link
+                to="/admin/reconciliation"
+                hash={reconcileHash}
+                className="text-[10px] uppercase tracking-[0.14em] text-white/45 hover:text-reps-orange"
+              >
+                Reconcile →
+              </Link>
+            ) : null}
+          </div>
           <div className="mt-1.5 flex items-baseline gap-2">
             <span className="font-display text-[26px] font-bold leading-none text-white">
               {value}
