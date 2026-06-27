@@ -53,8 +53,12 @@ function AdminTeamPage() {
     if (!email.trim()) return;
     setBusy(true);
     try {
-      await runGrant({ data: { email: email.trim() } });
-      toast.success(`${email.trim()} is now an admin.`);
+      const res = await runGrant({ data: { email: email.trim() } });
+      toast.success(
+        res?.invited
+          ? `Invite sent to ${email.trim()}. They'll become an admin as soon as they accept.`
+          : `${email.trim()} is now an admin.`,
+      );
       setEmail("");
       await refresh();
     } catch (e) {
@@ -88,7 +92,7 @@ function AdminTeamPage() {
               <h2 className="font-display text-[16px] font-semibold text-white">Grant admin</h2>
             </div>
             <p className="mt-1 text-[13px] text-white/65">
-              The person must already have a REPS account. Enter the email they signed up with.
+              Enter their email. If they don't have a REPS account yet, we'll send them an invite to set a password.
             </p>
             <form onSubmit={handleGrant} className="mt-4 flex flex-col gap-3 sm:flex-row">
               <Input
@@ -153,7 +157,11 @@ function AdminTeamPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex">
-                                <Button variant="outline" size="sm" disabled className="opacity-60">
+                                <Button
+                                  size="sm"
+                                  disabled
+                                  className="border border-red-500/20 bg-red-500/5 text-red-300/60"
+                                >
                                   <Trash2 className="size-3.5" />
                                   Remove
                                 </Button>
@@ -162,7 +170,11 @@ function AdminTeamPage() {
                             <TooltipContent>You can't remove your own admin access — ask another admin.</TooltipContent>
                           </Tooltip>
                         ) : (
-                          <Button variant="outline" size="sm" onClick={() => setConfirmRow(r)}>
+                          <Button
+                            size="sm"
+                            onClick={() => setConfirmRow(r)}
+                            className="border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200"
+                          >
                             <Trash2 className="size-3.5" />
                             Remove
                           </Button>
