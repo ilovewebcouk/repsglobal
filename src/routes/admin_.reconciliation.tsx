@@ -20,12 +20,26 @@ import {
   getMembershipReconciliation,
   getRegistrationsReconciliation,
   getForecastReconciliation,
+  getGrowthReconciliation,
   type RevenueRow,
   type RevenueReportDTO,
   type MemberReportDTO,
   type RegistrationReportDTO,
   type ForecastReportDTO,
+  type GrowthReportDTO,
 } from "@/lib/admin/reconciliation.functions";
+import {
+  FORECAST_HORIZON_OPTIONS,
+  type ForecastHorizon,
+} from "@/lib/admin/metrics-definitions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useNavigate } from "@tanstack/react-router";
 
 const searchSchema = z.object({
   period: fallback(
