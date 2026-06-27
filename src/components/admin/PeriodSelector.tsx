@@ -15,12 +15,11 @@ export function PeriodSelector({ value }: { value: PeriodKey }) {
       value={value}
       onValueChange={(v) =>
         navigate({
-          search: (prev) => ({ ...(prev as object), period: v as PeriodKey }),
+          search: (prev: Record<string, unknown>) => ({ ...prev, period: v as PeriodKey }),
         })
       }
     >
       <SelectTrigger
-        size="sm"
         className="h-8 w-[160px] rounded-[8px] border-reps-border bg-reps-panel-soft text-[12px] font-semibold text-white/80 shadow-none"
       >
         <SelectValue />
