@@ -802,3 +802,111 @@ function ForecastTables({ data }: { data: ForecastReportDTO }) {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Net Member Growth tables
+// ---------------------------------------------------------------------------
+
+function GrowthTables({ data }: { data: GrowthReportDTO }) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="mb-2 text-[12px] text-white/55">
+          Joined inside window ({data.joined_total} included)
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12px]">
+            <thead className="text-left text-white/45">
+              <tr>
+                <th className="py-2 pr-3 font-medium">User</th>
+                <th className="py-2 pr-3 font-medium">First paid sub</th>
+                <th className="py-2 pr-3 font-medium">Tier</th>
+                <th className="py-2 pr-3 font-medium">Counted?</th>
+                <th className="py-2 font-medium">Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.joined.map((r) => (
+                <tr key={`j-${r.user_id}`} className="border-t border-white/5">
+                  <td className="py-2 pr-3 text-white/80">
+                    {r.email ?? r.user_id}
+                  </td>
+                  <td className="py-2 pr-3 text-white/70">
+                    {fmtDateTime(r.first_paid_subscription_at)}
+                  </td>
+                  <td className="py-2 pr-3 text-white/70">{r.tier ?? "—"}</td>
+                  <td className="py-2 pr-3">
+                    {r.included_in_joined ? (
+                      <Badge className="bg-reps-green/15 text-reps-green">Yes</Badge>
+                    ) : (
+                      <Badge className="bg-white/10 text-white/55">No</Badge>
+                    )}
+                  </td>
+                  <td className="py-2 text-white/55">
+                    {r.exclusion_reason ?? "—"}
+                  </td>
+                </tr>
+              ))}
+              {data.joined.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-white/55">
+                    No paid subscriptions on record.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-2 text-[12px] text-white/55">
+          Churned inside window ({data.churned_total} included)
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12px]">
+            <thead className="text-left text-white/45">
+              <tr>
+                <th className="py-2 pr-3 font-medium">User</th>
+                <th className="py-2 pr-3 font-medium">Stage</th>
+                <th className="py-2 pr-3 font-medium">Entered at</th>
+                <th className="py-2 pr-3 font-medium">Counted?</th>
+                <th className="py-2 font-medium">Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.churned.map((r) => (
+                <tr key={`c-${r.user_id}`} className="border-t border-white/5">
+                  <td className="py-2 pr-3 text-white/80">
+                    {r.email ?? r.user_id}
+                  </td>
+                  <td className="py-2 pr-3 text-white/70">{r.stage ?? "—"}</td>
+                  <td className="py-2 pr-3 text-white/70">
+                    {fmtDateTime(r.entered_at)}
+                  </td>
+                  <td className="py-2 pr-3">
+                    {r.included_in_churned ? (
+                      <Badge className="bg-reps-orange/15 text-reps-orange">Yes</Badge>
+                    ) : (
+                      <Badge className="bg-white/10 text-white/55">No</Badge>
+                    )}
+                  </td>
+                  <td className="py-2 text-white/55">
+                    {r.exclusion_reason ?? "—"}
+                  </td>
+                </tr>
+              ))}
+              {data.churned.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-white/55">
+                    No churn_lifecycle records yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
