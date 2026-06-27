@@ -178,7 +178,10 @@ export async function mintAndEmailRenewalToken(opts: {
   const result = await sendTransactionalEmailServer({
     templateName: opts.templateName,
     recipientEmail: opts.email,
-    idempotencyKey: `${opts.purpose}-${opts.userId}-${Date.now()}`,
+    // Day-bucketed key: retries within the same UTC day collapse to one send,
+    // preventing duplicate nudges if the function is retried (queue redelivery,
+    // network blip, manual rerun).
+    idempotencyKey: `${opts.purpose}-${opts.userId}-${new Date().toISOString().slice(0, 10)}`,
     templateData: { ...opts.templateData, renewUrl },
   });
 
