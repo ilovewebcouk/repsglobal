@@ -3885,6 +3885,7 @@ export type Database = {
           signups: number
         }[]
       }
+      count_orphan_subscriptions: { Args: never; Returns: number }
       credit_tier_policy: {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: {
@@ -4118,6 +4119,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      platform_health_snapshot: { Args: never; Returns: Json }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -4179,6 +4181,7 @@ export type Database = {
           hard_purged: number
         }[]
       }
+      sweep_orphan_subscriptions: { Args: never; Returns: number }
       upsert_pro_review_response: {
         Args: { _response: string; _review_id: string }
         Returns: undefined
