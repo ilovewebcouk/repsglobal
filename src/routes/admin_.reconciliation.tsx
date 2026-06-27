@@ -433,7 +433,7 @@ function RegistrationsTable({
   rows,
   total,
 }: {
-  rows: Awaited<ReturnType<typeof getRegistrationsReconciliation>>["rows"];
+  rows: RegistrationReportDTO["rows"];
   total: number;
 }) {
   return (
