@@ -16,6 +16,8 @@ import {
 } from "@/lib/admin/webhook-recovery.functions";
 import {
   dryRunReplayWebhookFailures,
+  replayWebhookFailures,
+  type ReplayResultDTO,
   type ReplayRow,
 } from "@/lib/admin/webhook-replay.functions";
 
@@ -242,7 +244,11 @@ function ReplayRowCard({ row }: { row: ReplayRow }) {
 function AdminWebhookRecoveryPage() {
   const diagnoseFn = useServerFn(diagnoseWebhookFailures);
   const replayFn = useServerFn(dryRunReplayWebhookFailures);
-  const [tab, setTab] = useState<"diagnosis" | "replay">("diagnosis");
+  const liveReplayFn = useServerFn(replayWebhookFailures);
+  const [tab, setTab] = useState<"diagnosis" | "replay" | "live">("diagnosis");
+  const [liveResult, setLiveResult] = useState<ReplayResultDTO | null>(null);
+  const [liveRunning, setLiveRunning] = useState(false);
+  const [liveError, setLiveError] = useState<string | null>(null);
 
   const q = useQuery({
     queryKey: ["admin", "webhook-recovery", "diagnosis"],
@@ -253,6 +259,23 @@ function AdminWebhookRecoveryPage() {
     queryFn: () => replayFn({ data: {} }),
     enabled: tab === "replay",
   });
+
+  async function runLiveReplay() {
+    const confirmed = window.confirm(
+      "Step 4 — LIVE replay.\n\nThis will:\n  • Upsert subscriptions rows from Stripe\n  • Set churn lifecycle stages\n  • Clear processing_error on payment_events\n\nIt will NOT send emails or modify Stripe.\n\nProceed?",
+    );
+    if (!confirmed) return;
+    setLiveRunning(true);
+    setLiveError(null);
+    try {
+      const res = await liveReplayFn({ data: { confirm: "REPLAY" } });
+      setLiveResult(res);
+    } catch (e) {
+      setLiveError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLiveRunning(false);
+    }
+  }
 
   const data = q.data;
 
@@ -277,6 +300,13 @@ function AdminWebhookRecoveryPage() {
           onClick={() => setTab("replay")}
         >
           Step 3 — Dry-run replay
+        </Button>
+        <Button
+          variant={tab === "live" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setTab("live")}
+        >
+          Step 4 — Live replay
         </Button>
       </div>
 
@@ -437,6 +467,144 @@ function AdminWebhookRecoveryPage() {
           )}
         </div>
       )}
+
+      {tab === "live" && (
+        <div className="space-y-6">
+          <PCard>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-2xl">
+                <div className="font-display text-[18px] mb-1">
+                  Step 4 — Live replay (writes)
+                </div>
+                <div className="text-[12.5px] text-white/65 leading-relaxed">
+                  Re-processes every failed <code>payment_events</code> row in
+                  the last 7 days using the live resolver. Upserts{" "}
+                  <code>subscriptions</code>, sets churn lifecycle stages, and
+                  clears <code>processing_error</code>. Idempotent — safe to
+                  re-run. Does NOT send emails or update Stripe customer
+                  metadata (live handler already does the latter going forward).
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={runLiveReplay}
+                disabled={liveRunning}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                {liveRunning ? "Replaying…" : "Run live replay"}
+              </Button>
+            </div>
+          </PCard>
+
+          {liveError && (
+            <PCard>
+              <div className="text-red-300 text-[13px]">{liveError}</div>
+            </PCard>
+          )}
+
+          {liveResult && (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <PCard>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/55 mb-2">
+                    Processed
+                  </div>
+                  <div className="font-display text-[28px] leading-none">
+                    {liveResult.total_failed_events}
+                  </div>
+                </PCard>
+                <PCard>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/55 mb-2">
+                    OK
+                  </div>
+                  <div className="font-display text-[28px] leading-none text-emerald-300">
+                    {liveResult.ok}
+                  </div>
+                </PCard>
+                <PCard>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/55 mb-2">
+                    Skipped
+                  </div>
+                  <div className="font-display text-[28px] leading-none">
+                    {liveResult.skipped}
+                  </div>
+                </PCard>
+                <PCard>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/55 mb-2">
+                    Errored
+                  </div>
+                  <div className="font-display text-[28px] leading-none text-red-300">
+                    {liveResult.errored}
+                  </div>
+                </PCard>
+              </div>
+
+              <div className="space-y-3">
+                {liveResult.rows.map((r) => (
+                  <PCard key={r.payment_event_id}>
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className="bg-white/5 border border-white/15 text-white/80 text-[10px] uppercase tracking-wider">
+                          {r.event_type}
+                        </Badge>
+                        <Badge
+                          className={`border text-[10px] uppercase tracking-wider ${
+                            r.status === "ok"
+                              ? "bg-emerald-500/15 text-emerald-300 border-emerald-400/30"
+                              : r.status === "skipped"
+                                ? "bg-zinc-500/15 text-zinc-300 border-zinc-400/30"
+                                : "bg-red-500/15 text-red-300 border-red-400/30"
+                          }`}
+                        >
+                          {r.status}
+                        </Badge>
+                        {r.churn_stage_set && (
+                          <Badge className="bg-white/5 border border-white/15 text-white/70 text-[10px] uppercase tracking-wider">
+                            churn → {r.churn_stage_set}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-white/55 font-mono">
+                        {r.stripe_event_id}
+                      </div>
+                    </div>
+                    {r.subscription_upserted && (
+                      <div className="text-[11.5px] text-emerald-200/90 font-mono break-all mb-1">
+                        upserted sub: {r.subscription_upserted}
+                      </div>
+                    )}
+                    {r.resolved_user_id && (
+                      <div className="text-[11.5px] text-white/65 font-mono break-all">
+                        user: {r.resolved_user_id} · via {r.resolved_via}
+                      </div>
+                    )}
+                    {r.error && (
+                      <div className="text-red-300/90 text-[11.5px] mt-2 font-mono break-words">
+                        {r.error}
+                      </div>
+                    )}
+                    {r.notes.length > 0 && (
+                      <ul className="mt-2 space-y-0.5 text-[11px] text-white/55 list-disc pl-4">
+                        {r.notes.map((n, i) => (
+                          <li key={i}>{n}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </PCard>
+                ))}
+              </div>
+
+              <details className="text-[11px] text-white/45">
+                <summary className="cursor-pointer">Raw JSON</summary>
+                <pre className="mt-2 p-3 bg-black/40 rounded overflow-auto text-[10px]">
+                  {JSON.stringify(liveResult, null, 2)}
+                </pre>
+              </details>
+            </>
+          )}
+        </div>
+      )}
+
 
       {tab === "diagnosis" && data && (
         <details className="text-[11px] text-white/45 mt-6">
