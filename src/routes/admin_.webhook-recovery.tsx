@@ -16,6 +16,8 @@ import {
 } from "@/lib/admin/webhook-recovery.functions";
 import {
   dryRunReplayWebhookFailures,
+  replayWebhookFailures,
+  type ReplayResultDTO,
   type ReplayRow,
 } from "@/lib/admin/webhook-replay.functions";
 
