@@ -171,36 +171,82 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       revBuckets.set(key, (revBuckets.get(key) ?? 0) + payment.amount);
     }
 
-    // 3) Forecast — active subs renewing in next 30 days, plus approved migration charges.
+    // 3) Forecast — three sources, deduped by user_id (or bd_member_id for
+    // legacy rows not yet linked to a Supabase user):
+    //   a) Active counted subscriptions whose current_period_end is in window.
+    //   b) legacy_stripe_link rows whose access_expires_at is in window — the
+    //      same anchor the renewal cron uses to charge £99.
+    //   c) bd_member_seed rows whose bd_next_due_date is in window, for
+    //      members not yet covered by (a) or (b).
     const fcastFrom = new Date(fcast.from).getTime();
     const fcastTo = new Date(fcast.to).getTime();
     let forecastPence = 0;
     const fcastBuckets = new Map<string, number>();
+    const countedUsers = new Set<string>();
+    const countedMembers = new Set<string>();
+
+    const addForecast = (iso: string, amount: number) => {
+      if (!amount) return;
+      forecastPence += amount;
+      const key = londonDayKey(iso);
+      fcastBuckets.set(key, (fcastBuckets.get(key) ?? 0) + amount);
+    };
+
     for (const s of subs) {
-      if (!s.current_period_end) continue;
+      if (!s.current_period_end || !s.user_id) continue;
       const t = new Date(s.current_period_end).getTime();
       if (t < fcastFrom || t >= fcastTo) continue;
       const amount = TIER_RENEWAL_PENCE[s.tier!] ?? 0;
       if (!amount) continue;
-      forecastPence += amount;
-      const key = londonDayKey(s.current_period_end);
-      fcastBuckets.set(key, (fcastBuckets.get(key) ?? 0) + amount);
+      addForecast(s.current_period_end, amount);
+      countedUsers.add(s.user_id);
     }
 
-    // bd_migration scheduled renewals (status ready/approved with renewal date in window)
-    const { data: migs } = await supabase
-      .from("bd_migration")
-      .select("bd_renewal_date, status, target_tier, bd_price_pence")
-      .in("status", ["seeded", "pending"]);
-    for (const m of migs ?? []) {
-      if (!m.bd_renewal_date) continue;
-      const t = new Date(m.bd_renewal_date).getTime();
+    // Seeds index — used to resolve legacy_stripe_link → claimed_user_id and
+    // to dedupe pass (c) against passes (a)/(b).
+    const { data: seeds } = await supabase
+      .from("bd_member_seed")
+      .select("bd_member_id, claimed_user_id, bd_next_due_date");
+    const seedByMember = new Map<string, { claimed_user_id: string | null; bd_next_due_date: string | null }>();
+    for (const s of seeds ?? []) {
+      if (s.bd_member_id != null) {
+        seedByMember.set(String(s.bd_member_id), {
+          claimed_user_id: (s.claimed_user_id as string | null) ?? null,
+          bd_next_due_date: (s.bd_next_due_date as string | null) ?? null,
+        });
+      }
+    }
+
+    const LEGACY_AMOUNT = TIER_RENEWAL_PENCE["verified"];
+
+    // (b) legacy_stripe_link
+    const { data: links } = await supabase
+      .from("legacy_stripe_link")
+      .select("bd_member_id, access_expires_at")
+      .not("access_expires_at", "is", null)
+      .gte("access_expires_at", new Date(fcastFrom).toISOString())
+      .lt("access_expires_at", new Date(fcastTo).toISOString());
+    for (const l of links ?? []) {
+      const memberKey = l.bd_member_id != null ? String(l.bd_member_id) : null;
+      const seed = memberKey ? seedByMember.get(memberKey) : null;
+      const uid = seed?.claimed_user_id ?? null;
+      if (uid && countedUsers.has(uid)) continue;
+      if (memberKey && countedMembers.has(memberKey)) continue;
+      addForecast(l.access_expires_at as string, LEGACY_AMOUNT);
+      if (uid) countedUsers.add(uid);
+      if (memberKey) countedMembers.add(memberKey);
+    }
+
+    // (c) bd_member_seed
+    for (const [memberId, seed] of seedByMember) {
+      if (!seed.bd_next_due_date) continue;
+      const t = new Date(seed.bd_next_due_date).getTime();
       if (t < fcastFrom || t >= fcastTo) continue;
-      const amount = m.bd_price_pence ?? TIER_RENEWAL_PENCE[m.target_tier ?? ""] ?? 0;
-      if (!amount) continue;
-      forecastPence += amount;
-      const key = londonDayKey(new Date(m.bd_renewal_date).toISOString());
-      fcastBuckets.set(key, (fcastBuckets.get(key) ?? 0) + amount);
+      if (seed.claimed_user_id && countedUsers.has(seed.claimed_user_id)) continue;
+      if (countedMembers.has(memberId)) continue;
+      addForecast(seed.bd_next_due_date, LEGACY_AMOUNT);
+      if (seed.claimed_user_id) countedUsers.add(seed.claimed_user_id);
+      countedMembers.add(memberId);
     }
 
     // 4) New registrations — first paid subscription per user, created in window.
