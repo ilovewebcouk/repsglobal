@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { requireRole } from "@/lib/route-gates";
@@ -133,9 +133,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminDashboardPage() {
   const { period, from, to, fcast, fcastFrom, fcastTo } = Route.useSearch();
-  const { data } = useSuspenseQuery(
-    overviewQuery(period, fcast, from, to, fcastFrom, fcastTo),
-  );
+  const data = Route.useLoaderData();
   const periodLabel =
     PERIOD_OPTIONS.find((o) => o.value === period)?.label ?? "Last 30 days";
   return (
