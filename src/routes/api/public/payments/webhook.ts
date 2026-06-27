@@ -750,6 +750,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "charge.refunded": {
               const acctHeader = request.headers.get("stripe-account");
               if (acctHeader) await handleConnectChargeRefunded(event.data.object as Stripe.Charge);
+              else await handlePlatformChargeRefunded(event.data.object as Stripe.Charge, env);
               break;
             }
             case "charge.dispute.created":
