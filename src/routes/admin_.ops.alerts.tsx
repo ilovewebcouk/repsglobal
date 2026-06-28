@@ -1,5 +1,5 @@
 import { OpsSubNav } from "@/components/ops/OpsSubNav";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { getRecentAlerts, ackAlert, runAlertEvaluator } from "@/lib/ops/operations.functions";
 import { muteAlert, setAlertNotes, sendTestAlertEmail } from "@/lib/ops/alerts-extra.functions";
+import { humaniseAlert } from "@/lib/ops/alert-humanizer";
 
 export const Route = createFileRoute("/admin_/ops/alerts")({
   ssr: false,
@@ -79,13 +80,12 @@ function AlertsPage() {
           <table className="w-full text-sm">
             <thead className="bg-reps-ink/40 text-left text-xs uppercase tracking-wide text-reps-text/60">
               <tr>
-                <th className="px-3 py-2">Kind</th>
+                <th className="px-3 py-2 w-[44%]">What happened</th>
                 <th className="px-3 py-2">Sev</th>
                 <th className="px-3 py-2">Opened</th>
                 <th className="px-3 py-2">Resolved</th>
                 <th className="px-3 py-2">Mute</th>
-                <th className="px-3 py-2">Context</th>
-                <th className="px-3 py-2 w-[260px]">Notes</th>
+                <th className="px-3 py-2 w-[220px]">Notes</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
@@ -100,7 +100,7 @@ function AlertsPage() {
                 />
               ))}
               {q.data && q.data.length === 0 && (
-                <tr><td colSpan={8} className="px-3 py-6 text-center text-reps-text/60">No alerts in the last 7 days. 🎉</td></tr>
+                <tr><td colSpan={7} className="px-3 py-6 text-center text-reps-text/60">No alerts in the last 7 days. 🎉</td></tr>
               )}
             </tbody>
           </table>
@@ -131,9 +131,23 @@ function AlertRow({ a, onAck, onMute, onNotes }: {
   const [notes, setNotes] = useState(a.notes ?? "");
   const [customMin, setCustomMin] = useState("");
   const muted = a.muted_until && new Date(a.muted_until) > new Date();
+  const h = humaniseAlert(a.kind, a.context);
   return (
     <tr className={a.resolved_at ? "opacity-60" : ""}>
-      <td className="px-3 py-2 font-mono text-xs align-top">{a.kind}</td>
+      <td className="px-3 py-2 align-top">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[13px] font-semibold text-white">{h.label}</span>
+          <span className="text-[12px] text-reps-text/75">{h.summary}</span>
+          <div className="mt-0.5 flex items-center gap-2">
+            {h.href && (
+              <Link to={h.href} className="text-[11px] font-semibold text-reps-orange hover:underline">
+                {h.cta ?? "Open"} →
+              </Link>
+            )}
+            <code className="text-[10px] text-reps-text/40">{a.kind}</code>
+          </div>
+        </div>
+      </td>
       <td className="px-3 py-2 align-top">
         {a.severity === "crit" ? <Badge variant="destructive">crit</Badge>
           : a.severity === "warn" ? <Badge>warn</Badge>
@@ -166,9 +180,6 @@ function AlertRow({ a, onAck, onMute, onNotes }: {
             </Button>
           </div>
         )}
-      </td>
-      <td className="px-3 py-2 align-top max-w-[280px]">
-        <code className="text-[11px] text-reps-text/70 break-words">{JSON.stringify(a.context)}</code>
       </td>
       <td className="px-3 py-2 align-top">
         <Textarea

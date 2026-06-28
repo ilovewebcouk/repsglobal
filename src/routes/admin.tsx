@@ -174,7 +174,7 @@ function PaymentFailedBanner() {
   if (!q.data || count === 0) return null;
   return (
     <div className="rounded-[14px] border border-rose-400/40 bg-rose-500/10 p-4 text-[13px] text-rose-100">
-      <strong>{count}</strong> subscription{count === 1 ? "" : "s"} stuck in payment-failed / incomplete — these members are silently missing from Active Members.{" "}
+      <strong>{count}</strong> subscription{count === 1 ? "" : "s"} stuck in failed-payment / incomplete — these members are silently missing from <em>Active paying members</em>.{" "}
       <Link to="/admin/reconciliation" hash="payment-failed" className="underline">
         Review and recover
       </Link>
