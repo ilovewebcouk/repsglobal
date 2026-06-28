@@ -31,6 +31,7 @@ import { template as purchaseConfirmation } from './purchase-confirmation'
 import { template as cancellationConfirmation } from './cancellation-confirmation'
 import { template as welcomeSignup } from './welcome-signup'
 import { template as opsAlert } from './ops-alert'
+import { template as relaunchAnnouncement } from './relaunch-announcement'
 
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
@@ -56,6 +57,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'cancellation-confirmation': cancellationConfirmation,
   'welcome-signup': welcomeSignup,
   'ops-alert': opsAlert,
+  'relaunch-announcement': relaunchAnnouncement,
 }
 
 

@@ -7,6 +7,7 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
 import { backfillPrimaryLocations } from "@/lib/profile/location.functions";
 import { listAdminAuditLog, type AuditLogRow } from "@/lib/admin-audit-list.functions";
+import { sendRelaunchTestEmail } from "@/lib/admin/send-relaunch-test.functions";
 import { TimeAgo } from "@/components/verification/TimeAgo";
 import { toast } from "sonner";
 
@@ -108,8 +109,10 @@ function AdminSettings() {
           </PCard>
 
           <MaintenanceCard />
+          <RelaunchTestCard />
         </div>
       </div>
+
 
 
       <AuditLogPanel />
@@ -285,3 +288,40 @@ function MaintenanceCard() {
     </PCard>
   );
 }
+
+function RelaunchTestCard() {
+  const run = useServerFn(sendRelaunchTestEmail);
+  const [email, setEmail] = useState("cruz.pt@icloud.com");
+  const [busy, setBusy] = useState(false);
+
+  async function send() {
+    setBusy(true);
+    try {
+      await run({ data: { recipientEmail: email } });
+      toast.success(`Relaunch email queued to ${email}. Should land within a minute.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Send failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <PCard>
+      <h3 className="font-display text-[14px] font-semibold text-white">Relaunch email test</h3>
+      <p className="mt-2 text-[12px] text-white/55">
+        Send the relaunch announcement to a single address to QA in your inbox before the bulk run.
+      </p>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="mt-3 w-full rounded-[8px] border border-reps-border bg-reps-ink px-3 py-2 text-[13px] text-white outline-none focus:border-reps-orange/60"
+      />
+      <Button size="sm" onClick={send} disabled={busy || !email} className="mt-3">
+        {busy ? "Sending…" : "Send test"}
+      </Button>
+    </PCard>
+  );
+}
+
