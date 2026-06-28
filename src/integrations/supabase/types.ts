@@ -1975,6 +1975,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ops_alerts: {
+        Row: {
+          ack_at: string | null
+          ack_by: string | null
+          context: Json
+          id: string
+          kind: string
+          opened_at: string
+          resolved_at: string | null
+          severity: string
+        }
+        Insert: {
+          ack_at?: string | null
+          ack_by?: string | null
+          context?: Json
+          id?: string
+          kind: string
+          opened_at?: string
+          resolved_at?: string | null
+          severity?: string
+        }
+        Update: {
+          ack_at?: string | null
+          ack_by?: string | null
+          context?: Json
+          id?: string
+          kind?: string
+          opened_at?: string
+          resolved_at?: string | null
+          severity?: string
+        }
+        Relationships: []
+      }
       outbound_campaign_recipients: {
         Row: {
           campaign_id: string
@@ -4105,6 +4138,8 @@ export type Database = {
         }
         Returns: number
       }
+      ops_alerts_evaluate: { Args: never; Returns: number }
+      ops_alerts_open_count: { Args: never; Returns: number }
       peek_renewal_token: {
         Args: { _token_hash: string }
         Returns: {
