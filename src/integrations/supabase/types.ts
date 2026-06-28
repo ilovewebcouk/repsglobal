@@ -1024,6 +1024,24 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_daily_runs: {
+        Row: {
+          job_name: string
+          london_date: string
+          ran_at: string
+        }
+        Insert: {
+          job_name: string
+          london_date: string
+          ran_at?: string
+        }
+        Update: {
+          job_name?: string
+          london_date?: string
+          ran_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -3945,6 +3963,10 @@ export type Database = {
           signup_grant: number
         }[]
       }
+      cron_should_run_at_london: {
+        Args: { _hour: number; _job_name: string; _minute: number }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -4042,6 +4064,7 @@ export type Database = {
           status: string
         }[]
       }
+      get_site_time_info: { Args: never; Returns: Json }
       get_user_ids_by_email: {
         Args: { _email: string }
         Returns: {
