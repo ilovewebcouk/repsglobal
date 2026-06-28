@@ -17,12 +17,14 @@ const PLAN_A_LOOKAHEAD_DAYS = 14;
 
 type CronResult = {
   plan_a: { scanned: number; emailed: number; skipped: number };
+  at_risk_first_nudge: { scanned: number; emailed: number; skipped: number };
   dunning_progressed: number;
   lapsed: number;
   winback_sent: number;
   dormant: number;
   errors: string[];
 };
+
 
 export const Route = createFileRoute("/api/public/hooks/lifecycle-cron")({
   server: {
