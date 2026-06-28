@@ -209,6 +209,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       }>,
       trust: {
         verified:
+          !inDispute &&
           (proExtra?.verification ?? r.verification_status) === "verified" &&
           proExtra?.identity_status === "approved" &&
           Boolean(insuranceRow),
