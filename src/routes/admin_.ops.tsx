@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/admin_/ops")({
 });
 
 function OpsHub() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
   const getAlerts = useServerFn(getOpenAlerts);
   const ping = useServerFn(pingConnectivity);
@@ -30,6 +31,8 @@ function OpsHub() {
 
   const alertsQ = useQuery({ queryKey: ["ops-alerts-open"], queryFn: () => getAlerts(), refetchInterval: 60_000 });
   const pingQ = useQuery({ queryKey: ["ops-ping"], queryFn: () => ping(), refetchInterval: 60_000 });
+
+  if (pathname !== "/admin/ops") return <Outlet />;
 
   async function gotoMember() {
     const q = memberQuery.trim();
