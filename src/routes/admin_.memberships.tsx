@@ -687,9 +687,10 @@ function UpcomingPaymentsPanel({
     );
   const title = "Payments in next 14 days";
   const subtitle = launchInWindow && launchDate
-    ? `Renewals · trial conversions · launch cohort (${launchDate})`
-    : "Renewals · trial conversions · launch cohort";
+    ? `Stripe renewals · scheduled charges · launch cohort (${launchDate})`
+    : "Stripe renewals · scheduled charges";
   const acrossLabel = "next 14 days";
+
 
   return (
     <PPanel>
