@@ -79,7 +79,7 @@ export function MemberReconciliationStrip({
             {proGap > 0 ? (
               <ReconRow
                 label="Free / non-paying professionals"
-                sub="Active Professionals − Active Paying Members"
+                sub="No active Stripe, legacy or BD paid window"
                 value={proGap}
                 to="/admin/professionals"
                 search={{ plan: "free" }}
