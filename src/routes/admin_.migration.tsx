@@ -12,6 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/route-gates";
@@ -189,16 +190,34 @@ function AdminMigrationPage() {
           >
             <PlayCircle className="h-4 w-4" /> Seed next 25
           </button>
-          <button
-            onClick={() => seedMutation.mutate({ limit: 500 })}
-            disabled={seedMutation.isPending || (seedStats?.remaining ?? 0) === 0}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white disabled:opacity-50"
-          >
-            <PlayCircle className="h-4 w-4" />
-            {seedMutation.isPending
-              ? "Seeding…"
-              : `Seed all remaining (${seedStats?.remaining ?? "…"})`}
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                disabled={seedMutation.isPending || (seedStats?.remaining ?? 0) === 0}
+                className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white disabled:opacity-50"
+              >
+                <PlayCircle className="h-4 w-4" />
+                {seedMutation.isPending
+                  ? "Seeding…"
+                  : `Seed all remaining (${seedStats?.remaining ?? "…"})`}
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Seed all remaining members?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will stage every remaining legacy member into REPS as unverified professionals
+                  ({seedStats?.remaining ?? 0} rows). The job runs in a single batch and may take several minutes.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => seedMutation.mutate({ limit: 500 })} className="bg-reps-orange hover:bg-orange-600">
+                  Seed all
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       }
     >
@@ -701,16 +720,31 @@ function StripeLinkingPanel() {
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button
-            onClick={() => {
-              if (window.confirm(`Delete ALL ${data?.linked ?? 0} link rows? This is destructive and only needed when switching env (e.g. sandbox → live).`))
-                resetPass.mutate();
-            }}
-            disabled={busy}
-            className="flex h-9 items-center gap-2 rounded-[10px] border border-red-400/40 bg-red-500/10 px-3 text-[12px] font-semibold text-red-200 disabled:opacity-50"
-          >
-            {resetPass.isPending ? "Resetting…" : "Reset linking"}
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                disabled={busy}
+                className="flex h-9 items-center gap-2 rounded-[10px] border border-red-400/40 bg-red-500/10 px-3 text-[12px] font-semibold text-red-200 disabled:opacity-50"
+              >
+                {resetPass.isPending ? "Resetting…" : "Reset linking"}
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset all legacy Stripe linking?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will delete ALL {data?.linked ?? 0} link rows. Destructive — only needed when switching environments
+                  (e.g. sandbox → live).
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => resetPass.mutate()} className="bg-red-600 hover:bg-red-700">
+                  Delete all links
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <label className="flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/85 disabled:opacity-50">
             <Download className="h-3.5 w-3.5" />
             {csvImport.isPending ? "Importing…" : "Import Stripe CSV"}

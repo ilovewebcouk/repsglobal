@@ -29,11 +29,15 @@ const TABS = ["General", "Branding", "Email", "Integrations", "Feature flags", "
 function AdminSettings() {
   return (
     <DashboardShell role="admin" active="Settings" title="Platform settings" subtitle="Production environment · v2026.05.31">
-      <div className="mb-6 flex flex-wrap gap-1 rounded-[10px] border border-reps-border bg-reps-panel p-1 text-[12px] font-medium">
+      <div className="mb-6 rounded-[12px] border border-amber-400/40 bg-amber-500/10 p-4 text-[13px] text-amber-100">
+        <strong>Read-only.</strong> Inline editing of platform settings is not available yet — the tabs and Edit buttons below are placeholders. Only the <em>Maintenance</em> action and the <em>Audit log</em> at the bottom are live.
+      </div>
+      <div className="mb-6 flex flex-wrap gap-1 rounded-[10px] border border-reps-border bg-reps-panel p-1 text-[12px] font-medium opacity-60">
         {TABS.map((t, i) => (
           <button
             key={t}
-            className={`rounded-[8px] px-3 py-2 ${i === 0 ? "bg-reps-orange-soft text-reps-orange" : "text-white/65 hover:text-white"}`}
+            disabled
+            className={`rounded-[8px] px-3 py-2 ${i === 0 ? "bg-reps-orange-soft text-reps-orange" : "text-white/65"}`}
           >
             {t}
           </button>

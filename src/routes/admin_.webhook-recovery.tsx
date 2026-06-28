@@ -9,6 +9,17 @@ import { PCard } from "@/components/dashboard/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   diagnoseWebhookFailures,
   type DiagnosisRow,
   type LookupAttempt,
@@ -261,10 +272,6 @@ function AdminWebhookRecoveryPage() {
   });
 
   async function runLiveReplay() {
-    const confirmed = window.confirm(
-      "Step 4 — LIVE replay.\n\nThis will:\n  • Upsert subscriptions rows from Stripe\n  • Set churn lifecycle stages\n  • Clear processing_error on payment_events\n\nIt will NOT send emails or modify Stripe.\n\nProceed?",
-    );
-    if (!confirmed) return;
     setLiveRunning(true);
     setLiveError(null);
     try {
@@ -282,7 +289,7 @@ function AdminWebhookRecoveryPage() {
   return (
     <DashboardShell
       role="admin"
-      active="Churn"
+      active="Webhook recovery"
       title="Webhook recovery"
       subtitle="Diagnose and dry-run replay payment_events the live handler failed to process. Read-only — no replay runs from this page."
     >
@@ -485,14 +492,39 @@ function AdminWebhookRecoveryPage() {
                   metadata (live handler already does the latter going forward).
                 </div>
               </div>
-              <Button
-                size="sm"
-                onClick={runLiveReplay}
-                disabled={liveRunning}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                {liveRunning ? "Replaying…" : "Run live replay"}
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    disabled={liveRunning}
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    {liveRunning ? "Replaying…" : "Run live replay"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Run live webhook replay?</AlertDialogTitle>
+                    <AlertDialogDescription asChild>
+                      <div className="space-y-2 text-[13px]">
+                        <p>This will:</p>
+                        <ul className="list-disc space-y-1 pl-5">
+                          <li>Upsert subscriptions rows from Stripe</li>
+                          <li>Set churn lifecycle stages</li>
+                          <li>Clear processing_error on payment_events</li>
+                        </ul>
+                        <p>It will <strong>not</strong> send emails or modify Stripe.</p>
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={runLiveReplay} className="bg-orange-500 hover:bg-orange-600">
+                      Run replay
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </PCard>
 

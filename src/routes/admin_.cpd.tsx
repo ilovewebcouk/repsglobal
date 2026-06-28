@@ -20,6 +20,9 @@ export const Route = createFileRoute("/admin_/cpd")({
 function AdminCpd() {
   return (
     <DashboardShell role="admin" active="CPD" title="CPD oversight" subtitle="Current cycle: Jan 2026 – Dec 2026">
+      <div className="mb-6 rounded-[12px] border border-amber-400/40 bg-amber-500/10 p-4 text-[13px] text-amber-100">
+        <strong>Preview only.</strong> CPD tracking ships in a later release. Numbers, pros and courses below are placeholder data — no live records, reminders or audits are wired up yet.
+      </div>
       <div className="grid gap-4 md:grid-cols-4">
         {[
           { l: "Compliance", v: "84%", d: "1,824 / 2,168 pros" },

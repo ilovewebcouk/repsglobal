@@ -131,29 +131,50 @@ export const PRO_NAV = [
 
 export const ADMIN_NAV = [
   {
-    title: "Manage",
+    title: "Overview",
     items: [
       { icon: LayoutDashboard, label: "Overview", to: "/admin" },
+    ],
+  },
+  {
+    title: "Members & Pros",
+    items: [
       { icon: Users, label: "Professionals", to: "/admin/professionals" },
       { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
       { icon: UserCheck, label: "Memberships", to: "/admin/memberships" },
+      { icon: AlertCircle, label: "Churn", to: "/admin/churn" },
+      { icon: Star, label: "Reviews", to: "/admin/reviews" },
+    ],
+  },
+  {
+    title: "Revenue",
+    items: [
+      { icon: CreditCard, label: "Stripe", to: "/admin/payments" },
+      { icon: AreaChart, label: "Reconciliation", to: "/admin/reconciliation" },
+    ],
+  },
+  {
+    title: "Content & Discovery",
+    items: [
       { icon: Target, label: "Directory", to: "/admin/directory" },
       { icon: Building2, label: "Gyms", to: "/admin/gyms" },
-      { icon: Star, label: "Reviews", to: "/admin/reviews" },
-      { icon: CreditCard, label: "Stripe", to: "/admin/payments" },
       { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },
     ],
   },
   {
-    title: "Platform",
+    title: "Operations",
     items: [
-      { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
-      { icon: AlertCircle, label: "Churn", to: "/admin/churn" },
+      { icon: Gauge, label: "Operations", to: "/admin/ops" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
+      { icon: Activity, label: "Webhook recovery", to: "/admin/webhook-recovery" },
+      { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
+    ],
+  },
+  {
+    title: "System",
+    items: [
       { icon: ShieldCheck, label: "Team", to: "/admin/team" },
-      { icon: Activity, label: "Health", to: "/admin/health" },
-      { icon: Gauge, label: "Operations", to: "/admin/ops" },
       { icon: Settings, label: "Settings", to: "/admin/settings" },
     ],
   },

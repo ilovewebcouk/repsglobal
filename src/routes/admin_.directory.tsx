@@ -2,12 +2,12 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { requireRole } from "@/lib/route-gates";
-import { AlertTriangle, Globe2, RefreshCcw, Sparkles, Star } from "lucide-react";
+import { Globe2, RefreshCcw, Star } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { getDirectoryHealth } from "@/lib/directory/featured.functions";
 
 export const Route = createFileRoute("/admin_/directory")({
@@ -213,19 +213,7 @@ function AdminDirectory() {
             )}
           </PCard>
 
-          <PCard className="border-white/10 bg-white/[0.02]">
-            <div className="flex items-center gap-2 text-white/70">
-              <AlertTriangle className="h-4 w-4 text-white/55" />
-              <h3 className="font-display text-[14px] font-semibold">Crawl alerts</h3>
-            </div>
-            <p className="mt-2 text-[12px] text-white/55">
-              Link crawler ships in a later release. This panel will surface outbound-link failures once it goes live.
-            </p>
-            <Button disabled className="mt-3 h-9 rounded-[10px] bg-white/5 text-[12px] font-semibold text-white/40 hover:bg-white/5">
-              <Sparkles className="mr-1.5 h-3 w-3" />
-              Re-run crawl
-            </Button>
-          </PCard>
+          {/* Crawl alerts panel hidden until the link crawler ships. */}
         </div>
       </div>
     </DashboardShell>

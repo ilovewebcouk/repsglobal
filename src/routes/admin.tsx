@@ -244,7 +244,7 @@ function PlatformHealthBanner() {
   return (
     <div className={`rounded-[14px] border p-4 text-[13px] ${cls}`}>
       <strong>{label}</strong> — {items.join(" · ")}.{" "}
-      <Link to="/admin/health" className="underline">Open Platform Health</Link>.
+      <Link to="/admin/ops/platform" className="underline">Open Platform Health</Link>.
     </div>
   );
 }
