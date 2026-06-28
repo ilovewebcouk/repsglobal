@@ -16,6 +16,7 @@ interface Props {
   proName?: string;
   renewalDate?: string;
   amount?: string;
+  previousAmount?: string;
   cardBrand?: string;
   cardLast4?: string;
   manageBillingUrl?: string;
@@ -26,6 +27,7 @@ const LegacyConversionConfirmation = ({
   proName = "there",
   renewalDate = "your renewal date",
   amount = "£99",
+  previousAmount = "£34",
   cardBrand = "Card",
   cardLast4 = "••••",
   manageBillingUrl = "https://repsuk.org/dashboard/settings",
