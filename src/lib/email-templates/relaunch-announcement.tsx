@@ -15,11 +15,13 @@ import type { TemplateEntry } from "./registry";
 interface Props {
   ctaUrl?: string;
   settingsUrl?: string;
+  resetUrl?: string;
 }
 
 const RelaunchAnnouncement = ({
-  ctaUrl = "https://repsuk.org/dashboard",
+  ctaUrl = "https://repsuk.org/auth",
   settingsUrl = "https://repsuk.org/dashboard/settings",
+  resetUrl = "https://repsuk.org/auth",
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -70,14 +72,17 @@ const RelaunchAnnouncement = ({
           <table cellPadding={0} cellSpacing={0} role="presentation" align="center">
             <tr>
               <td align="center" style={{ background: "#e85a1a", borderRadius: "10px" }}>
-                <a href={ctaUrl} style={ctaLink}>Verify my account →</a>
+                <a href={ctaUrl} style={ctaLink}>Set my password & sign in →</a>
               </td>
             </tr>
           </table>
           <Text style={muted}>
-            Takes under 5 minutes. ID, qualification, insurance — then the green tick is yours.
+            First time signing in? Your old password didn't carry over. Tap above (or use{" "}
+            <Link href={resetUrl} style={inlineLink}>Forgot password</Link>{" "}
+            on the sign-in page) to set a new one — takes 30 seconds. Then verify your account: ID, qualification, insurance.
           </Text>
         </Section>
+
 
         {/* Pricing card */}
         <Section style={{ padding: "26px 32px 4px 32px" }}>
@@ -218,7 +223,7 @@ const footerLink = { color: "#6b7280", textDecoration: "underline" };
 
 export const template = {
   component: RelaunchAnnouncement,
-  subject: "REPs has relaunched — verify your account",
+  subject: "REPs has relaunched — set your password to sign in",
   displayName: "Relaunch announcement",
   previewData: {},
 } satisfies TemplateEntry;
