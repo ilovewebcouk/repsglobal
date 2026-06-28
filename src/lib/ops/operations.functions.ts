@@ -53,7 +53,7 @@ export const getBillingHealth = createServerFn({ method: "GET" })
     const start7dIso = new Date(Date.now() - 7 * 86400_000).toISOString();
     const start30dIso = new Date(Date.now() - 30 * 86400_000).toISOString();
 
-    const [paidToday, refundsToday, failedActive, recovered30d, inRecovery, webhookFails, dlq, stuck, latency] =
+    const [paidToday, refundsToday, failedActive, recovered30d, inRecovery, webhookFails, dlq, stuck, latency, openDisputes, closedDisputes30d] =
       await Promise.all([
         supabaseAdmin.from("payment_events").select("payload, created_at", { count: "exact" })
           .eq("event_type", "invoice.paid").gte("created_at", startIso),
@@ -77,6 +77,13 @@ export const getBillingHealth = createServerFn({ method: "GET" })
           .not("processed_at", "is", null)
           .gte("created_at", new Date(Date.now() - 86400_000).toISOString())
           .limit(500),
+        supabaseAdmin.from("disputes")
+          .select("amount_pence, funds_withdrawn_pence, funds_reinstated_pence, lifecycle_stage")
+          .in("lifecycle_stage", ["opened", "funds_withdrawn", "funds_reinstated"]),
+        supabaseAdmin.from("disputes")
+          .select("lifecycle_stage, funds_withdrawn_pence, funds_reinstated_pence")
+          .in("lifecycle_stage", ["won", "lost"])
+          .gte("updated_at", start30dIso),
       ]);
 
     // sum revenue paid today (Stripe invoice payload: data.object.amount_paid)
