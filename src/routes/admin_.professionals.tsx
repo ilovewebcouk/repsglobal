@@ -752,7 +752,7 @@ function ProRow({ row }: { row: AdminProRow }) {
   });
 
   const initials = initialsFromName(row.name);
-  const isSuspended = row.status === "suspended";
+  const isSuspended = Boolean(row.suspendedAt);
   const isFlagged = row.status === "flagged";
   const slug = row.handle.replace(/^@/, "");
 
@@ -890,16 +890,17 @@ function ProRow({ row }: { row: AdminProRow }) {
                 disabled={suspendM.isPending}
                 className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white"
               >
-                <Play className="h-4 w-4" /> Reinstate professional
+                <Play className="h-4 w-4" /> Restore to verified
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
                 onSelect={(e) => { e.preventDefault(); setSuspendOpen(true); }}
                 className="cursor-pointer rounded-[6px] text-amber-300 focus:bg-amber-500/10 focus:text-amber-200"
               >
-                <Pause className="h-4 w-4" /> Suspend professional…
+                <Pause className="h-4 w-4" /> Mark as unverified…
               </DropdownMenuItem>
             )}
+
             <DropdownMenuItem
               onSelect={(e) => { e.preventDefault(); flagM.mutate(!isFlagged); }}
               disabled={flagM.isPending}
@@ -976,9 +977,11 @@ function SuspendDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle className="text-white">Suspend {name}?</DialogTitle>
+          <DialogTitle className="text-white">Mark {name} as Unverified?</DialogTitle>
           <DialogDescription className="text-white/55">
-            Their profile will be removed from the public directory. They'll receive an email with the reason below.
+            Their public profile stays live — REPs doesn't hide professionals once
+            they're on the register. The Verified badge will be removed and they'll
+            receive an email with the reason below. They can re-verify at any time.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 py-2 text-left">
@@ -988,7 +991,7 @@ function SuspendDialog({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={4}
-            placeholder="e.g. Profile content under review pending verification of qualifications."
+            placeholder="e.g. Profile content under review pending re-check of qualifications."
             className="rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30"
           />
         </div>
@@ -999,13 +1002,14 @@ function SuspendDialog({
             onClick={() => onConfirm(reason.trim())}
             className="bg-amber-500 text-black hover:bg-amber-400"
           >
-            {pending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Suspending…</> : "Suspend & notify"}
+            {pending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Updating…</> : "Mark unverified & notify"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
 
 function ConfirmDialog({
   open, onOpenChange, title, description, confirmLabel, confirmTone, pending, onConfirm, requireTypedConfirm,

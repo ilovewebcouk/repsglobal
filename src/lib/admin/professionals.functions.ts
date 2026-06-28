@@ -193,7 +193,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       case 'verified':   query = query.eq('verification', 'verified').eq('is_published', true); break;
       case 'pending':    query = query.eq('verification', 'pending'); break;
       case 'flagged':    query = query.eq('verification', 'rejected'); break;
-      case 'suspended':  query = query.eq('is_published', false).not('suspended_at', 'is', null); break;
+      case 'suspended':  query = query.not('suspended_at', 'is', null); break;
       case 'recent': {
         const since = new Date(Date.now() - 30 * 24 * 60 * 60_000).toISOString();
         query = query.gte('created_at', since);
@@ -372,11 +372,16 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const tier: AdminProRow['plan'] =
         activeTier ?? failedTier ?? (isRenewalDue ? 'verified' : 'free');
       const ra = ratingAcc.get(p.id);
+      // Policy (no self-removal): a pro's public profile stays live; only their
+      // trust badge changes. Admin "suspension", chargebacks, and exhausted
+      // payment recovery all surface as Unverified (pending) in the UI.
       const status: AdminProRow['status'] =
-        p.is_published === false && p.suspended_at ? 'suspended'
+        billingState !== 'ok' ? 'pending'
+        : p.suspended_at ? 'pending'
         : p.verification === 'verified' && p.is_published ? 'verified'
         : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';
+
       const name = profile?.full_name ?? 'Unnamed';
       const subDetail = subDetailMap.get(p.id);
       return {
@@ -480,9 +485,20 @@ export const setProfessionalSuspension = createServerFn({ method: 'POST' })
       .maybeSingle();
     if (!prev) throw new Error('Professional not found');
 
+    // Policy: a professional's public profile is NEVER hidden by REPs (Trustpilot-style).
+    // "Suspending" simply drops them back to Unverified (verification = 'pending') and
+    // records the reason. Reinstating restores them to Verified.
     const update = data.suspended
-      ? { is_published: false, suspended_at: new Date().toISOString(), suspension_reason: data.reason }
-      : { is_published: true, suspended_at: null, suspension_reason: null };
+      ? {
+          suspended_at: new Date().toISOString(),
+          suspension_reason: data.reason,
+          verification: 'pending' as const,
+        }
+      : {
+          suspended_at: null,
+          suspension_reason: null,
+          verification: 'verified' as const,
+        };
 
     const { error } = await supabaseAdmin
       .from('professionals')
@@ -506,8 +522,9 @@ export const setProfessionalSuspension = createServerFn({ method: 'POST' })
         templateData: data.suspended
           ? { proName, reason: data.reason }
           : { proName },
-      }).catch((e) => { console.error('suspension email failed', e); });
+      }).catch((e) => { console.error('verification status email failed', e); });
     }
+
 
     await supabaseAdmin.rpc('log_admin_action', {
       _actor_id: context.userId,
