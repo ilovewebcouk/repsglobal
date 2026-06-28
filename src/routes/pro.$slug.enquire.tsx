@@ -185,6 +185,7 @@ function EnquirePage() {
       rating: count > 0 ? rating : 0,
       reviews: count,
       mode,
+      verified: profile?.verification_status === "verified",
     };
   }, [liveQuery.data, profileQuery.data, reviewsQuery.data, fallbackPro]);
 
