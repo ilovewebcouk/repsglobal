@@ -752,8 +752,10 @@ function UpcomingPaymentsPanel({
 function cohortLabel(c: string | null | undefined): string | null {
   if (c === "honour_window") return "Honour window · £34 → £99 next year";
   if (c === "anomaly_launch_charge") return "Anomaly · £99 at launch";
+  if (c === "future_due") return "BD scheduled · £99 renewal";
   return null;
 }
+
 
 
 function PastDuePanel({ data, loading }: { data?: MembershipMetrics; loading: boolean }) {
