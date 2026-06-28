@@ -19,9 +19,9 @@ interface Props {
 }
 
 const RelaunchAnnouncement = ({
-  ctaUrl = "https://repsuk.org/auth/reset",
+  ctaUrl = "https://repsuk.org/auth",
   settingsUrl = "https://repsuk.org/dashboard/settings",
-  resetUrl = "https://repsuk.org/auth/reset",
+  resetUrl = "https://repsuk.org/auth",
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
