@@ -25,7 +25,8 @@ export type TimelineSource =
   | "review"
   | "admin"
   | "identity"
-  | "auth";
+  | "auth"
+  | "dispute";
 
 export interface TimelineEvent {
   ts: string;
