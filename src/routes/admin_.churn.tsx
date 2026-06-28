@@ -167,7 +167,7 @@ function AdminChurnPage() {
                       const meta = STAGE_META[r.stage as Stage];
                       return (
                         <TableRow key={r.id} className="border-reps-border/50">
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium text-white">
                             {r.pro_name ?? <span className="text-white/45">—</span>}
                           </TableCell>
                           <TableCell>
