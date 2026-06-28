@@ -4018,6 +4018,16 @@ export type Database = {
           qualification: string
         }[]
       }
+      get_renewal_cron_runs: {
+        Args: { _limit?: number }
+        Returns: {
+          end_time: string
+          jobname: string
+          return_message: string
+          start_time: string
+          status: string
+        }[]
+      }
       get_review_request_by_token: {
         Args: { _token: string }
         Returns: {
