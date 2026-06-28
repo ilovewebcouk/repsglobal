@@ -1980,8 +1980,11 @@ export type Database = {
           ack_at: string | null
           ack_by: string | null
           context: Json
+          email_dispatched_at: string | null
           id: string
           kind: string
+          muted_until: string | null
+          notes: string | null
           opened_at: string
           resolved_at: string | null
           severity: string
@@ -1990,8 +1993,11 @@ export type Database = {
           ack_at?: string | null
           ack_by?: string | null
           context?: Json
+          email_dispatched_at?: string | null
           id?: string
           kind: string
+          muted_until?: string | null
+          notes?: string | null
           opened_at?: string
           resolved_at?: string | null
           severity?: string
@@ -2000,8 +2006,11 @@ export type Database = {
           ack_at?: string | null
           ack_by?: string | null
           context?: Json
+          email_dispatched_at?: string | null
           id?: string
           kind?: string
+          muted_until?: string | null
+          notes?: string | null
           opened_at?: string
           resolved_at?: string | null
           severity?: string
@@ -4138,8 +4147,24 @@ export type Database = {
         }
         Returns: number
       }
+      ops_admin_emails: {
+        Args: never
+        Returns: {
+          email: string
+        }[]
+      }
       ops_alerts_evaluate: { Args: never; Returns: number }
       ops_alerts_open_count: { Args: never; Returns: number }
+      ops_db_health: { Args: never; Returns: Json }
+      ops_find_member: {
+        Args: { _q: string }
+        Returns: {
+          email: string
+          full_name: string
+          match_kind: string
+          user_id: string
+        }[]
+      }
       peek_renewal_token: {
         Args: { _token_hash: string }
         Returns: {

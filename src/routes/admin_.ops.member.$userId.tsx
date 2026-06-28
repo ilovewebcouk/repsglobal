@@ -12,6 +12,7 @@ import {
   SOURCE_DOT_CLASSES,
   ALL_TIMELINE_SOURCES,
 } from "@/components/ops/source-pill";
+import { MemberFinder } from "@/components/ops/MemberFinder";
 
 export const Route = createFileRoute("/admin_/ops/member/$userId")({
   ssr: false,
@@ -59,6 +60,9 @@ function MemberPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Member timeline" subtitle={subtitle}>
       <div className="space-y-4 p-6">
+        {/* Header finder — jump to any other member without leaving the recorder */}
+        <MemberFinder placeholder="Find another member by email, id, cus_, sub_, BD id…" />
+
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-2 rounded-[16px] border border-reps-border bg-reps-panel/40 p-3">
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search summary, type, or id…"

@@ -6,6 +6,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Badge } from "@/components/ui/badge";
 import { getPlatformHealth } from "@/lib/admin/platform-health.functions";
 import { pingConnectivity } from "@/lib/ops/connectivity.functions";
+import { getDatabaseHealth } from "@/lib/ops/database-health.functions";
 
 export const Route = createFileRoute("/admin_/ops/platform")({
   ssr: false,
@@ -17,8 +18,10 @@ export const Route = createFileRoute("/admin_/ops/platform")({
 function PlatformPage() {
   const getHealth = useServerFn(getPlatformHealth);
   const getPing = useServerFn(pingConnectivity);
+  const getDb = useServerFn(getDatabaseHealth);
   const h = useQuery({ queryKey: ["ops-platform"], queryFn: () => getHealth(), refetchInterval: 60_000 });
   const p = useQuery({ queryKey: ["ops-platform-ping"], queryFn: () => getPing(), refetchInterval: 60_000 });
+  const db = useQuery({ queryKey: ["ops-platform-db"], queryFn: () => getDb(), refetchInterval: 60_000 });
   const snap = h.data;
 
   return (
@@ -94,6 +97,70 @@ function PlatformPage() {
             </div>
           </section>
         )}
+        {/* Database health */}
+        <section>
+          <div className="text-xs uppercase tracking-wide text-reps-text/60">Database health</div>
+          {!db.data ? (
+            <div className="mt-2 text-reps-text/60">Loading…</div>
+          ) : !db.data.ok ? (
+            <div className="mt-2 rounded-[16px] border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+              Database diagnostics degraded: {db.data.error ?? "unknown"}
+            </div>
+          ) : (
+            <>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Tile
+                  label="Connectivity"
+                  v={db.data.ok ? 1 : 0}
+                  crit={!db.data.ok}
+                />
+                <Tile
+                  label="Active connections"
+                  v={db.data.active_connections}
+                  warn={db.data.max_connections > 0 && db.data.active_connections >= Math.floor(db.data.max_connections * 0.7)}
+                  crit={db.data.max_connections > 0 && db.data.active_connections >= Math.floor(db.data.max_connections * 0.9)}
+                />
+                <Tile label="Max connections" v={db.data.max_connections} />
+                <Tile
+                  label="DB size (MB)"
+                  v={Math.round(db.data.database_bytes / (1024 * 1024))}
+                />
+              </div>
+              <div className="mt-2 text-xs text-reps-text/60">
+                Long-running queries: <span className="font-semibold text-reps-fg">{db.data.long_running_queries}</span>
+              </div>
+
+              {db.data.slow_queries.length > 0 ? (
+                <div className="mt-3 overflow-x-auto rounded-[16px] border border-reps-border bg-reps-panel/40">
+                  <table className="w-full text-sm">
+                    <thead className="bg-reps-ink/40 text-left text-xs uppercase tracking-wide text-reps-text/60">
+                      <tr>
+                        <th className="px-3 py-2">Query</th>
+                        <th className="px-3 py-2">Calls</th>
+                        <th className="px-3 py-2">Mean ms</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-reps-border/60">
+                      {db.data.slow_queries.slice(0, 10).map((s, i) => (
+                        <tr key={i}>
+                          <td className="px-3 py-2 font-mono text-xs">
+                            <div className="line-clamp-2 max-w-[60ch]">{s.query}</div>
+                          </td>
+                          <td className="px-3 py-2 tabular-nums">{s.calls.toLocaleString()}</td>
+                          <td className="px-3 py-2 tabular-nums">{s.mean_ms.toFixed(1)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-[16px] border border-reps-border bg-reps-panel/30 p-4 text-xs text-reps-text/60">
+                  No slow queries reported (pg_stat_statements may be disabled or recently reset).
+                </div>
+              )}
+            </>
+          )}
+        </section>
       </div>
     </DashboardShell>
   );

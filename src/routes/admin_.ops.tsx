@@ -1,17 +1,15 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Gauge, CreditCard, Activity, Users, Bell, Search } from "lucide-react";
+import { CreditCard, Activity, Users, Bell, Mail, Radio } from "lucide-react";
 import { getOpenAlerts, runAlertEvaluator } from "@/lib/ops/operations.functions";
-import { pingConnectivity } from "@/lib/ops/connectivity.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SystemStatusStrip } from "@/components/ops/SystemStatusStrip";
+import { MemberFinder } from "@/components/ops/MemberFinder";
 
 export const Route = createFileRoute("/admin_/ops")({
   ssr: false,
@@ -22,37 +20,15 @@ export const Route = createFileRoute("/admin_/ops")({
 
 function OpsHub() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const navigate = useNavigate();
   const getAlerts = useServerFn(getOpenAlerts);
-  const ping = useServerFn(pingConnectivity);
   const runEval = useServerFn(runAlertEvaluator);
-  const [memberQuery, setMemberQuery] = useState("");
-  const [resolving, setResolving] = useState(false);
 
   const alertsQ = useQuery({ queryKey: ["ops-alerts-open"], queryFn: () => getAlerts(), refetchInterval: 60_000 });
-  const pingQ = useQuery({ queryKey: ["ops-ping"], queryFn: () => ping(), refetchInterval: 60_000 });
 
   if (pathname !== "/admin/ops") return <Outlet />;
 
-  async function gotoMember() {
-    const q = memberQuery.trim();
-    if (!q) return;
-    setResolving(true);
-    try {
-      // uuid?
-      if (/^[0-9a-f-]{36}$/i.test(q)) {
-        navigate({ to: "/admin/ops/member/$userId", params: { userId: q } });
-        return;
-      }
-      // email lookup via profiles → no email column; use auth admin via server fn? skip — try edge: search via prefix RPC for ID input.
-      // Fallback: query supabase view for user by email through profiles+auth join not available client-side.
-      // Use a small admin RPC: search_profiles_by_id_prefix is for ID prefix; for emails we just call supabase auth users via a server fn route not built here — direct user to paste id.
-      toast.info("Paste the user id (uuid). Email search coming next sprint.");
-    } finally { setResolving(false); }
-  }
-
   return (
-    <DashboardShell role="admin" active="Operations" title="Operations" subtitle="Billing · Platform · Customer · Member timeline">
+    <DashboardShell role="admin" active="Operations" title="Operations" subtitle="Run REPS in seconds — Billing · Platform · Customer · Emails · Activity">
       <div className="space-y-6 p-6">
         <OpsAlertsBanner alerts={alertsQ.data ?? []} onEvaluate={async () => {
           const r = await runEval();
@@ -60,46 +36,27 @@ function OpsHub() {
           await alertsQ.refetch();
         }} />
 
+        {/* System status — green / amber / red at-a-glance */}
+        <SystemStatusStrip />
+
         {/* Member finder */}
         <div className="rounded-[16px] border border-reps-border bg-reps-panel/40 p-4">
-          <div className="text-xs uppercase tracking-wide text-reps-text/60">Flight recorder</div>
-          <div className="mt-2 flex items-center gap-2">
-            <Search className="size-4 text-reps-text/60" />
-            <Input value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)}
-              placeholder="Paste user id (uuid)…" className="bg-reps-ink/40" />
-            <Button onClick={gotoMember} disabled={resolving}>Open timeline</Button>
-          </div>
+          <div className="text-xs uppercase tracking-wide text-reps-text/60">Flight recorder · find a member</div>
+          <div className="mt-2"><MemberFinder placeholder="Email, user id, Stripe cus_ / sub_, BD id, name…" /></div>
         </div>
 
-        {/* Three sections */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <SectionCard to="/admin/ops/billing" title="Billing health" icon={<CreditCard className="size-5" />}
-            blurb="Payments, refunds, recoveries, DLQ, latency." />
-          <SectionCard to="/admin/ops/platform" title="Platform health" icon={<Activity className="size-5" />}
+        {/* Sections */}
+        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
+          <SectionCard to="/admin/ops/billing" title="Billing" icon={<CreditCard className="size-5" />}
+            blurb="Payments, recoveries, DLQ." />
+          <SectionCard to="/admin/ops/platform" title="Platform" icon={<Activity className="size-5" />}
             blurb="Cron, queues, connectivity, DB." />
-          <SectionCard to="/admin/ops/customer" title="Customer health" icon={<Users className="size-5" />}
-            blurb="Active, new, churn, pending cancellations." />
-        </div>
-
-        {/* Connectivity strip */}
-        <div className="grid gap-3 md:grid-cols-3">
-          {(["stripe", "mail", "storage"] as const).map((k) => {
-            const p = pingQ.data?.[k];
-            const tone = !p ? "bg-reps-panel/40 text-reps-text/60 border-reps-border"
-              : p.ok ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
-              : "border-rose-500/40 bg-rose-500/10 text-rose-200";
-            return (
-              <div key={k} className={`rounded-[16px] border p-3 ${tone}`}>
-                <div className="flex items-center justify-between text-xs uppercase tracking-wide opacity-70">
-                  <span>{k}</span>
-                  <span>{p ? `${p.latency_ms}ms` : "…"}</span>
-                </div>
-                <div className="mt-1 text-sm font-medium">{p ? (p.ok ? "Healthy" : "Down") : "Checking…"}</div>
-                {p?.detail && <div className="text-xs opacity-70">{p.detail}</div>}
-                {p?.error && <div className="text-xs text-rose-300">{p.error}</div>}
-              </div>
-            );
-          })}
+          <SectionCard to="/admin/ops/customer" title="Customer" icon={<Users className="size-5" />}
+            blurb="Active, new, churn." />
+          <SectionCard to="/admin/ops/email" title="Emails" icon={<Mail className="size-5" />}
+            blurb="Lifecycle, DLQ, suppressions." />
+          <SectionCard to="/admin/ops/activity" title="Activity" icon={<Radio className="size-5" />}
+            blurb="Live platform heartbeat." />
         </div>
 
         <div className="text-xs text-reps-text/50">
@@ -156,6 +113,3 @@ export function OpsAlertsBanner({ alerts, onEvaluate }: { alerts: Array<{ id: st
     </div>
   );
 }
-
-// keep linter happy — surface that we read supabase client at least once
-void supabase;
