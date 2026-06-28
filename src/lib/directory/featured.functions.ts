@@ -203,7 +203,7 @@ async function fetchFeaturedPool(
   }
 
   const enriched: FeaturedProRow[] = pros
-    .filter((p) => p.slug)
+    .filter((p) => p.slug && !disputedIds.has(p.id))
     .map((p) => {
       const prof = profileById.get(p.id);
       const tier = tierById.get(p.id) ?? "free";
