@@ -1,89 +1,70 @@
-# Admin Remediation Plan — From 67/100 to Freeze
 
-Goal: close every P0/P1 from the audit, ship the must-have polish, then freeze admin architecture and shift to customer-facing work. No changes to billing, webhook, renewal, churn, reconciliation, recovery business logic.
+## What's wrong
 
-Delivered in three waves so you can ship, test, and decide whether to continue before each one.
+On `/admin/memberships`, two cards look broken even though the DB clearly disagrees:
 
----
+### 1. "Payments in next 14 days" → **No payments due** (wrong by design)
 
-## Wave 1 — Safety + Quick Wins (half a day)
+`getMembershipMetrics` (src/lib/admin/memberships.functions.ts) builds the 14-day window from only **two** sources:
 
-Hard safety fixes and the 30-min nav cleanups. Highest impact per minute.
+- **Stripe live subs** where `current_period_end ∈ [now, now+14d]`. DB confirms `0` such rows — every paid sub renews ~12 months out.
+- **Launch cohort** (`honour_window` + `anomaly_launch_charge`) — but only **if `LAUNCH_AT_UTC ∈ [now, now+14d]`**. Launch was 2026-06-26; today is 2026-06-28, so the launch window has closed and this branch is now permanently dead post-launch.
 
-**Safety (P0)**
-1. AlertDialog confirmation on **Delete professional** (`/admin/professionals` row action).
-2. AlertDialog confirmation on **Suspend professional**.
-3. AlertDialog confirmation on **Migration → Seed all**.
-4. Replace `window.confirm()` on **Webhook recovery → Live replay** with AlertDialog.
-5. Add a top "⚠️ Placeholder data — not connected yet" banner to `/admin/cpd`.
-6. Add "⚠️ Editing not yet available" notice to `/admin/settings`; collapse non-working tabs to disabled.
+What it ignores: the BD-migrated members whose next renewal is driven by `bd_member_seed.bd_next_due_date` / `legacy_stripe_link` — i.e. the same source that already powers the £11,187 Q2 2028 forecast row directly above it. That's why the forecast shows real cash but the 14-day card shows zero.
 
-**Navigation cleanup (P1, all ~5 min each)**
-7. Add `/admin/webhook-recovery` to sidebar under Operations.
-8. Add `/admin/reconciliation` to sidebar under Revenue.
-9. Remove "Health" from sidebar (route stays as redirect).
-10. Fix `active="Churn"` on webhook-recovery → `active="Operations"`.
-11. Fix `active="Overview"` on reconciliation → new `active="Reconciliation"`.
-12. Health banner on `/admin` links straight to `/admin/ops/platform` (no redirect hop).
-13. Hide "Crawl alerts" placeholder panel in `/admin/directory`.
-14. Fix campaigns queryKey namespace `"support"` → `"admin"`.
+### 2. "Failed payments" → **No past-due memberships** (stale build, not a data bug)
 
-**Sidebar re-group** to the structure in §2 of the report:
-`OVERVIEW · MEMBERS & PROS · REVENUE · CONTENT & DISCOVERY · OPERATIONS · SYSTEM`.
+Raheela's sub is in the DB exactly where we expect: `environment=live`, `status=incomplete_expired`, `user_id` present in `profiles`. The `PAST_DUE_STATUSES` set (built from `FAILED_PAYMENT_STATUSES`) already includes `incomplete_expired`. A direct count on the live DB returns `past_due_total = 1`.
 
----
+Console shows `Failed to fetch dynamically imported module: virtual:tanstack-start-client-entry` — a classic stale-chunk symptom after this morning's edits. The page rendered against an older client bundle that pre-dates the `incomplete_expired` addition. A fresh load will already show Raheela. We'll prove this in-place and add a defensive log so we don't second-guess it again.
 
-## Wave 2 — Operational Gaps (3–4 days)
+## Fix
 
-The audit's P1 list — turning read-only screens into screens an operator can act from.
+### A. Extend the 14-day upcoming-payments source set
 
-1. **Persistent ops sub-nav strip** (`Billing | Platform | Customer | Emails | Activity | Alerts`) visible across all `/admin/ops/*` pages, plus a back-to-Ops breadcrumb in `DashboardShell` for the admin role. Kills the 2-click hub bounce.
-2. **`/admin/ops/customer` drill-downs** — every tile links to a filtered member list (Churn → `/admin/churn`, Failed renewals → `/admin/ops/billing?kind=failed_active`, etc.).
-3. **`/admin/ops/billing` failed_active recovery** — inline "Send recovery email" action on drill rows; humanise drill-table titles (enum → label); add Refresh button.
-4. **`/admin/ops/email` suppression management** — remove-from-suppression action, paginate suppression list, "Clear filters" button, DLQ retry/requeue action, link DLQ tile from platform → email filtered view.
-5. **`/admin/churn` actions** — "Send nudge" per-row, link to Campaigns for bulk win-back, tabs: Lifecycle | Win-back | Recovery actions.
-6. **`/admin/reviews`** — default sort surfaces AI-suspect verdicts first.
-7. **`/admin/payments` Export** — wire the broken export button.
-8. **Verification workspace** — "Approve & next" button, keyboard shortcuts (j/k/a/r) matching support.
-9. **Support → Member 360 link** — "Open member timeline →" from every ticket.
-10. **Campaigns** — recipient-count preview in compose dialog + send confirmation step.
+Edit `src/lib/admin/memberships.functions.ts` `getMembershipMetrics`:
 
----
+1. Drop the `LAUNCH_AT_UTC ∈ window` gate on cohort rows; replace with **per-row due-date** logic:
+   - `honour_window` / `anomaly_launch_charge`: due at `LAUNCH_AT_UTC` (only included if that instant is still in the window — i.e. effectively never post-launch, which is correct).
+   - `future_due`: due at `bd_next_due_date`. Include if that date ∈ `[now, now+14d]`. Amount = `TIER_PRICE_PENCE.verified` (£99).
+2. Add a third source: `legacy_stripe_link` rows where `next_invoice_at ∈ [now, now+14d]` and the user isn't already covered by a live Stripe sub in `upcomingLive`. Use the same fields the forecast already reads. Amount = the linked tier's `paymentPenceFor`.
+3. Dedupe by `user_id`: prefer the live-Stripe row, then legacy-link, then BD cohort. This avoids double-counting BD members who've already claimed and have a live Stripe sub.
 
-## Wave 3 — Consolidation + Freeze (2–3 days)
+Sort order in `upcomingItems`: by `dueAt` ascending (drop the launch-cohort priority that no longer matters).
 
-Resolve the structural duplication called out in §5 and §10 of the report, then freeze.
+### B. Update card copy + subtitle
 
-1. **Canonical revenue page** — merge `/admin/memberships` into `/admin/payments` as a "Forecast" tab; retire memberships route. `/admin` keeps business KPIs, `/admin/ops/billing` keeps operational. Document each KPI's source of truth in `metrics-definitions.ts`.
-2. **"Open member timeline" everywhere** — professionals row actions, billing drill rows, churn rows, activity stream events. Standard primitive.
-3. **Alert humanisation** — map `kind` enums to display labels + descriptions, summarise `context` JSON as plain English, add severity filter.
-4. **Activity stream polish** — truncation warning at 500 cap, text search, member-event deep links.
-5. **Freeze marker** — write `mem://admin/freeze-2026-06` capturing: sidebar structure, ops sub-nav, KPI source-of-truth map, list of pages that may not be restructured without explicit ask. Add the same lock note to the audit report.
+In `src/routes/admin_.memberships.tsx` (`UpcomingPaymentsPanel`):
 
-Explicitly **out of scope** (per audit §10 large redesigns — defer unless you ask):
-- Unified `/admin/member/$userId` 360 view (cross-tab Profile/Billing/Timeline/Support/Verification).
-- Churn → full Retention Centre (cohort analysis, funnel viz).
-- `/admin/cpd` real-data wiring (banner only until CPD product scope is decided).
-- `/admin/settings` editability (notice only).
+- Drop the `(launch cohort)` subtitle branch.
+- New subtitle: `"Stripe renewals · legacy renewals · BD cohort"`.
+- Empty-state description: `"Renewals and scheduled charges in the next 14 days will list here."`
 
----
+### C. Prove Past-due renders Raheela (no logic change)
 
-## Technical Notes
+1. After the upcoming-payments edit deploys, hard-reload `/admin/memberships`. Expect the Failed-payments card to show `1 · Raheela Khalid · Free · incomplete expired · £0`.
+2. If it still shows `0`, add a one-line diagnostic in `getMembershipMetrics` (`console.log("[memberships] pastDueCount", pastDue.length, pastDue.map(s => s.status))`) and inspect server logs to confirm the server function actually returns 1.
+3. Once confirmed, leave the diagnostic in place (gated behind a `process.env.DEBUG_MEMBERSHIPS` check) so future drift is one log away.
 
-- Sidebar source of truth: `src/components/dashboard/nav-data.ts` (`ADMIN_NAV`) + `AdminActive` union in `src/components/dashboard/DashboardSidebar.tsx`. Adding sidebar entries needs both updated.
-- Confirmation dialogs: use existing shadcn `AlertDialog` primitive — do not roll a new one.
-- Ops sub-nav: implement once as `<OpsSubNav />` in `src/components/ops/`, render from each `/admin/ops/*` page header (or the `admin_.ops.tsx` parent if we accept always-rendered chrome).
-- Drill-downs: use existing `?kind=` URL-param pattern from `/admin/ops/billing` for consistency.
-- Suppression removal: needs a server fn calling Resend's suppression API + local `email_suppressions` row delete; HMAC-protected DLQ retry endpoint already exists under `/api/public/ops/*` — reuse, don't fork.
-- Reuse `MemberFinder` for the "Open member timeline" links — already production-grade.
-- No migrations expected in Wave 1; Waves 2–3 may need 1–2 small ones (suppression actions audit log, freeze metadata) — flagged before applying.
+### D. Tier-label handling for `free` past-dues
 
----
+`tierLabel('free')` currently has no branch. Add a `free → "Free"` fallback in `src/routes/admin_.memberships.tsx` so Raheela's row renders with `Free · incomplete expired` instead of an empty / "Unknown" label. No business-logic change.
 
-## Decision Points
+## Out of scope (explicit)
 
-- **After Wave 1**: ship & confirm; decide whether to continue. Wave 1 alone closes every P0 and most of the §8 quick-wins list.
-- **After Wave 2**: ship & confirm; this is the point at which the admin is operationally complete.
-- **After Wave 3**: freeze admin, redirect engineering effort to the customer-facing product as you described.
+- No changes to billing logic, webhook logic, renewal logic, churn logic, reconciliation logic, or payment-recovery logic — per the standing Wave-3 freeze.
+- No changes to the forecast table itself; it already reads the legacy/BD source correctly.
+- No changes to `FAILED_PAYMENT_STATUSES` (already correct after this morning's edit).
 
-Shall I start Wave 1?
+## Acceptance criteria
+
+1. `/admin/memberships` "Payments in next 14 days" shows a non-zero value when any of: a live Stripe sub renews in 14d, a `legacy_stripe_link.next_invoice_at` falls in 14d, or a BD `future_due` row's `bd_next_due_date` falls in 14d.
+2. No member is counted twice across the three sources.
+3. "Failed payments" card shows Raheela on a fresh load, with tier label `Free`, status `incomplete expired`, count `1`.
+4. Subtitle on the 14-day card no longer references "launch cohort" by default.
+
+## Technical notes
+
+- `paymentPenceFor('free', …) = 0`, so Raheela's amount column renders £0 — accurate; we don't synthesise a fake charge.
+- `legacy_stripe_link` columns used by forecast (see `getRevenueForecast`, lines 422-590) are already SELECTed by the same path; reuse the same projection helper rather than re-querying.
+- All edits stay inside `src/lib/admin/memberships.functions.ts` and `src/routes/admin_.memberships.tsx`. No migration. No new server function.

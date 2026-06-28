@@ -687,9 +687,10 @@ function UpcomingPaymentsPanel({
     );
   const title = "Payments in next 14 days";
   const subtitle = launchInWindow && launchDate
-    ? `Renewals · trial conversions · launch cohort (${launchDate})`
-    : "Renewals · trial conversions · launch cohort";
+    ? `Stripe renewals · scheduled charges · launch cohort (${launchDate})`
+    : "Stripe renewals · scheduled charges";
   const acrossLabel = "next 14 days";
+
 
   return (
     <PPanel>
@@ -709,8 +710,9 @@ function UpcomingPaymentsPanel({
               <EmptyHeader>
                 <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
                 <EmptyDescription>
-                  Renewals, trial conversions and launch-cohort charges will list here as they approach.
+                  Stripe renewals and scheduled BD-cohort charges in the next 14 days will list here.
                 </EmptyDescription>
+
               </EmptyHeader>
             </Empty>
           </div>
@@ -750,8 +752,10 @@ function UpcomingPaymentsPanel({
 function cohortLabel(c: string | null | undefined): string | null {
   if (c === "honour_window") return "Honour window · £34 → £99 next year";
   if (c === "anomaly_launch_charge") return "Anomaly · £99 at launch";
+  if (c === "future_due") return "BD scheduled · £99 renewal";
   return null;
 }
+
 
 
 function PastDuePanel({ data, loading }: { data?: MembershipMetrics; loading: boolean }) {
@@ -812,8 +816,10 @@ function tierLabel(t: string) {
   if (t === "verified") return "Core";
   if (t === "pro") return "Pro";
   if (t === "studio") return "Studio";
+  if (t === "free") return "Free";
   return t;
 }
+
 
 function formatDueDate(iso: string | null) {
   if (!iso) return "—";
