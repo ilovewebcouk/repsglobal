@@ -210,14 +210,16 @@ export const getActivityStream = createServerFn({ method: "POST" })
       });
     }
 
-    for (const a of (auditRes.data ?? []) as Array<{ id: string; created_at: string; actor_user_id: string | null; action: string; target_user_id: string | null }>) {
+    for (const a of (auditRes.data ?? []) as Array<{ id: string; created_at: string; actor_id: string | null; action: string; target_id: string | null; target_table: string | null }>) {
+      const isUserTarget = a.target_table === "auth.users" || a.target_table === "profiles" || a.target_table === "professionals";
+      const targetUser = isUserTarget ? a.target_id : null;
       out.push({
         ts: a.created_at,
         kind: "admin_action",
         severity: "info",
         summary: `Admin ${a.action}`,
-        user_id: a.target_user_id,
-        href: memberHref(a.target_user_id),
+        user_id: targetUser,
+        href: memberHref(targetUser),
       });
     }
 
