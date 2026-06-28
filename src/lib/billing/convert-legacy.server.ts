@@ -254,6 +254,10 @@ async function convertOne(args: {
   // Mirror into public.subscriptions (upsert on stripe_subscription_id).
   // Match an existing user if we have one; otherwise leave user_id null on
   // the audit row — the webhook will reconcile when the user signs in.
+  // Resolve a REPs user_id if we can (bd_migration mapping is authoritative).
+  // If we can't, we still create the Stripe Subscription — the Stripe webhook
+  // will mirror into public.subscriptions when the user later signs in and
+  // their auth.users row is linked to this customer.
   let userId: string | null = null;
   const { data: userRow } = await supabaseAdmin
     .from("bd_migration")
@@ -261,14 +265,6 @@ async function convertOne(args: {
     .eq("bd_member_id", String(bd))
     .maybeSingle();
   if (userRow?.rep_user_id) userId = userRow.rep_user_id;
-  if (!userId) {
-    const { data: prof } = await supabaseAdmin
-      .from("professionals")
-      .select("user_id")
-      .eq("email", row.email)
-      .maybeSingle();
-    if (prof?.user_id) userId = prof.user_id;
-  }
 
   if (userId) {
     await supabaseAdmin
