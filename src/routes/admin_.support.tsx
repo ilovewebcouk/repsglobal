@@ -869,6 +869,9 @@ function TicketDrawer({
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
+  const [isAutoDrafted, setIsAutoDrafted] = useState(false);
+  const autoDraftedTickets = useRef<Set<string>>(new Set());
+  
   
 
   // Mark ticket as read when drawer opens
