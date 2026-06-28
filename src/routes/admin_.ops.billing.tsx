@@ -9,6 +9,7 @@ import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { getBillingHealth, getBillingDrill } from "@/lib/ops/operations.functions";
+import { RenewalEngineCard } from "@/components/ops/RenewalEngineCard";
 
 const drillEnum = z.enum([
   "payments_today", "refunds_today", "failed_active",
@@ -80,6 +81,10 @@ function BillingPage() {
               ) : <div key={t.key}>{inner}</div>;
             })}
         </div>
+
+        {/* Renewal engine visibility — last 7 nights + upcoming 14 days */}
+        <RenewalEngineCard />
+
 
         {kind && (
           <div className="rounded-[16px] border border-reps-border bg-reps-panel/40">
