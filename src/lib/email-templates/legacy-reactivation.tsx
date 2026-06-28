@@ -118,3 +118,5 @@ const ctaLink = { display: "inline-block", padding: "14px 26px", fontSize: "15px
 const inlineLink = { color: "#e85a1a", textDecoration: "underline" };
 const footer = { background: "#faf8f4", borderTop: "1px solid #ece9e3", padding: "18px 28px" };
 const footerText = { margin: 0, fontSize: "12px", lineHeight: 1.5, color: "#6a7079" };
+const footerLink = { color: "#6a7079", textDecoration: "underline" };
+
