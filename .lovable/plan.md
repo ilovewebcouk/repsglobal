@@ -1,77 +1,73 @@
-Admin display/aggregation fix for `/admin/memberships`. No business-logic, webhook, renewal, churn, reconciliation or payment-recovery changes. No migrations, no new server functions.
 
-## A — "Renewals due next 14 days" uses the same renewal universe as the forecast
+# Why Adam was not processed today (28 Jun)
 
-In `src/lib/admin/memberships.functions.ts → getMembershipMetrics`, extend the upcoming-payments projection so it mirrors the forecast source set (used by `getRevenueForecast`):
+Short answer: the launch script tagged him `future_due` at import. The renewal engine's first run after launch read that tag and wrote `legacy_stripe_link.migration_status = 'skipped'`. From that moment on, the daily candidate query — which requires `migration_status = 'ready'` — could never select him again. Today's run skipped him for the same reason yesterday's did: he is permanently invisible to the engine, not waiting for a date.
 
-1. **Live Stripe** — kept as-is (`current_period_end ∈ [now, now+14d]`, paid tier, LIVE_STATUSES).
-2. **`bd_member_seed` cohort** — kept, using the same `nextCohortDue()` annual roll-forward already in the function.
-3. **`legacy_stripe_link`** — NEW source. Read `bd_member_id, claimed_user_id, email, bd_next_due_date, is_lifetime`. Skip lifetime. For each non-lifetime row, project the next annual due using the same Europe/London-anchored roll-forward as cohort rows. Include if it lands in `[now, now+14d]`.
+## The launch plan vs. what shipped
 
-Reuse the existing `nextCohortDue()` shape — do not introduce a second projection algorithm. Factor the per-row "roll annually until ≥ now" into a small local helper (`projectNextAnnual(anchor, baseAmount)`) shared by cohort rows and the new legacy rows. Forecast logic is untouched; the metric simply becomes a 14-day slice of the same universe.
+The plan said `future_due` meant "their BD access is still good — don't charge yet — re-evaluate when their due date arrives." The code that does the re-evaluation step does not exist. There is no job, trigger, or branch anywhere in the codebase that promotes a `future_due` row from `skipped` back to `ready` when its `bd_next_due_date` passes. We shipped the "park them" half and not the "release them" half.
 
-## B — Identity-ladder dedupe (no double-counting)
+## Adam's row, today
 
-Replace the current `seenUserIds: Set<string>` with a ladder-based dedupe key built per row in this precedence:
+| field | value |
+|---|---|
+| `bd_next_due_date` | **2026-06-28** (today) ✓ should fire |
+| `legacy_stripe_link.access_expires_at` | 2026-06-27 23:47 (yesterday) ✓ in window |
+| `legacy_stripe_link.migration_status` | **`skipped`** ✗ excluded by candidate query |
+| `migration_cohort_override` | `future_due` ✗ override branch re-skips even if selected |
+| `migration_cohort_reason` | NULL (no reason was ever recorded) |
+| `legacy_kind` | `one_time` |
+| `stripe_customer_id` | `cus_QNMbWiFzzt2Yx5` (exists, payment-method state unverified) |
+| `subscriptions` / `payment_events` / `churn_lifecycle` / recovery email | none |
+
+The cron ran at 03:00 today. It selected its candidate set with `WHERE migration_status = 'ready'`. Adam's row says `skipped`, so he was not in the set. No attempt was made, no Stripe call, no webhook, no churn row, no email. From the engine's point of view he doesn't exist.
+
+## The double lock
+
+Even if I patched only the selection predicate, Adam still wouldn't process today, because there is a second exclusion inside the run loop:
 
 ```text
-stripe_subscription_id  →  user_id  →  claimed_user_id  →  email (lowercased)  →  bd_member_id
+src/lib/admin/stripe-linking.functions.ts:404-413
+if (ov?.cohort && ov.cohort !== 'honour_window' && ov.cohort !== 'anomaly_launch_charge') {
+  // future_due / manual_review / blocked → re-mark migration_status = 'skipped' and continue
+}
 ```
 
-Source precedence when the same identity surfaces in more than one source:
+So `future_due` is rejected in two places. Both need to change for the launch plan to behave as written.
 
-```text
-1. Live Stripe subscription   (wins)
-2. Legacy Stripe link
-3. BD seed / cohort           (loses)
-```
+## This isn't just Adam
 
-A `Map<dedupeKey, sourceRank>` enforces this — only insert/keep the higher-precedence source. Same ladder is applied to the past-due list so it does not collide with the upcoming list.
+The same lock applies to **242 BD members**. All `legacy_kind = 'one_time'`, all `migration_cohort_override = 'future_due'`, all `migration_cohort_reason` NULL, all with valid Stripe customers, none with any downstream record. 5 are past due as of today; the rest age into the same trap on their BD date. Adam is the one we noticed because he's today's date.
 
-## C — Date handling
+## Adjacent risk (not the cause, but related)
 
-- `now = new Date()`, `in14d = daysFromNow(14, now)` — already consistent with forecast.
-- Date-only fields (`bd_next_due_date`) are parsed via the same path as the forecast (`new Date(string)`), then the existing "roll annually until on/after `now`" loop runs. The window test stays `due >= now && due <= in14d`.
-- No new tz library; we explicitly do not change how the renewal job interprets dates.
+The `legacy-renewal` cron is registered in `pg_cron` to send the Supabase anon key in the `apikey` header, but the route at `src/routes/api/public/hooks/legacy-renewal.ts:21-35` only accepts `CRON_SECRET` or `service_role` and explicitly rejects anon. This is the same auth-contract bug we fixed last turn on `lifecycle-cron`. It can't be confirmed from `cron.job_run_details` (which only logs pg_net submission success), and the live HTTP response is gone after ~6 h. If the auth check is rejecting daily, the engine has been a no-op for **everyone** since launch — not just the 242. Worth a one-call verification.
 
-## D — Card copy in `src/routes/admin_.memberships.tsx`
+## What I am proposing (read-only audit is already done; this is the fix plan)
 
-- Title: **Renewals due next 14 days** (replaces "Payments in next 14 days").
-- Subtitle (always, no launch-cohort branch): **Stripe renewals · legacy renewals · BD cohort**.
-- Empty state: **Renewals and scheduled charges in the next 14 days will list here.**
-- Remove the `launchDate`-based subtitle conditional entirely.
+I won't run any of this until you say so.
 
-## E — Failed payments / Raheela verification
+1. **Fix the auth contract** on `legacy-renewal` to match `lifecycle-cron` (accept anon `apikey`). Verify with one invocation before touching any data.
 
-Audit, not a logic change:
+2. **Make the `future_due` hold time-based, not sticky.** In `_runLegacyRenewalBatch`:
+   - The candidate query selects rows where `migration_status IN ('ready', NULL)` OR `(migration_cohort_override = 'future_due' AND bd_next_due_date <= now())`.
+   - The override branch only re-skips a `future_due` row when `bd_next_due_date > now()`. Once the date has passed, the row falls through and gets processed by the same code path as every other member.
+   - This means Adam (and the 5 past-due) flow through naturally on the next run. The remaining 237 wait, then release themselves on their date.
 
-1. From the server fn perspective, confirm `getMembershipMetrics()` returns `pastDueCount = 1` when Raheela's row is `incomplete_expired` (the status set is already correct in `FAILED_PAYMENT_STATUSES`). Use a read-only DB query to confirm her sub exists with that status and that her profile row exists (orphan filter would otherwise hide her).
-2. Add an opt-in server log gated on `process.env.DEBUG_MEMBERSHIPS === "1"` only — prints `pastDue.length`, the dedupe-key sample, and orphan count. Off by default. No noisy logs in production.
-3. On the route, ensure the Failed Payments card re-fetches on mount (the query already runs via TanStack; we'll add `staleTime: 0` only on this single key if needed). No churn / recovery logic touched.
+3. **Backfill: one engine run with `limit=300`** after the fix lands. No new code path, no manual inserts. Whatever happens (Stripe charge succeeds → Core subscription; Stripe needs a card → `awaiting_payment_method` → existing claim-and-renew email) is the production path everyone else uses.
 
-## F — Free tier display
+4. **Add a `/admin/ops` invariant tile**: "BD members past due with no engine activity in 24h". Catches any future drift the same way the failed-payment banner catches webhook gaps.
 
-In `src/routes/admin_.memberships.tsx` past-due list:
+5. **Regression test**: seed one `future_due` row with `bd_next_due_date = yesterday`, run the batch, assert it was processed.
 
-- `tierLabel`: `free → "Free"` (display fallback). Already partially in place — re-confirm and keep.
-- Disambiguate amount column:
-  - The card shows the **plan amount** (current behaviour) → relabel the column header / row sub-text as **Plan amount**. £0 for Free is correct under that label.
-  - If a `payment_events` row of type `invoice.payment_failed` exists for that user, surface the attempted amount as a secondary line: **Last failed attempt: £NN.NN**. Read-only — no writes, no new server fn. Done inline via a small additive `select` in `getMembershipMetrics` (latest `invoice.payment_failed` per past-due user_id) returned on the `PastDueItem`.
-  - If no failed-attempt amount is found, omit the second line — do not invent £0.
+## What I am NOT doing
 
-## Acceptance check (manual after build)
+- No insert into `churn_lifecycle` for Adam.
+- No manual Stripe call.
+- No bespoke "process Adam" button.
+- No new email template.
+- No webhook, entitlement, or admin-metric changes.
 
-1. `/admin/memberships` → "Renewals due next 14 days" lists non-zero rows when any Stripe / legacy_stripe_link / BD cohort due-date lands in the window.
-2. The card total equals the 14-day slice of the forecast universe (cross-check with forecast's `next14dPence`).
-3. No member appears twice across the three sources.
-4. Raheela appears in Failed Payments on a fresh load, status `incomplete expired`, tier label `Free`.
-5. Amount column clearly labelled "Plan amount"; her last failed attempt shown if a `payment_events` row exists.
-6. No "launch cohort" subtitle remains anywhere on the 14-day card.
-7. `git grep` shows no changes to billing, webhook, renewal, churn, reconciliation, or payment-recovery files.
+Adam goes through the production path or nothing. The fix is the launch plan's missing half, not a workaround for him.
 
-## Files touched
-
-- `src/lib/admin/memberships.functions.ts` — extend `getMembershipMetrics` only (legacy_stripe_link source, ladder dedupe, optional debug log, latest-failed-attempt amount on `PastDueItem`). `getRevenueForecast` unchanged.
-- `src/routes/admin_.memberships.tsx` — card title / subtitle / empty-state copy, "Plan amount" column label, optional last-failed-attempt line, tier fallback.
-
-No new files. No migrations. No new server functions.
+Approve and I'll start with step 1 (the cron auth verification) before touching the engine.

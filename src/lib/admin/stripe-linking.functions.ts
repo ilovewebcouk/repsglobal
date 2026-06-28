@@ -334,39 +334,77 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
     legacyPrice = null;
   }
 
-  // Pull candidate rows. We then filter them through the SHARED
-  // `isActiveLegacyLink` predicate (from src/lib/members/active-paying-member)
-  // and renew ONLY rows that are NOT currently active — guaranteeing the
-  // renewal engine and the /admin Active Members tile can never disagree
-  // about who is "still active". This is the single source of truth.
+  // Candidate set: any row whose access has expired AND which is either
+  //   (a) freshly imported (`migration_status = 'ready'`), or
+  //   (b) parked behind a `future_due` admin hold whose BD due date has now
+  //       arrived (`migration_status = 'skipped'` + override = 'future_due'
+  //       + bd_member_seed.bd_next_due_date <= today).
+  // Holds are time-based, not sticky: once the date passes, the row flows
+  // through the same code path as every other member. See `.lovable/plan.md`.
   const { isActiveLegacyLink } = await import(
     "@/lib/members/active-paying-member"
   );
   const nowIso = new Date().toISOString();
+  const todayIso = nowIso.slice(0, 10);
 
-  const { data: due } = await supabaseAdmin
+  const { data: readyDue } = await supabaseAdmin
     .from("legacy_stripe_link")
     .select(
       "bd_member_id,email,stripe_customer_id,access_expires_at,eligible_for_legacy_price",
     )
     .eq("migration_status", "ready")
     .not("stripe_customer_id", "is", null)
-    .lte("access_expires_at", new Date().toISOString())
+    .lte("access_expires_at", nowIso)
     .limit(limit);
 
-  const rows = ((due ?? []) as {
+  // Released future_due holds: join bd_member_seed and require date arrived.
+  const { data: parkedDue } = await supabaseAdmin
+    .from("legacy_stripe_link")
+    .select(
+      "bd_member_id,email,stripe_customer_id,access_expires_at,eligible_for_legacy_price,bd_member_seed!inner(migration_cohort_override,bd_next_due_date)",
+    )
+    .eq("migration_status", "skipped")
+    .eq("bd_member_seed.migration_cohort_override", "future_due")
+    .lte("bd_member_seed.bd_next_due_date", todayIso)
+    .not("stripe_customer_id", "is", null)
+    .limit(limit);
+
+  const seen = new Set<number>();
+  const merged: {
     bd_member_id: number;
     email: string;
     stripe_customer_id: string;
     access_expires_at: string;
     eligible_for_legacy_price: boolean | null;
-  }[]).filter(
-    (r) =>
-      !isActiveLegacyLink(
-        { bd_member_id: r.bd_member_id, access_expires_at: r.access_expires_at },
-        nowIso,
-      ),
-  );
+  }[] = [];
+  for (const r of [...(readyDue ?? []), ...(parkedDue ?? [])] as Array<{
+    bd_member_id: number;
+    email: string;
+    stripe_customer_id: string;
+    access_expires_at: string;
+    eligible_for_legacy_price: boolean | null;
+  }>) {
+    if (seen.has(r.bd_member_id)) continue;
+    seen.add(r.bd_member_id);
+    merged.push({
+      bd_member_id: r.bd_member_id,
+      email: r.email,
+      stripe_customer_id: r.stripe_customer_id,
+      access_expires_at: r.access_expires_at,
+      eligible_for_legacy_price: r.eligible_for_legacy_price,
+    });
+  }
+
+  const rows = merged
+    .filter(
+      (r) =>
+        !isActiveLegacyLink(
+          { bd_member_id: r.bd_member_id, access_expires_at: r.access_expires_at },
+          nowIso,
+        ),
+    )
+    .slice(0, limit);
+
 
 
 
@@ -377,21 +415,25 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
   const bdIds = rows.map((r) => r.bd_member_id);
   const overrideMap = new Map<
     number,
-    { cohort: string | null; reason: string | null }
+    { cohort: string | null; reason: string | null; nextDue: string | null }
   >();
   if (bdIds.length) {
     const { data: overrides } = await supabaseAdmin
       .from("bd_member_seed")
-      .select("bd_member_id,migration_cohort_override,migration_cohort_reason")
+      .select(
+        "bd_member_id,migration_cohort_override,migration_cohort_reason,bd_next_due_date",
+      )
       .in("bd_member_id", bdIds);
     for (const o of (overrides ?? []) as {
       bd_member_id: number;
       migration_cohort_override: string | null;
       migration_cohort_reason: string | null;
+      bd_next_due_date: string | null;
     }[]) {
       overrideMap.set(o.bd_member_id, {
         cohort: o.migration_cohort_override,
         reason: o.migration_cohort_reason,
+        nextDue: o.bd_next_due_date,
       });
     }
   }
@@ -399,18 +441,28 @@ export async function _runLegacyRenewalBatch(env: StripeEnv, limit: number): Pro
   for (const row of rows) {
     res.processed += 1;
     try {
-      // Admin cohort overrides win over computed logic.
+      // Admin cohort overrides win over computed logic — BUT they are
+      // time-based, not sticky. A `future_due` hold releases itself once
+      // bd_next_due_date has arrived; the row then flows through the
+      // normal renewal path. manual_review / blocked remain hard skips.
       const ov = overrideMap.get(row.bd_member_id);
-      if (ov?.cohort && ov.cohort !== "honour_window" && ov.cohort !== "anomaly_launch_charge") {
-        // future_due / manual_review / blocked → do NOT charge or create a
-        // subscription on launch day. Skip and record why.
+      const futureDueStillHeld =
+        ov?.cohort === "future_due" &&
+        (!ov.nextDue || ov.nextDue > todayIso);
+      const hardSkip =
+        ov?.cohort &&
+        ov.cohort !== "honour_window" &&
+        ov.cohort !== "anomaly_launch_charge" &&
+        ov.cohort !== "future_due";
+      if (futureDueStillHeld || hardSkip) {
         await markRow(row.bd_member_id, {
           migration_status: "skipped",
           last_attempt_at: new Date().toISOString(),
-          notes: `Skipped by admin cohort override "${ov.cohort}": ${ov.reason ?? "no reason recorded"}`.slice(0, 500),
+          notes: `Skipped by admin cohort override "${ov!.cohort}": ${ov!.reason ?? "no reason recorded"}`.slice(0, 500),
         });
         continue;
       }
+
 
       const customer = (await stripe.customers.retrieve(row.stripe_customer_id)) as {
         deleted?: boolean;
