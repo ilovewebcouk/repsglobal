@@ -247,7 +247,7 @@ function AdminProfessionalsPage() {
     {
       label: "Active professionals",
       value: kpisQ.data ? kpisQ.data.activeCount.toLocaleString() : "—",
-      delta: "Confirmed signed-up members",
+      delta: "All confirmed pros, incl. Free tier",
       icon: Users,
     },
     {
@@ -261,7 +261,7 @@ function AdminProfessionalsPage() {
     {
       label: "Paid members",
       value: kpisQ.data ? kpisQ.data.paidCount.toLocaleString() : "—",
-      delta: "Active or trialing subscriptions",
+      delta: "Canonical paying — matches /admin",
       icon: CreditCard,
     },
     {

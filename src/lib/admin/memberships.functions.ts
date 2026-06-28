@@ -13,6 +13,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { LAUNCH_AT_UTC } from "@/lib/launch";
+import { FAILED_PAYMENT_STATUSES } from "./metrics-definitions";
 import {
   type Tier,
   type BillingPeriod,
@@ -40,7 +41,9 @@ async function requireAdmin(supabase: any, userId: string) {
 }
 
 const LIVE_STATUSES = new Set(["active", "trialing"]);
-const PAST_DUE_STATUSES = new Set(["past_due", "unpaid", "payment_required"]);
+// Canonical failed-payments set — shared with /admin/ops/billing,
+// /admin/ops/customer, and /admin red banner. See metrics-definitions.ts.
+const PAST_DUE_STATUSES = new Set<string>([...FAILED_PAYMENT_STATUSES]);
 
 // ============================================================================
 // getMembershipMetrics — KPIs, tier counts, plan distribution, past-due, etc.

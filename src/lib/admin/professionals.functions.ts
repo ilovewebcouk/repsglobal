@@ -61,6 +61,9 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const { fetchActivePayingMemberCollection } = await import(
+      '@/lib/members/active-paying-member.server'
+    );
     const since30 = new Date(Date.now() - 30 * 24 * 60 * 60_000).toISOString();
     const since60 = new Date(Date.now() - 60 * 24 * 60 * 60_000).toISOString();
 
@@ -69,18 +72,17 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     // shells from `generateLink({ type: 'invite' })` are excluded).
     // "Active" = confirmed signed-up members, regardless of publish status,
     // so the Verified subtext "N of M" shares the same denominator.
-    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, paidRes, adminRolesRes] = await Promise.all([
+    //
+    // "Paid members" intentionally consumes the CANONICAL Active Paying Member
+    // collection so it never silently drifts from /admin's "Active paying
+    // members" tile. See docs/11_admin_metric_registry.md.
+    const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, adminRolesRes, activeCollection] = await Promise.all([
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false }),
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since30 }),
       supabaseAdmin.rpc('count_confirmed_pro_signups', { _since: since60, _until: since30 }),
-      supabaseAdmin
-        .from('subscriptions')
-        .select('user_id, tier, status, environment')
-        .eq('environment', 'live')
-        .in('status', ['active', 'trialing'])
-        .neq('tier', 'free'),
       supabaseAdmin.from('user_roles').select('user_id').eq('role', 'admin'),
+      fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
 
     const adminIds = new Set(((adminRolesRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
@@ -109,11 +111,10 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     const verifiedCount = Math.max(0, ((verifiedRes.data as number | null) ?? 0) - adminVerifiedCount);
     const signups = (signups30Res.data as number | null) ?? 0;
     const prevSignups = (signupsPrev30Res.data as number | null) ?? 0;
-    const paidCount = new Set(
-      ((paidRes.data ?? []) as Array<{ user_id: string }>)
-        .filter(r => !adminIds.has(r.user_id))
-        .map(r => r.user_id),
-    ).size;
+    // Paid members = canonical Active Paying Members whose user_id isn't an admin.
+    const paidCount = activeCollection.members.filter(
+      (m) => !m.user_id || !adminIds.has(m.user_id),
+    ).length;
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
 
     return {

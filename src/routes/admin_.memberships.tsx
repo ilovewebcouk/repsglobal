@@ -157,14 +157,14 @@ function KpiRow({
         sub="Projected for current month"
       />
       <KpiCard
-        label="Total members"
+        label="Paying + scheduled"
         value={loading ? null : totalMembers.toLocaleString()}
         sub={
           loading || !data
             ? "—"
-            : `Core · Pro · Studio${
+            : `Active paying${
                 (data.verifiedScheduled ?? 0) > 0
-                  ? ` (incl. ${data.verifiedScheduled} scheduled)`
+                  ? ` + ${data.verifiedScheduled} scheduled to start`
                   : ""
               }`
         }

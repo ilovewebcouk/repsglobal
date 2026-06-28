@@ -37,6 +37,8 @@ export const getBillingHealth = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<BillingHealthSnapshot> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { FAILED_PAYMENT_STATUSES } = await import("@/lib/admin/metrics-definitions");
+
 
     const startOfDay = new Date();
     startOfDay.setUTCHours(0, 0, 0, 0);
@@ -51,7 +53,7 @@ export const getBillingHealth = createServerFn({ method: "GET" })
         supabaseAdmin.from("payment_events").select("payload", { count: "exact" })
           .eq("event_type", "charge.refunded").gte("created_at", startIso),
         supabaseAdmin.from("subscriptions").select("user_id", { count: "exact", head: true })
-          .eq("environment", "live").in("status", ["past_due", "unpaid", "incomplete"]),
+          .eq("environment", "live").in("status", [...FAILED_PAYMENT_STATUSES]),
         supabaseAdmin.from("churn_lifecycle").select("user_id", { count: "exact", head: true })
           .eq("stage", "recovered").gte("entered_at", start30dIso),
         supabaseAdmin.from("churn_lifecycle").select("user_id", { count: "exact", head: true })
@@ -266,6 +268,12 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<CustomerHealthSnapshot> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { fetchActivePayingMemberCollection } = await import(
+      "@/lib/members/active-paying-member.server"
+    );
+    const { FAILED_PAYMENT_STATUSES } = await import(
+      "@/lib/admin/metrics-definitions"
+    );
     const start7dIso = new Date(Date.now() - 7 * 86400_000).toISOString();
     const nowIso = new Date().toISOString();
 
@@ -273,6 +281,7 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
       newCore, newPro, newStudio,
       churnCount, recoveryCount,
       pendingCancel, failedRenew, awaitingUpdate,
+      activeCollection,
     ] = await Promise.all([
       supabaseAdmin.from("subscriptions").select("id", { count: "exact", head: true })
         .eq("tier", "verified").eq("environment", "live").gte("created_at", start7dIso),
@@ -286,22 +295,19 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
         .eq("stage", "recovered").gte("entered_at", start7dIso),
       supabaseAdmin.from("subscriptions").select("id", { count: "exact", head: true })
         .eq("environment", "live").eq("cancel_at_period_end", true),
+      // Canonical "failed payments" definition — shared with /admin/ops/billing
+      // and /admin red banner via FAILED_PAYMENT_STATUSES.
       supabaseAdmin.from("subscriptions").select("id", { count: "exact", head: true })
-        .eq("environment", "live").in("status", ["past_due", "unpaid"]),
+        .eq("environment", "live").in("status", [...FAILED_PAYMENT_STATUSES]),
       supabaseAdmin.from("renewal_tokens").select("id", { count: "exact", head: true })
         .eq("purpose", "card_needed").is("consumed_at", null).gt("expires_at", nowIso),
+      // Canonical Active Paying Member model — same code path as /admin.
+      // Replaces the previous Stripe-only "cheap proxy".
+      fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
 
-    // active paying — reuse canonical model via overview RPC if available.
-    // Cheap proxy: live + active/trialing distinct user_ids.
-    const { count: activeCount } = await supabaseAdmin
-      .from("subscriptions")
-      .select("user_id", { count: "exact", head: true })
-      .eq("environment", "live")
-      .in("status", ["active", "trialing"]);
-
     return {
-      active_paying: activeCount ?? 0,
+      active_paying: activeCollection.counts.final_active_members,
       new_core_7d: newCore.count ?? 0,
       new_pro_7d: newPro.count ?? 0,
       new_studio_7d: newStudio.count ?? 0,

@@ -21,6 +21,7 @@ export const Route = createFileRoute("/admin_/ops/customer")({
 type Tile = {
   label: string;
   value: number;
+  sub?: string;
   tone?: "warn" | "crit";
   drill?: { to: string; hint: string };
 };
@@ -31,14 +32,14 @@ function CustomerPage() {
   const h = q.data;
 
   const tiles: Tile[] = h ? [
-    { label: "Active paying members", value: h.active_paying, drill: { to: "/admin/professionals", hint: "Open list" } },
+    { label: "Active paying members", value: h.active_paying, sub: "Subs + legacy + BD, deduped — matches /admin", drill: { to: "/admin/professionals", hint: "Open list" } },
     { label: "New Core (7d)", value: h.new_core_7d, drill: { to: "/admin/memberships", hint: "View memberships" } },
     { label: "New Pro (7d)", value: h.new_pro_7d, drill: { to: "/admin/memberships", hint: "View memberships" } },
     { label: "New Studio (7d)", value: h.new_studio_7d, drill: { to: "/admin/memberships", hint: "View memberships" } },
     { label: "Churn (7d)", value: h.churn_7d, tone: h.churn_7d > 0 ? "warn" : undefined, drill: { to: "/admin/churn", hint: "Open churn" } },
     { label: "Recoveries (7d)", value: h.recoveries_7d, drill: { to: "/admin/churn", hint: "Open churn" } },
     { label: "Pending cancellations", value: h.pending_cancellations, tone: h.pending_cancellations > 0 ? "warn" : undefined, drill: { to: "/admin/churn", hint: "Open churn" } },
-    { label: "Failed renewals", value: h.failed_renewals, tone: h.failed_renewals > 0 ? "crit" : undefined, drill: { to: "/admin/webhook-recovery", hint: "Webhook recovery" } },
+    { label: "Failed payments", value: h.failed_renewals, sub: "past_due · unpaid · incomplete", tone: h.failed_renewals > 0 ? "crit" : undefined, drill: { to: "/admin/webhook-recovery", hint: "Webhook recovery" } },
     { label: "Awaiting payment update", value: h.awaiting_payment_update, drill: { to: "/admin/webhook-recovery", hint: "Webhook recovery" } },
   ] : [];
 
@@ -58,7 +59,8 @@ function CustomerPage() {
                   {t.drill && <ArrowUpRight className="h-3.5 w-3.5 opacity-40 transition group-hover:opacity-90" />}
                 </div>
                 <div className="mt-1 text-2xl font-semibold tabular-nums">{t.value.toLocaleString()}</div>
-                {t.drill && <div className="mt-1 text-[11px] text-reps-text/55">{t.drill.hint} →</div>}
+                {t.sub && <div className="mt-1 text-[11px] text-reps-text/55">{t.sub}</div>}
+                {t.drill && <div className="mt-1 text-[11px] text-reps-text/45">{t.drill.hint} →</div>}
               </div>
             );
             return t.drill ? (
