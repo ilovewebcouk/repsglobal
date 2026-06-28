@@ -40,6 +40,8 @@ import {
 } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
 import { LocationMap } from "@/components/pro/LocationMap";
+import { Monogram } from "@/components/directory/Monogram";
+import { Users as UsersIcon } from "lucide-react";
 
 
 function formatReviewWhen(iso: string): string {
