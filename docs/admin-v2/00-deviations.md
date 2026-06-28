@@ -101,3 +101,47 @@ match the spec. We do not re-shuffle.
 
 If a future change wants to deviate from the spec in a way not listed
 here, add a new section to this file in the same PR.
+
+---
+
+## 7 · Operator Trust Pass clarifications (2026-06-29)
+
+These three clarifications are binding on every Admin v2 surface and
+override any conflicting wording elsewhere in the pack.
+
+### 7.1 Payment Recovery routing
+
+"Payment Recovery" is a **member lifecycle** state, not a webhook state.
+Every UI affordance labelled "Payment Recovery" must link to
+`/admin/churn` (or `/admin/ops/billing?kind=in_recovery` where a sub-feed
+is needed). It must **never** link to `/admin/webhook-recovery`.
+
+`/admin/webhook-recovery` is reserved exclusively for failed Stripe
+webhook processing, dead-letter queues, and replay tooling.
+
+### 7.2 "Verified" terminology
+
+"Verified" is **banned as a user-facing tier label**. Any UI that
+displays the membership tier must say **Core**.
+
+Permitted uses of "Verified":
+- Internal DB / code tier keys (`tier === "verified"`,
+  `TIER_RENEWAL_PENCE.verified`, Stripe metadata) — left untouched.
+- UI strings that refer to **professional verification status**
+  (ID / qualifications / insurance) — e.g. "Verified Professionals",
+  "REPS Verified" badge.
+
+### 7.3 Memberships visual hierarchy
+
+`/admin/memberships` must make the arithmetic visually obvious:
+
+    Active Paying Members = Core + Pro + Studio
+
+Scheduled Starts, Legacy / BD setup, and Awaiting-Stripe-Setup cohorts
+are reported in a **separate** "Migration & setup" section and must
+never be merged into the Active Paying Members total.
+
+No large aggregate number may be displayed without a label that names
+exactly what it counts. Bare totals like "392" without registry-mapped
+context are forbidden.
+

@@ -245,23 +245,23 @@ function AdminProfessionalsPage() {
 
   const kpis = [
     {
-      label: "Active professionals",
+      label: "Active Professionals",
       value: kpisQ.data ? kpisQ.data.activeCount.toLocaleString() : "—",
-      delta: "All confirmed pros, incl. Free tier",
+      delta: "All confirmed pros, including Free (M2)",
       icon: Users,
     },
     {
-      label: "Verified professionals",
+      label: "Verified Professionals",
       value: kpisQ.data ? kpisQ.data.verifiedCount.toLocaleString() : "—",
       delta: kpisQ.data
-        ? `${kpisQ.data.verifiedCount.toLocaleString()} of ${kpisQ.data.activeCount.toLocaleString()} active professionals`
+        ? `${kpisQ.data.verifiedCount.toLocaleString()} of ${kpisQ.data.activeCount.toLocaleString()} active`
         : "",
       icon: ShieldCheck,
     },
     {
-      label: "Paid members",
+      label: "Paid Professionals",
       value: kpisQ.data ? kpisQ.data.paidCount.toLocaleString() : "—",
-      delta: "Canonical paying — matches /admin",
+      delta: "With active paid entitlement — matches /admin M1",
       icon: CreditCard,
     },
     {
@@ -606,7 +606,7 @@ function InviteButton() {
                 className={plan === "verified"
                   ? "flex-1 rounded-[10px] border border-reps-orange bg-reps-orange-soft px-3 py-2 text-left text-[12px] font-semibold text-reps-orange"
                   : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
-                Verified <span className="font-normal text-white/55">£99/yr</span>
+                Core <span className="font-normal text-white/55">£99/yr</span>
               </button>
               <button onClick={() => setPlan("pro")}
                 className={plan === "pro"
