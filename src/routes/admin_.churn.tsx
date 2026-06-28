@@ -47,6 +47,15 @@ const STAGE_TONE: Record<Stage, string> = {
   dormant: "bg-zinc-500/15 text-zinc-300 border-zinc-400/30",
 };
 
+const STAGE_SUB: Record<Stage, string> = {
+  active: "Paying and current",
+  at_risk: "Renewal due ≤14d or first failed charge",
+  grace: "Retrying card · still active",
+  lapsed: "Payment failed — entitlement ended",
+  recovered: "Came back after a failed payment",
+  dormant: "Cancelled long-term, no activity",
+};
+
 function AdminChurnPage() {
   const kpiFn = useServerFn(churnLifecycleKpis);
   const listFn = useServerFn(listChurnLifecycle);
@@ -77,6 +86,7 @@ function AdminChurnPage() {
               <div className="font-display text-[28px] leading-none">
                 {k[s] ?? 0}
               </div>
+              <div className="mt-1 text-[11px] text-white/55">{STAGE_SUB[s]}</div>
             </PCard>
           ))}
         </div>
