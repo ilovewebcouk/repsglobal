@@ -66,8 +66,7 @@ export function MemberReconciliationStrip({
               label="Active Paying Members"
               sub="Stripe + legacy + BD, deduped"
               value={activePayingMembers}
-              to="/admin/reconciliation"
-              hash="members"
+              to="/admin/memberships"
             />
             {activePros !== null ? (
               <ReconRow
@@ -83,6 +82,7 @@ export function MemberReconciliationStrip({
                 sub="Active Professionals − Active Paying Members"
                 value={proGap}
                 to="/admin/professionals"
+                search={{ plan: "free" }}
                 muted
               />
             ) : null}
@@ -92,9 +92,21 @@ export function MemberReconciliationStrip({
                 sub="Professionals with active paid entitlement"
                 value={paidPros}
                 to="/admin/professionals"
+                search={{ plan: "paid" }}
                 muted
               />
             ) : null}
+            {failedCount > 0 ? (
+              <ReconRow
+                label="Payment Recovery"
+                sub="Members in recovery lifecycle after a failed payment"
+                value={failedCount}
+                to="/admin/churn"
+                tone="warn"
+              />
+            ) : null}
+          </ul>
+
             {failedCount > 0 ? (
               <ReconRow
                 label="Payment Recovery"
