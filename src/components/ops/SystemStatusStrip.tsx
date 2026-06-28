@@ -23,34 +23,37 @@ export function SystemStatusStrip() {
   });
   const tiles = q.data?.tiles ?? [];
 
+  if (tiles.length === 0) {
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[88px] animate-pulse rounded-[16px] border border-reps-border bg-reps-panel/40"
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      {(tiles.length > 0 ? tiles : Array.from({ length: 5 })).map((t, i) => {
-        if (!t) {
-          return (
-            <div
-              key={i}
-              className="h-[88px] animate-pulse rounded-[16px] border border-reps-border bg-reps-panel/40"
-            />
-          );
-        }
-        return (
-          <Link
-            key={t.key}
-            to={t.href}
-            className={`block rounded-[16px] border p-4 transition hover:brightness-110 ${TONE_CLASS[t.tone]}`}
-          >
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wide opacity-80">
-              <span className={`inline-block size-2 rounded-full ${DOT_CLASS[t.tone]}`} />
-              {t.label}
-            </div>
-            <div className="mt-1 text-base font-semibold">
-              {t.tone === "green" ? "Healthy" : t.tone === "amber" ? "Degraded" : "Issue"}
-            </div>
-            <div className="text-xs opacity-75">{t.detail}</div>
-          </Link>
-        );
-      })}
+      {tiles.map((t) => (
+        <Link
+          key={t.key}
+          to={t.href}
+          className={`block rounded-[16px] border p-4 transition hover:brightness-110 ${TONE_CLASS[t.tone]}`}
+        >
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wide opacity-80">
+            <span className={`inline-block size-2 rounded-full ${DOT_CLASS[t.tone]}`} />
+            {t.label}
+          </div>
+          <div className="mt-1 text-base font-semibold">
+            {t.tone === "green" ? "Healthy" : t.tone === "amber" ? "Degraded" : "Issue"}
+          </div>
+          <div className="text-xs opacity-75">{t.detail}</div>
+        </Link>
+      ))}
     </div>
   );
 }
