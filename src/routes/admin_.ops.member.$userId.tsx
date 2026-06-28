@@ -4,10 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getMemberTimeline, type TimelineSource } from "@/lib/ops/timeline.functions";
+import {
+  SourcePill,
+  SOURCE_DOT_CLASSES,
+  ALL_TIMELINE_SOURCES,
+} from "@/components/ops/source-pill";
 
 export const Route = createFileRoute("/admin_/ops/member/$userId")({
   ssr: false,
@@ -16,23 +20,6 @@ export const Route = createFileRoute("/admin_/ops/member/$userId")({
   component: MemberPage,
 });
 
-const SOURCE_COLORS: Record<TimelineSource, string> = {
-  payment: "bg-emerald-500/20 text-emerald-200 border-emerald-400/30",
-  webhook: "bg-sky-500/20 text-sky-200 border-sky-400/30",
-  subscription: "bg-indigo-500/20 text-indigo-200 border-indigo-400/30",
-  churn: "bg-rose-500/20 text-rose-200 border-rose-400/30",
-  recovery: "bg-amber-500/20 text-amber-100 border-amber-400/30",
-  email: "bg-violet-500/20 text-violet-200 border-violet-400/30",
-  verification: "bg-emerald-500/20 text-emerald-200 border-emerald-400/30",
-  support: "bg-orange-500/20 text-orange-100 border-orange-400/30",
-  review: "bg-yellow-500/20 text-yellow-100 border-yellow-400/30",
-  admin: "bg-fuchsia-500/20 text-fuchsia-200 border-fuchsia-400/30",
-  identity: "bg-teal-500/20 text-teal-200 border-teal-400/30",
-  auth: "bg-slate-500/20 text-slate-100 border-slate-400/30",
-};
-
-const ALL_SOURCES: TimelineSource[] = Object.keys(SOURCE_COLORS) as TimelineSource[];
-
 function MemberPage() {
   const { userId } = Route.useParams();
   const getFn = useServerFn(getMemberTimeline);
@@ -40,7 +27,7 @@ function MemberPage() {
     queryKey: ["ops-member-timeline", userId],
     queryFn: () => getFn({ data: { user_id: userId, limit: 500 } }),
   });
-  const [enabled, setEnabled] = useState<Set<TimelineSource>>(new Set(ALL_SOURCES));
+  const [enabled, setEnabled] = useState<Set<TimelineSource>>(new Set(ALL_TIMELINE_SOURCES));
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -82,10 +69,8 @@ function MemberPage() {
             </a>
           )}
           <div className="ml-auto flex flex-wrap gap-1">
-            {ALL_SOURCES.map((s) => (
-              <button key={s}
-                className={`rounded-full border px-2 py-0.5 text-xs ${enabled.has(s) ? SOURCE_COLORS[s] : "border-reps-border bg-reps-panel/40 text-reps-text/40"}`}
-                onClick={() => toggle(s)}>{s}</button>
+            {ALL_TIMELINE_SOURCES.map((s) => (
+              <SourcePill key={s} source={s} as="button" active={enabled.has(s)} onClick={() => toggle(s)} />
             ))}
           </div>
         </div>
@@ -101,10 +86,10 @@ function MemberPage() {
             <ol className="ml-4 border-l border-reps-border/60">
               {evs.map((e, i) => (
                 <li key={`${e.ts}-${i}`} className="relative pl-4 py-2">
-                  <span className={`absolute -left-[5px] top-3 size-2 rounded-full ${SOURCE_COLORS[e.source].split(" ")[0]}`} />
+                  <span className={`absolute -left-[5px] top-3 size-2 rounded-full ${SOURCE_DOT_CLASSES[e.source]}`} />
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="text-xs tabular-nums text-reps-text/60">{e.ts.slice(11, 19)}</span>
-                    <Badge variant="outline" className={`text-[10px] ${SOURCE_COLORS[e.source]}`}>{e.source}</Badge>
+                    <SourcePill source={e.source} />
                     <span className="font-mono text-xs text-reps-text/70">{e.type}</span>
                     {e.status && <span className="text-[10px] uppercase tracking-wide text-reps-text/50">{e.status}</span>}
                     {e.externalUrl && <a href={e.externalUrl} target="_blank" rel="noreferrer" className="text-xs text-reps-orange hover:underline">↗</a>}
