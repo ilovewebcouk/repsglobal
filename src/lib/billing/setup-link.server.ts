@@ -171,7 +171,7 @@ export async function runSetupLinkBatch(opts: BatchOpts): Promise<BatchSummary> 
           ? { proName, setupUrl, amount: "£99", previousAmount: "£34", renewalDate }
           : { proName, setupUrl, amount: "£99" };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const element = React!.createElement(tmpl.component as any, props);
+        const element = React!.createElement(tmpl.component as unknown as React.ComponentType<Record<string, unknown>>, props as Record<string, unknown>);
         const html = await render!(element);
         const text = await render!(element, { plainText: true });
         const subject = typeof tmpl.subject === "function" ? tmpl.subject(props as Record<string, unknown>) : tmpl.subject;
