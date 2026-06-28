@@ -792,6 +792,16 @@ function ProRow({ row }: { row: AdminProRow }) {
               Open their dashboard
             </DropdownMenuItem>
 
+            <DropdownMenuSeparator className="bg-reps-border" />
+            <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+              Forensics
+            </DropdownMenuLabel>
+            <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white">
+              <Link to="/admin/ops/member/$userId" params={{ userId: row.id }}>
+                <Activity className="h-4 w-4" /> Open member timeline
+              </Link>
+            </DropdownMenuItem>
+
             {slug && slug !== "—" ? (
               <>
                 <DropdownMenuSeparator className="bg-reps-border" />
