@@ -340,8 +340,14 @@ function RelaunchBroadcastCard() {
   const [result, setResult] = useState<{
     total: number;
     queued: number;
+    sent?: number;
+    alreadySent?: number;
     skipped: number;
     failed: number;
+    remaining?: number;
+    paused?: boolean;
+    retryAt?: string | null;
+    pauseReason?: string | null;
     firstErrors: Array<{ email: string; error: string }>;
   } | null>(null);
 
@@ -365,7 +371,11 @@ function RelaunchBroadcastCard() {
     try {
       const r = await broadcast({ data: { confirmToken: confirm } });
       setResult(r);
-      toast.success(`Queued ${r.queued} of ${r.total}.`);
+      if (r.paused) {
+        toast.info(`Sent ${r.sent ?? 0} new emails. ${r.remaining ?? 0} still remaining.`);
+      } else {
+        toast.success(`Sent ${r.queued} of ${r.total}.`);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Broadcast failed");
     } finally {
@@ -426,10 +436,15 @@ function RelaunchBroadcastCard() {
       ) : null}
 
       {result ? (
-        <div className="mt-3 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-3 text-[12px] text-emerald-100">
-          Queued <strong>{result.queued}</strong> of {result.total} · skipped {result.skipped} · failed {result.failed}.
-          {result.failed > 0 ? (
-            <ul className="mt-2 list-disc pl-4 text-emerald-200/80">
+        <div className={`mt-3 rounded-[10px] border p-3 text-[12px] ${result.paused ? "border-amber-400/30 bg-amber-500/10 text-amber-100" : "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"}`}>
+          Sent <strong>{result.queued}</strong> of {result.total}
+          {typeof result.sent === "number" ? <> · new this run {result.sent}</> : null}
+          {typeof result.alreadySent === "number" ? <> · already sent {result.alreadySent}</> : null}
+          {typeof result.remaining === "number" ? <> · remaining {result.remaining}</> : null}
+          <> · skipped {result.skipped} · failed {result.failed}.</>
+          {result.pauseReason ? <p className="mt-2">{result.pauseReason}</p> : null}
+          {result.failed > 0 || result.paused ? (
+            <ul className={`mt-2 list-disc pl-4 ${result.paused ? "text-amber-100/80" : "text-emerald-200/80"}`}>
               {result.firstErrors.map((e) => (
                 <li key={e.email}>
                   {maskEmail(e.email)} — {e.error}

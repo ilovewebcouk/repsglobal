@@ -2,6 +2,31 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const RELAUNCH_BROADCAST_TAG = "v1-2026-06-28";
+const MAX_NEW_SENDS_PER_RUN = 75;
+const SEND_DELAY_MS = 650;
+
+function isMailgunThrottle(error?: string | null) {
+  if (!error) return false;
+  return (
+    /\b420\b/.test(error) ||
+    /\b429\b/.test(error) ||
+    /recipient limit exceeded/i.test(error) ||
+    /request limit exceeded/i.test(error) ||
+    /sending too fast/i.test(error)
+  );
+}
+
+function parseRetryAt(error?: string | null, retryAfter?: string | null) {
+  const direct = retryAfter ? Date.parse(retryAfter) : NaN;
+  if (Number.isFinite(direct)) return new Date(direct).toISOString();
+
+  const match = error?.match(/try again after ([^"}\n]+?)(?:["}]|$)/i);
+  if (!match) return null;
+  const parsed = Date.parse(match[1].trim());
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
+}
+
 /**
  * Resolve the relaunch audience: every confirmed member + BD-seed members
  * who never signed up, minus admins, demo accounts, and suppressed addresses.
@@ -82,14 +107,43 @@ export const sendRelaunchBroadcast = createServerFn({ method: "POST" })
 
     // Stable broadcast tag — bumping this lets us legitimately re-send to all
     // (e.g. if the relaunch is delayed). Keep it stable for THIS run.
-    const broadcastTag = "v1-2026-06-28";
+    const broadcastTag = RELAUNCH_BROADCAST_TAG;
 
-    let queued = 0;
+    const { data: sentRows, error: sentRowsError } = await supabaseAdmin
+      .from("email_send_log")
+      .select("message_id")
+      .eq("template_name", "relaunch-announcement")
+      .eq("status", "sent")
+      .like("message_id", `relaunch-${broadcastTag}-%`)
+      .limit(1000);
+    if (sentRowsError) throw new Error(sentRowsError.message);
+    const alreadySentKeys = new Set((sentRows ?? []).map((row) => row.message_id));
+
+    let sent = 0;
+    let alreadySent = 0;
     let skipped = 0;
+    let failed = 0;
+    let processedThisRun = 0;
+    let paused = false;
+    let retryAt: string | null = null;
+    let pauseReason: string | null = null;
     const errors: Array<{ email: string; error: string }> = [];
 
-    // Sequential with a tiny pacing delay to be polite to Mailgun.
+    // Sequential with safe pacing. Mailgun can return 420 recipient-limit
+    // throttles; those must pause the run rather than marking the rest failed.
     for (const row of audience) {
+      const idempotencyKey = `relaunch-${broadcastTag}-${row.email}`;
+      if (alreadySentKeys.has(idempotencyKey)) {
+        alreadySent += 1;
+        continue;
+      }
+
+      if (processedThisRun >= MAX_NEW_SENDS_PER_RUN) {
+        paused = true;
+        pauseReason = `Paused after ${MAX_NEW_SENDS_PER_RUN} new sends to stay inside Mailgun limits. Run it again to continue.`;
+        break;
+      }
+
       try {
         const res = await sendViaMailgun({
           to: row.email,
@@ -97,24 +151,55 @@ export const sendRelaunchBroadcast = createServerFn({ method: "POST" })
           html,
           text,
           templateName: "relaunch-announcement",
-          idempotencyKey: `relaunch-${broadcastTag}-${row.email}`,
+          idempotencyKey,
         });
-        if (res.ok) queued += 1;
+        processedThisRun += 1;
+        if (res.ok && res.skippedDuplicate) alreadySent += 1;
+        else if (res.ok) sent += 1;
         else if (res.error === "suppressed") skipped += 1;
-        else errors.push({ email: row.email, error: res.error ?? "unknown" });
+        else if (isMailgunThrottle(res.error)) {
+          paused = true;
+          retryAt = parseRetryAt(res.error, res.retryAfter);
+          pauseReason = retryAt
+            ? `Mailgun asked us to pause until ${retryAt}. Run it again after that time.`
+            : "Mailgun asked us to pause for rate limiting. Run it again shortly.";
+          errors.push({ email: row.email, error: pauseReason });
+          break;
+        } else {
+          failed += 1;
+          errors.push({ email: row.email, error: res.error ?? "unknown" });
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        if (isMailgunThrottle(msg)) {
+          paused = true;
+          retryAt = parseRetryAt(msg, null);
+          pauseReason = retryAt
+            ? `Mailgun asked us to pause until ${retryAt}. Run it again after that time.`
+            : "Mailgun asked us to pause for rate limiting. Run it again shortly.";
+          errors.push({ email: row.email, error: pauseReason });
+          break;
+        }
+        failed += 1;
         errors.push({ email: row.email, error: msg });
       }
-      // ~10/sec pacing
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, SEND_DELAY_MS));
     }
+
+    const accepted = alreadySent + sent;
+    const remaining = Math.max(0, audience.length - accepted - skipped - failed);
 
     return {
       total: audience.length,
-      queued,
+      queued: accepted,
+      sent,
+      alreadySent,
       skipped,
-      failed: errors.length,
+      failed,
+      remaining,
+      paused,
+      retryAt,
+      pauseReason,
       firstErrors: errors.slice(0, 10),
     };
   });
