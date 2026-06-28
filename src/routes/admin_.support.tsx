@@ -1190,26 +1190,31 @@ function TicketDrawer({
             <div className="ml-auto flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => aiDraft.mutate()}
+                onClick={() => aiDraft.mutate({ auto: false })}
                 disabled={
                   aiDraft.isPending ||
                   mode !== "reply" ||
                   !messages.some((m: any) => m.direction === "inbound")
                 }
                 title={
-                  draft.trim()
+                  draft.trim() && !isAutoDrafted
                     ? "Use your notes as a brief — AI writes the polished reply"
-                    : "Draft a reply from the conversation"
+                    : draft.trim()
+                      ? "Replace with a fresh AI draft"
+                      : "Draft a reply from the conversation"
                 }
                 className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
                 {aiDraft.isPending
                   ? "Drafting…"
-                  : draft.trim()
+                  : draft.trim() && !isAutoDrafted
                     ? "Draft from notes"
-                    : "AI draft"}
+                    : draft.trim()
+                      ? "Redraft"
+                      : "AI draft"}
               </button>
+
             </div>
           </div>
           <div className="relative">
