@@ -63,12 +63,14 @@ export const Route = createFileRoute("/api/public/hooks/lifecycle-cron")({
 async function runLifecycleBatch(): Promise<CronResult> {
   const result: CronResult = {
     plan_a: { scanned: 0, emailed: 0, skipped: 0 },
+    at_risk_first_nudge: { scanned: 0, emailed: 0, skipped: 0 },
     dunning_progressed: 0,
     lapsed: 0,
     winback_sent: 0,
     dormant: 0,
     errors: [],
   };
+
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { mintAndEmailRenewalToken } = await import("@/lib/churn/lifecycle.functions");
