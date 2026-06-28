@@ -15,12 +15,29 @@ export const sendRelaunchTestEmail = createServerFn({ method: "POST" })
     });
     if (!isAdmin) throw new Error("Forbidden");
 
-    const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
-    const result = await sendTransactionalEmailServer({
+    // Send via Mailgun (same rail as every other REPs transactional email)
+    // so it bypasses Lovable Emails' 100/hr workspace cap and shows in Mailgun.
+    const React = await import("react");
+    const { render } = await import("@react-email/components");
+    const { TEMPLATES } = await import("@/lib/email-templates/registry");
+    const tmpl = TEMPLATES["relaunch-announcement"];
+    if (!tmpl) throw new Error("relaunch-announcement template missing");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const element = React.createElement(tmpl.component as any, {});
+    const html = await render(element);
+    const text = await render(element, { plainText: true });
+    const subject =
+      typeof tmpl.subject === "function" ? tmpl.subject({}) : tmpl.subject;
+
+    const { sendViaMailgun } = await import("@/lib/email/mailgun.server");
+    const result = await sendViaMailgun({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
       templateName: "relaunch-announcement",
-      recipientEmail: data.recipientEmail,
       idempotencyKey: `relaunch-test-${data.recipientEmail}-${Date.now()}`,
-      templateData: {},
     });
-    return { ok: true, result };
+    return { ok: result.ok, result };
   });
