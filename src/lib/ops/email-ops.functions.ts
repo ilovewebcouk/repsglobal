@@ -228,3 +228,23 @@ export const listSuppressions = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { rows: rows ?? [], total: count ?? 0 };
   });
+
+/**
+ * Remove an address from the suppression list so it can receive REPS emails again.
+ * Use sparingly — typically only after the user has confirmed they want our mail.
+ */
+export const removeSuppression = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ email: z.string().email() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("suppressed_emails")
+      .delete()
+      .eq("email", data.email.toLowerCase());
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
