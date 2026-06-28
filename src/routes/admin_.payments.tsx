@@ -110,7 +110,7 @@ function SubscriptionsTab() {
     { label: "MRR", value: fmtMoney(m.mrrPence), sub: `${m.activeCount} Stripe-active subs (excl. legacy/BD)`, icon: BadgePoundSterling },
     { label: "ARR (run-rate)", value: fmtMoney(m.arrPence), sub: "12 × current MRR", icon: TrendingUp },
     { label: "New this month", value: String(m.newThisMonth), sub: "Net new paid", icon: Users },
-    { label: "Past due", value: String(m.pastDueCount), sub: "Failed payment recovery", icon: AlertTriangle },
+    { label: "Failed payments", value: String(m.pastDueCount), sub: "past_due · unpaid · incomplete", icon: AlertTriangle },
   ];
 
   return (
