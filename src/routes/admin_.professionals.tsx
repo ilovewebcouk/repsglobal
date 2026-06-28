@@ -890,16 +890,17 @@ function ProRow({ row }: { row: AdminProRow }) {
                 disabled={suspendM.isPending}
                 className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white"
               >
-                <Play className="h-4 w-4" /> Reinstate professional
+                <Play className="h-4 w-4" /> Restore to verified
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
                 onSelect={(e) => { e.preventDefault(); setSuspendOpen(true); }}
                 className="cursor-pointer rounded-[6px] text-amber-300 focus:bg-amber-500/10 focus:text-amber-200"
               >
-                <Pause className="h-4 w-4" /> Suspend professional…
+                <Pause className="h-4 w-4" /> Mark as unverified…
               </DropdownMenuItem>
             )}
+
             <DropdownMenuItem
               onSelect={(e) => { e.preventDefault(); flagM.mutate(!isFlagged); }}
               disabled={flagM.isPending}
