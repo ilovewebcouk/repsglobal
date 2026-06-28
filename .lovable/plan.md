@@ -1,118 +1,56 @@
-# Chargeback / Dispute Lifecycle
+## Scope
 
-## Part 1 — Read-only audit (current state)
+Two things in this pass:
 
-**Webhook coverage (`src/routes/api/public/payments/webhook.ts`)**
-- Only `charge.dispute.created` and `charge.dispute.closed` are routed, and only when a `stripe-account` header is present (Connect path → updates `bookings.dispute_status`).
-- Platform-level disputes (REPS membership Stripe account, no connected account) hit `default: break` — no business logic runs.
-- `charge.dispute.updated`, `funds_withdrawn`, `funds_reinstated` are **not** routed anywhere.
+1. **Open the shop-front (`/c/$slug`) to Verified tier** so Katie Gibbs (Core/Verified) gets a working `/c/katie-gibbs` page.
+2. **Confirm the Services & Pricing wiring** on `/pro/$slug` is already live — no changes until you send the card design for `/c/$slug`.
 
-**`payment_events` evidence**
-- 1× `charge.dispute.created` (du_1TnGABAP31Yc4cJjk1J0oA3G, livemode, £34, reason `subscription_canceled`, status `needs_response`, pi `pi_3Tgvq6AP31Yc4cJj2MXkOoT8`)
-- 1× `charge.dispute.funds_withdrawn`
-- 17× `charge.dispute.updated`
-- Every row has `user_id = null`, `stripe_subscription_id = null`, `stripe_customer_id = null` — current persistence in `recordEvent()` doesn't resolve dispute → charge → PI → subscription → user.
+## 1. Unlock `/c/$slug` for Verified
 
-**Subscription / entitlement impact**: none. The disputed user still counts in `fetchActivePayingMemberCollection()`, still appears in `/admin/professionals`, still shows public Verified status, and the subscription has not been cancelled. No timeline, alert, or email exists.
+Currently `src/routes/c.$slug.tsx` loader rejects anything that isn't `pro` or `studio`:
 
-**Admin visibility**: zero. `/admin/payments` has a dead `disputeRate` tile fed from a manual bookings calc; `/admin/ops/billing`, `/admin/reconciliation`, `/admin/ops/activity`, `/admin/ops/member/$userId` have no dispute surface.
+```ts
+if (live.shopFront.tier !== "pro" && live.shopFront.tier !== "studio") {
+  throw notFound();
+}
+```
 
-**Revenue handling**: `getOverviewKpis().revenueReceivedPence` is gross successful charges — no deduction for withdrawn funds.
+Change: allow `verified` too. The page will only render at all if the pro has a `shop_fronts` row with `is_published = true` (that requirement stays), so Verified pros still have to opt in by publishing one.
 
-**Metric Registry**: no M-row exists for Open Disputes / Disputed Amount / Chargebacks Won/Lost.
+Also update the marketing memory + copy that says "Shop-front is Pro+Studio only":
+- `mem://design/coach-shopfront` — change to "Verified, Pro and Studio".
+- `mem://design/locked-shop-front` — same edit; also drop the "Pro+Studio only" sentence.
+- `/features/shop-front` page copy + the Verified-vs-Pro matrix on that page — flip Shop-front from a Pro/Studio-only row to "All tiers".
+- `/pricing` + `/compare` tier matrices — same flip.
 
-**Conclusion**: gap is total for platform (non-Connect) disputes. Implementation must not change Connect/booking dispute behaviour or `FAILED_PAYMENT_STATUSES`.
+I will NOT touch the visual design of `/c/$slug` in this pass.
 
----
+## 2. Katie's shop-front data
 
-## Part 2 — Implementation
+Katie has no `shop_fronts` row yet. Once the gate is open, she still needs a published shop-front to see anything at `/c/katie-gibbs`. I'll seed one minimal published row for her so the URL works immediately:
 
-### 2.1 Schema (migration)
+```sql
+INSERT INTO public.shop_fronts (professional_id, is_published, published_at, layout_variant)
+VALUES ('<katie-uuid>', true, now(), 'lite')
+ON CONFLICT (professional_id) DO UPDATE SET is_published = true, published_at = COALESCE(shop_fronts.published_at, now());
+```
 
-New table `public.disputes`:
-- `id` uuid pk
-- `stripe_dispute_id` text unique
-- `stripe_charge_id`, `stripe_payment_intent_id`, `stripe_subscription_id`, `stripe_customer_id`
-- `user_id` uuid (resolved)
-- `amount_pence` int, `currency` text
-- `reason` text, `status` text (Stripe raw)
-- `lifecycle_stage` text — `opened | funds_withdrawn | funds_reinstated | won | lost`
-- `evidence_due_by` timestamptz
-- `funds_withdrawn_pence` int, `funds_reinstated_pence` int
-- `opened_at`, `closed_at`, `updated_at`
-- raw `payload` jsonb
+(Looked up via her `cruz.pt+kate@icloud.com` account.)
 
-GRANTs to `service_role` + `authenticated` (select via admin RLS using `has_role`).
+## 3. Services & Pricing on `/pro/katie-gibbs` — already wired
 
-Add `payment_standing` text column to `subscriptions` (nullable, values: `ok | payment_disputed | chargeback_lost | chargeback_won`) — kept distinct from `status` so verification/qualification flags remain untouched.
+Confirmed in `src/lib/profile/public-profile.functions.ts` (lines 159–167) and `src/routes/pro.$slug.index.tsx` (lines 326–361): the profile page reads live `services` rows for the pro, ordered by `sort_order`, limited to 3. The "1-to-1 session / From £75" card you see today is the fallback that renders when she has **zero published services** but a `hourly_rate_pence` is set. The moment she saves her first service card in `/dashboard/services`, it replaces the fallback on `/pro/katie-gibbs`.
 
-Index `subscriptions(payment_standing)` for fast filtering.
+No code change here.
 
-### 2.2 Webhook routing (`src/routes/api/public/payments/webhook.ts`)
+## 4. Waiting on you
 
-Add new `handlePlatformDispute(dispute, eventType)` (Connect path preserved unchanged):
+You said you'd send the card design for what services should look like on `/c/katie-gibbs`. I'll do that as a follow-up — the current `TierCard` layout stays untouched until then.
 
-- `charge.dispute.created` → upsert dispute row (stage `opened`), resolve `charge → payment_intent → invoice → subscription → user`, set `subscriptions.payment_standing='payment_disputed'`, **immediately cancel the Stripe subscription** (`stripe.subscriptions.cancel(id, { invoice_now: false, prorate: false })` with try/catch), mark local `subscriptions.status='canceled'`, fire `ops_alerts` insert (`severity='critical', kind='dispute_opened'`), append Member Timeline event, enqueue `chargeback-received` email.
-- `charge.dispute.updated` → update stage + status + `evidence_due_by`.
-- `charge.dispute.funds_withdrawn` → set `funds_withdrawn_pence`, stage `funds_withdrawn`, timeline event.
-- `charge.dispute.funds_reinstated` → set `funds_reinstated_pence`, timeline event.
-- `charge.dispute.closed` →
-  - won: stage `won`, `closed_at`, timeline event, send `chargeback-resolved-won` (do NOT auto-reinstate sub — flag for admin review).
-  - lost: stage `lost`, `subscriptions.payment_standing='chargeback_lost'`, `churn_lifecycle` row with reason `chargeback_lost`, send `chargeback-resolved-lost`.
+## Technical details
 
-Route platform path when `request.headers.get('stripe-account')` is **null** (Connect path stays as-is).
-
-### 2.3 Active-paying-member exclusion
-
-`src/lib/members/active-paying-member.ts` → in `isActiveSubscription`, exclude rows whose `payment_standing IN ('payment_disputed','chargeback_lost')` even if status was `active` at snapshot. Pass `payment_standing` through `active-paying-member.server.ts` select.
-
-This removes the disputed member from M1, /admin/professionals "Paid", reconciliation, public Verified badge gating (badge uses `is_pro_fully_verified` + active membership lookup → flips to false automatically without touching `verification_status`).
-
-### 2.4 Public visibility
-
-`src/lib/directory/featured.functions.ts` and `search.functions.ts` already gate on `verification='verified'`. Add a join filter excluding users whose latest subscription has `payment_standing` in (`payment_disputed`, `chargeback_lost`). Verification record itself is untouched.
-
-### 2.5 Admin surfaces
-
-- `/admin/ops/billing` → new "Open disputes" tile + "Disputed amount" tile + list card (member, amount, reason, due-by countdown, Stripe link, status).
-- `/admin/payments` → replace dead `disputeRate` tile with Open / Won / Lost split sourced from `disputes` table.
-- `/admin/reconciliation` → new "Disputed funds" rail (withdrawn − reinstated).
-- `/admin/ops/activity` → render dispute events from `disputes` + `payment_events`.
-- `/admin/ops/member/$userId` → timeline entries (`dispute_opened`, `funds_withdrawn`, `funds_reinstated`, `dispute_won`, `dispute_lost`) with amount/reason/Stripe deep link.
-- New `ops_alerts` humanizer entries in `src/lib/ops/alert-humanizer.ts`.
-
-### 2.6 Emails (React Email templates)
-
-`src/lib/email-templates/chargeback-received.tsx`, `chargeback-resolved-won.tsx`, `chargeback-resolved-lost.tsx` registered in `registry.ts`. Plain, neutral language; no aggressive recovery copy; does NOT loop through the renewal/lifecycle cron.
-
-Explicitly: lifecycle cron (`src/routes/api/public/hooks/lifecycle-cron.ts`) must skip subscriptions where `payment_standing != 'ok'` so no `renewal-payment-failed` / nudge emails fire on disputes.
-
-### 2.7 Metric Registry
-
-Append M17–M20 in `docs/11_admin_metric_registry.md` and surface in `src/lib/admin/metrics-definitions.ts`:
-- **M17 Open disputes** — `disputes` where `lifecycle_stage IN ('opened','funds_withdrawn','funds_reinstated')`.
-- **M18 Disputed amount (open)** — sum of `amount_pence` for M17.
-- **M19 Chargebacks won (30d)** / **M20 Chargebacks lost (30d)**.
-- Add banned-synonym row: never collapse disputes into "Failed payments".
-
-### 2.8 Backfill the live dispute
-
-One-off SQL inside the same migration: resolve `pi_3Tgvq6AP31Yc4cJj2MXkOoT8` against Stripe in code (or, simpler, run a recovery server-fn that re-fetches the dispute via Stripe API, inserts the `disputes` row, sets `payment_standing`, cancels the sub if still live, writes timeline events). Admin-only button "Replay dispute events" on `/admin/ops/billing` to re-process the 19 unprocessed rows.
-
-### 2.9 Subscription billing-stop posture
-
-Approach: **cancel immediately on dispute open** (clearer, deterministic, avoids further disputed invoices). Documented in code comment. We do not rely on Stripe's "Cancel subscriptions on dispute" Radar setting because we want the cancel to happen in the same transaction that flips `payment_standing`.
-
----
-
-## Part 3 — Out of scope (explicit)
-
-- Connect/booking `handleConnectDispute` behaviour stays unchanged.
-- `FAILED_PAYMENT_STATUSES` not modified.
-- BD renewal engine untouched.
-- Pricing / verification / qualification logic untouched.
-- No marketing or bulk emails.
-
-## Acceptance checklist
-
-All 10 acceptance items from the brief map to: 2.3 (1,2), 2.4 (3), 2.2 + 2.9 (4), 2.5 (5,6), 2.5 + 2.6 timeline (6), 2.2 + 2.5 (7), 2.2 closed branch (8), 2.7 (9), 2.6 lifecycle-skip (10).
+- File: `src/routes/c.$slug.tsx` — change the loader tier check to `!["verified", "pro", "studio"].includes(live.shopFront.tier ?? "")`.
+- Migration: insert/upsert one `shop_fronts` row for Katie's `professional_id` (data op via insert tool, not schema).
+- Memory edits: `mem://design/coach-shopfront`, `mem://design/locked-shop-front`, and the Core rule in `mem://index.md` that says "Shop-front is a Pro+Studio feature (NOT Verified)".
+- Copy edits: `src/routes/features.shop-front.tsx` tier matrix + intro line; `/pricing` + comparison matrices that list Shop-front as Pro-only.
+- No changes to `/pro/$slug` services rendering.
