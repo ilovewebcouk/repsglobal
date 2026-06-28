@@ -278,9 +278,7 @@ async function convertOne(args: {
           stripe_customer_id: row.stripe_customer_id,
           stripe_subscription_id: sub.id,
           stripe_price_id: price.id,
-          current_period_end: sub.current_period_end
-            ? new Date(sub.current_period_end * 1000).toISOString()
-            : trialEndIso,
+          current_period_end: trialEndIso,
           is_founding: false,
           migrated_from_bd: true,
           environment,
