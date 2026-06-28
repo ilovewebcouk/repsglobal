@@ -1,70 +1,77 @@
+Admin display/aggregation fix for `/admin/memberships`. No business-logic, webhook, renewal, churn, reconciliation or payment-recovery changes. No migrations, no new server functions.
 
-## What's wrong
+## A — "Renewals due next 14 days" uses the same renewal universe as the forecast
 
-On `/admin/memberships`, two cards look broken even though the DB clearly disagrees:
+In `src/lib/admin/memberships.functions.ts → getMembershipMetrics`, extend the upcoming-payments projection so it mirrors the forecast source set (used by `getRevenueForecast`):
 
-### 1. "Payments in next 14 days" → **No payments due** (wrong by design)
+1. **Live Stripe** — kept as-is (`current_period_end ∈ [now, now+14d]`, paid tier, LIVE_STATUSES).
+2. **`bd_member_seed` cohort** — kept, using the same `nextCohortDue()` annual roll-forward already in the function.
+3. **`legacy_stripe_link`** — NEW source. Read `bd_member_id, claimed_user_id, email, bd_next_due_date, is_lifetime`. Skip lifetime. For each non-lifetime row, project the next annual due using the same Europe/London-anchored roll-forward as cohort rows. Include if it lands in `[now, now+14d]`.
 
-`getMembershipMetrics` (src/lib/admin/memberships.functions.ts) builds the 14-day window from only **two** sources:
+Reuse the existing `nextCohortDue()` shape — do not introduce a second projection algorithm. Factor the per-row "roll annually until ≥ now" into a small local helper (`projectNextAnnual(anchor, baseAmount)`) shared by cohort rows and the new legacy rows. Forecast logic is untouched; the metric simply becomes a 14-day slice of the same universe.
 
-- **Stripe live subs** where `current_period_end ∈ [now, now+14d]`. DB confirms `0` such rows — every paid sub renews ~12 months out.
-- **Launch cohort** (`honour_window` + `anomaly_launch_charge`) — but only **if `LAUNCH_AT_UTC ∈ [now, now+14d]`**. Launch was 2026-06-26; today is 2026-06-28, so the launch window has closed and this branch is now permanently dead post-launch.
+## B — Identity-ladder dedupe (no double-counting)
 
-What it ignores: the BD-migrated members whose next renewal is driven by `bd_member_seed.bd_next_due_date` / `legacy_stripe_link` — i.e. the same source that already powers the £11,187 Q2 2028 forecast row directly above it. That's why the forecast shows real cash but the 14-day card shows zero.
+Replace the current `seenUserIds: Set<string>` with a ladder-based dedupe key built per row in this precedence:
 
-### 2. "Failed payments" → **No past-due memberships** (stale build, not a data bug)
+```text
+stripe_subscription_id  →  user_id  →  claimed_user_id  →  email (lowercased)  →  bd_member_id
+```
 
-Raheela's sub is in the DB exactly where we expect: `environment=live`, `status=incomplete_expired`, `user_id` present in `profiles`. The `PAST_DUE_STATUSES` set (built from `FAILED_PAYMENT_STATUSES`) already includes `incomplete_expired`. A direct count on the live DB returns `past_due_total = 1`.
+Source precedence when the same identity surfaces in more than one source:
 
-Console shows `Failed to fetch dynamically imported module: virtual:tanstack-start-client-entry` — a classic stale-chunk symptom after this morning's edits. The page rendered against an older client bundle that pre-dates the `incomplete_expired` addition. A fresh load will already show Raheela. We'll prove this in-place and add a defensive log so we don't second-guess it again.
+```text
+1. Live Stripe subscription   (wins)
+2. Legacy Stripe link
+3. BD seed / cohort           (loses)
+```
 
-## Fix
+A `Map<dedupeKey, sourceRank>` enforces this — only insert/keep the higher-precedence source. Same ladder is applied to the past-due list so it does not collide with the upcoming list.
 
-### A. Extend the 14-day upcoming-payments source set
+## C — Date handling
 
-Edit `src/lib/admin/memberships.functions.ts` `getMembershipMetrics`:
+- `now = new Date()`, `in14d = daysFromNow(14, now)` — already consistent with forecast.
+- Date-only fields (`bd_next_due_date`) are parsed via the same path as the forecast (`new Date(string)`), then the existing "roll annually until on/after `now`" loop runs. The window test stays `due >= now && due <= in14d`.
+- No new tz library; we explicitly do not change how the renewal job interprets dates.
 
-1. Drop the `LAUNCH_AT_UTC ∈ window` gate on cohort rows; replace with **per-row due-date** logic:
-   - `honour_window` / `anomaly_launch_charge`: due at `LAUNCH_AT_UTC` (only included if that instant is still in the window — i.e. effectively never post-launch, which is correct).
-   - `future_due`: due at `bd_next_due_date`. Include if that date ∈ `[now, now+14d]`. Amount = `TIER_PRICE_PENCE.verified` (£99).
-2. Add a third source: `legacy_stripe_link` rows where `next_invoice_at ∈ [now, now+14d]` and the user isn't already covered by a live Stripe sub in `upcomingLive`. Use the same fields the forecast already reads. Amount = the linked tier's `paymentPenceFor`.
-3. Dedupe by `user_id`: prefer the live-Stripe row, then legacy-link, then BD cohort. This avoids double-counting BD members who've already claimed and have a live Stripe sub.
+## D — Card copy in `src/routes/admin_.memberships.tsx`
 
-Sort order in `upcomingItems`: by `dueAt` ascending (drop the launch-cohort priority that no longer matters).
+- Title: **Renewals due next 14 days** (replaces "Payments in next 14 days").
+- Subtitle (always, no launch-cohort branch): **Stripe renewals · legacy renewals · BD cohort**.
+- Empty state: **Renewals and scheduled charges in the next 14 days will list here.**
+- Remove the `launchDate`-based subtitle conditional entirely.
 
-### B. Update card copy + subtitle
+## E — Failed payments / Raheela verification
 
-In `src/routes/admin_.memberships.tsx` (`UpcomingPaymentsPanel`):
+Audit, not a logic change:
 
-- Drop the `(launch cohort)` subtitle branch.
-- New subtitle: `"Stripe renewals · legacy renewals · BD cohort"`.
-- Empty-state description: `"Renewals and scheduled charges in the next 14 days will list here."`
+1. From the server fn perspective, confirm `getMembershipMetrics()` returns `pastDueCount = 1` when Raheela's row is `incomplete_expired` (the status set is already correct in `FAILED_PAYMENT_STATUSES`). Use a read-only DB query to confirm her sub exists with that status and that her profile row exists (orphan filter would otherwise hide her).
+2. Add an opt-in server log gated on `process.env.DEBUG_MEMBERSHIPS === "1"` only — prints `pastDue.length`, the dedupe-key sample, and orphan count. Off by default. No noisy logs in production.
+3. On the route, ensure the Failed Payments card re-fetches on mount (the query already runs via TanStack; we'll add `staleTime: 0` only on this single key if needed). No churn / recovery logic touched.
 
-### C. Prove Past-due renders Raheela (no logic change)
+## F — Free tier display
 
-1. After the upcoming-payments edit deploys, hard-reload `/admin/memberships`. Expect the Failed-payments card to show `1 · Raheela Khalid · Free · incomplete expired · £0`.
-2. If it still shows `0`, add a one-line diagnostic in `getMembershipMetrics` (`console.log("[memberships] pastDueCount", pastDue.length, pastDue.map(s => s.status))`) and inspect server logs to confirm the server function actually returns 1.
-3. Once confirmed, leave the diagnostic in place (gated behind a `process.env.DEBUG_MEMBERSHIPS` check) so future drift is one log away.
+In `src/routes/admin_.memberships.tsx` past-due list:
 
-### D. Tier-label handling for `free` past-dues
+- `tierLabel`: `free → "Free"` (display fallback). Already partially in place — re-confirm and keep.
+- Disambiguate amount column:
+  - The card shows the **plan amount** (current behaviour) → relabel the column header / row sub-text as **Plan amount**. £0 for Free is correct under that label.
+  - If a `payment_events` row of type `invoice.payment_failed` exists for that user, surface the attempted amount as a secondary line: **Last failed attempt: £NN.NN**. Read-only — no writes, no new server fn. Done inline via a small additive `select` in `getMembershipMetrics` (latest `invoice.payment_failed` per past-due user_id) returned on the `PastDueItem`.
+  - If no failed-attempt amount is found, omit the second line — do not invent £0.
 
-`tierLabel('free')` currently has no branch. Add a `free → "Free"` fallback in `src/routes/admin_.memberships.tsx` so Raheela's row renders with `Free · incomplete expired` instead of an empty / "Unknown" label. No business-logic change.
+## Acceptance check (manual after build)
 
-## Out of scope (explicit)
+1. `/admin/memberships` → "Renewals due next 14 days" lists non-zero rows when any Stripe / legacy_stripe_link / BD cohort due-date lands in the window.
+2. The card total equals the 14-day slice of the forecast universe (cross-check with forecast's `next14dPence`).
+3. No member appears twice across the three sources.
+4. Raheela appears in Failed Payments on a fresh load, status `incomplete expired`, tier label `Free`.
+5. Amount column clearly labelled "Plan amount"; her last failed attempt shown if a `payment_events` row exists.
+6. No "launch cohort" subtitle remains anywhere on the 14-day card.
+7. `git grep` shows no changes to billing, webhook, renewal, churn, reconciliation, or payment-recovery files.
 
-- No changes to billing logic, webhook logic, renewal logic, churn logic, reconciliation logic, or payment-recovery logic — per the standing Wave-3 freeze.
-- No changes to the forecast table itself; it already reads the legacy/BD source correctly.
-- No changes to `FAILED_PAYMENT_STATUSES` (already correct after this morning's edit).
+## Files touched
 
-## Acceptance criteria
+- `src/lib/admin/memberships.functions.ts` — extend `getMembershipMetrics` only (legacy_stripe_link source, ladder dedupe, optional debug log, latest-failed-attempt amount on `PastDueItem`). `getRevenueForecast` unchanged.
+- `src/routes/admin_.memberships.tsx` — card title / subtitle / empty-state copy, "Plan amount" column label, optional last-failed-attempt line, tier fallback.
 
-1. `/admin/memberships` "Payments in next 14 days" shows a non-zero value when any of: a live Stripe sub renews in 14d, a `legacy_stripe_link.next_invoice_at` falls in 14d, or a BD `future_due` row's `bd_next_due_date` falls in 14d.
-2. No member is counted twice across the three sources.
-3. "Failed payments" card shows Raheela on a fresh load, with tier label `Free`, status `incomplete expired`, count `1`.
-4. Subtitle on the 14-day card no longer references "launch cohort" by default.
-
-## Technical notes
-
-- `paymentPenceFor('free', …) = 0`, so Raheela's amount column renders £0 — accurate; we don't synthesise a fake charge.
-- `legacy_stripe_link` columns used by forecast (see `getRevenueForecast`, lines 422-590) are already SELECTed by the same path; reuse the same projection helper rather than re-querying.
-- All edits stay inside `src/lib/admin/memberships.functions.ts` and `src/routes/admin_.memberships.tsx`. No migration. No new server function.
+No new files. No migrations. No new server functions.

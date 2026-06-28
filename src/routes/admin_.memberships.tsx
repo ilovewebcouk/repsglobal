@@ -677,18 +677,8 @@ function UpcomingPaymentsPanel({
   data?: MembershipMetrics;
   loading: boolean;
 }) {
-  const launchDate = data?.launchAt
-    ? new Date(data.launchAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
-    : null;
-  const launchInWindow =
-    !!data &&
-    data.upcomingItems.some(
-      (it) => it.cohort === "honour_window" || it.cohort === "anomaly_launch_charge",
-    );
-  const title = "Payments in next 14 days";
-  const subtitle = launchInWindow && launchDate
-    ? `Stripe renewals · scheduled charges · launch cohort (${launchDate})`
-    : "Stripe renewals · scheduled charges";
+  const title = "Renewals due next 14 days";
+  const subtitle = "Stripe renewals · legacy renewals · BD cohort";
   const acrossLabel = "next 14 days";
 
 
@@ -708,9 +698,9 @@ function UpcomingPaymentsPanel({
           <div className="flex h-72 items-center justify-center">
             <Empty>
               <EmptyHeader>
-                <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
+                <EmptyTitle>No renewals due in the next 14 days</EmptyTitle>
                 <EmptyDescription>
-                  Stripe renewals and scheduled BD-cohort charges in the next 14 days will list here.
+                  Renewals and scheduled charges in the next 14 days will list here.
                 </EmptyDescription>
 
               </EmptyHeader>
@@ -799,8 +789,16 @@ function PastDuePanel({ data, loading }: { data?: MembershipMetrics; loading: bo
                       <div className="truncate text-[11px] text-white/55">
                         {tierLabel(it.tier)} · {it.status.replace(/_/g, " ")}
                       </div>
+                      {it.lastFailedAttemptPence != null && (
+                        <div className="truncate text-[11px] text-reps-orange/85">
+                          Last failed attempt: {gbp(it.lastFailedAttemptPence)}
+                        </div>
+                      )}
                     </div>
-                    <div className="shrink-0 text-[13px] font-semibold text-reps-orange">{gbp(it.amountPence)}</div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-[13px] font-semibold text-reps-orange">{gbp(it.amountPence)}</div>
+                      <div className="text-[10px] uppercase tracking-wide text-white/45">Plan amount</div>
+                    </div>
                   </li>
                 ))}
               </ul>

@@ -72,6 +72,8 @@ export type PastDueItem = {
   tier: Tier;
   status: string;
   amountPence: number;
+  lastFailedAttemptPence: number | null;
+  lastFailedAt: string | null;
 };
 
 export type MembershipMetrics = {
@@ -121,7 +123,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     // 1. Active/trialing subscriptions in the current env, paid tiers only.
     const { data: subsRaw } = await supabaseAdmin
       .from("subscriptions")
-      .select("user_id, tier, status, current_period_end, environment, billing_period, stripe_subscription_id")
+      .select("user_id, tier, status, current_period_end, environment, billing_period, stripe_subscription_id, stripe_customer_id")
       .eq("environment", env);
 
     const allSubs = (subsRaw ?? []) as Array<{
@@ -215,15 +217,48 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
 
     // 3. Upcoming payments — rolling 14-day window of every expected charge:
     //    a) Stripe live renewals (active/trialing) with current_period_end ∈ [now, now+14d]
-    //    b) V7 cohort rows whose NEXT due date (per-row, rolled forward annually
+    //    b) legacy_stripe_link rows (non-lifetime) with next_due_at rolled annually
+    //       until ≥ now, falling in [now, now+14d].
+    //    c) V7 cohort rows whose NEXT due date (per-row, rolled forward annually
     //       until ≥ now) falls in [now, now+14d].
-    //    Deduped by user_id: a live Stripe sub for a member shadows any cohort row.
+    //    Identity-ladder dedupe across sources (precedence: live Stripe →
+    //    legacy_stripe_link → BD cohort). A live Stripe sub for a member
+    //    shadows any legacy/cohort row.
     let upcomingPence = 0;
     let upcomingCount = 0;
-    const seenUserIds = new Set<string>();
+
+    type DedupeKey = string;
+    function keysForStripe(userId: string, customerId: string | null, subId: string | null): DedupeKey[] {
+      const out: DedupeKey[] = [`user:${userId}`];
+      if (customerId) out.push(`cust:${customerId}`);
+      if (subId) out.push(`sub:${subId}`);
+      return out;
+    }
+    function keysForEmail(email: string | null, bdMemberId: number | string | null, userId: string | null, customerId: string | null): DedupeKey[] {
+      const out: DedupeKey[] = [];
+      if (userId) out.push(`user:${userId}`);
+      if (customerId) out.push(`cust:${customerId}`);
+      if (bdMemberId != null) out.push(`bd:${bdMemberId}`);
+      if (email) out.push(`email:${email.trim().toLowerCase()}`);
+      return out;
+    }
+    const seenKeys = new Set<DedupeKey>();
+    function claim(keys: DedupeKey[]): boolean {
+      if (keys.some((k) => seenKeys.has(k))) return false;
+      for (const k of keys) seenKeys.add(k);
+      return true;
+    }
+
     const upcomingLive: Array<{
       userId: string;
       tier: Tier;
+      dueAt: Date;
+      amountPence: number;
+    }> = [];
+    const upcomingLegacy: Array<{
+      email: string;
+      name: string;
+      userId: string | null;
       dueAt: Date;
       amountPence: number;
     }> = [];
@@ -236,6 +271,16 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       cohort: "honour_window" | "anomaly_launch_charge" | "future_due";
     }> = [];
 
+    // (a) Live Stripe — always wins. Claim keys for all live subs (not just
+    // those due in 14d) so legacy/cohort never double-counts a live member.
+    const liveSubsByUser = new Map<string, { customerId: string | null; subId: string | null }>();
+    for (const s of live) {
+      liveSubsByUser.set(s.user_id, {
+        customerId: (s as any).stripe_customer_id ?? null,
+        subId: s.stripe_subscription_id ?? null,
+      });
+      claim(keysForStripe(s.user_id, (s as any).stripe_customer_id ?? null, s.stripe_subscription_id ?? null));
+    }
     for (const s of live) {
       if (!s.current_period_end) continue;
       const due = new Date(s.current_period_end);
@@ -243,7 +288,6 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         const amt = paymentPenceFor(s.tier, s.billing_period);
         upcomingPence += amt;
         upcomingCount += 1;
-        seenUserIds.add(s.user_id);
         upcomingLive.push({
           userId: s.user_id,
           tier: s.tier as Tier,
@@ -253,28 +297,9 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       }
     }
 
-    // Per-row cohort projection: roll annually until on/after `now`, then test window.
-    function nextCohortDue(r: CohortRow): { dueAt: Date; amount: number } | null {
-      let due: Date;
-      let firstAmount: number;
-      if (r.cohort === "honour_window") {
-        due = new Date(LAUNCH_AT_UTC);
-        firstAmount = LEGACY_HONOUR_PENCE;
-      } else if (r.cohort === "anomaly_launch_charge") {
-        due = new Date(LAUNCH_AT_UTC);
-        firstAmount = TIER_PRICE_PENCE.verified;
-      } else {
-        if (!r.bdNextDue) return null;
-        due = new Date(r.bdNextDue);
-        // Roll forward to on/after launch first (matches forecast behaviour).
-        while (due < LAUNCH_AT_UTC) {
-          const d = new Date(due);
-          d.setUTCFullYear(d.getUTCFullYear() + 1);
-          due = d;
-        }
-        firstAmount = TIER_PRICE_PENCE.verified;
-      }
-      // Roll forward annually until >= now.
+    // Shared per-row annual roll-forward (matches forecast behaviour).
+    function projectNextAnnual(anchor: Date, firstAmount: number): { dueAt: Date; amount: number } {
+      let due = new Date(anchor);
       let isFirst = true;
       while (due < now) {
         const d = new Date(due);
@@ -282,18 +307,61 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         due = d;
         isFirst = false;
       }
-      const amount = isFirst ? firstAmount : TIER_PRICE_PENCE.verified;
-      return { dueAt: due, amount };
+      return { dueAt: due, amount: isFirst ? firstAmount : TIER_PRICE_PENCE.verified };
     }
 
+    // Per-row cohort projection: roll annually until on/after `now`, then test window.
+    function nextCohortDue(r: CohortRow): { dueAt: Date; amount: number } | null {
+      if (r.cohort === "honour_window") {
+        return projectNextAnnual(new Date(LAUNCH_AT_UTC), LEGACY_HONOUR_PENCE);
+      }
+      if (r.cohort === "anomaly_launch_charge") {
+        return projectNextAnnual(new Date(LAUNCH_AT_UTC), TIER_PRICE_PENCE.verified);
+      }
+      if (!r.bdNextDue) return null;
+      // Roll forward to on/after launch first (matches forecast behaviour).
+      let due = new Date(r.bdNextDue);
+      while (due < LAUNCH_AT_UTC) {
+        const d = new Date(due);
+        d.setUTCFullYear(d.getUTCFullYear() + 1);
+        due = d;
+      }
+      return projectNextAnnual(due, TIER_PRICE_PENCE.verified);
+    }
+
+    // (b) legacy_stripe_link — non-lifetime renewal rows.
+    const { data: legacyLinks } = await supabaseAdmin
+      .from("legacy_stripe_link")
+      .select("bd_member_id, email, stripe_customer_id, next_due_at, is_lifetime");
+    for (const l of (legacyLinks ?? []) as any[]) {
+      if (l.is_lifetime) continue;
+      if (!l.next_due_at) continue;
+      const emailLc = l.email ? String(l.email).trim().toLowerCase() : null;
+      const keys = keysForEmail(emailLc, l.bd_member_id ?? null, null, l.stripe_customer_id ?? null);
+      if (!claim(keys)) continue;
+      const next = projectNextAnnual(new Date(l.next_due_at as string), TIER_PRICE_PENCE.verified);
+      if (next.dueAt < now || next.dueAt > in14d) continue;
+      upcomingPence += next.amount;
+      upcomingCount += 1;
+      upcomingLegacy.push({
+        email: String(l.email ?? ""),
+        name: String(l.email ?? "Legacy member"),
+        userId: null,
+        dueAt: next.dueAt,
+        amountPence: next.amount,
+      });
+    }
+
+    // (c) BD cohort.
     for (const r of cohortRows) {
-      if (r.claimedUserId && seenUserIds.has(r.claimedUserId)) continue;
+      const emailLc = r.email ? r.email.trim().toLowerCase() : null;
+      const keys = keysForEmail(emailLc, r.memberId, r.claimedUserId, null);
+      if (!claim(keys)) continue;
       const next = nextCohortDue(r);
       if (!next) continue;
       if (next.dueAt < now || next.dueAt > in14d) continue;
       upcomingPence += next.amount;
       upcomingCount += 1;
-      if (r.claimedUserId) seenUserIds.add(r.claimedUserId);
       upcomingCohort.push({
         email: r.email,
         name: r.name,
@@ -352,6 +420,15 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         source: "stripe" as const,
         cohort: null,
       })),
+      ...upcomingLegacy.map((it) => ({
+        name: it.name,
+        email: it.email || null,
+        tier: "verified" as Tier,
+        dueAt: it.dueAt.toISOString(),
+        amountPence: it.amountPence,
+        source: "scheduled" as const,
+        cohort: null,
+      })),
       ...upcomingCohort.map((it) => {
         const fromProfile = it.userId ? profileMap.get(it.userId)?.full_name : null;
         return {
@@ -366,14 +443,51 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       }),
     ].sort((a, b) => (a.dueAt ?? "").localeCompare(b.dueAt ?? ""));
 
+    // Latest invoice.payment_failed per past-due user, for the "last failed
+    // attempt" line. Display-only — no business-logic side effects.
+    const lastFailedMap = new Map<string, { amountPence: number | null; at: string }>();
+    if (pastDueUserIds.length > 0) {
+      const { data: failedEvents } = await supabaseAdmin
+        .from("payment_events")
+        .select("user_id, created_at, payload")
+        .in("user_id", pastDueUserIds)
+        .eq("event_type", "invoice.payment_failed")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      for (const e of (failedEvents ?? []) as any[]) {
+        if (!e.user_id || lastFailedMap.has(e.user_id)) continue;
+        const obj = e.payload?.data?.object ?? {};
+        const raw = obj.amount_due ?? obj.amount_paid ?? obj.amount ?? null;
+        const amt = typeof raw === "number" ? raw : raw != null ? Number(raw) : null;
+        lastFailedMap.set(e.user_id, {
+          amountPence: Number.isFinite(amt as number) ? (amt as number) : null,
+          at: e.created_at,
+        });
+      }
+    }
 
-    const pastDueItems: PastDueItem[] = pastDue.map((s) => ({
-      name: profileMap.get(s.user_id)?.full_name || userEmailMap.get(s.user_id) || "Member",
-      email: userEmailMap.get(s.user_id) ?? null,
-      tier: s.tier as Tier,
-      status: s.status,
-      amountPence: paymentPenceFor(s.tier, s.billing_period),
-    }));
+    const pastDueItems: PastDueItem[] = pastDue.map((s) => {
+      const last = lastFailedMap.get(s.user_id) ?? null;
+      return {
+        name: profileMap.get(s.user_id)?.full_name || userEmailMap.get(s.user_id) || "Member",
+        email: userEmailMap.get(s.user_id) ?? null,
+        tier: s.tier as Tier,
+        status: s.status,
+        amountPence: paymentPenceFor(s.tier, s.billing_period),
+        lastFailedAttemptPence: last?.amountPence ?? null,
+        lastFailedAt: last?.at ?? null,
+      };
+    });
+
+    if (process.env.DEBUG_MEMBERSHIPS === "1") {
+      console.log("[memberships]", {
+        pastDueCount: pastDue.length,
+        upcomingCount,
+        upcomingPence,
+        orphans: orphanSubs.length,
+        sampleKeys: Array.from(seenKeys).slice(0, 10),
+      });
+    }
 
     const distribution = [
       { label: "Core", count: verifiedActive + verifiedScheduledCount, tone: "verified" as const },
