@@ -64,13 +64,15 @@ export const getSubscriptionMetrics = createServerFn({ method: "GET" })
     const newThisMonth = all.filter(
       (s) => s.tier !== "free" && new Date(s.created_at) >= monthStart,
     ).length;
-    const pastDueCount = all.filter((s) => ["past_due", "unpaid"].includes(s.status)).length;
+    const failedSet = new Set<string>([...FAILED_PAYMENT_STATUSES]);
+    const pastDueCount = all.filter((s) => failedSet.has(s.status)).length;
     const canceledThisMonth = all.filter(
       (s) => s.status === "canceled" && s.current_period_end && new Date(s.current_period_end) >= monthStart,
     ).length;
 
     // Failed payments — fetch emails via profiles
-    const failed = all.filter((s) => ["past_due", "unpaid"].includes(s.status)).slice(0, 20);
+    const failed = all.filter((s) => failedSet.has(s.status)).slice(0, 20);
+
     const failedIds = failed.map((s) => s.user_id);
     let emailMap = new Map<string, string | null>();
     if (failedIds.length) {
