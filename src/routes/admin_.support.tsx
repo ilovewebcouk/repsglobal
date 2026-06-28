@@ -932,20 +932,24 @@ function TicketDrawer({
   });
 
   const aiDraft = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts?: { auto?: boolean }) => {
       if (!ticketId) throw new Error("No ticket");
       const brief = draft.trim();
-      return draftFn({ data: { ticketId, brief: brief || undefined } });
+      const res = await draftFn({ data: { ticketId, brief: brief || undefined } });
+      return { ...res, auto: opts?.auto ?? false };
     },
     onSuccess: (res) => {
       if (res?.text) {
-        // Replace the brief with the polished draft
         setDraft(res.text);
-        toast.success("Draft ready — review before sending");
+        setIsAutoDrafted(true);
+        if (!res.auto) toast.success("Draft ready — review before sending");
       }
     },
-    onError: (e: any) => toast.error(e?.message ?? "Could not draft reply"),
+    onError: (_e: any, vars) => {
+      if (!vars?.auto) toast.error(_e?.message ?? "Could not draft reply");
+    },
   });
+
 
   const update = useMutation({
     mutationFn: (patch: any) => updateFn({ data: { id: ticketId!, ...patch } }),
