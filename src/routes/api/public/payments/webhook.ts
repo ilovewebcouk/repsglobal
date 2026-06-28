@@ -754,9 +754,23 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               break;
             }
             case "charge.dispute.created":
-            case "charge.dispute.closed": {
+            case "charge.dispute.updated":
+            case "charge.dispute.closed":
+            case "charge.dispute.funds_withdrawn":
+            case "charge.dispute.funds_reinstated": {
               const acctHeader = request.headers.get("stripe-account");
-              if (acctHeader) await handleConnectDispute(event.data.object as Stripe.Dispute, event.type);
+              if (acctHeader) {
+                await handleConnectDispute(event.data.object as Stripe.Dispute, event.type);
+              } else {
+                const { handlePlatformDispute } = await import("@/lib/billing/disputes.server");
+                const res = await handlePlatformDispute(
+                  event.data.object as Stripe.Dispute,
+                  event.type,
+                  stripe,
+                  env,
+                );
+                if (res.userId) userId = res.userId;
+              }
               break;
             }
             default:
