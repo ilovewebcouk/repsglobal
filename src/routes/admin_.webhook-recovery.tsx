@@ -282,7 +282,7 @@ function AdminWebhookRecoveryPage() {
   return (
     <DashboardShell
       role="admin"
-      active="Churn"
+      active="Webhook recovery"
       title="Webhook recovery"
       subtitle="Diagnose and dry-run replay payment_events the live handler failed to process. Read-only — no replay runs from this page."
     >

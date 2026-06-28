@@ -164,7 +164,7 @@ function ReconciliationPage() {
   return (
     <DashboardShell
       role="admin"
-      active="Overview"
+      active="Reconciliation"
       title="KPI reconciliation"
       subtitle={`Raw rows behind every /admin KPI. Every excluded row carries a reason. Period: ${periodLabel} (${range.from} → ${range.to}).`}
       actions={<PeriodSelector value={period} />}
