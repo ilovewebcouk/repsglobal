@@ -10,6 +10,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { getBillingHealth, getBillingDrill } from "@/lib/ops/operations.functions";
 import { RenewalEngineCard } from "@/components/ops/RenewalEngineCard";
+import { SiteTimePanel } from "@/components/ops/SiteTimePanel";
 
 const drillEnum = z.enum([
   "payments_today", "refunds_today", "failed_active",
@@ -82,8 +83,12 @@ function BillingPage() {
             })}
         </div>
 
+        {/* Site time + next/last payment cron runs */}
+        <SiteTimePanel />
+
         {/* Renewal engine visibility — last 7 nights + upcoming 14 days */}
         <RenewalEngineCard />
+
 
 
         {kind && (
