@@ -788,11 +788,26 @@ function ProRow({ row }: { row: AdminProRow }) {
         )}
       </td>
       <td className="px-3 py-3">
-        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
-          {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
-          {STATUS_LABEL[row.status]}
-        </span>
+        <div className="flex flex-wrap items-center gap-1">
+          {row.billingState !== "ok" && (
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}
+              title={
+                row.billingState === "payment_failed"
+                  ? "Stripe subscription is past due / unpaid — recovery in progress."
+                  : "BD renewal date has arrived; awaiting nightly renewal cron."
+              }
+            >
+              {BILLING_LABEL[row.billingState]}
+            </span>
+          )}
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
+            {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
+            {STATUS_LABEL[row.status]}
+          </span>
+        </div>
       </td>
+
       <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
       <td className="px-3 py-3 text-white/75">
         <span className="inline-flex items-center gap-1.5">
