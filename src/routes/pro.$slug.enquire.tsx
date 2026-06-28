@@ -46,6 +46,7 @@ import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 import { listPublicReviewsBySlug, type ReviewDTO } from "@/lib/reviews/reviews.functions";
 import { getProfessionLabel } from "@/lib/professions";
+import { Monogram } from "@/components/directory/Monogram";
 
 
 /* ------------------------------------------------------------------ */
