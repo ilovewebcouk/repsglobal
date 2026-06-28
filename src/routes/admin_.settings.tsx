@@ -7,6 +7,7 @@ import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Button } from "@/components/ui/button";
 import { backfillPrimaryLocations } from "@/lib/profile/location.functions";
 import { listAdminAuditLog, type AuditLogRow } from "@/lib/admin-audit-list.functions";
+import { sendRelaunchTestEmail } from "@/lib/admin/send-relaunch-test.functions";
 import { TimeAgo } from "@/components/verification/TimeAgo";
 import { toast } from "sonner";
 
@@ -108,8 +109,10 @@ function AdminSettings() {
           </PCard>
 
           <MaintenanceCard />
+          <RelaunchTestCard />
         </div>
       </div>
+
 
 
       <AuditLogPanel />
