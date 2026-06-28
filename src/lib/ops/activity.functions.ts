@@ -164,13 +164,13 @@ export const getActivityStream = createServerFn({ method: "POST" })
       });
     }
 
-    for (const t of (ticketsRes.data ?? []) as Array<{ id: string; created_at: string; ticket_number: string | null; user_id: string | null; subject: string | null }>) {
+    for (const t of (ticketsRes.data ?? []) as Array<{ id: string; created_at: string; ticket_number: string | null; requester_user_id: string | null; subject: string | null }>) {
       out.push({
         ts: t.created_at,
         kind: "support_ticket",
         severity: "info",
         summary: `Support ticket ${t.ticket_number ?? ""} — ${t.subject ?? "(no subject)"}`.trim(),
-        user_id: t.user_id,
+        user_id: t.requester_user_id,
         href: "/admin/support",
       });
     }
