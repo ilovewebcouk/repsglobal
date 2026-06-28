@@ -116,14 +116,14 @@ function AdminChurnPage() {
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="font-display text-[18px]">Lifecycle events</CardTitle>
+                  <CardTitle className="font-display text-[18px] text-white">Lifecycle events</CardTitle>
                   <CardDescription className="text-white/55">
                     Latest stage transitions across all paid members.
                   </CardDescription>
                 </div>
                 <Select value={stage} onValueChange={(v) => setStage(v as Stage | "all")}>
-                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="w-[180px] border-reps-border bg-reps-panel-soft text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="border-reps-border bg-reps-panel text-white">
                     <SelectItem value="all">All stages</SelectItem>
                     {(Object.keys(STAGE_META) as Stage[]).map((s) => (
                       <SelectItem key={s} value={s}>{STAGE_META[s].label}</SelectItem>
@@ -167,7 +167,7 @@ function AdminChurnPage() {
                       const meta = STAGE_META[r.stage as Stage];
                       return (
                         <TableRow key={r.id} className="border-reps-border/50">
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium text-white">
                             {r.pro_name ?? <span className="text-white/45">—</span>}
                           </TableCell>
                           <TableCell>
