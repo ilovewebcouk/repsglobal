@@ -131,9 +131,23 @@ function AlertRow({ a, onAck, onMute, onNotes }: {
   const [notes, setNotes] = useState(a.notes ?? "");
   const [customMin, setCustomMin] = useState("");
   const muted = a.muted_until && new Date(a.muted_until) > new Date();
+  const h = humaniseAlert(a.kind, a.context);
   return (
     <tr className={a.resolved_at ? "opacity-60" : ""}>
-      <td className="px-3 py-2 font-mono text-xs align-top">{a.kind}</td>
+      <td className="px-3 py-2 align-top">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[13px] font-semibold text-white">{h.label}</span>
+          <span className="text-[12px] text-reps-text/75">{h.summary}</span>
+          <div className="mt-0.5 flex items-center gap-2">
+            {h.href && (
+              <Link to={h.href} className="text-[11px] font-semibold text-reps-orange hover:underline">
+                {h.cta ?? "Open"} →
+              </Link>
+            )}
+            <code className="text-[10px] text-reps-text/40">{a.kind}</code>
+          </div>
+        </div>
+      </td>
       <td className="px-3 py-2 align-top">
         {a.severity === "crit" ? <Badge variant="destructive">crit</Badge>
           : a.severity === "warn" ? <Badge>warn</Badge>
@@ -166,9 +180,6 @@ function AlertRow({ a, onAck, onMute, onNotes }: {
             </Button>
           </div>
         )}
-      </td>
-      <td className="px-3 py-2 align-top max-w-[280px]">
-        <code className="text-[11px] text-reps-text/70 break-words">{JSON.stringify(a.context)}</code>
       </td>
       <td className="px-3 py-2 align-top">
         <Textarea
