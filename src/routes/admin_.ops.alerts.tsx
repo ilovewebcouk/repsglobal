@@ -100,7 +100,7 @@ function AlertsPage() {
                 />
               ))}
               {q.data && q.data.length === 0 && (
-                <tr><td colSpan={8} className="px-3 py-6 text-center text-reps-text/60">No alerts in the last 7 days. 🎉</td></tr>
+                <tr><td colSpan={7} className="px-3 py-6 text-center text-reps-text/60">No alerts in the last 7 days. 🎉</td></tr>
               )}
             </tbody>
           </table>
