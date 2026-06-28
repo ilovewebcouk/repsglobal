@@ -320,6 +320,56 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
       });
     }
 
+    // disputes / chargebacks
+    for (const r of (disputesRes.data ?? []) as unknown as Array<{
+      id: string; opened_at: string; updated_at: string; closed_at: string | null;
+      lifecycle_stage: string; status: string | null; reason: string | null;
+      amount_pence: number; currency: string;
+      stripe_dispute_id: string; evidence_due_by: string | null;
+    }>) {
+      const amountText = `£${((r.amount_pence ?? 0) / 100).toFixed(2)}`;
+      const dueText = r.evidence_due_by
+        ? ` — evidence due ${new Date(r.evidence_due_by).toLocaleDateString("en-GB")}`
+        : "";
+      // Opened event
+      events.push({
+        ts: r.opened_at,
+        source: "dispute",
+        type: `dispute.opened`,
+        status: r.status ?? "needs_response",
+        summary: `Chargeback opened (${amountText}, ${r.reason ?? "no reason"})${dueText}`,
+        entityId: r.id,
+        entityKind: "dispute",
+        externalUrl: `https://dashboard.stripe.com/disputes/${r.stripe_dispute_id}`,
+      });
+      // Current stage event (if not just 'opened')
+      if (r.lifecycle_stage !== "opened") {
+        events.push({
+          ts: r.updated_at ?? r.opened_at,
+          source: "dispute",
+          type: `dispute.${r.lifecycle_stage}`,
+          status: r.lifecycle_stage,
+          summary: `Chargeback ${r.lifecycle_stage} (${amountText})`,
+          entityId: r.id,
+          entityKind: "dispute",
+          externalUrl: `https://dashboard.stripe.com/disputes/${r.stripe_dispute_id}`,
+        });
+      }
+      if (r.closed_at && (r.lifecycle_stage === "won" || r.lifecycle_stage === "lost")) {
+        events.push({
+          ts: r.closed_at,
+          source: "dispute",
+          type: `dispute.closed`,
+          status: r.lifecycle_stage,
+          summary: `Chargeback closed — ${r.lifecycle_stage} (${amountText})`,
+          entityId: r.id,
+          entityKind: "dispute",
+          externalUrl: `https://dashboard.stripe.com/disputes/${r.stripe_dispute_id}`,
+        });
+      }
+    }
+
+
     // auth signup
     if (authRes.data?.user?.created_at) {
       events.push({
