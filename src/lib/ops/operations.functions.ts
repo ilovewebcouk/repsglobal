@@ -37,6 +37,8 @@ export const getBillingHealth = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<BillingHealthSnapshot> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { FAILED_PAYMENT_STATUSES } = await import("@/lib/admin/metrics-definitions");
+
 
     const startOfDay = new Date();
     startOfDay.setUTCHours(0, 0, 0, 0);
