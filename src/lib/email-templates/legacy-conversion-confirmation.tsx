@@ -57,7 +57,14 @@ const LegacyConversionConfirmation = ({
             Hi {proName}, when you joined REPs through Brilliant Directories you
             agreed to an annual auto-renewal on the card we have on file.
             We've now moved your membership onto the rebuilt REPs platform —
-            <strong style={ink}> same card, same renewal date, same price.</strong>
+            <strong style={ink}> same card, same renewal date.</strong>
+          </Text>
+          <Text style={{ ...p, marginTop: "12px" }}>
+            Your renewal is now <strong style={ink}>{amount}</strong> (was {previousAmount}).
+            That difference gets you a fully rebuilt profile, verified badge, 
+            client discovery tools, and the same platform-wide visibility that used 
+            to cost several times more elsewhere. Nothing is charged today — your next 
+            payment lands on {renewalDate}.
           </Text>
         </Section>
 
