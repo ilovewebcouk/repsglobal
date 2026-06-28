@@ -170,6 +170,19 @@ function statusClass(s: AdminProRow["status"]) {
   }
 }
 
+const BILLING_LABEL: Record<Exclude<AdminProRow["billingState"], "ok">, string> = {
+  payment_failed: "Payment failed",
+  renewal_due: "Renewal due",
+};
+
+function billingClass(b: Exclude<AdminProRow["billingState"], "ok">) {
+  switch (b) {
+    case "payment_failed": return "bg-red-500/15 text-red-400";
+    case "renewal_due":    return "bg-amber-500/15 text-amber-300";
+  }
+}
+
+
 const PLAN_LABEL: Record<AdminProRow["plan"], string> = {
   free: "Free", verified: "Core", pro: "Pro", studio: "Studio",
 };
