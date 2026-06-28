@@ -123,7 +123,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     // 1. Active/trialing subscriptions in the current env, paid tiers only.
     const { data: subsRaw } = await supabaseAdmin
       .from("subscriptions")
-      .select("user_id, tier, status, current_period_end, environment, billing_period, stripe_subscription_id")
+      .select("user_id, tier, status, current_period_end, environment, billing_period, stripe_subscription_id, stripe_customer_id")
       .eq("environment", env);
 
     const allSubs = (subsRaw ?? []) as Array<{
