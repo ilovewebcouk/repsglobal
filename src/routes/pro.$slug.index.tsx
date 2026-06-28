@@ -789,13 +789,17 @@ function ProProfilePage() {
                     key={s.title}
                     className="flex items-stretch gap-4 rounded-[18px] bg-reps-panel p-3 text-white"
                   >
-                    <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[12px]">
-                      <img
-                        src={s.image}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/5 ring-1 ring-white/10">
+                      {s.image ? (
+                        <img
+                          src={s.image}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <s.icon className="h-8 w-8 text-white/40" aria-hidden />
+                      )}
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                       <div className="font-display text-[16px] font-bold leading-tight text-white">
