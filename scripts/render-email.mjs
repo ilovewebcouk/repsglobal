@@ -1,4 +1,4 @@
-import { render } from '@react-email/render/node';
+import { render } from '@react-email/render';
 import React from 'react';
 import { template } from '../src/lib/email-templates/legacy-conversion-confirmation.tsx';
 const html = await render(React.createElement(template.component, {
