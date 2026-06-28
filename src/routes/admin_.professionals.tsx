@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { requireRole } from "@/lib/route-gates";
 import {
+  Activity,
   ArrowDown,
   ArrowUp,
   CheckCircle2,
