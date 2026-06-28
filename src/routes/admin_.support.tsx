@@ -869,7 +869,17 @@ function TicketDrawer({
 
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
+  const [isAutoDrafted, setIsAutoDrafted] = useState(false);
+  const autoDraftedTickets = useRef<Set<string>>(new Set());
   
+  
+
+  // Reset draft + auto-draft state whenever a different ticket opens
+  useEffect(() => {
+    setDraft("");
+    setIsAutoDrafted(false);
+    setMode("reply");
+  }, [ticketId]);
 
   // Mark ticket as read when drawer opens
   useEffect(() => {
@@ -880,6 +890,7 @@ function TicketDrawer({
         /* non-blocking */
       });
   }, [ticketId, markReadFn, onChanged]);
+
 
   // 'E' to solve when the drawer is focused and not typing
   useEffect(() => {
@@ -929,20 +940,24 @@ function TicketDrawer({
   });
 
   const aiDraft = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts?: { auto?: boolean }) => {
       if (!ticketId) throw new Error("No ticket");
       const brief = draft.trim();
-      return draftFn({ data: { ticketId, brief: brief || undefined } });
+      const res = await draftFn({ data: { ticketId, brief: brief || undefined } });
+      return { ...res, auto: opts?.auto ?? false };
     },
     onSuccess: (res) => {
       if (res?.text) {
-        // Replace the brief with the polished draft
         setDraft(res.text);
-        toast.success("Draft ready — review before sending");
+        setIsAutoDrafted(true);
+        if (!res.auto) toast.success("Draft ready — review before sending");
       }
     },
-    onError: (e: any) => toast.error(e?.message ?? "Could not draft reply"),
+    onError: (_e: any, vars) => {
+      if (!vars?.auto) toast.error(_e?.message ?? "Could not draft reply");
+    },
   });
+
 
   const update = useMutation({
     mutationFn: (patch: any) => updateFn({ data: { id: ticketId!, ...patch } }),
@@ -958,6 +973,22 @@ function TicketDrawer({
 
   const ticket = q.data?.ticket;
   const messages = q.data?.messages ?? [];
+
+  // Auto-draft a reply the moment a ticket opens where the customer is waiting on us.
+  useEffect(() => {
+    if (!ticketId) return;
+    if (mode !== "reply") return;
+    if (draft.trim()) return;
+    if (autoDraftedTickets.current.has(ticketId)) return;
+    if (aiDraft.isPending) return;
+    if (!messages.length) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.direction !== "inbound") return;
+    autoDraftedTickets.current.add(ticketId);
+    aiDraft.mutate({ auto: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketId, messages.length]);
+
 
   const priorQuery = useQuery({
     queryKey: ["admin", "support", "prior", ticket?.requester_email, ticketId],
@@ -1167,32 +1198,46 @@ function TicketDrawer({
             <div className="ml-auto flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => aiDraft.mutate()}
+                onClick={() => aiDraft.mutate({ auto: false })}
                 disabled={
                   aiDraft.isPending ||
                   mode !== "reply" ||
                   !messages.some((m: any) => m.direction === "inbound")
                 }
                 title={
-                  draft.trim()
+                  draft.trim() && !isAutoDrafted
                     ? "Use your notes as a brief — AI writes the polished reply"
-                    : "Draft a reply from the conversation"
+                    : draft.trim()
+                      ? "Replace with a fresh AI draft"
+                      : "Draft a reply from the conversation"
                 }
                 className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[12px] font-semibold text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
                 {aiDraft.isPending
                   ? "Drafting…"
-                  : draft.trim()
+                  : draft.trim() && !isAutoDrafted
                     ? "Draft from notes"
-                    : "AI draft"}
+                    : draft.trim()
+                      ? "Redraft"
+                      : "AI draft"}
               </button>
+
             </div>
           </div>
+          {isAutoDrafted && draft.trim() && mode === "reply" && (
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-[6px] border border-reps-orange/30 bg-reps-orange/10 px-2 py-0.5 text-[11px] font-semibold text-reps-orange">
+              <Sparkles className="h-3 w-3" /> Auto-drafted · review &amp; send
+            </div>
+          )}
           <div className="relative">
             <Textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              value={aiDraft.isPending && !draft ? "" : draft}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                if (isAutoDrafted) setIsAutoDrafted(false);
+              }}
+
               onKeyDown={(e) => {
                 if (
                   (e.metaKey || e.ctrlKey) &&
