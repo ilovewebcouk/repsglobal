@@ -57,6 +57,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'cancellation-confirmation': cancellationConfirmation,
   'welcome-signup': welcomeSignup,
   'ops-alert': opsAlert,
+  'relaunch-announcement': relaunchAnnouncement,
 }
 
 
