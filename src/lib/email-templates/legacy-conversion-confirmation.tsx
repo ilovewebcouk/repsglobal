@@ -61,10 +61,15 @@ const LegacyConversionConfirmation = ({
           </Text>
           <Text style={{ ...p, marginTop: "12px" }}>
             Your renewal is now <strong style={ink}>{amount}</strong> (was {previousAmount}).
-            That difference gets you a fully rebuilt profile, verified badge, 
-            client discovery tools, and the same platform-wide visibility that used 
-            to cost several times more elsewhere. Nothing is charged today — your next 
+            That difference gets you a fully rebuilt profile, verified badge,
+            client discovery tools, and the same platform-wide visibility that used
+            to cost several times more elsewhere. Nothing is charged today — your next
             payment lands on {renewalDate}.
+          </Text>
+          <Text style={{ ...p, marginTop: "12px" }}>
+            Honestly — if it gets you <strong style={ink}>one client this year</strong>,
+            it's paid for itself several times over. Plus you'll be on the only
+            global register that makes you look like a pro.
           </Text>
         </Section>
 
