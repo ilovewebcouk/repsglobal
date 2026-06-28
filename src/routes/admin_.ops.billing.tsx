@@ -103,6 +103,10 @@ function BillingPage() {
         {/* BD → Stripe Subscription rail-swap (Phase 2 migration) */}
         <BdRailSwapCard />
 
+        {/* BD Workstreams 2 & 3 — setup-link + reactivation */}
+        <BdSetupLinkCard />
+
+
 
 
 
