@@ -119,6 +119,7 @@ function ReconRow({
   value,
   to,
   hash,
+  search,
   tone = "neutral",
   muted = false,
 }: {
@@ -127,6 +128,7 @@ function ReconRow({
   value: number;
   to: string;
   hash?: string;
+  search?: Record<string, string>;
   tone?: "neutral" | "warn";
   muted?: boolean;
 }) {
@@ -141,8 +143,10 @@ function ReconRow({
       <Link
         to={to}
         hash={hash}
+        search={search as never}
         className="flex items-center justify-between gap-3 px-3 py-2.5 transition-colors hover:bg-white/[0.03]"
       >
+
         <div className="min-w-0">
           <div className="text-[12.5px] font-semibold text-white">{label}</div>
           <div className="text-[11px] text-white/55">{sub}</div>
