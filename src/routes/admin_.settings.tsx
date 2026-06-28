@@ -448,7 +448,7 @@ function RelaunchBroadcastCard() {
             <div className="mt-2 text-emerald-200">All members have been sent the relaunch email.</div>
           ) : (
             <div className="mt-2 text-amber-100/90">
-              You can resume sending — the next run will send up to {MAX_NEW_SENDS_PER_RUN_DISPLAY} new emails and skip anyone already sent.
+              You can resume sending — the next run will send up to 75 new emails and skip anyone already sent.
             </div>
           )}
           <Button size="sm" variant="ghost" onClick={refreshStatus} disabled={busy} className="mt-2 px-0 text-reps-orange hover:text-reps-orange">
