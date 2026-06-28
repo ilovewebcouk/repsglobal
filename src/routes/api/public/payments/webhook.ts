@@ -181,7 +181,9 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: St
     current_period_end: periodEndIso(sub),
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
     is_founding: lookup?.founding ?? false,
-    migrated_from_bd: sub.metadata?.migrated_from === "bd",
+    migrated_from_bd:
+      sub.metadata?.migrated_from === "bd_legacy" ||
+      sub.metadata?.migrated_from === "bd",
     metadata: sub.metadata as unknown as object,
     environment: env,
     updated_at: new Date().toISOString(),

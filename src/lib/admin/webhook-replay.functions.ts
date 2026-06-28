@@ -462,7 +462,9 @@ function buildSubscriptionUpsert(
     current_period_end: subIso(sub),
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
     is_founding: lookup?.founding ?? false,
-    migrated_from_bd: sub.metadata?.migrated_from === "bd",
+    migrated_from_bd:
+      sub.metadata?.migrated_from === "bd_legacy" ||
+      sub.metadata?.migrated_from === "bd",
     environment: sub.livemode ? "live" : "sandbox",
   };
 }
@@ -701,7 +703,9 @@ export const replayWebhookFailures = createServerFn({ method: "POST" })
             current_period_end: cpe ? new Date(cpe * 1000).toISOString() : null,
             cancel_at_period_end: liveSub.cancel_at_period_end ?? false,
             is_founding: lookup?.founding ?? false,
-            migrated_from_bd: liveSub.metadata?.migrated_from === "bd",
+            migrated_from_bd:
+              liveSub.metadata?.migrated_from === "bd_legacy" ||
+              liveSub.metadata?.migrated_from === "bd",
             metadata: liveSub.metadata as unknown as object,
             environment: env,
             updated_at: new Date().toISOString(),
