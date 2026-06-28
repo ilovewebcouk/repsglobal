@@ -874,6 +874,13 @@ function TicketDrawer({
   
   
 
+  // Reset draft + auto-draft state whenever a different ticket opens
+  useEffect(() => {
+    setDraft("");
+    setIsAutoDrafted(false);
+    setMode("reply");
+  }, [ticketId]);
+
   // Mark ticket as read when drawer opens
   useEffect(() => {
     if (!ticketId) return;
@@ -883,6 +890,7 @@ function TicketDrawer({
         /* non-blocking */
       });
   }, [ticketId, markReadFn, onChanged]);
+
 
   // 'E' to solve when the drawer is focused and not typing
   useEffect(() => {
