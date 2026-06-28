@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { requireRole } from "@/lib/route-gates";
-import { AlertTriangle, Globe2, RefreshCcw, Sparkles, Star } from "lucide-react";
+import { Globe2, RefreshCcw, Star } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
