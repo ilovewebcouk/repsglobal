@@ -104,11 +104,19 @@ import {
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
 
+type ProfessionalsSearch = { plan?: "free" | "paid" };
+
 export const Route = createFileRoute("/admin_/professionals")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
+  validateSearch: (search: Record<string, unknown>): ProfessionalsSearch => {
+    const plan = search.plan;
+    if (plan === "free" || plan === "paid") return { plan };
+    return {};
+  },
   component: AdminProfessionalsPage,
 });
+
 
 const TABS: { label: string; value: AdminProTab }[] = [
   { label: "All", value: "all" },
