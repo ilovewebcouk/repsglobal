@@ -37,6 +37,13 @@ export interface SubscriptionRowLike {
   environment: string | null;
   created_at: string | null;
   current_period_end?: string | null;
+  /**
+   * Payment standing. Anything other than 'ok' (payment_disputed,
+   * chargeback_lost, chargeback_won) means this subscription must NOT count
+   * as an active paying member. Defaults to 'ok' if the caller doesn't pass
+   * the column (older callers).
+   */
+  payment_standing?: string | null;
 }
 
 export interface LegacyLinkRowLike {
@@ -64,7 +71,8 @@ export function isActiveSubscription(s: SubscriptionRowLike): boolean {
   return (
     s.environment === "live" &&
     (ACTIVE_SUBSCRIPTION_STATUSES as readonly string[]).includes(s.status ?? "") &&
-    (COUNTED_TIERS as readonly string[]).includes(s.tier ?? "")
+    (COUNTED_TIERS as readonly string[]).includes(s.tier ?? "") &&
+    (s.payment_standing ?? "ok") === "ok"
   );
 }
 
