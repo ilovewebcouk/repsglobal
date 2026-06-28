@@ -30,6 +30,13 @@ export interface BillingHealthSnapshot {
   dlq_size: number;
   stuck_processing: number;
   avg_webhook_latency_ms: number | null;
+  /** Disputes / chargebacks — kept separate from failed payments. */
+  open_disputes: number;
+  disputed_amount_pence: number;
+  funds_withdrawn_pence_30d: number;
+  funds_reinstated_pence_30d: number;
+  chargebacks_won_30d: number;
+  chargebacks_lost_30d: number;
 }
 
 export const getBillingHealth = createServerFn({ method: "GET" })
