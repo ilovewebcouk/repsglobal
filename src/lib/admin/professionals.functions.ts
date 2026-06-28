@@ -153,6 +153,9 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const { fetchActivePayingMemberCollection } = await import(
+      '@/lib/members/active-paying-member.server'
+    );
 
     // Fetch a generously sized window so we can sort across joined data
     // (rating/clients/plan) without an RPC. Realistic register sizes for v1.
@@ -240,7 +243,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return out;
     }
 
-    const [profilesData, subsData, reviewsData, ccData, paymentsData, bdSeedData] = await Promise.all([
+    const [profilesData, subsData, reviewsData, ccData, paymentsData, bdSeedData, activeCollection] = await Promise.all([
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
       fetchAll<{ user_id: string; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
@@ -262,6 +265,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
           .in('claimed_user_id', c)
           .not('claimed_user_id', 'is', null)
           .not('bd_next_due_date', 'is', null)),
+      fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
     const bdDueMap = new Map<string, string>();
     for (const r of bdSeedData) {
@@ -269,12 +273,14 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     }
 
     const profileMap = new Map(profilesData.map((p) => [p.id, p]));
-    const subMap = new Map<string, string>();
+    const paidTierByUserId = new Map<string, AdminProRow['plan']>();
+    for (const m of activeCollection.members) {
+      if (m.user_id) paidTierByUserId.set(m.user_id, m.tier as AdminProRow['plan']);
+    }
     const subDetailMap = new Map<string, { createdAt: string; currentPeriodEnd: string | null; status: string }>();
     for (const s of subsData) {
       if (!['active', 'trialing', 'past_due'].includes(s.status)) continue;
-      if (!subMap.has(s.user_id)) {
-        subMap.set(s.user_id, s.tier);
+      if (!subDetailMap.has(s.user_id)) {
         subDetailMap.set(s.user_id, { createdAt: s.created_at, currentPeriodEnd: s.current_period_end, status: s.status });
       }
     }
@@ -301,7 +307,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     let rows: AdminProRow[] = prosFiltered.map(p => {
       const profile = profileMap.get(p.id);
-      const tier = (subMap.get(p.id) ?? 'free') as AdminProRow['plan'];
+      // Plan filter/display follows the canonical Active Paying Member model.
+      // BD/legacy members with a valid future paid window are Core here; only
+      // professionals absent from that model are Free / non-paying.
+      const tier = paidTierByUserId.get(p.id) ?? 'free';
       const ra = ratingAcc.get(p.id);
       const status: AdminProRow['status'] =
         p.is_published === false && p.suspended_at ? 'suspended'
