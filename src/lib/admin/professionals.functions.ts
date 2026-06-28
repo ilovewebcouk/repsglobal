@@ -480,9 +480,20 @@ export const setProfessionalSuspension = createServerFn({ method: 'POST' })
       .maybeSingle();
     if (!prev) throw new Error('Professional not found');
 
+    // Policy: a professional's public profile is NEVER hidden by REPs (Trustpilot-style).
+    // "Suspending" simply drops them back to Unverified (verification = 'pending') and
+    // records the reason. Reinstating restores them to Verified.
     const update = data.suspended
-      ? { is_published: false, suspended_at: new Date().toISOString(), suspension_reason: data.reason }
-      : { is_published: true, suspended_at: null, suspension_reason: null };
+      ? {
+          suspended_at: new Date().toISOString(),
+          suspension_reason: data.reason,
+          verification: 'pending' as const,
+        }
+      : {
+          suspended_at: null,
+          suspension_reason: null,
+          verification: 'verified' as const,
+        };
 
     const { error } = await supabaseAdmin
       .from('professionals')
@@ -506,8 +517,9 @@ export const setProfessionalSuspension = createServerFn({ method: 'POST' })
         templateData: data.suspended
           ? { proName, reason: data.reason }
           : { proName },
-      }).catch((e) => { console.error('suspension email failed', e); });
+      }).catch((e) => { console.error('verification status email failed', e); });
     }
+
 
     await supabaseAdmin.rpc('log_admin_action', {
       _actor_id: context.userId,
