@@ -55,7 +55,7 @@ function OpsHub() {
             blurb="Active, new, churn." />
           <SectionCard to="/admin/ops/email" title="Emails" icon={<Mail className="size-5" />}
             blurb="Lifecycle, DLQ, suppressions." />
-          <SectionCard to="/admin/ops/activity" title="Activity" icon={<Stream className="size-5" />}
+          <SectionCard to="/admin/ops/activity" title="Activity" icon={<Radio className="size-5" />}
             blurb="Live platform heartbeat." />
         </div>
 
@@ -113,6 +113,3 @@ export function OpsAlertsBanner({ alerts, onEvaluate }: { alerts: Array<{ id: st
     </div>
   );
 }
-
-// keep linter happy — surface that we read supabase client at least once
-void supabase;
