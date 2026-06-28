@@ -1,44 +1,128 @@
-# Post-BD Migration QA Audit — Plan
 
-Strictly read-only. No DB writes, no Stripe mutations, no emails, no code changes, no cron toggles. Deliverable is a single report + CSV + screenshots that you approve before any cleanup work begins.
+# Admin v2 — World-Class Rebuild + Stripe Source of Truth
 
-## Inputs I'll use
-- Uploaded `subscriptions.csv` (Stripe export, 341 rows) as Stripe-side source of truth.
-- Live DB via read-only `psql`: `bd_member_seed`, `bd_migration`, `legacy_stripe_link`, `legacy_stripe_payments`, `subscriptions`, `billing_setup_tokens`, `churn_lifecycle`, `payment_events`, `disputes`, `renewal_tokens`, `email_send_log`, `professionals`, `profiles`, `auth.users`, `user_roles`.
-- Codebase search across `src/routes`, `src/components`, `src/lib`, `supabase/migrations` for legacy/BD references.
-- Live admin screenshots via headless Playwright using the injected admin session.
+## Brutal honest truth
 
-## Workstreams (mapped to your 16 sections)
+The current admin is a working **operations console bolted onto a migration**. It got us safely through BD → Stripe, but it carries scar tissue everywhere:
 
-1. **Migration truth table** — single SQL roll-up classifying every `bd_member_seed` row into exactly one of: Converted-active, Converted-scheduled/trialing, Awaiting card setup, Failed/recovery, Lapsed/churned, Manual review, Pre-existing sub, Still on legacy rail, Invisible. Cross-checked against the CSV.
-2. **Row-level CSV** → `/mnt/documents/post-bd-audit/bd-member-state-2026-06-28.csv` with all 24 columns you listed, one row per BD member.
-3. **Stripe reconciliation** — join CSV ↔ `subscriptions` ↔ `legacy_stripe_link`. Exception tables: missing-local, missing-stripe, duplicates, missing metadata (`migrated_from`/`bd_member_id`/`reps_user_id`/`original_next_due`), wrong tier, wrong anchor date, unexpected immediate charge, still legacy-selectable.
-4. **Legacy dependency sweep** — `rg` across the codebase for the 16 tokens you listed; each hit classified Keep-historical / Keep-temporary / Remove / Replace / Archive-only / Dangerous.
-5. **Cron & route audit** — read `cron.job` + `cron.job_run_details` + `cron_daily_runs` + `/api/public/*` routes. Per-job table with schedule, last run, can-it-touch-converted-members, recommendation. Nothing disabled.
-6. **Admin page audit** — every route in your list: purpose, BD/legacy exposure, duplication, keep/merge/archive/delete, required changes.
-7. **Canonical metric audit** — re-check `docs/11_admin_metric_registry.md` against subscription-first sources; flag any metric still unioning legacy/BD/seed.
-8. **Revenue & forecast audit** — verify Revenue Received uses `payment_events` success-only, refunds netted, disputes separated; forecast windows (overdue / today / 7 / 14 / 30 / 60 / 90 / RoY) built from Stripe `current_period_end` only.
-9. **Churn & recovery audit** — table of states (incomplete, past_due, unpaid, cancel_at_period_end, dispute, setup-required, lapsed) × visible-in-admin / email-sent / timeline-visible / pass-fail.
-10. **Setup-required + reactivation cohorts** — counts, members, token status, next reminder, owner page, entitlement impact.
-11. **Member Timeline spot checks (15)** — 5 future-due converted, 2 already-renewed, 2 setup-required, 2 lapsed, 2 failed-payment, 1 manual review, plus Adam Davis.
-12. **Screenshot audit** — Playwright captures of the 11 admin pages you named + one converted-BD member timeline, saved under `/mnt/documents/post-bd-audit/screenshots/`.
-13. **Language/label sweep** — the `rg` query you specified, every hit classified; flag any "Core shown as Verified" or "lapse shown as Unverified" violations.
-14. **Removal / archive plan** — per-item file, reason, risk, timing, needs-migration?, needs-user-comms?
-15. **Proposed admin rebuild** — target sidebar + per-page scope (cockpit / professionals / memberships / payments / churn / ops / migration-archive).
-16. **Final report** → `docs/admin-v2/post-bd-migration-admin-audit-2026-06-28.md` with Executive Summary, Population State, Dashboard Trust, Legacy Leftovers, Ranked Fixes (P0–P3), Removal Plan, Rebuild Plan, Screenshots index, Final Recommendation (1 of 4).
+- **3 parallel "is this person paying?" sources** (`subscriptions`, `legacy_stripe_link`, `bd_member_seed`) deduped by a helper. Every KPI starts with a reconciliation step instead of a query.
+- **Internal aliases** (`verified_annual`) stored where Stripe Price IDs belong, so revenue forecasting is hand-computed.
+- **Metadata typos** (`migrated_from === "bd"` vs `bd_legacy`) silently break flags.
+- **17 disputes** sit in `payment_events` but never landed in `public.disputes` — two event tables, one truth.
+- **Sidebar grew by accretion** (Churn, Ops, Reconciliation, Migration, Webhook Recovery, Health…) — operators can't find anything in one hop.
+- **Same label, different math** across pages (Active Paying Members, Paid Pros, Failed Payments).
 
-## Deliverables (all under `/mnt/documents/post-bd-audit/`)
-- `bd-member-state-2026-06-28.csv` — row-level export
-- `stripe-reconciliation-exceptions.csv` — all exception buckets
-- `legacy-code-references.csv` — every `rg` hit + classification
-- `cron-route-audit.csv`
-- `screenshots/*.png`
-- `docs/admin-v2/post-bd-migration-admin-audit-2026-06-28.md` — the report
+The fix isn't "polish the dashboard." It's: **make Stripe the single source of truth for money, Supabase the single source of truth for identity/trust, and rebuild admin as a thin, opinionated read layer on top — entirely on shadcn/ui primitives.**
 
-## Guardrails
-- Only `SELECT` SQL via `psql`. No `supabase--migration`, no inserts, no Stripe API calls, no email sends, no cron edits, no file edits in `src/`.
-- The only files written are under `/mnt/documents/post-bd-audit/` and the one report file under `docs/admin-v2/`.
-- Final Recommendation will be one of the 4 options you listed — no implementation work follows without your explicit go-ahead.
+---
 
-## After you approve
-I run the audit end-to-end in build mode and return: the report path, the CSVs, screenshot index, and the one-line Final Recommendation. Any P0 fixes wait for a separate approval.
+## The model (non-negotiable foundation)
+
+```text
+Money / billing state           →  Stripe (subscriptions, customers, invoices, disputes)
+Identity / verification / RBAC  →  Supabase (auth.users, professionals, verification_*, user_roles)
+Engagement / content / ops      →  Supabase (reviews, enquiries, support_tickets, bookings)
+```
+
+Rule: **if Stripe knows it, we don't store a second copy of the truth.** We cache for speed; every read has a "reconcile with Stripe" path; the canonical answer always wins.
+
+---
+
+## UI rule (locked across all phases)
+
+Admin v2 is **shadcn/ui-first**. Every primitive comes from the registry — no bespoke divs where a component exists.
+
+- **Charts** → `Chart` (`ChartContainer` / `ChartTooltip` / `ChartTooltipContent` / `ChartLegend`) wrapping Recharts. `accessibilityLayer`, chart config with human labels, CSS variables via `var(--chart-1..n)`. No raw `<ResponsiveContainer>` outside `ChartContainer`.
+- **Tables** → `Table` + shadcn DataTable patterns. Row actions via `DropdownMenu`.
+- **KPI tiles** → full `Card` composition (`CardHeader` / `CardTitle` / `CardDescription` / `CardContent` / `CardFooter`) — never dump everything into `CardContent`.
+- **Forms** → `FieldGroup` + `Field` + `FieldLabel` + `FieldDescription`; `InputGroup` + `InputGroupAddon` for inline buttons; `ToggleGroup` for 2–7 option sets. No raw `div` + `space-y-*`.
+- **Overlays** → `Dialog` for modals, `Sheet` for side panels (Timeline detail, email lifecycle, verification certificate), `Drawer` on mobile, `AlertDialog` for every destructive action (always with `DialogTitle`).
+- **Feedback** → `sonner` `toast()`, `Alert` for callouts, `Skeleton` for loading, `Empty` for empty states, `Spinner` + `data-icon` for loading buttons. No custom `animate-pulse`.
+- **Nav** → `Sidebar` + `NavigationMenu` + `Breadcrumb`. Cmd-K via `Command` inside `Dialog`.
+- **Badges** → `Badge` variants for tier (Core / Pro / Studio) and status (Active / Past due / In recovery / Churned / Verified). Never colored spans.
+- **Spacing/sizing** → `flex` + `gap-*` (no `space-y-*`), `size-*` for square. Icons in buttons via `data-icon`, no `size-4` classes.
+- **Colors** → semantic tokens only (`bg-primary`, `text-muted-foreground`, brand orange via existing token). Reuse dashboard UI kit in `src/components/dashboard/ui/` for the dark authenticated surface.
+
+Workflow: before building any page, run `npx shadcn@latest search` + `docs <component>`, install missing primitives with `add`, and verify composition against the rules.
+
+---
+
+## Phased plan
+
+### Phase A — Foundation cleanup (1 sprint, no UI work)
+
+1. **Fix the 4 P0s** from the post-BD audit:
+   - Webhook metadata typo (`migrated_from === "bd"` → `bd_legacy`) in `webhook.ts` + `webhook-replay.functions.ts`.
+   - Backfill `migrated_from_bd = true` on the 340 affected rows.
+   - Replace internal price aliases (`verified_annual`) in `subscriptions.stripe_price_id` with real `price_…` IDs from Stripe.
+   - Backfill the 17 missing rows into `public.disputes` and make the webhook write atomically (or drop one table).
+
+2. **Single billing read API** — one module `src/lib/billing/stripe-mirror.server.ts` owning `getSubscriptionByUser`, `getCustomerByUser`, `listInvoices`, `listDisputes`, `listPaymentMethods` (60s cache). Every admin page reads through this. Nothing else calls `stripe.subscriptions.*` directly.
+
+3. **Retire the 3-source dedupe.** `legacy_stripe_link` + `bd_member_seed` become read-only archives. Canonical "active paying member" = `Stripe subscription in (active, trialing, past_due) AND auth.users row exists`. One query, no dedupe.
+
+4. **Metric registry enforcement.** Every KPI imports its definition from `docs/11_admin_metric_registry.md` via a typed const. Same-label/different-math becomes a typecheck error.
+
+### Phase B — Admin v2 shell at `/admin-v2` (parallel namespace per Doc 12)
+
+5. **IA collapse — 14 routes → 6 sections:**
+   ```text
+   /admin-v2            Dashboard    (30-second business view)
+   /admin-v2/members    Members      (Professionals + 360° timeline spine)
+   /admin-v2/revenue    Revenue      (Stripe-mirrored subs, invoices, disputes, forecast)
+   /admin-v2/trust      Trust        (Verification + Reviews + Support unified)
+   /admin-v2/ops        Operations   (Billing health, webhooks, crons, alerts, email)
+   /admin-v2/settings   Settings     (Team, flags, integrations, audit log)
+   ```
+   Migration / Reconciliation / Churn / Webhook Recovery become panels inside Ops.
+
+6. **Shared shadcn-based primitives** in `src/components/admin-v2/primitives/`:
+   `PageShell` (header + actions + tabs slot), `KPICard` (Card + delta Badge + Recharts sparkline via `ChartContainer`), `HealthStatusStrip` (Badge row), `DataTable` (shadcn Table + filters), `MemberTimeline` (Sheet + Card list), `MemberFinder` (Command palette in Dialog), `ChartPanel` (`ChartContainer` + `ChartTooltip` + `ChartTooltipContent` + `accessibilityLayer`), `ConfirmActionDialog` (AlertDialog), `EmptyState` (Empty), `AlertBanner` (Alert). All shadcn-first, semantic tokens only.
+
+7. **Member 360 as the spine.** Every row in every table → `Open Timeline` → one page (identity, verification, live Stripe subscription, invoices, disputes, reviews, support, enquiries, audit log). Currently 5 pages to answer one question.
+
+### Phase C — Page-by-page rebuild
+
+8. **Dashboard v2** — 4 canonical `KPICard`s + revenue `AreaChart` + needs-attention queue via `DataTable`.
+9. **Revenue v2** — Stripe is the table. `DataTable` + filters + `Sheet` for dispute detail; MRR/ARR live from Stripe; forecast `BarChart` via shadcn `Chart`.
+10. **Members v2** — Professionals `DataTable` + invite flow (`Dialog` + `FieldGroup`) + cross-link to Timeline.
+11. **Trust v2** — Verification 3-step workspace + Reviews moderation + Support tickets in one `Tabs` surface (they're the same job: respond to a human).
+12. **Ops v2** — Billing health, webhook recovery, cron status, email deliverability, alerts; Migration + Reconciliation as historical panels.
+
+### Phase D — Cutover & freeze
+
+13. Side-by-side QA: open `/admin` and `/admin-v2`, every KPI must match or be intentionally renamed.
+14. Operator trial week; record friction.
+15. Make `/admin-v2` the default `/admin`; keep v1 at `/admin/v1` for 30 days.
+16. Delete v1; **freeze sidebar, metric registry, page ownership** per Doc 12 §10.
+
+---
+
+## What "Stripe = source of truth" actually changes
+
+- **No more ghost subscriptions** — if Stripe doesn't have it, we don't show it.
+- **Dispute lifecycle is real** — `disputes` becomes a Stripe cache, not a parallel registry.
+- **Price changes happen in Stripe**, app reads them — no hardcoded `verified_annual` aliases.
+- **Reconciliation becomes a diff view** — "0 rows differ from Stripe" is the success state.
+- **Renewal/trial logic moves to Stripe** (`trial_end`, `cancel_at_period_end`) — finish what the BD rail swap started.
+
+---
+
+## Technical notes
+
+- All new server logic: `createServerFn` + `requireSupabaseAuth` + `has_role(_, 'admin')` gate. Stripe SDK only inside `*.server.ts` files loaded via `await import()` in handlers.
+- Stripe webhook is the **only** writer to the `subscriptions` cache. App code reads, never writes, billing state.
+- `stripe_event_id` idempotency key on every webhook-triggered write.
+- New tables: none in Phase A/B. Phase C may add a thin `member_timeline_event` append-only log for fast Timeline reads.
+- Locked marketing/UI memories untouched — this is admin-only.
+
+---
+
+## What I need from you before building
+
+1. **Approve the IA collapse** (14 → 6). Biggest single decision.
+2. **Approve "Stripe is canonical, retire dedupe"** — `legacy_stripe_link` + `bd_member_seed` become read-only archives.
+3. **Confirm parallel `/admin-v2` namespace** vs feature-flag on `/admin`.
+4. **Phase A first, or skip to redesign?** Strong recommendation: Phase A first — redesigning on the current dedupe mess bakes in the mess.
+
+Greenlight and I start Phase A (4 P0 fixes + single billing read API) — invisible to operators, biggest trust unlock. Then the shadcn-native redesign on clean foundations.
