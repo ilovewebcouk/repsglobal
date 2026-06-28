@@ -87,7 +87,7 @@ function getPro(slug: string) {
     area: "Shoreditch",
     rating: 5.0,
     reviews: 128,
-    mode: "In-person & Online" as const,
+    mode: "In-person & Online",
     image: proJames,
     responseTime: "Usually replies within 2 hours",
     typicalRate: "£60 / hour",
