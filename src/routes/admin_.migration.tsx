@@ -720,16 +720,31 @@ function StripeLinkingPanel() {
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button
-            onClick={() => {
-              if (window.confirm(`Delete ALL ${data?.linked ?? 0} link rows? This is destructive and only needed when switching env (e.g. sandbox → live).`))
-                resetPass.mutate();
-            }}
-            disabled={busy}
-            className="flex h-9 items-center gap-2 rounded-[10px] border border-red-400/40 bg-red-500/10 px-3 text-[12px] font-semibold text-red-200 disabled:opacity-50"
-          >
-            {resetPass.isPending ? "Resetting…" : "Reset linking"}
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                disabled={busy}
+                className="flex h-9 items-center gap-2 rounded-[10px] border border-red-400/40 bg-red-500/10 px-3 text-[12px] font-semibold text-red-200 disabled:opacity-50"
+              >
+                {resetPass.isPending ? "Resetting…" : "Reset linking"}
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset all legacy Stripe linking?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will delete ALL {data?.linked ?? 0} link rows. Destructive — only needed when switching environments
+                  (e.g. sandbox → live).
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => resetPass.mutate()} className="bg-red-600 hover:bg-red-700">
+                  Delete all links
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <label className="flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/85 disabled:opacity-50">
             <Download className="h-3.5 w-3.5" />
             {csvImport.isPending ? "Importing…" : "Import Stripe CSV"}
