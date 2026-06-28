@@ -361,11 +361,12 @@ export const Route = createFileRoute("/c/$slug")({
   loader: async ({ params }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const };
-    // For DB-backed pros, the Pro shop-front (/c/...) is Pro+Studio only.
-    // Verified pros have no /c/<slug> page — they appear via /pro/<slug>.
+    // DB-backed: any paying tier (Verified, Pro, Studio) can publish a shop-front.
+    // The page only renders when shop_fronts.is_published = true, so Verified
+    // pros still opt in by publishing one.
     const live = await getShopFrontBySlug({ data: { slug: params.slug } });
     if (!live) throw notFound();
-    if (live.shopFront.tier !== "pro" && live.shopFront.tier !== "studio") {
+    if (!live.shopFront.tier || !["verified", "pro", "studio"].includes(live.shopFront.tier)) {
       throw notFound();
     }
     return { gated: false as const };
