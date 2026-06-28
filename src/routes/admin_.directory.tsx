@@ -7,7 +7,7 @@ import { Globe2, RefreshCcw, Star } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { getDirectoryHealth } from "@/lib/directory/featured.functions";
 
 export const Route = createFileRoute("/admin_/directory")({
