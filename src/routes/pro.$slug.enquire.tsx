@@ -162,7 +162,7 @@ function EnquirePage() {
     const reviews = reviewsQuery.data?.reviews ?? [];
     const count = reviews.length;
     const rating = count > 0
-      ? reviews.reduce((a, r) => a + (r.rating || 0), 0) / count
+      ? reviews.reduce((a: number, r: ReviewDTO) => a + (r.rating || 0), 0) / count
       : 0;
     return {
       ...fallbackPro,
