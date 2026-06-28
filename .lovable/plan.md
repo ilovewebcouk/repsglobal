@@ -1,188 +1,106 @@
+# BD Migration → Stripe Subscriptions (Full Rail Swap)
 
-# BD → Stripe Subscriptions Migration
+End state: BD migration **disappears as a concept**. Every paying member is a real Stripe Subscription. One billing rail, one KPI query, no more `is_legacy` branches.
 
-## The brutal truth
+## What "clean" looks like after all 4 phases ship
 
-Two parallel billing rails is the root cause of nearly every billing bug we've fixed this month: Raheela's failed-charge confusion, KPI drift between `/admin` and `/admin/professionals`, churn-stage ambiguity, dispute-hook branching, the existence of `/admin/ops/billing`'s Site Time panel. Every new feature has to ask "is this a real subscriber or a BD legacy?" That branching is where bugs live.
+| Cohort | Count | Treatment | End state |
+|---|---:|---|---|
+| Auto-convertible | 331 | Phase 2 auto-convert | Real Stripe Sub, trial-anchored to BD date, auto-renew £99/yr |
+| Grace (0–30d lapsed, card on file) | small | Phase 2 auto-convert with `trial_end = now+7d` | Real Stripe Sub |
+| No card on file | 27 | Phase 3 magic-link (setup) | Subscribed OR honest Unverified lapse |
+| Lapsed >30d | 9 | Phase 3 magic-link (reactivate) | Subscribed OR stays Unverified |
+| `renewed_to_verified` / `awaiting_payment_method` | 7 | Excluded (already on new rail) | Untouched |
 
-The fix is to upgrade the back-end primitive from "cron + annual `PaymentIntent`" to a real Stripe Subscription per member, anchored to their original BD renewal date. The **legal basis is unchanged** — BD's T&Cs already grant standing mandate for annual auto-renewal on the stored card, and the current cron relies on that same authority. We're swapping the mechanism, not the consent.
+## Phase 2 — Execute auto-convert (already wired, not yet run)
 
-## Population (live numbers, from the database right now)
+1. **Live batch of 10** from `/admin/ops/billing` → BdRailSwapCard → spot-check in Stripe Dashboard, verify confirmation email lands, verify `legacy_stripe_link.migration_status = 'converted_to_subscription'`.
+2. **Resumable batches of 50** until all 331 auto rows + grace rows are converted.
+3. **24h soak.** Monitor `/admin/ops/billing` failed-payment tile, dispute hook, support inbox.
 
-| Bucket | Count | Treatment |
-|---|---:|---|
-| BD links with Stripe customer + future renewal | ~340 | **Auto-convert** — no user action |
-| BD links with Stripe customer but already lapsed (≤ today) | 9 | **Reactivation magic-link** flow |
-| BD links without a Stripe customer (newer seeds, BD-only payers) | 27 | **Setup magic-link** flow (T-30 / T-7 reminders) |
-| Already subscribed via new flow | 7 | Skip (idempotent) |
-| Total BD links | 390 | |
+Idempotency: `stripe_subscription_id IS NULL` filter + Stripe `idempotency_key = bd-convert-<id>`. Re-runnable safely.
 
-## Phase 1 — Read-only audit (one turn, sub-agent)
+## Phase 3 — Magic-link cohorts (27 no-card + 9 lapsed)
 
-Before any writes, produce `docs/admin-v2/bd-rail-swap-audit-2026-06-28.md` mapping every BD touchpoint we'll either delete, simplify, or migrate:
-
-- All call sites of `legacy_stripe_link`, `legacy_stripe_payments`, `legacy-renewal` cron route, `renewal-engine`.
-- Branches in KPI/active-paying-member/dispute/churn that ask "legacy vs new".
-- Email templates referencing legacy renewal copy.
-- Admin dashboard panels that read from the legacy rail.
-- Webhook handlers that special-case `pi_*` outside a subscription.
-
-Deliverable: a defect/leftover list we work through in Phase 4.
-
-## Phase 2 — Auto-convert (the cohort with card on file)
-
-A single TanStack server function `convertLegacyToSubscription({ bd_member_id })`, callable from a new admin action at `/admin/ops/billing` ("Convert BD members → Stripe Subscriptions"), with a dry-run mode and a batched live mode (50 at a time, resumable like the relaunch broadcast).
-
-For each eligible BD member:
-
-1. Resolve the existing Stripe Customer + default PaymentMethod from `legacy_stripe_link.stripe_customer_id`.
-2. Create a Stripe Subscription:
-   - `customer` = existing customer
-   - `items` = single line at the £99 Core annual Price (`PRICE_CORE_YEARLY` in `src/lib/billing.ts`)
-   - `default_payment_method` = the existing PM (already authorized under BD mandate)
-   - `trial_end` = `legacy_stripe_link.next_due_at` (unix) — Stripe holds without charging until then, then bills £99 and auto-renews annually
-   - `proration_behavior: 'none'`
-   - `payment_behavior: 'default_incomplete'` is **not** needed — trial period defers the first charge cleanly
-   - `metadata: { migrated_from: 'bd_legacy', bd_member_id, original_next_due: <iso> }`
-3. Insert into `public.subscriptions` with `tier='verified'`, `status='trialing'` (until anchor flips it to `active`), `payment_standing='ok'`, `stripe_subscription_id`, `current_period_end = next_due_at`, `environment='live'`.
-4. Mark `legacy_stripe_link.migration_status='converted_to_subscription'` and stamp `stripe_subscription_id`.
-5. Enqueue the **"Your REPs membership is now on recurring billing"** confirmation email (template added in Phase 3).
-6. Log to `admin_audit_log` with before/after JSON.
-
-If a member is past-due but ≤ 30 days lapsed (per T&Cs grace), include them in this auto-cohort with `trial_end = now() + 7 days` and an honest email: "your renewal will be collected in 7 days unless you cancel from your dashboard."
-
-## Phase 3 — Magic-link cohorts (no card on file + truly lapsed)
-
-Two new public routes under `src/routes/api/public/billing/`:
-- `setup-card/$token.tsx` — for BD members with no PaymentMethod. Stripe Checkout in `setup` mode, on success creates the Subscription with `trial_end = next_due_at`.
-- `reactivate/$token.tsx` — for lapsed (> 30 days past due). Stripe Checkout in `subscription` mode at £99/yr starting immediately, copy = "reactivate your REPs Core membership."
-
-Tokens stored in a new `billing_setup_tokens` table (24 column-wide; 30-day expiry; one-shot). Three React Email templates:
-- `legacy-setup-card-now` (initial)
-- `legacy-setup-card-reminder-30` (T-30 before renewal date)
-- `legacy-setup-card-reminder-7` (T-7)
-- `legacy-reactivate-invite` (lapsed cohort)
-
-Scheduled by extending `cron_should_run_at_london` with a 09:00 London job that picks up tokens whose target renewal is in the T-30 or T-7 window.
-
-If they never click → they lapse to **Unverified** on the renewal date (Trustpilot policy intact, profile stays live).
-
-## Phase 4 — Tear down the legacy rail
-
-After 7 days of green Phase-2 telemetry (no spike in failed payments, no dispute uptick):
-
-- Unschedule the `legacy-stripe-renewal-daily` pg_cron job.
-- Mark `/api/public/hooks/legacy-renewal` as 410 Gone (keep file for one release, then delete).
-- Remove `is_legacy` / `legacy_kind` branches from `active-paying-member.ts`, KPI queries, dispute hooks, churn lifecycle.
-- `legacy_stripe_link` becomes a **read-only historical record** (no writes) — keep for audit + email lookup.
-- Delete the Site Time panel's "next renewal run" tile (no longer relevant — Stripe handles it).
-- Update `docs/admin-v2/` registry to mark BD migration **closed**.
-
-## Phase 5 — Comms
-
-One email at conversion, no marketing dressing. Sent through existing `sendTransactionalEmailServer` (Mailgun pipeline, already loop-guarded). Subject: *"Your REPs Core membership — next renewal £99 on [date]"*. Body covers: what changed (back-end upgrade, no fee change), confirmed next renewal date and amount, cancel-anytime via dashboard link, support contact. Stripe's own 7-days-before pre-renewal email layers on automatically.
-
-Reactivation cohort gets the **"reactivate"** template instead — different subject, different CTA, no implied charge until they confirm in Checkout.
-
-## Phase 6 — Admin observability
-
-New section in `/admin/ops/billing` (top of page, above Site Time):
-- **BD → Stripe migration**: tiles for `auto-convertible / setup-link-required / reactivation / converted / lapsed`, "Run conversion (dry-run)" button, "Run conversion (live, 50 at a time)" button with resume token, last-run timestamp, recent failures table.
-- Each row deep-links to `/admin/professionals?q=<email>` and to the Stripe Customer.
-
-## Technical reference
-
-### Schema changes (one migration)
-
-```sql
--- New: token table for setup/reactivate magic links
-CREATE TABLE public.billing_setup_tokens (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  bd_member_id bigint REFERENCES bd_member_seed(bd_member_id),
-  user_id uuid REFERENCES auth.users(id),
-  email citext NOT NULL,
-  kind text NOT NULL CHECK (kind IN ('setup','reactivate')),
-  token text UNIQUE NOT NULL,
-  target_renewal_at timestamptz,
-  consumed_at timestamptz,
-  expires_at timestamptz NOT NULL DEFAULT now() + interval '30 days',
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE ON public.billing_setup_tokens TO authenticated;
-GRANT ALL ON public.billing_setup_tokens TO service_role;
-ALTER TABLE public.billing_setup_tokens ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "admins manage tokens" ON public.billing_setup_tokens
-  FOR ALL TO authenticated USING (has_role(auth.uid(),'admin'));
-
--- Status tracking on legacy_stripe_link
-ALTER TABLE public.legacy_stripe_link
-  ADD COLUMN IF NOT EXISTS migration_kind text,   -- 'auto'|'setup_link'|'reactivate'
-  ADD COLUMN IF NOT EXISTS converted_at timestamptz;
+New files:
 ```
-
-### Stripe call shape
-
-```ts
-const sub = await stripe.subscriptions.create({
-  customer: link.stripe_customer_id,
-  items: [{ price: PRICE_CORE_YEARLY }],
-  default_payment_method: defaultPm.id,
-  trial_end: Math.floor(new Date(link.next_due_at).getTime() / 1000),
-  proration_behavior: 'none',
-  collection_method: 'charge_automatically',
-  metadata: { migrated_from: 'bd_legacy', bd_member_id: String(link.bd_member_id) },
-});
-```
-
-### Webhook handling
-
-Existing `/api/public/payments/webhook.ts` already consumes `customer.subscription.*` and `invoice.*` events — no changes needed. The `trial_will_end` event 3 days before anchor is opt-in via subscription `trial_settings`; skip it (Stripe sends its own pre-renewal email at 7 days).
-
-### Idempotency
-
-- Server fn skips any `bd_member_id` where `legacy_stripe_link.stripe_subscription_id IS NOT NULL`.
-- Stripe `idempotency_key = 'bd-convert-' + bd_member_id` on subscription create.
-
-### Files added/changed
-
-```
-docs/admin-v2/bd-rail-swap-audit-2026-06-28.md           (Phase 1)
-src/lib/billing/convert-legacy.functions.ts              (Phase 2)
-src/lib/billing/convert-legacy.server.ts
-src/routes/api/public/billing/setup-card.$token.tsx      (Phase 3)
+src/lib/billing/setup-tokens.server.ts            (create/consume tokens)
+src/routes/api/public/billing/setup-card.$token.tsx
 src/routes/api/public/billing/reactivate.$token.tsx
-src/lib/email-templates/legacy-conversion-confirmation.tsx
 src/lib/email-templates/legacy-setup-card-now.tsx
 src/lib/email-templates/legacy-setup-card-reminder-30.tsx
 src/lib/email-templates/legacy-setup-card-reminder-7.tsx
 src/lib/email-templates/legacy-reactivate-invite.tsx
-src/lib/email-templates/registry.ts                       (add 5 entries)
-src/routes/admin_.ops.billing.tsx                         (new migration panel)
-src/lib/members/active-paying-member.ts                   (Phase 4: drop legacy branch)
-src/routes/api/public/hooks/legacy-renewal.ts             (Phase 4: 410)
+src/routes/api/public/hooks/setup-link-reminders.ts  (daily 09:00 London cron)
 ```
 
-## Why this is 10/10 and not a stopgap
+Flow:
+- **Setup cohort**: token → Stripe Checkout `mode=setup` → on completion create Subscription with `trial_end = next_due_at`.
+- **Reactivate cohort**: token → Stripe Checkout `mode=subscription` at £99/yr starting immediately.
+- **Reminders**: T-30 and T-7 days before BD renewal date.
+- **Lapse policy**: if not clicked by renewal date → `verification = 'unverified'`. Profile stays live (Trustpilot policy). No further emails after that point — final state is honest "unverified" not silent suspension.
 
-- One source of truth for paying members.
-- Stripe handles SCA, dunning, card updates, portal cancel, pre-renewal email natively.
-- KPIs become a single query — no reconciliation needed.
-- Disputes, churn, payment recovery all stop branching on legacy.
-- The "BD migration" disappears as a concept — every member is just a Stripe subscriber.
+Admin UI: extend BdRailSwapCard with "Send invites" batch buttons + funnel tile (invited → card added → converted).
 
-## Risks I'm being honest about
+## Phase 4 — Tear down legacy rail (gated on 7 days green telemetry)
 
-- **Dormant-card SCA failures** — same risk as today's cron; Stripe Smart Retries + card-update email handle it, expect a small involuntary-churn tail.
-- **First few days, the legacy cron and new subscriptions both exist** — Phase 2 marks `legacy_stripe_link` as converted to prevent double-billing. The audit step (Phase 1) verifies the cron is reading that flag before we go live.
-- **Support tickets** — expect a small wave of "what is this email?" replies. Pre-write a saved reply for the support inbox.
+After Phase 2 + Phase 3 sit green for 7 days:
 
-## Rough order of magnitude
+- `SELECT cron.unschedule('legacy-stripe-renewal-daily')`
+- `/api/public/hooks/legacy-renewal` returns 410 Gone (delete file one release later)
+- Delete `is_legacy` / `legacy_kind` branches from:
+  - `src/lib/members/active-paying-member.ts`
+  - KPI queries in `/admin` and `/admin/professionals`
+  - dispute webhook
+  - churn lifecycle
+  - payment recovery
+- Delete Site Time panel's "next legacy renewal run" tile
+- Mark `legacy_stripe_link` read-only (revoke INSERT/UPDATE grants except service_role for historical reads)
+- Mark `docs/admin-v2/12-implementation-roadmap-and-migration-plan.md` BD section **CLOSED**
 
-- Phase 1: 1 sub-agent turn
-- Phase 2: 1 build turn (migration + server fn + admin button + dry-run)
-- Phase 3: 1 build turn (magic-link routes + email templates + cron)
-- Phase 4: 1 build turn (cleanup) — gated by Phase-2 success
-- Phase 5/6: included in Phase 2
+## Phase 5 — Comms (runs alongside Phase 2)
 
-Start with Phase 1 today, run Phase 2 dry-run as soon as the audit's clean.
+One transactional email per conversion via `sendTransactionalEmailServer` (Mailgun, loop-guarded):
+- Subject: *"Your REPs Core membership — next renewal £99 on [date]"*
+- Body: what changed (back-end upgrade, no fee change), confirmed renewal date + amount, cancel-anytime link, support contact.
+- Legal basis: existing BD T&Cs MIT mandate. No re-consent needed for cohorts with card on file.
+- Stripe's own 7-days-before pre-renewal email layers on automatically.
+
+Magic-link cohorts get the setup/reactivate templates instead — different subject, different CTA, no implied charge until they confirm.
+
+## Phase 6 — Admin observability (built in Phase 2, extended in Phase 3)
+
+`/admin/ops/billing` → BdRailSwapCard:
+- Population tiles: `auto-convertible / setup-link-required / reactivation / converted / lapsed`
+- Dry-run + live batch buttons (already shipped Phase 2)
+- Invite batch buttons (Phase 3)
+- Funnel tile: invited → card added → converted
+- Recent failures table
+- Each row deep-links to `/admin/professionals?q=<email>` and the Stripe Customer
+
+## Brutal honest residual risks
+
+1. **Involuntary churn tail (~5–10 members)** — dormant 2024 cards fail SCA on first real charge. Stripe Smart Retries + card-update email handle most. Rest lapse to Unverified (same outcome as today's cron, better UX).
+2. **Magic-link conversion ~60–80%** — the rest lapse to Unverified. Correct outcome for someone with no card on file.
+3. **Phase 4 is gated on Phase 2 telemetry.** If Phase 2 throws errors, we pause and fix before tearing legacy down. Non-negotiable.
+
+## Execution order
+
+1. **Today**: Phase 2 live batch of 10 → soak 1 hour → spot-check.
+2. **Today**: Phase 2 remaining batches of 50 until all 331+grace converted.
+3. **+24h**: green-light Phase 3 build (magic links + reminders + cron).
+4. **+72h**: send first batch of magic-link invites.
+5. **+7 days from Phase 2 completion**: Phase 4 teardown.
+6. **+14 days**: delete `/api/public/hooks/legacy-renewal` file entirely.
+
+## Technical reference (for the build agent)
+
+- Stripe call shape, schema, idempotency keys, file list: already documented in `.lovable/plan.md` (unchanged).
+- Dry-run CSV (`bd-rail-swap-dryrun-2026-06-28.csv`) approved — cohort classification matches expected population.
+- Excluded rows hardened: `renewed_to_verified`, `awaiting_payment_method`, and any row with `stripe_subscription_id IS NOT NULL`.
+
+## Answer to your question
+
+**Yes — this makes everything clean.** After Phase 4, BD migration is gone. Everyone on Core is on a real Stripe Subscription auto-renewing at £99/yr. The dual-rail mess is dead. KPIs become one query. Disputes, churn, payment recovery stop branching. The 27+9 magic-link cohort either subscribes or honestly lapses to Unverified — both clean states.
+
+The only way this fails to clean everything up is if you stop after Phase 2. **Commit to all 4 phases** or the mess survives.
