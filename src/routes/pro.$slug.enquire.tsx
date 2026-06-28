@@ -185,6 +185,7 @@ function EnquirePage() {
       rating: count > 0 ? rating : 0,
       reviews: count,
       mode,
+      verified: profile?.verification_status === "verified",
     };
   }, [liveQuery.data, profileQuery.data, reviewsQuery.data, fallbackPro]);
 
@@ -496,12 +497,14 @@ function EnquirePage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h2 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">{pro.name}</h2>
-                    <Badge
-                      variant="outline"
-                      className="gap-0.5 rounded-full border-reps-green/30 bg-reps-green/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-reps-green"
-                    >
-                      <BadgeCheck className="size-2.5" /> Verified
-                    </Badge>
+                    {pro.verified && (
+                      <Badge
+                        variant="outline"
+                        className="gap-0.5 rounded-full border-reps-green/30 bg-reps-green/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-reps-green"
+                      >
+                        <BadgeCheck className="size-2.5" /> Verified
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-[12.5px] text-reps-muted-light">{pro.role}</div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] text-reps-muted-light">
