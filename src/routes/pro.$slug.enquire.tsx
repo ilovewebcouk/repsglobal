@@ -179,7 +179,7 @@ function EnquirePage() {
       role:
         getProfessionLabel(sf?.primary_profession ?? profile?.primary_profession) ??
         fallbackPro.role,
-      image: sf?.avatar_url ?? profile?.avatar_url ?? fallbackPro.image,
+      image: sf?.avatar_url ?? profile?.avatar_url ?? null,
       area: loc?.town ?? loc?.postcode_outward ?? fallbackPro.area,
       city: sf?.city ?? profile?.city ?? loc?.region ?? fallbackPro.city,
       rating: count > 0 ? rating : 0,
@@ -488,12 +488,16 @@ function EnquirePage() {
             {/* Pro card */}
             <div className="overflow-hidden rounded-[22px] border border-reps-stone bg-reps-warm-white">
               <div className="flex items-center gap-4 p-5">
-                <img
-                  src={pro.image}
-                  alt={pro.name}
-                  className="size-16 rounded-[18px] object-cover"
-                  loading="lazy"
-                />
+                {pro.image ? (
+                  <img
+                    src={pro.image}
+                    alt={pro.name}
+                    className="size-16 rounded-[18px] object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <Monogram name={pro.name} size={64} className="!rounded-[18px]" />
+                )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h2 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">{pro.name}</h2>
