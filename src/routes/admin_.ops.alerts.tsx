@@ -80,13 +80,12 @@ function AlertsPage() {
           <table className="w-full text-sm">
             <thead className="bg-reps-ink/40 text-left text-xs uppercase tracking-wide text-reps-text/60">
               <tr>
-                <th className="px-3 py-2">Kind</th>
+                <th className="px-3 py-2 w-[44%]">What happened</th>
                 <th className="px-3 py-2">Sev</th>
                 <th className="px-3 py-2">Opened</th>
                 <th className="px-3 py-2">Resolved</th>
                 <th className="px-3 py-2">Mute</th>
-                <th className="px-3 py-2">Context</th>
-                <th className="px-3 py-2 w-[260px]">Notes</th>
+                <th className="px-3 py-2 w-[220px]">Notes</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
