@@ -1217,10 +1217,19 @@ function TicketDrawer({
 
             </div>
           </div>
+          {isAutoDrafted && draft.trim() && mode === "reply" && (
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-[6px] border border-reps-orange/30 bg-reps-orange/10 px-2 py-0.5 text-[11px] font-semibold text-reps-orange">
+              <Sparkles className="h-3 w-3" /> Auto-drafted · review &amp; send
+            </div>
+          )}
           <div className="relative">
             <Textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              value={aiDraft.isPending && !draft ? "" : draft}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                if (isAutoDrafted) setIsAutoDrafted(false);
+              }}
+
               onKeyDown={(e) => {
                 if (
                   (e.metaKey || e.ctrlKey) &&
