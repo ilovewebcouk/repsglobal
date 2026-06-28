@@ -151,11 +151,13 @@ function EnquirePage() {
     const live = liveQuery.data;
     const profile = profileQuery.data;
     const sf = live?.shopFront;
+    const loc = profile?.location;
     return {
       ...fallbackPro,
       name: sf?.full_name ?? profile?.full_name ?? fallbackPro.name,
       image: sf?.avatar_url ?? profile?.avatar_url ?? fallbackPro.image,
-      city: sf?.city ?? profile?.city ?? fallbackPro.city,
+      area: loc?.town ?? loc?.postcode_outward ?? fallbackPro.area,
+      city: sf?.city ?? profile?.city ?? loc?.region ?? fallbackPro.city,
     };
   }, [liveQuery.data, profileQuery.data, fallbackPro]);
 
