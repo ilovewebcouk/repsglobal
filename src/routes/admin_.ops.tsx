@@ -30,6 +30,7 @@ function OpsHub() {
   return (
     <DashboardShell role="admin" active="Operations" title="Operations" subtitle="Run REPS in seconds — Billing · Platform · Customer · Emails · Activity">
       <div className="space-y-6 p-6">
+        <OpsSubNav />
         <OpsAlertsBanner alerts={alertsQ.data ?? []} onEvaluate={async () => {
           const r = await runEval();
           toast.success(`Alert evaluator ran (${r.opened} opens)`);

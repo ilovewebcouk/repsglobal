@@ -56,6 +56,7 @@ function AlertsPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Alerts" subtitle="Open and recently-resolved alerts (last 7 days).">
       <div className="space-y-4 p-6">
+        <OpsSubNav />
         <div className="rounded-[16px] border border-reps-border bg-reps-panel/40 p-3 text-xs text-reps-text/70">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>

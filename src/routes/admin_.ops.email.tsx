@@ -97,6 +97,7 @@ function EmailOpsPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Email operations" subtitle="Lifecycle for every email REPS sends.">
       <div className="space-y-6 p-6">
+        <OpsSubNav />
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 rounded-[16px] border border-reps-border bg-reps-panel/40 p-3">
           <div className="flex gap-1">

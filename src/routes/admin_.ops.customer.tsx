@@ -32,6 +32,7 @@ function CustomerPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Customer health" subtitle="Operational customer numbers — not marketing analytics.">
       <div className="space-y-6 p-6">
+        <OpsSubNav />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {!h ? <div className="text-reps-text/60">Loading…</div> : tiles.map((t) => {
             const tone = t.tone === "crit" ? "border-rose-500/40 bg-rose-500/10 text-rose-100" :
