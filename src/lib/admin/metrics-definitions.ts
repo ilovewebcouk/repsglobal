@@ -37,12 +37,20 @@ export const LEGACY_AMOUNT_PENCE = TIER_RENEWAL_PENCE.verified;
 // "A member whose card is broken right now." Used by every surface that
 // surfaces a failed-payment count: /admin/ops/billing (Failed payments),
 // /admin/ops/customer (Failed payments), /admin/payments (Past due),
-// /admin red banner. Do NOT inline-fork this list anywhere.
+// /admin/memberships (Past-due tile), /admin red banner. Do NOT inline-fork
+// this list anywhere.
+//
+// `incomplete_expired` is included because a BD-migration / launch-day
+// sub whose first invoice failed lands in this terminal state with
+// tier=free — operationally still a broken card we need to recover
+// (e.g. Raheela Khalid, sub_1Tmow2AP31Yc4cJj822tte4r).
 export const FAILED_PAYMENT_STATUSES = [
   "past_due",
   "unpaid",
   "incomplete",
+  "incomplete_expired",
 ] as const;
+
 
 // --- Churn -------------------------------------------------------------------
 // `churn_lifecycle.stage` values that represent "this user has churned".

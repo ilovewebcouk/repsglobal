@@ -16,10 +16,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { FAILED_PAYMENT_STATUSES } from "@/lib/admin/metrics-definitions";
 
 // Canonical "failed payments" set lives in metrics-definitions.ts so the
-// /admin red banner count matches Ops Billing's "Failed payments" tile and
-// Ops Customer's "Failed payments" tile. Adds `incomplete_expired` for the
-// recovery-list surface only — same broken-card cohort, terminal Stripe state.
-const FAILED_STATUSES = [...FAILED_PAYMENT_STATUSES, "incomplete_expired"] as const;
+// /admin red banner, Ops Billing/Customer "Failed payments" tiles,
+// /admin/memberships Past-due tile and this recovery list all agree.
+const FAILED_STATUSES = [...FAILED_PAYMENT_STATUSES] as const;
+
 
 export interface PaymentFailedSubRow {
   user_id: string;

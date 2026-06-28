@@ -104,11 +104,19 @@ import {
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
 
+type ProfessionalsSearch = { plan?: "free" | "paid" };
+
 export const Route = createFileRoute("/admin_/professionals")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
+  validateSearch: (search: Record<string, unknown>): ProfessionalsSearch => {
+    const plan = search.plan;
+    if (plan === "free" || plan === "paid") return { plan };
+    return {};
+  },
   component: AdminProfessionalsPage,
 });
+
 
 const TABS: { label: string; value: AdminProTab }[] = [
   { label: "All", value: "all" },
@@ -200,12 +208,18 @@ function useDebounced<T>(value: T, ms = 250): T {
 }
 
 function AdminProfessionalsPage() {
+  const searchParams = Route.useSearch();
   const [tab, setTab] = React.useState<AdminProTab>("all");
   const [page, setPage] = React.useState(1);
   const [search, setSearch] = React.useState("");
   const [sort, setSort] = React.useState<AdminProSort>("joined");
   const [dir, setDir] = React.useState<SortDir>("desc");
-  const [filters, setFilters] = React.useState<AdminProFilters>({});
+  const [filters, setFilters] = React.useState<AdminProFilters>(() => {
+    if (searchParams.plan === "free") return { plans: ["free"] };
+    if (searchParams.plan === "paid") return { plans: ["verified", "pro", "studio"] };
+    return {};
+  });
+
   const debouncedSearch = useDebounced(search, 300);
   const pageSize = 25;
 

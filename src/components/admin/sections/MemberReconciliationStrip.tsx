@@ -66,8 +66,7 @@ export function MemberReconciliationStrip({
               label="Active Paying Members"
               sub="Stripe + legacy + BD, deduped"
               value={activePayingMembers}
-              to="/admin/reconciliation"
-              hash="members"
+              to="/admin/memberships"
             />
             {activePros !== null ? (
               <ReconRow
@@ -83,6 +82,7 @@ export function MemberReconciliationStrip({
                 sub="Active Professionals − Active Paying Members"
                 value={proGap}
                 to="/admin/professionals"
+                search={{ plan: "free" }}
                 muted
               />
             ) : null}
@@ -92,6 +92,7 @@ export function MemberReconciliationStrip({
                 sub="Professionals with active paid entitlement"
                 value={paidPros}
                 to="/admin/professionals"
+                search={{ plan: "paid" }}
                 muted
               />
             ) : null}
@@ -105,6 +106,7 @@ export function MemberReconciliationStrip({
               />
             ) : null}
           </ul>
+
         </div>
       </div>
     </AdminCard>
@@ -117,6 +119,7 @@ function ReconRow({
   value,
   to,
   hash,
+  search,
   tone = "neutral",
   muted = false,
 }: {
@@ -125,6 +128,7 @@ function ReconRow({
   value: number;
   to: string;
   hash?: string;
+  search?: Record<string, string>;
   tone?: "neutral" | "warn";
   muted?: boolean;
 }) {
@@ -139,8 +143,10 @@ function ReconRow({
       <Link
         to={to}
         hash={hash}
+        search={search as never}
         className="flex items-center justify-between gap-3 px-3 py-2.5 transition-colors hover:bg-white/[0.03]"
       >
+
         <div className="min-w-0">
           <div className="text-[12.5px] font-semibold text-white">{label}</div>
           <div className="text-[11px] text-white/55">{sub}</div>
