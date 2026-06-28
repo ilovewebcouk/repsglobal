@@ -1140,32 +1140,13 @@ function ProProfilePage() {
                           </div>
                         </div>
                       ))
-                    : REVIEWS.map((r, i) => (
-
-                        <div key={r.name} className="grid grid-cols-[44px_1fr] gap-3">
-                          <img
-                            src={REVIEW_AVATARS[i % REVIEW_AVATARS.length]}
-                            alt=""
-                            className="h-11 w-11 rounded-full object-cover"
-                          />
-                          <div>
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="text-[13px] font-semibold text-reps-charcoal">{r.name}</div>
-                                <div className="text-[11px] text-reps-muted-light">{r.when}</div>
-                              </div>
-                            </div>
-                            <div className="mt-1 flex gap-0.5">
-                              {Array.from({ length: 5 }).map((_, k) => (
-                                <Star key={k} className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                              ))}
-                            </div>
-                            <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light">
-                              “{r.body}”
-                            </p>
-                          </div>
+                    : (
+                        <div className="rounded-[16px] border border-dashed border-reps-stone bg-reps-warm-white/60 p-6 text-center">
+                          <p className="text-[13px] text-reps-muted-light">
+                            No reviews yet. Verified client reviews will appear here once published.
+                          </p>
                         </div>
-                      ))}
+                      )}
                 </div>
               </div>
             </div>
