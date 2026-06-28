@@ -475,6 +475,62 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_setup_tokens: {
+        Row: {
+          bd_member_id: number | null
+          consumed_at: string | null
+          consumed_stripe_subscription_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          kind: string
+          reminders_sent: Json
+          target_renewal_at: string | null
+          token: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          bd_member_id?: number | null
+          consumed_at?: string | null
+          consumed_stripe_subscription_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          kind: string
+          reminders_sent?: Json
+          target_renewal_at?: string | null
+          token: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          bd_member_id?: number | null
+          consumed_at?: string | null
+          consumed_stripe_subscription_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          reminders_sent?: Json
+          target_renewal_at?: string | null
+          token?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_setup_tokens_bd_member_id_fkey"
+            columns: ["bd_member_id"]
+            isOneToOne: false
+            referencedRelation: "bd_member_seed"
+            referencedColumns: ["bd_member_id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           amount_pence: number
@@ -1881,6 +1937,8 @@ export type Database = {
         Row: {
           access_expires_at: string | null
           bd_member_id: number
+          converted_at: string | null
+          converted_subscription_id: string | null
           created_at: string
           current_price_id: string | null
           eligible_for_legacy_price: boolean
@@ -1891,6 +1949,7 @@ export type Database = {
           last_paid_at: string | null
           legacy_kind: string
           link_status: string
+          migration_kind: string | null
           migration_status: string
           next_due_at: string | null
           notes: string | null
@@ -1902,6 +1961,8 @@ export type Database = {
         Insert: {
           access_expires_at?: string | null
           bd_member_id: number
+          converted_at?: string | null
+          converted_subscription_id?: string | null
           created_at?: string
           current_price_id?: string | null
           eligible_for_legacy_price?: boolean
@@ -1912,6 +1973,7 @@ export type Database = {
           last_paid_at?: string | null
           legacy_kind?: string
           link_status?: string
+          migration_kind?: string | null
           migration_status?: string
           next_due_at?: string | null
           notes?: string | null
@@ -1923,6 +1985,8 @@ export type Database = {
         Update: {
           access_expires_at?: string | null
           bd_member_id?: number
+          converted_at?: string | null
+          converted_subscription_id?: string | null
           created_at?: string
           current_price_id?: string | null
           eligible_for_legacy_price?: boolean
@@ -1933,6 +1997,7 @@ export type Database = {
           last_paid_at?: string | null
           legacy_kind?: string
           link_status?: string
+          migration_kind?: string | null
           migration_status?: string
           next_due_at?: string | null
           notes?: string | null
