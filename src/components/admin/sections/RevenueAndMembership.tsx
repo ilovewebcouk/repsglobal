@@ -179,7 +179,7 @@ export function RevenueAndMembership({
           <span className="font-display text-[28px] font-bold leading-none text-white">
             {data.totalMembers.toLocaleString()}
           </span>
-          <span className="text-[12px] text-white/55">Active members by tier</span>
+          <span className="text-[12px] text-white/55">Active paying members by tier</span>
         </div>
         <div className="mt-4">
           {data.totalMembers > 0 ? (
