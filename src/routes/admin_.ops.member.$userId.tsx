@@ -27,7 +27,7 @@ function MemberPage() {
     queryKey: ["ops-member-timeline", userId],
     queryFn: () => getFn({ data: { user_id: userId, limit: 500 } }),
   });
-  const [enabled, setEnabled] = useState<Set<TimelineSource>>(new Set(ALL_SOURCES));
+  const [enabled, setEnabled] = useState<Set<TimelineSource>>(new Set(ALL_TIMELINE_SOURCES));
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
