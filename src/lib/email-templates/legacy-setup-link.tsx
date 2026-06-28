@@ -59,7 +59,7 @@ const LegacySetupLink = ({
           <Text style={{ ...p, marginTop: "12px" }}>
             Honestly — if it gets you <strong style={ink}>one client this year</strong>,
             it's paid for itself several times over. Plus you'll be on the only
-            UK-built register that makes you look like a pro.
+            global register that makes you look like a pro.
           </Text>
         </Section>
 
