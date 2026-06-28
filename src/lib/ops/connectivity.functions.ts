@@ -44,7 +44,7 @@ async function probeMail(): Promise<ProbeResult> {
     return { ok: false, latency_ms: 0, error: "Mailgun connector keys missing" };
   }
   try {
-    const res = await fetch(`https://connector-gateway.lovable.dev/mailgun/repsuk.org`, {
+    const res = await fetch(`https://connector-gateway.lovable.dev/mailgun/v3/domains/repsuk.org`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${lovableKey}`,
@@ -52,9 +52,20 @@ async function probeMail(): Promise<ProbeResult> {
       },
     });
     if (!res.ok) {
-      return { ok: false, latency_ms: Date.now() - t0, error: `Mailgun ${res.status}` };
+      const body = await res.text().catch(() => "");
+      return {
+        ok: false,
+        latency_ms: Date.now() - t0,
+        error: `Mailgun ${res.status}`,
+        detail: body.slice(0, 200) || undefined,
+      };
     }
-    return { ok: true, latency_ms: Date.now() - t0, detail: "repsuk.org" };
+    const json = (await res.json().catch(() => ({}))) as { domain?: { state?: string } };
+    return {
+      ok: true,
+      latency_ms: Date.now() - t0,
+      detail: json?.domain?.state ? `repsuk.org (${json.domain.state})` : "repsuk.org",
+    };
   } catch (e) {
     return { ok: false, latency_ms: Date.now() - t0, error: (e as Error).message };
   }
