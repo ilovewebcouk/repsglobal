@@ -44,6 +44,7 @@ import proJames from "@/assets/pro-james.jpg";
 import { submitEnquiry } from "@/lib/enquiries/enquiries.functions";
 import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
+import { listPublicReviewsBySlug, type ReviewDTO } from "@/lib/reviews/reviews.functions";
 
 
 /* ------------------------------------------------------------------ */
@@ -147,19 +148,32 @@ function EnquirePage() {
     staleTime: 60_000,
   });
 
+  const reviewsQuery = useQuery({
+    queryKey: ["public-reviews", slug],
+    queryFn: () => listPublicReviewsBySlug({ data: { slug } }),
+    staleTime: 60_000,
+  });
+
   const pro = useMemo(() => {
     const live = liveQuery.data;
     const profile = profileQuery.data;
     const sf = live?.shopFront;
     const loc = profile?.location;
+    const reviews = reviewsQuery.data?.reviews ?? [];
+    const count = reviews.length;
+    const rating = count > 0
+      ? reviews.reduce((a: number, r: ReviewDTO) => a + (r.rating || 0), 0) / count
+      : 0;
     return {
       ...fallbackPro,
       name: sf?.full_name ?? profile?.full_name ?? fallbackPro.name,
       image: sf?.avatar_url ?? profile?.avatar_url ?? fallbackPro.image,
       area: loc?.town ?? loc?.postcode_outward ?? fallbackPro.area,
       city: sf?.city ?? profile?.city ?? loc?.region ?? fallbackPro.city,
+      rating: count > 0 ? rating : 0,
+      reviews: count,
     };
-  }, [liveQuery.data, profileQuery.data, fallbackPro]);
+  }, [liveQuery.data, profileQuery.data, reviewsQuery.data, fallbackPro]);
 
   const serviceOptions: ServiceOption[] = useMemo(() => {
     const live = liveQuery.data;
