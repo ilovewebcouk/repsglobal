@@ -1,8 +1,10 @@
 import { OpsSubNav } from "@/components/ops/OpsSubNav";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { requireRole } from "@/lib/route-gates";
@@ -30,6 +32,7 @@ import {
   getEmailTemplates,
   getEmailHistory,
   listSuppressions,
+  removeSuppression,
 } from "@/lib/ops/email-ops.functions";
 
 const rangeEnum = z.enum(["24h", "7d", "30d"]);
