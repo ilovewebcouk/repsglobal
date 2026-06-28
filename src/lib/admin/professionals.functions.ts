@@ -193,7 +193,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       case 'verified':   query = query.eq('verification', 'verified').eq('is_published', true); break;
       case 'pending':    query = query.eq('verification', 'pending'); break;
       case 'flagged':    query = query.eq('verification', 'rejected'); break;
-      case 'suspended':  query = query.eq('is_published', false).not('suspended_at', 'is', null); break;
+      case 'suspended':  query = query.not('suspended_at', 'is', null); break;
       case 'recent': {
         const since = new Date(Date.now() - 30 * 24 * 60 * 60_000).toISOString();
         query = query.gte('created_at', since);
