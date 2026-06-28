@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Plus, Save, Sparkles, Star, Trash2 } from "lucide-react";
+import { Plus, Save, Star, Trash2 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -185,45 +185,6 @@ function ServicesPage() {
           {/* 03 — Service cards (Verified + Pro). Up to 3 cards shown on your
               public profile and in the enquire form. */}
           <ServiceCardsEditor tier={tier} />
-
-
-
-          {/* 03 — Pro upsell: Shop-front */}
-          {tier === "verified" ? (
-            <PPanel className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-[15px] font-semibold text-white">
-                    Unlock your Shop-front
-                  </h3>
-                  <p className="mt-1 text-[13px] text-white/60">
-                    Pro turns your listing into a full coach page — priced service packages,
-                    "Most popular" highlight, online enquire / book / pay, and a guided client
-                    onboarding flow. Core members appear in the directory; Pro members sell
-                    from it.
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-[13px] font-semibold">
-                    <Link
-                      to="/features/shop-front"
-                      className="inline-flex items-center gap-1.5 text-reps-orange hover:underline"
-                    >
-                      See the Shop-front <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                    <span className="text-white/30">·</span>
-                    <Link
-                      to="/pricing"
-                      className="inline-flex items-center gap-1.5 text-white/70 hover:text-white"
-                    >
-                      Compare plans
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </PPanel>
-          ) : null}
         </div>
 
         {/* Live preview */}
@@ -380,7 +341,7 @@ function ServiceCardsEditor({ tier }: { tier: "verified" | "pro" | "studio" }) {
   const fetchMine = useServerFn(getMyShopFront);
   const upsertSvc = useServerFn(upsertMyService);
   const deleteSvc = useServerFn(deleteMyService);
-  const isPro = tier === "pro" || tier === "studio";
+  
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-shop-front"],
@@ -426,7 +387,7 @@ function ServiceCardsEditor({ tier }: { tier: "verified" | "pro" | "studio" }) {
             ? services.find((s) => s.id === editingId)?.sort_order ?? 0
             : services.length,
           is_published: true,
-          is_featured: isPro ? draft.is_featured : false,
+          is_featured: draft.is_featured,
         },
       }),
     onSuccess: () => {
@@ -483,7 +444,7 @@ function ServiceCardsEditor({ tier }: { tier: "verified" | "pro" | "studio" }) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
-                  {s.is_featured && isPro ? (
+                  {s.is_featured ? (
                     <span className="inline-flex items-center gap-1 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-semibold text-reps-orange">
                       <Star className="h-3 w-3" /> Most popular
                     </span>
@@ -560,22 +521,16 @@ function ServiceCardsEditor({ tier }: { tier: "verified" | "pro" | "studio" }) {
             <option value="online">Online</option>
             <option value="hybrid">Hybrid</option>
           </select>
-          {isPro ? (
-            <label className="flex items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white/85">
-              <input
-                type="checkbox"
-                checked={draft.is_featured}
-                onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
-                disabled={atCap && !editingId}
-                className="h-4 w-4 accent-reps-orange"
-              />
-              Mark as "Most popular"
-            </label>
-          ) : (
-            <div className="flex items-center rounded-[10px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-3 text-[12px] text-white/45">
-              "Most popular" highlight is Pro-only
-            </div>
-          )}
+          <label className="flex items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white/85">
+            <input
+              type="checkbox"
+              checked={draft.is_featured}
+              onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
+              disabled={atCap && !editingId}
+              className="h-4 w-4 accent-reps-orange"
+            />
+            Mark as "Most popular"
+          </label>
           <textarea
             value={draft.description}
             onChange={(e) => setDraft({ ...draft, description: e.target.value })}
