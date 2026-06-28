@@ -82,6 +82,10 @@ function BillingPage() {
             })}
         </div>
 
+        {/* Renewal engine visibility — last 7 nights + upcoming 14 days */}
+        <RenewalEngineCard />
+
+
         {kind && (
           <div className="rounded-[16px] border border-reps-border bg-reps-panel/40">
             <div className="flex items-center justify-between border-b border-reps-border px-4 py-3">
