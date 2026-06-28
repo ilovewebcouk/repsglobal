@@ -133,6 +133,13 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
           (r) => r,
           () => ({ data: [] as Array<Record<string, unknown>> }),
         ),
+      supabaseAdmin.from("disputes")
+        .select("id, opened_at, updated_at, closed_at, lifecycle_stage, status, reason, amount_pence, currency, stripe_dispute_id, evidence_due_by")
+        .eq("user_id", data.user_id)
+        .order("opened_at", { ascending: false }).limit(50).then(
+          (r) => r,
+          () => ({ data: [] as Array<Record<string, unknown>> }),
+        ),
     ]);
 
     const events: TimelineEvent[] = [];
