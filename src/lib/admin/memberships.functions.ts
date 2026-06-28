@@ -364,14 +364,8 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
           cohort: it.cohort,
         };
       }),
-    ].sort((a, b) => {
-      // honour_window first, then anomaly, then by dueAt
-      const order = (c: string | null | undefined) =>
-        c === "honour_window" ? 0 : c === "anomaly_launch_charge" ? 1 : 2;
-      const d = order(a.cohort) - order(b.cohort);
-      if (d !== 0) return d;
-      return (a.dueAt ?? "").localeCompare(b.dueAt ?? "");
-    });
+    ].sort((a, b) => (a.dueAt ?? "").localeCompare(b.dueAt ?? ""));
+
 
     const pastDueItems: PastDueItem[] = pastDue.map((s) => ({
       name: profileMap.get(s.user_id)?.full_name || userEmailMap.get(s.user_id) || "Member",
