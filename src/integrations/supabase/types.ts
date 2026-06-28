@@ -4040,6 +4040,13 @@ export type Database = {
           qualification: string
         }[]
       }
+      get_relaunch_audience: {
+        Args: never
+        Returns: {
+          email: string
+          source: string
+        }[]
+      }
       get_renewal_cron_runs: {
         Args: { _limit?: number }
         Returns: {
