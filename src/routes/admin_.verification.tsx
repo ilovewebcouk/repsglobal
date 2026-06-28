@@ -1000,6 +1000,23 @@ function AdminVerificationPage() {
                       >
                         {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve qualification"}
                       </Button>
+                      <Button
+                        size="sm"
+                        disabled={busy || !approveAllowed}
+                        onClick={() => {
+                          advanceAfterDecideRef.current = true;
+                          decideMutation.mutate({
+                            decision: "approved",
+                            unlocked_tier: "verified",
+                            gates_snapshot: gatesSnap,
+                            override_reason: overrideReason.trim() || null,
+                          });
+                        }}
+                        className="bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50"
+                        title={approveAllowed ? "Approve and jump to the next pending case" : `Failing: ${gates.blockingReasons.join(", ")}`}
+                      >
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve & next"}
+                      </Button>
                     </div>
                   </PCard>
                 )}
