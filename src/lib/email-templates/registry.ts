@@ -30,6 +30,7 @@ import { template as verificationReminder } from './verification-reminder'
 import { template as purchaseConfirmation } from './purchase-confirmation'
 import { template as cancellationConfirmation } from './cancellation-confirmation'
 import { template as welcomeSignup } from './welcome-signup'
+import { template as opsAlert } from './ops-alert'
 
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
