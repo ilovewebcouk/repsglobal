@@ -138,8 +138,14 @@ export function OpsAlertsBanner({ alerts, onEvaluate }: { alerts: Array<{ id: st
           {crit > 0 && <Badge variant="destructive">{crit} critical</Badge>}
         </div>
         <div className="flex gap-2">
-          {onEvaluate && <Button size="sm" variant="ghost" onClick={onEvaluate}>Re-evaluate</Button>}
-          <Link to="/admin/ops/alerts"><Button size="sm" variant="outline">View alerts</Button></Link>
+          {onEvaluate && (
+            <Button size="sm" variant="outline" onClick={onEvaluate} className="border-rose-300/40 bg-transparent text-rose-50 hover:bg-rose-500/20 hover:text-rose-50">
+              Re-evaluate
+            </Button>
+          )}
+          <Link to="/admin/ops/alerts">
+            <Button size="sm" className="bg-rose-50 text-rose-900 hover:bg-white hover:text-rose-900">View alerts</Button>
+          </Link>
         </div>
       </div>
       <ul className="mt-2 flex flex-wrap gap-2 text-xs">
