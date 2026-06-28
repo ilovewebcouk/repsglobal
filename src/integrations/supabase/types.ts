@@ -3151,6 +3151,7 @@ export type Database = {
         Row: {
           billing_period: Database["public"]["Enums"]["billing_period"] | null
           cancel_at_period_end: boolean
+          canceled_at: string | null
           created_at: string
           current_period_end: string | null
           environment: string
@@ -3169,6 +3170,7 @@ export type Database = {
         Insert: {
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           cancel_at_period_end?: boolean
+          canceled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           environment?: string
@@ -3187,6 +3189,7 @@ export type Database = {
         Update: {
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           cancel_at_period_end?: boolean
+          canceled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           environment?: string
