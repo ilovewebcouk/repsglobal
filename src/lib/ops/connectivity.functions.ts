@@ -44,7 +44,7 @@ async function probeMail(): Promise<ProbeResult> {
     return { ok: false, latency_ms: 0, error: "Mailgun connector keys missing" };
   }
   try {
-    const res = await fetch(`https://connector-gateway.lovable.dev/mailgun/v3/domains/repsuk.org`, {
+    const res = await fetch(`https://connector-gateway.lovable.dev/mailgun/domains/repsuk.org`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${lovableKey}`,
