@@ -139,7 +139,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     };
   });
 
-const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'recent', 'demos'] as const;
+const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'payment_failed', 'renewal_due', 'recent', 'demos'] as const;
 export type AdminProTab = typeof TAB_VALUES[number];
 export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | 'mrr' | 'lifetimeValue' | 'renewalDate';
 export type SortDir = 'asc' | 'desc';
@@ -426,6 +426,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     }
     if (data.filters.hasAvatar === true) rows = rows.filter(r => !!r.avatarUrl);
     if (data.filters.hasAvatar === false) rows = rows.filter(r => !r.avatarUrl);
+
+    // Billing-state tabs (post-join — billingState is computed above).
+    if (data.tab === 'payment_failed') rows = rows.filter(r => r.billingState === 'payment_failed');
+    if (data.tab === 'renewal_due')    rows = rows.filter(r => r.billingState === 'renewal_due');
 
     // Sort.
     const dir = data.dir === 'asc' ? 1 : -1;
