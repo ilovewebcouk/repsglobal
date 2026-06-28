@@ -302,19 +302,9 @@ async function convertOne(args: {
     .eq("bd_member_id", bd);
 
   // Audit log
-  await supabaseAdmin.from("admin_audit_log").insert({
-    action: "bd_legacy_converted_to_subscription",
-    target_type: "legacy_stripe_link",
-    target_id: String(bd),
-    metadata: {
-      bd_member_id: bd,
-      stripe_customer_id: row.stripe_customer_id,
-      stripe_subscription_id: sub.id,
-      trial_end: trialEndIso,
-      grace: ageDays > 0,
-      environment,
-    },
-  });
+  // Audit trail lives on legacy_stripe_link (migration_status, converted_at,
+  // converted_subscription_id) — admin_audit_log requires an actor_id and
+  // this path runs without an admin session (cron / service worker).
 
   // Confirmation email — non-blocking failure.
   try {
