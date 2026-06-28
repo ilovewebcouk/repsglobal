@@ -1,3 +1,4 @@
+import { OpsSubNav } from "@/components/ops/OpsSubNav";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -60,6 +61,7 @@ function MemberPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Member timeline" subtitle={subtitle}>
       <div className="space-y-4 p-6">
+        <OpsSubNav />
         {/* Header finder — jump to any other member without leaving the recorder */}
         <MemberFinder placeholder="Find another member by email, id, cus_, sub_, BD id…" />
 

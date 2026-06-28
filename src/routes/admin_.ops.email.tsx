@@ -1,3 +1,4 @@
+import { OpsSubNav } from "@/components/ops/OpsSubNav";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -97,6 +98,7 @@ function EmailOpsPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Email operations" subtitle="Lifecycle for every email REPS sends.">
       <div className="space-y-6 p-6">
+        <OpsSubNav />
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 rounded-[16px] border border-reps-border bg-reps-panel/40 p-3">
           <div className="flex gap-1">

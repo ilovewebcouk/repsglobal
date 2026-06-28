@@ -17,7 +17,7 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -135,6 +135,8 @@ function AdminVerificationPage() {
   const [manualQualConfirmed, setManualQualConfirmed] = useState(false);
   const [revokeOpen, setRevokeOpen] = useState(false);
   const [revokeReason, setRevokeReason] = useState("");
+  /** When true, after the next decision lands we jump to the next pending case instead of clearing. */
+  const advanceAfterDecideRef = useRef(false);
 
   const listing = useQuery({
     queryKey: ["admin-verifications", statusFilter],
@@ -224,13 +226,28 @@ function AdminVerificationPage() {
     },
     onSettled: () => {
       setBusy(false);
-      setSelectedId(null);
+      // Compute the next pending case (in current queue order) before we mutate selectedId.
+      const advance = advanceAfterDecideRef.current;
+      advanceAfterDecideRef.current = false;
+      let nextId: string | null = null;
+      if (advance) {
+        const list = listing.data ?? [];
+        const pending = list.filter((r) => r.status === "submitted" || r.status === "changes_requested" || r.id === selectedId);
+        const idx = pending.findIndex((r) => r.id === selectedId);
+        const next = idx >= 0 ? pending.slice(idx + 1).find((r) => r.id !== selectedId) : pending[0];
+        nextId = next?.id ?? null;
+      }
       setNote("");
       setOverrideReason("");
       setChecks({});
       setManualQualConfirmed(false);
       qc.invalidateQueries({ queryKey: ["admin-verifications"] });
       qc.invalidateQueries({ queryKey: ["admin-queue-stats"] });
+      if (nextId) {
+        void selectCase(nextId);
+      } else {
+        setSelectedId(null);
+      }
     },
     onError: (e) => alert(e instanceof Error ? e.message : "Decision failed"),
   });
@@ -982,6 +999,23 @@ function AdminVerificationPage() {
                         title={approveAllowed ? "Approve qualification" : `Failing: ${gates.blockingReasons.join(", ")}`}
                       >
                         {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve qualification"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={busy || !approveAllowed}
+                        onClick={() => {
+                          advanceAfterDecideRef.current = true;
+                          decideMutation.mutate({
+                            decision: "approved",
+                            unlocked_tier: "verified",
+                            gates_snapshot: gatesSnap,
+                            override_reason: overrideReason.trim() || null,
+                          });
+                        }}
+                        className="bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50"
+                        title={approveAllowed ? "Approve and jump to the next pending case" : `Failing: ${gates.blockingReasons.join(", ")}`}
+                      >
+                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve & next"}
                       </Button>
                     </div>
                   </PCard>

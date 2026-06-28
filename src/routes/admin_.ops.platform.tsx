@@ -1,3 +1,4 @@
+import { OpsSubNav } from "@/components/ops/OpsSubNav";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -27,6 +28,7 @@ function PlatformPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Platform health" subtitle="Cron · queues · connectivity · DB">
       <div className="space-y-6 p-6">
+        <OpsSubNav />
         {/* Connectivity */}
         <section>
           <div className="text-xs uppercase tracking-wide text-reps-text/60">Connectivity</div>

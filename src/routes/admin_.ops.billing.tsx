@@ -1,3 +1,4 @@
+import { OpsSubNav } from "@/components/ops/OpsSubNav";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -61,6 +62,7 @@ function BillingPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Billing health" subtitle="Live operational billing metrics — click a tile to drill in.">
       <div className="space-y-6 p-6">
+        <OpsSubNav />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {!h ? <div className="text-reps-text/60">Loading…</div> :
             tiles.map((t) => {

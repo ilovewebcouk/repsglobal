@@ -1,3 +1,4 @@
+import { OpsSubNav } from "@/components/ops/OpsSubNav";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -85,6 +86,7 @@ function ActivityPage() {
   return (
     <DashboardShell role="admin" active="Operations" title="Activity stream" subtitle="The operational heartbeat of REPS — everything happening across the platform.">
       <div className="space-y-4 p-6">
+        <OpsSubNav />
         <div className="flex flex-wrap items-center gap-2 rounded-[16px] border border-reps-border bg-reps-panel/40 p-3">
           <div className="flex gap-1">
             {([24, 72, 168] as const).map((h) => (
