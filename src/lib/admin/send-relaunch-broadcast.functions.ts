@@ -56,6 +56,56 @@ export const previewRelaunchAudience = createServerFn({ method: "POST" })
   });
 
 /**
+ * Status snapshot — no sending. Counts how many of the relaunch audience
+ * have already been accepted by Mailgun (status = 'sent') for the current
+ * broadcast tag, and how many are still outstanding.
+ */
+export const getRelaunchBroadcastStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: aud, error: audErr } = await supabaseAdmin.rpc("get_relaunch_audience");
+    if (audErr) throw new Error(audErr.message);
+    const audience = (aud ?? []) as Array<{ email: string; source: string }>;
+    const total = audience.length;
+
+    // Pull sent log rows for this broadcast tag (template_name + tag in message_id)
+    const { data: sentRows } = await supabaseAdmin
+      .from("email_send_log")
+      .select("recipient_email, status, created_at")
+      .like("message_id", `relaunch-${RELAUNCH_BROADCAST_TAG}-%`)
+      .eq("status", "sent")
+      .order("created_at", { ascending: false })
+      .limit(2000);
+
+    const sentSet = new Set(
+      ((sentRows ?? []) as Array<{ recipient_email: string }>).map((r) =>
+        r.recipient_email.toLowerCase(),
+      ),
+    );
+    let alreadySent = 0;
+    for (const r of audience) if (sentSet.has(r.email.toLowerCase())) alreadySent += 1;
+
+    const remaining = Math.max(0, total - alreadySent);
+    const lastSentAt = (sentRows?.[0] as { created_at?: string } | undefined)?.created_at ?? null;
+
+    return {
+      total,
+      alreadySent,
+      remaining,
+      lastSentAt,
+      broadcastTag: RELAUNCH_BROADCAST_TAG,
+    };
+  });
+
+
+/**
  * Broadcast the relaunch announcement to the resolved audience.
  * Sends directly via the Mailgun connector (NOT Lovable Emails) so we're
  * not capped by the 100/hr workspace limit — Mailgun is the project's
