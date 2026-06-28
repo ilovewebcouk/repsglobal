@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.ops_find_member(text) TO authenticated;
