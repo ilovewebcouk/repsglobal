@@ -1,0 +1,25 @@
+
+REVOKE EXECUTE ON FUNCTION public.fan_out_review_notifications(uuid, uuid)              FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.on_auth_user_deleted_cleanup_subscriptions()          FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_lock_full_name_after_identity_approved()           FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_log_full_name_change()                             FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_refresh_score_by_pro_id()                          FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_refresh_score_by_profile_id()                      FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_refresh_score_by_user_id()                         FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_refresh_score_self()                               FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_seed_shop_front_on_identity_approved()             FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_subscription_grant_credits()                       FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_support_message_after_insert()                     FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_recompute_pro_verif_from_insurance()              FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_recompute_pro_verif_from_self()                   FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_recompute_pro_verif_from_submission()             FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_reviews_fan_out_notifications()                   FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.insurance_check_renewals()                            FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.recompute_verification_daily_sweep()                  FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.run_monthly_credit_refills()                          FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.count_confirmed_signups(timestamptz, timestamptz)     FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.grant_credits(uuid, integer, text, uuid, jsonb, boolean) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.list_fully_verified_pro_ids()                         FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.spend_credits(uuid, integer, text, uuid, jsonb)       FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.mint_renewal_token(uuid, text, renewal_token_purpose, text, integer, jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.gyms_throttle_submission()                            FROM PUBLIC, anon, authenticated;
