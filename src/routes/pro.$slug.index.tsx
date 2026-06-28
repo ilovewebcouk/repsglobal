@@ -71,7 +71,7 @@ type Pro = {
   reviews: number;
   modes: ("In-person" | "Online")[];
   blurb: string;
-  image: string;
+  image: string | null;
   years: number;
   clients: string;
   bio: string[];
@@ -81,7 +81,7 @@ type Pro = {
     desc: string;
     price: string;
     unit: string;
-    image: string;
+    image: string | null;
     icon: typeof BadgeCheck;
   }[];
   qualifications: {
@@ -316,7 +316,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       ...(row.online_available ? (["Online"] as const) : []),
     ] as Pro["modes"],
     blurb: row.headline ?? "",
-    image: row.avatar_url || proJames,
+    image: row.avatar_url || null,
     years,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
@@ -326,8 +326,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     services: (() => {
       const live = (row as { services?: Array<{ title: string; description: string | null; price_pence: number | null; price_label: string | null; duration_minutes: number | null; mode: string }> }).services ?? [];
       if (live.length) {
-        const stockImages = [heroCoaching, proDaniel, proSophie];
-        return live.slice(0, 3).map((s, i) => ({
+        return live.slice(0, 3).map((s) => ({
           title: s.title,
           desc: s.description ?? "",
           price:
@@ -341,7 +340,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
                 : s.mode === "hybrid"
                   ? "hybrid"
                   : "in-person",
-          image: stockImages[i % stockImages.length],
+          image: null,
           icon: Users,
         }));
       }
