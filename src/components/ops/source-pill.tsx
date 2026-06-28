@@ -35,6 +35,7 @@ export const SOURCE_DOT_CLASSES: Record<TimelineSource, string> = {
   admin: "bg-fuchsia-400",
   identity: "bg-teal-400",
   auth: "bg-slate-400",
+  dispute: "bg-rose-500",
 };
 
 export const ALL_TIMELINE_SOURCES: TimelineSource[] = Object.keys(
