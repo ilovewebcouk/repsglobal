@@ -142,6 +142,19 @@ async function fetchFeaturedPool(
   const ids = pros.filter((p) => p.slug).map((p) => p.id);
   if (ids.length === 0) return { pool: [], paidCount: 0, backfillUsed: false };
 
+  // Exclude anyone with an open / lost chargeback — they are no longer in
+  // good standing as a paid REPS member.
+  const { data: disputedRows } = await supabaseAdmin
+    .from("subscriptions")
+    .select("user_id, payment_standing")
+    .in("user_id", ids)
+    .in("payment_standing", ["payment_disputed", "chargeback_lost"]);
+  const disputedIds = new Set(
+    ((disputedRows ?? []) as Array<{ user_id: string | null }>)
+      .map((r) => r.user_id)
+      .filter((v): v is string => !!v),
+  );
+
   const [profilesRes, subsRes, reviewsRes, locsRes] = await Promise.all([
     supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", ids),
     supabaseAdmin
@@ -190,7 +203,7 @@ async function fetchFeaturedPool(
   }
 
   const enriched: FeaturedProRow[] = pros
-    .filter((p) => p.slug)
+    .filter((p) => p.slug && !disputedIds.has(p.id))
     .map((p) => {
       const prof = profileById.get(p.id);
       const tier = tierById.get(p.id) ?? "free";

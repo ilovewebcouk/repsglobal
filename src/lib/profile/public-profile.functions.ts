@@ -141,6 +141,15 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       .eq("id", r.id)
       .maybeSingle();
 
+    // Suppress the public "REPS Verified" trust badge while a payment dispute
+    // (chargeback) is open, even though the underlying verification evidence
+    // (ID, qualifications, insurance) remains intact.
+    let inDispute = false;
+    try {
+      const { data: dr } = await supabaseAdmin.rpc("is_in_payment_dispute", { _user_id: r.id });
+      inDispute = !!dr;
+    } catch { /* helper missing — treat as not disputed */ }
+
     const { data: photoRows } = await supabaseAdmin
       .from("professional_photos")
       .select("id, storage_path, sort_order, width, height")
@@ -200,6 +209,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
       }>,
       trust: {
         verified:
+          !inDispute &&
           (proExtra?.verification ?? r.verification_status) === "verified" &&
           proExtra?.identity_status === "approved" &&
           Boolean(insuranceRow),

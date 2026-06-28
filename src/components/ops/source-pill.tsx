@@ -19,6 +19,7 @@ export const SOURCE_PILL_CLASSES: Record<TimelineSource, string> = {
   admin: "bg-fuchsia-500/15 text-fuchsia-50 border-fuchsia-400/40",
   identity: "bg-teal-500/15 text-teal-50 border-teal-400/40",
   auth: "bg-slate-500/20 text-slate-50 border-slate-400/40",
+  dispute: "bg-rose-600/20 text-rose-50 border-rose-500/50",
 };
 
 export const SOURCE_DOT_CLASSES: Record<TimelineSource, string> = {
@@ -34,6 +35,7 @@ export const SOURCE_DOT_CLASSES: Record<TimelineSource, string> = {
   admin: "bg-fuchsia-400",
   identity: "bg-teal-400",
   auth: "bg-slate-400",
+  dispute: "bg-rose-500",
 };
 
 export const ALL_TIMELINE_SOURCES: TimelineSource[] = Object.keys(

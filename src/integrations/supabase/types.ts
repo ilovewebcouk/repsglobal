@@ -1042,6 +1042,72 @@ export type Database = {
         }
         Relationships: []
       }
+      disputes: {
+        Row: {
+          amount_pence: number
+          closed_at: string | null
+          currency: string
+          evidence_due_by: string | null
+          funds_reinstated_pence: number
+          funds_withdrawn_pence: number
+          id: string
+          lifecycle_stage: string
+          opened_at: string
+          payload: Json
+          reason: string | null
+          status: string | null
+          stripe_charge_id: string | null
+          stripe_customer_id: string | null
+          stripe_dispute_id: string
+          stripe_payment_intent_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_pence?: number
+          closed_at?: string | null
+          currency?: string
+          evidence_due_by?: string | null
+          funds_reinstated_pence?: number
+          funds_withdrawn_pence?: number
+          id?: string
+          lifecycle_stage?: string
+          opened_at?: string
+          payload?: Json
+          reason?: string | null
+          status?: string | null
+          stripe_charge_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_dispute_id: string
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_pence?: number
+          closed_at?: string | null
+          currency?: string
+          evidence_due_by?: string | null
+          funds_reinstated_pence?: number
+          funds_withdrawn_pence?: number
+          id?: string
+          lifecycle_stage?: string
+          opened_at?: string
+          payload?: Json
+          reason?: string | null
+          status?: string | null
+          stripe_charge_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_dispute_id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -3177,6 +3243,7 @@ export type Database = {
           is_founding: boolean
           metadata: Json | null
           migrated_from_bd: boolean
+          payment_standing: string
           status: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id: string | null
           stripe_price_id: string | null
@@ -3196,6 +3263,7 @@ export type Database = {
           is_founding?: boolean
           metadata?: Json | null
           migrated_from_bd?: boolean
+          payment_standing?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
@@ -3215,6 +3283,7 @@ export type Database = {
           is_founding?: boolean
           metadata?: Json | null
           migrated_from_bd?: boolean
+          payment_standing?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
@@ -4098,6 +4167,10 @@ export type Database = {
         }
         Returns: number
       }
+      has_active_paid_membership: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       has_active_tier: {
         Args: {
           _tiers: Database["public"]["Enums"]["subscription_tier"][]
@@ -4117,6 +4190,7 @@ export type Database = {
         Args: { _client_id: string; _pro_id: string }
         Returns: boolean
       }
+      is_in_payment_dispute: { Args: { _user_id: string }; Returns: boolean }
       is_pro_fully_verified: { Args: { _pro_id: string }; Returns: boolean }
       is_pro_hidden_by_churn: { Args: { _user_id: string }; Returns: boolean }
       list_fully_verified_pro_ids: { Args: never; Returns: string[] }

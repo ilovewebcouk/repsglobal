@@ -24,7 +24,7 @@ export async function fetchActivePayingMemberCollection(
   const [subsRes, legacyRes, bdRes] = await Promise.all([
     supabaseAdmin
       .from("subscriptions")
-      .select("id, user_id, tier, status, environment, created_at, current_period_end"),
+      .select("id, user_id, tier, status, environment, created_at, current_period_end, payment_standing"),
     supabaseAdmin
       .from("legacy_stripe_link")
       .select("bd_member_id, email, claimed_user_id, access_expires_at, created_at, stripe_customer_id"),
@@ -67,6 +67,7 @@ export async function fetchActivePayingMemberCollection(
       environment: (s.environment as string | null) ?? null,
       created_at: (s.created_at as string | null) ?? null,
       current_period_end: (s.current_period_end as string | null) ?? null,
+      payment_standing: (s.payment_standing as string | null) ?? "ok",
     })),
     legacyLinks: ((legacyRes.data ?? []) as Array<Record<string, unknown>>).map((l) => ({
       bd_member_id: (l.bd_member_id as number | string | null) ?? null,

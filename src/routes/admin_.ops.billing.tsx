@@ -59,6 +59,15 @@ function BillingPage() {
     { key: "stuck", label: "Stuck processing", value: String(h.stuck_processing), drill: "stuck",
       tone: h.stuck_processing > 0 ? "crit" : undefined },
     { key: "latency", label: "Webhook latency (24h)", value: h.avg_webhook_latency_ms == null ? "—" : `${h.avg_webhook_latency_ms} ms` },
+    { key: "open_disputes", label: "Open disputes", value: String(h.open_disputes),
+      tone: h.open_disputes > 0 ? "crit" : undefined },
+    { key: "disputed_amount", label: "Disputed amount", value: gbp(h.disputed_amount_pence),
+      tone: h.disputed_amount_pence > 0 ? "crit" : undefined },
+    { key: "funds_withdrawn", label: "Funds withdrawn (30d)", value: gbp(h.funds_withdrawn_pence_30d) },
+    { key: "funds_reinstated", label: "Funds reinstated (30d)", value: gbp(h.funds_reinstated_pence_30d) },
+    { key: "chargebacks_won", label: "Chargebacks won (30d)", value: String(h.chargebacks_won_30d) },
+    { key: "chargebacks_lost", label: "Chargebacks lost (30d)", value: String(h.chargebacks_lost_30d),
+      tone: h.chargebacks_lost_30d > 0 ? "warn" : undefined },
   ] : [];
 
   return (

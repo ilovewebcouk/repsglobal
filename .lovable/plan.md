@@ -1,109 +1,118 @@
-## Policy (the rule going forward)
+# Chargeback / Dispute Lifecycle
 
-A professional's public profile is **never hidden** by REPs. Like Trustpilot, once you're on the register you stay on the register — reviews, history and all. What changes is the **trust badge**.
+## Part 1 — Read-only audit (current state)
 
-Any of the following drops a pro to **Unverified** (badge removed, public profile remains live):
-- Admin suspension (manual trust action — fraud flag, complaint under review, etc.)
-- Stripe chargeback / dispute received
-- Failed payment that exhausts recovery (final dunning step)
-- Insurance expired with no replacement
-- Identity / qualification revoked
+**Webhook coverage (`src/routes/api/public/payments/webhook.ts`)**
+- Only `charge.dispute.created` and `charge.dispute.closed` are routed, and only when a `stripe-account` header is present (Connect path → updates `bookings.dispute_status`).
+- Platform-level disputes (REPS membership Stripe account, no connected account) hit `default: break` — no business logic runs.
+- `charge.dispute.updated`, `funds_withdrawn`, `funds_reinstated` are **not** routed anywhere.
 
-A pro can re-earn **Verified** by resolving the underlying issue (pay, re-submit ID, upload valid insurance) — automatic where possible, admin-reviewed where not.
+**`payment_events` evidence**
+- 1× `charge.dispute.created` (du_1TnGABAP31Yc4cJjk1J0oA3G, livemode, £34, reason `subscription_canceled`, status `needs_response`, pi `pi_3Tgvq6AP31Yc4cJj2MXkOoT8`)
+- 1× `charge.dispute.funds_withdrawn`
+- 17× `charge.dispute.updated`
+- Every row has `user_id = null`, `stripe_subscription_id = null`, `stripe_customer_id = null` — current persistence in `recordEvent()` doesn't resolve dispute → charge → PI → subscription → user.
 
-A pro can **never self-unpublish** to escape reviews. The only path to full removal is admin-only and reserved for: death, legal order, proven impersonation, GDPR erasure request that we're legally required to honour.
+**Subscription / entitlement impact**: none. The disputed user still counts in `fetchActivePayingMemberCollection()`, still appears in `/admin/professionals`, still shows public Verified status, and the subscription has not been cancelled. No timeline, alert, or email exists.
 
----
+**Admin visibility**: zero. `/admin/payments` has a dead `disputeRate` tile fed from a manual bookings calc; `/admin/ops/billing`, `/admin/reconciliation`, `/admin/ops/activity`, `/admin/ops/member/$userId` have no dispute surface.
 
-## Changes
+**Revenue handling**: `getOverviewKpis().revenueReceivedPence` is gross successful charges — no deduction for withdrawn funds.
 
-### 1. Rename + repurpose the "Suspend" action (the dialog in your screenshot)
+**Metric Registry**: no M-row exists for Open Disputes / Disputed Amount / Chargebacks Won/Lost.
 
-In `src/routes/admin_.professionals.tsx` and its row-action menu:
-- Rename **Suspend & notify** → **Mark unverified & notify**
-- Dialog title: "Mark Derek Paterson as Unverified?"
-- Dialog body: *"Their public profile stays live. The Verified badge will be removed and they'll receive an email with the reason below. They can re-verify at any time."*
-- CTA button: **Mark unverified**
-- Remove all copy/logic about "removed from the public directory"
-- Add a small "Restore to verified" action on the row when status = unverified-by-admin (admin override only, with audit log)
-
-### 2. Server: new trust-state transition (no profile hiding)
-
-New server fn `markProfessionalUnverified` in `src/lib/admin/professionals.functions.ts`:
-- Requires `requireSupabaseAuth` + admin role check
-- Sets `professionals.verification = 'unverified'`
-- Writes reason + actor + timestamp to `verification_decisions` (existing table)
-- Writes `admin_audit_log` entry
-- Writes member timeline event
-- Sends `verification-revoked` email (new template, mirrors the existing removal-reason tone)
-- **Does NOT** touch `is_published`, `slug`, profile content, services, gallery or reviews
-
-Retire / hide the old "suspend (unpublish)" path — keep the underlying capability as an **admin-only "Hard remove (legal/erasure)"** action behind a separate, confirm-twice dialog with a fixed reason category (`legal_order | impersonation | gdpr_erasure | deceased`). This is the only path that ever sets `is_published = false`.
-
-### 3. Auto-drop to Unverified on billing events
-
-In `src/routes/api/public/payments/webhook.ts` (Stripe webhook):
-- On `charge.dispute.created` → call shared `transitionToUnverified(userId, reason: 'chargeback')`
-- On final failed-payment lifecycle step in `src/routes/api/public/hooks/lifecycle-cron.ts` (after recovery emails exhausted) → call same helper with `reason: 'payment_failed_recovery_exhausted'`
-
-Shared helper lives in `src/lib/verification/trust-transitions.ts`:
-```text
-transitionToUnverified(userId, reason)
-  → updates professionals.verification
-  → writes verification_decisions row (system actor)
-  → writes admin_audit_log
-  → writes timeline event
-  → emails the pro (template per reason)
-  → never modifies is_published
-```
-
-Mirror the existing insurance-expiry trigger pattern (`recompute_pro_verification`) so the DB stays the single source of truth for the `verification` column.
-
-### 4. Auto re-promote when the issue clears
-
-Extend `recompute_pro_verification` trigger so when:
-- chargeback `dispute.closed` resolves in our favour, OR
-- failed payment is recovered (new successful charge), OR
-- valid insurance is uploaded, OR
-- admin clicks "Restore to verified"
-
-…the pro flips back to `verified` automatically **only if** ID + Qual + Insurance + active billing are all green again. Otherwise stays `unverified` with the live reason.
-
-### 5. Public profile behaviour (`/pro/$slug`)
-
-- Profile remains fully visible at all verification states (no 404, no "removed")
-- The green Verified pill (`src/routes/pro.$slug.index.tsx`) just doesn't render when status ≠ verified — already how it works, no change needed
-- Add a subtle line under the name when status = `unverified`: *"Not currently verified by REPs"* with a link to `/help/verification/overview`. Reviews stay visible. Services stay visible.
-
-### 6. Directory / search
-
-In `src/lib/directory/featured.functions.ts` and `src/lib/directory/search.functions.ts`:
-- Featured carousels: keep the existing `verification = 'verified'` filter (Featured is a privilege of trust)
-- Main search results: **include unverified pros** but sort verified above unverified and show the Unverified pill on their card
-
-### 7. UI status tab in admin
-
-`src/routes/admin_.professionals.tsx`:
-- Existing tabs stay (`All`, `Payment failed`, `Renewal due`, `Demos`)
-- Add tab **`Unverified`** that surfaces every pro currently in `unverified` state with the reason badge (admin-suspended / chargeback / payment / insurance / identity / qualification)
-- Row pill colour stays amber for `Unverified`, matches existing token
-
-### 8. Help + emails
-
-- New help article `src/content/help/articles/verification-revoked.tsx` explaining the policy and how to re-earn verified
-- New email template `src/lib/email-templates/verification-revoked.tsx` (reason-aware)
-- Update `verification-rejected.tsx` and `troubleshoot-signin.tsx` cross-links
-
-### 9. Docs
-
-Update `.lovable/mem/design/locked-reviews.md` and `docs/admin-v2/06-verification-trust-and-safety.md` with the no-self-unpublish + auto-unverify policy. Add memory entry `mem://policy/trust-no-self-removal`.
+**Conclusion**: gap is total for platform (non-Connect) disputes. Implementation must not change Connect/booking dispute behaviour or `FAILED_PAYMENT_STATUSES`.
 
 ---
 
-## Technical details
+## Part 2 — Implementation
 
-- Migration adds an enum value `unverified_reason` (postgres enum) covering: `admin_suspended | chargeback | payment_failed | insurance_expired | identity_revoked | qualification_revoked` and a `professionals.unverified_reason` column (nullable).
-- Trigger `recompute_pro_verification` extended to read the new column when deciding whether to clear it on re-promotion.
-- All new server fns go through `requireSupabaseAuth` + admin role check; `transitionToUnverified` is internal-only (not exported from a route).
-- Hard-remove path keeps `is_published = false` capability but moves it behind a separate confirm-twice modal so it can't be hit by accident from the row menu.
-- Reviews table untouched — no review ever gets hidden as a side-effect of any of this.
+### 2.1 Schema (migration)
+
+New table `public.disputes`:
+- `id` uuid pk
+- `stripe_dispute_id` text unique
+- `stripe_charge_id`, `stripe_payment_intent_id`, `stripe_subscription_id`, `stripe_customer_id`
+- `user_id` uuid (resolved)
+- `amount_pence` int, `currency` text
+- `reason` text, `status` text (Stripe raw)
+- `lifecycle_stage` text — `opened | funds_withdrawn | funds_reinstated | won | lost`
+- `evidence_due_by` timestamptz
+- `funds_withdrawn_pence` int, `funds_reinstated_pence` int
+- `opened_at`, `closed_at`, `updated_at`
+- raw `payload` jsonb
+
+GRANTs to `service_role` + `authenticated` (select via admin RLS using `has_role`).
+
+Add `payment_standing` text column to `subscriptions` (nullable, values: `ok | payment_disputed | chargeback_lost | chargeback_won`) — kept distinct from `status` so verification/qualification flags remain untouched.
+
+Index `subscriptions(payment_standing)` for fast filtering.
+
+### 2.2 Webhook routing (`src/routes/api/public/payments/webhook.ts`)
+
+Add new `handlePlatformDispute(dispute, eventType)` (Connect path preserved unchanged):
+
+- `charge.dispute.created` → upsert dispute row (stage `opened`), resolve `charge → payment_intent → invoice → subscription → user`, set `subscriptions.payment_standing='payment_disputed'`, **immediately cancel the Stripe subscription** (`stripe.subscriptions.cancel(id, { invoice_now: false, prorate: false })` with try/catch), mark local `subscriptions.status='canceled'`, fire `ops_alerts` insert (`severity='critical', kind='dispute_opened'`), append Member Timeline event, enqueue `chargeback-received` email.
+- `charge.dispute.updated` → update stage + status + `evidence_due_by`.
+- `charge.dispute.funds_withdrawn` → set `funds_withdrawn_pence`, stage `funds_withdrawn`, timeline event.
+- `charge.dispute.funds_reinstated` → set `funds_reinstated_pence`, timeline event.
+- `charge.dispute.closed` →
+  - won: stage `won`, `closed_at`, timeline event, send `chargeback-resolved-won` (do NOT auto-reinstate sub — flag for admin review).
+  - lost: stage `lost`, `subscriptions.payment_standing='chargeback_lost'`, `churn_lifecycle` row with reason `chargeback_lost`, send `chargeback-resolved-lost`.
+
+Route platform path when `request.headers.get('stripe-account')` is **null** (Connect path stays as-is).
+
+### 2.3 Active-paying-member exclusion
+
+`src/lib/members/active-paying-member.ts` → in `isActiveSubscription`, exclude rows whose `payment_standing IN ('payment_disputed','chargeback_lost')` even if status was `active` at snapshot. Pass `payment_standing` through `active-paying-member.server.ts` select.
+
+This removes the disputed member from M1, /admin/professionals "Paid", reconciliation, public Verified badge gating (badge uses `is_pro_fully_verified` + active membership lookup → flips to false automatically without touching `verification_status`).
+
+### 2.4 Public visibility
+
+`src/lib/directory/featured.functions.ts` and `search.functions.ts` already gate on `verification='verified'`. Add a join filter excluding users whose latest subscription has `payment_standing` in (`payment_disputed`, `chargeback_lost`). Verification record itself is untouched.
+
+### 2.5 Admin surfaces
+
+- `/admin/ops/billing` → new "Open disputes" tile + "Disputed amount" tile + list card (member, amount, reason, due-by countdown, Stripe link, status).
+- `/admin/payments` → replace dead `disputeRate` tile with Open / Won / Lost split sourced from `disputes` table.
+- `/admin/reconciliation` → new "Disputed funds" rail (withdrawn − reinstated).
+- `/admin/ops/activity` → render dispute events from `disputes` + `payment_events`.
+- `/admin/ops/member/$userId` → timeline entries (`dispute_opened`, `funds_withdrawn`, `funds_reinstated`, `dispute_won`, `dispute_lost`) with amount/reason/Stripe deep link.
+- New `ops_alerts` humanizer entries in `src/lib/ops/alert-humanizer.ts`.
+
+### 2.6 Emails (React Email templates)
+
+`src/lib/email-templates/chargeback-received.tsx`, `chargeback-resolved-won.tsx`, `chargeback-resolved-lost.tsx` registered in `registry.ts`. Plain, neutral language; no aggressive recovery copy; does NOT loop through the renewal/lifecycle cron.
+
+Explicitly: lifecycle cron (`src/routes/api/public/hooks/lifecycle-cron.ts`) must skip subscriptions where `payment_standing != 'ok'` so no `renewal-payment-failed` / nudge emails fire on disputes.
+
+### 2.7 Metric Registry
+
+Append M17–M20 in `docs/11_admin_metric_registry.md` and surface in `src/lib/admin/metrics-definitions.ts`:
+- **M17 Open disputes** — `disputes` where `lifecycle_stage IN ('opened','funds_withdrawn','funds_reinstated')`.
+- **M18 Disputed amount (open)** — sum of `amount_pence` for M17.
+- **M19 Chargebacks won (30d)** / **M20 Chargebacks lost (30d)**.
+- Add banned-synonym row: never collapse disputes into "Failed payments".
+
+### 2.8 Backfill the live dispute
+
+One-off SQL inside the same migration: resolve `pi_3Tgvq6AP31Yc4cJj2MXkOoT8` against Stripe in code (or, simpler, run a recovery server-fn that re-fetches the dispute via Stripe API, inserts the `disputes` row, sets `payment_standing`, cancels the sub if still live, writes timeline events). Admin-only button "Replay dispute events" on `/admin/ops/billing` to re-process the 19 unprocessed rows.
+
+### 2.9 Subscription billing-stop posture
+
+Approach: **cancel immediately on dispute open** (clearer, deterministic, avoids further disputed invoices). Documented in code comment. We do not rely on Stripe's "Cancel subscriptions on dispute" Radar setting because we want the cancel to happen in the same transaction that flips `payment_standing`.
+
+---
+
+## Part 3 — Out of scope (explicit)
+
+- Connect/booking `handleConnectDispute` behaviour stays unchanged.
+- `FAILED_PAYMENT_STATUSES` not modified.
+- BD renewal engine untouched.
+- Pricing / verification / qualification logic untouched.
+- No marketing or bulk emails.
+
+## Acceptance checklist
+
+All 10 acceptance items from the brief map to: 2.3 (1,2), 2.4 (3), 2.2 + 2.9 (4), 2.5 (5,6), 2.5 + 2.6 timeline (6), 2.2 + 2.5 (7), 2.2 closed branch (8), 2.7 (9), 2.6 lifecycle-skip (10).

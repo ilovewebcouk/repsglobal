@@ -30,6 +30,13 @@ export interface BillingHealthSnapshot {
   dlq_size: number;
   stuck_processing: number;
   avg_webhook_latency_ms: number | null;
+  /** Disputes / chargebacks — kept separate from failed payments. */
+  open_disputes: number;
+  disputed_amount_pence: number;
+  funds_withdrawn_pence_30d: number;
+  funds_reinstated_pence_30d: number;
+  chargebacks_won_30d: number;
+  chargebacks_lost_30d: number;
 }
 
 export const getBillingHealth = createServerFn({ method: "GET" })
@@ -46,7 +53,7 @@ export const getBillingHealth = createServerFn({ method: "GET" })
     const start7dIso = new Date(Date.now() - 7 * 86400_000).toISOString();
     const start30dIso = new Date(Date.now() - 30 * 86400_000).toISOString();
 
-    const [paidToday, refundsToday, failedActive, recovered30d, inRecovery, webhookFails, dlq, stuck, latency] =
+    const [paidToday, refundsToday, failedActive, recovered30d, inRecovery, webhookFails, dlq, stuck, latency, openDisputes, closedDisputes30d] =
       await Promise.all([
         supabaseAdmin.from("payment_events").select("payload, created_at", { count: "exact" })
           .eq("event_type", "invoice.paid").gte("created_at", startIso),
@@ -70,6 +77,13 @@ export const getBillingHealth = createServerFn({ method: "GET" })
           .not("processed_at", "is", null)
           .gte("created_at", new Date(Date.now() - 86400_000).toISOString())
           .limit(500),
+        supabaseAdmin.from("disputes")
+          .select("amount_pence, funds_withdrawn_pence, funds_reinstated_pence, lifecycle_stage")
+          .in("lifecycle_stage", ["opened", "funds_withdrawn", "funds_reinstated"]),
+        supabaseAdmin.from("disputes")
+          .select("lifecycle_stage, funds_withdrawn_pence, funds_reinstated_pence")
+          .in("lifecycle_stage", ["won", "lost"])
+          .gte("updated_at", start30dIso),
       ]);
 
     // sum revenue paid today (Stripe invoice payload: data.object.amount_paid)
@@ -96,6 +110,30 @@ export const getBillingHealth = createServerFn({ method: "GET" })
       latencyMs = Math.round(total / samples.length);
     }
 
+    // Dispute aggregates
+    let openDisputeCount = 0;
+    let disputedAmount = 0;
+    let fundsWithdrawn30d = 0;
+    let fundsReinstated30d = 0;
+    for (const d of (openDisputes.data ?? []) as Array<{
+      amount_pence: number; funds_withdrawn_pence: number; funds_reinstated_pence: number; lifecycle_stage: string;
+    }>) {
+      openDisputeCount += 1;
+      disputedAmount += d.amount_pence ?? 0;
+      fundsWithdrawn30d += d.funds_withdrawn_pence ?? 0;
+      fundsReinstated30d += d.funds_reinstated_pence ?? 0;
+    }
+    let chargebacksWon = 0;
+    let chargebacksLost = 0;
+    for (const d of (closedDisputes30d.data ?? []) as Array<{
+      lifecycle_stage: string; funds_withdrawn_pence: number; funds_reinstated_pence: number;
+    }>) {
+      if (d.lifecycle_stage === "won") chargebacksWon += 1;
+      else if (d.lifecycle_stage === "lost") chargebacksLost += 1;
+      fundsWithdrawn30d += d.funds_withdrawn_pence ?? 0;
+      fundsReinstated30d += d.funds_reinstated_pence ?? 0;
+    }
+
     return {
       payments_today: paidToday.count ?? 0,
       revenue_today_pence: revenue,
@@ -108,6 +146,12 @@ export const getBillingHealth = createServerFn({ method: "GET" })
       dlq_size: dlq.count ?? 0,
       stuck_processing: stuck.count ?? 0,
       avg_webhook_latency_ms: latencyMs,
+      open_disputes: openDisputeCount,
+      disputed_amount_pence: disputedAmount,
+      funds_withdrawn_pence_30d: fundsWithdrawn30d,
+      funds_reinstated_pence_30d: fundsReinstated30d,
+      chargebacks_won_30d: chargebacksWon,
+      chargebacks_lost_30d: chargebacksLost,
     };
   });
 

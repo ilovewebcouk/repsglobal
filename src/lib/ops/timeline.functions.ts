@@ -25,7 +25,8 @@ export type TimelineSource =
   | "review"
   | "admin"
   | "identity"
-  | "auth";
+  | "auth"
+  | "dispute";
 
 export interface TimelineEvent {
   ts: string;
@@ -73,6 +74,7 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
       verifRes, vDecRes, ticketsRes, msgsRes,
       reviewsAsProRes, reviewsAsClientRes,
       auditActorRes, auditTargetRes, nameRes,
+      disputesRes,
     ] = await Promise.all([
       supabaseAdmin.from("payment_events")
         .select("id, created_at, event_type, processing_error, dead_lettered_at, processed_at, stripe_subscription_id")
@@ -128,6 +130,13 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
       supabaseAdmin.from("identity_name_changes")
         .select("id, created_at, old_full_name, new_full_name, source").eq("user_id", data.user_id)
         .order("created_at", { ascending: false }).limit(20).then(
+          (r) => r,
+          () => ({ data: [] as Array<Record<string, unknown>> }),
+        ),
+      supabaseAdmin.from("disputes")
+        .select("id, opened_at, updated_at, closed_at, lifecycle_stage, status, reason, amount_pence, currency, stripe_dispute_id, evidence_due_by")
+        .eq("user_id", data.user_id)
+        .order("opened_at", { ascending: false }).limit(50).then(
           (r) => r,
           () => ({ data: [] as Array<Record<string, unknown>> }),
         ),
@@ -310,6 +319,56 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
         entityId: r.id, entityKind: "identity_name_change",
       });
     }
+
+    // disputes / chargebacks
+    for (const r of (disputesRes.data ?? []) as unknown as Array<{
+      id: string; opened_at: string; updated_at: string; closed_at: string | null;
+      lifecycle_stage: string; status: string | null; reason: string | null;
+      amount_pence: number; currency: string;
+      stripe_dispute_id: string; evidence_due_by: string | null;
+    }>) {
+      const amountText = `£${((r.amount_pence ?? 0) / 100).toFixed(2)}`;
+      const dueText = r.evidence_due_by
+        ? ` — evidence due ${new Date(r.evidence_due_by).toLocaleDateString("en-GB")}`
+        : "";
+      // Opened event
+      events.push({
+        ts: r.opened_at,
+        source: "dispute",
+        type: `dispute.opened`,
+        status: r.status ?? "needs_response",
+        summary: `Chargeback opened (${amountText}, ${r.reason ?? "no reason"})${dueText}`,
+        entityId: r.id,
+        entityKind: "dispute",
+        externalUrl: `https://dashboard.stripe.com/disputes/${r.stripe_dispute_id}`,
+      });
+      // Current stage event (if not just 'opened')
+      if (r.lifecycle_stage !== "opened") {
+        events.push({
+          ts: r.updated_at ?? r.opened_at,
+          source: "dispute",
+          type: `dispute.${r.lifecycle_stage}`,
+          status: r.lifecycle_stage,
+          summary: `Chargeback ${r.lifecycle_stage} (${amountText})`,
+          entityId: r.id,
+          entityKind: "dispute",
+          externalUrl: `https://dashboard.stripe.com/disputes/${r.stripe_dispute_id}`,
+        });
+      }
+      if (r.closed_at && (r.lifecycle_stage === "won" || r.lifecycle_stage === "lost")) {
+        events.push({
+          ts: r.closed_at,
+          source: "dispute",
+          type: `dispute.closed`,
+          status: r.lifecycle_stage,
+          summary: `Chargeback closed — ${r.lifecycle_stage} (${amountText})`,
+          entityId: r.id,
+          entityKind: "dispute",
+          externalUrl: `https://dashboard.stripe.com/disputes/${r.stripe_dispute_id}`,
+        });
+      }
+    }
+
 
     // auth signup
     if (authRes.data?.user?.created_at) {
