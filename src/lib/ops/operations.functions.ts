@@ -53,7 +53,7 @@ export const getBillingHealth = createServerFn({ method: "GET" })
         supabaseAdmin.from("payment_events").select("payload", { count: "exact" })
           .eq("event_type", "charge.refunded").gte("created_at", startIso),
         supabaseAdmin.from("subscriptions").select("user_id", { count: "exact", head: true })
-          .eq("environment", "live").in("status", ["past_due", "unpaid", "incomplete"]),
+          .eq("environment", "live").in("status", [...FAILED_PAYMENT_STATUSES]),
         supabaseAdmin.from("churn_lifecycle").select("user_id", { count: "exact", head: true })
           .eq("stage", "recovered").gte("entered_at", start30dIso),
         supabaseAdmin.from("churn_lifecycle").select("user_id", { count: "exact", head: true })
