@@ -51,7 +51,12 @@ export async function getConvertCandidates() {
     )
     .is("converted_at", null)
     .is("stripe_subscription_id", null)
-    .eq("is_lifetime", false);
+    .eq("is_lifetime", false)
+    // Belt-and-braces: skip any row the legacy cron has already touched.
+    // Audit (docs/admin-v2/bd-rail-swap-audit-2026-06-28.md) flagged 6
+    // `renewed_to_verified` rows where a Stripe subscription already exists
+    // — converting them would create a duplicate sub on the same customer.
+    .not("migration_status", "in", "(renewed_to_verified,awaiting_payment_method,converted_to_subscription)");
 
   if (error) throw new Error(error.message);
   const now = Date.now();
