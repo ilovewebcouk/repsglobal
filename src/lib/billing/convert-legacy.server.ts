@@ -115,6 +115,7 @@ export async function runConvertBatch(opts: RunOptions): Promise<ConvertSummary>
     .is("stripe_subscription_id", null)
     .eq("is_lifetime", false)
     .not("stripe_customer_id", "is", null)
+    .not("migration_status", "in", "(renewed_to_verified,awaiting_payment_method,converted_to_subscription)")
     .order("next_due_at", { ascending: true, nullsFirst: false })
     .limit(limit);
 
