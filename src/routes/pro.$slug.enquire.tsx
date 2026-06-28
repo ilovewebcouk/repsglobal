@@ -87,7 +87,7 @@ function getPro(slug: string) {
     area: "Shoreditch",
     rating: 5.0,
     reviews: 128,
-    mode: "In-person & Online" as const,
+    mode: "In-person & Online",
     image: proJames,
     responseTime: "Usually replies within 2 hours",
     typicalRate: "£60 / hour",
@@ -164,6 +164,14 @@ function EnquirePage() {
     const rating = count > 0
       ? reviews.reduce((a: number, r: ReviewDTO) => a + (r.rating || 0), 0) / count
       : 0;
+
+    const inPerson = sf?.in_person_available ?? profile?.in_person_available ?? false;
+    const online = sf?.online_available ?? profile?.online_available ?? false;
+    let mode = fallbackPro.mode;
+    if (inPerson && online) mode = "In-person & Online";
+    else if (inPerson) mode = "In-person";
+    else if (online) mode = "Online";
+
     return {
       ...fallbackPro,
       name: sf?.full_name ?? profile?.full_name ?? fallbackPro.name,
@@ -172,6 +180,7 @@ function EnquirePage() {
       city: sf?.city ?? profile?.city ?? loc?.region ?? fallbackPro.city,
       rating: count > 0 ? rating : 0,
       reviews: count,
+      mode,
     };
   }, [liveQuery.data, profileQuery.data, reviewsQuery.data, fallbackPro]);
 
