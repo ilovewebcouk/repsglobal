@@ -95,7 +95,7 @@ function HealthPage() {
             </h1>
             <p className="text-sm text-reps-fg/60">Cron, email queues, payments and subscription drift.</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => void refresh()} disabled={loading}>
+          <Button variant="outline" size="sm" onClick={() => void refresh()} disabled={loading} className="border-reps-border bg-reps-panel/60 text-reps-fg hover:bg-reps-panel hover:text-reps-fg">
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </Button>
         </div>
