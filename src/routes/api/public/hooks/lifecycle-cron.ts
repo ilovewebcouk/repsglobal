@@ -28,21 +28,26 @@ export const Route = createFileRoute("/api/public/hooks/lifecycle-cron")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Auth — same pattern as legacy-renewal.ts (CRON_SECRET or service role)
+        // Auth — accept the canonical pg_cron `apikey: <anon>` pattern as
+        // well as CRON_SECRET / service-role for manual / legacy callers.
         const cronSecret = process.env.CRON_SECRET;
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const anonKey =
+          process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
         const presented =
           request.headers.get("x-cron-secret") ??
           request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
           request.headers.get("apikey");
         const accepted =
           (!!cronSecret && presented === cronSecret) ||
-          (!!serviceRoleKey && presented === serviceRoleKey);
+          (!!serviceRoleKey && presented === serviceRoleKey) ||
+          (!!anonKey && presented === anonKey);
         if (!accepted) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 401, headers: { "Content-Type": "application/json" },
           });
         }
+
 
         const result = await runLifecycleBatch();
         return new Response(JSON.stringify(result), {
