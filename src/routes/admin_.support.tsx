@@ -966,6 +966,22 @@ function TicketDrawer({
   const ticket = q.data?.ticket;
   const messages = q.data?.messages ?? [];
 
+  // Auto-draft a reply the moment a ticket opens where the customer is waiting on us.
+  useEffect(() => {
+    if (!ticketId) return;
+    if (mode !== "reply") return;
+    if (draft.trim()) return;
+    if (autoDraftedTickets.current.has(ticketId)) return;
+    if (aiDraft.isPending) return;
+    if (!messages.length) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.direction !== "inbound") return;
+    autoDraftedTickets.current.add(ticketId);
+    aiDraft.mutate({ auto: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketId, messages.length]);
+
+
   const priorQuery = useQuery({
     queryKey: ["admin", "support", "prior", ticket?.requester_email, ticketId],
     queryFn: () =>
