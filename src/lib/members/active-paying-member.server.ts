@@ -67,6 +67,7 @@ export async function fetchActivePayingMemberCollection(
       environment: (s.environment as string | null) ?? null,
       created_at: (s.created_at as string | null) ?? null,
       current_period_end: (s.current_period_end as string | null) ?? null,
+      payment_standing: (s.payment_standing as string | null) ?? "ok",
     })),
     legacyLinks: ((legacyRes.data ?? []) as Array<Record<string, unknown>>).map((l) => ({
       bd_member_id: (l.bd_member_id as number | string | null) ?? null,
