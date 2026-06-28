@@ -73,7 +73,7 @@ export const getActivityStream = createServerFn({ method: "POST" })
           .order("created_at", { ascending: false })
           .limit(100),
         supabaseAdmin.from("support_tickets")
-          .select("id, created_at, ticket_number, user_id, subject")
+          .select("id, created_at, ticket_number, requester_user_id, subject")
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(100),
