@@ -1,43 +1,20 @@
 ## Goal
 
-When admin opens a support ticket in `/admin/support`, the AI draft is **already in the reply box**, polished and on-brand. Admin reviews → hits Send. No "AI draft" click needed.
+Produce a PNG render of the `legacy-conversion-confirmation` email (the one BD members receive when their £34 legacy record is converted to a real £99 Stripe subscription) so you can sign it off before any more conversions are queued.
 
-## Changes
+## Approach
 
-### 1. Auto-draft on ticket open (`src/routes/admin_.support.tsx`)
+1. Render the React Email template `src/lib/email-templates/legacy-conversion-confirmation.tsx` to HTML using its built-in `previewData` plus a realistic BD example (name: Katie Gibbs, renewal date matching her real anchor, card brand/last4 from a representative Stripe PaymentMethod, old price £34 → new price £99, "one client pays for it" value line).
+2. Open the rendered HTML in headless Chromium at a true email-client width (600px content, 800px viewport) and screenshot the full email body.
+3. Save the result to `/mnt/documents/legacy-conversion-confirmation-preview.png` and surface it as a `<presentation-artifact>` so you can preview/download it inline.
+4. Also save a second PNG at mobile width (390px) so you can confirm it holds up on iOS Mail / Gmail mobile.
 
-In the ticket detail sheet (around lines 900–945):
+No application code or templates change. No emails are sent. No BD conversions are run. This is purely a visual QA artifact.
 
-- Add an effect that triggers `aiDraft.mutate()` automatically when:
-  - A ticket is opened, AND
-  - The latest message in the thread is **inbound** (customer is waiting on us), AND
-  - The draft box is empty (don't overwrite anything the admin typed), AND
-  - We haven't already auto-drafted this ticket in this session (track via `useRef<Set<string>>` keyed by ticket id).
-- Show a subtle "Drafting reply…" shimmer in the textarea while `aiDraft.isPending`, then drop the polished reply in.
-- Keep the existing `AI draft` button — it now acts as a "redraft" button (and still expands a brief if admin typed shorthand).
+## Acceptance
 
-### 2. Tighten the prompt for full auto-send quality (`src/lib/support/ai-draft.functions.ts`)
-
-The current prompt is already strong, but for true "just hit send" quality we add:
-
-- **Context awareness for the BD-migration / £34 → £99 cohort** — if the thread mentions paid-through dates, legacy pricing, or "can't access", the draft must:
-  - Confirm we can see their record and what we're doing now (migrate / send magic link / honour paid-through date).
-  - Address the price jump using the locked talking points from `mem://`: "one client this year and it's paid for itself" + value-add framing (verified badge, rebuilt profile, discovery tools).
-  - Never invent a refund or a discount.
-- **No placeholders**: explicitly ban `[name]`, `[date]`, `[ticket #]` etc. — if a fact isn't in the thread, write around it.
-- Keep temperature at 0.4 (already good for consistency).
-
-### 3. Small UX polish
-
-- Rename the button label from `AI draft` → `Redraft` once a draft is present (so admin knows clicking again replaces it).
-- Add a tiny "✨ Auto-drafted" badge above the textarea when the current text came from auto-draft (clears as soon as admin edits a character).
-
-## What stays the same
-
-- Send pipeline, Mailgun sending, ticket status flow, internal notes — untouched.
-- The reply still goes out as `support@repsuk.org` only when admin clicks **Send & pending** / **Send & solve**. Nothing auto-sends.
-
-## Out of scope
-
-- No new tables, no new server functions beyond editing `draftSupportReply`'s prompt.
-- No changes to inbound webhook or loop guard.
+- Two PNGs in `/mnt/documents/`:
+  - `legacy-conversion-confirmation-desktop.png`
+  - `legacy-conversion-confirmation-mobile.png`
+- Both shown back to you as artifacts in chat.
+- After you approve the look, we resume BD rail-swap conversions; if you want copy tweaks first, we iterate on the template and re-render before sending anything.
