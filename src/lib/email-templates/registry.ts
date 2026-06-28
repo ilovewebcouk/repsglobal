@@ -35,6 +35,7 @@ import { template as relaunchAnnouncement } from './relaunch-announcement'
 import { template as chargebackReceived } from './chargeback-received'
 import { template as chargebackResolvedWon } from './chargeback-resolved-won'
 import { template as chargebackResolvedLost } from './chargeback-resolved-lost'
+import { template as legacyConversionConfirmation } from './legacy-conversion-confirmation'
 
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
@@ -64,6 +65,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'chargeback-received': chargebackReceived,
   'chargeback-resolved-won': chargebackResolvedWon,
   'chargeback-resolved-lost': chargebackResolvedLost,
+  'legacy-conversion-confirmation': legacyConversionConfirmation,
 }
 
 
