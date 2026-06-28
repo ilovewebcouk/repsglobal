@@ -372,11 +372,16 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const tier: AdminProRow['plan'] =
         activeTier ?? failedTier ?? (isRenewalDue ? 'verified' : 'free');
       const ra = ratingAcc.get(p.id);
+      // Policy (no self-removal): a pro's public profile stays live; only their
+      // trust badge changes. Admin "suspension", chargebacks, and exhausted
+      // payment recovery all surface as Unverified (pending) in the UI.
       const status: AdminProRow['status'] =
-        p.is_published === false && p.suspended_at ? 'suspended'
+        billingState !== 'ok' ? 'pending'
+        : p.suspended_at ? 'pending'
         : p.verification === 'verified' && p.is_published ? 'verified'
         : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';
+
       const name = profile?.full_name ?? 'Unnamed';
       const subDetail = subDetailMap.get(p.id);
       return {
