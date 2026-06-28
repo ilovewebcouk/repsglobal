@@ -314,6 +314,17 @@ async function convertOne(args: {
 
   // Confirmation email — non-blocking failure.
   try {
+    // Look up card brand/last4 for the summary card. Best-effort.
+    let cardBrand = "Card";
+    let cardLast4 = "••••";
+    try {
+      const pm = await stripe.paymentMethods.retrieve(pmId);
+      if (pm.card) {
+        cardBrand = pm.card.brand.charAt(0).toUpperCase() + pm.card.brand.slice(1);
+        cardLast4 = pm.card.last4;
+      }
+    } catch {/* ignore — fall through with defaults */}
+
     await sendTransactionalEmailServer({
       templateName: "legacy-conversion-confirmation",
       recipientEmail: row.email,
@@ -323,7 +334,10 @@ async function convertOne(args: {
           day: "numeric", month: "long", year: "numeric",
         }),
         amount: "£99",
-        dashboardUrl: "https://repsuk.org/dashboard",
+        cardBrand,
+        cardLast4,
+        manageBillingUrl: "https://repsuk.org/dashboard/settings",
+        settingsUrl: "https://repsuk.org/dashboard/settings",
       },
     });
   } catch (e) {
