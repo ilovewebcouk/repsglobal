@@ -386,9 +386,21 @@ export const replyToTicket = createServerFn({ method: "POST" })
         replyTo: SUPPORT_FROM_EMAIL,
       });
     } catch (err) {
-      throw new Error(
-        `Could not send reply: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      const raw = err instanceof Error ? err.message : String(err);
+      // Mailgun probation / hourly cap → friendly message with retry window
+      const probation = raw.match(/enabled in (\d+) seconds/i);
+      if (probation) {
+        const mins = Math.ceil(Number(probation[1]) / 60);
+        throw new Error(
+          `Mailgun hourly send cap hit (account on probation, 100/hr). Try again in ~${mins} min. Reply not sent.`,
+        );
+      }
+      if (/not allowed to send/i.test(raw)) {
+        throw new Error(
+          `Mailgun temporarily blocked this send (domain on probation). Reply not sent — retry shortly.`,
+        );
+      }
+      throw new Error(`Could not send reply: ${raw}`);
     }
 
     // Store outbound message
