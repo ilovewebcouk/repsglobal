@@ -12,6 +12,7 @@ import { getBillingHealth, getBillingDrill } from "@/lib/ops/operations.function
 import { RenewalEngineCard } from "@/components/ops/RenewalEngineCard";
 import { SiteTimePanel } from "@/components/ops/SiteTimePanel";
 import { BdRailSwapCard } from "@/components/ops/BdRailSwapCard";
+import { BdSetupLinkCard } from "@/components/ops/BdSetupLinkCard";
 
 const drillEnum = z.enum([
   "payments_today", "refunds_today", "failed_active",
