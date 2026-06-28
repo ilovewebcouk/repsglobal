@@ -96,7 +96,7 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
         .select("id, created_at, event, context").eq("professional_id", data.user_id)
         .order("created_at", { ascending: false }).limit(50),
       supabaseAdmin.from("verification_decisions")
-        .select("id, created_at, decision, reviewer_notes").eq("professional_id", data.user_id)
+        .select("id, created_at, decision, notes").eq("professional_id", data.user_id)
         .order("created_at", { ascending: false }).limit(30).then(
           (r) => r,
           () => ({ data: [] as Array<Record<string, unknown>> }),
@@ -231,11 +231,11 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
 
     // verification decisions
     for (const r of (vDecRes.data ?? []) as unknown as Array<{
-      id: string; created_at: string; decision: string; reviewer_notes: string | null;
+      id: string; created_at: string; decision: string; notes: string | null;
     }>) {
       events.push({
         ts: r.created_at, source: "verification", type: `verification.${r.decision}`, status: r.decision,
-        summary: r.reviewer_notes ?? `Decision: ${r.decision}`,
+        summary: r.notes ?? `Decision: ${r.decision}`,
         entityId: r.id, entityKind: "verification_decision",
       });
     }
