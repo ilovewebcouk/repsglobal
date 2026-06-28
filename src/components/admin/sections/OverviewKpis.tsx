@@ -148,8 +148,8 @@ export function OverviewKpis({
   const netNeutral = net === 0;
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {/* KPI 1 — Active Members */}
-      <TileShell icon={Users} label="Active members" reconcileHash="members">
+      {/* KPI 1 — Active paying members (M1 in metric registry) */}
+      <TileShell icon={Users} label="Active paying members" reconcileHash="members">
         <div className="mt-1.5 flex items-baseline gap-2">
           <span className="font-display text-[26px] font-bold leading-none text-white">
             {data.totalMembers.toLocaleString()}
