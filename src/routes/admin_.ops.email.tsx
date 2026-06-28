@@ -88,7 +88,23 @@ function EmailOpsPage() {
     queryKey: ["email-log", args, q, page],
     queryFn: () => listFn({ data: { ...args, q: q || null, limit: PAGE_SIZE, offset: page * PAGE_SIZE } }),
   });
-  const supQ = useQuery({ queryKey: ["email-suppressions"], queryFn: () => supFn({ data: { limit: 20, offset: 0 } }) });
+  const [supQuery, setSupQuery] = useState("");
+  const supQ = useQuery({
+    queryKey: ["email-suppressions", supQuery],
+    queryFn: () => supFn({ data: { q: supQuery || null, limit: 50, offset: 0 } }),
+  });
+
+  const qc = useQueryClient();
+  const removeFn = useServerFn(removeSuppression);
+  const removeM = useMutation({
+    mutationFn: (email: string) => removeFn({ data: { email } }),
+    onSuccess: (_d, email) => {
+      toast.success(`${email} removed from suppression list`);
+      qc.invalidateQueries({ queryKey: ["email-suppressions"] });
+      qc.invalidateQueries({ queryKey: ["email-stats"] });
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
 
   const [openMsg, setOpenMsg] = useState<string | null>(null);
 
