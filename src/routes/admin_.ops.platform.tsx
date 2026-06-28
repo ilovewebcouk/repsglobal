@@ -102,7 +102,7 @@ function PlatformPage() {
           <div className="text-xs uppercase tracking-wide text-reps-text/60">Database health</div>
           {!db.data ? (
             <div className="mt-2 text-reps-text/60">Loading…</div>
-          ) : db.data.degraded ? (
+          ) : !db.data.ok ? (
             <div className="mt-2 rounded-[16px] border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
               Database diagnostics degraded: {db.data.error ?? "unknown"}
             </div>
@@ -111,24 +111,26 @@ function PlatformPage() {
               <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Tile
                   label="Connectivity"
-                  v={db.data.ping_ms ?? 0}
-                  crit={!db.data.reachable}
-                  warn={(db.data.ping_ms ?? 0) > 250}
+                  v={db.data.ok ? 1 : 0}
+                  crit={!db.data.ok}
                 />
                 <Tile
                   label="Active connections"
                   v={db.data.active_connections}
-                  warn={db.data.active_connections >= Math.floor(db.data.max_connections * 0.7)}
-                  crit={db.data.active_connections >= Math.floor(db.data.max_connections * 0.9)}
+                  warn={db.data.max_connections > 0 && db.data.active_connections >= Math.floor(db.data.max_connections * 0.7)}
+                  crit={db.data.max_connections > 0 && db.data.active_connections >= Math.floor(db.data.max_connections * 0.9)}
                 />
                 <Tile label="Max connections" v={db.data.max_connections} />
                 <Tile
                   label="DB size (MB)"
-                  v={Math.round(db.data.db_size_bytes / (1024 * 1024))}
+                  v={Math.round(db.data.database_bytes / (1024 * 1024))}
                 />
               </div>
+              <div className="mt-2 text-xs text-reps-text/60">
+                Long-running queries: <span className="font-semibold text-reps-fg">{db.data.long_running_queries}</span>
+              </div>
 
-              {db.data.slow_queries.length > 0 && (
+              {db.data.slow_queries.length > 0 ? (
                 <div className="mt-3 overflow-x-auto rounded-[16px] border border-reps-border bg-reps-panel/40">
                   <table className="w-full text-sm">
                     <thead className="bg-reps-ink/40 text-left text-xs uppercase tracking-wide text-reps-text/60">
@@ -136,7 +138,6 @@ function PlatformPage() {
                         <th className="px-3 py-2">Query</th>
                         <th className="px-3 py-2">Calls</th>
                         <th className="px-3 py-2">Mean ms</th>
-                        <th className="px-3 py-2">Total ms</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-reps-border/60">
@@ -147,14 +148,12 @@ function PlatformPage() {
                           </td>
                           <td className="px-3 py-2 tabular-nums">{s.calls.toLocaleString()}</td>
                           <td className="px-3 py-2 tabular-nums">{s.mean_ms.toFixed(1)}</td>
-                          <td className="px-3 py-2 tabular-nums">{s.total_ms.toFixed(0)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              )}
-              {db.data.slow_queries.length === 0 && (
+              ) : (
                 <div className="mt-3 rounded-[16px] border border-reps-border bg-reps-panel/30 p-4 text-xs text-reps-text/60">
                   No slow queries reported (pg_stat_statements may be disabled or recently reset).
                 </div>
