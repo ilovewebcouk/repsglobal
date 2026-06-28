@@ -363,6 +363,8 @@ export function buildActivePayingMemberCollection(
           )
         )
           reason = `status="${s.status}" (requires active/trialing)`;
+        else if ((s.payment_standing ?? "ok") !== "ok")
+          reason = `payment_standing="${s.payment_standing}" (chargeback / dispute)`;
         else
           reason = `tier="${s.tier}" (requires verified/pro/studio)`;
         baseRow.exclusion_reason = reason;
