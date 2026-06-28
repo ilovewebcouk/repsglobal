@@ -684,7 +684,7 @@ function PastDuePanel({ data, loading }: { data?: MembershipMetrics; loading: bo
     <PPanel>
       <div className="flex items-center justify-between border-b border-reps-border px-5 py-4">
         <div>
-          <h2 className="font-display text-[16px] font-bold text-white">Past due</h2>
+          <h2 className="font-display text-[16px] font-bold text-white">Failed payments</h2>
           <p className="text-[12px] text-white/55">Members requiring follow-up</p>
         </div>
         <AlertTriangle className="h-4 w-4 text-white/40" />
