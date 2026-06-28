@@ -220,10 +220,22 @@ function AdminProfessionalsPage() {
     return {};
   });
 
+  // Sync filters when navigating with a ?plan= search param (re-entry to route)
+  React.useEffect(() => {
+    if (searchParams.plan === "free") {
+      setFilters((f) => ({ ...f, plans: ["free"] }));
+      setTab("all");
+    } else if (searchParams.plan === "paid") {
+      setFilters((f) => ({ ...f, plans: ["verified", "pro", "studio"] }));
+      setTab("all");
+    }
+  }, [searchParams.plan]);
+
   const debouncedSearch = useDebounced(search, 300);
   const pageSize = 25;
 
   React.useEffect(() => { setPage(1); }, [tab, debouncedSearch, sort, dir, filters]);
+
 
   const kpisFn = useServerFn(getAdminProfessionalsKpis);
   const listFn = useServerFn(listAdminProfessionals);
