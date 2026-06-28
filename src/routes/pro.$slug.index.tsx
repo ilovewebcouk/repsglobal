@@ -40,6 +40,7 @@ import {
 } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
 import { LocationMap } from "@/components/pro/LocationMap";
+import { Monogram } from "@/components/directory/Monogram";
 
 
 function formatReviewWhen(iso: string): string {
@@ -71,7 +72,7 @@ type Pro = {
   reviews: number;
   modes: ("In-person" | "Online")[];
   blurb: string;
-  image: string;
+  image: string | null;
   years: number;
   clients: string;
   bio: string[];
@@ -81,7 +82,7 @@ type Pro = {
     desc: string;
     price: string;
     unit: string;
-    image: string;
+    image: string | null;
     icon: typeof BadgeCheck;
   }[];
   qualifications: {
@@ -316,7 +317,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       ...(row.online_available ? (["Online"] as const) : []),
     ] as Pro["modes"],
     blurb: row.headline ?? "",
-    image: row.avatar_url || proJames,
+    image: row.avatar_url || null,
     years,
     clients: "—",
     bio: row.bio ? row.bio.split(/\n\n+/).filter(Boolean) : [],
@@ -326,8 +327,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
     services: (() => {
       const live = (row as { services?: Array<{ title: string; description: string | null; price_pence: number | null; price_label: string | null; duration_minutes: number | null; mode: string }> }).services ?? [];
       if (live.length) {
-        const stockImages = [heroCoaching, proDaniel, proSophie];
-        return live.slice(0, 3).map((s, i) => ({
+        return live.slice(0, 3).map((s) => ({
           title: s.title,
           desc: s.description ?? "",
           price:
@@ -341,7 +341,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
                 : s.mode === "hybrid"
                   ? "hybrid"
                   : "in-person",
-          image: stockImages[i % stockImages.length],
+          image: null,
           icon: Users,
         }));
       }
@@ -539,14 +539,20 @@ function ProProfilePage() {
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-4 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
             {/* Portrait */}
-            <div className="relative block overflow-hidden rounded-[24px] bg-reps-stone">
-              <img
-                src={pro.image}
-                alt={`${pro.name} — ${pro.role}`}
-                className="aspect-[4/3] h-full w-full object-cover"
-                width={920}
-                height={690}
-              />
+            <div className="relative block aspect-[4/3] overflow-hidden rounded-[24px] bg-reps-stone">
+              {pro.image ? (
+                <img
+                  src={pro.image}
+                  alt={`${pro.name} — ${pro.role}`}
+                  className="h-full w-full object-cover"
+                  width={920}
+                  height={690}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <Monogram name={pro.name} size={220} className="!rounded-[24px]" />
+                </div>
+              )}
             </div>
 
             {/* Right info */}
@@ -783,13 +789,17 @@ function ProProfilePage() {
                     key={s.title}
                     className="flex items-stretch gap-4 rounded-[18px] bg-reps-panel p-3 text-white"
                   >
-                    <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[12px]">
-                      <img
-                        src={s.image}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/5 ring-1 ring-white/10">
+                      {s.image ? (
+                        <img
+                          src={s.image}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <s.icon className="h-8 w-8 text-white/40" aria-hidden />
+                      )}
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                       <div className="font-display text-[16px] font-bold leading-tight text-white">
