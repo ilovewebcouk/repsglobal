@@ -162,3 +162,35 @@ What is **always fine** without triggering this rule:
 - `src/lib/ops/alert-humanizer.ts` — operator-facing alert copy.
 - `src/components/admin/primitives/OpenTimelineLink.tsx` — Flight
   Recorder entry point.
+
+## 8 · Operational crons (recovery path)
+
+| Job name                         | Schedule       | Route                                         | Purpose                                                                 |
+| -------------------------------- | -------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
+| `churn-lifecycle-daily`          | `30 3 * * *`   | `/api/public/hooks/lifecycle-cron`            | Plan A BD blocked nudge · **at_risk first-nudge for Stripe failures** · grace/lapsed promotion · winback. Auth: `apikey: <anon>`. |
+| `legacy-stripe-renewal-daily`    | `0 3 * * *`    | `/api/public/hooks/legacy-renewal`            | Migrates legacy_stripe_link renewals onto Stripe.                       |
+| `ops-alerts-evaluate` / dispatch | `*/5 * * * *`  | `public.ops_alerts_evaluate()` + dispatch     | Surfaces ops alerts, including stale recovery state.                    |
+
+**Recovery first-nudge contract.** A member entering `at_risk` from a
+Stripe failure (`invoice.payment_failed`, `subscription.updated → past_due
+| unpaid`, or `incomplete_expired` migration renewal) must receive the
+first `renewal-payment-failed` email automatically. Two code paths
+satisfy this:
+
+1. **Webhook fast-path** — `src/routes/api/public/payments/webhook.ts`
+   calls `mintAndEmailRenewalToken({ purpose: "payment_failed",
+   templateName: "renewal-payment-failed", … })` inside the
+   `invoice.payment_failed` / `past_due` branches.
+2. **Cron safety-net** — `churn-lifecycle-daily` scans `churn_lifecycle`
+   for `stage = at_risk AND nudge_count = 0 AND last_nudge_at IS NULL`
+   and sends the same email. Catches webhook send failures and any
+   member promoted to `at_risk` outside the fast-path.
+
+Idempotency is enforced by the day-bucketed key
+`payment_failed-{userId}-{YYYY-MM-DD}` in `mintAndEmailRenewalToken`,
+so the webhook and cron cannot double-send on the same UTC day.
+
+The failed amount is dynamic: webhook reads `invoice.amount_due`; cron
+reads the latest `payment_events.invoice.payment_failed.payload.amount_due`
+and falls back to the active plan price (verified £99 / pro £59) only
+when no failed-invoice event exists.
