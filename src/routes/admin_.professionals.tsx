@@ -208,12 +208,18 @@ function useDebounced<T>(value: T, ms = 250): T {
 }
 
 function AdminProfessionalsPage() {
+  const searchParams = Route.useSearch();
   const [tab, setTab] = React.useState<AdminProTab>("all");
   const [page, setPage] = React.useState(1);
   const [search, setSearch] = React.useState("");
   const [sort, setSort] = React.useState<AdminProSort>("joined");
   const [dir, setDir] = React.useState<SortDir>("desc");
-  const [filters, setFilters] = React.useState<AdminProFilters>({});
+  const [filters, setFilters] = React.useState<AdminProFilters>(() => {
+    if (searchParams.plan === "free") return { plans: ["free"] };
+    if (searchParams.plan === "paid") return { plans: ["verified", "pro", "studio"] };
+    return {};
+  });
+
   const debouncedSearch = useDebounced(search, 300);
   const pageSize = 25;
 
