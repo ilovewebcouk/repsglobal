@@ -16,6 +16,7 @@ interface Props {
   proName?: string;
   renewalDate?: string;
   amount?: string;
+  previousAmount?: string;
   cardBrand?: string;
   cardLast4?: string;
   manageBillingUrl?: string;
@@ -26,6 +27,7 @@ const LegacyConversionConfirmation = ({
   proName = "there",
   renewalDate = "your renewal date",
   amount = "£99",
+  previousAmount = "£34",
   cardBrand = "Card",
   cardLast4 = "••••",
   manageBillingUrl = "https://repsuk.org/dashboard/settings",
@@ -55,7 +57,14 @@ const LegacyConversionConfirmation = ({
             Hi {proName}, when you joined REPs through Brilliant Directories you
             agreed to an annual auto-renewal on the card we have on file.
             We've now moved your membership onto the rebuilt REPs platform —
-            <strong style={ink}> same card, same renewal date, same price.</strong>
+            <strong style={ink}> same card, same renewal date.</strong>
+          </Text>
+          <Text style={{ ...p, marginTop: "12px" }}>
+            Your renewal is now <strong style={ink}>{amount}</strong> (was {previousAmount}).
+            That difference gets you a fully rebuilt profile, verified badge, 
+            client discovery tools, and the same platform-wide visibility that used 
+            to cost several times more elsewhere. Nothing is charged today — your next 
+            payment lands on {renewalDate}.
           </Text>
         </Section>
 
@@ -153,6 +162,7 @@ export const template = {
     proName: "Jordon",
     renewalDate: "12 July 2026",
     amount: "£99",
+    previousAmount: "£34",
     cardBrand: "Visa",
     cardLast4: "4242",
     manageBillingUrl: "https://repsuk.org/dashboard/settings",

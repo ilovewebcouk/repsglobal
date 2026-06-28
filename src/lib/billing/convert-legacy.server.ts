@@ -330,10 +330,12 @@ async function convertOne(args: {
       recipientEmail: row.email,
       idempotencyKey: `bd-convert-${bd}`,
       templateData: {
+        proName: row.email.split("@")[0],
         renewalDate: new Date(trialEndUnix * 1000).toLocaleDateString("en-GB", {
           day: "numeric", month: "long", year: "numeric",
         }),
         amount: "£99",
+        previousAmount: "£34",
         cardBrand,
         cardLast4,
         manageBillingUrl: "https://repsuk.org/dashboard/settings",
