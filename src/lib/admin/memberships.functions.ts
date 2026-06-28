@@ -213,12 +213,14 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
     // ARR = steady-state run-rate at £99/member (honour window is year-1 only).
     const scheduledArr = verifiedScheduledCount * TIER_PRICE_PENCE.verified;
 
-    // 3. Upcoming payments — unified rolling 14-day window of every expected
-    //    charge: Stripe renewals (active) + trial conversions (trialing subs
-    //    whose trial ends in the window) + V7 cohort (honour_window /
-    //    anomaly_launch_charge) if LAUNCH_AT_UTC falls in the window.
+    // 3. Upcoming payments — rolling 14-day window of every expected charge:
+    //    a) Stripe live renewals (active/trialing) with current_period_end ∈ [now, now+14d]
+    //    b) V7 cohort rows whose NEXT due date (per-row, rolled forward annually
+    //       until ≥ now) falls in [now, now+14d].
+    //    Deduped by user_id: a live Stripe sub for a member shadows any cohort row.
     let upcomingPence = 0;
     let upcomingCount = 0;
+    const seenUserIds = new Set<string>();
     const upcomingLive: Array<{
       userId: string;
       tier: Tier;
@@ -231,7 +233,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       userId: string | null;
       dueAt: Date;
       amountPence: number;
-      cohort: "honour_window" | "anomaly_launch_charge";
+      cohort: "honour_window" | "anomaly_launch_charge" | "future_due";
     }> = [];
 
     for (const s of live) {
@@ -241,6 +243,7 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         const amt = paymentPenceFor(s.tier, s.billing_period);
         upcomingPence += amt;
         upcomingCount += 1;
+        seenUserIds.add(s.user_id);
         upcomingLive.push({
           userId: s.user_id,
           tier: s.tier as Tier,
@@ -249,23 +252,58 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         });
       }
     }
-    if (LAUNCH_AT_UTC >= now && LAUNCH_AT_UTC <= in14d) {
-      for (const r of cohortRows) {
-        if (r.cohort === "future_due") continue;
-        const amount =
-          r.cohort === "honour_window" ? LEGACY_HONOUR_PENCE : TIER_PRICE_PENCE.verified;
-        upcomingPence += amount;
-        upcomingCount += 1;
-        upcomingCohort.push({
-          email: r.email,
-          name: r.name,
-          userId: r.claimedUserId,
-          dueAt: LAUNCH_AT_UTC,
-          amountPence: amount,
-          cohort: r.cohort,
-        });
+
+    // Per-row cohort projection: roll annually until on/after `now`, then test window.
+    function nextCohortDue(r: CohortRow): { dueAt: Date; amount: number } | null {
+      let due: Date;
+      let firstAmount: number;
+      if (r.cohort === "honour_window") {
+        due = new Date(LAUNCH_AT_UTC);
+        firstAmount = LEGACY_HONOUR_PENCE;
+      } else if (r.cohort === "anomaly_launch_charge") {
+        due = new Date(LAUNCH_AT_UTC);
+        firstAmount = TIER_PRICE_PENCE.verified;
+      } else {
+        if (!r.bdNextDue) return null;
+        due = new Date(r.bdNextDue);
+        // Roll forward to on/after launch first (matches forecast behaviour).
+        while (due < LAUNCH_AT_UTC) {
+          const d = new Date(due);
+          d.setUTCFullYear(d.getUTCFullYear() + 1);
+          due = d;
+        }
+        firstAmount = TIER_PRICE_PENCE.verified;
       }
+      // Roll forward annually until >= now.
+      let isFirst = true;
+      while (due < now) {
+        const d = new Date(due);
+        d.setUTCFullYear(d.getUTCFullYear() + 1);
+        due = d;
+        isFirst = false;
+      }
+      const amount = isFirst ? firstAmount : TIER_PRICE_PENCE.verified;
+      return { dueAt: due, amount };
     }
+
+    for (const r of cohortRows) {
+      if (r.claimedUserId && seenUserIds.has(r.claimedUserId)) continue;
+      const next = nextCohortDue(r);
+      if (!next) continue;
+      if (next.dueAt < now || next.dueAt > in14d) continue;
+      upcomingPence += next.amount;
+      upcomingCount += 1;
+      if (r.claimedUserId) seenUserIds.add(r.claimedUserId);
+      upcomingCohort.push({
+        email: r.email,
+        name: r.name,
+        userId: r.claimedUserId,
+        dueAt: next.dueAt,
+        amountPence: next.amount,
+        cohort: r.cohort,
+      });
+    }
+
 
     // 4. Lifetime members (kept in Verified count, excluded from forecast).
     const { count: lifetimeCount } = await supabaseAdmin
