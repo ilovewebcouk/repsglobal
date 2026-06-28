@@ -291,6 +291,41 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     for (const m of activeCollection.members) {
       if (m.user_id) paidTierByUserId.set(m.user_id, m.tier as AdminProRow['plan']);
     }
+
+    // ── Billing-state derivation ──────────────────────────────────────────
+    // Stripe subs whose payment has broken but still represent a Core/Pro/
+    // Studio paying relationship in recovery — Raheela's row today.
+    const FAILED_STRIPE_STATUSES = new Set([
+      'past_due', 'unpaid', 'incomplete', 'incomplete_expired',
+    ]);
+    const COUNTED_TIERS_SET = new Set(['verified', 'pro', 'studio']);
+    const failedSubTier = new Map<string, AdminProRow['plan']>();
+    for (const s of subsData) {
+      if (!FAILED_STRIPE_STATUSES.has(s.status)) continue;
+      if (!COUNTED_TIERS_SET.has(s.tier)) continue;
+      // Only mark as failed if there's no concurrently-active paid record.
+      if (paidTierByUserId.has(s.user_id)) continue;
+      const existing = failedSubTier.get(s.user_id);
+      const cur = (s.tier as AdminProRow['plan']);
+      if (!existing || PLAN_RANK[cur] > PLAN_RANK[existing]) {
+        failedSubTier.set(s.user_id, cur);
+      }
+    }
+    // BD members whose due date has arrived but the renewal cron hasn't yet
+    // converted them into a live Stripe sub — Adam Davis on his due day.
+    const RENEWAL_DUE_GRACE_DAYS = 7;
+    const nowMs = Date.now();
+    const renewalDueUserIds = new Set<string>();
+    for (const [uid, dueIso] of bdDueMap.entries()) {
+      if (paidTierByUserId.has(uid) || failedSubTier.has(uid)) continue;
+      const dueMs = new Date(dueIso).getTime();
+      if (!Number.isFinite(dueMs)) continue;
+      // due today or in the past 7 days = "renewal due, awaiting cron"
+      if (dueMs <= nowMs && nowMs - dueMs <= RENEWAL_DUE_GRACE_DAYS * 86400_000) {
+        renewalDueUserIds.add(uid);
+      }
+    }
+
     const subDetailMap = new Map<string, { createdAt: string; currentPeriodEnd: string | null; status: string }>();
     for (const s of subsData) {
       if (!['active', 'trialing', 'past_due'].includes(s.status)) continue;
@@ -321,10 +356,21 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     let rows: AdminProRow[] = prosFiltered.map(p => {
       const profile = profileMap.get(p.id);
-      // Plan filter/display follows the canonical Active Paying Member model.
-      // BD/legacy members with a valid future paid window are Core here; only
-      // professionals absent from that model are Free / non-paying.
-      const tier = paidTierByUserId.get(p.id) ?? 'free';
+      // Plan = canonical Active Paying Member tier when present, else fall
+      // back to a billing-recovery tier (failed Stripe sub OR BD renewal due
+      // today) so members in the renewal pipeline don't read as "Free".
+      const activeTier = paidTierByUserId.get(p.id);
+      const failedTier = failedSubTier.get(p.id);
+      const isRenewalDue = renewalDueUserIds.has(p.id);
+      const billingState: AdminProBillingState = activeTier
+        ? 'ok'
+        : failedTier
+          ? 'payment_failed'
+          : isRenewalDue
+            ? 'renewal_due'
+            : 'ok';
+      const tier: AdminProRow['plan'] =
+        activeTier ?? failedTier ?? (isRenewalDue ? 'verified' : 'free');
       const ra = ratingAcc.get(p.id);
       const status: AdminProRow['status'] =
         p.is_published === false && p.suspended_at ? 'suspended'
@@ -344,6 +390,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         plan: tier,
         planMrrPence: planMrrPence(tier),
         status,
+        billingState,
         rating: ra ? Math.round((ra.sum / ra.n) * 100) / 100 : null,
         clients: clientCount.get(p.id) ?? 0,
         joined: p.member_since ?? p.created_at,
@@ -355,6 +402,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         lifetimeValuePence: ltvMap.get(p.id) ?? 0,
         renewalDate: subDetail?.currentPeriodEnd ?? bdDueMap.get(p.id) ?? null,
         renewalDateSource: subDetail?.currentPeriodEnd ? 'stripe' : bdDueMap.has(p.id) ? 'bd' : null,
+
         isTrial: subDetail?.status === 'trialing',
         trialDaysLeft: subDetail?.status === 'trialing' && subDetail.currentPeriodEnd
           ? Math.max(0, Math.ceil((new Date(subDetail.currentPeriodEnd).getTime() - Date.now()) / 86400000))
