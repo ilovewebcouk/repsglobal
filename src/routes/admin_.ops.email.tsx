@@ -1,8 +1,10 @@
 import { OpsSubNav } from "@/components/ops/OpsSubNav";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { requireRole } from "@/lib/route-gates";
@@ -30,6 +32,7 @@ import {
   getEmailTemplates,
   getEmailHistory,
   listSuppressions,
+  removeSuppression,
 } from "@/lib/ops/email-ops.functions";
 
 const rangeEnum = z.enum(["24h", "7d", "30d"]);
@@ -85,7 +88,23 @@ function EmailOpsPage() {
     queryKey: ["email-log", args, q, page],
     queryFn: () => listFn({ data: { ...args, q: q || null, limit: PAGE_SIZE, offset: page * PAGE_SIZE } }),
   });
-  const supQ = useQuery({ queryKey: ["email-suppressions"], queryFn: () => supFn({ data: { limit: 20, offset: 0 } }) });
+  const [supQuery, setSupQuery] = useState("");
+  const supQ = useQuery({
+    queryKey: ["email-suppressions", supQuery],
+    queryFn: () => supFn({ data: { q: supQuery || null, limit: 50, offset: 0 } }),
+  });
+
+  const qc = useQueryClient();
+  const removeFn = useServerFn(removeSuppression);
+  const removeM = useMutation({
+    mutationFn: (email: string) => removeFn({ data: { email } }),
+    onSuccess: (_d, email) => {
+      toast.success(`${email} removed from suppression list`);
+      qc.invalidateQueries({ queryKey: ["email-suppressions"] });
+      qc.invalidateQueries({ queryKey: ["email-stats"] });
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
 
   const [openMsg, setOpenMsg] = useState<string | null>(null);
 
@@ -191,11 +210,19 @@ function EmailOpsPage() {
           </div>
         </div>
 
-        {/* Suppression list (top 20) */}
+        {/* Suppression list */}
         <div className="rounded-[16px] border border-reps-border bg-reps-panel/40">
-          <div className="flex items-center justify-between border-b border-reps-border px-3 py-2 text-xs uppercase tracking-wide text-reps-text/60">
-            <span>Recent suppressions</span>
-            <span>{supQ.data ? `${supQ.data.total.toLocaleString()} total` : ""}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-reps-border px-3 py-2 text-xs uppercase tracking-wide text-reps-text/60">
+            <span>Suppressions · bounces / complaints / unsubscribes</span>
+            <div className="flex items-center gap-2 normal-case tracking-normal">
+              <Input
+                value={supQuery}
+                onChange={(e) => setSupQuery(e.target.value)}
+                placeholder="Search email…"
+                className="h-7 w-[200px] bg-reps-ink/40 text-xs"
+              />
+              <span className="text-reps-text/60">{supQ.data ? `${supQ.data.total.toLocaleString()} total` : ""}</span>
+            </div>
           </div>
           <table className="w-full text-sm">
             <tbody className="divide-y divide-reps-border/60">
@@ -204,15 +231,32 @@ function EmailOpsPage() {
                   <td className="px-3 py-2">{s.email}</td>
                   <td className="px-3 py-2 text-xs text-reps-text/60">{s.reason ?? "—"}</td>
                   <td className="px-3 py-2 text-xs text-reps-text/60">{new Date(s.created_at).toLocaleDateString("en-GB")}</td>
+                  <td className="px-3 py-2 text-right">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={removeM.isPending && removeM.variables === s.email}
+                      onClick={() => {
+                        if (window.confirm(`Remove ${s.email} from the suppression list? They will receive REPS emails again.`)) {
+                          removeM.mutate(s.email);
+                        }
+                      }}
+                      className="h-7 gap-1 px-2 text-xs text-rose-200 hover:bg-rose-500/10 hover:text-rose-100"
+                      title="Remove from suppression list"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                    </Button>
+                  </td>
                 </tr>
               ))}
               {supQ.data && supQ.data.rows.length === 0 && (
-                <tr><td className="px-3 py-6 text-center text-reps-text/60">No suppressed addresses.</td></tr>
+                <tr><td colSpan={4} className="px-3 py-6 text-center text-reps-text/60">No suppressed addresses{supQuery ? " match." : "."}</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
 
       {/* Message lifecycle drawer */}
       <Sheet open={openMsg != null} onOpenChange={(v) => !v && setOpenMsg(null)}>
