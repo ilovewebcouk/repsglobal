@@ -223,7 +223,7 @@ const footerLink = { color: "#6b7280", textDecoration: "underline" };
 
 export const template = {
   component: RelaunchAnnouncement,
-  subject: "REPs has relaunched — verify your account",
+  subject: "REPs has relaunched — set your password to sign in",
   displayName: "Relaunch announcement",
   previewData: {},
 } satisfies TemplateEntry;
