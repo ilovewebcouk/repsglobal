@@ -174,11 +174,12 @@ function SubscriptionsTab() {
               <EmptyRow label="No past-due subscriptions. 🎉" />
             ) : (
               m.failedPayments.map((f) => (
-                <div key={f.userId} className="flex items-center justify-between px-5 py-3">
-                  <div className="min-w-0">
+                <div key={f.userId} className="flex items-center justify-between gap-3 px-5 py-3">
+                  <div className="min-w-0 flex-1">
                     <div className="truncate text-[13px] font-semibold text-white">{f.email ?? f.userId}</div>
                     <div className="text-[11px] text-white/55 capitalize">{f.tier} · {f.status}</div>
                   </div>
+                  <OpenTimelineLink userId={f.userId} variant="button" label="Timeline" />
                   <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-300">
                     <ShieldAlert className="h-3 w-3" />
                   </span>
