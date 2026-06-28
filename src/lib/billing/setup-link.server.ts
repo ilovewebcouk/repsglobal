@@ -61,7 +61,9 @@ export async function getSetupLinkCohorts(): Promise<{
     } else if (lapsedDays !== null && lapsedDays > 30) {
       reactivate.push(cohortRow);
     } else if (row.migration_status === "awaiting_payment_method") {
-      reactivate.push(cohortRow);
+      // Future-due with no reusable PM (one-off / guest legacy purchases) → setup-link.
+      // Already-lapsed cases are caught by the >30d branch above.
+      setup.push(cohortRow);
     } else {
       unactionable.push(cohortRow);
     }
