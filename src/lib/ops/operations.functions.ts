@@ -317,13 +317,15 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
 // ALERTS
 // =============================================================================
 
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
 export interface OpsAlert {
   id: string;
   kind: string;
   severity: "info" | "warn" | "crit";
   opened_at: string;
   resolved_at: string | null;
-  context: Record<string, unknown>;
+  context: JsonValue;
   ack_by: string | null;
   ack_at: string | null;
 }

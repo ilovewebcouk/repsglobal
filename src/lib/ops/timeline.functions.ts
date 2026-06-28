@@ -102,7 +102,7 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
           () => ({ data: [] as Array<Record<string, unknown>> }),
         ),
       supabaseAdmin.from("support_tickets")
-        .select("id, created_at, subject, status").eq("requester_id", data.user_id)
+        .select("id, created_at, subject, status").eq("requester_user_id", data.user_id)
         .order("created_at", { ascending: false }).limit(50).then(
           (r) => r,
           () => ({ data: [] as Array<Record<string, unknown>> }),
