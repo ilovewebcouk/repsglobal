@@ -327,3 +327,127 @@ function RelaunchTestCard() {
   );
 }
 
+function RelaunchBroadcastCard() {
+  const preview = useServerFn(previewRelaunchAudience);
+  const broadcast = useServerFn(sendRelaunchBroadcast);
+  const [audience, setAudience] = useState<{
+    total: number;
+    bySource: Record<string, number>;
+    sample: string[];
+  } | null>(null);
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{
+    total: number;
+    queued: number;
+    skipped: number;
+    failed: number;
+    firstErrors: Array<{ email: string; error: string }>;
+  } | null>(null);
+
+  async function runPreview() {
+    setBusy(true);
+    setResult(null);
+    try {
+      const r = await preview();
+      setAudience(r);
+      setConfirm("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Preview failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runBroadcast() {
+    if (!audience) return;
+    setBusy(true);
+    try {
+      const r = await broadcast({ data: { confirmToken: confirm } });
+      setResult(r);
+      toast.success(`Queued ${r.queued} of ${r.total}.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Broadcast failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const expectedToken = audience ? `SEND-${audience.total}` : "";
+  const tokenOk = audience !== null && confirm === expectedToken;
+
+  return (
+    <PCard>
+      <h3 className="font-display text-[14px] font-semibold text-white">Relaunch broadcast</h3>
+      <p className="mt-2 text-[12px] text-white/55">
+        Sends the relaunch announcement to every member (confirmed accounts + BD-seed members),
+        excluding admins, demos and suppressed addresses. Per-recipient idempotency prevents duplicates.
+      </p>
+
+      <Button size="sm" variant="outline" onClick={runPreview} disabled={busy} className="mt-3">
+        {busy && !audience ? "Resolving…" : "Dry-run — count audience"}
+      </Button>
+
+      {audience ? (
+        <div className="mt-4 space-y-3 rounded-[10px] border border-reps-border bg-reps-ink p-3 text-[12px] text-white/80">
+          <div>
+            <span className="font-semibold text-white">{audience.total.toLocaleString()}</span> recipients
+            <span className="text-white/55">
+              {" "}· {Object.entries(audience.bySource)
+                .map(([k, v]) => `${v} ${k.replace("_", " ")}`)
+                .join(" · ")}
+            </span>
+          </div>
+          <div className="text-white/55">
+            Sample: {audience.sample.map((e) => maskEmail(e)).join(", ") || "—"}
+          </div>
+
+          <div className="border-t border-reps-border pt-3">
+            <label className="block text-[11px] uppercase tracking-[0.06em] text-white/55">
+              To send, type <code className="text-reps-orange">{expectedToken}</code>
+            </label>
+            <input
+              type="text"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder={expectedToken}
+              className="mt-2 w-full rounded-[8px] border border-reps-border bg-reps-panel px-3 py-2 text-[13px] text-white outline-none focus:border-reps-orange/60"
+            />
+            <Button
+              size="sm"
+              onClick={runBroadcast}
+              disabled={busy || !tokenOk}
+              className="mt-3"
+            >
+              {busy ? "Enqueuing…" : `Send to ${audience.total.toLocaleString()} members`}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {result ? (
+        <div className="mt-3 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-3 text-[12px] text-emerald-100">
+          Queued <strong>{result.queued}</strong> of {result.total} · skipped {result.skipped} · failed {result.failed}.
+          {result.failed > 0 ? (
+            <ul className="mt-2 list-disc pl-4 text-emerald-200/80">
+              {result.firstErrors.map((e) => (
+                <li key={e.email}>
+                  {maskEmail(e.email)} — {e.error}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </PCard>
+  );
+}
+
+function maskEmail(e: string): string {
+  const [u, d] = e.split("@");
+  if (!u || !d) return e;
+  const head = u.length <= 2 ? u : `${u.slice(0, 2)}…`;
+  return `${head}@${d}`;
+}
+
+
