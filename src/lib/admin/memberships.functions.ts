@@ -420,6 +420,15 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
         source: "stripe" as const,
         cohort: null,
       })),
+      ...upcomingLegacy.map((it) => ({
+        name: it.name,
+        email: it.email || null,
+        tier: "verified" as Tier,
+        dueAt: it.dueAt.toISOString(),
+        amountPence: it.amountPence,
+        source: "scheduled" as const,
+        cohort: null,
+      })),
       ...upcomingCohort.map((it) => {
         const fromProfile = it.userId ? profileMap.get(it.userId)?.full_name : null;
         return {
@@ -434,14 +443,51 @@ export const getMembershipMetrics = createServerFn({ method: "GET" })
       }),
     ].sort((a, b) => (a.dueAt ?? "").localeCompare(b.dueAt ?? ""));
 
+    // Latest invoice.payment_failed per past-due user, for the "last failed
+    // attempt" line. Display-only — no business-logic side effects.
+    const lastFailedMap = new Map<string, { amountPence: number | null; at: string }>();
+    if (pastDueUserIds.length > 0) {
+      const { data: failedEvents } = await supabaseAdmin
+        .from("payment_events")
+        .select("user_id, created_at, payload")
+        .in("user_id", pastDueUserIds)
+        .eq("event_type", "invoice.payment_failed")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      for (const e of (failedEvents ?? []) as any[]) {
+        if (!e.user_id || lastFailedMap.has(e.user_id)) continue;
+        const obj = e.payload?.data?.object ?? {};
+        const raw = obj.amount_due ?? obj.amount_paid ?? obj.amount ?? null;
+        const amt = typeof raw === "number" ? raw : raw != null ? Number(raw) : null;
+        lastFailedMap.set(e.user_id, {
+          amountPence: Number.isFinite(amt as number) ? (amt as number) : null,
+          at: e.created_at,
+        });
+      }
+    }
 
-    const pastDueItems: PastDueItem[] = pastDue.map((s) => ({
-      name: profileMap.get(s.user_id)?.full_name || userEmailMap.get(s.user_id) || "Member",
-      email: userEmailMap.get(s.user_id) ?? null,
-      tier: s.tier as Tier,
-      status: s.status,
-      amountPence: paymentPenceFor(s.tier, s.billing_period),
-    }));
+    const pastDueItems: PastDueItem[] = pastDue.map((s) => {
+      const last = lastFailedMap.get(s.user_id) ?? null;
+      return {
+        name: profileMap.get(s.user_id)?.full_name || userEmailMap.get(s.user_id) || "Member",
+        email: userEmailMap.get(s.user_id) ?? null,
+        tier: s.tier as Tier,
+        status: s.status,
+        amountPence: paymentPenceFor(s.tier, s.billing_period),
+        lastFailedAttemptPence: last?.amountPence ?? null,
+        lastFailedAt: last?.at ?? null,
+      };
+    });
+
+    if (process.env.DEBUG_MEMBERSHIPS === "1") {
+      console.log("[memberships]", {
+        pastDueCount: pastDue.length,
+        upcomingCount,
+        upcomingPence,
+        orphans: orphanSubs.length,
+        sampleKeys: Array.from(seenKeys).slice(0, 10),
+      });
+    }
 
     const distribution = [
       { label: "Core", count: verifiedActive + verifiedScheduledCount, tone: "verified" as const },
