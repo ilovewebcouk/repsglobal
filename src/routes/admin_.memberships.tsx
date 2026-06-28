@@ -137,61 +137,136 @@ function KpiRow({
   forecast?: RevenueForecast;
   loading: boolean;
 }) {
-  const totalMembers = data
-    ? (data.verifiedActive ?? 0) +
-      (data.verifiedScheduled ?? 0) +
-      (data.tiers.find((t) => t.tier === "pro")?.active ?? 0) +
-      (data.tiers.find((t) => t.tier === "pro")?.trialing ?? 0) +
-      (data.tiers.find((t) => t.tier === "studio")?.active ?? 0) +
-      (data.tiers.find((t) => t.tier === "studio")?.trialing ?? 0)
-    : 0;
+  // Active Paying Members = Core active + Pro (active+trialing) + Studio (active+trialing).
+  // Scheduled / awaiting setup is reported separately and never merged in.
+  const coreActive = data?.verifiedActive ?? 0;
+  const proActive =
+    (data?.tiers.find((t) => t.tier === "pro")?.active ?? 0) +
+    (data?.tiers.find((t) => t.tier === "pro")?.trialing ?? 0);
+  const studioActive =
+    (data?.tiers.find((t) => t.tier === "studio")?.active ?? 0) +
+    (data?.tiers.find((t) => t.tier === "studio")?.trialing ?? 0);
+  const activePaying = coreActive + proActive + studioActive;
+  const scheduledStarts = data?.verifiedScheduled ?? 0;
   const trialingNow = data
     ? data.tiers.reduce((s, t) => s + (t.trialing ?? 0), 0)
     : 0;
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      <KpiCard
-        label="Monthly revenue"
-        value={loading ? null : gbp(forecast?.currentMonthPence ?? 0)}
-        sub="Projected for current month"
-      />
-      <KpiCard
-        label="Paying + scheduled"
-        value={loading ? null : totalMembers.toLocaleString()}
-        sub={
-          loading || !data
-            ? "—"
-            : `Active paying${
-                (data.verifiedScheduled ?? 0) > 0
-                  ? ` + ${data.verifiedScheduled} scheduled to start`
-                  : ""
-              }`
-        }
-      />
-      <KpiCard
-        label="Forecast ARR"
-        value={loading ? null : gbp(data?.forecastArrPence ?? 0)}
-        sub={
-          loading || !data
-            ? "—"
-            : `${gbp(data.activeArrPence)} live · ${gbp(data.scheduledArrPence)} scheduled`
-        }
-      />
-      <KpiCard
-        label="Trialing now"
-        value={loading ? null : trialingNow.toLocaleString()}
-        sub={
-          loading
-            ? "—"
-            : trialingNow === 0
-              ? "No active trials"
-              : "Convert at trial end"
-        }
-      />
+    <div className="space-y-6">
+      {/* A · Current entitlement */}
+      <Section
+        eyebrow="A · Current entitlement"
+        title="Who is paying right now"
+        hint="Active Paying Members = Core + Pro + Studio. Scheduled starts are excluded."
+      >
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            label="Active Paying Members"
+            value={loading ? null : activePaying.toLocaleString()}
+            sub="Stripe + legacy + BD, deduped (M1)"
+          />
+          <KpiCard
+            label="Core"
+            value={loading ? null : coreActive.toLocaleString()}
+            sub="£99/year · verified tier"
+          />
+          <KpiCard
+            label="Pro"
+            value={loading ? null : proActive.toLocaleString()}
+            sub="£59/month · founding"
+          />
+          <KpiCard
+            label="Studio"
+            value={loading ? null : studioActive.toLocaleString()}
+            sub="£149/month"
+          />
+        </div>
+      </Section>
+
+      {/* B · Migration & setup */}
+      <Section
+        eyebrow="B · Migration & setup"
+        title="Not yet paying, but on the books"
+        hint="Counted separately from Active Paying Members."
+      >
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <KpiCard
+            label="Scheduled starts"
+            value={loading ? null : scheduledStarts.toLocaleString()}
+            sub="Awaiting Stripe setup / first charge"
+          />
+          <KpiCard
+            label="Trialing now"
+            value={loading ? null : trialingNow.toLocaleString()}
+            sub={trialingNow === 0 ? "No active trials" : "Convert at trial end"}
+          />
+          <KpiCard
+            label="Past-due"
+            value={loading ? null : (data?.pastDueCount ?? 0).toLocaleString()}
+            sub="Failed payments — in recovery"
+            tone={data && data.pastDueCount > 0 ? "warn" : "neutral"}
+          />
+        </div>
+      </Section>
+
+      {/* C · Renewal forecast */}
+      <Section
+        eyebrow="C · Renewal forecast"
+        title="Projected cash from current book"
+        hint="Forward-looking only — does not include past receipts."
+      >
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <KpiCard
+            label="Projected current-month cash"
+            value={loading ? null : gbp(forecast?.currentMonthPence ?? 0)}
+            sub="Renewals + trial conversions, current month"
+          />
+          <KpiCard
+            label="Forecast ARR — active"
+            value={loading ? null : gbp(data?.activeArrPence ?? 0)}
+            sub="From members paying today"
+          />
+          <KpiCard
+            label="Forecast ARR — scheduled"
+            value={loading ? null : gbp(data?.scheduledArrPence ?? 0)}
+            sub="From scheduled starts once live"
+          />
+        </div>
+      </Section>
     </div>
   );
 }
+
+function Section({
+  eyebrow,
+  title,
+  hint,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-3">
+        <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/45">
+          {eyebrow}
+        </div>
+        <div className="mt-0.5 font-display text-[15px] font-bold text-white">
+          {title}
+        </div>
+        {hint ? (
+          <div className="mt-0.5 text-[11.5px] text-white/55">{hint}</div>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 
 function KpiCard({
   label,
