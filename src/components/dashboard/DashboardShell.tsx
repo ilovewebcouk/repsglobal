@@ -12,6 +12,8 @@ import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { DashboardToaster, DashboardTooltipProvider } from "@/components/dashboard/ui";
+
 
 import { DashboardSidebar } from "./DashboardSidebar";
 import type {
@@ -165,29 +167,33 @@ export function DashboardShell({
     role === "admin" ? "Search professionals, members, leads…" : "Search…";
 
   return (
-    <div className="h-screen bg-reps-ink text-reps-text">
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "232px",
-            "--sidebar-width-icon": "3.25rem",
-          } as React.CSSProperties
-        }
-      >
-        <DashboardSidebar role={role} tier={tier} active={active} member={member} />
-        <SidebarInset className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-reps-ink">
-          <ImpersonationBanner />
-          <TopBar
-            role={role}
-            title={title}
-            subtitle={subtitle}
-            actions={actions}
-            searchPlaceholder={searchPlaceholder}
-            search={search}
-          />
-          <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">{children}</main>
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
+    <DashboardTooltipProvider delayDuration={200}>
+      <div className="h-screen bg-reps-ink text-reps-text">
+        <SidebarProvider
+          style={
+            {
+              "--sidebar-width": "232px",
+              "--sidebar-width-icon": "3.25rem",
+            } as React.CSSProperties
+          }
+        >
+          <DashboardSidebar role={role} tier={tier} active={active} member={member} />
+          <SidebarInset className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-reps-ink">
+            <ImpersonationBanner />
+            <TopBar
+              role={role}
+              title={title}
+              subtitle={subtitle}
+              actions={actions}
+              searchPlaceholder={searchPlaceholder}
+              search={search}
+            />
+            <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">{children}</main>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
+      <DashboardToaster />
+    </DashboardTooltipProvider>
   );
 }
+
