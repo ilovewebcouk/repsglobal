@@ -59,7 +59,8 @@ function CustomerPage() {
                   {t.drill && <ArrowUpRight className="h-3.5 w-3.5 opacity-40 transition group-hover:opacity-90" />}
                 </div>
                 <div className="mt-1 text-2xl font-semibold tabular-nums">{t.value.toLocaleString()}</div>
-                {t.drill && <div className="mt-1 text-[11px] text-reps-text/55">{t.drill.hint} →</div>}
+                {t.sub && <div className="mt-1 text-[11px] text-reps-text/55">{t.sub}</div>}
+                {t.drill && <div className="mt-1 text-[11px] text-reps-text/45">{t.drill.hint} →</div>}
               </div>
             );
             return t.drill ? (
