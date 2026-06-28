@@ -1,6 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 
+export type AdminProBillingState = 'ok' | 'payment_failed' | 'renewal_due';
+
 export type AdminProRow = {
   id: string;
   name: string;
@@ -12,6 +14,17 @@ export type AdminProRow = {
   plan: 'free' | 'verified' | 'pro' | 'studio';
   planMrrPence: number;
   status: 'verified' | 'pending' | 'flagged' | 'suspended';
+  /**
+   * Billing health, derived per row:
+   *  - 'payment_failed' → has a Stripe sub in past_due / unpaid / incomplete / incomplete_expired
+   *    with a counted tier (Raheela today).
+   *  - 'renewal_due'    → BD-migrated member whose `bd_next_due_date` has arrived
+   *    but no active sub exists yet (Adam Davis on his due day, before the cron runs).
+   *  - 'ok'             → no billing alert.
+   * When set to anything other than 'ok' we bump `plan` to 'verified' (Core) so
+   * the row doesn't read as a "Free / Unverified" non-paying member.
+   */
+  billingState: AdminProBillingState;
   rating: number | null;
   clients: number;
   joined: string;
@@ -26,6 +39,7 @@ export type AdminProRow = {
   isTrial: boolean;
   trialDaysLeft: number | null;
 };
+
 
 const PROFESSION_LABEL: Record<string, string> = {
   'personal-trainer': 'PT',
