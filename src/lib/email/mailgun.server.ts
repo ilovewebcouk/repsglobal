@@ -22,7 +22,27 @@ export interface SendViaMailgunArgs {
   idempotencyKey: string;
 }
 
-export async function sendViaMailgun(args: SendViaMailgunArgs): Promise<{ ok: boolean; mailgunId?: string; error?: string }> {
+export interface SendViaMailgunResult {
+  ok: boolean;
+  mailgunId?: string;
+  error?: string;
+  status?: number;
+  retryAfter?: string | null;
+  skippedDuplicate?: boolean;
+}
+
+export async function sendViaMailgun(args: SendViaMailgunArgs): Promise<SendViaMailgunResult> {
+  const { data: existingSent } = await supabaseAdmin
+    .from("email_send_log")
+    .select("metadata")
+    .eq("message_id", args.idempotencyKey)
+    .eq("status", "sent")
+    .limit(1);
+  if (existingSent?.length) {
+    const metadata = existingSent[0]?.metadata as { mailgun_id?: string } | null;
+    return { ok: true, mailgunId: metadata?.mailgun_id, skippedDuplicate: true };
+  }
+
   const lovableKey = process.env.LOVABLE_API_KEY;
   const connectionKey = process.env.MAILGUN_API_KEY;
   if (!lovableKey || !connectionKey) {
@@ -68,8 +88,9 @@ export async function sendViaMailgun(args: SendViaMailgunArgs): Promise<{ ok: bo
     const json: any = await res.json().catch(() => ({}));
     if (!res.ok) {
       const err = `Mailgun ${res.status}: ${json?.message || JSON.stringify(json)}`;
+      const retryAfter = res.headers.get("retry-after") ?? json?.retry_after ?? null;
       await logRow(args, "failed", null, err);
-      return { ok: false, error: err };
+      return { ok: false, error: err, status: res.status, retryAfter };
     }
     const mailgunId: string | undefined = json?.id;
     await logRow(args, "sent", mailgunId ?? null, null);
