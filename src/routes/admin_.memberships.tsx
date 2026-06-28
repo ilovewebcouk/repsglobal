@@ -816,8 +816,10 @@ function tierLabel(t: string) {
   if (t === "verified") return "Core";
   if (t === "pro") return "Pro";
   if (t === "studio") return "Studio";
+  if (t === "free") return "Free";
   return t;
 }
+
 
 function formatDueDate(iso: string | null) {
   if (!iso) return "—";
