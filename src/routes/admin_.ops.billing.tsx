@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { getBillingHealth, getBillingDrill } from "@/lib/ops/operations.functions";
 import { RenewalEngineCard } from "@/components/ops/RenewalEngineCard";
 import { SiteTimePanel } from "@/components/ops/SiteTimePanel";
+import { BdRailSwapCard } from "@/components/ops/BdRailSwapCard";
 
 const drillEnum = z.enum([
   "payments_today", "refunds_today", "failed_active",
@@ -97,6 +98,10 @@ function BillingPage() {
 
         {/* Renewal engine visibility — last 7 nights + upcoming 14 days */}
         <RenewalEngineCard />
+
+        {/* BD → Stripe Subscription rail-swap (Phase 2 migration) */}
+        <BdRailSwapCard />
+
 
 
 
