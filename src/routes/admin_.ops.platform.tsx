@@ -49,17 +49,25 @@ function PlatformPage() {
 
         {/* Health snapshot */}
         {!snap ? <div className="text-reps-text/60">Loading…</div> : (
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Tile label="Cron failures (24h)" v={snap.cron_failures_24h} crit={snap.cron_failures_24h > 0} />
-            <Tile label="Queue: transactional" v={snap.queue_transactional} warn={snap.queue_transactional > 50} crit={snap.queue_transactional > 500} />
-            <Tile label="Queue: auth" v={snap.queue_auth} warn={snap.queue_auth > 50} crit={snap.queue_auth > 500} />
-            <Tile label="DLQ emails (7d)" v={snap.dlq_emails_7d} crit={snap.dlq_emails_7d > 0} />
-            <Tile label="DLQ webhooks (7d)" v={snap.dlq_webhook_events_7d} crit={snap.dlq_webhook_events_7d > 0} />
-            <Tile label="Stuck payment events" v={snap.stuck_payment_events} crit={snap.stuck_payment_events > 0} />
-            <Tile label="Failed payments (active)" v={snap.failed_payments_active} warn={snap.failed_payments_active > 0} crit={snap.failed_payments_active > 10} />
-            <Tile label="Orphan subscriptions" v={snap.orphan_subscriptions} warn={snap.orphan_subscriptions > 0} />
-            <Tile label="Suppressions (7d)" v={snap.suppressions_7d} warn={snap.suppressions_7d > 25} />
-          </section>
+          <>
+            {snap.degraded && (
+              <div className="rounded-[16px] border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+                <div className="font-semibold">Platform diagnostics are degraded</div>
+                <div className="mt-1 text-amber-100/80">{snap.error}</div>
+              </div>
+            )}
+            <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Tile label="Cron failures (24h)" v={snap.cron_failures_24h} crit={snap.cron_failures_24h > 0} />
+              <Tile label="Queue: transactional" v={snap.queue_transactional} warn={snap.queue_transactional > 50} crit={snap.queue_transactional > 500} />
+              <Tile label="Queue: auth" v={snap.queue_auth} warn={snap.queue_auth > 50} crit={snap.queue_auth > 500} />
+              <Tile label="DLQ emails (7d)" v={snap.dlq_emails_7d} crit={snap.dlq_emails_7d > 0} />
+              <Tile label="DLQ webhooks (7d)" v={snap.dlq_webhook_events_7d} crit={snap.dlq_webhook_events_7d > 0} />
+              <Tile label="Stuck payment events" v={snap.stuck_payment_events} crit={snap.stuck_payment_events > 0} />
+              <Tile label="Failed payments (active)" v={snap.failed_payments_active} warn={snap.failed_payments_active > 0} crit={snap.failed_payments_active > 10} />
+              <Tile label="Orphan subscriptions" v={snap.orphan_subscriptions} warn={snap.orphan_subscriptions > 0} />
+              <Tile label="Suppressions (7d)" v={snap.suppressions_7d} warn={snap.suppressions_7d > 25} />
+            </section>
+          </>
         )}
 
         {/* Cron table */}
