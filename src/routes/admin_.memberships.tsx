@@ -710,8 +710,9 @@ function UpcomingPaymentsPanel({
               <EmptyHeader>
                 <EmptyTitle>No payments due in the next 14 days</EmptyTitle>
                 <EmptyDescription>
-                  Renewals, trial conversions and launch-cohort charges will list here as they approach.
+                  Stripe renewals and scheduled BD-cohort charges in the next 14 days will list here.
                 </EmptyDescription>
+
               </EmptyHeader>
             </Empty>
           </div>
