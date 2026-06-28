@@ -1,56 +1,29 @@
+## Problem
+
+`/dashboard/services` still treats Shop-front and the "Most popular" highlight as **Pro-only**, but our current policy (per recent work on `/c/$slug`) is that Verified/Core members get a shop-front too. So the "Unlock your Shop-front" upsell card and the "Pro-only" copy on the Add-service form are stale and misleading.
+
 ## Scope
 
-Two things in this pass:
+Frontend-only edit to `src/routes/_authenticated/_professional/dashboard_.services.tsx`. No backend, no schema, no other surfaces.
 
-1. **Open the shop-front (`/c/$slug`) to Verified tier** so Katie Gibbs (Core/Verified) gets a working `/c/katie-gibbs` page.
-2. **Confirm the Services & Pricing wiring** on `/pro/$slug` is already live — no changes until you send the card design for `/c/$slug`.
+## Changes
 
-## 1. Unlock `/c/$slug` for Verified
+1. **Remove the upsell block** (lines ~191–217): delete the entire `{tier === "verified" ? (...) : null}` "Unlock your Shop-front / See the Shop-front · Compare plans" card. Every tier already has a shop-front, so the upsell is wrong.
 
-Currently `src/routes/c.$slug.tsx` loader rejects anything that isn't `pro` or `studio`:
+2. **Remove the Pro-only gate on "Most popular" highlight** in the Add-service form:
+   - Drop the `isPro` check around the checkbox so all tiers can mark a card as Most popular.
+   - Replace the placeholder `"Most popular" highlight is Pro-only` with neutral copy (e.g. `Mark one card as "Most popular"` or remove the placeholder line).
+   - Update the existing card render so `s.is_featured` displays regardless of tier (drop `&& isPro` on line 486).
+   - In the save handler (line 429), persist `is_featured` for all tiers (drop the `isPro ? ... : false` ternary).
 
-```ts
-if (live.shopFront.tier !== "pro" && live.shopFront.tier !== "studio") {
-  throw notFound();
-}
-```
+3. **Out of scope**: the `tier` prop / `useTrainerTier()` hook stays — it may still be useful for future differentiation. We're only removing the stale Shop-front upsell and Most-popular gate. No changes to `/c/$slug`, marketing pages, pricing, or `useTrainerTier` itself.
 
-Change: allow `verified` too. The page will only render at all if the pro has a `shop_fronts` row with `is_published = true` (that requirement stays), so Verified pros still have to opt in by publishing one.
+## Verification
 
-Also update the marketing memory + copy that says "Shop-front is Pro+Studio only":
-- `mem://design/coach-shopfront` — change to "Verified, Pro and Studio".
-- `mem://design/locked-shop-front` — same edit; also drop the "Pro+Studio only" sentence.
-- `/features/shop-front` page copy + the Verified-vs-Pro matrix on that page — flip Shop-front from a Pro/Studio-only row to "All tiers".
-- `/pricing` + `/compare` tier matrices — same flip.
+- View the page as Katie Gibbs (Core tier): the "Unlock your Shop-front" card is gone, and the "Most popular" highlight is available in the Add-service form.
+- View as a Pro tier user: nothing changes (they already had access).
+- No TS errors from the removed `isPro` references.
 
-I will NOT touch the visual design of `/c/$slug` in this pass.
+## Out of scope (flag, don't touch)
 
-## 2. Katie's shop-front data
-
-Katie has no `shop_fronts` row yet. Once the gate is open, she still needs a published shop-front to see anything at `/c/katie-gibbs`. I'll seed one minimal published row for her so the URL works immediately:
-
-```sql
-INSERT INTO public.shop_fronts (professional_id, is_published, published_at, layout_variant)
-VALUES ('<katie-uuid>', true, now(), 'lite')
-ON CONFLICT (professional_id) DO UPDATE SET is_published = true, published_at = COALESCE(shop_fronts.published_at, now());
-```
-
-(Looked up via her `cruz.pt+kate@icloud.com` account.)
-
-## 3. Services & Pricing on `/pro/katie-gibbs` — already wired
-
-Confirmed in `src/lib/profile/public-profile.functions.ts` (lines 159–167) and `src/routes/pro.$slug.index.tsx` (lines 326–361): the profile page reads live `services` rows for the pro, ordered by `sort_order`, limited to 3. The "1-to-1 session / From £75" card you see today is the fallback that renders when she has **zero published services** but a `hourly_rate_pence` is set. The moment she saves her first service card in `/dashboard/services`, it replaces the fallback on `/pro/katie-gibbs`.
-
-No code change here.
-
-## 4. Waiting on you
-
-You said you'd send the card design for what services should look like on `/c/katie-gibbs`. I'll do that as a follow-up — the current `TierCard` layout stays untouched until then.
-
-## Technical details
-
-- File: `src/routes/c.$slug.tsx` — change the loader tier check to `!["verified", "pro", "studio"].includes(live.shopFront.tier ?? "")`.
-- Migration: insert/upsert one `shop_fronts` row for Katie's `professional_id` (data op via insert tool, not schema).
-- Memory edits: `mem://design/coach-shopfront`, `mem://design/locked-shop-front`, and the Core rule in `mem://index.md` that says "Shop-front is a Pro+Studio feature (NOT Verified)".
-- Copy edits: `src/routes/features.shop-front.tsx` tier matrix + intro line; `/pricing` + comparison matrices that list Shop-front as Pro-only.
-- No changes to `/pro/$slug` services rendering.
+- Marketing pages still frame Shop-front as a Pro/Studio differentiator (`/features/shop-front`, `/pricing`, comparison matrices). Those are locked pages and need a separate, explicit pass to re-tier Shop-front as a Core+ feature across marketing. Want me to queue that as the next task?
