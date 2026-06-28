@@ -63,7 +63,7 @@ export type PaymentListItem = {
   dueAt: string | null;
   amountPence: number;
   source: "stripe" | "scheduled";
-  cohort?: "honour_window" | "anomaly_launch_charge" | null;
+  cohort?: "honour_window" | "anomaly_launch_charge" | "future_due" | null;
 };
 
 export type PastDueItem = {
