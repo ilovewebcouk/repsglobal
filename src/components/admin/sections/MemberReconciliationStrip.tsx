@@ -107,16 +107,6 @@ export function MemberReconciliationStrip({
             ) : null}
           </ul>
 
-            {failedCount > 0 ? (
-              <ReconRow
-                label="Payment Recovery"
-                sub="Members in recovery lifecycle after a failed payment"
-                value={failedCount}
-                to="/admin/churn"
-                tone="warn"
-              />
-            ) : null}
-          </ul>
         </div>
       </div>
     </AdminCard>
