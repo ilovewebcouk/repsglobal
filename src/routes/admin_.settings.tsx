@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { backfillPrimaryLocations } from "@/lib/profile/location.functions";
 import { listAdminAuditLog, type AuditLogRow } from "@/lib/admin-audit-list.functions";
 import { sendRelaunchTestEmail } from "@/lib/admin/send-relaunch-test.functions";
-import { previewRelaunchAudience, sendRelaunchBroadcast } from "@/lib/admin/send-relaunch-broadcast.functions";
+import { getRelaunchBroadcastStatus, previewRelaunchAudience, sendRelaunchBroadcast } from "@/lib/admin/send-relaunch-broadcast.functions";
 import { TimeAgo } from "@/components/verification/TimeAgo";
 import { toast } from "sonner";
 
@@ -330,10 +330,18 @@ function RelaunchTestCard() {
 function RelaunchBroadcastCard() {
   const preview = useServerFn(previewRelaunchAudience);
   const broadcast = useServerFn(sendRelaunchBroadcast);
+  const status = useServerFn(getRelaunchBroadcastStatus);
   const [audience, setAudience] = useState<{
     total: number;
     bySource: Record<string, number>;
     sample: string[];
+  } | null>(null);
+  const [snapshot, setSnapshot] = useState<{
+    total: number;
+    alreadySent: number;
+    remaining: number;
+    lastSentAt: string | null;
+    broadcastTag: string;
   } | null>(null);
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -350,6 +358,31 @@ function RelaunchBroadcastCard() {
     pauseReason?: string | null;
     firstErrors: Array<{ email: string; error: string }>;
   } | null>(null);
+
+  // Auto-load the live status on mount so the operator can see progress
+  // (sent / remaining / last sent at) without having to click anything.
+  useEffect(() => {
+    let cancelled = false;
+    status()
+      .then((s) => {
+        if (!cancelled) setSnapshot(s);
+      })
+      .catch(() => { /* ignore — surfaces via "Refresh status" button */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function refreshStatus() {
+    setBusy(true);
+    try {
+      const s = await status();
+      setSnapshot(s);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Status check failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function runPreview() {
     setBusy(true);
@@ -376,6 +409,8 @@ function RelaunchBroadcastCard() {
       } else {
         toast.success(`Sent ${r.queued} of ${r.total}.`);
       }
+      // refresh snapshot after a send
+      try { setSnapshot(await status()); } catch { /* ignore */ }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Broadcast failed");
     } finally {
@@ -394,9 +429,45 @@ function RelaunchBroadcastCard() {
         excluding admins, demos and suppressed addresses. Per-recipient idempotency prevents duplicates.
       </p>
 
-      <Button size="sm" variant="outline" onClick={runPreview} disabled={busy} className="mt-3">
-        {busy && !audience ? "Resolving…" : "Dry-run — count audience"}
-      </Button>
+      {/* Live progress snapshot — auto-loads on mount */}
+      {snapshot ? (
+        <div className="mt-3 rounded-[10px] border border-reps-border bg-reps-ink p-3 text-[12px] text-white/85">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <span><strong className="text-white">{snapshot.alreadySent.toLocaleString()}</strong> sent</span>
+            <span className="text-white/55">·</span>
+            <span><strong className={snapshot.remaining > 0 ? "text-amber-200" : "text-emerald-200"}>{snapshot.remaining.toLocaleString()}</strong> remaining</span>
+            <span className="text-white/55">·</span>
+            <span className="text-white/55">{snapshot.total.toLocaleString()} total audience</span>
+          </div>
+          {snapshot.lastSentAt ? (
+            <div className="mt-1 text-white/55">
+              Last send accepted by Mailgun: {new Date(snapshot.lastSentAt).toLocaleString("en-GB")}
+            </div>
+          ) : null}
+          {snapshot.remaining === 0 ? (
+            <div className="mt-2 text-emerald-200">All members have been sent the relaunch email.</div>
+          ) : (
+            <div className="mt-2 text-amber-100/90">
+              You can resume sending — the next run will send up to 75 new emails and skip anyone already sent.
+            </div>
+          )}
+          <Button size="sm" variant="ghost" onClick={refreshStatus} disabled={busy} className="mt-2 px-0 text-reps-orange hover:text-reps-orange">
+            Refresh status
+          </Button>
+        </div>
+      ) : null}
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={runPreview} disabled={busy}>
+          {busy && !audience ? "Resolving…" : audience ? "Re-count audience" : "Dry-run — count audience"}
+        </Button>
+        {snapshot && snapshot.remaining > 0 && audience ? (
+          <span className="text-[11px] text-white/55 self-center">
+            Type <code className="text-reps-orange">{expectedToken}</code> below to resume.
+          </span>
+        ) : null}
+      </div>
+
 
       {audience ? (
         <div className="mt-4 space-y-3 rounded-[10px] border border-reps-border bg-reps-ink p-3 text-[12px] text-white/80">
