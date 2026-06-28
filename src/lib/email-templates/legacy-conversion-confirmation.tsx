@@ -162,6 +162,7 @@ export const template = {
     proName: "Jordon",
     renewalDate: "12 July 2026",
     amount: "£99",
+    previousAmount: "£34",
     cardBrand: "Visa",
     cardLast4: "4242",
     manageBillingUrl: "https://repsuk.org/dashboard/settings",
