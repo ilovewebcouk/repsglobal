@@ -72,6 +72,8 @@ export type PastDueItem = {
   tier: Tier;
   status: string;
   amountPence: number;
+  lastFailedAttemptPence: number | null;
+  lastFailedAt: string | null;
 };
 
 export type MembershipMetrics = {
