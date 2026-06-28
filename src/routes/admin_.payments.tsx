@@ -21,6 +21,7 @@ import {
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { getSubscriptionMetrics, getMarketplaceMetrics, type SubscriptionMetrics, type MarketplaceMetrics } from "@/lib/payments/admin.functions";
+import { OpenTimelineLink } from "@/components/admin/primitives/OpenTimelineLink";
 
 type Tab = "subscriptions" | "marketplace";
 
