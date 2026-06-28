@@ -86,10 +86,12 @@ async function resolveUserForDispute(
   // Find a Stripe subscription on the related invoice (if any).
   if (piId) {
     try {
-      const pi = await stripe.paymentIntents.retrieve(piId, { expand: ["invoice"] });
+      const pi = (await stripe.paymentIntents.retrieve(piId, {
+        expand: ["invoice"],
+      })) as unknown as { invoice?: string | { subscription?: string | { id?: string } | null } | null };
       const invoice = pi.invoice && typeof pi.invoice !== "string" ? pi.invoice : null;
       if (invoice) {
-        const subRef = (invoice as Stripe.Invoice).subscription;
+        const subRef = invoice.subscription;
         resolvedSubscriptionId =
           typeof subRef === "string" ? subRef : subRef?.id ?? null;
       }
