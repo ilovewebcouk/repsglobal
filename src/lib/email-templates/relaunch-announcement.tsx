@@ -15,11 +15,13 @@ import type { TemplateEntry } from "./registry";
 interface Props {
   ctaUrl?: string;
   settingsUrl?: string;
+  resetUrl?: string;
 }
 
 const RelaunchAnnouncement = ({
-  ctaUrl = "https://repsuk.org/dashboard",
+  ctaUrl = "https://repsuk.org/auth/reset",
   settingsUrl = "https://repsuk.org/dashboard/settings",
+  resetUrl = "https://repsuk.org/auth/reset",
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
