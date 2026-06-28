@@ -94,7 +94,7 @@ export const getActivityStream = createServerFn({ method: "POST" })
           .order("opened_at", { ascending: false })
           .limit(100),
         supabaseAdmin.from("admin_audit_log")
-          .select("id, created_at, actor_user_id, action, target_user_id, metadata")
+          .select("id, created_at, actor_id, action, target_id, target_table")
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(100),
