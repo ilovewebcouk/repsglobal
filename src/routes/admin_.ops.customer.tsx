@@ -21,6 +21,7 @@ export const Route = createFileRoute("/admin_/ops/customer")({
 type Tile = {
   label: string;
   value: number;
+  sub?: string;
   tone?: "warn" | "crit";
   drill?: { to: string; hint: string };
 };
