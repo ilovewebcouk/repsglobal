@@ -752,7 +752,7 @@ function ProRow({ row }: { row: AdminProRow }) {
   });
 
   const initials = initialsFromName(row.name);
-  const isSuspended = row.status === "suspended";
+  const isSuspended = Boolean(row.suspendedAt);
   const isFlagged = row.status === "flagged";
   const slug = row.handle.replace(/^@/, "");
 
