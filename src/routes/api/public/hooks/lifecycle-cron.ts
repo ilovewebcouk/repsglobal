@@ -135,6 +135,90 @@ async function runLifecycleBatch(): Promise<CronResult> {
     result.errors.push(`plan_a scan: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // ---- 1b. First-nudge for Stripe-failed at_risk members ---------
+  // Covers any at_risk row with nudge_count = 0 that didn't receive an
+  // email synchronously from the Stripe webhook (e.g. webhook send error,
+  // or member promoted via subscription.updated without a recovery email).
+  // Idempotent: mintAndEmailRenewalToken uses a day-bucketed key, so a
+  // second run on the same UTC day collapses to one send.
+  try {
+    const { data: pending } = await supabaseAdmin
+      .from("churn_lifecycle")
+      .select("user_id, entered_at, source_event, nudge_count, last_nudge_at")
+      .eq("stage", "at_risk")
+      .eq("nudge_count", 0)
+      .is("last_nudge_at", null);
+    for (const r of (pending ?? []) as Array<{
+      user_id: string; entered_at: string; source_event: string | null;
+      nudge_count: number; last_nudge_at: string | null;
+    }>) {
+      result.at_risk_first_nudge.scanned += 1;
+      // Skip the BD blocked path — already handled by Plan A above with
+      // a different template ("card_needed") and its own throttle.
+      if (r.source_event === "plan_a_cron") {
+        result.at_risk_first_nudge.skipped += 1;
+        continue;
+      }
+      try {
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(r.user_id);
+        const email = authUser?.user?.email ?? null;
+        if (!email) {
+          result.at_risk_first_nudge.skipped += 1;
+          continue;
+        }
+        const { data: profile } = await supabaseAdmin
+          .from("profiles").select("full_name").eq("id", r.user_id).maybeSingle();
+        const { data: sub } = await supabaseAdmin
+          .from("subscriptions")
+          .select("tier, billing_period, status")
+          .eq("user_id", r.user_id).maybeSingle();
+        // Derive failed amount from the most recent payment_failed event.
+        const { data: ev } = await supabaseAdmin
+          .from("payment_events")
+          .select("payload, event_type, created_at")
+          .eq("user_id", r.user_id)
+          .in("event_type", ["invoice.payment_failed"])
+          .order("created_at", { ascending: false })
+          .limit(1).maybeSingle();
+        const evPayload = (ev as { payload?: { amount_due?: number; data?: { object?: { amount_due?: number } } } } | null)?.payload;
+        const evAmt = evPayload?.amount_due ?? evPayload?.data?.object?.amount_due ?? 0;
+        let amountStr = "";
+        if (evAmt > 0) {
+          const v = evAmt / 100;
+          amountStr = `£${v.toFixed(v % 1 === 0 ? 0 : 2)}`;
+        } else {
+          // Fallback: derive from plan; tier=free / unknown → omit currency.
+          const tier = (sub as { tier?: string } | null)?.tier;
+          if (tier === "pro") amountStr = "£59";
+          else if (tier === "verified") amountStr = "£99";
+          else amountStr = "your last invoice amount";
+        }
+        const intendedTier = (sub as { tier?: string } | null)?.tier === "pro" ? "pro" : "verified";
+        const graceEnd = new Date(
+          new Date(r.entered_at).getTime() + GRACE_DAYS * 86400000,
+        );
+        await mintAndEmailRenewalToken({
+          userId: r.user_id, email, purpose: "payment_failed",
+          templateName: "renewal-payment-failed",
+          intendedTier,
+          templateData: {
+            proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
+            amount: amountStr,
+            graceEndDate: graceEnd.toLocaleDateString("en-GB", {
+              day: "numeric", month: "long", year: "numeric",
+            }),
+          },
+        });
+        result.at_risk_first_nudge.emailed += 1;
+      } catch (e) {
+        result.errors.push(`at_risk_first_nudge ${r.user_id}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  } catch (e) {
+    result.errors.push(`at_risk_first_nudge scan: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+
   // ---- 2. Dunning progression: at_risk → grace → lapsed ----------
   try {
     const { data: rows } = await supabaseAdmin
