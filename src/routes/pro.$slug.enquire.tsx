@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import proJames from "@/assets/pro-james.jpg";
 import { submitEnquiry } from "@/lib/enquiries/enquiries.functions";
 import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
+import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 
 
 /* ------------------------------------------------------------------ */
@@ -138,17 +139,25 @@ function EnquirePage() {
     staleTime: 60_000,
   });
 
+  // Public profile fallback — covers pros without a published shop_front
+  // so name/avatar/city still come from the real account.
+  const profileQuery = useQuery({
+    queryKey: ["public-profile", slug],
+    queryFn: () => getPublicProfileBySlug({ data: { slug } }),
+    staleTime: 60_000,
+  });
+
   const pro = useMemo(() => {
     const live = liveQuery.data;
-    if (!live) return fallbackPro;
-    const sf = live.shopFront;
+    const profile = profileQuery.data;
+    const sf = live?.shopFront;
     return {
       ...fallbackPro,
-      name: sf.full_name ?? fallbackPro.name,
-      image: sf.avatar_url || fallbackPro.image,
-      city: sf.city ?? fallbackPro.city,
+      name: sf?.full_name ?? profile?.full_name ?? fallbackPro.name,
+      image: sf?.avatar_url ?? profile?.avatar_url ?? fallbackPro.image,
+      city: sf?.city ?? profile?.city ?? fallbackPro.city,
     };
-  }, [liveQuery.data, fallbackPro]);
+  }, [liveQuery.data, profileQuery.data, fallbackPro]);
 
   const serviceOptions: ServiceOption[] = useMemo(() => {
     const live = liveQuery.data;
