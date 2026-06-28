@@ -122,6 +122,8 @@ const TABS: { label: string; value: AdminProTab }[] = [
   { label: "All", value: "all" },
   { label: "Verified", value: "verified" },
   { label: "Unverified", value: "pending" },
+  { label: "Payment failed", value: "payment_failed" },
+  { label: "Renewal due", value: "renewal_due" },
   { label: "Flagged", value: "flagged" },
   { label: "Suspended", value: "suspended" },
   { label: "Recently joined", value: "recent" },
