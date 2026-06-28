@@ -101,6 +101,7 @@ import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
+import { Route as BillingSetupTokenRouteImport } from './routes/billing.setup.$token'
 import { Route as AdminOpsPlatformRouteImport } from './routes/admin_.ops.platform'
 import { Route as AdminOpsEmailRouteImport } from './routes/admin_.ops.email'
 import { Route as AdminOpsCustomerRouteImport } from './routes/admin_.ops.customer'
@@ -610,6 +611,11 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   path: '/checkout/credits/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BillingSetupTokenRoute = BillingSetupTokenRouteImport.update({
+  id: '/billing/setup/$token',
+  path: '/billing/setup/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminOpsPlatformRoute = AdminOpsPlatformRouteImport.update({
   id: '/platform',
   path: '/platform',
@@ -981,6 +987,7 @@ export interface FileRoutesByFullPath {
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
+  '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1117,6 +1124,7 @@ export interface FileRoutesByTo {
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
+  '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1259,6 +1267,7 @@ export interface FileRoutesById {
   '/admin_/ops/customer': typeof AdminOpsCustomerRoute
   '/admin_/ops/email': typeof AdminOpsEmailRoute
   '/admin_/ops/platform': typeof AdminOpsPlatformRoute
+  '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1400,6 +1409,7 @@ export interface FileRouteTypes {
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
+    | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1536,6 +1546,7 @@ export interface FileRouteTypes {
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
+    | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1677,6 +1688,7 @@ export interface FileRouteTypes {
     | '/admin_/ops/customer'
     | '/admin_/ops/email'
     | '/admin_/ops/platform'
+    | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1808,6 +1820,7 @@ export interface RootRouteChildren {
   RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
+  BillingSetupTokenRoute: typeof BillingSetupTokenRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
@@ -2470,6 +2483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCreditsReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/billing/setup/$token': {
+      id: '/billing/setup/$token'
+      path: '/billing/setup/$token'
+      fullPath: '/billing/setup/$token'
+      preLoaderRoute: typeof BillingSetupTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/ops/platform': {
       id: '/admin_/ops/platform'
       path: '/platform'
@@ -3119,6 +3139,7 @@ const rootRouteChildren: RootRouteChildren = {
   RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
+  BillingSetupTokenRoute: BillingSetupTokenRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
