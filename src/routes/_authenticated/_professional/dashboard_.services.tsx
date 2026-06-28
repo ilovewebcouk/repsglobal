@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Plus, Save, Sparkles, Star, Trash2 } from "lucide-react";
+import { Plus, Save, Star, Trash2 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -341,7 +341,7 @@ function ServiceCardsEditor({ tier }: { tier: "verified" | "pro" | "studio" }) {
   const fetchMine = useServerFn(getMyShopFront);
   const upsertSvc = useServerFn(upsertMyService);
   const deleteSvc = useServerFn(deleteMyService);
-  const isPro = tier === "pro" || tier === "studio";
+  
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-shop-front"],
