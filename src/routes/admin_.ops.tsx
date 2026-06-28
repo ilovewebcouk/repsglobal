@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Activity, Users, Bell, Mail, Stream } from "lucide-react";
+import { CreditCard, Activity, Users, Bell, Mail, Radio } from "lucide-react";
 import { getOpenAlerts, runAlertEvaluator } from "@/lib/ops/operations.functions";
 import { toast } from "sonner";
 import { SystemStatusStrip } from "@/components/ops/SystemStatusStrip";
