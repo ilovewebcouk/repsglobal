@@ -74,6 +74,7 @@ export const getMemberTimeline = createServerFn({ method: "POST" })
       verifRes, vDecRes, ticketsRes, msgsRes,
       reviewsAsProRes, reviewsAsClientRes,
       auditActorRes, auditTargetRes, nameRes,
+      disputesRes,
     ] = await Promise.all([
       supabaseAdmin.from("payment_events")
         .select("id, created_at, event_type, processing_error, dead_lettered_at, processed_at, stripe_subscription_id")
