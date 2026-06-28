@@ -32,10 +32,12 @@ export const findMember = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ q: z.string().min(1).max(200) }).parse(d))
   .handler(async ({ data, context }): Promise<MemberMatch[]> => {
     await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows, error } = await supabaseAdmin.rpc("ops_find_member" as never, {
-      _q: data.q,
-    } as never);
+    // Use the user-scoped client so the SECURITY DEFINER RPC sees auth.uid()
+    // (service-role calls have a NULL auth.uid() → the RPC's admin check fails).
+    const supa = context.supabase as unknown as {
+      rpc: (n: string, p: object) => Promise<{ data: unknown; error: { message: string } | null }>;
+    };
+    const { data: rows, error } = await supa.rpc("ops_find_member", { _q: data.q });
     if (error) throw new Error(error.message);
     return (rows ?? []) as MemberMatch[];
   });
