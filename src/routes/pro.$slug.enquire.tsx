@@ -176,6 +176,9 @@ function EnquirePage() {
     return {
       ...fallbackPro,
       name: sf?.full_name ?? profile?.full_name ?? fallbackPro.name,
+      role:
+        getProfessionLabel(sf?.primary_profession ?? profile?.primary_profession) ??
+        fallbackPro.role,
       image: sf?.avatar_url ?? profile?.avatar_url ?? fallbackPro.image,
       area: loc?.town ?? loc?.postcode_outward ?? fallbackPro.area,
       city: sf?.city ?? profile?.city ?? loc?.region ?? fallbackPro.city,
