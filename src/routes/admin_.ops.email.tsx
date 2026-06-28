@@ -90,8 +90,8 @@ function EmailOpsPage() {
 
   const stats = statsQ.data;
 
-  function setSearch(patch: Partial<typeof Route.types.fullSearchSchema>) {
-    void navigate({ search: (s) => ({ ...s, ...patch, page: 0 }) });
+  function setSearch(patch: Partial<z.infer<typeof search>>) {
+    void navigate({ search: (s: z.infer<typeof search>) => ({ ...s, ...patch, page: 0 }) });
   }
 
   return (
@@ -183,8 +183,8 @@ function EmailOpsPage() {
           <div className="flex items-center justify-between gap-2 border-t border-reps-border px-3 py-2 text-xs text-reps-text/60">
             <span>{logQ.data ? `${logQ.data.total.toLocaleString()} match${logQ.data.total === 1 ? "" : "es"}` : "…"}</span>
             <div className="flex items-center gap-1">
-              <Button size="sm" variant="outline" disabled={page === 0} onClick={() => navigate({ search: (s) => ({ ...s, page: Math.max(0, s.page - 1) }) })}>Prev</Button>
-              <Button size="sm" variant="outline" disabled={!logQ.data || (page + 1) * PAGE_SIZE >= logQ.data.total} onClick={() => navigate({ search: (s) => ({ ...s, page: s.page + 1 }) })}>Next</Button>
+              <Button size="sm" variant="outline" disabled={page === 0} onClick={() => navigate({ search: (s: z.infer<typeof search>) => ({ ...s, page: Math.max(0, s.page - 1) }) })}>Prev</Button>
+              <Button size="sm" variant="outline" disabled={!logQ.data || (page + 1) * PAGE_SIZE >= logQ.data.total} onClick={() => navigate({ search: (s: z.infer<typeof search>) => ({ ...s, page: s.page + 1 }) })}>Next</Button>
             </div>
           </div>
         </div>
