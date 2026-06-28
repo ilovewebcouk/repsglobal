@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_payment_events_type_created ON public.payment_events (event_type, created_at DESC);
