@@ -280,7 +280,7 @@ async function resolveTierRecipients(
   // Email: always the auth.users login email.
   const emailMap = await resolveUserEmailsById(supabaseAdmin, proSet.map((p: any) => p.id));
 
-  return proSet
+  const live = proSet
     .map((p: any) => {
       const email = (emailMap.get(p.id) ?? "").toLowerCase().trim();
       return {
@@ -290,6 +290,25 @@ async function resolveTierRecipients(
       };
     })
     .filter((r) => r.email && isValidEmail(r.email));
+
+  if (!wantFormer) return live;
+
+  // Former members live in `mailing_list_contacts` (populated by the
+  // cancel-and-delete flow). We use `former_user_id` as a stable userId so
+  // dedupe + downstream send logic don't choke on null ids.
+  const { data: formerRows } = await supabaseAdmin
+    .from("mailing_list_contacts")
+    .select("email, full_name, former_user_id")
+    .eq("marketing_opt_in", true);
+  const seen = new Set(live.map((r) => r.email));
+  const former = ((formerRows ?? []) as any[])
+    .map((r) => ({
+      userId: r.former_user_id ?? `former:${r.email}`,
+      email: (r.email ?? "").toLowerCase().trim(),
+      name: r.full_name ?? "",
+    }))
+    .filter((r) => r.email && isValidEmail(r.email) && !seen.has(r.email));
+  return [...live, ...former];
 }
 
 
