@@ -2,42 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
-const identityInput = z.object({
-  doc_type: z.enum(["passport", "driving_licence", "national_id"]),
-  doc_country: z.string().min(2).max(64).optional().nullable(),
-  doc_path_front: z.string().min(1),
-  doc_path_back: z.string().optional().nullable(),
-  selfie_path: z.string().optional().nullable(),
-  name_on_doc: z.string().max(160).optional().nullable(),
-  dob_on_doc: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
-  doc_expiry: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
-});
+// Identity is captured exclusively via Stripe Identity. The legacy manual
+// upload path (saveIdentity + identity_documents writes from the dashboard)
+// has been retired — see createStripeIdentitySession in
+// ./stripe-identity.functions.ts for the only entry point now.
 
-export const saveIdentity = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuthWithImpersonation])
-  .inputValidator((d: unknown) => identityInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
-    const { data: row, error } = await supabase
-      .from("identity_documents")
-      .insert({
-        professional_id: userId,
-        doc_type: data.doc_type,
-        doc_country: data.doc_country ?? null,
-        doc_path_front: data.doc_path_front,
-        doc_path_back: data.doc_path_back ?? null,
-        selfie_path: data.selfie_path ?? null,
-        name_on_doc: data.name_on_doc ?? null,
-        dob_on_doc: data.dob_on_doc ?? null,
-        doc_expiry: data.doc_expiry ?? null,
-        status: "pending",
-      } as never)
-      .select("id, status, created_at")
-      .single();
-    if (error) throw new Error(error.message);
-    return row;
-  });
 
 export const myIdentity = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
