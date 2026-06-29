@@ -97,13 +97,14 @@ function Member360Page() {
   const name = snap.data?.full_name ?? snap.data?.email ?? "Member";
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">{name}</h1>
-        <p className="text-sm text-muted-foreground">
-          {snap.data?.email ?? "Loading member identity…"}
-        </p>
-      </header>
+    <DashboardShell
+      role="admin"
+      active="Memberships"
+      title={name}
+      subtitle={snap.data?.email ?? "Loading member identity…"}
+    >
+      <div className="flex flex-col gap-6">
+
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr_240px]">
         {/* Identity column */}
