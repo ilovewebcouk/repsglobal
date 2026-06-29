@@ -1,8 +1,11 @@
 // Admin Member 360 — billing write actions.
 //
-// Stripe is the source of truth; after every successful write we mirror the
-// new state back into `public.subscriptions` so the UI reflects immediately
-// without waiting on the webhook round-trip.
+// Cancellation contract lives in `closeMembership` (delegating to
+// `_closeMembershipImpl` in close-membership.server.ts).
+//
+// Stripe is the source of truth; after every successful Stripe write the
+// matching `public.subscriptions` row is mirrored back so the UI reflects
+// immediately without waiting on the webhook round-trip.
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -17,13 +20,7 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
   if (!isAdmin) throw new Error("Forbidden");
 }
 
-type ResolvedSub = {
-  stripe_subscription_id: string;
-  env: StripeEnv;
-  rowId: string;
-};
-
-async function resolveActiveSub(userId: string): Promise<ResolvedSub> {
+async function resolveActiveSub(userId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("subscriptions")
@@ -37,9 +34,9 @@ async function resolveActiveSub(userId: string): Promise<ResolvedSub> {
     rows.find((r) => ["active", "trialing", "past_due"].includes(r.status)) ?? rows[0];
   if (!live?.stripe_subscription_id) throw new Error("No Stripe subscription on file");
   return {
-    stripe_subscription_id: live.stripe_subscription_id,
+    stripe_subscription_id: live.stripe_subscription_id as string,
     env: (live.environment === "live" ? "live" : "sandbox") as StripeEnv,
-    rowId: live.id,
+    rowId: live.id as string,
   };
 }
 
@@ -127,7 +124,7 @@ export const setMemberCancelAtPeriodEnd = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/* ─────────────── Cancel immediately ─────────────── */
+/* ─────────────── Cancel immediately (no delete) ─────────────── */
 
 export const cancelMemberSubscriptionNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -146,55 +143,41 @@ export const cancelMemberSubscriptionNow = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/* ─────────────── Cancel + delete (canonical close-account flow) ───────────────
- *
- * Business rule: "No active account without an active subscription."
- *
- * Every UI button that ends a member's relationship with REPS — Member 360
- * Billing actions, the support-ticket "Cancel this member's account" card,
- * a member-requested cancellation via support — funnels through this one
- * server fn so behaviour can't diverge across surfaces.
- *
- * Order of operations (best-effort cancel first, then archive, then delete):
- *   1. Snapshot identity + tier from profile / professional / subscription.
- *   2. Cancel every Stripe subscription on file (live + sandbox).
- *   3. Archive the contact into `mailing_list_contacts` (uniqueness by lower(email))
- *      so the email survives the cascade for future campaigns.
- *   4. Send the "member-cancelled" confirmation via Mailgun. Sends BEFORE we
- *      delete the auth row so the address is still in `auth.users` for logs.
- *   5. Delete the auth user — cascades to profiles, professionals, reviews, etc.
- *   6. Write an admin audit-log entry.
- */
+/* ─────────────── closeMembership — canonical contract ─────────────── */
 
+export type CloseMode = "schedule_end_period" | "end_now_delete" | "delete_only";
 export type CancelReason =
   | "admin_cancel_immediate"
   | "admin_cancel_period_end"
   | "admin_end_trial"
   | "admin_delete"
-  | "member_request";
+  | "member_request"
+  | "chargeback_lost";
 
-const REASON_LABEL: Record<CancelReason, string> = {
-  admin_cancel_immediate: "cancelled by admin",
-  admin_cancel_period_end: "cancelled at admin's request",
-  admin_end_trial: "trial ended by admin",
-  admin_delete: "removed by admin",
-  member_request: "at your request",
-};
+const ALL_MODES: CloseMode[] = ["schedule_end_period", "end_now_delete", "delete_only"];
+const ALL_REASONS: CancelReason[] = [
+  "admin_cancel_immediate",
+  "admin_cancel_period_end",
+  "admin_end_trial",
+  "admin_delete",
+  "member_request",
+  "chargeback_lost",
+];
 
-export const cancelAndDeleteMember = createServerFn({ method: "POST" })
+export const closeMembership = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { user_id: string; reason: CancelReason; notes?: string }) => {
+  .inputValidator((d: {
+    user_id: string;
+    mode: CloseMode;
+    reason: CancelReason;
+    notes?: string;
+  }) => {
     if (!d?.user_id) throw new Error("user_id required");
-    const REASONS: CancelReason[] = [
-      "admin_cancel_immediate",
-      "admin_cancel_period_end",
-      "admin_end_trial",
-      "admin_delete",
-      "member_request",
-    ];
-    if (!REASONS.includes(d.reason)) throw new Error("invalid reason");
+    if (!ALL_MODES.includes(d.mode)) throw new Error("invalid mode");
+    if (!ALL_REASONS.includes(d.reason)) throw new Error("invalid reason");
     return {
       user_id: d.user_id,
+      mode: d.mode,
       reason: d.reason,
       notes: d.notes?.trim() || null,
     };
@@ -204,151 +187,54 @@ export const cancelAndDeleteMember = createServerFn({ method: "POST" })
     if (data.user_id === context.userId) {
       throw new Error("You cannot close your own admin account from here.");
     }
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // 1) Snapshot — pull what we need before the cascade wipes it.
-    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(data.user_id);
-    const email = (authUser?.user?.email ?? "").toLowerCase().trim();
-    if (!email) throw new Error("Member has no email on auth account");
-
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("full_name, display_name")
-      .eq("id", data.user_id)
-      .maybeSingle();
-
-    const { data: professional } = await supabaseAdmin
-      .from("professionals")
-      .select("slug, primary_profession, city, is_published")
-      .eq("id", data.user_id)
-      .maybeSingle();
-
-    const { data: subs } = await supabaseAdmin
-      .from("subscriptions")
-      .select("id, stripe_subscription_id, environment, tier, status")
-      .eq("user_id", data.user_id);
-
-    const lastTier =
-      (subs ?? []).find((s: any) => ["active", "trialing", "past_due"].includes(s.status))?.tier ??
-      (subs ?? [])[0]?.tier ??
-      null;
-
-    const fullName =
-      (profile as any)?.full_name ?? (profile as any)?.display_name ?? null;
-
-    // 2) Best-effort cancel every Stripe subscription (live + sandbox).
-    const { createStripeClient } = await import("@/lib/billing/stripe.server");
-    let cancelled = 0;
-    for (const s of (subs ?? []) as any[]) {
-      if (!s.stripe_subscription_id) continue;
-      try {
-        const stripe = createStripeClient((s.environment === "live" ? "live" : "sandbox") as StripeEnv);
-        await stripe.subscriptions.cancel(s.stripe_subscription_id);
-        cancelled++;
-      } catch (e) {
-        console.warn("[cancelAndDeleteMember] stripe cancel failed", s.stripe_subscription_id, e);
-      }
-    }
-
-    // 3) Archive the contact (idempotent upsert on lower(email)).
-    try {
-      await supabaseAdmin
-        .from("mailing_list_contacts")
-        .upsert(
-          {
-            email,
-            full_name: fullName,
-            profession: (professional as any)?.primary_profession ?? null,
-            city: (professional as any)?.city ?? null,
-            former_user_id: data.user_id,
-            last_tier: lastTier,
-            deletion_reason: data.reason,
-            deletion_notes: data.notes,
-            marketing_opt_in: true,
-            source: "cancellation",
-            deleted_at: new Date().toISOString(),
-          } as never,
-          { onConflict: "email" },
-        );
-    } catch (e) {
-      console.warn("[cancelAndDeleteMember] archive failed", e);
-    }
-
-    // 4) Send the confirmation email (before delete so the audit trail is clean).
-    let emailResult: { ok: boolean; error?: string } = { ok: true };
-    try {
-      const React = await import("react");
-      const { render } = await import("@react-email/components");
-      const { TEMPLATES } = await import("@/lib/email-templates/registry");
-      const tmpl = TEMPLATES["member-cancelled"];
-      if (tmpl) {
-        const props = {
-          proName: fullName ?? undefined,
-          reasonLabel: REASON_LABEL[data.reason],
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const element = React.createElement(tmpl.component as any, props);
-        const html = await render(element);
-        const text = await render(element, { plainText: true });
-        const subject =
-          typeof tmpl.subject === "function" ? tmpl.subject(props) : tmpl.subject;
-        const { sendViaMailgun } = await import("@/lib/email/mailgun.server");
-        const sendRes = await sendViaMailgun({
-          to: email,
-          subject,
-          html,
-          text,
-          templateName: "member-cancelled",
-          idempotencyKey: `member-cancelled-${data.user_id}-${Date.now()}`,
-        });
-        emailResult = { ok: sendRes.ok, error: sendRes.error };
-      }
-    } catch (e: any) {
-      console.warn("[cancelAndDeleteMember] email failed", e);
-      emailResult = { ok: false, error: e?.message ?? String(e) };
-    }
-
-    // 5) Delete the auth user (cascades via FKs to profiles, professionals, etc.).
-    const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
-    if (delErr) throw delErr;
-
-    // 6) Audit log.
-    try {
-      await supabaseAdmin.rpc("log_admin_action", {
-        _actor_id: context.userId,
-        _action: "member.cancel_and_delete",
-        _target_table: "auth.users",
-        _target_id: data.user_id,
-        _before_state: {
-          email,
-          full_name: fullName,
-          last_tier: lastTier,
-          stripe_subs_cancelled: cancelled,
-          reason: data.reason,
-        },
-        _reason: data.notes ?? data.reason,
-      });
-    } catch (e) {
-      console.warn("[cancelAndDeleteMember] audit log failed", e);
-    }
-
-    return {
-      ok: true,
-      cancelled,
-      emailSent: emailResult.ok,
-      emailError: emailResult.error,
-    };
+    const { _closeMembershipImpl } = await import("./close-membership.server");
+    return _closeMembershipImpl({
+      user_id: data.user_id,
+      mode: data.mode,
+      reason: data.reason,
+      notes: data.notes,
+      actor_id: `admin:${context.userId}`,
+    });
   });
 
+/* ─────────────── Back-compat shim ─────────────── */
+// Old callers (route file, support card) imported `cancelAndDeleteMember`.
+// Resolves to end_now_delete (or delete_only when there's nothing to
+// cancel) — matching the original behaviour exactly.
+export const cancelAndDeleteMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { user_id: string; reason: CancelReason; notes?: string }) => {
+    if (!d?.user_id) throw new Error("user_id required");
+    return {
+      user_id: d.user_id,
+      reason: d.reason,
+      notes: d.notes?.trim() || null,
+    };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: subs } = await supabaseAdmin
+      .from("subscriptions")
+      .select("stripe_subscription_id, status")
+      .eq("user_id", data.user_id);
+    const hasLiveSub = (subs ?? []).some(
+      (s: any) =>
+        s.stripe_subscription_id &&
+        ["active", "trialing", "past_due"].includes(s.status),
+    );
+    const mode: CloseMode = hasLiveSub ? "end_now_delete" : "delete_only";
+    const { _closeMembershipImpl } = await import("./close-membership.server");
+    return _closeMembershipImpl({
+      user_id: data.user_id,
+      mode,
+      reason: data.reason,
+      notes: data.notes,
+      actor_id: `admin:${context.userId}`,
+    });
+  });
 
-/* ─────────────── Find a member by email (used by support tickets) ───────────────
- *
- * Support tickets only carry the requester's email, not their user_id. This
- * fn walks `auth.users` (paginated, 200/page — fine for REPs' headcount) to
- * find a match and returns just enough to render a "Close this member's
- * account" card in the ticket sheet.
- */
+/* ─────────────── Find a member by email (used by support tickets) ─────────────── */
 export const findMemberByEmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { email: string }) => {

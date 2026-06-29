@@ -609,30 +609,30 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     _source_event: event.type,
                     _metadata: { subscription_id: sub.id },
                   } as never);
-                  // Cancellation confirmation email — idempotent on sub id.
+                  // Self-cancel cleanup — unpublish profile, archive email,
+                  // delete auth user, send confirmation. Canonical contract
+                  // shared with admin-initiated closure. Idempotent: if the
+                  // user was already deleted (admin-led cancel that fired
+                  // this webhook), the helper will throw "Member has no
+                  // email on auth account" which we swallow.
                   try {
-                    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
-                    const email = authUser?.user?.email ?? null;
-                    if (email) {
-                      const { data: profile } = await supabaseAdmin
-                        .from("profiles").select("display_name, full_name").eq("id", userId).maybeSingle();
-                      const tier = (sub.metadata?.tier as string) ?? "verified";
-                      const tierLabel = tier === "pro" ? "REPS Pro" : tier === "studio" ? "REPS Studio" : "REPS Core";
-                      const endsAtTs = (sub as unknown as { current_period_end?: number }).current_period_end;
-                      const endsAt = endsAtTs ? new Date(endsAtTs * 1000).toISOString() : undefined;
-                      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
-                      await sendTransactionalEmailServer({
-                        templateName: "cancellation-confirmation",
-                        recipientEmail: email,
-                        idempotencyKey: `cancellation-confirmation:${sub.id}`,
-                        templateData: {
-                          proName: (profile?.display_name ?? profile?.full_name ?? "").toString().split(" ")[0] || null,
-                          tierLabel, endsAt,
-                        },
-                      });
+                    const { _closeMembershipImpl } = await import(
+                      "@/lib/admin/close-membership.server"
+                    );
+                    await _closeMembershipImpl({
+                      user_id: userId,
+                      mode: "end_now_delete",
+                      reason: "member_request",
+                      notes: `Stripe self-cancel via portal (sub ${sub.id})`,
+                      actor_id: "stripe_webhook",
+                    });
+                  } catch (e: any) {
+                    if (!/no email on auth account/i.test(e?.message ?? "")) {
+                      console.warn(
+                        "[webhook] self-cancel cleanup failed:",
+                        e?.message ?? e,
+                      );
                     }
-                  } catch (e) {
-                    console.warn("[email] cancellation confirmation failed:", e);
                   }
                 } else if (sub.status === "past_due" || sub.status === "unpaid") {
                   // Subscription transitioned to past_due — enrol in recovery

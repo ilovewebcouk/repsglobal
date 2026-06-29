@@ -3352,6 +3352,11 @@ export type Database = {
           billing_period: Database["public"]["Enums"]["billing_period"] | null
           cancel_at_period_end: boolean
           canceled_at: string | null
+          cancellation_notes: string | null
+          cancellation_reason: string | null
+          cancelled_email: string | null
+          cancelled_full_name: string | null
+          closed_by_actor: string | null
           created_at: string
           current_period_end: string | null
           environment: string
@@ -3372,6 +3377,11 @@ export type Database = {
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           cancel_at_period_end?: boolean
           canceled_at?: string | null
+          cancellation_notes?: string | null
+          cancellation_reason?: string | null
+          cancelled_email?: string | null
+          cancelled_full_name?: string | null
+          closed_by_actor?: string | null
           created_at?: string
           current_period_end?: string | null
           environment?: string
@@ -3392,6 +3402,11 @@ export type Database = {
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           cancel_at_period_end?: boolean
           canceled_at?: string | null
+          cancellation_notes?: string | null
+          cancellation_reason?: string | null
+          cancelled_email?: string | null
+          cancelled_full_name?: string | null
+          closed_by_actor?: string | null
           created_at?: string
           current_period_end?: string | null
           environment?: string

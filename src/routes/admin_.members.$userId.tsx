@@ -42,8 +42,9 @@ import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.func
 
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
 import {
-  cancelAndDeleteMember,
+  closeMembership,
   type CancelReason,
+  type CloseMode,
 } from "@/lib/admin/billing-actions.functions";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -465,27 +466,34 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
   );
 }
 
-type Strategy = "end_trial" | "cancel_period_end" | "cancel_now";
+type Strategy = "end_trial" | "schedule_end_period" | "cancel_now";
+
+const STRATEGY_TO_MODE: Record<Strategy, CloseMode> = {
+  end_trial: "end_now_delete",
+  schedule_end_period: "schedule_end_period",
+  cancel_now: "end_now_delete",
+};
 
 const STRATEGY_TO_REASON: Record<Strategy, CancelReason> = {
   end_trial: "admin_end_trial",
-  cancel_period_end: "admin_cancel_period_end",
+  schedule_end_period: "admin_cancel_period_end",
   cancel_now: "admin_cancel_immediate",
 };
 
 const STRATEGY_LABEL: Record<Strategy, { title: string; detail: string }> = {
   end_trial: {
     title: "End trial now",
-    detail: "Stops the trial today, no charge. Profile removed, email archived.",
+    detail: "Stops the trial today, no charge. Profile removed, account deleted, email archived.",
   },
-  cancel_period_end: {
-    title: "Cancel at period end",
+  schedule_end_period: {
+    title: "Cancel at period end (keep account live)",
     detail:
-      "Lets the current paid period run out, then closes the account. Recommended for paying members.",
+      "Schedules Stripe to stop renewing. Profile stays live until period end, member can resume from Stripe portal. NO delete.",
   },
   cancel_now: {
-    title: "Cancel immediately",
-    detail: "Cancels Stripe now. No refund is issued.",
+    title: "Cancel immediately and delete",
+    detail:
+      "Cancels Stripe now, removes the profile, deletes the account, archives the email. No refund. Use for spam / abuse / member-requested closure.",
   },
 };
 
@@ -504,14 +512,14 @@ function BillingActions({
 }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const closeAccount = useServerFn(cancelAndDeleteMember);
+  const closeFn = useServerFn(closeMembership);
 
   const hasLiveSub = status !== "canceled" && status !== "incomplete_expired";
   const defaultStrategy: Strategy = isTrialing
     ? "end_trial"
     : cancelAtPeriodEnd
       ? "cancel_now"
-      : "cancel_period_end";
+      : "schedule_end_period";
 
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -519,7 +527,11 @@ function BillingActions({
   const [typedName, setTypedName] = useState("");
   const [strategy, setStrategy] = useState<Strategy>(defaultStrategy);
 
+  const isDestructive = !hasLiveSub || STRATEGY_TO_MODE[strategy] !== "schedule_end_period";
+
+  // Only require the typed-name confirmation for destructive (delete) modes.
   const nameMatches =
+    !isDestructive ||
     typedName.trim().toLowerCase() === (memberName ?? "").trim().toLowerCase();
 
   const reset = () => {
@@ -532,23 +544,37 @@ function BillingActions({
   const run = async () => {
     setPending(true);
     try {
+      const mode: CloseMode = hasLiveSub
+        ? STRATEGY_TO_MODE[strategy]
+        : "delete_only";
       const reason: CancelReason = hasLiveSub
         ? STRATEGY_TO_REASON[strategy]
         : "admin_delete";
-      const res = await closeAccount({
+      const res = await closeFn({
         data: {
           user_id: userId,
+          mode,
           reason,
           notes: notes.trim() || undefined,
         },
       });
-      toast.success(
-        res.emailSent
-          ? "Account closed. Confirmation email sent."
-          : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
-      );
-      await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
-      navigate({ to: "/admin/members" });
+      if (mode === "schedule_end_period") {
+        toast.success(
+          res.emailSent
+            ? "Scheduled to end at period close. Confirmation email sent."
+            : "Scheduled to end at period close.",
+        );
+        await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+        reset();
+      } else {
+        toast.success(
+          res.emailSent
+            ? "Account closed. Confirmation email sent."
+            : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
+        );
+        await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+        navigate({ to: "/admin/members" });
+      }
     } catch (e: any) {
       toast.error(e?.message ?? "Could not close account");
       setPending(false);
@@ -583,11 +609,15 @@ function BillingActions({
       <AlertDialog open={open} onOpenChange={(o) => !o && !pending && reset()}>
         <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this member's account?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {isDestructive ? "Close this member's account?" : "Schedule cancellation?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {hasLiveSub
-                ? "Choose how to wind down the Stripe subscription. The profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone."
-                : "Subscription is already cancelled. This removes the profile, sends a confirmation email, and archives the email. This can't be undone."}
+              {!hasLiveSub
+                ? "Subscription is already cancelled. This removes the profile, sends a confirmation email, and archives the email. This can't be undone."
+                : STRATEGY_TO_MODE[strategy] === "schedule_end_period"
+                  ? "Stripe will stop renewing at the current period end. The profile stays live, the member keeps access, and they can resume from the Stripe portal. The account is NOT deleted."
+                  : "Choose how to wind down the Stripe subscription. The profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -601,7 +631,7 @@ function BillingActions({
                   className="mt-2 flex flex-col gap-2"
                 >
                   {(
-                    ["end_trial", "cancel_period_end", "cancel_now"] as Strategy[]
+                    ["end_trial", "schedule_end_period", "cancel_now"] as Strategy[]
                   )
                     .filter((s) => (s === "end_trial" ? isTrialing : true))
                     .map((s) => (
@@ -642,19 +672,21 @@ function BillingActions({
               />
             </div>
 
-            <div>
-              <Label htmlFor="close-confirm" className="text-[12.5px] text-white/70">
-                Type <span className="font-semibold text-white">{memberName || "the member's name"}</span> to confirm
-              </Label>
-              <Input
-                id="close-confirm"
-                value={typedName}
-                onChange={(e) => setTypedName(e.target.value)}
-                className="mt-1"
-                disabled={pending}
-                autoComplete="off"
-              />
-            </div>
+            {isDestructive && (
+              <div>
+                <Label htmlFor="close-confirm" className="text-[12.5px] text-white/70">
+                  Type <span className="font-semibold text-white">{memberName || "the member's name"}</span> to confirm
+                </Label>
+                <Input
+                  id="close-confirm"
+                  value={typedName}
+                  onChange={(e) => setTypedName(e.target.value)}
+                  className="mt-1"
+                  disabled={pending}
+                  autoComplete="off"
+                />
+              </div>
+            )}
           </div>
 
           <AlertDialogFooter>
@@ -665,9 +697,19 @@ function BillingActions({
                 e.preventDefault();
                 run();
               }}
-              className="bg-rose-500 text-white hover:bg-rose-600"
+              className={cn(
+                isDestructive
+                  ? "bg-rose-500 text-white hover:bg-rose-600"
+                  : "bg-reps-orange text-white hover:bg-reps-orange/90",
+              )}
             >
-              {pending ? "Closing…" : "Delete account"}
+              {pending
+                ? isDestructive
+                  ? "Closing…"
+                  : "Scheduling…"
+                : isDestructive
+                  ? "Delete account"
+                  : "Schedule cancellation"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
