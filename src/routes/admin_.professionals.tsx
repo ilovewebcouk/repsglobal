@@ -671,12 +671,8 @@ function ProRow({ row }: { row: AdminProRow }) {
   const startFn = useServerFn(startImpersonation);
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
-  const cancelSubFn = useServerFn(cancelProfessionalSubscription);
-  const deleteFn = useServerFn(deleteProfessional);
   const [busy, setBusy] = React.useState(false);
   const [suspendOpen, setSuspendOpen] = React.useState(false);
-  const [cancelOpen, setCancelOpen] = React.useState(false);
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   async function handleViewAs() {
     if (busy) return;
