@@ -334,7 +334,7 @@ export const aiDraftDisputeEvidence = createServerFn({ method: "POST" })
     await assertAdmin(supabaseAdmin, context.userId);
 
     // Re-use the workbench resolver to get full context.
-    const wb = await (getDisputeWorkbench as any).handler({ context, data });
+    const wb = await buildWorkbench(context.userId, data.disputeId);
 
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI is not configured");
