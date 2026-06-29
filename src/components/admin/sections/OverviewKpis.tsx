@@ -227,27 +227,19 @@ export function OverviewKpis({
         )}
       </TileShell>
 
-      {/* KPI 4 — Net Member Growth */}
-      <TileShell icon={TrendingUp} label="Net member growth" reconcileHash="growth">
+      {/* KPI 4 — Total Revenue (lifetime) */}
+      <TileShell icon={PoundSterling} label="Total revenue" reconcileHash="revenue">
         <div className="mt-1.5 flex items-baseline gap-2">
-          <span
-            className={`font-display text-[26px] font-bold leading-none ${netPositive ? "text-reps-green" : net < 0 ? "text-white" : "text-white"}`}
-          >
-            {netPositive ? `+${net}` : net}
+          <span className="font-display text-[26px] font-bold leading-none text-reps-green">
+            {fmtPounds(data.lifetimeRevenuePence)}
           </span>
         </div>
-        <div className="mt-1 flex items-center gap-3 text-[11px] text-white/55">
-          <span>
-            Joined <span className="font-semibold text-white/80">{data.joinedInPeriod}</span>
-          </span>
-          <span className="text-white/20">·</span>
-          <span>
-            Churned <span className="font-semibold text-white/80">{data.churnedInPeriod}</span>
-          </span>
+        <div className="mt-1 text-[11px] text-white/45">
+          All-time cash banked across REPS
         </div>
-        {data.signupsSeries && data.signupsSeries.length > 1 ? (
+        {data.revenueSeries && data.revenueSeries.length > 1 ? (
           <div className="mt-3">
-            <Sparkline data={data.signupsSeries} id="growth" color="var(--reps-green)" />
+            <Sparkline data={data.revenueSeries} id="lifetime" color="var(--reps-green)" />
           </div>
         ) : (
           <div className="mt-3 h-10" aria-hidden />
