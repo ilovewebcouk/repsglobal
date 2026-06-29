@@ -173,6 +173,7 @@ export function computeMemberBillingRow(input: MemberBillingRowInput): MemberBil
     trialDaysLeft,
     hasActiveEntitlement: plan !== "free",
     stripeSubscriptionId: null, // not modelled in SubscriptionRowLite; resolver augments
+    stripeCustomerId: null, // not modelled in SubscriptionRowLite; resolver augments
     stripeStatus: subDetail?.status ?? null,
     cancelAtPeriodEnd: false, // not modelled in SubscriptionRowLite; resolver augments
   };
