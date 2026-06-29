@@ -892,28 +892,6 @@ function ProRow({ row }: { row: AdminProRow }) {
           onConfirm={(reason) => suspendM.mutate({ suspended: true, reason })}
         />
 
-        <ConfirmDialog
-          open={cancelOpen}
-          onOpenChange={setCancelOpen}
-          title={`Cancel subscription for ${row.name}?`}
-          description="This cancels any active Stripe subscription immediately and marks their local subscription as canceled. Their account stays active — use Delete member to remove them entirely."
-          confirmLabel="Cancel subscription"
-          confirmTone="amber"
-          pending={cancelSubM.isPending}
-          onConfirm={(reason) => cancelSubM.mutate(reason)}
-        />
-
-        <ConfirmDialog
-          open={deleteOpen}
-          onOpenChange={setDeleteOpen}
-          title={`Delete ${row.name}?`}
-          description="This cancels any active Stripe subscription, then permanently deletes their account, profile, and all associated data. This cannot be undone."
-          confirmLabel="Delete member"
-          confirmTone="red"
-          requireTypedConfirm="DELETE"
-          pending={deleteM.isPending}
-          onConfirm={(reason) => deleteM.mutate(reason)}
-        />
       </td>
     </tr>
   );
