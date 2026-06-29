@@ -93,6 +93,8 @@ type ProRow = {
   slug: string | null;
   city: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   specialisms: string[] | null;
   headline: string | null;
   in_person_available: boolean | null;
