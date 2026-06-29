@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { BulkActionBar } from "@/components/admin/support/BulkActionBar";
 import { NewTicketDialog } from "@/components/admin/support/NewTicketDialog";
+import { MemberCancelCard } from "@/components/admin/support/MemberCancelCard";
 
 import { supabase } from "@/integrations/supabase/client";
 import { requireRole } from "@/lib/route-gates";
@@ -1103,6 +1104,16 @@ function TicketDrawer({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          {ticket?.requester_email ? (
+            <MemberCancelCard
+              requesterEmail={ticket.requester_email}
+              onClosed={() => {
+                qc.invalidateQueries({ queryKey: ["admin", "support", "tickets"] });
+                update.mutate({ status: "solved" });
+              }}
+            />
+          ) : null}
+
           {priorTickets.length > 0 ? (
             <div className="rounded-[12px] border border-reps-border bg-white/[0.02]">
               <button

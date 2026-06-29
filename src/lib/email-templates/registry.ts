@@ -38,6 +38,7 @@ import { template as chargebackResolvedLost } from './chargeback-resolved-lost'
 import { template as legacyConversionConfirmation } from './legacy-conversion-confirmation'
 import { template as legacySetupLink } from './legacy-setup-link'
 import { template as legacyReactivation } from './legacy-reactivation'
+import { template as memberCancelled } from './member-cancelled'
 
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
@@ -70,6 +71,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'legacy-conversion-confirmation': legacyConversionConfirmation,
   'legacy-setup-link': legacySetupLink,
   'legacy-reactivation': legacyReactivation,
+  'member-cancelled': memberCancelled,
 }
 
 

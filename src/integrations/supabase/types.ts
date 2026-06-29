@@ -2076,6 +2076,57 @@ export type Database = {
         }
         Relationships: []
       }
+      mailing_list_contacts: {
+        Row: {
+          city: string | null
+          created_at: string
+          deleted_at: string
+          deletion_notes: string | null
+          deletion_reason: Database["public"]["Enums"]["mailing_list_deletion_reason"]
+          email: string
+          former_user_id: string | null
+          full_name: string | null
+          id: string
+          last_tier: string | null
+          marketing_opt_in: boolean
+          profession: string | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          deleted_at?: string
+          deletion_notes?: string | null
+          deletion_reason: Database["public"]["Enums"]["mailing_list_deletion_reason"]
+          email: string
+          former_user_id?: string | null
+          full_name?: string | null
+          id?: string
+          last_tier?: string | null
+          marketing_opt_in?: boolean
+          profession?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          deleted_at?: string
+          deletion_notes?: string | null
+          deletion_reason?: Database["public"]["Enums"]["mailing_list_deletion_reason"]
+          email?: string
+          former_user_id?: string | null
+          full_name?: string | null
+          id?: string
+          last_tier?: string | null
+          marketing_opt_in?: boolean
+          profession?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -4492,6 +4543,12 @@ export type Database = {
         | "trial_booked"
         | "converted"
         | "lost"
+      mailing_list_deletion_reason:
+        | "admin_cancel_immediate"
+        | "admin_cancel_period_end"
+        | "admin_end_trial"
+        | "admin_delete"
+        | "member_request"
       renewal_token_purpose: "card_needed" | "payment_failed" | "reactivate"
       reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
       roster_status: "prospect" | "confirmed" | "active" | "archived"
@@ -4706,6 +4763,13 @@ export const Constants = {
         "trial_booked",
         "converted",
         "lost",
+      ],
+      mailing_list_deletion_reason: [
+        "admin_cancel_immediate",
+        "admin_cancel_period_end",
+        "admin_end_trial",
+        "admin_delete",
+        "member_request",
       ],
       renewal_token_purpose: ["card_needed", "payment_failed", "reactivate"],
       reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],

@@ -53,10 +53,13 @@ import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.func
 
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
 import {
-  endMemberTrialNow,
-  setMemberCancelAtPeriodEnd,
-  cancelMemberSubscriptionNow,
+  cancelAndDeleteMember,
+  type CancelReason,
 } from "@/lib/admin/billing-actions.functions";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { useNavigate } from "@tanstack/react-router";
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
 
 export const Route = createFileRoute("/admin_/members/$userId")({
@@ -485,10 +488,10 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
         </div>
         <BillingActions
           userId={userId}
+          memberName={snapshot.full_name ?? snapshot.email ?? ""}
           status={status}
-          cancelAtPeriodEnd={sub.cancel_at_period_end}
           isTrialing={status === "trialing"}
-          renewalAt={sub.renewal_at}
+          cancelAtPeriodEnd={sub.cancel_at_period_end}
         />
       </div>
     </section>
@@ -497,167 +500,228 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
 
 /* ─────────────── Billing actions ─────────────── */
 
-type ActionKind = "end_trial" | "schedule_cancel" | "resume" | "cancel_now" | null;
+/* ─────────────── Billing actions ───────────────
+ *
+ * Business rule: "No active account without an active subscription."
+ * Every cancel button here funnels through `cancelAndDeleteMember`, which
+ * cancels Stripe, archives the contact into mailing_list_contacts, sends a
+ * confirmation email, then deletes the auth user. On success we route the
+ * admin back to /admin/members so they don't sit on a now-deleted record.
+ */
+
+type ActionKind = "end_trial" | "cancel_period_end" | "cancel_now" | "delete" | null;
+
+const ACTION_TO_REASON: Record<Exclude<ActionKind, null>, CancelReason> = {
+  end_trial: "admin_end_trial",
+  cancel_period_end: "admin_cancel_period_end",
+  cancel_now: "admin_cancel_immediate",
+  delete: "admin_delete",
+};
+
+const ACTION_COPY: Record<
+  Exclude<ActionKind, null>,
+  { title: string; intro: string; cta: string }
+> = {
+  end_trial: {
+    title: "End trial and close this account?",
+    intro:
+      "Ending the trial here also closes the member's account. Their Stripe subscription is cancelled, their profile is removed, and they receive a confirmation email. Their email is kept in the mailing list so we can contact them later.",
+    cta: "End trial & close account",
+  },
+  cancel_period_end: {
+    title: "Cancel and close this account?",
+    intro:
+      "REPS doesn't keep accounts active without a subscription, so this closes the account now. The Stripe subscription is cancelled, the profile removed, and a confirmation email sent. Their email stays in the mailing list.",
+    cta: "Cancel & close account",
+  },
+  cancel_now: {
+    title: "Cancel immediately and close this account?",
+    intro:
+      "This cancels the Stripe subscription, removes the public profile, sends a confirmation email, and deletes the account. No refund is issued. The email address is archived for future campaigns.",
+    cta: "Cancel now & close account",
+  },
+  delete: {
+    title: "Delete this member's account?",
+    intro:
+      "Any active Stripe subscription is cancelled, the profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone.",
+    cta: "Delete account",
+  },
+};
 
 function BillingActions({
   userId,
+  memberName,
   status,
-  cancelAtPeriodEnd,
   isTrialing,
-  renewalAt,
+  cancelAtPeriodEnd,
 }: {
   userId: string;
+  memberName: string;
   status: string;
-  cancelAtPeriodEnd: boolean;
   isTrialing: boolean;
-  renewalAt: string | null;
+  cancelAtPeriodEnd: boolean;
 }) {
   const qc = useQueryClient();
-  const endTrial = useServerFn(endMemberTrialNow);
-  const setCancel = useServerFn(setMemberCancelAtPeriodEnd);
-  const cancelNow = useServerFn(cancelMemberSubscriptionNow);
+  const navigate = useNavigate();
+  const closeAccount = useServerFn(cancelAndDeleteMember);
 
-  const [pending, setPending] = useState<ActionKind>(null);
-  const [confirm, setConfirm] = useState<ActionKind>(null);
+  const [open, setOpen] = useState<ActionKind>(null);
+  const [pending, setPending] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [typedName, setTypedName] = useState("");
 
   const canAct = status !== "canceled";
-  const refresh = async () => {
-    await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
-    await qc.invalidateQueries({ queryKey: ["admin-member-timeline", userId] });
+  const requireTypedConfirm = open === "cancel_now" || open === "delete";
+  const nameMatches =
+    !requireTypedConfirm ||
+    typedName.trim().toLowerCase() === (memberName ?? "").trim().toLowerCase();
+
+  const reset = () => {
+    setOpen(null);
+    setNotes("");
+    setTypedName("");
   };
 
-  const run = async (kind: Exclude<ActionKind, null>) => {
-    setPending(kind);
+  const run = async () => {
+    if (!open) return;
+    setPending(true);
     try {
-      if (kind === "end_trial") {
-        await endTrial({ data: { user_id: userId } });
-        toast.success("Trial ended — Stripe will attempt the first charge now.");
-      } else if (kind === "schedule_cancel") {
-        await setCancel({ data: { user_id: userId, cancel: true } });
-        toast.success("Cancellation scheduled for period end.");
-      } else if (kind === "resume") {
-        await setCancel({ data: { user_id: userId, cancel: false } });
-        toast.success("Cancellation removed — subscription will renew.");
-      } else if (kind === "cancel_now") {
-        await cancelNow({ data: { user_id: userId } });
-        toast.success("Subscription canceled immediately.");
-      }
-      await refresh();
+      const res = await closeAccount({
+        data: {
+          user_id: userId,
+          reason: ACTION_TO_REASON[open],
+          notes: notes.trim() || undefined,
+        },
+      });
+      toast.success(
+        res.emailSent
+          ? "Account closed. Confirmation email sent."
+          : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
+      );
+      await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+      // Member is gone — bounce back to the list.
+      navigate({ to: "/admin/members" });
     } catch (e: any) {
-      toast.error(e?.message ?? "Action failed");
-    } finally {
-      setPending(null);
-      setConfirm(null);
+      toast.error(e?.message ?? "Could not close account");
+      setPending(false);
     }
-  };
-
-  if (!canAct) {
-    return (
-      <div className="rounded-[12px] border border-reps-border/60 bg-reps-panel/40 px-3 py-2 text-[12.5px] text-white/55">
-        Subscription is canceled — no further billing actions available here.
-      </div>
-    );
-  }
-
-  const confirmCopy: Record<Exclude<ActionKind, null>, { title: string; body: string; cta: string; destructive?: boolean }> = {
-    end_trial: {
-      title: "End trial now?",
-      body: "Stripe will end the trial immediately and attempt the first invoice on the member's default payment method.",
-      cta: "End trial now",
-    },
-    schedule_cancel: {
-      title: "Schedule cancellation?",
-      body: renewalAt
-        ? `The subscription will stay active until ${new Date(renewalAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} and then cancel.`
-        : "The subscription will cancel at the end of the current period.",
-      cta: "Schedule cancellation",
-    },
-    resume: {
-      title: "Remove scheduled cancellation?",
-      body: "Stripe will resume normal billing — the subscription will renew on its next cycle.",
-      cta: "Resume subscription",
-    },
-    cancel_now: {
-      title: "Cancel immediately?",
-      body: "This ends billing right now and revokes entitlement at once. No refund is issued. This cannot be undone — they will need a fresh checkout to come back.",
-      cta: "Cancel now",
-      destructive: true,
-    },
   };
 
   return (
     <>
       <div className="flex flex-col gap-2 rounded-[12px] border border-reps-border/60 bg-reps-panel/40 px-4 py-3">
         <div className="flex items-center justify-between">
-          <span className="text-[13px] font-semibold text-white">Subscription actions</span>
-          <span className="text-[11px] text-white/45">Writes go straight to Stripe and mirror back here.</span>
+          <span className="text-[13px] font-semibold text-white">Close member account</span>
+          <span className="text-[11px] text-white/45">
+            REPS doesn't keep accounts without a subscription. Every option below
+            closes the account and emails the member.
+          </span>
         </div>
-        <div className="flex flex-wrap gap-2 pt-1">
-          {isTrialing && (
+
+        {!canAct ? (
+          <p className="pt-1 text-[12.5px] text-white/55">
+            Subscription is already cancelled. Use{" "}
+            <button
+              type="button"
+              onClick={() => setOpen("delete")}
+              className="underline underline-offset-2 hover:text-white"
+            >
+              Delete account
+            </button>{" "}
+            to remove their profile and archive the email.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {isTrialing && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setOpen("end_trial")}
+                className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+              >
+                <Zap data-icon="inline-start" /> End trial & close
+              </Button>
+            )}
             <Button
               size="sm"
               variant="outline"
-              disabled={pending !== null}
-              onClick={() => setConfirm("end_trial")}
+              onClick={() => setOpen("cancel_period_end")}
               className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+              disabled={cancelAtPeriodEnd}
             >
-              <Zap data-icon="inline-start" /> End trial now
+              <CalendarX data-icon="inline-start" /> Cancel & close
             </Button>
-          )}
-          {cancelAtPeriodEnd ? (
             <Button
               size="sm"
               variant="outline"
-              disabled={pending !== null}
-              onClick={() => setConfirm("resume")}
-              className="h-9 rounded-[10px] border-emerald-400/30 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 hover:text-emerald-100"
+              onClick={() => setOpen("cancel_now")}
+              className="h-9 rounded-[10px] border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100"
             >
-              <Undo2 data-icon="inline-start" /> Resume subscription
+              <Ban data-icon="inline-start" /> Cancel now & close
             </Button>
-          ) : (
             <Button
               size="sm"
               variant="outline"
-              disabled={pending !== null}
-              onClick={() => setConfirm("schedule_cancel")}
-              className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+              onClick={() => setOpen("delete")}
+              className="h-9 rounded-[10px] border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100"
             >
-              <CalendarX data-icon="inline-start" /> Cancel at period end
+              <Undo2 data-icon="inline-start" /> Delete account
             </Button>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={pending !== null}
-            onClick={() => setConfirm("cancel_now")}
-            className="h-9 rounded-[10px] border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100"
-          >
-            <Ban data-icon="inline-start" /> Cancel immediately
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
 
-      <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && pending === null && setConfirm(null)}>
-        <AlertDialogContent>
-          {confirm && (
+      <AlertDialog open={open !== null} onOpenChange={(o) => !o && !pending && reset()}>
+        <AlertDialogContent className="max-w-lg">
+          {open && (
             <>
               <AlertDialogHeader>
-                <AlertDialogTitle>{confirmCopy[confirm].title}</AlertDialogTitle>
-                <AlertDialogDescription>{confirmCopy[confirm].body}</AlertDialogDescription>
+                <AlertDialogTitle>{ACTION_COPY[open].title}</AlertDialogTitle>
+                <AlertDialogDescription>{ACTION_COPY[open].intro}</AlertDialogDescription>
               </AlertDialogHeader>
+
+              <div className="flex flex-col gap-3 py-1">
+                <div>
+                  <Label htmlFor="close-notes" className="text-[12.5px] text-white/70">
+                    Reason / notes (saved to audit log)
+                  </Label>
+                  <Textarea
+                    id="close-notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Member asked to cancel via support ticket TKT-1234"
+                    className="mt-1 min-h-[72px]"
+                    disabled={pending}
+                  />
+                </div>
+                {requireTypedConfirm && (
+                  <div>
+                    <Label htmlFor="close-confirm" className="text-[12.5px] text-white/70">
+                      Type <span className="font-semibold text-white">{memberName || "the member's name"}</span> to confirm
+                    </Label>
+                    <Input
+                      id="close-confirm"
+                      value={typedName}
+                      onChange={(e) => setTypedName(e.target.value)}
+                      className="mt-1"
+                      disabled={pending}
+                      autoComplete="off"
+                    />
+                  </div>
+                )}
+              </div>
+
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={pending !== null}>Back</AlertDialogCancel>
+                <AlertDialogCancel disabled={pending}>Back</AlertDialogCancel>
                 <AlertDialogAction
-                  disabled={pending !== null}
+                  disabled={pending || !nameMatches}
                   onClick={(e) => {
                     e.preventDefault();
-                    run(confirm);
+                    run();
                   }}
-                  className={cn(
-                    confirmCopy[confirm].destructive && "bg-rose-600 text-white hover:bg-rose-500",
-                  )}
+                  className={cn("bg-rose-600 text-white hover:bg-rose-500")}
                 >
-                  {pending === confirm ? "Working…" : confirmCopy[confirm].cta}
+                  {pending ? "Closing…" : ACTION_COPY[open].cta}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </>
