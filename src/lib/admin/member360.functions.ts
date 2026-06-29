@@ -55,6 +55,16 @@ export const getMember360 = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Live Stripe pull for this user (cheap: scoped to their customer(s))
+    // before resolving billing state, so Member 360 always reflects Stripe
+    // truth even when a webhook is delayed/missing.
+    try {
+      const { resyncUserFromStripe } = await import("@/lib/admin/member-stripe-sync.server");
+      await resyncUserFromStripe(data.user_id, supabaseAdmin);
+    } catch {
+      // Non-fatal — fall back to mirror state if Stripe is unreachable.
+    }
+
     const [authRes, profileRes, proRes, subState] = await Promise.all([
       supabaseAdmin.auth.admin.getUserById(data.user_id),
       supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", data.user_id).maybeSingle(),
@@ -65,6 +75,7 @@ export const getMember360 = createServerFn({ method: "GET" })
         .maybeSingle(),
       resolveSubscriptionStateForUser(data.user_id),
     ]);
+
 
     const email = authRes.data?.user?.email ?? null;
     const created_at = authRes.data?.user?.created_at ?? null;
