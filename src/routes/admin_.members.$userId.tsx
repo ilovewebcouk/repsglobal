@@ -181,12 +181,14 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
   }
 
   const { full_name, email, slug, verification, is_published, subscription, avatar_url, profession } = snapshot;
-  const tier = subscription?.tier ?? null;
-  const status = subscription?.status ?? null;
-  const trialEnd = subscription?.trial_end ?? null;
-  const cancelAt = subscription?.cancel_at_period_end ? subscription.current_period_end : null;
+  const sub = subscription;
+  const hasSub = sub.source !== "none";
+  const tierLbl = sub.tier_label;
+  const status = sub.status;
+  const cancelAt = sub.cancel_at_period_end ? sub.renewal_at : null;
   const publicHref = slug ? `/c/${slug}` : null;
   const mailtoHref = email ? `mailto:${email}` : null;
+  const hasDiscrepancy = sub.discrepancies.length > 0;
 
   return (
     <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
@@ -210,35 +212,28 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 <ShieldCheck data-icon="inline-start" /> Verified
               </Badge>
             )}
-            {tier && (
-              <Badge variant="outline" className="h-6 border-reps-orange-border bg-reps-orange/10 text-reps-orange capitalize">
-                {tier}
+            {tierLbl && (
+              <Badge variant="outline" className="h-6 border-reps-orange-border bg-reps-orange/10 text-reps-orange">
+                {tierLbl}
               </Badge>
             )}
-            {status && (
+            {hasSub && (
               <Badge
                 variant="outline"
                 className={cn(
-                  "h-6 capitalize",
-                  status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
-                  status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-300",
+                  "h-6",
+                  sub.has_active_entitlement && status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-200",
+                  sub.has_active_entitlement && status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
                   status === "past_due" && "border-amber-400/30 bg-amber-500/15 text-amber-300",
                   (status === "canceled" || status === "unpaid") && "border-rose-400/30 bg-rose-500/15 text-rose-300",
-                  ![
-                    "active",
-                    "trialing",
-                    "past_due",
-                    "canceled",
-                    "unpaid",
-                  ].includes(status) && "border-reps-border bg-reps-panel/60 text-white/70",
                 )}
               >
-                {status.replace(/_/g, " ")}
+                {sub.display_status_label}
               </Badge>
             )}
-            {status === "trialing" && trialEnd && (
-              <Badge variant="outline" className="h-6 border-sky-400/30 bg-sky-500/10 text-sky-200">
-                Trial ends {fmtDate(trialEnd)}
+            {hasSub && sub.display_renewal_label && (
+              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/70">
+                {sub.display_renewal_label}
               </Badge>
             )}
             {cancelAt && (
@@ -246,9 +241,28 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 Cancels {fmtDate(cancelAt)}
               </Badge>
             )}
-            {!subscription && (
+            {!hasSub && (
               <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
-                No subscription
+                No active subscription
+              </Badge>
+            )}
+            {/* Source badge — neutral for stripe-live and local-mirror; amber only for true mismatch. */}
+            {hasSub && !hasDiscrepancy && (
+              <Badge
+                variant="outline"
+                className="h-6 border-reps-border bg-reps-panel/60 text-white/55"
+                title={sub.fallback_reason ?? "Live Stripe data"}
+              >
+                {sub.source === "stripe-live" ? "Stripe live" : "Local mirror"}
+              </Badge>
+            )}
+            {hasSub && hasDiscrepancy && (
+              <Badge
+                variant="outline"
+                className="h-6 border-amber-400/30 bg-amber-500/15 text-amber-200"
+                title={`Mismatch: ${sub.discrepancies.join(", ")}`}
+              >
+                Source mismatch
               </Badge>
             )}
             {!is_published && (
@@ -322,11 +336,16 @@ function PanelHeader({ title, description }: { title: string; description?: stri
 
 function OverviewPane({ snapshot }: { snapshot: Member360Snapshot }) {
   const sub = snapshot.subscription;
+  const hasSub = sub.source !== "none";
   const stats: { label: string; value: React.ReactNode; sub?: string }[] = [
-    { label: "Tier", value: <span className="capitalize">{sub?.tier ?? "—"}</span>, sub: sub ? sub.status : "no subscription" },
-    { label: "Price", value: fmtMoney(sub?.unit_amount_pence, sub?.currency), sub: sub?.interval ? `per ${sub.interval}` : undefined },
-    { label: "Next renewal", value: fmtDate(sub?.current_period_end), sub: sub?.cancel_at_period_end ? "cancels at period end" : undefined },
-    { label: "Trial ends", value: fmtDate(sub?.trial_end), sub: sub?.trial_end ? undefined : "no trial" },
+    { label: "Tier", value: sub.tier_label ?? "—", sub: hasSub ? sub.display_status_label : "no subscription" },
+    { label: "Price", value: fmtMoney(sub.unit_amount_pence, sub.currency), sub: sub.interval ? `per ${sub.interval}` : undefined },
+    {
+      label: sub.is_scheduled_renewal ? "Scheduled renewal" : "Next renewal",
+      value: fmtDate(sub.renewal_at),
+      sub: sub.cancel_at_period_end ? "cancels at period end" : undefined,
+    },
+    { label: "Source", value: sub.source === "stripe-live" ? "Stripe live" : sub.source === "local-mirror" ? "Local mirror" : "—" },
     { label: "Joined", value: fmtDate(snapshot.created_at) },
     { label: "Last sign-in", value: fmtDate(snapshot.last_sign_in_at) },
   ];
@@ -362,8 +381,8 @@ function OverviewPane({ snapshot }: { snapshot: Member360Snapshot }) {
           />
           <IdRow
             label="Stripe subscription"
-            value={sub?.id ?? null}
-            href={sub?.id ? `https://dashboard.stripe.com/subscriptions/${sub.id}` : undefined}
+            value={sub.stripe_subscription_id}
+            href={sub.stripe_subscription_id ? `https://dashboard.stripe.com/subscriptions/${sub.stripe_subscription_id}` : undefined}
           />
           <IdRow label="Public slug" value={snapshot.slug} href={snapshot.slug ? `/c/${snapshot.slug}` : undefined} internal />
         </div>
@@ -400,43 +419,60 @@ function IdRow({ label, value, href, internal }: { label: string; value: string 
 function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
   const sub = snapshot.subscription;
 
-  if (!sub) {
+  if (sub.source === "none") {
     return (
       <section className={cn(PANEL, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
         <h3 className={PANEL_TITLE}>No active subscription</h3>
         <p className="max-w-md text-sm text-white/55">
-          This member isn't on a paid plan in the live Stripe environment.
+          This member isn't on a paid plan right now.
         </p>
       </section>
     );
   }
 
-  const status = sub.status;
+  const status = sub.status ?? "unknown";
   const statusClass = cn(
-    "h-6 capitalize",
-    status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
-    status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-300",
+    "h-6",
+    sub.has_active_entitlement && status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+    sub.has_active_entitlement && status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-200",
     status === "past_due" && "border-amber-400/30 bg-amber-500/15 text-amber-300",
     (status === "canceled" || status === "unpaid") && "border-rose-400/30 bg-rose-500/15 text-rose-300",
   );
 
   const stats: { label: string; value: React.ReactNode; sub?: string }[] = [
-    { label: "Plan", value: <span className="capitalize">{sub.tier ?? "—"}</span>, sub: sub.price_lookup_key ?? undefined },
+    { label: "Plan", value: sub.tier_label ?? "—", sub: sub.price_lookup_key ?? undefined },
     { label: "Price", value: fmtMoney(sub.unit_amount_pence, sub.currency), sub: sub.interval ? `per ${sub.interval}` : undefined },
-    { label: "Current period end", value: fmtDate(sub.current_period_end), sub: sub.cancel_at_period_end ? "cancels at period end" : undefined },
-    { label: "Trial end", value: fmtDate(sub.trial_end), sub: sub.trial_end ? undefined : "no trial" },
+    {
+      label: sub.is_scheduled_renewal ? "Scheduled renewal" : "Current period end",
+      value: fmtDate(sub.renewal_at),
+      sub: sub.cancel_at_period_end ? "cancels at period end" : undefined,
+    },
+    {
+      label: "Source",
+      value: sub.source === "stripe-live" ? "Stripe live" : "Local mirror",
+      sub: sub.fallback_reason ?? undefined,
+    },
   ];
 
   return (
     <section className={PANEL}>
       <div className={cn(PANEL_HEADER, "flex flex-wrap items-start justify-between gap-3")}>
         <div>
-          <h3 className={PANEL_TITLE}>Current Stripe subscription</h3>
-          <p className={PANEL_DESC}>Live Stripe mirror — the source of truth for billing.</p>
+          <h3 className={PANEL_TITLE}>Current subscription</h3>
+          <p className={PANEL_DESC}>
+            {sub.source === "stripe-live"
+              ? "Live Stripe mirror — the source of truth for billing."
+              : "Local subscriptions row — Stripe live mirror was unavailable for this read."}
+          </p>
         </div>
-        <Badge variant="outline" className={statusClass}>{status.replace(/_/g, " ")}</Badge>
+        <Badge variant="outline" className={statusClass}>{sub.display_status_label}</Badge>
       </div>
       <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
+        {sub.discrepancies.length > 0 && (
+          <div className="rounded-[12px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-200">
+            Stripe and local mirror disagree on: {sub.discrepancies.join(", ").replace(/_/g, " ")}.
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
           {stats.map((s) => (
             <div
@@ -457,8 +493,8 @@ function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
           />
           <IdRow
             label="Stripe subscription"
-            value={sub.id}
-            href={`https://dashboard.stripe.com/subscriptions/${sub.id}`}
+            value={sub.stripe_subscription_id}
+            href={sub.stripe_subscription_id ? `https://dashboard.stripe.com/subscriptions/${sub.stripe_subscription_id}` : undefined}
           />
           <IdRow
             label="Price id"
