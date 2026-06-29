@@ -39,6 +39,8 @@ export type ShopFrontDTO = {
   avatar_url: string | null;
   headline: string | null;
   primary_profession: string | null;
+  /** Display-ready professional titles in priority order, e.g. ["Personal Trainer", "Nutrition Coach"]. */
+  titles: string[];
   specialisms: string[];
   city: string | null;
   in_person_available: boolean;
