@@ -196,15 +196,24 @@ export function InsuranceUploadDialog({
         setStep("extracting");
         setDocPath(r.doc_path);
         setFilename(r.filename);
+        // Mirror the upload-tab flow: AI extract failure must NOT bounce the
+        // trainer back to "pick". Advance to confirm with empty fields so
+        // they can type the details manually. Always mark the QR session
+        // consumed so it can't replay.
         try {
           const extracted = await extractPath({ data: { doc_path: r.doc_path } });
           applyExtracted(extracted);
-          await markConsumed({ data: { id: sessionId } });
-          setStep("confirm");
         } catch (e) {
-          toast.error(e instanceof Error ? e.message : "AI extract failed");
-          setStep("pick");
+          toast.message("AI couldn't read the certificate — please fill in the details by hand below.", {
+            description: e instanceof Error ? e.message : undefined,
+          });
         }
+        try {
+          await markConsumed({ data: { id: sessionId } });
+        } catch {
+          // best-effort
+        }
+        setStep("confirm");
       }
       return row;
     },
@@ -283,6 +292,10 @@ export function InsuranceUploadDialog({
                   type="file"
                   accept="application/pdf,image/jpeg,image/png"
                   className="hidden"
+                  onClick={(e) => {
+                    // Allow re-picking the same file after a failed attempt.
+                    (e.currentTarget as HTMLInputElement).value = "";
+                  }}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) void handlePickFile(f);
