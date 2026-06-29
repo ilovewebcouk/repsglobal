@@ -125,7 +125,7 @@ function BillingConsole() {
 // KPI strip
 // ---------------------------------------------------------------------------
 
-function KpiStrip({ data, loading, onRefresh }: { data?: BillingKpis; loading: boolean; onRefresh: () => void }) {
+function KpiStrip({ data, loading, onRefresh, refreshing }: { data?: BillingKpis; loading: boolean; onRefresh: () => void; refreshing?: boolean }) {
   return (
     <div className="rounded-[12px] border border-reps-border bg-reps-panel/60 p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -137,8 +137,8 @@ function KpiStrip({ data, loading, onRefresh }: { data?: BillingKpis; loading: b
             </Badge>
           )}
         </div>
-        <Button size="sm" variant="ghost" onClick={onRefresh} className="h-7 gap-1 text-white/70 hover:text-white">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+        <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 gap-1 text-white/70 hover:text-white">
+          <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} /> {refreshing ? "Syncing…" : "Refresh from Stripe"}
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
