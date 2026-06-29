@@ -597,19 +597,25 @@ export function VerificationStatusCard({ trust }: { trust: TrustState | null | u
               ? "Rejected — upload a new certificate"
               : undefined;
 
-  // Qualifications — driven by approved verification_submissions count, not row existence.
+  // Qualifications — drive label off real submission state, not "activity elsewhere".
+  // pendingCount > 0 means a certificate is genuinely sat with admin. Anything else
+  // with qualCount === 0 is "Not started" — we must not lie and say "In review"
+  // when nothing has been submitted (that's what blew up Charlotte Evans).
   const qualCount = trust?.qualifications.count ?? 0;
-  const qualificationsRow: RowStatus =
+  const qualPending = trust?.qualifications.pendingCount ?? 0;
+  const qualChanges = trust?.qualifications.changesRequestedCount ?? 0;
+  const qualRejected = trust?.qualifications.rejectedCount ?? 0;
+  const qualificationsRowFinal: RowStatus =
     qualCount > 0
       ? { tone: "ok", label: `${qualCount} approved` }
-      : { tone: "warn", label: "In review" };
-  // If nothing has ever been submitted, show "Not started" instead of "In review".
-  // We can't tell from TrustState alone whether a submission exists, so fall back to
-  // generic "In review" only when at least one tick is in flight elsewhere — otherwise
-  // just show muted.
-  const anyActivity = idStatus !== "none" || insStatus !== "none";
-  const qualificationsRowFinal: RowStatus =
-    qualCount === 0 && !anyActivity ? { tone: "muted", label: "Not started" } : qualificationsRow;
+      : qualPending > 0
+        ? { tone: "warn", label: "In review" }
+        : qualChanges > 0
+          ? { tone: "warn", label: "Changes requested" }
+          : qualRejected > 0
+            ? { tone: "warn", label: "Rejected" }
+            : { tone: "muted", label: "Not started" };
+
 
   const rows: Array<{ label: string; status: RowStatus; detail?: string }> = [
     { label: "Identity verified", status: identityRow },
