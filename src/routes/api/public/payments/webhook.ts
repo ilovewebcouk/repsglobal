@@ -568,32 +568,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 } catch (e) {
                   console.warn("[email] purchase confirmation failed:", e);
                 }
-                // BD setup-link / reactivation token consumption.
-                // If this checkout was started from /billing/setup/<token>,
-                // mark the token consumed and stamp the legacy row so the
-                // member drops out of the open cohort.
-                try {
-                  const tokenId = meta.bd_setup_token_id ?? sub.metadata?.bd_setup_token_id;
-                  const bdMemberId = meta.bd_member_id ?? sub.metadata?.bd_member_id;
-                  if (tokenId) {
-                    const { markBdSetupTokenConsumed } = await import("@/lib/billing/setup-link.server");
-                    await markBdSetupTokenConsumed({ tokenId, subscriptionId: sub.id });
-                  }
-                  if (bdMemberId) {
-                    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-                    await supabaseAdmin
-                      .from("legacy_stripe_link")
-                      .update({
-                        migration_status: "converted_to_subscription",
-                        migration_kind: meta.bd_setup_kind === "reactivate" ? "reactivation_converted" : "setup_link_converted",
-                        converted_at: new Date().toISOString(),
-                        stripe_subscription_id: sub.id,
-                      })
-                      .eq("bd_member_id", Number(bdMemberId));
-                  }
-                } catch (e) {
-                  console.warn("[bd-setup-link] token consume failed:", e);
-                }
+                // BD setup-link / reactivation token consumption was retired
+                // when the legacy modules were archived in Phase 7.
+
               }
               break;
             }
