@@ -42,7 +42,7 @@ const HUMANISERS: Record<string, (ctx: Ctx) => HumanisedAlert> = {
   "webhook.dlq": (ctx) => ({
     label: "Stripe webhooks dead-lettered",
     summary: `${n(ctx, "dlq_7d")} webhook event${n(ctx, "dlq_7d") === 1 ? "" : "s"} in the last 7 days could not be processed. Members may be missing or stuck.`,
-    href: "/admin/webhook-recovery",
+    href: "/admin/ops",
     cta: "Open Webhook Recovery",
   }),
   "webhook.stuck_processing": (ctx) => ({
@@ -66,7 +66,7 @@ const HUMANISERS: Record<string, (ctx: Ctx) => HumanisedAlert> = {
   "payments.failed_active": (ctx) => ({
     label: "Failed payments",
     summary: `${n(ctx, "count")} member${n(ctx, "count") === 1 ? "" : "s"} ${n(ctx, "count") === 1 ? "is" : "are"} in a broken-card state (past_due / unpaid / incomplete) and ${n(ctx, "count") === 1 ? "is" : "are"} silently missing from Active paying members.`,
-    href: "/admin/webhook-recovery",
+    href: "/admin/ops",
     cta: "Open Payment Recovery",
   }),
   "payments.failure_spike": (ctx) => ({
