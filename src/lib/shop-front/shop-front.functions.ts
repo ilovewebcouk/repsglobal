@@ -298,6 +298,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
           tier,
+          trust,
         }
       : null;
 
