@@ -115,11 +115,7 @@ const TABS: { label: string; value: AdminProTab }[] = [
   { label: "Verified", value: "verified" },
   { label: "Unverified", value: "pending" },
   { label: "Payment failed", value: "payment_failed" },
-  { label: "Renewal due", value: "renewal_due" },
-  { label: "Flagged", value: "flagged" },
   { label: "Suspended", value: "suspended" },
-  { label: "Recently joined", value: "recent" },
-  { label: "Demos", value: "demos" },
 ];
 
 const SORT_OPTIONS: { value: AdminProSort; label: string; defaultDir: SortDir }[] = [
@@ -141,8 +137,9 @@ const PROFESSION_OPTIONS = [
   { slug: "yoga-teacher", label: "Yoga" },
 ];
 
-const PLAN_OPTIONS: { value: "free" | "verified" | "pro" | "studio"; label: string }[] = [
-  { value: "free", label: "Free" },
+// "Free" is intentionally absent — every active REPs member must be on a
+// paid Stripe sub. Legacy free / BD-window accounts are deleted, not filtered.
+const PLAN_OPTIONS: { value: "verified" | "pro" | "studio"; label: string }[] = [
   { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
