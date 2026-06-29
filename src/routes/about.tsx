@@ -23,12 +23,13 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About REPS — The professional platform for the modern fitness industry" },
+      { title: "About REPS — The professional standard for fitness" },
       {
         name: "description",
         content:
-          "REPS is building a new professional home for fitness professionals — combining public trust, professional visibility, education, reviews and business software in one connected platform.",
+          "REPS is the professional home for fitness — combining public trust, visibility, education, reviews and business software in one platform.",
       },
+
       { property: "og:title", content: "About REPS" },
       {
         property: "og:description",
