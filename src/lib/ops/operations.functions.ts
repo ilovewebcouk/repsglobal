@@ -312,8 +312,8 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<CustomerHealthSnapshot> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { fetchActivePayingMemberCollection } = await import(
-      "@/lib/members/active-paying-member.server"
+    const { isActiveSubscription } = await import(
+      "@/lib/members/active-paying-member"
     );
     const { FAILED_PAYMENT_STATUSES } = await import(
       "@/lib/admin/metrics-definitions"
@@ -325,7 +325,7 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
       newCore, newPro, newStudio,
       churnCount, recoveryCount,
       pendingCancel, failedRenew, awaitingUpdate,
-      activeCollection,
+      subsRes,
     ] = await Promise.all([
       supabaseAdmin.from("subscriptions").select("id", { count: "exact", head: true })
         .eq("tier", "verified").eq("environment", "live").gte("created_at", start7dIso),
@@ -345,13 +345,45 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
         .eq("environment", "live").in("status", [...FAILED_PAYMENT_STATUSES]),
       supabaseAdmin.from("renewal_tokens").select("id", { count: "exact", head: true })
         .eq("purpose", "card_needed").is("consumed_at", null).gt("expires_at", nowIso),
-      // Canonical Active Paying Member model — same code path as /admin.
-      // Replaces the previous Stripe-only "cheap proxy".
-      fetchActivePayingMemberCollection(supabaseAdmin),
+      // STRIPE-MIRROR ONLY (Admin v2, Phase A4b-3) — survivor + anti-ghost
+      // dedupe, identical rule to /admin overview + /admin/memberships.
+      supabaseAdmin
+        .from("subscriptions")
+        .select("user_id, tier, status, current_period_end, created_at, environment, cancel_at_period_end"),
     ]);
 
+    // Anti-ghost filter (drop subs whose user_id no longer exists in auth.users).
+    const authIds = new Set<string>();
+    try {
+      let page = 1;
+      while (page < 50) {
+        const { data: users, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+        if (error) break;
+        for (const u of users.users) authIds.add(u.id);
+        if (users.users.length < 200) break;
+        page += 1;
+      }
+    } catch {
+      // best-effort
+    }
+
+    const tierRank: Record<string, number> = { studio: 3, pro: 2, verified: 1 };
+    const survivor = new Map<string, { tier: string; created_at: string | null }>();
+    for (const s of (subsRes.data ?? []) as Array<any>) {
+      if (!isActiveSubscription(s)) continue;
+      if (!s.user_id || !s.tier) continue;
+      if (authIds.size && !authIds.has(s.user_id)) continue;
+      const prev = survivor.get(s.user_id);
+      if (!prev) { survivor.set(s.user_id, { tier: s.tier, created_at: s.created_at }); continue; }
+      const a = tierRank[s.tier] ?? 0;
+      const b = tierRank[prev.tier] ?? 0;
+      if (a > b || (a === b && new Date(s.created_at ?? 0).getTime() > new Date(prev.created_at ?? 0).getTime())) {
+        survivor.set(s.user_id, { tier: s.tier, created_at: s.created_at });
+      }
+    }
+
     return {
-      active_paying: activeCollection.counts.final_active_members,
+      active_paying: survivor.size,
       new_core_7d: newCore.count ?? 0,
       new_pro_7d: newPro.count ?? 0,
       new_studio_7d: newStudio.count ?? 0,
@@ -362,6 +394,7 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
       awaiting_payment_update: awaitingUpdate.count ?? 0,
     };
   });
+
 
 // =============================================================================
 // ALERTS
