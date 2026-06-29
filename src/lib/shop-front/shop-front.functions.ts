@@ -1,6 +1,6 @@
 // Server functions for shop-front (/c/$slug) + services management.
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 const ShopFrontUpsertSchema = z.object({
@@ -20,9 +20,16 @@ const ShopFrontUpsertSchema = z.object({
 export type ShopFrontDTO = {
   professional_id: string;
   tagline: string | null;
+  subtitle: string | null;
   about: string | null;
   hero_image_url: string | null;
   accent_hex: string | null;
+  method_name: string | null;
+  method_intro: string | null;
+  method_pillars: Array<{ title: string; body: string }>;
+  venues: Array<{ name: string; address?: string | null }>;
+  coaching_reach: { cities: string[]; online_worldwide: boolean };
+  client_results_intro: string | null;
   layout_variant: "lite" | "full";
   is_published: boolean;
   published_at: string | null;
@@ -64,6 +71,58 @@ export type ShopFrontDTO = {
     label: string;
   }>;
 };
+
+export type ShopFrontTransformationDTO = {
+  id: string;
+  client_first_name: string | null;
+  metric: string | null;
+  headline: string | null;
+  quote: string | null;
+  image_url: string | null;
+  sort_order: number;
+  is_published: boolean;
+};
+
+export type ShopFrontFaqDTO = {
+  id: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+  source: string;
+};
+
+function asPillars(v: unknown): Array<{ title: string; body: string }> {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
+    .map((p) => ({
+      title: String(p.title ?? "").trim(),
+      body: String(p.body ?? "").trim(),
+    }))
+    .filter((p) => p.title || p.body)
+    .slice(0, 6);
+}
+
+function asVenues(v: unknown): Array<{ name: string; address?: string | null }> {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
+    .map((p) => ({
+      name: String(p.name ?? "").trim(),
+      address: p.address == null ? null : String(p.address).trim(),
+    }))
+    .filter((p) => p.name)
+    .slice(0, 8);
+}
+
+function asReach(v: unknown): { cities: string[]; online_worldwide: boolean } {
+  if (!v || typeof v !== "object") return { cities: [], online_worldwide: false };
+  const obj = v as { cities?: unknown; online_worldwide?: unknown };
+  const cities = Array.isArray(obj.cities)
+    ? obj.cities.map((c) => String(c).trim()).filter(Boolean).slice(0, 12)
+    : [];
+  return { cities, online_worldwide: !!obj.online_worldwide };
+}
 
 function buildSocials(row: {
   social_instagram?: string | null;
@@ -244,7 +303,7 @@ export type ServiceDTO = {
 
 export const getShopFrontBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
-  .handler(async ({ data }): Promise<{ shopFront: ShopFrontDTO; services: ServiceDTO[] } | null> => {
+  .handler(async ({ data }): Promise<{ shopFront: ShopFrontDTO; services: ServiceDTO[]; transformations: ShopFrontTransformationDTO[]; faqs: ShopFrontFaqDTO[] } | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: pro } = await supabaseAdmin
@@ -264,11 +323,11 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     );
     if (!(await isProPubliclyVisible(pro.id))) return null;
 
-    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, coachingSinceYear, trust] = await Promise.all([
+    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: faqs }, coachingSinceYear, trust] = await Promise.all([
       supabaseAdmin
         .from("shop_fronts")
         .select(
-          "professional_id, tagline, about, hero_image_url, accent_hex, layout_variant, is_published, published_at",
+          "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, is_published, published_at",
         )
         .eq("professional_id", pro.id)
         .eq("is_published", true)
@@ -287,6 +346,17 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .select("tier, status")
         .eq("user_id", pro.id)
         .maybeSingle(),
+      supabaseAdmin
+        .from("shop_front_transformations")
+        .select("id, client_first_name, metric, headline, quote, image_url, sort_order, is_published")
+        .eq("user_id", pro.id)
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true }),
+      supabaseAdmin
+        .from("shop_front_faqs")
+        .select("id, question, answer, sort_order, source")
+        .eq("user_id", pro.id)
+        .order("sort_order", { ascending: true }),
       fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
       fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
     ]);
@@ -303,9 +373,16 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       shopFront: {
         professional_id: pro.id,
         tagline: sf.tagline,
+        subtitle: sf.subtitle ?? null,
         about: sf.about,
         hero_image_url: sf.hero_image_url,
         accent_hex: sf.accent_hex,
+        method_name: sf.method_name ?? null,
+        method_intro: sf.method_intro ?? null,
+        method_pillars: asPillars(sf.method_pillars),
+        venues: asVenues(sf.venues),
+        coaching_reach: asReach(sf.coaching_reach),
+        client_results_intro: sf.client_results_intro ?? null,
         layout_variant: (sf.layout_variant as "lite" | "full") ?? "lite",
         is_published: sf.is_published,
         published_at: sf.published_at,
@@ -326,13 +403,15 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
 
       },
       services: (services ?? []) as ServiceDTO[],
+      transformations: (transformations ?? []) as ShopFrontTransformationDTO[],
+      faqs: (faqs ?? []) as ShopFrontFaqDTO[],
     };
   });
 
 /* ---------------- Pro-side reads / writes ---------------- */
 
 export const getMyShopFront = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<{ shopFront: ShopFrontDTO | null; services: ServiceDTO[] }> => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -350,7 +429,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("shop_fronts")
           .select(
-            "professional_id, tagline, about, hero_image_url, accent_hex, layout_variant, is_published, published_at",
+            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, is_published, published_at",
           )
           .eq("professional_id", userId)
           .maybeSingle(),
@@ -380,16 +459,41 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         ? (subRow.tier as "verified" | "pro" | "studio")
         : null;
 
-    const shopFront: ShopFrontDTO | null = sf
+    const resolvedSf = sf ?? (trust.isVerified
+      ? await (async () => {
+          const layoutVariant = tier === "pro" || tier === "studio" ? "full" : "lite";
+          const { data: created, error } = await supabaseAdmin
+            .from("shop_fronts")
+            .upsert(
+              { professional_id: userId, layout_variant: layoutVariant, is_published: false },
+              { onConflict: "professional_id" },
+            )
+            .select(
+              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, is_published, published_at",
+            )
+            .single();
+          if (error) throw error;
+          return created;
+        })()
+      : null);
+
+    const shopFront: ShopFrontDTO | null = resolvedSf
       ? {
           professional_id: userId,
-          tagline: sf.tagline,
-          about: sf.about,
-          hero_image_url: sf.hero_image_url,
-          accent_hex: sf.accent_hex,
-          layout_variant: (sf.layout_variant as "lite" | "full") ?? "lite",
-          is_published: sf.is_published,
-          published_at: sf.published_at,
+          tagline: resolvedSf.tagline,
+          subtitle: resolvedSf.subtitle ?? null,
+          about: resolvedSf.about,
+          hero_image_url: resolvedSf.hero_image_url,
+          accent_hex: resolvedSf.accent_hex,
+          method_name: resolvedSf.method_name ?? null,
+          method_intro: resolvedSf.method_intro ?? null,
+          method_pillars: asPillars(resolvedSf.method_pillars),
+          venues: asVenues(resolvedSf.venues),
+          coaching_reach: asReach(resolvedSf.coaching_reach),
+          client_results_intro: resolvedSf.client_results_intro ?? null,
+          layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
+          is_published: resolvedSf.is_published,
+          published_at: resolvedSf.published_at,
           slug: pro.slug,
           full_name: prof?.full_name ?? null,
           avatar_url: prof?.avatar_url ?? null,
@@ -413,7 +517,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
   });
 
 export const upsertMyShopFront = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => ShopFrontUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -450,7 +554,7 @@ const ServiceUpsertSchema = z.object({
 });
 
 export const upsertMyService = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => ServiceUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -468,7 +572,7 @@ export const upsertMyService = createServerFn({ method: "POST" })
   });
 
 export const deleteMyService = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
