@@ -42,8 +42,9 @@ import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.func
 
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
 import {
-  cancelAndDeleteMember,
+  closeMembership,
   type CancelReason,
+  type CloseMode,
 } from "@/lib/admin/billing-actions.functions";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
