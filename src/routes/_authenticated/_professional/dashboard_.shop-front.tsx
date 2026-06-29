@@ -59,8 +59,8 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 function ShopFrontEditorPage() {
-  const blocked = useProGuard("Shop-front");
   const tier = useTrainerTier();
+  const blocked = false;
 
   // Core members get the Lite shop-front; Pro/Studio get the full editor.
 
