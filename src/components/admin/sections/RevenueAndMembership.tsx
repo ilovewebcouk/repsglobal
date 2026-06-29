@@ -184,7 +184,7 @@ export function RevenueAndMembership({
                 <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="day" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} />
                 <YAxis tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} width={40} tickFormatter={(v) => `£${v}`} />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} />} />
                 <Bar dataKey="value" fill="var(--reps-blue)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ChartContainer>
@@ -217,7 +217,7 @@ export function RevenueAndMembership({
                 <CartesianGrid horizontal={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis type="number" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <YAxis type="category" dataKey="tier" tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }} tickLine={false} axisLine={false} width={72} />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} />} />
                 <Bar dataKey="value" fill="var(--reps-orange)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ChartContainer>
