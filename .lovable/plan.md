@@ -1,43 +1,67 @@
-## What you saw
+## What's actually wrong (from the screenshot)
 
-The new `/admin/v2` rendered its own shell (`src/routes/admin_.v2.tsx` + `src/components/admin/v2/AdminSidebar.tsx`) with a light cream surface, a bare Members/Billing/Churn list, no NotificationsBell, no UserAccountMenu card, no REPs Admin badge. That's the regression — we rebuilt the shell from scratch instead of reusing the existing one.
+I shipped Member 360 using raw shadcn defaults (`<Card>`, `<TabsList>`, `<Avatar>`, `<Button variant="outline">`). On the dark admin shell those tokens render **cream/white**, so:
 
-## Fix — reuse the existing admin shell, change nothing visual about it
+- The avatar fallback is white-on-white — Katie's "KG" is invisible.
+- Both Snapshot and Identifiers cards are cream slabs with white text inside → unreadable. The actual data is rendered, you just can't see it.
+- The tab strip is a cream pill on dark ink — looks like a broken component.
+- "View public profile" / "Send email" / `⋯` are white buttons floating on dark — zero hierarchy with the page.
+- Sticky header is a flat row with no visual weight, no separator, no rhythm.
 
-1. **Delete the custom v2 shell**
-   - `src/routes/admin_.v2.tsx` (the SidebarProvider + custom header)
-   - `src/components/admin/v2/AdminSidebar.tsx`
-   - The pinned `MemberFinder` lives back in each v2 page header as an `actions` slot, not in a custom topbar.
+Every other admin page (`admin_.ops.*`, `admin_.verification`, `admin_.support`) uses the project's own tokens — `border-reps-border`, `bg-reps-panel/40`, `text-reps-text`, `bg-reps-panel-soft`, `text-reps-orange`. Member 360 is the only screen that didn't. This is a styling defect, not a design question.
 
-2. **Each `/admin/v2/*` route renders inside `DashboardShell` (role="admin")**
-   - Reuses the locked branded sidebar: REPS wordmark, "REPS Admin" badge, Overview / Members & Pros / Revenue / Content & Discovery / Operations / System groups, NotificationsBell, UserAccountMenu, bottom user card with avatar + email + Admin pill.
-   - Uses the existing `⌘K` search input in the TopBar — wires through `search.value/onChange` to drive the `MemberFinder` results popover so finding a member feels identical to current `/admin`.
-   - `active` prop maps each v2 page to its existing nav label so the correct sidebar row highlights:
-     - `/admin/v2` → active `"Overview"`
-     - `/admin/v2/members` and `/admin/v2/members/$userId` → active `"Memberships"`
-     - `/admin/v2/billing` → active `"Stripe"`
-     - `/admin/v2/churn` → active `"Churn"`
-     - `/admin/v2/reconciliation` → active `"Reconciliation"`
-     - `/admin/v2/ops` → active `"Operations"`
-     - `/admin/v2/support` → active `"Support"`
-   - `title` / `subtitle` per page (e.g. "Overview" / "Active paying members, revenue received, projected cash due.").
+## Plan — restyle Member 360 to match the rest of the admin
 
-3. **Page bodies — keep the work we just did, restyle for the dark surface**
-   - Overview KPIs, Tier mix, sparkline, Memberships + Reconciliation tiles all stay; replace any hand-rolled neutral surfaces with the existing dashboard tokens (`bg-reps-panel`, `border-reps-border`, `text-white`, brand-orange accents) so they match the screenshot you liked.
-   - Member 360 keeps the 3-column layout (Identity / Snapshot+Timeline / Quick actions) but inside the existing shell, on the dark surface.
-   - Stub pages (Billing/Churn/Reconciliation/Ops/Support) keep their deep-links to the legacy cockpits — same shell, just a card.
+Frontend-only. No business logic, no data shape changes, no new tabs.
 
-4. **No nav changes**
-   - We do NOT add a "v2" entry to `ADMIN_NAV`. The v2 pages are reachable from the legacy pages' "Open in v2" affordances and via direct URL; nav stays exactly as today.
+### 1. Sticky header — make it feel like a workbench, not a row
 
-## Out of scope
+- Increase avatar to `size-14`, give it a ring (`ring-1 ring-reps-border`) and an **orange tint** background (`bg-reps-orange/15 text-reps-orange`) so KG initials read instantly, even before any photo is wired up.
+- Two-line identity stack: name (lg, semibold, white) + email (sm, `text-reps-text/65`) — tightened.
+- Status pills row directly under the name, not jammed inline: Verified (emerald), tier (orange-tinted), status (state-coloured), Unpublished (muted). Consistent height, consistent radius.
+- Right-side actions become a **proper button group**: primary "View public profile" (solid orange `bg-reps-orange text-black`), secondary "Send email" (`border-reps-border bg-reps-panel/40 text-white`), `⋯` ghost icon button. Same height, same gap.
+- Header background: `border-b border-reps-border bg-reps-ink/85 backdrop-blur-md` — keeps the sticky behaviour, but adds the soft shadow on scroll that the rest of the chrome uses.
 
-- The redesign Phase C2 (rebuilding the legacy cockpits on the mirror) is unchanged — only the shell wrapper is being reverted.
-- No backend / data changes. No nav copy changes. No new route files.
+### 2. Replace shadcn `<Card>` defaults with REPs panel surface
 
-## Files touched
+Every card on this page becomes:
 
-- Delete: `src/routes/admin_.v2.tsx`, `src/components/admin/v2/AdminSidebar.tsx`.
-- Edit: `src/routes/admin_.v2.index.tsx`, `src/routes/admin_.v2.members.index.tsx`, `src/routes/admin_.v2.members.$userId.tsx`, `src/routes/admin_.v2.billing.tsx`, `src/routes/admin_.v2.churn.tsx`, `src/routes/admin_.v2.reconciliation.tsx`, `src/routes/admin_.v2.ops.tsx`, `src/routes/admin_.v2.support.tsx` — each wraps its content in `<DashboardShell role="admin" active={…} title={…} subtitle={…} search={…} actions={…}>` and switches surfaces to dark dashboard tokens.
+```text
+rounded-[18px] border border-reps-border bg-reps-panel/40
+  header: px-5 pt-5 (title 14-15px white semibold, description 13px text-white/55)
+  content: px-5 pb-5 pt-2
+```
 
-After this lands, `/admin/v2` looks identical in chrome to your first screenshot — same sidebar, same logo, same bell, same SC avatar card, same ⌘K search — only the page body changes per route.
+Snapshot, Identifiers, Verification, MemberSnapshotCard wrapper, and ActivityPane day-group panels all share that surface. Cards now read as dark glass slabs with a hairline border — consistent with `/admin/ops/*`.
+
+### 3. Tabs
+
+- `TabsList`: thin pill (`h-10 rounded-[12px] border border-reps-border bg-reps-panel/40 p-1`).
+- `TabsTrigger`: `h-8 rounded-[10px] px-3 text-[13px] text-white/65 data-[state=active]:bg-reps-panel-soft data-[state=active]:text-white`.
+- No more cream slab. Sticky just under the header (`top-[72px]`) so it stays visible while you scroll.
+
+### 4. Overview pane
+
+- 6-stat grid stays, but each stat lives in its own `bg-reps-panel/60 rounded-[14px] border border-reps-border/60 p-3` micro-card with label / value / sub — looks like a real KPI strip instead of a flat grid.
+- Identifiers card: monospace values get a `bg-reps-panel-soft/60 rounded-[8px] px-2 py-1` chip so Stripe / user IDs are visually distinct from labels. External-link icon stays orange.
+
+### 5. Verification & Activity panes
+
+- Verification: status row gets a tinted strip background that matches the tone (`bg-emerald-500/10` for verified, `bg-amber-500/10` for pending, etc.) — instant read.
+- Activity timeline: day header gets a small `bg-reps-panel/40 rounded-[8px] px-2 py-1` chip; the timeline rail becomes `border-reps-border/40` so it doesn't fight the surface; each event row gets `hover:bg-white/[0.03]` for affordance.
+
+### 6. "Coming next" empty states (Profile / Reviews / Notes)
+
+- Replace the default `<Empty>` (which renders a cream slab) with a dark panel that matches everything else: same `bg-reps-panel/40 border-reps-border` surface, muted icon in an orange tint chip, headline + description + a single "Shipping next" badge. No more white box.
+
+### Out of scope (on purpose)
+
+- No new tabs, no new data, no new server functions.
+- Not touching `MemberSnapshotCard.tsx` itself — only the wrapper it sits in.
+- No changes to the global sidebar / shell — only this route.
+
+### Technical notes
+
+- One file: `src/routes/admin_.members.$userId.tsx`.
+- Tokens already exist in `src/styles.css`: `reps-ink`, `reps-panel`, `reps-panel-soft`, `reps-border`, `reps-text`, `reps-orange`. No new tokens needed.
+- Keeps every shadcn primitive (Card, Tabs, Avatar, Badge, Button, DropdownMenu, Empty, Separator, Skeleton) — just passes the right `className` overrides so they adopt the admin theme, exactly like the other admin pages do.
