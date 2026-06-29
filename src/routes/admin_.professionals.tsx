@@ -77,6 +77,32 @@ function NameWithIdTooltip({ id, name }: { id: string; name: string }) {
   );
 }
 
+// Tiny inline sparkline (12-pt monthly series). No deps.
+function Sparkline({ values }: { values: number[] }) {
+  if (!values.length) return <div className="h-7 w-full" />;
+  const w = 120, h = 28, pad = 2;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(1, max - min);
+  const stepX = (w - pad * 2) / Math.max(1, values.length - 1);
+  const pts = values.map((v, i) => {
+    const x = pad + i * stepX;
+    const y = pad + (h - pad * 2) * (1 - (v - min) / range);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const lastX = pad + (values.length - 1) * stepX;
+  const lastY = pad + (h - pad * 2) * (1 - (values[values.length - 1] - min) / range);
+  const areaPath = `M ${pts[0]} L ${pts.join(" L ")} L ${lastX.toFixed(1)},${h - pad} L ${pad},${h - pad} Z`;
+  const linePath = `M ${pts.join(" L ")}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-7 w-full" preserveAspectRatio="none">
+      <path d={areaPath} fill="rgb(255 122 0 / 0.12)" />
+      <path d={linePath} fill="none" stroke="rgb(255 122 0)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={lastX} cy={lastY} r="2" fill="rgb(255 122 0)" />
+    </svg>
+  );
+}
+
 
 
 import { initialsFromName } from "@/lib/initials";
