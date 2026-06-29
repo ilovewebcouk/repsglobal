@@ -1,13 +1,18 @@
 // Admin v2 — Member 360 read API.
 //
-// Stripe-mirror-first: returns identity + the live Stripe subscription snapshot
-// for a single user. No reads from `legacy_stripe_link` or `bd_member_seed`.
-// The detailed event timeline is served by `getMemberTimeline` and rendered
-// alongside this snapshot in the Member 360 page.
+// Funnels billing reads through the canonical subscription resolver
+// (`subscription-resolver.server.ts`) so Member 360 stays identical to the
+// Memberships, Professionals, Churn, Ops and aggregate-count surfaces.
+//
+// No reads from `legacy_stripe_link` or `bd_member_seed`.
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  resolveSubscriptionStateForUser,
+  type AdminSubscriptionState,
+} from "@/lib/admin/subscription-resolver.server";
 
 const Input = z.object({ user_id: z.string().uuid() });
 
@@ -34,23 +39,7 @@ export type Member360Snapshot = {
   last_sign_in_at: string | null;
   stripe_customer_id: string | null;
   has_active_subscription: boolean;
-  subscription: {
-    id: string;
-    status: string;
-    tier: string | null;
-    price_id: string | null;
-    price_lookup_key: string | null;
-    unit_amount_pence: number | null;
-    currency: string | null;
-    interval: string | null;
-    interval_count: number | null;
-    cancel_at_period_end: boolean;
-    current_period_start: string | null;
-    current_period_end: string | null;
-    trial_end: string | null;
-    livemode: boolean;
-    metadata: Record<string, string>;
-  } | null;
+  subscription: AdminSubscriptionState;
 };
 
 export const getMember360 = createServerFn({ method: "GET" })
@@ -65,9 +54,8 @@ export const getMember360 = createServerFn({ method: "GET" })
     if (!isAdmin) throw new Error("Forbidden");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { getMirrorForUser } = await import("@/lib/billing/stripe-mirror.server");
 
-    const [authRes, profileRes, proRes] = await Promise.all([
+    const [authRes, profileRes, proRes, subState] = await Promise.all([
       supabaseAdmin.auth.admin.getUserById(data.user_id),
       supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", data.user_id).maybeSingle(),
       supabaseAdmin
@@ -75,6 +63,7 @@ export const getMember360 = createServerFn({ method: "GET" })
         .select("slug, verification, is_published, primary_profession")
         .eq("id", data.user_id)
         .maybeSingle(),
+      resolveSubscriptionStateForUser(data.user_id),
     ]);
 
     const email = authRes.data?.user?.email ?? null;
@@ -85,21 +74,6 @@ export const getMember360 = createServerFn({ method: "GET" })
     const avatar_url = profile?.avatar_url ?? null;
     const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null; primary_profession?: string | null } | null) ?? null;
     const profession = pro?.primary_profession ? (PROFESSION_LABEL[pro.primary_profession] ?? pro.primary_profession) : null;
-
-    // Stripe mirror (live env). Sandbox is intentionally ignored — admin v2
-    // surfaces the production billing state only.
-    const mirror = await getMirrorForUser(data.user_id, "live").catch(() => null);
-
-    // Tier from the local row (Stripe doesn't carry a "tier" concept directly).
-    let tier: string | null = null;
-    if (mirror) {
-      const { data: sRow } = await supabaseAdmin
-        .from("subscriptions")
-        .select("tier")
-        .eq("stripe_subscription_id", mirror.stripe_subscription_id)
-        .maybeSingle();
-      tier = (sRow as { tier?: string | null } | null)?.tier ?? null;
-    }
 
     return {
       user_id: data.user_id,
@@ -112,26 +86,8 @@ export const getMember360 = createServerFn({ method: "GET" })
       is_published: pro?.is_published ?? false,
       created_at,
       last_sign_in_at,
-      stripe_customer_id: mirror?.stripe_customer_id ?? null,
-      has_active_subscription: !!mirror && ["active", "trialing", "past_due"].includes(mirror.status),
-      subscription: mirror
-        ? {
-            id: mirror.stripe_subscription_id,
-            status: mirror.status,
-            tier,
-            price_id: mirror.price_id,
-            price_lookup_key: mirror.price_lookup_key,
-            unit_amount_pence: mirror.unit_amount_pence,
-            currency: mirror.currency,
-            interval: mirror.interval ?? null,
-            interval_count: mirror.interval_count,
-            cancel_at_period_end: mirror.cancel_at_period_end,
-            current_period_start: mirror.current_period_start,
-            current_period_end: mirror.current_period_end,
-            trial_end: mirror.trial_end,
-            livemode: mirror.livemode,
-            metadata: mirror.metadata,
-          }
-        : null,
+      stripe_customer_id: subState.stripe_customer_id,
+      has_active_subscription: subState.has_active_entitlement,
+      subscription: subState,
     };
   });
