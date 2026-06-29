@@ -66,6 +66,8 @@ export type SearchProfessionalRow = {
   headline: string | null;
   bio: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   specialisms: string[];
   city: string | null;
   country: string | null;
