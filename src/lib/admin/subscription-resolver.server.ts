@@ -129,7 +129,7 @@ export function adaptBillingRowToState(row: MemberBillingRow): AdminSubscription
     user_id: row.user_id,
     source: "shared-compute",
     stripe_subscription_id: row.stripeSubscriptionId,
-    stripe_customer_id: null,
+    stripe_customer_id: row.stripeCustomerId,
     status,
     tier,
     tier_label: lbl,
