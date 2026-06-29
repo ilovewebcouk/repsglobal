@@ -443,7 +443,7 @@ function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
       <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
         {sub.discrepancies.length > 0 && (
           <div className="rounded-[12px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-200">
-            Stripe and local mirror disagree on: {sub.discrepancies.join(", ").replace(/_/g, " ")}.
+            Stripe and our copy disagree on: {sub.discrepancies.join(", ").replace(/_/g, " ")}. Open in Stripe to reconcile.
           </div>
         )}
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
