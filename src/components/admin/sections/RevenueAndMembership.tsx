@@ -4,6 +4,7 @@ import {
   AreaChart,
   Bar,
   BarChart,
+  Cell,
   CartesianGrid,
   XAxis,
   YAxis,
