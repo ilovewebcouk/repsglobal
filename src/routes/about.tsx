@@ -36,9 +36,10 @@ export const Route = createFileRoute("/about")({
         content: "The professional platform for the modern fitness industry.",
       },
       { property: "og:image", content: heroAsset.url },
-      { property: "og:url", content: "/about" },
+      { property: "og:url", content: "https://repsuk.org/about" },
     ],
-    links: [{ rel: "canonical", href: "/about" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/about" }],
+
   }),
   component: AboutPage,
 });
