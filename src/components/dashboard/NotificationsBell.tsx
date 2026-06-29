@@ -131,7 +131,8 @@ export function NotificationsBell() {
     adminSupport.isLoading ||
     mySupport.isLoading ||
     reviews.isLoading ||
-    verification.isLoading;
+    verification.isLoading ||
+    adminVerification.isLoading;
 
   const handleOpenChange = (next: boolean) => {
     if (next) setSnapshot(combined);
