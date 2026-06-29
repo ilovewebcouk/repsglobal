@@ -563,6 +563,8 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       lifetimeRevenuePence,
       newRegistrations,
       membersSeries: membersSeries.length && totalMembers > 0 ? membersSeries : null,
+      membersByTierSeries:
+        membersByTierSeries.length && totalMembers > 0 ? membersByTierSeries : null,
       revenueSeries: hasData(revenueSeriesArr) ? revenueSeriesArr : null,
       signupsSeries: hasData(signupsSeriesArr) ? signupsSeriesArr : null,
       forecastSeries: hasData(forecastSeriesArr) ? forecastSeriesArr : null,
