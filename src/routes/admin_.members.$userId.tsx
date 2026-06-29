@@ -50,6 +50,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.functions";
+import { verifyMemberMatchesProfessionalsRow } from "@/lib/admin/member-row-check.functions";
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
 import {
   endMemberTrialNow,
