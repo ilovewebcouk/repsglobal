@@ -342,10 +342,13 @@ function VerificationPane({ snapshot }: { snapshot: Member360Snapshot }) {
   );
 }
 
-function ActivityPane({ data, loading }: { data: Awaited<ReturnType<typeof getMemberTimeline>> | undefined; loading: boolean }) {
-  const groups = useMemo(() => {
-    if (!data) return [] as [string, typeof data.events][];
-    const m = new Map<string, typeof data.events>();
+type TimelineBundle = Awaited<ReturnType<typeof getMemberTimeline>>;
+type TimelineEvent = TimelineBundle["events"][number];
+
+function ActivityPane({ data, loading }: { data: TimelineBundle | undefined; loading: boolean }) {
+  const groups = useMemo<[string, TimelineEvent[]][]>(() => {
+    if (!data) return [];
+    const m = new Map<string, TimelineEvent[]>();
     for (const e of data.events) {
       const day = e.ts.slice(0, 10);
       if (!m.has(day)) m.set(day, []);
