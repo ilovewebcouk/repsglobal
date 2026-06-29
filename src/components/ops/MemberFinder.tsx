@@ -12,13 +12,19 @@ interface Props {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  // Destination route for the matched member. Defaults to the legacy ops
+  // recorder so existing call-sites are unaffected; Admin v2 surfaces pass
+  // `/admin/v2/members/$userId`.
+  target?: "/admin/ops/member/$userId" | "/admin/v2/members/$userId";
 }
 
 export function MemberFinder({
   placeholder = "Find member by email, user id, cus_…, sub_… or BD id",
   className = "",
   autoFocus,
+  target = "/admin/ops/member/$userId",
 }: Props) {
+
   const navigate = useNavigate();
   const find = useServerFn(findMember);
   const [q, setQ] = useState("");
@@ -37,7 +43,7 @@ export function MemberFinder({
         setMatches([]);
       } else if (rows.length === 1) {
         setMatches([]);
-        navigate({ to: "/admin/ops/member/$userId", params: { userId: rows[0].user_id } });
+        navigate({ to: target, params: { userId: rows[0].user_id } });
       } else {
         setMatches(rows);
       }
@@ -73,7 +79,7 @@ export function MemberFinder({
               type="button"
               onClick={() => {
                 setMatches([]);
-                navigate({ to: "/admin/ops/member/$userId", params: { userId: m.user_id } });
+                navigate({ to: target, params: { userId: m.user_id } });
               }}
               className="flex w-full items-center justify-between gap-3 rounded-[8px] px-3 py-2 text-left text-sm hover:bg-reps-panel/60"
             >
