@@ -22,7 +22,7 @@
 // Server-only. Never import from client code.
 
 import type { MirrorSubscription } from "@/lib/billing/stripe-mirror.server";
-import { TIERS, type TierKey } from "@/lib/billing/prices";
+import { TIERS, type TierKey } from "@/lib/billing";
 
 export type AdminSubscriptionSource = "stripe-live" | "local-mirror" | "none";
 
