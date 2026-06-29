@@ -209,7 +209,10 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
   const tierLbl = sub.tier_label;
   const status = sub.status;
   const publicHref = slug ? `/c/${slug}` : null;
-  const mailtoHref = email ? `mailto:${email}` : null;
+  // "Send email" routes through /admin/campaigns so outbound is tracked
+  // end-to-end (drafts, schedule, delivery). Never use `mailto:` — that
+  // bypasses Mailgun, tracking, tone-locked templates, and audit trail.
+
   
 
   return (
