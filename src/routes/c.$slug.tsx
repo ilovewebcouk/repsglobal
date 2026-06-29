@@ -784,12 +784,28 @@ function HeroSection({
 /* ------------------------------------------------------------------ */
 
 function TrustStrip({ coach }: { coach: Coach }) {
+  const insExpiry = coach.trust?.insuranceExpiry ?? null;
+  let insuranceValue = coach.insuranceUntil;
+  let insuranceLabel = "Insurance valid";
+  if (coach.trust) {
+    if (insExpiry) {
+      const d = new Date(insExpiry);
+      if (!isNaN(d.getTime())) {
+        insuranceValue = d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        insuranceLabel = d.getTime() < Date.now() ? "Insurance expired" : "Insurance valid";
+      }
+    } else {
+      insuranceValue = "Not on file";
+      insuranceLabel = "Insurance";
+    }
+  }
   const items = [
     { label: "Years coaching", value: coach.years <= 1 ? `${coach.years}` : `${coach.years}+`, icon: Calendar },
     { label: "Clients trained", value: coach.clients, icon: Users },
     { label: "Verified since", value: coach.verifiedSince, icon: ShieldCheck },
-    { label: "Insurance valid", value: coach.insuranceUntil, icon: BadgeCheck },
+    { label: insuranceLabel, value: insuranceValue, icon: BadgeCheck },
   ];
+
   return (
     <section className="bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 pb-2 pt-10 lg:px-10 lg:pt-12">
