@@ -495,8 +495,188 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
             href={sub.price_id ? `https://dashboard.stripe.com/prices/${sub.price_id}` : undefined}
           />
         </div>
+        <BillingActions
+          userId={userId}
+          status={status}
+          cancelAtPeriodEnd={sub.cancel_at_period_end}
+          isTrialing={status === "trialing"}
+          renewalAt={sub.renewal_at}
+        />
       </div>
     </section>
+  );
+}
+
+/* ─────────────── Billing actions ─────────────── */
+
+type ActionKind = "end_trial" | "schedule_cancel" | "resume" | "cancel_now" | null;
+
+function BillingActions({
+  userId,
+  status,
+  cancelAtPeriodEnd,
+  isTrialing,
+  renewalAt,
+}: {
+  userId: string;
+  status: string;
+  cancelAtPeriodEnd: boolean;
+  isTrialing: boolean;
+  renewalAt: string | null;
+}) {
+  const qc = useQueryClient();
+  const endTrial = useServerFn(endMemberTrialNow);
+  const setCancel = useServerFn(setMemberCancelAtPeriodEnd);
+  const cancelNow = useServerFn(cancelMemberSubscriptionNow);
+
+  const [pending, setPending] = useState<ActionKind>(null);
+  const [confirm, setConfirm] = useState<ActionKind>(null);
+
+  const canAct = status !== "canceled";
+  const refresh = async () => {
+    await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+    await qc.invalidateQueries({ queryKey: ["admin-member-timeline", userId] });
+  };
+
+  const run = async (kind: Exclude<ActionKind, null>) => {
+    setPending(kind);
+    try {
+      if (kind === "end_trial") {
+        await endTrial({ data: { user_id: userId } });
+        toast.success("Trial ended — Stripe will attempt the first charge now.");
+      } else if (kind === "schedule_cancel") {
+        await setCancel({ data: { user_id: userId, cancel: true } });
+        toast.success("Cancellation scheduled for period end.");
+      } else if (kind === "resume") {
+        await setCancel({ data: { user_id: userId, cancel: false } });
+        toast.success("Cancellation removed — subscription will renew.");
+      } else if (kind === "cancel_now") {
+        await cancelNow({ data: { user_id: userId } });
+        toast.success("Subscription canceled immediately.");
+      }
+      await refresh();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Action failed");
+    } finally {
+      setPending(null);
+      setConfirm(null);
+    }
+  };
+
+  if (!canAct) {
+    return (
+      <div className="rounded-[12px] border border-reps-border/60 bg-reps-panel/40 px-3 py-2 text-[12.5px] text-white/55">
+        Subscription is canceled — no further billing actions available here.
+      </div>
+    );
+  }
+
+  const confirmCopy: Record<Exclude<ActionKind, null>, { title: string; body: string; cta: string; destructive?: boolean }> = {
+    end_trial: {
+      title: "End trial now?",
+      body: "Stripe will end the trial immediately and attempt the first invoice on the member's default payment method.",
+      cta: "End trial now",
+    },
+    schedule_cancel: {
+      title: "Schedule cancellation?",
+      body: renewalAt
+        ? `The subscription will stay active until ${new Date(renewalAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} and then cancel.`
+        : "The subscription will cancel at the end of the current period.",
+      cta: "Schedule cancellation",
+    },
+    resume: {
+      title: "Remove scheduled cancellation?",
+      body: "Stripe will resume normal billing — the subscription will renew on its next cycle.",
+      cta: "Resume subscription",
+    },
+    cancel_now: {
+      title: "Cancel immediately?",
+      body: "This ends billing right now and revokes entitlement at once. No refund is issued. This cannot be undone — they will need a fresh checkout to come back.",
+      cta: "Cancel now",
+      destructive: true,
+    },
+  };
+
+  return (
+    <>
+      <div className="flex flex-col gap-2 rounded-[12px] border border-reps-border/60 bg-reps-panel/40 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] font-semibold text-white">Subscription actions</span>
+          <span className="text-[11px] text-white/45">Writes go straight to Stripe and mirror back here.</span>
+        </div>
+        <div className="flex flex-wrap gap-2 pt-1">
+          {isTrialing && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pending !== null}
+              onClick={() => setConfirm("end_trial")}
+              className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+            >
+              <Zap data-icon="inline-start" /> End trial now
+            </Button>
+          )}
+          {cancelAtPeriodEnd ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pending !== null}
+              onClick={() => setConfirm("resume")}
+              className="h-9 rounded-[10px] border-emerald-400/30 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 hover:text-emerald-100"
+            >
+              <Undo2 data-icon="inline-start" /> Resume subscription
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pending !== null}
+              onClick={() => setConfirm("schedule_cancel")}
+              className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+            >
+              <CalendarX data-icon="inline-start" /> Cancel at period end
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending !== null}
+            onClick={() => setConfirm("cancel_now")}
+            className="h-9 rounded-[10px] border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100"
+          >
+            <Ban data-icon="inline-start" /> Cancel immediately
+          </Button>
+        </div>
+      </div>
+
+      <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && pending === null && setConfirm(null)}>
+        <AlertDialogContent>
+          {confirm && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{confirmCopy[confirm].title}</AlertDialogTitle>
+                <AlertDialogDescription>{confirmCopy[confirm].body}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={pending !== null}>Back</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={pending !== null}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    run(confirm);
+                  }}
+                  className={cn(
+                    confirmCopy[confirm].destructive && "bg-rose-600 text-white hover:bg-rose-500",
+                  )}
+                >
+                  {pending === confirm ? "Working…" : confirmCopy[confirm].cta}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+          )}
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
