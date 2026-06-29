@@ -27,7 +27,7 @@ const OpsAlertEmail = ({
   severity = "warn",
   summary = "An operational alert has opened.",
   openedAt,
-  href = "https://repsuk.org/admin/ops/alerts",
+  href = "https://repsuk.org/admin",
 }: OpsAlertProps) => {
   const color = severity === "crit" ? "#b91c1c" : severity === "warn" ? "#b45309" : "#0f766e";
   const sevLabel = severity.toUpperCase();
@@ -60,7 +60,7 @@ const OpsAlertEmail = ({
           <Hr style={hr} />
           <Text style={footer}>
             You're receiving this because you're an admin on {SITE_NAME}. Manage alerts at{" "}
-            <Link href="https://repsuk.org/admin/ops/alerts" style={link}>
+            <Link href="https://repsuk.org/admin" style={link}>
               the operations centre
             </Link>
             .
@@ -84,7 +84,7 @@ export const template = {
     severity: "crit",
     summary: "5 failed payments are currently active and need recovery.",
     openedAt: new Date().toISOString(),
-    href: "https://repsuk.org/admin/ops/alerts",
+    href: "https://repsuk.org/admin",
   },
 } satisfies TemplateEntry;
 
