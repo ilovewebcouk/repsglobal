@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { searchProfessionals } from "@/lib/directory/search.functions";
 import { getProfessionLabel } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
+import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 import { searchTaxonomy } from "@/lib/search/taxonomy";
 
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
