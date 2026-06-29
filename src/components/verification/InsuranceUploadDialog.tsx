@@ -292,6 +292,10 @@ export function InsuranceUploadDialog({
                   type="file"
                   accept="application/pdf,image/jpeg,image/png"
                   className="hidden"
+                  onClick={(e) => {
+                    // Allow re-picking the same file after a failed attempt.
+                    (e.currentTarget as HTMLInputElement).value = "";
+                  }}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) void handlePickFile(f);
