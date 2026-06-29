@@ -277,30 +277,69 @@ export const listPayments = createServerFn({ method: "POST" })
       stripe_customer_id: string | null;
     }>;
 
-    // Fallback: link customer ids back to users via the subscriptions mirror
-    // so dispute/failed events that arrived without user_id still show a name.
-    const customerIds = Array.from(
-      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
-    );
-    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
-    const allUserIds = new Set<string>([
+    // Per-event metadata pass (so we know charge ids before resolving contacts)
+    type Meta = {
+      e: typeof events[number];
+      obj: any;
+      status: PaymentRow["status"];
+      amount: number;
+      currency: string;
+      chargeId: string | null;
+      piId: string | null;
+      customerId: string | null;
+    };
+    const metas: Meta[] = events.map((e) => {
+      const obj = e.payload?.data?.object ?? {};
+      let status: PaymentRow["status"] = "succeeded";
+      let amount = 0;
+      let currency = "gbp";
+      let chargeId: string | null = null;
+      let piId: string | null = null;
+      if (e.event_type === "invoice.paid") {
+        status = "succeeded"; amount = obj.amount_paid ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = obj.charge ?? null; piId = obj.payment_intent ?? null;
+      } else if (e.event_type === "charge.refunded") {
+        status = "refunded"; amount = obj.amount_refunded ?? obj.amount ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = obj.id ?? null; piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
+      } else if (e.event_type === "charge.failed") {
+        status = "failed"; amount = obj.amount ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = obj.id ?? null; piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
+      } else if (e.event_type === "charge.dispute.created") {
+        status = "disputed"; amount = obj.amount ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = typeof obj.charge === "string" ? obj.charge : null;
+      }
+      return { e, obj, status, amount, currency, chargeId, piId, customerId: e.stripe_customer_id };
+    });
+
+    // Backfill customer ids via legacy_stripe_payments (for legacy chargebacks where
+    // the dispute event has no customer id but we have the charge id locally).
+    const chargeIds = metas.map((m) => m.chargeId).filter(Boolean) as string[];
+    const chargeMap = await resolveContactsByChargeIds(supabaseAdmin, chargeIds);
+    for (const m of metas) {
+      if (!m.customerId && m.chargeId) {
+        const hit = chargeMap.get(m.chargeId);
+        if (hit?.stripeCustomerId) m.customerId = hit.stripeCustomerId;
+      }
+    }
+
+    // Batch contact resolution (subscriptions → legacy_link → bd_member_seed)
+    const customerIds = Array.from(new Set(metas.map((m) => m.customerId).filter(Boolean) as string[]));
+    const contactByCustomer = await resolveContactsByCustomerIds(supabaseAdmin, customerIds);
+
+    // Hydrate profile names + emails for any resolved user_ids
+    const userIds = Array.from(new Set([
       ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
-      ...Array.from(customerToUser.values()),
-    ]);
-    const userIds = Array.from(allUserIds);
-    let profileMap = new Map<string, { full_name: string | null }>();
-    let emailMap = new Map<string, string | null>();
+      ...Array.from(contactByCustomer.values()).map((c) => c.userId).filter(Boolean) as string[],
+    ]));
+    const profileMap = new Map<string, { full_name: string | null }>();
+    const emailMap = new Map<string, string | null>();
     if (userIds.length) {
       const { data: profs } = await supabaseAdmin.from("profiles").select("id, full_name").in("id", userIds);
-      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null }>) {
-        profileMap.set(p.id, { full_name: p.full_name });
-      }
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null }>) profileMap.set(p.id, { full_name: p.full_name });
       try {
-        const { supabaseAdmin: sa } = await import("@/integrations/supabase/client.server");
-        // Pull emails in chunks via auth admin listUsers — best-effort
         let page = 1;
         while (page < 30) {
-          const { data: ud, error } = await sa.auth.admin.listUsers({ page, perPage: 200 });
+          const { data: ud, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
           if (error) break;
           for (const u of ud.users) if (userIds.includes(u.id)) emailMap.set(u.id, u.email ?? null);
           if (ud.users.length < 200) break;
@@ -310,47 +349,20 @@ export const listPayments = createServerFn({ method: "POST" })
     }
 
     const out: PaymentRow[] = [];
-    for (const e of events) {
-      const obj = e.payload?.data?.object ?? {};
-      let status: PaymentRow["status"] = "succeeded";
-      let amount = 0;
-      let currency = "gbp";
-      let chargeId: string | null = null;
-      let piId: string | null = null;
-      if (e.event_type === "invoice.paid") {
-        status = "succeeded";
-        amount = obj.amount_paid ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = obj.charge ?? null;
-        piId = obj.payment_intent ?? null;
-      } else if (e.event_type === "charge.refunded") {
-        status = "refunded";
-        amount = obj.amount_refunded ?? obj.amount ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = obj.id ?? null;
-        piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
-      } else if (e.event_type === "charge.failed") {
-        status = "failed";
-        amount = obj.amount ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = obj.id ?? null;
-        piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
-      } else if (e.event_type === "charge.dispute.created") {
-        status = "disputed";
-        amount = obj.amount ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = typeof obj.charge === "string" ? obj.charge : null;
-      }
+    for (const m of metas) {
+      const e = m.e;
+      const custHit = m.customerId ? contactByCustomer.get(m.customerId) : null;
+      const resolvedUserId = e.user_id ?? custHit?.userId ?? null;
+      const profName = resolvedUserId ? profileMap.get(resolvedUserId)?.full_name ?? null : null;
+      const profEmail = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
+      const chargeHit = m.chargeId ? chargeMap.get(m.chargeId) : null;
+      const payload = extractPayloadContact(m.obj);
+      const fullName = profName ?? custHit?.fullName ?? payload.fullName ?? null;
+      const email = profEmail ?? custHit?.email ?? chargeHit?.email ?? payload.email ?? null;
 
-      const resolvedUserId =
-        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
-      const prof = resolvedUserId ? profileMap.get(resolvedUserId) : null;
-      const email = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
-
-      // Search filter (client-side over hydrated rows)
       if (data.search) {
         const q = data.search.toLowerCase();
-        const hay = `${email ?? ""} ${prof?.full_name ?? ""} ${chargeId ?? ""} ${piId ?? ""} ${e.stripe_customer_id ?? ""}`.toLowerCase();
+        const hay = `${email ?? ""} ${fullName ?? ""} ${m.chargeId ?? ""} ${m.piId ?? ""} ${m.customerId ?? ""}`.toLowerCase();
         if (!hay.includes(q)) continue;
       }
 
@@ -359,15 +371,16 @@ export const listPayments = createServerFn({ method: "POST" })
         createdAt: e.created_at,
         userId: resolvedUserId,
         email,
-        fullName: prof?.full_name ?? null,
-        amountPence: amount,
-        currency,
-        status,
-        stripeChargeId: chargeId,
-        stripeCustomerId: e.stripe_customer_id,
-        stripePaymentIntentId: piId,
+        fullName,
+        amountPence: m.amount,
+        currency: m.currency,
+        status: m.status,
+        stripeChargeId: m.chargeId,
+        stripeCustomerId: m.customerId,
+        stripePaymentIntentId: m.piId,
       });
     }
+
 
     return out;
   });
