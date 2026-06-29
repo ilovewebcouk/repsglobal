@@ -86,6 +86,12 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     if (error) throw error;
     if (!row) return null;
 
+    // Phase 5 public-visibility gate: hide profiles with no active paid sub.
+    const { isProPubliclyVisible } = await import(
+      "@/lib/visibility/public-gate.server"
+    );
+    if (!(await isProPubliclyVisible((row as { id: string }).id))) return null;
+
     const r = row as unknown as ProPublicRow;
 
     const [{ data: prof }, locMap] = await Promise.all([
