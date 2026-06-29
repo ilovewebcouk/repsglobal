@@ -111,7 +111,7 @@ export const verifyMemberMatchesProfessionalsRow = createServerFn({ method: "GET
     if (!sameDay(list_renewal_date, m360.renewal_at)) mismatches.push("renewal_date");
     if (list_is_trial !== (m360.status === "trialing")) mismatches.push("is_trial");
     if ((list_trial_days_left ?? null) !== (m360.trial_days_left ?? null)) mismatches.push("trial_days_left");
-    if ((list_tier ?? null) !== (m360.tier_key ?? null)) mismatches.push("tier");
+    if ((list_tier ?? null) !== ((m360.tier as string | null) ?? null)) mismatches.push("tier");
 
     return {
       match: mismatches.length === 0,
