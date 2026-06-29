@@ -152,31 +152,69 @@ export function HeroImageEditor({
       )}
 
       {mode === "ai" && (
-        <div className="space-y-2 rounded-[12px] border border-reps-border bg-reps-panel-soft/60 p-4">
+        <div className="space-y-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/60 p-4">
           <div className="text-[12px] text-white/65">
-            We'll use your profile photo as a reference so the generated hero looks like you. One short
-            line describing the shot works best.
+            We use your profile photo as a likeness reference and our locked REPs cinematic
+            shot as a style anchor, so the result matches our brand quality bar.
           </div>
+
+          <div>
+            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/55">
+              Style
+            </div>
+            <div className="inline-flex flex-wrap gap-1.5">
+              {([
+                { id: "editorial", label: "Editorial · golden hour" },
+                { id: "studio", label: "Studio · magazine cover" },
+                { id: "action", label: "In-action · mid-rep" },
+              ] as const).map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setStyle(s.id)}
+                  className={`h-8 rounded-[10px] border px-3 text-[12px] font-medium transition ${
+                    style === s.id
+                      ? "border-reps-orange bg-reps-orange/15 text-white"
+                      : "border-reps-border bg-reps-panel-soft text-white/65 hover:text-white"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             maxLength={400}
-            placeholder="Coaching a client through a deadlift, gym setting, golden hour"
+            placeholder="Coaching a client through a deadlift, industrial gym, golden hour"
             className="min-h-[72px] w-full rounded-[10px] border border-reps-border bg-reps-ink/60 px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
           />
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] text-white/45">
-              Powered by Lovable AI · takes ~15s
+              Gemini 3 Pro Image · cinematic · ~25s
             </span>
-            <button
-              type="button"
-              disabled={!prompt.trim() || aiMut.isPending}
-              onClick={() => aiMut.mutate()}
-              className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-            >
-              <Sparkles className="h-4 w-4" />
-              {aiMut.isPending ? "Generating…" : "Generate"}
-            </button>
+            <div className="flex items-center gap-2">
+              {aiMut.isSuccess && !aiMut.isPending ? (
+                <button
+                  type="button"
+                  onClick={() => aiMut.mutate()}
+                  className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] font-medium text-white/80 hover:bg-reps-panel"
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Regenerate
+                </button>
+              ) : null}
+              <button
+                type="button"
+                disabled={!prompt.trim() || aiMut.isPending}
+                onClick={() => aiMut.mutate()}
+                className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+              >
+                <Sparkles className="h-4 w-4" />
+                {aiMut.isPending ? "Generating…" : "Generate"}
+              </button>
+            </div>
           </div>
         </div>
       )}
