@@ -41,8 +41,8 @@ export const Route = createFileRoute("/coming-soon")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "REPS — Launching 26 June 2026" },
       { name: "twitter:image", content: heroAsset.url },
-      // Coming-soon page IS indexable (root is noindex by default — this overrides for this page only).
-      { name: "robots", content: "index, follow" },
+      // Keep page live but excluded from search results.
+      { name: "robots", content: "noindex, follow" },
     ],
     links: [{ rel: "canonical", href: "/coming-soon" }],
   }),
