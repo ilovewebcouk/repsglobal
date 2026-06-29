@@ -52,6 +52,7 @@ export const VERIFIED_NAV = [
   {
     title: "Deliver",
     items: [
+      { icon: Store, label: "Shop-front", to: "/dashboard/shop-front" },
       { icon: Tag, label: "Services", to: "/dashboard/services" },
       { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
       { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
