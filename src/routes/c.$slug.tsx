@@ -470,16 +470,14 @@ function mergeLiveIntoCoach(
 export const Route = createFileRoute("/c/$slug")({
   loader: async ({ params }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
-    if (COACHES[params.slug]) return { gated: false as const };
+    if (COACHES[params.slug]) return { gated: false as const, live: null };
     // DB-backed: any paying tier (Verified, Pro, Studio) can publish a shop-front.
-    // The page only renders when shop_fronts.is_published = true, so Verified
-    // pros still opt in by publishing one.
     const live = await getShopFrontBySlug({ data: { slug: params.slug } });
     if (!live) throw notFound();
     if (!live.shopFront.tier || !["verified", "pro", "studio"].includes(live.shopFront.tier)) {
       throw notFound();
     }
-    return { gated: false as const };
+    return { gated: false as const, live };
   },
   notFoundComponent: () => (
     <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
@@ -530,6 +528,7 @@ const NAV_ITEMS = [
 
 function CoachShopFrontPage() {
   const { slug } = Route.useParams();
+  const loaderData = Route.useLoaderData();
   const fetchShopFront = useServerFn(getShopFrontBySlug);
   const fetchReviews = useServerFn(listPublicReviewsBySlug);
   const isFixture = !!COACHES[slug];
@@ -547,6 +546,7 @@ function CoachShopFrontPage() {
     queryFn: () => fetchShopFront({ data: { slug } }),
     staleTime: 60_000,
     enabled: !isFixture,
+    initialData: loaderData?.live ?? undefined,
   });
 
   const { data: reviewsData } = useQuery({
