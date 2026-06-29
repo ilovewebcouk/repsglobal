@@ -35,7 +35,7 @@ export const LEGACY_AMOUNT_PENCE = TIER_RENEWAL_PENCE.verified;
 
 // --- Failed payments (canonical) --------------------------------------------
 // "A member whose card is broken right now." Used by every surface that
-// surfaces a failed-payment count: /admin/ops/billing (Failed payments),
+// surfaces a failed-payment count: /admin/billing (Failed payments),
 // /admin/ops/customer (Failed payments), /admin/payments (Past due),
 // /admin/memberships (Past-due tile), /admin red banner. Do NOT inline-fork
 // this list anywhere.

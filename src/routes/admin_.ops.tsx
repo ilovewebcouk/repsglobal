@@ -49,7 +49,7 @@ function OpsHub() {
 
         {/* Sections */}
         <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
-          <SectionCard to="/admin/ops/billing" title="Billing" icon={<CreditCard className="size-5" />}
+          <SectionCard to="/admin/billing" title="Billing" icon={<CreditCard className="size-5" />}
             blurb="Payments, recoveries, DLQ." />
           <SectionCard to="/admin/ops/platform" title="Platform" icon={<Activity className="size-5" />}
             blurb="Cron, queues, connectivity, DB." />

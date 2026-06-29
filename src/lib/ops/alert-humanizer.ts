@@ -72,13 +72,13 @@ const HUMANISERS: Record<string, (ctx: Ctx) => HumanisedAlert> = {
   "payments.failure_spike": (ctx) => ({
     label: "Payment failures spiking today",
     summary: `${n(ctx, "today")} payment failures today vs a 7-day avg of ${n(ctx, "avg_7d").toFixed(1)}. Something has changed — check Stripe, the gateway, or a release.`,
-    href: "/admin/ops/billing",
+    href: "/admin/billing",
     cta: "Open Billing Health",
   }),
   "payments.refund_spike": (ctx) => ({
     label: "Refunds spiking today",
     summary: `${n(ctx, "today")} refunds today (threshold: 3). Unusual — verify there is no operational mistake or fraud chargeback wave.`,
-    href: "/admin/ops/billing",
+    href: "/admin/billing",
     cta: "Open Billing Health",
   }),
   "test.notification": () => ({

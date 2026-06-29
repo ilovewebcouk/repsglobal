@@ -1,5 +1,5 @@
 // Renewal Engine — operator visibility for the nightly auto-renewal cron.
-// Read-only. Powers the "Renewal engine — last 7 nights" card on /admin/ops/billing.
+// Read-only. Powers the "Renewal engine — last 7 nights" card on /admin/billing.
 //
 // NO engine logic lives here. We just read what already happened so the operator
 // stops having to ask whether the cron worked.
