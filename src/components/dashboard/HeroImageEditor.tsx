@@ -191,10 +191,7 @@ export function HeroImageEditor({
             placeholder="Coaching a client through a deadlift, industrial gym, golden hour"
             className="min-h-[72px] w-full rounded-[10px] border border-reps-border bg-reps-ink/60 px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
           />
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] text-white/45">
-              Gemini 3 Pro Image · cinematic · ~25s
-            </span>
+          <div className="flex items-center justify-end gap-2">
             <div className="flex items-center gap-2">
               {aiMut.isSuccess && !aiMut.isPending ? (
                 <button
