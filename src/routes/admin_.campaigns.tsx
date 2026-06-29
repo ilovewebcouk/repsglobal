@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 import { PencilLine } from "lucide-react";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -9,9 +10,21 @@ import { ComposeDialog, type ComposeInitialDraft } from "@/components/admin/camp
 import { CampaignsList } from "@/components/admin/campaigns/CampaignsList";
 import { useQueryClient } from "@tanstack/react-query";
 
+// `?compose=1&to=user@example.com&name=Katie+Gibbs&inbox=pros` opens the
+// composer pre-seeded with a single direct recipient. Used by Member 360's
+// "Send email" action so admin outreach always lands in /admin/campaigns
+// (tracked end-to-end) instead of a local mail client via `mailto:`.
+const ComposeSearch = z.object({
+  compose: z.union([z.literal("1"), z.literal("true")]).optional(),
+  to: z.string().email().optional(),
+  name: z.string().optional(),
+  inbox: z.enum(["support", "pros", "partners", "press"]).optional(),
+});
+
 export const Route = createFileRoute("/admin_/campaigns")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
+  validateSearch: (s) => ComposeSearch.parse(s),
   head: () => ({
     meta: [
       { title: "Campaigns — REPS Admin" },
@@ -24,6 +37,7 @@ export const Route = createFileRoute("/admin_/campaigns")({
   }),
   component: AdminCampaigns,
 });
+
 
 function AdminCampaigns() {
   const [composeOpen, setComposeOpen] = useState(false);
