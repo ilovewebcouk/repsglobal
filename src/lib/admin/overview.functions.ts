@@ -524,6 +524,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       netMemberGrowth,
       revenuePence,
       forecastPence,
+      lifetimeRevenuePence,
       newRegistrations,
       membersSeries: membersSeries.length && totalMembers > 0 ? membersSeries : null,
       revenueSeries: hasData(revenueSeriesArr) ? revenueSeriesArr : null,
