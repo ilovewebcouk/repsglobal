@@ -69,13 +69,11 @@ function Sparkline({
 function TileShell({
   icon: Icon,
   label,
-  reconcileHash,
   headerRight,
   children,
 }: {
   icon: LucideIcon;
   label: string;
-  reconcileHash?: "revenue" | "members" | "registrations" | "forecast" | "growth";
   headerRight?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -88,18 +86,7 @@ function TileShell({
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <div className="text-[12px] text-white/55">{label}</div>
-            <div className="flex items-center gap-3">
-              {headerRight}
-              {reconcileHash ? (
-                <Link
-                  to="/admin/reconciliation"
-                  hash={reconcileHash}
-                  className="text-[10px] uppercase tracking-[0.14em] text-white/45 hover:text-reps-orange"
-                >
-                  Reconcile →
-                </Link>
-              ) : null}
-            </div>
+            {headerRight ? <div className="flex items-center gap-3">{headerRight}</div> : null}
           </div>
           {children}
         </div>
