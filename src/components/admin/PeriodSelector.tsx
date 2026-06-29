@@ -9,7 +9,7 @@ import {
 import { PERIOD_OPTIONS, type PeriodKey } from "@/lib/admin/overview-period";
 
 export function PeriodSelector({ value }: { value: PeriodKey }) {
-  const navigate = useNavigate({ from: "/admin" });
+  const navigate = useNavigate();
   return (
     <Select
       value={value}
