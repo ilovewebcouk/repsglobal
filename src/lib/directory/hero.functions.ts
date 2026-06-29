@@ -12,11 +12,16 @@ export type HeroAvatar = {
 export const getHomepageHeroAvatars = createServerFn({ method: "GET" }).handler(
   async (): Promise<HeroAvatar[]> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getPubliclyVisibleProIds } = await import(
+      "@/lib/visibility/public-gate.server"
+    );
+    const visibleIds = Array.from(await getPubliclyVisibleProIds());
+    if (visibleIds.length === 0) return [];
 
     const { data: pros, error } = await supabaseAdmin
       .from("professionals")
       .select("id, slug, city, quality_score")
-      .eq("is_published", true)
+      .in("id", visibleIds)
       .order("quality_score", { ascending: false, nullsFirst: false })
       .limit(24);
 
