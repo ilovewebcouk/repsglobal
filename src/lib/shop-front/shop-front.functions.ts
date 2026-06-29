@@ -102,6 +102,12 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!pro) return null;
 
+    // Phase 5 public-visibility gate: hide shop-fronts for pros with no active sub.
+    const { isProPubliclyVisible } = await import(
+      "@/lib/visibility/public-gate.server"
+    );
+    if (!(await isProPubliclyVisible(pro.id))) return null;
+
     const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, coachingSinceYear] = await Promise.all([
       supabaseAdmin
         .from("shop_fronts")

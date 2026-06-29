@@ -4309,6 +4309,7 @@ export type Database = {
       is_in_payment_dispute: { Args: { _user_id: string }; Returns: boolean }
       is_pro_fully_verified: { Args: { _pro_id: string }; Returns: boolean }
       is_pro_hidden_by_churn: { Args: { _user_id: string }; Returns: boolean }
+      is_pro_publicly_visible: { Args: { _pro_id: string }; Returns: boolean }
       list_fully_verified_pro_ids: { Args: never; Returns: string[] }
       list_my_unread_support_tickets: {
         Args: never
@@ -4318,6 +4319,12 @@ export type Database = {
           last_message_at: string
           subject: string
           ticket_number: string
+        }[]
+      }
+      list_publicly_visible_pro_ids: {
+        Args: never
+        Returns: {
+          id: string
         }[]
       }
       log_admin_action: {

@@ -109,15 +109,21 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       typeof data.viewer_lat === "number" &&
       typeof data.viewer_lng === "number";
 
+    // Phase 5 public-visibility contract: only show pros that are published,
+    // non-demo, AND hold a live paid subscription (verified/pro/studio in
+    // active/trialing/past_due). Blocks the 51-profile leak audited 2026-06-29.
+    const { getPubliclyVisibleProIds } = await import(
+      "@/lib/visibility/public-gate.server"
+    );
+    const visibleIds = Array.from(await getPubliclyVisibleProIds());
+    if (visibleIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+
     let qb = supabaseAdmin
       .from("professionals")
       .select(COLS, { count: "exact" })
-      .eq("is_published", true)
-      .eq("is_demo", false);
-    // Note: we deliberately do NOT filter on bd_seed_thin. Every published
-    // professional appears in the directory, including legacy-imported shells
-    // with no bio or photo (monogram avatar fallback handles missing photos).
-    // Demo/fixture pros (is_demo = true) are excluded — admin-only.
+      .in("id", visibleIds);
     // Hide churned profiles (stage 'lapsed' or 'dormant'). Admin still sees
     // them everywhere else; this is the public-facing register filter.
     const { data: hiddenChurnRows } = await supabaseAdmin
