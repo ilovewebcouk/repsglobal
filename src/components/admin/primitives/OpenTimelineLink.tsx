@@ -42,7 +42,7 @@ export function OpenTimelineLink({
   }
   return (
     <Link
-      to="/admin/ops/member/$userId"
+      to="/admin/members/$userId"
       params={{ userId }}
       className={cn(
         "inline-flex items-center gap-1 text-[12px] font-semibold text-reps-orange hover:underline",
