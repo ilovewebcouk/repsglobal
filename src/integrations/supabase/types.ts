@@ -3293,42 +3293,185 @@ export type Database = {
           },
         ]
       }
+      shop_front_client_results: {
+        Row: {
+          body: string | null
+          created_at: string
+          headline: string | null
+          id: string
+          is_published: boolean
+          review_id: string | null
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          headline?: string | null
+          id?: string
+          is_published?: boolean
+          review_id?: string | null
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          headline?: string | null
+          id?: string
+          is_published?: boolean
+          review_id?: string | null
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_front_client_results_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_front_faqs: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          question: string
+          sort_order: number
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          question: string
+          sort_order?: number
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          question?: string
+          sort_order?: number
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shop_front_transformations: {
+        Row: {
+          client_first_name: string | null
+          created_at: string
+          headline: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          metric: string | null
+          quote: string | null
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_first_name?: string | null
+          created_at?: string
+          headline?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          metric?: string | null
+          quote?: string | null
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_first_name?: string | null
+          created_at?: string
+          headline?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          metric?: string | null
+          quote?: string | null
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shop_fronts: {
         Row: {
           about: string | null
           accent_hex: string | null
+          client_results_intro: string | null
+          coaching_reach: Json
           created_at: string
+          faq_auto_generated: boolean
           hero_image_url: string | null
           is_published: boolean
           layout_variant: string
+          method_intro: string | null
+          method_name: string | null
+          method_pillars: Json
           professional_id: string
           published_at: string | null
+          subtitle: string | null
           tagline: string | null
           updated_at: string
+          venues: Json
         }
         Insert: {
           about?: string | null
           accent_hex?: string | null
+          client_results_intro?: string | null
+          coaching_reach?: Json
           created_at?: string
+          faq_auto_generated?: boolean
           hero_image_url?: string | null
           is_published?: boolean
           layout_variant?: string
+          method_intro?: string | null
+          method_name?: string | null
+          method_pillars?: Json
           professional_id: string
           published_at?: string | null
+          subtitle?: string | null
           tagline?: string | null
           updated_at?: string
+          venues?: Json
         }
         Update: {
           about?: string | null
           accent_hex?: string | null
+          client_results_intro?: string | null
+          coaching_reach?: Json
           created_at?: string
+          faq_auto_generated?: boolean
           hero_image_url?: string | null
           is_published?: boolean
           layout_variant?: string
+          method_intro?: string | null
+          method_name?: string | null
+          method_pillars?: Json
           professional_id?: string
           published_at?: string | null
+          subtitle?: string | null
           tagline?: string | null
           updated_at?: string
+          venues?: Json
         }
         Relationships: [
           {
