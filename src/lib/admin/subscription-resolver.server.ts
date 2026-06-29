@@ -324,13 +324,13 @@ export async function resolveSubscriptionStateForUser(
     supabaseAdmin
       .from("subscriptions")
       .select(
-        "id, user_id, stripe_subscription_id, stripe_customer_id, status, tier, current_period_end, cancel_at_period_end, environment, price_lookup_key",
+        "id, user_id, stripe_subscription_id, stripe_customer_id, status, tier, current_period_end, cancel_at_period_end, environment",
       )
       .eq("user_id", userId)
       .eq("environment", "live"),
   ]);
 
-  const localRows = ((localRes.data ?? []) as LocalSubscriptionRow[]).filter(Boolean);
+  const localRows = ((localRes.data ?? []) as unknown as LocalSubscriptionRow[]).filter(Boolean);
   const local = pickLocalRow(localRows);
 
   return resolveAdminSubscriptionState({ user_id: userId, mirror, local });
