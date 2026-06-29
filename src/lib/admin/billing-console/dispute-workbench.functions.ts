@@ -298,6 +298,14 @@ async function assembleWorkbench(
       },
       recentCharges,
     };
+  }
+}
+
+export const getDisputeWorkbench = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ disputeId: z.string().uuid() }).parse(d))
+  .handler(async ({ context, data }): Promise<DisputeWorkbench> => {
+    return buildWorkbench(context.userId, data.disputeId);
   });
 
 // ---------------------------------------------------------------------------
