@@ -72,7 +72,52 @@ async function fetchCoachingSinceYear(
     if (row.issue_date) {
       const parsed = new Date(row.issue_date);
       if (!isNaN(parsed.getTime())) y = parsed.getFullYear();
-    }
+}
+
+// Helper: public-safe trust summary used by both shop-front readers.
+async function fetchTrustSummary(
+  supabaseAdmin: { from: (t: string) => any },
+  professionalId: string,
+  primaryTitleSlug: string | null,
+): Promise<ShopFrontDTO["trust"]> {
+  const today = new Date().toISOString().slice(0, 10);
+  const [{ data: pro }, { data: ins }, { data: subs }] = await Promise.all([
+    supabaseAdmin
+      .from("professionals")
+      .select("identity_status, identity_verified_at")
+      .eq("id", professionalId)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("insurance_policies")
+      .select("status, expiry_date")
+      .eq("professional_id", professionalId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("verification_submissions")
+      .select("status, reviewed_at")
+      .eq("professional_id", professionalId),
+  ]);
+
+  const allSubs = (subs ?? []) as Array<{ status: string | null; reviewed_at: string | null }>;
+  const approved = allSubs.filter((s) => s.status === "approved");
+  const insRow = ins as { status: string | null; expiry_date: string | null } | null;
+  const insActive =
+    insRow?.status === "active" && (!insRow.expiry_date || insRow.expiry_date >= today);
+  const idApproved = (pro as { identity_status: string | null } | null)?.identity_status === "approved";
+  const reviewedDates = [
+    ...approved.map((s) => s.reviewed_at).filter((x): x is string => !!x),
+    (pro as { identity_verified_at: string | null } | null)?.identity_verified_at ?? null,
+  ].filter((x): x is string => !!x).sort();
+
+  return {
+    isVerified: idApproved && insActive && approved.length > 0,
+    primaryTitleSlug: primaryTitleSlug,
+    insuranceExpiry: insActive ? insRow?.expiry_date ?? null : null,
+    activeCredentialsCount: approved.length,
+    lastCheckedAt: reviewedDates.at(-1) ?? null,
+  };
     if (y == null && row.year != null) y = row.year;
     if (y != null && (earliest == null || y < earliest)) earliest = y;
   }
