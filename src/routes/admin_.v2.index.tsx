@@ -215,7 +215,7 @@ function KpiTile({
   loading,
   accent,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   label: string;
   value: string | null;
   loading: boolean;
@@ -223,11 +223,11 @@ function KpiTile({
 }) {
   return (
     <Card className="rounded-[16px] shadow-none">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardDescription className="text-xs uppercase tracking-wide">{label}</CardDescription>
         <Icon
           className="size-4"
-          style={accent ? { color: "var(--brand-orange)" } : { color: "var(--muted-foreground)" }}
+          style={{ color: accent ? "var(--brand-orange)" : "var(--muted-foreground)" }}
         />
       </CardHeader>
       <CardContent>
