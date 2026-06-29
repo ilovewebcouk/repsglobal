@@ -476,7 +476,7 @@ export const listDisputes = createServerFn({ method: "GET" })
     const { data: rows } = await supabaseAdmin
       .from("disputes")
       .select(
-        "id, opened_at, user_id, reason, amount_pence, currency, status, lifecycle_stage, evidence_due_by, stripe_dispute_id, stripe_charge_id",
+        "id, opened_at, user_id, reason, amount_pence, currency, status, lifecycle_stage, evidence_due_by, stripe_dispute_id, stripe_charge_id, stripe_customer_id",
       )
       .order("opened_at", { ascending: false })
       .limit(500);
@@ -493,9 +493,20 @@ export const listDisputes = createServerFn({ method: "GET" })
       evidence_due_by: string | null;
       stripe_dispute_id: string | null;
       stripe_charge_id: string | null;
+      stripe_customer_id: string | null;
     }>;
 
-    const userIds = Array.from(new Set(disputes.map((d) => d.user_id).filter(Boolean) as string[]));
+    const customerIds = Array.from(
+      new Set(disputes.map((d) => d.stripe_customer_id).filter(Boolean) as string[]),
+    );
+    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(
+      new Set<string>([
+        ...(disputes.map((d) => d.user_id).filter(Boolean) as string[]),
+        ...Array.from(customerToUser.values()),
+      ]),
+    );
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -513,21 +524,25 @@ export const listDisputes = createServerFn({ method: "GET" })
       } catch { /* best effort */ }
     }
 
-    return disputes.map((d) => ({
-      id: d.id,
-      openedAt: d.opened_at,
-      userId: d.user_id,
-      email: d.user_id ? emailMap.get(d.user_id) ?? null : null,
-      fullName: d.user_id ? profMap.get(d.user_id) ?? null : null,
-      reason: d.reason,
-      amountPence: d.amount_pence ?? 0,
-      currency: d.currency ?? "gbp",
-      status: d.status,
-      lifecycleStage: d.lifecycle_stage,
-      evidenceDueBy: d.evidence_due_by,
-      stripeDisputeId: d.stripe_dispute_id,
-      stripeChargeId: d.stripe_charge_id,
-    }));
+    return disputes.map((d) => {
+      const resolvedUserId =
+        d.user_id ?? (d.stripe_customer_id ? customerToUser.get(d.stripe_customer_id) ?? null : null);
+      return {
+        id: d.id,
+        openedAt: d.opened_at,
+        userId: resolvedUserId,
+        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
+        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
+        reason: d.reason,
+        amountPence: d.amount_pence ?? 0,
+        currency: d.currency ?? "gbp",
+        status: d.status,
+        lifecycleStage: d.lifecycle_stage,
+        evidenceDueBy: d.evidence_due_by,
+        stripeDisputeId: d.stripe_dispute_id,
+        stripeChargeId: d.stripe_charge_id,
+      };
+    });
   });
 
 // ---------------------------------------------------------------------------
