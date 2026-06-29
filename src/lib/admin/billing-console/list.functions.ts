@@ -576,15 +576,31 @@ export const listRefunds = createServerFn({ method: "POST" })
     const sinceIso = new Date(Date.now() - data.rangeDays * 86_400_000).toISOString();
     const { data: rows } = await supabaseAdmin
       .from("payment_events")
-      .select("id, created_at, user_id, payload")
+      .select("id, created_at, user_id, payload, stripe_customer_id")
       .eq("event_type", "charge.refunded")
       .gte("created_at", sinceIso)
       .order("created_at", { ascending: false })
       .limit(data.limit);
 
-    const events = (rows ?? []) as Array<{ id: string; created_at: string; user_id: string | null; payload: any }>;
+    const events = (rows ?? []) as Array<{
+      id: string;
+      created_at: string;
+      user_id: string | null;
+      payload: any;
+      stripe_customer_id: string | null;
+    }>;
 
-    const userIds = Array.from(new Set(events.map((e) => e.user_id).filter(Boolean) as string[]));
+    const customerIds = Array.from(
+      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
+    );
+    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(
+      new Set<string>([
+        ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
+        ...Array.from(customerToUser.values()),
+      ]),
+    );
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -604,12 +620,14 @@ export const listRefunds = createServerFn({ method: "POST" })
 
     return events.map((e) => {
       const obj = e.payload?.data?.object ?? {};
+      const resolvedUserId =
+        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
       return {
         id: e.id,
         createdAt: e.created_at,
-        userId: e.user_id,
-        email: e.user_id ? emailMap.get(e.user_id) ?? null : null,
-        fullName: e.user_id ? profMap.get(e.user_id) ?? null : null,
+        userId: resolvedUserId,
+        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
+        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
         amountPence: obj.amount_refunded ?? obj.amount ?? 0,
         currency: obj.currency ?? "gbp",
         reason: obj.refunds?.data?.[0]?.reason ?? null,
