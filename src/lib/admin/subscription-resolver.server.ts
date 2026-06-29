@@ -81,6 +81,9 @@ export interface AdminSubscriptionState {
   currency: string | null;
   interval: string | null;
 
+  /** Days remaining until trial_end / current_period_end when trialing. */
+  trial_days_left: number | null;
+
   /** True when the member has a paid entitlement right now. */
   has_active_entitlement: boolean;
 
