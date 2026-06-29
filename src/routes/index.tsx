@@ -224,9 +224,11 @@ function HomeV2() {
     staleTime: 60 * 60_000, // rotation only changes once per day
   });
   const liveFeatured = featuredResult?.pros ?? [];
-  const featuredCards: HomeFeaturedCard[] = liveFeatured.length
-    ? liveFeatured.slice(0, 4).map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]))
-    : [];
+  // Pros without a real avatar are never featured — no demo image substitutes.
+  const featuredCards: HomeFeaturedCard[] = liveFeatured
+    .filter((r) => !!r.avatar_url)
+    .slice(0, 4)
+    .map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]));
   const hasFeatured = featuredCards.length > 0;
 
   return (
