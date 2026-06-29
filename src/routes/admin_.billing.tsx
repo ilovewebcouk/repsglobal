@@ -30,6 +30,7 @@ import {
   type DisputeRow,
   type RefundRow,
 } from "@/lib/admin/billing-console/list.functions";
+import { CancelStripeSubCard } from "@/components/admin/billing/CancelStripeSubCard";
 
 const TAB_VALUES = ["payments", "subscriptions", "disputes", "refunds"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
