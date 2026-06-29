@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 import { PencilLine } from "lucide-react";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -9,9 +10,21 @@ import { ComposeDialog, type ComposeInitialDraft } from "@/components/admin/camp
 import { CampaignsList } from "@/components/admin/campaigns/CampaignsList";
 import { useQueryClient } from "@tanstack/react-query";
 
+// `?compose=1&to=user@example.com&name=Katie+Gibbs&inbox=pros` opens the
+// composer pre-seeded with a single direct recipient. Used by Member 360's
+// "Send email" action so admin outreach always lands in /admin/campaigns
+// (tracked end-to-end) instead of a local mail client via `mailto:`.
+const ComposeSearch = z.object({
+  compose: z.union([z.literal("1"), z.literal("true")]).optional(),
+  to: z.string().email().optional(),
+  name: z.string().optional(),
+  inbox: z.enum(["support", "pros", "partners", "press"]).optional(),
+});
+
 export const Route = createFileRoute("/admin_/campaigns")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
+  validateSearch: (s) => ComposeSearch.parse(s),
   head: () => ({
     meta: [
       { title: "Campaigns — REPS Admin" },
@@ -25,14 +38,35 @@ export const Route = createFileRoute("/admin_/campaigns")({
   component: AdminCampaigns,
 });
 
+
 function AdminCampaigns() {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [composeOpen, setComposeOpen] = useState(false);
   const [initialDraft, setInitialDraft] = useState<ComposeInitialDraft | null>(null);
   const qc = useQueryClient();
 
+  // Auto-open the composer when launched from Member 360 ("Send email").
+  // We strip the search params after seeding so a back-nav / refresh
+  // doesn't keep reopening the dialog.
+  useEffect(() => {
+    if (!search.compose || !search.to) return;
+    setInitialDraft({
+      inbox: search.inbox ?? "pros",
+      mode: "direct",
+      subject: "",
+      body: "",
+      format: "text",
+      recipients: [{ email: search.to, name: search.name ?? null }],
+    });
+    setComposeOpen(true);
+    void navigate({ search: {}, replace: true });
+  }, [search.compose, search.to, search.name, search.inbox, navigate]);
+
   const refetch = () => {
     void qc.invalidateQueries({ queryKey: ["admin", "support", "campaigns"] });
   };
+
 
   return (
     <DashboardShell
