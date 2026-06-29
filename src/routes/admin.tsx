@@ -144,7 +144,6 @@ function AdminDashboardPage() {
       actions={<PeriodSelector value={period} />}
     >
       <div className="space-y-6">
-        <OverviewOpsHeader />
         <OverviewKpis data={data} fcastHorizon={fcast} />
         <RevenueAndMembership data={data} periodLabel={periodLabel} />
       </div>
