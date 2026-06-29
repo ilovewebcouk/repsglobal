@@ -136,8 +136,67 @@ export function OverviewKpis({
   const netNeutral = net === 0;
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {/* KPI 1 — Active paying members (M1 in metric registry) */}
-      <TileShell icon={Users} label="Active paying members" reconcileHash="members">
+      {/* KPI 1 — Revenue Received (period) */}
+      <TileShell icon={Wallet} label="Revenue received">
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="font-display text-[26px] font-bold leading-none text-white">
+            {fmtPounds(data.revenuePence)}
+          </span>
+        </div>
+        <div className="mt-1 text-[11px] text-white/45">Cash banked, selected period</div>
+        {data.revenueSeries && data.revenueSeries.length > 1 ? (
+          <div className="mt-3">
+            <Sparkline data={data.revenueSeries} id="revenue" />
+          </div>
+        ) : (
+          <div className="mt-3 h-10" aria-hidden />
+        )}
+      </TileShell>
+
+      {/* KPI 2 — Total Revenue (lifetime) */}
+      <TileShell icon={PoundSterling} label="Total revenue">
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="font-display text-[26px] font-bold leading-none text-reps-green">
+            {fmtPounds(data.lifetimeRevenuePence)}
+          </span>
+        </div>
+        <div className="mt-1 text-[11px] text-white/45">
+          All-time cash banked across REPS
+        </div>
+        {data.revenueSeries && data.revenueSeries.length > 1 ? (
+          <div className="mt-3">
+            <Sparkline data={data.revenueSeries} id="lifetime" color="var(--reps-green)" />
+          </div>
+        ) : (
+          <div className="mt-3 h-10" aria-hidden />
+        )}
+      </TileShell>
+
+      {/* KPI 3 — Projected Cash Due (independent horizon) */}
+      <TileShell
+        icon={CalendarClock}
+        label="Projected cash due"
+        headerRight={<ForecastHorizonSelector value={fcastHorizon} />}
+      >
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="font-display text-[26px] font-bold leading-none text-white">
+            {fmtPounds(data.forecastPence)}
+          </span>
+        </div>
+        <div className="mt-1 text-[11px] text-white/45">
+          Scheduled renewals · separate from historical period
+        </div>
+        {data.forecastSeries && data.forecastSeries.length > 1 ? (
+          <div className="mt-3">
+            <Sparkline data={data.forecastSeries} id="forecast" color="var(--reps-blue)" />
+          </div>
+        ) : (
+          <div className="mt-3 h-10" aria-hidden />
+        )}
+      </TileShell>
+
+      {/* KPI 4 — Active paying members */}
+      <TileShell icon={Users} label="Active paying members">
         <div className="mt-1.5 flex items-baseline gap-2">
           <span className="font-display text-[26px] font-bold leading-none text-white">
             {data.totalMembers.toLocaleString()}
@@ -167,66 +226,6 @@ export function OverviewKpis({
         {data.membersSeries && data.membersSeries.length > 1 ? (
           <div className="mt-3">
             <Sparkline data={data.membersSeries} id="members" />
-          </div>
-        ) : (
-          <div className="mt-3 h-10" aria-hidden />
-        )}
-      </TileShell>
-
-      {/* KPI 2 — Revenue Received */}
-      <TileShell icon={Wallet} label="Revenue received" reconcileHash="revenue">
-        <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="font-display text-[26px] font-bold leading-none text-white">
-            {fmtPounds(data.revenuePence)}
-          </span>
-        </div>
-        <div className="mt-1 text-[11px] text-white/45">Cash banked, selected period</div>
-        {data.revenueSeries && data.revenueSeries.length > 1 ? (
-          <div className="mt-3">
-            <Sparkline data={data.revenueSeries} id="revenue" />
-          </div>
-        ) : (
-          <div className="mt-3 h-10" aria-hidden />
-        )}
-      </TileShell>
-
-      {/* KPI 3 — Projected Cash Due (independent horizon) */}
-      <TileShell
-        icon={CalendarClock}
-        label="Projected cash due"
-        reconcileHash="forecast"
-        headerRight={<ForecastHorizonSelector value={fcastHorizon} />}
-      >
-        <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="font-display text-[26px] font-bold leading-none text-white">
-            {fmtPounds(data.forecastPence)}
-          </span>
-        </div>
-        <div className="mt-1 text-[11px] text-white/45">
-          Scheduled renewals · separate from historical period
-        </div>
-        {data.forecastSeries && data.forecastSeries.length > 1 ? (
-          <div className="mt-3">
-            <Sparkline data={data.forecastSeries} id="forecast" color="var(--reps-blue)" />
-          </div>
-        ) : (
-          <div className="mt-3 h-10" aria-hidden />
-        )}
-      </TileShell>
-
-      {/* KPI 4 — Total Revenue (lifetime) */}
-      <TileShell icon={PoundSterling} label="Total revenue" reconcileHash="revenue">
-        <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="font-display text-[26px] font-bold leading-none text-reps-green">
-            {fmtPounds(data.lifetimeRevenuePence)}
-          </span>
-        </div>
-        <div className="mt-1 text-[11px] text-white/45">
-          All-time cash banked across REPS
-        </div>
-        {data.revenueSeries && data.revenueSeries.length > 1 ? (
-          <div className="mt-3">
-            <Sparkline data={data.revenueSeries} id="lifetime" color="var(--reps-green)" />
           </div>
         ) : (
           <div className="mt-3 h-10" aria-hidden />
