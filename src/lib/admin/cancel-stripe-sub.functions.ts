@@ -50,15 +50,16 @@ export const adminCancelStripeSubscription = createServerFn({ method: "POST" })
       // Audit log (best-effort)
       try {
         await supabaseAdmin.from("admin_audit_log").insert({
-          actor_user_id: context.userId,
+          actor_id: context.userId,
           action: "stripe.subscription.cancel",
-          target_type: "stripe_subscription",
+          target_table: "stripe_subscriptions",
           target_id: data.stripeSubscriptionId,
-          metadata: {
+          reason: data.reason ?? null,
+          after_state: {
             env: data.env,
-            reason: data.reason ?? null,
             customer_id: typeof sub.customer === "string" ? sub.customer : null,
-          },
+            status: sub.status,
+          } as any,
         });
       } catch {
         /* audit best-effort */
