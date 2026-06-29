@@ -124,14 +124,14 @@ function Member360Page() {
               {snap.data?.snapshot?.customer_id && (
                 <IdRow
                   label="Stripe customer"
-                  value={snap.data.snapshot.customer_id}
+                  value={snap.data.stripe_customer_id}
                   onCopy={() => copy(snap.data?.snapshot?.customer_id)}
                 />
               )}
               {snap.data?.snapshot?.subscription_id && (
                 <IdRow
                   label="Subscription"
-                  value={snap.data.snapshot.subscription_id}
+                  value={snap.data.subscription?.id}
                   onCopy={() => copy(snap.data?.snapshot?.subscription_id)}
                 />
               )}
@@ -256,7 +256,7 @@ function Member360Page() {
             {snap.data?.snapshot?.customer_id && (
               <Button asChild variant="outline" className="justify-start rounded-[10px] shadow-none">
                 <a
-                  href={`https://dashboard.stripe.com/customers/${snap.data.snapshot.customer_id}`}
+                  href={`https://dashboard.stripe.com/customers/${snap.data.stripe_customer_id}`}
                   target="_blank"
                   rel="noreferrer"
                 >
