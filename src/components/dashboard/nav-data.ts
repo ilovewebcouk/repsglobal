@@ -139,18 +139,16 @@ export const ADMIN_NAV = [
     items: [
       { icon: Users, label: "Professionals", to: "/admin/professionals" },
       { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
-      { icon: UserCheck, label: "Memberships", to: "/admin/memberships" },
-      { icon: AlertCircle, label: "Churn", to: "/admin/churn" },
       { icon: Star, label: "Reviews", to: "/admin/reviews" },
     ],
   },
   {
     title: "Revenue",
     items: [
-      { icon: CreditCard, label: "Stripe", to: "/admin/payments" },
-      { icon: AreaChart, label: "Reconciliation", to: "/admin/reconciliation" },
+      { icon: CreditCard, label: "Billing", to: "/admin/billing" },
     ],
   },
+
   {
     title: "Content & Discovery",
     items: [
