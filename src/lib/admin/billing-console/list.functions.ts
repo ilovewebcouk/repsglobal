@@ -14,6 +14,32 @@ async function requireAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Forbidden");
 }
 
+/**
+ * Resolve Stripe customer IDs to REPs user IDs via the local subscriptions
+ * mirror. Used by Payments / Disputes / Refunds to fill in "Unknown" rows
+ * where the webhook event arrived without a linked user_id but we hold the
+ * customer id.
+ */
+async function resolveUsersByCustomerIds(
+  supabase: any,
+  customerIds: string[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const ids = Array.from(new Set(customerIds.filter(Boolean)));
+  if (!ids.length) return out;
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("user_id, stripe_customer_id")
+    .in("stripe_customer_id", ids)
+    .eq("environment", "live");
+  for (const r of (data ?? []) as Array<{ user_id: string; stripe_customer_id: string | null }>) {
+    if (r.stripe_customer_id && r.user_id && !out.has(r.stripe_customer_id)) {
+      out.set(r.stripe_customer_id, r.user_id);
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // KPIs
 // ---------------------------------------------------------------------------
