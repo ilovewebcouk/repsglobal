@@ -141,6 +141,8 @@ export const listRequesterTickets = createServerFn({ method: "POST" })
 
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    if (!data.email) return [];
+
     let q = context.supabase
       .from("support_tickets")
       .select(
