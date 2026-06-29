@@ -60,6 +60,7 @@ export const Route = createFileRoute("/cpd-legacy")({
   head: () => ({
     meta: [
       { title: META_TITLE },
+      { name: "robots", content: "noindex, nofollow" },
       { name: "description", content: META_DESC },
       { property: "og:title", content: META_TITLE },
       { property: "og:description", content: META_DESC },
