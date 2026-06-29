@@ -2,9 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
-async function assertAdmin(ctx: { supabase: any; userId: string }) {
+async function assertAdmin(ctx: { supabase: any; userId: string; realUserId?: string }) {
+  // When the admin is impersonating, context.userId is the trainer being
+  // impersonated — check the real admin id instead.
+  const uid = ctx.realUserId ?? ctx.userId;
   const { data, error } = await ctx.supabase.rpc("has_role", {
-    _user_id: ctx.userId,
+    _user_id: uid,
     _role: "admin",
   });
   if (error) throw new Error(error.message);
