@@ -438,9 +438,9 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       await Promise.all([
         supabaseAdmin
           .from("professionals")
-          .select(
-            "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
-          )
+      .select(
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+      )
           .eq("id", userId)
           .maybeSingle(),
         supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
