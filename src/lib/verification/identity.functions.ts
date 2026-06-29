@@ -145,15 +145,35 @@ export const adminOverrideIdentity = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Forbidden");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+    const nowIso = new Date().toISOString();
+
+    // 1. Update the identity_documents row (audit trail).
+    const { data: idDoc, error } = await supabaseAdmin
       .from("identity_documents")
       .update({
         status: data.decision,
         admin_note: `Manual override by admin: ${data.reason}`,
-        reviewed_at: new Date().toISOString(),
+        reviewed_at: nowIso,
+        reviewed_by: userId,
       } as never)
-      .eq("id", data.identity_id);
+      .eq("id", data.identity_id)
+      .select("professional_id, name_on_doc")
+      .single();
     if (error) throw new Error(error.message);
+
+    // 2. Propagate the decision to the professional row so the trainer's
+    //    Dashboard, Verification page, and public Trust block all reflect it.
+    //    Without this, the doc was approved but the user still saw "In review".
+    const proPid = (idDoc as { professional_id: string; name_on_doc: string | null }).professional_id;
+    const nameOnDoc = (idDoc as { name_on_doc: string | null }).name_on_doc;
+
+    const proPatch: Record<string, unknown> = { identity_status: data.decision };
+    if (data.decision === "approved") {
+      proPatch.identity_verified_at = nowIso;
+      if (nameOnDoc) proPatch.identity_verified_name = nameOnDoc;
+    }
+    await supabaseAdmin.from("professionals").update(proPatch as never).eq("id", proPid);
+
     return { ok: true };
   });
 
