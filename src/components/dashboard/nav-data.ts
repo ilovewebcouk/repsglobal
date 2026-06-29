@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  Gauge,
   Apple,
   AreaChart,
   Briefcase,
