@@ -133,13 +133,16 @@ export const listRequesterTickets = createServerFn({ method: "POST" })
   .inputValidator((d: { email: string; excludeId?: string }) =>
     z
       .object({
-        email: z.string().email().max(320),
+        email: z.string().trim().toLowerCase().email().max(320).or(z.literal("")),
         excludeId: z.string().uuid().optional(),
       })
       .parse(d),
   )
+
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    if (!data.email) return [];
+
     let q = context.supabase
       .from("support_tickets")
       .select(
