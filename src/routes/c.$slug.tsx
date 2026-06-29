@@ -388,6 +388,7 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     tiers: liveTiers.length ? liveTiers : base.tiers,
     years: yearsCoaching,
     verifiedSince: memberYear ? String(memberYear) : base.verifiedSince,
+    trust: sf.trust,
   };
 }
 
