@@ -1,6 +1,17 @@
 import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Lock, ShieldCheck, Sparkles } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import {
   Sidebar,
@@ -215,8 +226,64 @@ function AdminBadgeRow() {
 /* DashboardSidebar                                                           */
 /* ------------------------------------------------------------------------- */
 
+function WebsiteLockedMenuItem({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  const [open, setOpen] = React.useState(false);
+  const Icon = item.icon;
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={isActive}
+        tooltip="Website (locked — get verified to unlock)"
+        onClick={() => setOpen(true)}
+        className={cn(
+          "h-10 rounded-[10px] text-[13px] font-medium text-white/45 hover:bg-reps-panel hover:text-white/70",
+        )}
+      >
+        <span className="relative inline-flex shrink-0">
+          <Icon className="h-[18px] w-[18px]" />
+        </span>
+        <span className="flex flex-1 items-center justify-between">
+          <span>{item.label}</span>
+          <Lock className="h-3.5 w-3.5 opacity-70" />
+        </span>
+      </SidebarMenuButton>
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Get verified to unlock your Website</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your public REPS website turns on once you've completed all three
+              verification steps — identity, qualifications and insurance. This
+              keeps every published page genuinely trusted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Not now</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Link to="/dashboard/verification">Continue verification</Link>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SidebarMenuItem>
+  );
+}
+
+function useIsFullyVerified(): { ready: boolean; verified: boolean } {
+  const { user } = useSessionUser();
+  const fetchTrust = useServerFn(getTrustState);
+  const { data, isLoading } = useQuery({
+    queryKey: ["my-trust-state"],
+    queryFn: () => fetchTrust(),
+    staleTime: 30_000,
+    enabled: !!user,
+  });
+  return { ready: !isLoading, verified: (data?.completedCount ?? 0) === 3 };
+}
+
 function NavSectionGroup({ group, active }: { group: NavGroup; active: DashboardActive }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { ready, verified } = useIsFullyVerified();
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
@@ -228,6 +295,20 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
             // Pathname-only match (label fallback removed — typecheck now
             // guarantees every `active` value corresponds to a nav item).
             const isActive = pathname === item.to || item.label === active;
+
+            // Website is gated behind the 3-pillar trust gate. Until we know
+            // the trust state, render normally — flipping to locked after
+            // hydration is fine and avoids a flash of "locked" for verified pros.
+            if (item.label === "Website" && ready && !verified) {
+              return (
+                <WebsiteLockedMenuItem
+                  key={`${group.title}:${item.label}`}
+                  item={item}
+                  isActive={isActive}
+                />
+              );
+            }
+
             const Icon = item.icon;
             const badge = <ItemBadge item={item} />;
             const hasBadge =
@@ -236,7 +317,7 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
               item.label === "Enquiries" ||
               item.label === "Support" ||
               item.label === "Reviews";
-            
+
             return (
               <SidebarMenuItem key={`${group.title}:${item.label}`}>
                 <SidebarMenuButton
