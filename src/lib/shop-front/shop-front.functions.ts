@@ -324,7 +324,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("professionals")
           .select(
-            "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
+            "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
           )
           .eq("id", userId)
           .maybeSingle(),
