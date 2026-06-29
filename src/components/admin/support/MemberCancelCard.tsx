@@ -160,7 +160,7 @@ export function MemberCancelCard({ requesterEmail, onClosed }: Props) {
 
           <div className="flex flex-col gap-3 py-1">
             <div>
-              <Label htmlFor="support-close-notes" className="text-[12.5px] text-white/70">
+              <Label htmlFor="support-close-notes" className="text-[12.5px] text-foreground/70">
                 Notes (saved to audit log)
               </Label>
               <Textarea
@@ -173,11 +173,12 @@ export function MemberCancelCard({ requesterEmail, onClosed }: Props) {
               />
             </div>
             <div>
-              <Label htmlFor="support-close-confirm" className="text-[12.5px] text-white/70">
+              <Label htmlFor="support-close-confirm" className="text-[12.5px] text-foreground/70">
                 Type{" "}
-                <span className="font-semibold text-white">{displayName}</span>{" "}
+                <span className="font-semibold text-foreground">{displayName}</span>{" "}
                 to confirm
               </Label>
+
               <Input
                 id="support-close-confirm"
                 value={typedName}
