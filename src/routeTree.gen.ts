@@ -104,6 +104,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as BillingSetupTokenRouteImport } from './routes/billing.setup.$token'
+import { Route as AdminV2ReconciliationRouteImport } from './routes/admin_.v2.reconciliation'
 import { Route as AdminV2ChurnRouteImport } from './routes/admin_.v2.churn'
 import { Route as AdminV2BillingRouteImport } from './routes/admin_.v2.billing'
 import { Route as AdminOpsPlatformRouteImport } from './routes/admin_.ops.platform'
@@ -632,6 +633,11 @@ const BillingSetupTokenRoute = BillingSetupTokenRouteImport.update({
   path: '/billing/setup/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminV2ReconciliationRoute = AdminV2ReconciliationRouteImport.update({
+  id: '/reconciliation',
+  path: '/reconciliation',
+  getParentRoute: () => AdminV2Route,
+} as any)
 const AdminV2ChurnRoute = AdminV2ChurnRouteImport.update({
   id: '/churn',
   path: '/churn',
@@ -1026,6 +1032,7 @@ export interface FileRoutesByFullPath {
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
   '/admin/v2/billing': typeof AdminV2BillingRoute
   '/admin/v2/churn': typeof AdminV2ChurnRoute
+  '/admin/v2/reconciliation': typeof AdminV2ReconciliationRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1168,6 +1175,7 @@ export interface FileRoutesByTo {
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
   '/admin/v2/billing': typeof AdminV2BillingRoute
   '/admin/v2/churn': typeof AdminV2ChurnRoute
+  '/admin/v2/reconciliation': typeof AdminV2ReconciliationRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1317,6 +1325,7 @@ export interface FileRoutesById {
   '/admin_/ops/platform': typeof AdminOpsPlatformRoute
   '/admin_/v2/billing': typeof AdminV2BillingRoute
   '/admin_/v2/churn': typeof AdminV2ChurnRoute
+  '/admin_/v2/reconciliation': typeof AdminV2ReconciliationRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1465,6 +1474,7 @@ export interface FileRouteTypes {
     | '/admin/ops/platform'
     | '/admin/v2/billing'
     | '/admin/v2/churn'
+    | '/admin/v2/reconciliation'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1607,6 +1617,7 @@ export interface FileRouteTypes {
     | '/admin/ops/platform'
     | '/admin/v2/billing'
     | '/admin/v2/churn'
+    | '/admin/v2/reconciliation'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1755,6 +1766,7 @@ export interface FileRouteTypes {
     | '/admin_/ops/platform'
     | '/admin_/v2/billing'
     | '/admin_/v2/churn'
+    | '/admin_/v2/reconciliation'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -2575,6 +2587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingSetupTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/v2/reconciliation': {
+      id: '/admin_/v2/reconciliation'
+      path: '/reconciliation'
+      fullPath: '/admin/v2/reconciliation'
+      preLoaderRoute: typeof AdminV2ReconciliationRouteImport
+      parentRoute: typeof AdminV2Route
+    }
     '/admin_/v2/churn': {
       id: '/admin_/v2/churn'
       path: '/churn'
@@ -3159,6 +3178,7 @@ const AdminOpsRouteWithChildren = AdminOpsRoute._addFileChildren(
 interface AdminV2RouteChildren {
   AdminV2BillingRoute: typeof AdminV2BillingRoute
   AdminV2ChurnRoute: typeof AdminV2ChurnRoute
+  AdminV2ReconciliationRoute: typeof AdminV2ReconciliationRoute
   AdminV2IndexRoute: typeof AdminV2IndexRoute
   AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
   AdminV2MembersIndexRoute: typeof AdminV2MembersIndexRoute
@@ -3167,6 +3187,7 @@ interface AdminV2RouteChildren {
 const AdminV2RouteChildren: AdminV2RouteChildren = {
   AdminV2BillingRoute: AdminV2BillingRoute,
   AdminV2ChurnRoute: AdminV2ChurnRoute,
+  AdminV2ReconciliationRoute: AdminV2ReconciliationRoute,
   AdminV2IndexRoute: AdminV2IndexRoute,
   AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
   AdminV2MembersIndexRoute: AdminV2MembersIndexRoute,
