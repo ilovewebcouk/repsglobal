@@ -19,7 +19,7 @@ import {
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +36,6 @@ import { cn } from "@/lib/utils";
 
 import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.functions";
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
-import { MemberSnapshotCard } from "@/components/admin/v2/MemberSnapshotCard";
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
 
 export const Route = createFileRoute("/admin_/members/$userId")({
@@ -127,13 +126,7 @@ function MemberPage() {
           </TabsContent>
 
           <TabsContent value="billing" className="flex flex-col gap-4">
-            {snap.data ? (
-              <div className="[&_[class*='rounded-xl']]:rounded-[18px] [&_.text-card-foreground]:text-white">
-                <MemberSnapshotCard snapshot={snap.data} />
-              </div>
-            ) : (
-              <PaneSkeleton />
-            )}
+            {snap.data ? <BillingPane snapshot={snap.data} /> : <PaneSkeleton />}
           </TabsContent>
 
           <TabsContent value="verification" className="flex flex-col gap-4">
@@ -187,9 +180,11 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
     );
   }
 
-  const { full_name, email, slug, verification, is_published, subscription } = snapshot;
+  const { full_name, email, slug, verification, is_published, subscription, avatar_url, profession } = snapshot;
   const tier = subscription?.tier ?? null;
   const status = subscription?.status ?? null;
+  const trialEnd = subscription?.trial_end ?? null;
+  const cancelAt = subscription?.cancel_at_period_end ? subscription.current_period_end : null;
   const publicHref = slug ? `/c/${slug}` : null;
   const mailtoHref = email ? `mailto:${email}` : null;
 
@@ -197,16 +192,18 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
     <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
       <div className="flex flex-wrap items-center gap-4">
         <Avatar className="size-14 ring-1 ring-reps-border">
+          {avatar_url && <AvatarImage src={avatar_url} alt={full_name ?? "Member avatar"} />}
           <AvatarFallback className="bg-reps-orange/15 text-base font-semibold text-reps-orange">
             {initialsOf(full_name, email)}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="flex items-baseline gap-3">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
             <h2 className="truncate text-lg font-semibold text-white">{full_name ?? "Unnamed member"}</h2>
-            <span className="truncate text-sm text-white/55">{email ?? "no email on file"}</span>
+            {profession && <span className="truncate text-sm text-white/55">{profession}</span>}
           </div>
+          <div className="truncate text-[13px] text-white/45">{email ?? "no email on file"}</div>
           <div className="flex flex-wrap items-center gap-1.5">
             {verification === "verified" && (
               <Badge variant="outline" className="h-6 border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
@@ -237,6 +234,21 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 )}
               >
                 {status.replace(/_/g, " ")}
+              </Badge>
+            )}
+            {status === "trialing" && trialEnd && (
+              <Badge variant="outline" className="h-6 border-sky-400/30 bg-sky-500/10 text-sky-200">
+                Trial ends {fmtDate(trialEnd)}
+              </Badge>
+            )}
+            {cancelAt && (
+              <Badge variant="outline" className="h-6 border-rose-400/30 bg-rose-500/10 text-rose-200">
+                Cancels {fmtDate(cancelAt)}
+              </Badge>
+            )}
+            {!subscription && (
+              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
+                No subscription
               </Badge>
             )}
             {!is_published && (
@@ -381,6 +393,81 @@ function IdRow({ label, value, href, internal }: { label: string; value: string 
         <span className="text-xs text-white/40">—</span>
       )}
     </div>
+  );
+}
+
+
+function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
+  const sub = snapshot.subscription;
+
+  if (!sub) {
+    return (
+      <section className={cn(PANEL, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
+        <h3 className={PANEL_TITLE}>No active subscription</h3>
+        <p className="max-w-md text-sm text-white/55">
+          This member isn't on a paid plan in the live Stripe environment.
+        </p>
+      </section>
+    );
+  }
+
+  const status = sub.status;
+  const statusClass = cn(
+    "h-6 capitalize",
+    status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+    status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-300",
+    status === "past_due" && "border-amber-400/30 bg-amber-500/15 text-amber-300",
+    (status === "canceled" || status === "unpaid") && "border-rose-400/30 bg-rose-500/15 text-rose-300",
+  );
+
+  const stats: { label: string; value: React.ReactNode; sub?: string }[] = [
+    { label: "Plan", value: <span className="capitalize">{sub.tier ?? "—"}</span>, sub: sub.price_lookup_key ?? undefined },
+    { label: "Price", value: fmtMoney(sub.unit_amount_pence, sub.currency), sub: sub.interval ? `per ${sub.interval}` : undefined },
+    { label: "Current period end", value: fmtDate(sub.current_period_end), sub: sub.cancel_at_period_end ? "cancels at period end" : undefined },
+    { label: "Trial end", value: fmtDate(sub.trial_end), sub: sub.trial_end ? undefined : "no trial" },
+  ];
+
+  return (
+    <section className={PANEL}>
+      <div className={cn(PANEL_HEADER, "flex flex-wrap items-start justify-between gap-3")}>
+        <div>
+          <h3 className={PANEL_TITLE}>Current Stripe subscription</h3>
+          <p className={PANEL_DESC}>Live Stripe mirror — the source of truth for billing.</p>
+        </div>
+        <Badge variant="outline" className={statusClass}>{status.replace(/_/g, " ")}</Badge>
+      </div>
+      <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="flex flex-col gap-1 rounded-[12px] border border-reps-border/60 bg-reps-panel/60 px-3 py-2.5"
+            >
+              <span className={LABEL}>{s.label}</span>
+              <span className="text-sm font-medium text-white">{s.value}</span>
+              {s.sub && <span className="text-[11px] text-white/45">{s.sub}</span>}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          <IdRow
+            label="Stripe customer"
+            value={snapshot.stripe_customer_id}
+            href={snapshot.stripe_customer_id ? `https://dashboard.stripe.com/customers/${snapshot.stripe_customer_id}` : undefined}
+          />
+          <IdRow
+            label="Stripe subscription"
+            value={sub.id}
+            href={`https://dashboard.stripe.com/subscriptions/${sub.id}`}
+          />
+          <IdRow
+            label="Price id"
+            value={sub.price_id}
+            href={sub.price_id ? `https://dashboard.stripe.com/prices/${sub.price_id}` : undefined}
+          />
+        </div>
+      </div>
+    </section>
   );
 }
 

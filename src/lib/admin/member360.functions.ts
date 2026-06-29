@@ -11,10 +11,22 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const Input = z.object({ user_id: z.string().uuid() });
 
+const PROFESSION_LABEL: Record<string, string> = {
+  'personal-trainer': 'Personal trainer',
+  'fitness-instructor': 'Fitness instructor',
+  'group-fitness-instructor': 'Group fitness instructor',
+  'strength-coach': 'Strength & conditioning coach',
+  'nutritionist': 'Nutritionist',
+  'pilates-instructor': 'Pilates instructor',
+  'yoga-teacher': 'Yoga teacher',
+};
+
 export type Member360Snapshot = {
   user_id: string;
   email: string | null;
   full_name: string | null;
+  avatar_url: string | null;
+  profession: string | null;
   slug: string | null;
   verification: string | null;
   is_published: boolean;
@@ -57,10 +69,10 @@ export const getMember360 = createServerFn({ method: "GET" })
 
     const [authRes, profileRes, proRes] = await Promise.all([
       supabaseAdmin.auth.admin.getUserById(data.user_id),
-      supabaseAdmin.from("profiles").select("full_name").eq("id", data.user_id).maybeSingle(),
+      supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", data.user_id).maybeSingle(),
       supabaseAdmin
         .from("professionals")
-        .select("slug, verification, is_published")
+        .select("slug, verification, is_published, primary_profession")
         .eq("id", data.user_id)
         .maybeSingle(),
     ]);
@@ -68,8 +80,11 @@ export const getMember360 = createServerFn({ method: "GET" })
     const email = authRes.data?.user?.email ?? null;
     const created_at = authRes.data?.user?.created_at ?? null;
     const last_sign_in_at = authRes.data?.user?.last_sign_in_at ?? null;
-    const full_name = (profileRes.data as { full_name?: string | null } | null)?.full_name ?? null;
-    const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null } | null) ?? null;
+    const profile = (profileRes.data as { full_name?: string | null; avatar_url?: string | null } | null) ?? null;
+    const full_name = profile?.full_name ?? null;
+    const avatar_url = profile?.avatar_url ?? null;
+    const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null; primary_profession?: string | null } | null) ?? null;
+    const profession = pro?.primary_profession ? (PROFESSION_LABEL[pro.primary_profession] ?? pro.primary_profession) : null;
 
     // Stripe mirror (live env). Sandbox is intentionally ignored — admin v2
     // surfaces the production billing state only.
@@ -90,6 +105,8 @@ export const getMember360 = createServerFn({ method: "GET" })
       user_id: data.user_id,
       email,
       full_name,
+      avatar_url,
+      profession,
       slug: pro?.slug ?? null,
       verification: pro?.verification ?? null,
       is_published: pro?.is_published ?? false,
