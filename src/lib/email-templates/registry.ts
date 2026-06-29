@@ -65,9 +65,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'chargeback-received': chargebackReceived,
   'chargeback-resolved-won': chargebackResolvedWon,
   'chargeback-resolved-lost': chargebackResolvedLost,
-  'legacy-conversion-confirmation': legacyConversionConfirmation,
-  'legacy-setup-link': legacySetupLink,
-  'legacy-reactivation': legacyReactivation,
   'member-cancelled': memberCancelled,
 }
 
