@@ -146,7 +146,7 @@ function MemberPage() {
           </TabsContent>
 
           <TabsContent value="billing" className="flex flex-col gap-4">
-            {snap.data ? <BillingPane snapshot={snap.data} /> : <PaneSkeleton />}
+            {snap.data ? <BillingPane snapshot={snap.data} userId={userId} /> : <PaneSkeleton />}
           </TabsContent>
 
           <TabsContent value="verification" className="flex flex-col gap-4">
