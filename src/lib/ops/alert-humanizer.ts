@@ -36,37 +36,37 @@ const HUMANISERS: Record<string, (ctx: Ctx) => HumanisedAlert> = {
   "cron.failed": (ctx) => ({
     label: "Scheduled job failed",
     summary: `${n(ctx, "failures_24h")} cron run${n(ctx, "failures_24h") === 1 ? "" : "s"} failed in the last 24h — automated work is not running.`,
-    href: "/admin/health",
+    href: "/admin",
     cta: "Open Platform Health",
   }),
   "webhook.dlq": (ctx) => ({
     label: "Stripe webhooks dead-lettered",
     summary: `${n(ctx, "dlq_7d")} webhook event${n(ctx, "dlq_7d") === 1 ? "" : "s"} in the last 7 days could not be processed. Members may be missing or stuck.`,
-    href: "/admin/ops",
+    href: "/admin",
     cta: "Open Webhook Recovery",
   }),
   "webhook.stuck_processing": (ctx) => ({
     label: "Webhook events stuck",
     summary: `${n(ctx, "count")} payment event${n(ctx, "count") === 1 ? "" : "s"} have been pending processing for >15 minutes. The webhook pipeline is backed up.`,
-    href: "/admin/ops/platform",
+    href: "/admin",
     cta: "Open Platform",
   }),
   "email.queue_backing_up": (ctx) => ({
     label: "Email queue backing up",
     summary: `${n(ctx, "queue_transactional")} transactional + ${n(ctx, "queue_auth")} auth emails queued — sends are falling behind.`,
-    href: "/admin/ops/email",
+    href: "/admin",
     cta: "Open Email",
   }),
   "email.dlq": (ctx) => ({
     label: "Emails dead-lettered",
     summary: `${n(ctx, "dlq_7d")} email${n(ctx, "dlq_7d") === 1 ? "" : "s"} failed permanently in the last 7 days. Members did not get the message.`,
-    href: "/admin/ops/email",
+    href: "/admin",
     cta: "Open Email",
   }),
   "payments.failed_active": (ctx) => ({
     label: "Failed payments",
     summary: `${n(ctx, "count")} member${n(ctx, "count") === 1 ? "" : "s"} ${n(ctx, "count") === 1 ? "is" : "are"} in a broken-card state (past_due / unpaid / incomplete) and ${n(ctx, "count") === 1 ? "is" : "are"} silently missing from Active paying members.`,
-    href: "/admin/ops",
+    href: "/admin",
     cta: "Open Payment Recovery",
   }),
   "payments.failure_spike": (ctx) => ({
@@ -84,7 +84,7 @@ const HUMANISERS: Record<string, (ctx: Ctx) => HumanisedAlert> = {
   "test.notification": () => ({
     label: "Test alert",
     summary: "Manual test alert sent from the Alerts page. Safe to acknowledge.",
-    href: "/admin/ops/alerts",
+    href: "/admin",
     cta: "Open Alerts",
   }),
 };
@@ -103,7 +103,7 @@ export function humaniseAlert(kind: string, context: unknown): HumanisedAlert {
     label: kind.replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
     summary:
       "No humaniser registered for this alert kind. Add it to src/lib/ops/alert-humanizer.ts in the same PR that adds the alert.",
-    href: "/admin/ops/alerts",
+    href: "/admin",
   };
 }
 
