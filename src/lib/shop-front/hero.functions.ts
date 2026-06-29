@@ -62,12 +62,12 @@ const HERO_SYSTEM = `Create a single photorealistic 9:16 portrait hero photograp
 LIKENESS (image 1 = the coach):
 - The first reference image is the coach. Match their FACE, build, hair, skin tone exactly. This is non-negotiable — it must clearly be the same person.
 
-STYLE ANCHOR (image 2 = REPs brand reference):
-- The second reference image is the REPs brand style anchor. Match its lighting, colour grade, framing, mood and the REPS wordmark execution on the t-shirt. This is the quality bar.
+STYLE ANCHOR (image 2 = brand reference):
+- The second reference image is a cinematic style anchor. Match its lighting, colour grade, framing and mood. This is the quality bar. Do NOT copy the wardrobe, logos or any text from the anchor — it is for lighting/grade/mood only.
 
-WARDROBE (HARD RULE):
-- Premium athletic-fit t-shirt or polo in a neutral / earth tone (charcoal, oat, olive, washed black, deep navy).
-- Visible REAL STITCHED EMBROIDERED "REPS" wordmark on the chest. ALL CAPS, white thread, crisp medium weight (NOT extra-bold). Visible thread texture and slight raised stitching — never a flat printed decal, sticker, or pasted-on logo. Small left-chest placement OR centred chest. Reads forward (never mirrored).
+WARDROBE:
+- Premium athletic-fit t-shirt, vest, polo or hoodie in a clean neutral / earth tone (charcoal, oat, olive, washed black, deep navy, white).
+- Plain fabric. NO logos, NO wordmarks, NO graphics, NO printed text of any kind on the clothing.
 
 FRAMING:
 - Portrait orientation, strict 9:16 aspect ratio.
@@ -75,8 +75,7 @@ FRAMING:
 - Leave clean negative space on the LEFT for hero copy overlay.
 
 HARD NEGATIVES:
-- No text overlays, captions, watermarks, or graphic logos other than the REPS wordmark.
-- No flat decals or pasted logos.
+- No text overlays, captions, watermarks, brand logos, or printed graphics anywhere in the image.
 - No bright commercial chain-gym backgrounds.
 - No posed gym-bro selfie energy, no smiling-to-camera stock pose.
 - No mirroring / horizontal flips.
