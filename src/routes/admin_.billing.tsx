@@ -5,16 +5,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { CreditCard, Receipt, ShieldAlert, Undo2, ExternalLink, RefreshCw, Search } from "lucide-react";
+import { CreditCard, Receipt, ShieldAlert, Undo2, ExternalLink, Search } from "lucide-react";
 import { resyncStripeMirror } from "@/lib/admin/resync-stripe.functions";
-import { toast } from "sonner";
+
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -70,29 +70,39 @@ function BillingConsole() {
   const kpisFn = useServerFn(getBillingKpis);
   const resyncFn = useServerFn(resyncStripeMirror);
   const queryClient = useQueryClient();
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [syncing, setSyncing] = useState(true);
+  const didRunRef = useRef(false);
+
+  // Live financial snapshot on mount: pull fresh Stripe state once per
+  // page load (and every reload), then invalidate every billing query so
+  // KPIs + tables repaint from the freshly-synced mirror.
+  useEffect(() => {
+    if (didRunRef.current) return;
+    didRunRef.current = true;
+    (async () => {
+      try {
+        await resyncFn();
+      } catch {
+        // Stripe unreachable — surface mirror state silently.
+      } finally {
+        setLastSyncedAt(new Date());
+        setSyncing(false);
+        await queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
+      }
+    })();
+  }, [resyncFn, queryClient]);
+
   const kpisQ = useQuery<BillingKpis>({
     queryKey: ["admin", "billing", "kpis"],
     queryFn: () => kpisFn(),
     staleTime: 60_000,
   });
 
-  const [resyncing, setResyncing] = useState(false);
-  async function handleRefresh() {
-    setResyncing(true);
-    try {
-      const res = await resyncFn();
-      await queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
-      toast.success(`Synced ${res.users} members from Stripe`);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Sync failed");
-    } finally {
-      setResyncing(false);
-    }
-  }
-
   return (
     <DashboardShell role="admin" active="Billing" title="Billing" subtitle="Payments, subscriptions, disputes and refunds — sourced from Stripe.">
-      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} onRefresh={handleRefresh} refreshing={resyncing} />
+      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} syncing={syncing} lastSyncedAt={lastSyncedAt} />
+
 
       <div className="mt-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
@@ -125,22 +135,21 @@ function BillingConsole() {
 // KPI strip
 // ---------------------------------------------------------------------------
 
-function KpiStrip({ data, loading, onRefresh, refreshing }: { data?: BillingKpis; loading: boolean; onRefresh: () => void; refreshing?: boolean }) {
+function KpiStrip({ data, loading, syncing, lastSyncedAt }: { data?: BillingKpis; loading: boolean; syncing: boolean; lastSyncedAt: Date | null }) {
+  const stamp = lastSyncedAt
+    ? lastSyncedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : null;
   return (
     <div className="rounded-[12px] border border-reps-border bg-reps-panel/60 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-white/55">
           Live financial snapshot
-          {data?.mirrorAgeSeconds != null && (
-            <Badge variant="outline" className="border-white/15 bg-white/5 text-[10px] text-white/70">
-              Stripe mirror · {formatAge(data.mirrorAgeSeconds)}
-            </Badge>
-          )}
         </div>
-        <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 gap-1 text-white/70 hover:text-white">
-          <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} /> {refreshing ? "Syncing…" : "Refresh from Stripe"}
-        </Button>
+        <div className="text-[11px] text-white/45">
+          {syncing ? "Syncing live from Stripe…" : stamp ? `Live from Stripe · ${stamp}` : null}
+        </div>
       </div>
+
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
         <Kpi label="MRR" value={loading ? "—" : formatGbp(data!.mrrPence)} accent="orange" />
         <Kpi label="Active paying" value={loading ? "—" : data!.activePaying.toString()} />
