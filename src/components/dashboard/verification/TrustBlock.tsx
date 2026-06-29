@@ -15,7 +15,7 @@
  * editable here — its status mirrors what Education & CPD says.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,36 +24,20 @@ import {
   ArrowRight,
   CheckCircle2,
   Circle,
-  FileText,
   Loader2,
   Upload,
-  UserCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
-import { DashboardInput as Input } from "@/components/dashboard/ui/input";
-import { myIdentity, saveIdentity } from "@/lib/verification/identity.functions";
+import { myIdentity } from "@/lib/verification/identity.functions";
 import { createStripeIdentitySession } from "@/lib/verification/stripe-identity.functions";
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
-import {
-  myInsurance,
-  uploadVerificationAsset,
-} from "@/lib/verification/insurance.functions";
+import { myInsurance } from "@/lib/verification/insurance.functions";
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { InsuranceUploadDialog } from "@/components/verification/InsuranceUploadDialog";
 
-
-
-function fileToDataUrl(f: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = reject;
-    r.readAsDataURL(f);
-  });
-}
 
 /* -------------------------------------------------------------------------- */
 /* Shared "profile card" wrapper — visually identical to Profile photo / Bio  */
