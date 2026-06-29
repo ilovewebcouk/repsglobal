@@ -854,8 +854,13 @@ function ProRow({ row }: { row: AdminProRow }) {
               Forensics
             </DropdownMenuLabel>
             <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white">
+              <Link to="/admin/members/$userId" params={{ userId: row.id }}>
+                <UserIcon className="h-4 w-4" /> Open Member 360
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white">
               <Link to="/admin/ops/member/$userId" params={{ userId: row.id }}>
-                <Activity className="h-4 w-4" /> Open member timeline
+                <Activity className="h-4 w-4" /> Open timeline
               </Link>
             </DropdownMenuItem>
 
