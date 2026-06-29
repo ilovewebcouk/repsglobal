@@ -8,7 +8,7 @@ import { ExternalLink, Plus, Save, Trash2 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
-import { useProGuard } from "@/lib/dashboard/useProGuard";
+
 import {
   getMyShopFront,
   upsertMyShopFront,
@@ -59,8 +59,8 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 function ShopFrontEditorPage() {
-  const blocked = useProGuard("Shop-front");
   const tier = useTrainerTier();
+  const blocked = false;
 
   // Core members get the Lite shop-front; Pro/Studio get the full editor.
 
