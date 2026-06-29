@@ -68,15 +68,31 @@ function BillingConsole() {
   const setTab = (next: TabValue) => navigate({ search: { ...search, tab: next } as any });
 
   const kpisFn = useServerFn(getBillingKpis);
+  const resyncFn = useServerFn(resyncStripeMirror);
+  const queryClient = useQueryClient();
   const kpisQ = useQuery<BillingKpis>({
     queryKey: ["admin", "billing", "kpis"],
     queryFn: () => kpisFn(),
     staleTime: 60_000,
   });
 
+  const [resyncing, setResyncing] = useState(false);
+  async function handleRefresh() {
+    setResyncing(true);
+    try {
+      const res = await resyncFn();
+      await queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
+      toast.success(`Synced ${res.users} members from Stripe`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Sync failed");
+    } finally {
+      setResyncing(false);
+    }
+  }
+
   return (
     <DashboardShell role="admin" active="Billing" title="Billing" subtitle="Payments, subscriptions, disputes and refunds — sourced from Stripe.">
-      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} onRefresh={() => kpisQ.refetch()} />
+      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} onRefresh={handleRefresh} refreshing={resyncing} />
 
       <div className="mt-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
