@@ -19,7 +19,7 @@ export const Route = createFileRoute("/help/$category/")({
       ? `${category.title} — REPS Help Centre`
       : "REPS Help Centre";
     const desc = category?.description ?? "";
-    const canonical = `https://repsglobal.lovable.app/help/${params.category}`;
+    const canonical = `https://repsuk.org/help/${params.category}`;
     return {
       meta: [
         { title },

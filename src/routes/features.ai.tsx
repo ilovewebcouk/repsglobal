@@ -289,9 +289,9 @@ export const Route = createFileRoute("/features/ai")({
           "AI that helps you make better decisions, work faster and stay on top of every client — without replacing the coach.",
       },
       { property: "og:image", content: heroAi.url },
-      { property: "og:url", content: "https://repsglobal.lovable.app/features/ai" },
+      { property: "og:url", content: "https://repsuk.org/features/ai" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/ai" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/features/ai" }],
   }),
   component: AIPage,
 });

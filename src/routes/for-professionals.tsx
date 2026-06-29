@@ -47,10 +47,10 @@ export const Route = createFileRoute("/for-professionals")({
         property:"og:description",
         content:"The register that brings you clients, and the AI operating system that runs your practice.",
       },
-      { property:"og:url", content:"https://repsglobal.lovable.app/for-professionals" },
+      { property:"og:url", content:"https://repsuk.org/for-professionals" },
     ],
     links: [
-      { rel:"canonical", href:"https://repsglobal.lovable.app/for-professionals" },
+      { rel:"canonical", href:"https://repsuk.org/for-professionals" },
       // Preload the LCP hero image — biggest single perceived-performance win on this page.
       { rel:"preload", as:"image", href: heroGym.url, fetchpriority:"high" },
     ],

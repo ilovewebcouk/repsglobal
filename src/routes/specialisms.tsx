@@ -38,7 +38,7 @@ const heroSpecialisms = heroSpecialismsAsset.url;
 /* Page head                                                           */
 /* ------------------------------------------------------------------ */
 
-const CANONICAL ="https://repsglobal.lovable.app/specialisms";
+const CANONICAL ="https://repsuk.org/specialisms";
 const META_TITLE =
 "Specialisms — verified personal trainers, coaches & nutritionists | REPS";
 const META_DESC =
@@ -78,7 +78,7 @@ function SPEC_LIST_FOR_JSONLD() {
 "@type":"ListItem",
     position: i + 1,
     name: s.plural,
-    url: `https://repsglobal.lovable.app/professions/${s.slug}`,
+    url: `https://repsuk.org/professions/${s.slug}`,
   }));
 }
 

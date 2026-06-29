@@ -269,9 +269,9 @@ export const Route = createFileRoute("/features/operations")({
         content:
 "The back office for your fitness business. Leads, bookings, forms, payments, client records and tasks — connected to your REPS profile.",
       },
-      { property:"og:url", content:"https://repsglobal.lovable.app/features/operations" },
+      { property:"og:url", content:"https://repsuk.org/features/operations" },
     ],
-    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/features/operations" }],
+    links: [{ rel:"canonical", href:"https://repsuk.org/features/operations" }],
   }),
   component: OperationsPage,
 });

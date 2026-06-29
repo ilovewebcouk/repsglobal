@@ -197,9 +197,9 @@ export const Route = createFileRoute("/features/growth")({
           "Improve revenue, retention, reviews, referrals and business performance — the growth layer behind REPS Pro.",
       },
       { property: "og:image", content: heroGrowth.url },
-      { property: "og:url", content: "https://repsglobal.lovable.app/features/growth" },
+      { property: "og:url", content: "https://repsuk.org/features/growth" },
     ],
-    links: [{ rel: "canonical", href: "https://repsglobal.lovable.app/features/growth" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/features/growth" }],
   }),
   component: GrowthPage,
 });

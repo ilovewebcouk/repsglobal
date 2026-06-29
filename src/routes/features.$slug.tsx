@@ -22,7 +22,7 @@ export const Route = createFileRoute("/features/$slug")({
     const f = loaderData.feature;
     const title = `${f.label} — REPS`;
     const desc = f.oneLiner;
-    const url = `https://repsglobal.lovable.app/features/${f.slug}`;
+    const url = `https://repsuk.org/features/${f.slug}`;
     return {
       meta: [
         { title },

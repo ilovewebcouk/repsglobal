@@ -6,7 +6,7 @@ import { PublicFooter } from"@/components/public/PublicFooter";
 import { CompetitorCompare } from"@/components/marketing/CompetitorCompare";
 import { COMPETITOR_LIST } from"@/data/competitor-data";
 
-const URL ="https://repsglobal.lovable.app/compare";
+const URL ="https://repsuk.org/compare";
 const TITLE ="Personal Trainer Software — REPS vs Trainerize, MyPTHub & PT Distinction";
 const DESC =
 "Compare REPS Pro (£59/mo founding) with Trainerize, MyPTHub and PT Distinction. Personal trainer software with the verified public register, CRM, bookings, payments, programmes, nutrition and AI all included — no paid add-on stack.";

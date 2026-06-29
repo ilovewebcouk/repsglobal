@@ -19,7 +19,7 @@ import { HELP_CATEGORIES } from "@/content/help/categories";
 import { getArticleSummaries } from "@/content/help/registry";
 import { CommandPalette, HelpSearchTrigger } from "@/components/help/CommandPalette";
 
-const CANONICAL = "https://repsglobal.lovable.app/help";
+const CANONICAL = "https://repsuk.org/help";
 const META_TITLE = "REPS Help Centre — Verification, profiles, reviews";
 const META_DESC =
   "Everything you need to set up your REPS profile, get verified, and run your listing. Built for professionals on the Core tier.";
