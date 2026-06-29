@@ -75,6 +75,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminWebhookRecoveryRouteImport } from './routes/admin_.webhook-recovery'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
+import { Route as AdminV2RouteImport } from './routes/admin_.v2'
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
@@ -483,6 +484,11 @@ const AdminVerificationRoute = AdminVerificationRouteImport.update({
   path: '/admin/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminV2Route = AdminV2RouteImport.update({
+  id: '/admin_/v2',
+  path: '/admin/v2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminTeamRoute = AdminTeamRouteImport.update({
   id: '/admin_/team',
   path: '/admin/team',
@@ -579,9 +585,9 @@ const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
   getParentRoute: () => HelpCategoryRoute,
 } as any)
 const AdminV2IndexRoute = AdminV2IndexRouteImport.update({
-  id: '/admin_/v2/',
-  path: '/admin/v2/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminV2Route,
 } as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
@@ -725,9 +731,9 @@ const ApiPublicHooksLegacyRenewalRoute =
     getParentRoute: () => rootRouteImport,
   } as any)
 const AdminV2MembersUserIdRoute = AdminV2MembersUserIdRouteImport.update({
-  id: '/admin_/v2/members/$userId',
-  path: '/admin/v2/members/$userId',
-  getParentRoute: () => rootRouteImport,
+  id: '/members/$userId',
+  path: '/members/$userId',
+  getParentRoute: () => AdminV2Route,
 } as any)
 const AdminOpsMemberUserIdRoute = AdminOpsMemberUserIdRouteImport.update({
   id: '/member/$userId',
@@ -958,6 +964,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
+  '/admin/v2': typeof AdminV2RouteWithChildren
   '/admin/verification': typeof AdminVerificationRoute
   '/admin/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
@@ -1241,6 +1248,7 @@ export interface FileRoutesById {
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
+  '/admin_/v2': typeof AdminV2RouteWithChildren
   '/admin_/verification': typeof AdminVerificationRoute
   '/admin_/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
@@ -1386,6 +1394,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
+    | '/admin/v2'
     | '/admin/verification'
     | '/admin/webhook-recovery'
     | '/c/$slug'
@@ -1668,6 +1677,7 @@ export interface FileRouteTypes {
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/team'
+    | '/admin_/v2'
     | '/admin_/verification'
     | '/admin_/webhook-recovery'
     | '/c/$slug'
@@ -1813,6 +1823,7 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
+  AdminV2Route: typeof AdminV2RouteWithChildren
   AdminVerificationRoute: typeof AdminVerificationRoute
   AdminWebhookRecoveryRoute: typeof AdminWebhookRecoveryRoute
   CSlugRoute: typeof CSlugRoute
@@ -1849,8 +1860,6 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
-  AdminV2IndexRoute: typeof AdminV2IndexRoute
-  AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicHooksLifecycleCronRoute: typeof ApiPublicHooksLifecycleCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -2327,6 +2336,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVerificationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/v2': {
+      id: '/admin_/v2'
+      path: '/admin/v2'
+      fullPath: '/admin/v2'
+      preLoaderRoute: typeof AdminV2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/team': {
       id: '/admin_/team'
       path: '/admin/team'
@@ -2462,10 +2478,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin_/v2/': {
       id: '/admin_/v2/'
-      path: '/admin/v2'
+      path: '/'
       fullPath: '/admin/v2/'
       preLoaderRoute: typeof AdminV2IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminV2Route
     }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
@@ -2651,10 +2667,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin_/v2/members/$userId': {
       id: '/admin_/v2/members/$userId'
-      path: '/admin/v2/members/$userId'
+      path: '/members/$userId'
       fullPath: '/admin/v2/members/$userId'
       preLoaderRoute: typeof AdminV2MembersUserIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminV2Route
     }
     '/admin_/ops/member/$userId': {
       id: '/admin_/ops/member/$userId'
@@ -3083,6 +3099,19 @@ const AdminOpsRouteWithChildren = AdminOpsRoute._addFileChildren(
   AdminOpsRouteChildren,
 )
 
+interface AdminV2RouteChildren {
+  AdminV2IndexRoute: typeof AdminV2IndexRoute
+  AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
+}
+
+const AdminV2RouteChildren: AdminV2RouteChildren = {
+  AdminV2IndexRoute: AdminV2IndexRoute,
+  AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
+}
+
+const AdminV2RouteWithChildren =
+  AdminV2Route._addFileChildren(AdminV2RouteChildren)
+
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -3148,6 +3177,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
+  AdminV2Route: AdminV2RouteWithChildren,
   AdminVerificationRoute: AdminVerificationRoute,
   AdminWebhookRecoveryRoute: AdminWebhookRecoveryRoute,
   CSlugRoute: CSlugRoute,
@@ -3184,8 +3214,6 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
-  AdminV2IndexRoute: AdminV2IndexRoute,
-  AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
   ApiPublicHooksLifecycleCronRoute: ApiPublicHooksLifecycleCronRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
