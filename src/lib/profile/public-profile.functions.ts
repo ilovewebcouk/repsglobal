@@ -233,10 +233,15 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
 export const listPublishedProfessionals = createServerFn({ method: "GET" }).handler(
   async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getPubliclyVisibleProIds } = await import(
+      "@/lib/visibility/public-gate.server"
+    );
+    const visibleIds = Array.from(await getPubliclyVisibleProIds());
+    if (visibleIds.length === 0) return [];
     const { data, error } = await supabaseAdmin
       .from("professionals")
       .select(PRO_LIST_COLUMNS)
-      .eq("is_published", true)
+      .in("id", visibleIds)
       .order("updated_at", { ascending: false })
       .limit(60);
     if (error) throw error;
