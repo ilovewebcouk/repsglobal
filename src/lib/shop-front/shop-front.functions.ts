@@ -72,6 +72,11 @@ async function fetchCoachingSinceYear(
     if (row.issue_date) {
       const parsed = new Date(row.issue_date);
       if (!isNaN(parsed.getTime())) y = parsed.getFullYear();
+    }
+    if (y == null && row.year != null) y = row.year;
+    if (y != null && (earliest == null || y < earliest)) earliest = y;
+  }
+  return earliest;
 }
 
 // Helper: public-safe trust summary used by both shop-front readers.
@@ -113,15 +118,11 @@ async function fetchTrustSummary(
 
   return {
     isVerified: idApproved && insActive && approved.length > 0,
-    primaryTitleSlug: primaryTitleSlug,
+    primaryTitleSlug,
     insuranceExpiry: insActive ? insRow?.expiry_date ?? null : null,
     activeCredentialsCount: approved.length,
     lastCheckedAt: reviewedDates.at(-1) ?? null,
   };
-    if (y == null && row.year != null) y = row.year;
-    if (y != null && (earliest == null || y < earliest)) earliest = y;
-  }
-  return earliest;
 }
 
 export type ServiceDTO = {
