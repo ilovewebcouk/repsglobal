@@ -463,7 +463,7 @@ function HomeV2() {
             {outcomes.map((o) => (
               <article key={o.name} className="overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img src={o.img} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  <img src={o.img} alt={o.headline} className="h-full w-full object-cover" loading="lazy" />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-reps-ink/85 via-reps-ink/40 to-transparent p-4 text-white">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange/90 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white">
                       {o.metric}
