@@ -483,11 +483,19 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     // Running-members series: derive joins-per-day from the same mirror
     // survivor set (first sub created_at per surviving user).
     const joinsByDay = new Map<string, number>();
+    const joinsByDayByTier = {
+      verified: new Map<string, number>(),
+      pro: new Map<string, number>(),
+      studio: new Map<string, number>(),
+    };
     for (const [uid, survivor] of survivorByUser) {
       void uid;
       if (!survivor.created_at) continue;
       const key = londonDayKey(survivor.created_at);
       joinsByDay.set(key, (joinsByDay.get(key) ?? 0) + 1);
+      const tierMap =
+        joinsByDayByTier[survivor.tier as keyof typeof joinsByDayByTier];
+      if (tierMap) tierMap.set(key, (tierMap.get(key) ?? 0) + 1);
     }
 
     let joinsBefore = 0;
@@ -496,6 +504,31 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const membersSeries: DayPoint[] = days.map((d) => {
       running += joinsByDay.get(d) ?? 0;
       return { day: d, value: running };
+    });
+
+    // Per-tier running totals — end at `mix.{tier}`, walk backwards to
+    // derive starting point so the stacked area always ties out to the
+    // current Member mix.
+    const tierKeys = ["verified", "pro", "studio"] as const;
+    const tierStart: Record<(typeof tierKeys)[number], number> = {
+      verified: mix.verified,
+      pro: mix.pro,
+      studio: mix.studio,
+    };
+    for (const t of tierKeys) {
+      for (const d of days) tierStart[t] -= joinsByDayByTier[t].get(d) ?? 0;
+    }
+    const tierRunning = { ...tierStart };
+    const membersByTierSeries = days.map((d) => {
+      for (const t of tierKeys) {
+        tierRunning[t] += joinsByDayByTier[t].get(d) ?? 0;
+      }
+      return {
+        day: d,
+        verified: tierRunning.verified,
+        pro: tierRunning.pro,
+        studio: tierRunning.studio,
+      };
     });
 
     const revenueSeriesArr: DayPoint[] = days.map((d) => ({
