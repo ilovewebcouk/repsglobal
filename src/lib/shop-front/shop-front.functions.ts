@@ -101,20 +101,35 @@ async function fetchTrustSummary(
       .maybeSingle(),
     supabaseAdmin
       .from("insurance_policies")
-      .select("status, expiry_date")
+      .select("status, expiry_date, provider, policy_number")
       .eq("professional_id", professionalId)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
     supabaseAdmin
       .from("verification_submissions")
-      .select("status, reviewed_at")
+      .select(
+        "status, reviewed_at, qualification, awarding_body, certificate_number, issue_date, year",
+      )
       .eq("professional_id", professionalId),
   ]);
 
-  const allSubs = (subs ?? []) as Array<{ status: string | null; reviewed_at: string | null }>;
+  const allSubs = (subs ?? []) as Array<{
+    status: string | null;
+    reviewed_at: string | null;
+    qualification: string | null;
+    awarding_body: string | null;
+    certificate_number: string | null;
+    issue_date: string | null;
+    year: number | null;
+  }>;
   const approved = allSubs.filter((s) => s.status === "approved");
-  const insRow = ins as { status: string | null; expiry_date: string | null } | null;
+  const insRow = ins as {
+    status: string | null;
+    expiry_date: string | null;
+    provider: string | null;
+    policy_number: string | null;
+  } | null;
   const insActive =
     insRow?.status === "active" && (!insRow.expiry_date || insRow.expiry_date >= today);
   const idApproved = (pro as { identity_status: string | null } | null)?.identity_status === "approved";
@@ -123,12 +138,45 @@ async function fetchTrustSummary(
     (pro as { identity_verified_at: string | null } | null)?.identity_verified_at ?? null,
   ].filter((x): x is string => !!x).sort();
 
+  const fmtMonthYear = (iso: string | null): string | null => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+  };
+
+  const items: ShopFrontDTO["trust"]["items"] = [];
+  for (const q of approved) {
+    if (!q.qualification) continue;
+    const dateLabel =
+      fmtMonthYear(q.issue_date) ?? (q.year ? String(q.year) : null);
+    items.push({
+      kind: "qualification",
+      title: q.qualification,
+      issuer: q.awarding_body ?? "Awarding body",
+      id: q.certificate_number ?? null,
+      dateLabel,
+    });
+  }
+  if (insActive && insRow) {
+    items.push({
+      kind: "insurance",
+      title: "Professional Indemnity Insurance",
+      issuer: insRow.provider ?? "Insurer",
+      id: insRow.policy_number ?? null,
+      dateLabel: insRow.expiry_date
+        ? `Active until ${fmtMonthYear(insRow.expiry_date) ?? insRow.expiry_date}`
+        : "Active",
+    });
+  }
+
   return {
     isVerified: idApproved && insActive && approved.length > 0,
     primaryTitleSlug,
     insuranceExpiry: insActive ? insRow?.expiry_date ?? null : null,
     activeCredentialsCount: approved.length,
     lastCheckedAt: reviewedDates.at(-1) ?? null,
+    items,
   };
 }
 
