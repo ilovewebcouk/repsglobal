@@ -427,13 +427,6 @@ function IdentityBody({
           >
             {stripeId.isPending ? <Loader2 className="size-4 animate-spin" /> : "Start ID check"}
           </Button>
-          <button
-            type="button"
-            onClick={() => setUseManual(true)}
-            className="text-[12px] text-white/55 underline-offset-2 hover:text-white/80 hover:underline sm:ml-2"
-          >
-            Upload manually instead
-          </button>
         </div>
       </div>
     );
