@@ -31,13 +31,13 @@ export const uploadHeroFromBase64 = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const path = `${userId}/hero-${Date.now()}.${ext}`;
+    const objectPath = `${userId}/hero-${Date.now()}.${ext}`;
     const { error: uploadError } = await supabaseAdmin.storage
       .from("shop-front-hero")
-      .upload(path, bytes, { contentType, upsert: true, cacheControl: "31536000" });
+      .upload(objectPath, bytes, { contentType, upsert: true, cacheControl: "31536000" });
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    const { data: pub } = supabaseAdmin.storage.from("shop-front-hero").getPublicUrl(path);
+    const { data: pub } = supabaseAdmin.storage.from("shop-front-hero").getPublicUrl(objectPath);
     return { url: pub.publicUrl };
   });
 
