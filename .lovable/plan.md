@@ -1,128 +1,119 @@
 
-# Admin v2 — World-Class Rebuild + Stripe Source of Truth
+# Admin v2 — Phase C rebuild
 
-## Brutal honest truth
+The current `/admin/v2` is a scaffold stub (a Card with a search box). This plan replaces it with the real operator console: REPs-branded dark surfaces with orange accents, left sidebar shell, breadcrumbs, pinned Member Finder in the header, KPI-first overview, and Member 360 wired to the Stripe mirror as the source of truth.
 
-The current admin is a working **operations console bolted onto a migration**. It got us safely through BD → Stripe, but it carries scar tissue everywhere:
-
-- **3 parallel "is this person paying?" sources** (`subscriptions`, `legacy_stripe_link`, `bd_member_seed`) deduped by a helper. Every KPI starts with a reconciliation step instead of a query.
-- **Internal aliases** (`verified_annual`) stored where Stripe Price IDs belong, so revenue forecasting is hand-computed.
-- **Metadata typos** (`migrated_from === "bd"` vs `bd_legacy`) silently break flags.
-- **17 disputes** sit in `payment_events` but never landed in `public.disputes` — two event tables, one truth.
-- **Sidebar grew by accretion** (Churn, Ops, Reconciliation, Migration, Webhook Recovery, Health…) — operators can't find anything in one hop.
-- **Same label, different math** across pages (Active Paying Members, Paid Pros, Failed Payments).
-
-The fix isn't "polish the dashboard." It's: **make Stripe the single source of truth for money, Supabase the single source of truth for identity/trust, and rebuild admin as a thin, opinionated read layer on top — entirely on shadcn/ui primitives.**
+Locked rules carried in: brand orange token only (never raw hex), 9-step radius scale (cards 16/18px, buttons 10px), emerald only for status, no shadows on buttons, shadcn primitives everywhere (no hand-rolled bubbles, no `space-y-*`, `size-*` for square, full Card composition).
 
 ---
 
-## The model (non-negotiable foundation)
+## 1. Shell — `src/routes/admin_.v2.route.tsx`
+
+A pathless v2 layout wrapping every `/admin/v2/*` page.
 
 ```text
-Money / billing state           →  Stripe (subscriptions, customers, invoices, disputes)
-Identity / verification / RBAC  →  Supabase (auth.users, professionals, verification_*, user_roles)
-Engagement / content / ops      →  Supabase (reviews, enquiries, support_tickets, bookings)
+┌───────────────────────────────────────────────────────────────┐
+│ ┌───────────┐ ┌─────────────────────────────────────────────┐ │
+│ │           │ │ Header: SidebarTrigger · Breadcrumbs        │ │
+│ │ Sidebar   │ │         · MemberFinder (pinned, ⌘K hint)    │ │
+│ │           │ ├─────────────────────────────────────────────┤ │
+│ │  Overview │ │                                             │ │
+│ │  Members  │ │                                             │ │
+│ │  Billing  │ │         <Outlet /> (page content)           │ │
+│ │  Churn    │ │                                             │ │
+│ │  Recon.   │ │                                             │ │
+│ │  Ops      │ │                                             │ │
+│ │  Support  │ │                                             │ │
+│ └───────────┘ └─────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────────────────────┘
 ```
 
-Rule: **if Stripe knows it, we don't store a second copy of the truth.** We cache for speed; every read has a "reconcile with Stripe" path; the canonical answer always wins.
+- shadcn `SidebarProvider` + `Sidebar collapsible="icon"`.
+- Header uses `SidebarTrigger`, shadcn `Breadcrumb`, and the existing `MemberFinder` with `target="/admin/v2/members/$userId"`.
+- Lives under `_authenticated/` — admin check via `has_role` in each loader (already established pattern).
 
----
+## 2. Sidebar — `src/components/admin/v2/AdminSidebar.tsx`
 
-## UI rule (locked across all phases)
+shadcn Sidebar with one group "Admin v2" and these items, each a `Link` from `@tanstack/react-router` with `isActive` from `useRouterState`:
 
-Admin v2 is **shadcn/ui-first**. Every primitive comes from the registry — no bespoke divs where a component exists.
+| Label | Route | Icon |
+| --- | --- | --- |
+| Overview | `/admin/v2` | LayoutDashboard |
+| Members | `/admin/v2/members` | Users |
+| Billing | `/admin/v2/billing` | CreditCard |
+| Churn | `/admin/v2/churn` | TrendingDown |
+| Reconciliation | `/admin/v2/reconciliation` | Scale |
+| Operations | `/admin/v2/ops` | Activity |
+| Support | `/admin/v2/support` | LifeBuoy |
 
-- **Charts** → `Chart` (`ChartContainer` / `ChartTooltip` / `ChartTooltipContent` / `ChartLegend`) wrapping Recharts. `accessibilityLayer`, chart config with human labels, CSS variables via `var(--chart-1..n)`. No raw `<ResponsiveContainer>` outside `ChartContainer`.
-- **Tables** → `Table` + shadcn DataTable patterns. Row actions via `DropdownMenu`.
-- **KPI tiles** → full `Card` composition (`CardHeader` / `CardTitle` / `CardDescription` / `CardContent` / `CardFooter`) — never dump everything into `CardContent`.
-- **Forms** → `FieldGroup` + `Field` + `FieldLabel` + `FieldDescription`; `InputGroup` + `InputGroupAddon` for inline buttons; `ToggleGroup` for 2–7 option sets. No raw `div` + `space-y-*`.
-- **Overlays** → `Dialog` for modals, `Sheet` for side panels (Timeline detail, email lifecycle, verification certificate), `Drawer` on mobile, `AlertDialog` for every destructive action (always with `DialogTitle`).
-- **Feedback** → `sonner` `toast()`, `Alert` for callouts, `Skeleton` for loading, `Empty` for empty states, `Spinner` + `data-icon` for loading buttons. No custom `animate-pulse`.
-- **Nav** → `Sidebar` + `NavigationMenu` + `Breadcrumb`. Cmd-K via `Command` inside `Dialog`.
-- **Badges** → `Badge` variants for tier (Core / Pro / Studio) and status (Active / Past due / In recovery / Churned / Verified). Never colored spans.
-- **Spacing/sizing** → `flex` + `gap-*` (no `space-y-*`), `size-*` for square. Icons in buttons via `data-icon`, no `size-4` classes.
-- **Colors** → semantic tokens only (`bg-primary`, `text-muted-foreground`, brand orange via existing token). Reuse dashboard UI kit in `src/components/dashboard/ui/` for the dark authenticated surface.
+Footer item: "Back to legacy admin" → `/admin`. Active item uses brand-orange left border + soft tint; inactive uses muted foreground.
 
-Workflow: before building any page, run `npx shadcn@latest search` + `docs <component>`, install missing primitives with `add`, and verify composition against the rules.
+## 3. Overview — `src/routes/admin_.v2.index.tsx` (rewrite)
 
----
+Replaces the current stub. All numbers from `stripe-mirror.server.ts` (already canonical).
 
-## Phased plan
+- **KPI strip (6 tiles, shadcn `Card` with full composition):**
+  - Active paying members (339)
+  - MRR (£)
+  - ARR (£)
+  - Trialing
+  - Open disputes
+  - Failed payments (last 7d)
+- **Two-column row:**
+  - Left: "Recent billing events" (last 10 from `payment_events`, status badge in emerald/destructive).
+  - Right: "Needs attention" (disputes open + payment_standing != good), each row links to Member 360.
+- **Footer row:** mini sparkline of new active members per day (Recharts) over 30d.
 
-### Phase A — Foundation cleanup (1 sprint, no UI work)
+No charts beyond the sparkline in Phase C — keep this shippable. Bigger charts come in Phase C2.
 
-1. **Fix the 4 P0s** from the post-BD audit:
-   - Webhook metadata typo (`migrated_from === "bd"` → `bd_legacy`) in `webhook.ts` + `webhook-replay.functions.ts`.
-   - Backfill `migrated_from_bd = true` on the 340 affected rows.
-   - Replace internal price aliases (`verified_annual`) in `subscriptions.stripe_price_id` with real `price_…` IDs from Stripe.
-   - Backfill the 17 missing rows into `public.disputes` and make the webhook write atomically (or drop one table).
+## 4. Member 360 — `src/routes/admin_.v2.members.$userId.tsx` (polish existing)
 
-2. **Single billing read API** — one module `src/lib/billing/stripe-mirror.server.ts` owning `getSubscriptionByUser`, `getCustomerByUser`, `listInvoices`, `listDisputes`, `listPaymentMethods` (60s cache). Every admin page reads through this. Nothing else calls `stripe.subscriptions.*` directly.
+Already scaffolded. Polish pass only:
 
-3. **Retire the 3-source dedupe.** `legacy_stripe_link` + `bd_member_seed` become read-only archives. Canonical "active paying member" = `Stripe subscription in (active, trialing, past_due) AND auth.users row exists`. One query, no dedupe.
+- Wrap in a 3-column grid: left = identity card (avatar/Monogram, email, full name, user_id, copy buttons), center = `MemberSnapshotCard` + timeline, right = quick actions stack (Open in Stripe, Send email, View profile, Refund last charge — buttons stub onClick to `console.warn("TODO")` for actions not yet wired).
+- Replace any raw `<div className="border-t">` with `<Separator />`.
+- Status pills use emerald/destructive/muted via shadcn `Badge` variants — no raw colors.
 
-4. **Metric registry enforcement.** Every KPI imports its definition from `docs/11_admin_metric_registry.md` via a typed const. Same-label/different-math becomes a typecheck error.
+## 5. Other tabs (stubs that route correctly)
 
-### Phase B — Admin v2 shell at `/admin-v2` (parallel namespace per Doc 12)
+So the sidebar isn't broken on click. Each renders an `Empty` shadcn component with "Coming in Phase C2 — wire to mirror" and a button back to Overview:
 
-5. **IA collapse — 14 routes → 6 sections:**
-   ```text
-   /admin-v2            Dashboard    (30-second business view)
-   /admin-v2/members    Members      (Professionals + 360° timeline spine)
-   /admin-v2/revenue    Revenue      (Stripe-mirrored subs, invoices, disputes, forecast)
-   /admin-v2/trust      Trust        (Verification + Reviews + Support unified)
-   /admin-v2/ops        Operations   (Billing health, webhooks, crons, alerts, email)
-   /admin-v2/settings   Settings     (Team, flags, integrations, audit log)
-   ```
-   Migration / Reconciliation / Churn / Webhook Recovery become panels inside Ops.
+- `admin_.v2.members.index.tsx` — directory list (stub)
+- `admin_.v2.billing.tsx` — stub
+- `admin_.v2.churn.tsx` — stub
+- `admin_.v2.reconciliation.tsx` — stub
+- `admin_.v2.ops.tsx` — stub
+- `admin_.v2.support.tsx` — stub
 
-6. **Shared shadcn-based primitives** in `src/components/admin-v2/primitives/`:
-   `PageShell` (header + actions + tabs slot), `KPICard` (Card + delta Badge + Recharts sparkline via `ChartContainer`), `HealthStatusStrip` (Badge row), `DataTable` (shadcn Table + filters), `MemberTimeline` (Sheet + Card list), `MemberFinder` (Command palette in Dialog), `ChartPanel` (`ChartContainer` + `ChartTooltip` + `ChartTooltipContent` + `accessibilityLayer`), `ConfirmActionDialog` (AlertDialog), `EmptyState` (Empty), `AlertBanner` (Alert). All shadcn-first, semantic tokens only.
+Phase D will replace each with the mirror-sourced rebuild of its legacy counterpart.
 
-7. **Member 360 as the spine.** Every row in every table → `Open Timeline` → one page (identity, verification, live Stripe subscription, invoices, disputes, reviews, support, enquiries, audit log). Currently 5 pages to answer one question.
+## 6. Tokens / styling
 
-### Phase C — Page-by-page rebuild
+- Active sidebar item: `bg-[color-mix(in_oklab,var(--brand-orange)_12%,transparent)] text-foreground border-l-2 border-[var(--brand-orange)]`.
+- KPI numerals: `font-display tabular-nums`.
+- Cards: `rounded-[16px]` standard, `rounded-[18px]` for the member snapshot. No `rounded-xl/2xl`.
+- Buttons: `shadow-none` enforced; primary action uses brand-orange variant already in the system.
+- No new hex values; everything goes through tokens already in `src/styles.css`.
 
-8. **Dashboard v2** — 4 canonical `KPICard`s + revenue `AreaChart` + needs-attention queue via `DataTable`.
-9. **Revenue v2** — Stripe is the table. `DataTable` + filters + `Sheet` for dispute detail; MRR/ARR live from Stripe; forecast `BarChart` via shadcn `Chart`.
-10. **Members v2** — Professionals `DataTable` + invite flow (`Dialog` + `FieldGroup`) + cross-link to Timeline.
-11. **Trust v2** — Verification 3-step workspace + Reviews moderation + Support tickets in one `Tabs` surface (they're the same job: respond to a human).
-12. **Ops v2** — Billing health, webhook recovery, cron status, email deliverability, alerts; Migration + Reconciliation as historical panels.
+## 7. Out of scope (deliberate)
 
-### Phase D — Cutover & freeze
+- No new server functions — Overview KPIs reuse `getAdminOverview` from `src/lib/admin/overview.functions.ts` (already mirror-sourced).
+- No new tables, no migrations.
+- No nav change in `src/components/dashboard/nav-data.ts` — `/admin` stays the default until Phase D cutover.
+- Legacy `/admin/*` routes untouched.
 
-13. Side-by-side QA: open `/admin` and `/admin-v2`, every KPI must match or be intentionally renamed.
-14. Operator trial week; record friction.
-15. Make `/admin-v2` the default `/admin`; keep v1 at `/admin/v1` for 30 days.
-16. Delete v1; **freeze sidebar, metric registry, page ownership** per Doc 12 §10.
+## 8. Acceptance
 
----
-
-## What "Stripe = source of truth" actually changes
-
-- **No more ghost subscriptions** — if Stripe doesn't have it, we don't show it.
-- **Dispute lifecycle is real** — `disputes` becomes a Stripe cache, not a parallel registry.
-- **Price changes happen in Stripe**, app reads them — no hardcoded `verified_annual` aliases.
-- **Reconciliation becomes a diff view** — "0 rows differ from Stripe" is the success state.
-- **Renewal/trial logic moves to Stripe** (`trial_end`, `cancel_at_period_end`) — finish what the BD rail swap started.
-
----
+- `/admin/v2` shows the new sidebar shell + KPI overview reconciling to 339 / matching `/admin` exactly.
+- Sidebar trigger collapses to icon-only rail; pinned MemberFinder still works in collapsed state.
+- Member Finder in header jumps to `/admin/v2/members/$userId` and the 360 page renders snapshot + timeline + quick actions.
+- All other sidebar items route without 404, render Empty stub.
+- `tsgo` clean. `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` exits 0.
 
 ## Technical notes
 
-- All new server logic: `createServerFn` + `requireSupabaseAuth` + `has_role(_, 'admin')` gate. Stripe SDK only inside `*.server.ts` files loaded via `await import()` in handlers.
-- Stripe webhook is the **only** writer to the `subscriptions` cache. App code reads, never writes, billing state.
-- `stripe_event_id` idempotency key on every webhook-triggered write.
-- New tables: none in Phase A/B. Phase C may add a thin `member_timeline_event` append-only log for fast Timeline reads.
-- Locked marketing/UI memories untouched — this is admin-only.
-
----
-
-## What I need from you before building
-
-1. **Approve the IA collapse** (14 → 6). Biggest single decision.
-2. **Approve "Stripe is canonical, retire dedupe"** — `legacy_stripe_link` + `bd_member_seed` become read-only archives.
-3. **Confirm parallel `/admin-v2` namespace** vs feature-flag on `/admin`.
-4. **Phase A first, or skip to redesign?** Strong recommendation: Phase A first — redesigning on the current dedupe mess bakes in the mess.
-
-Greenlight and I start Phase A (4 P0 fixes + single billing read API) — invisible to operators, biggest trust unlock. Then the shadcn-native redesign on clean foundations.
+- New files: `src/routes/admin_.v2.route.tsx`, `src/components/admin/v2/AdminSidebar.tsx`, `src/components/admin/v2/AdminHeader.tsx`, 6 stub routes above.
+- Rewritten: `src/routes/admin_.v2.index.tsx`, `src/routes/admin_.v2.members.$userId.tsx`.
+- shadcn primitives used: Sidebar, Breadcrumb, Card, Badge, Separator, Empty, Button, Skeleton, Tooltip.
+- Recharts already installed for the sparkline.
+- All loaders call existing mirror-backed server fns; no `legacy_stripe_link` / `bd_member_seed` reads anywhere in v2.
