@@ -85,7 +85,6 @@ import { Route as AdminMembershipsRouteImport } from './routes/admin_.membership
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
-import { Route as AdminCleanupRouteImport } from './routes/admin_.cleanup'
 import { Route as AdminChurnRouteImport } from './routes/admin_.churn'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AdminBillingRouteImport } from './routes/admin_.billing'
@@ -520,11 +519,6 @@ const AdminCpdRoute = AdminCpdRouteImport.update({
   path: '/admin/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminCleanupRoute = AdminCleanupRouteImport.update({
-  id: '/admin_/cleanup',
-  path: '/admin/cleanup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminChurnRoute = AdminChurnRouteImport.update({
   id: '/admin_/churn',
   path: '/admin/churn',
@@ -865,7 +859,6 @@ export interface FileRoutesByFullPath {
   '/admin/billing': typeof AdminBillingRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
-  '/admin/cleanup': typeof AdminCleanupRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
@@ -993,7 +986,6 @@ export interface FileRoutesByTo {
   '/admin/billing': typeof AdminBillingRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
-  '/admin/cleanup': typeof AdminCleanupRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
@@ -1122,7 +1114,6 @@ export interface FileRoutesById {
   '/admin_/billing': typeof AdminBillingRoute
   '/admin_/campaigns': typeof AdminCampaignsRoute
   '/admin_/churn': typeof AdminChurnRoute
-  '/admin_/cleanup': typeof AdminCleanupRoute
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
@@ -1254,7 +1245,6 @@ export interface FileRouteTypes {
     | '/admin/billing'
     | '/admin/campaigns'
     | '/admin/churn'
-    | '/admin/cleanup'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
@@ -1382,7 +1372,6 @@ export interface FileRouteTypes {
     | '/admin/billing'
     | '/admin/campaigns'
     | '/admin/churn'
-    | '/admin/cleanup'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
@@ -1510,7 +1499,6 @@ export interface FileRouteTypes {
     | '/admin_/billing'
     | '/admin_/campaigns'
     | '/admin_/churn'
-    | '/admin_/cleanup'
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/gyms'
@@ -1642,7 +1630,6 @@ export interface RootRouteChildren {
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCampaignsRoute: typeof AdminCampaignsRoute
   AdminChurnRoute: typeof AdminChurnRoute
-  AdminCleanupRoute: typeof AdminCleanupRoute
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
@@ -2231,13 +2218,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/cpd'
       fullPath: '/admin/cpd'
       preLoaderRoute: typeof AdminCpdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/cleanup': {
-      id: '/admin_/cleanup'
-      path: '/admin/cleanup'
-      fullPath: '/admin/cleanup'
-      preLoaderRoute: typeof AdminCleanupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/churn': {
@@ -2856,7 +2836,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminBillingRoute: AdminBillingRoute,
   AdminCampaignsRoute: AdminCampaignsRoute,
   AdminChurnRoute: AdminChurnRoute,
-  AdminCleanupRoute: AdminCleanupRoute,
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
