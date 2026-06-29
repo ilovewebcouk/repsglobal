@@ -595,17 +595,23 @@ export const listDisputes = createServerFn({ method: "GET" })
       stripe_customer_id: string | null;
     }>;
 
-    const customerIds = Array.from(
-      new Set(disputes.map((d) => d.stripe_customer_id).filter(Boolean) as string[]),
-    );
-    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+    // Backfill customer_id via charge_id → legacy_stripe_payments for legacy chargebacks.
+    const chargeIds = disputes.map((d) => d.stripe_charge_id).filter(Boolean) as string[];
+    const chargeMap = await resolveContactsByChargeIds(supabaseAdmin, chargeIds);
+    const customerIdByDispute = new Map<string, string | null>();
+    for (const d of disputes) {
+      let cust = d.stripe_customer_id ?? null;
+      if (!cust && d.stripe_charge_id) cust = chargeMap.get(d.stripe_charge_id)?.stripeCustomerId ?? null;
+      customerIdByDispute.set(d.id, cust);
+    }
 
-    const userIds = Array.from(
-      new Set<string>([
-        ...(disputes.map((d) => d.user_id).filter(Boolean) as string[]),
-        ...Array.from(customerToUser.values()),
-      ]),
-    );
+    const customerIds = Array.from(new Set(Array.from(customerIdByDispute.values()).filter(Boolean) as string[]));
+    const contactByCustomer = await resolveContactsByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(new Set<string>([
+      ...(disputes.map((d) => d.user_id).filter(Boolean) as string[]),
+      ...Array.from(contactByCustomer.values()).map((c) => c.userId).filter(Boolean) as string[],
+    ]));
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -624,14 +630,18 @@ export const listDisputes = createServerFn({ method: "GET" })
     }
 
     return disputes.map((d) => {
-      const resolvedUserId =
-        d.user_id ?? (d.stripe_customer_id ? customerToUser.get(d.stripe_customer_id) ?? null : null);
+      const cust = customerIdByDispute.get(d.id) ?? null;
+      const custHit = cust ? contactByCustomer.get(cust) : null;
+      const resolvedUserId = d.user_id ?? custHit?.userId ?? null;
+      const profName = resolvedUserId ? profMap.get(resolvedUserId) ?? null : null;
+      const profEmail = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
+      const chargeHit = d.stripe_charge_id ? chargeMap.get(d.stripe_charge_id) : null;
       return {
         id: d.id,
         openedAt: d.opened_at,
         userId: resolvedUserId,
-        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
-        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
+        email: profEmail ?? custHit?.email ?? chargeHit?.email ?? null,
+        fullName: profName ?? custHit?.fullName ?? null,
         reason: d.reason,
         amountPence: d.amount_pence ?? 0,
         currency: d.currency ?? "gbp",
@@ -643,6 +653,7 @@ export const listDisputes = createServerFn({ method: "GET" })
       };
     });
   });
+
 
 // ---------------------------------------------------------------------------
 // Refunds
