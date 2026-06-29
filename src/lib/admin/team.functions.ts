@@ -88,7 +88,11 @@ export const grantAdmin = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    const { getRequestHeader } = await import('@tanstack/react-start/server');
+
+    // Resolve inviter display name for the email body.
+    const { data: inviter } = await supabaseAdmin
+      .from('profiles').select('full_name').eq('id', context.userId).maybeSingle();
+    const inviterName = inviter?.full_name ?? 'The REPs team';
 
     // Look up the user. Admins are platform staff — they may not be REPS
     // members, so if no auth.users row exists yet we invite them by email.
@@ -106,16 +110,30 @@ export const grantAdmin = createServerFn({ method: 'POST' })
 
     let invited = false;
     if (!foundId) {
-      const origin = getRequestHeader('origin') ?? process.env.SITE_URL ?? null;
-      const redirectTo = origin ? `${origin}/auth/callback` : undefined;
-      const { data: invite, error: invErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-        data.email,
-        redirectTo ? { redirectTo } : undefined,
-      );
-      if (invErr || !invite?.user?.id) {
-        throw new Error(invErr?.message ?? `Could not send invite to ${data.email}.`);
+      // Use generateLink so we can send a REPs-branded email via Mailgun
+      // instead of Supabase's default invite email.
+      const redirectTo = 'https://repsuk.org/admin';
+      const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'invite',
+        email: data.email,
+        options: { redirectTo, data: { signup_kind: 'admin' } },
+      });
+      if (linkErr || !linkData?.user?.id) {
+        throw new Error(linkErr?.message ?? `Could not create invite for ${data.email}.`);
       }
-      foundId = invite.user.id;
+      foundId = linkData.user.id;
+      const inviteUrl = linkData.properties?.action_link ?? redirectTo;
+
+      const { sendTransactionalEmailServer } = await import('@/lib/email/send.server');
+      await sendTransactionalEmailServer({
+        templateName: 'admin-invite',
+        recipientEmail: data.email,
+        templateData: {
+          inviteeName: null,
+          inviterName,
+          acceptUrl: inviteUrl,
+        },
+      });
       invited = true;
     }
 
