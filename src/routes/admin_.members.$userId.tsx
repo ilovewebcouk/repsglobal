@@ -85,7 +85,7 @@ function MemberPage() {
   });
 
   return (
-    <DashboardShell role="admin" active="Members" title="Member 360" subtitle="One workbench for every member action.">
+    <DashboardShell role="admin" active="Professionals" title="Member 360" subtitle="One workbench for every member action.">
       <div className="space-y-6 p-6">
         <StickyHeader snapshot={snap.data} loading={snap.isLoading} />
 
