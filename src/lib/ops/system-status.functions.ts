@@ -105,7 +105,7 @@ export const getSystemStatus = createServerFn({ method: "GET" })
             : orphan > 0
             ? `${orphan} orphan subscriptions`
             : "All clear",
-          href: "/admin/ops/platform",
+          href: "/admin",
         },
         {
           key: "emails",
@@ -116,21 +116,21 @@ export const getSystemStatus = createServerFn({ method: "GET" })
             : stuckEmails > 0
             ? `${stuckEmails} pending`
             : "All clear",
-          href: "/admin/ops/email",
+          href: "/admin",
         },
         {
           key: "queues",
           label: "Queues",
           tone: queuesTone,
           detail: qDepth > 0 ? `${qDepth.toLocaleString()} queued` : "Empty",
-          href: "/admin/ops/platform",
+          href: "/admin",
         },
         {
           key: "storage",
           label: "Storage",
           tone: storageTone,
           detail: storageOk ? "Reachable" : "Unreachable",
-          href: "/admin/ops/platform",
+          href: "/admin",
         },
       ],
       checked_at: new Date().toISOString(),
