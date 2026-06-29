@@ -109,6 +109,7 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
+import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admin_.billing.disputes.$disputeId'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
@@ -648,6 +649,12 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
     path: '/api/public/hooks/send-scheduled-campaigns',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminBillingDisputesDisputeIdRoute =
+  AdminBillingDisputesDisputeIdRouteImport.update({
+    id: '/disputes/$disputeId',
+    path: '/disputes/$disputeId',
+    getParentRoute: () => AdminBillingRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardVerificationRoute =
   AuthenticatedProfessionalDashboardVerificationRouteImport.update({
     id: '/dashboard_/verification',
@@ -856,7 +863,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/admin/billing': typeof AdminBillingRoute
+  '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
   '/admin/cpd': typeof AdminCpdRoute
@@ -925,6 +932,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
+  '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -983,7 +991,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/admin/billing': typeof AdminBillingRoute
+  '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
   '/admin/cpd': typeof AdminCpdRoute
@@ -1049,6 +1057,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
+  '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1111,7 +1120,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
-  '/admin_/billing': typeof AdminBillingRoute
+  '/admin_/billing': typeof AdminBillingRouteWithChildren
   '/admin_/campaigns': typeof AdminCampaignsRoute
   '/admin_/churn': typeof AdminChurnRoute
   '/admin_/cpd': typeof AdminCpdRoute
@@ -1181,6 +1190,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
+  '/admin_/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1311,6 +1321,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/support'
     | '/dashboard/verification'
+    | '/admin/billing/disputes/$disputeId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1435,6 +1446,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/shop-front'
     | '/dashboard/verification'
+    | '/admin/billing/disputes/$disputeId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1566,6 +1578,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
+    | '/admin_/billing/disputes/$disputeId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1627,7 +1640,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
-  AdminBillingRoute: typeof AdminBillingRoute
+  AdminBillingRoute: typeof AdminBillingRouteWithChildren
   AdminCampaignsRoute: typeof AdminCampaignsRoute
   AdminChurnRoute: typeof AdminChurnRoute
   AdminCpdRoute: typeof AdminCpdRoute
@@ -2388,6 +2401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/billing/disputes/$disputeId': {
+      id: '/admin_/billing/disputes/$disputeId'
+      path: '/disputes/$disputeId'
+      fullPath: '/admin/billing/disputes/$disputeId'
+      preLoaderRoute: typeof AdminBillingDisputesDisputeIdRouteImport
+      parentRoute: typeof AdminBillingRoute
+    }
     '/_authenticated/_professional/dashboard_/verification': {
       id: '/_authenticated/_professional/dashboard_/verification'
       path: '/dashboard/verification'
@@ -2784,6 +2804,18 @@ const HelpRouteChildren: HelpRouteChildren = {
 
 const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
 
+interface AdminBillingRouteChildren {
+  AdminBillingDisputesDisputeIdRoute: typeof AdminBillingDisputesDisputeIdRoute
+}
+
+const AdminBillingRouteChildren: AdminBillingRouteChildren = {
+  AdminBillingDisputesDisputeIdRoute: AdminBillingDisputesDisputeIdRoute,
+}
+
+const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
+  AdminBillingRouteChildren,
+)
+
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -2833,7 +2865,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
-  AdminBillingRoute: AdminBillingRoute,
+  AdminBillingRoute: AdminBillingRouteWithChildren,
   AdminCampaignsRoute: AdminCampaignsRoute,
   AdminChurnRoute: AdminChurnRoute,
   AdminCpdRoute: AdminCpdRoute,
