@@ -889,7 +889,7 @@ function ProRow({ row }: { row: AdminProRow }) {
                 {(row.plan === "pro" || row.plan === "studio") ? (
                   <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white">
                     <Link to="/c/$slug" params={{ slug }} target="_blank">
-                      <ExternalLink className="h-4 w-4" /> View shop-front
+                      <ExternalLink className="h-4 w-4" /> View website
                     </Link>
                   </DropdownMenuItem>
                 ) : null}

@@ -4,7 +4,7 @@
 // results, FAQs, plus AI-assisted draft helpers.
 
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 /* ===================================================================== */
@@ -98,7 +98,7 @@ function asReach(v: unknown): { cities: string[]; online_worldwide: boolean } {
 /* ===================================================================== */
 
 export const getMyWebsiteContent = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(
     async ({
       context,
@@ -187,7 +187,7 @@ const SaveContentSchema = z.object({
 });
 
 export const saveMyWebsiteContent = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => SaveContentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
@@ -225,7 +225,7 @@ const TransformationSchema = z.object({
 });
 
 export const upsertTransformation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => TransformationSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -240,7 +240,7 @@ export const upsertTransformation = createServerFn({ method: "POST" })
   });
 
 export const deleteTransformation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -267,7 +267,7 @@ const ResultSchema = z.object({
 });
 
 export const upsertClientResult = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => ResultSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -282,7 +282,7 @@ export const upsertClientResult = createServerFn({ method: "POST" })
   });
 
 export const deleteClientResult = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -308,7 +308,7 @@ const FaqSchema = z.object({
 });
 
 export const upsertFaq = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => FaqSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -323,7 +323,7 @@ export const upsertFaq = createServerFn({ method: "POST" })
   });
 
 export const deleteFaq = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -416,7 +416,7 @@ async function loadFacts(userId: string) {
 }
 
 export const aiDraftMethod = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z.object({ extra: z.string().trim().max(400).optional().default("") }).parse(d),
   )
@@ -448,7 +448,7 @@ export const aiDraftMethod = createServerFn({ method: "POST" })
   );
 
 export const aiDraftFaqs = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z.object({ count: z.number().int().min(3).max(8).default(5) }).parse(d),
   )

@@ -3,7 +3,14 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useSessionUser } from "@/hooks/use-session-user";
-import { getShopFrontBySlug, type ServiceDTO, type ShopFrontDTO } from "@/lib/shop-front/shop-front.functions";
+import {
+  getShopFrontBySlug,
+  type ServiceDTO,
+  type ShopFrontDTO,
+  type ShopFrontClientResultDTO,
+  type ShopFrontFaqDTO,
+  type ShopFrontTransformationDTO,
+} from "@/lib/shop-front/shop-front.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import {
   ArrowRight,
@@ -82,7 +89,7 @@ type Coach = {
   region: string;
   promise: string;
   subhead: string;
-  method: { name: string; pillars: { title: string; desc: string }[] };
+  method: { name: string; intro?: string; pillars: { title: string; desc: string }[] };
   bio: string[];
   heroImage: string;
   aboutImage: string;
@@ -100,6 +107,7 @@ type Coach = {
   cities: string[];
   transformations: Transformation[];
   testimonials: Testimonial[];
+  clientResultsIntro?: string | null;
   qualifications: { title: string; issuer: string; id: string; issued: string }[];
   faqs: { q: string; a: string }[];
   socials: {
@@ -362,7 +370,14 @@ const COACHES: Record<string, Coach> = {
 /* Route                                                              */
 /* ------------------------------------------------------------------ */
 
-function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[]): Coach {
+function mergeLiveIntoCoach(
+  base: Coach,
+  sf: ShopFrontDTO,
+  services: ServiceDTO[],
+  transformations: ShopFrontTransformationDTO[] = [],
+  clientResults: ShopFrontClientResultDTO[] = [],
+  faqs: ShopFrontFaqDTO[] = [],
+): Coach {
   const liveTiers: Tier[] = services.map((s, i) => ({
     slug: s.id,
     name: s.title,
@@ -384,11 +399,38 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
   const liveModes: ("In-person" | "Online")[] = [];
   if (sf.in_person_available) liveModes.push("In-person");
   if (sf.online_available) liveModes.push("Online");
+  const liveVenues = sf.venues.map((venue) => ({
+    name: venue.name,
+    city: venue.address || sf.city || base.city,
+  }));
+  const liveCities = [
+    ...sf.coaching_reach.cities,
+    ...(sf.coaching_reach.online_worldwide ? ["Online (worldwide)"] : []),
+  ];
+  const liveTransformations: Transformation[] = transformations
+    .filter((t) => t.is_published)
+    .map((t, i) => ({
+      image: t.image_url ?? base.transformations[i % Math.max(base.transformations.length, 1)]?.image ?? base.heroImage,
+      client: t.client_first_name ? `${t.client_first_name}` : `Client ${i + 1}`,
+      meta: t.headline ?? "Client result",
+      metric: t.metric ?? t.headline ?? "Client progress",
+      quote: t.quote ?? t.headline ?? "Great progress from consistent coaching.",
+    }));
+  const liveFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
+  const liveTestimonials = clientResults
+    .filter((r) => r.is_published && (r.headline || r.body))
+    .map((r, i) => ({
+      initials: `C${i + 1}`,
+      name: r.headline ?? `Client ${i + 1}`,
+      role: "Verified client result",
+      quote: r.body ?? r.headline ?? "",
+    }));
   return {
     ...base,
     name: sf.full_name ?? base.name,
     firstName: sf.full_name?.trim().split(/\s+/)[0] ?? base.firstName,
     promise: sf.tagline ?? base.promise,
+    subhead: sf.subtitle ?? base.subhead,
     bio: sf.about ? sf.about.split(/\n\n+/).filter(Boolean) : base.bio,
     heroImage: sf.hero_image_url ?? base.heroImage,
     aboutImage: sf.avatar_url ?? sf.hero_image_url ?? base.aboutImage,
@@ -396,6 +438,19 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     modes: liveModes.length ? liveModes : base.modes,
     specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
     tiers: liveTiers.length ? liveTiers : base.tiers,
+    method: {
+      name: sf.method_name ?? base.method.name,
+      intro: sf.method_intro ?? base.method.intro,
+      pillars: sf.method_pillars.length
+        ? sf.method_pillars.map((p) => ({ title: p.title, desc: p.body }))
+        : base.method.pillars,
+    },
+    venues: liveVenues.length ? liveVenues : base.venues,
+    cities: liveCities.length ? liveCities : base.cities,
+    transformations: liveTransformations.length ? liveTransformations : base.transformations,
+    testimonials: liveTestimonials.length ? liveTestimonials : base.testimonials,
+    clientResultsIntro: sf.client_results_intro ?? base.clientResultsIntro ?? null,
+    faqs: liveFaqs.length ? liveFaqs : base.faqs,
     years: yearsCoaching,
     verifiedSince: (() => {
       const idAt = sf.trust?.identityVerifiedAt;
@@ -528,7 +583,16 @@ function CoachShopFrontPage() {
       </div>
     );
   }
-  let coach = live ? mergeLiveIntoCoach(baseCoach ?? COACHES["james-wilson"], live.shopFront, live.services) : baseCoach!;
+  let coach = live
+    ? mergeLiveIntoCoach(
+        baseCoach ?? COACHES["james-wilson"],
+        live.shopFront,
+        live.services,
+        live.transformations,
+        live.clientResults,
+        live.faqs,
+      )
+    : baseCoach!;
   if (!isFixture && reviewsData) {
     coach = {
       ...coach,
@@ -1002,7 +1066,8 @@ function MethodSection({ coach }: { coach: Coach }) {
               {coach.method.name}
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed text-reps-text-soft">
-              A three-phase system I've refined over 100+ clients. Same shape every time, written from scratch for every person.
+              {coach.method.intro ??
+                "A three-phase system I've refined over 100+ clients. Same shape every time, written from scratch for every person."}
             </p>
           </div>
           <ol className="grid gap-4">
@@ -1171,7 +1236,8 @@ function TransformationsSection({ coach }: { coach: Coach }) {
             Real numbers from real people
           </h2>
           <p className="mt-3 text-[15.5px] leading-relaxed text-reps-text-soft">
-            Every metric below is from a current or past client. Names and photos used with permission.
+            {coach.clientResultsIntro ??
+              "Every metric below is from a current or past client. Names and photos used with permission."}
           </p>
         </div>
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
