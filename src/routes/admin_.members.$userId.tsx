@@ -263,16 +263,19 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
               </a>
             </Button>
           )}
-          {mailtoHref && (
+          {email && (
             <Button
               asChild
               size="sm"
               variant="outline"
               className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
             >
-              <a href={mailtoHref}>
+              <Link
+                to="/admin/campaigns"
+                search={{ compose: "1", to: email, name: full_name ?? undefined, inbox: "pros" }}
+              >
                 <Mail data-icon="inline-start" /> Send email
-              </a>
+              </Link>
             </Button>
           )}
           <DropdownMenu>
