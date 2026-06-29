@@ -496,53 +496,27 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
   );
 }
 
-/* ─────────────── Billing actions ─────────────── */
+type Strategy = "end_trial" | "cancel_period_end" | "cancel_now";
 
-/* ─────────────── Billing actions ───────────────
- *
- * Business rule: "No active account without an active subscription."
- * Every cancel button here funnels through `cancelAndDeleteMember`, which
- * cancels Stripe, archives the contact into mailing_list_contacts, sends a
- * confirmation email, then deletes the auth user. On success we route the
- * admin back to /admin/members so they don't sit on a now-deleted record.
- */
-
-type ActionKind = "end_trial" | "cancel_period_end" | "cancel_now" | "delete" | null;
-
-const ACTION_TO_REASON: Record<Exclude<ActionKind, null>, CancelReason> = {
+const STRATEGY_TO_REASON: Record<Strategy, CancelReason> = {
   end_trial: "admin_end_trial",
   cancel_period_end: "admin_cancel_period_end",
   cancel_now: "admin_cancel_immediate",
-  delete: "admin_delete",
 };
 
-const ACTION_COPY: Record<
-  Exclude<ActionKind, null>,
-  { title: string; intro: string; cta: string }
-> = {
+const STRATEGY_LABEL: Record<Strategy, { title: string; detail: string }> = {
   end_trial: {
-    title: "End trial and close this account?",
-    intro:
-      "Ending the trial here also closes the member's account. Their Stripe subscription is cancelled, their profile is removed, and they receive a confirmation email. Their email is kept in the mailing list so we can contact them later.",
-    cta: "End trial & close account",
+    title: "End trial now",
+    detail: "Stops the trial today, no charge. Profile removed, email archived.",
   },
   cancel_period_end: {
-    title: "Cancel and close this account?",
-    intro:
-      "REPS doesn't keep accounts active without a subscription, so this closes the account now. The Stripe subscription is cancelled, the profile removed, and a confirmation email sent. Their email stays in the mailing list.",
-    cta: "Cancel & close account",
+    title: "Cancel at period end",
+    detail:
+      "Lets the current paid period run out, then closes the account. Recommended for paying members.",
   },
   cancel_now: {
-    title: "Cancel immediately and close this account?",
-    intro:
-      "This cancels the Stripe subscription, removes the public profile, sends a confirmation email, and deletes the account. No refund is issued. The email address is archived for future campaigns.",
-    cta: "Cancel now & close account",
-  },
-  delete: {
-    title: "Delete this member's account?",
-    intro:
-      "Any active Stripe subscription is cancelled, the profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone.",
-    cta: "Delete account",
+    title: "Cancel immediately",
+    detail: "Cancels Stripe now. No refund is issued.",
   },
 };
 
@@ -563,31 +537,39 @@ function BillingActions({
   const navigate = useNavigate();
   const closeAccount = useServerFn(cancelAndDeleteMember);
 
-  const [open, setOpen] = useState<ActionKind>(null);
+  const hasLiveSub = status !== "canceled" && status !== "incomplete_expired";
+  const defaultStrategy: Strategy = isTrialing
+    ? "end_trial"
+    : cancelAtPeriodEnd
+      ? "cancel_now"
+      : "cancel_period_end";
+
+  const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [notes, setNotes] = useState("");
   const [typedName, setTypedName] = useState("");
+  const [strategy, setStrategy] = useState<Strategy>(defaultStrategy);
 
-  const canAct = status !== "canceled";
-  const requireTypedConfirm = open === "cancel_now" || open === "delete";
   const nameMatches =
-    !requireTypedConfirm ||
     typedName.trim().toLowerCase() === (memberName ?? "").trim().toLowerCase();
 
   const reset = () => {
-    setOpen(null);
+    setOpen(false);
     setNotes("");
     setTypedName("");
+    setStrategy(defaultStrategy);
   };
 
   const run = async () => {
-    if (!open) return;
     setPending(true);
     try {
+      const reason: CancelReason = hasLiveSub
+        ? STRATEGY_TO_REASON[strategy]
+        : "admin_delete";
       const res = await closeAccount({
         data: {
           user_id: userId,
-          reason: ACTION_TO_REASON[open],
+          reason,
           notes: notes.trim() || undefined,
         },
       });
@@ -597,7 +579,6 @@ function BillingActions({
           : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
       );
       await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
-      // Member is gone — bounce back to the list.
       navigate({ to: "/admin/members" });
     } catch (e: any) {
       toast.error(e?.message ?? "Could not close account");
@@ -608,127 +589,124 @@ function BillingActions({
   return (
     <>
       <div className="flex flex-col gap-2 rounded-[12px] border border-reps-border/60 bg-reps-panel/40 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[13px] font-semibold text-white">Close member account</span>
-          <span className="text-[11px] text-white/45">
-            REPS doesn't keep accounts without a subscription. Every option below
-            closes the account and emails the member.
-          </span>
-        </div>
-
-        {!canAct ? (
-          <p className="pt-1 text-[12.5px] text-white/55">
-            Subscription is already cancelled. Use{" "}
-            <button
-              type="button"
-              onClick={() => setOpen("delete")}
-              className="underline underline-offset-2 hover:text-white"
-            >
-              Delete account
-            </button>{" "}
-            to remove their profile and archive the email.
-          </p>
-        ) : (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {isTrialing && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setOpen("end_trial")}
-                className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
-              >
-                <Zap data-icon="inline-start" /> End trial & close
-              </Button>
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setOpen("cancel_period_end")}
-              className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
-              disabled={cancelAtPeriodEnd}
-            >
-              <CalendarX data-icon="inline-start" /> Cancel & close
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setOpen("cancel_now")}
-              className="h-9 rounded-[10px] border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100"
-            >
-              <Ban data-icon="inline-start" /> Cancel now & close
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setOpen("delete")}
-              className="h-9 rounded-[10px] border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100"
-            >
-              <Undo2 data-icon="inline-start" /> Delete account
-            </Button>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col">
+            <span className="text-[13px] font-semibold text-white">Close member account</span>
+            <span className="text-[11.5px] text-white/55">
+              REPS doesn't keep accounts without a subscription. This cancels Stripe,
+              removes the profile, and archives the email.
+            </span>
           </div>
-        )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setStrategy(defaultStrategy);
+              setOpen(true);
+            }}
+            className="h-9 shrink-0 rounded-[10px] border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100"
+          >
+            <Trash2 data-icon="inline-start" /> Delete account
+          </Button>
+        </div>
       </div>
 
-      <AlertDialog open={open !== null} onOpenChange={(o) => !o && !pending && reset()}>
+      <AlertDialog open={open} onOpenChange={(o) => !o && !pending && reset()}>
         <AlertDialogContent className="max-w-lg">
-          {open && (
-            <>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{ACTION_COPY[open].title}</AlertDialogTitle>
-                <AlertDialogDescription>{ACTION_COPY[open].intro}</AlertDialogDescription>
-              </AlertDialogHeader>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this member's account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {hasLiveSub
+                ? "Choose how to wind down the Stripe subscription. The profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone."
+                : "Subscription is already cancelled. This removes the profile, sends a confirmation email, and archives the email. This can't be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-              <div className="flex flex-col gap-3 py-1">
-                <div>
-                  <Label htmlFor="close-notes" className="text-[12.5px] text-white/70">
-                    Reason / notes (saved to audit log)
-                  </Label>
-                  <Textarea
-                    id="close-notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="e.g. Member asked to cancel via support ticket TKT-1234"
-                    className="mt-1 min-h-[72px]"
-                    disabled={pending}
-                  />
-                </div>
-                {requireTypedConfirm && (
-                  <div>
-                    <Label htmlFor="close-confirm" className="text-[12.5px] text-white/70">
-                      Type <span className="font-semibold text-white">{memberName || "the member's name"}</span> to confirm
-                    </Label>
-                    <Input
-                      id="close-confirm"
-                      value={typedName}
-                      onChange={(e) => setTypedName(e.target.value)}
-                      className="mt-1"
-                      disabled={pending}
-                      autoComplete="off"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={pending}>Back</AlertDialogCancel>
-                <AlertDialogAction
-                  disabled={pending || !nameMatches}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    run();
-                  }}
-                  className={cn("bg-rose-600 text-white hover:bg-rose-500")}
+          <div className="flex flex-col gap-3 py-1">
+            {hasLiveSub && (
+              <div>
+                <Label className="text-[12.5px] text-white/70">Cancellation strategy</Label>
+                <RadioGroup
+                  value={strategy}
+                  onValueChange={(v) => setStrategy(v as Strategy)}
+                  className="mt-2 flex flex-col gap-2"
                 >
-                  {pending ? "Closing…" : ACTION_COPY[open].cta}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </>
-          )}
+                  {(
+                    ["end_trial", "cancel_period_end", "cancel_now"] as Strategy[]
+                  )
+                    .filter((s) => (s === "end_trial" ? isTrialing : true))
+                    .map((s) => (
+                      <label
+                        key={s}
+                        htmlFor={`strat-${s}`}
+                        className={cn(
+                          "flex cursor-pointer items-start gap-3 rounded-[10px] border border-reps-border/60 bg-reps-panel/40 px-3 py-2.5",
+                          strategy === s && "border-reps-orange/60 bg-reps-orange/5",
+                        )}
+                      >
+                        <RadioGroupItem id={`strat-${s}`} value={s} className="mt-0.5" />
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-semibold text-white">
+                            {STRATEGY_LABEL[s].title}
+                          </span>
+                          <span className="text-[12px] text-white/60">
+                            {STRATEGY_LABEL[s].detail}
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                </RadioGroup>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="close-notes" className="text-[12.5px] text-white/70">
+                Reason / notes (saved to audit log)
+              </Label>
+              <Textarea
+                id="close-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="e.g. Member asked to cancel via support ticket TKT-1234"
+                className="mt-1 min-h-[72px]"
+                disabled={pending}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="close-confirm" className="text-[12.5px] text-white/70">
+                Type <span className="font-semibold text-white">{memberName || "the member's name"}</span> to confirm
+              </Label>
+              <Input
+                id="close-confirm"
+                value={typedName}
+                onChange={(e) => setTypedName(e.target.value)}
+                className="mt-1"
+                disabled={pending}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>Back</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={pending || !nameMatches}
+              onClick={(e) => {
+                e.preventDefault();
+                run();
+              }}
+              className="bg-rose-500 text-white hover:bg-rose-600"
+            >
+              {pending ? "Closing…" : "Delete account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
   );
 }
+
 
 function VerificationPane({ snapshot }: { snapshot: Member360Snapshot }) {
   const v = snapshot.verification ?? "missing";
