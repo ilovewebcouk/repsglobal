@@ -150,12 +150,34 @@ export function adaptBillingRowToState(row: MemberBillingRow): AdminSubscription
   };
 }
 
-/** Resolve one user's subscription state via the shared compute. */
+/** Resolve one user's subscription state via the shared compute, augmented
+ *  with LIVE Stripe price/amount/interval truth via the Stripe mirror. */
 export async function resolveSubscriptionStateForUser(
   userId: string,
 ): Promise<AdminSubscriptionState> {
   const row = await fetchMemberBillingRow(userId);
-  return adaptBillingRowToState(row);
+  const state = adaptBillingRowToState(row);
+
+  // Live-augment price details from Stripe so M360 surfaces the real
+  // price_id / lookup_key / unit_amount even when the DB mirror still holds
+  // a legacy alias like "verified_annual".
+  if (state.stripe_subscription_id) {
+    try {
+      const { getMirrorSubscription } = await import("@/lib/billing/stripe-mirror.server");
+      const mirror = await getMirrorSubscription(state.stripe_subscription_id, "live");
+      if (mirror) {
+        state.price_id = mirror.price_id;
+        state.price_lookup_key = mirror.price_lookup_key;
+        if (mirror.unit_amount_pence !== null) state.unit_amount_pence = mirror.unit_amount_pence;
+        if (mirror.currency) state.currency = mirror.currency;
+        if (mirror.interval) state.interval = mirror.interval;
+        state.cancel_at_period_end = mirror.cancel_at_period_end;
+      }
+    } catch {
+      // Stripe unreachable — fall back to catalogue values already on state.
+    }
+  }
+  return state;
 }
 
 /** Bulk variant. */
