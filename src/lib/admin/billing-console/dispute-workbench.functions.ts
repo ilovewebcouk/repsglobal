@@ -177,10 +177,22 @@ export type DisputeWorkbench = {
   recentCharges: Array<{ id: string; createdAt: string; amountPence: number; status: string; description: string | null }>;
 };
 
-export const getDisputeWorkbench = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ disputeId: z.string().uuid() }).parse(d))
-  .handler(async ({ context, data }): Promise<DisputeWorkbench> => {
+async function buildWorkbench(userId: string, disputeId: string): Promise<DisputeWorkbench> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await assertAdmin(supabaseAdmin, userId);
+
+  const row = await loadDisputeRow(disputeId);
+  const { env, dispute } = await fetchStripeDispute(row.stripe_dispute_id);
+  return await assembleWorkbench(row, env, dispute);
+}
+
+async function assembleWorkbench(
+  row: Awaited<ReturnType<typeof loadDisputeRow>>,
+  env: StripeEnv,
+  dispute: Stripe.Dispute,
+): Promise<DisputeWorkbench> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await assertAdmin(supabaseAdmin, context.userId);
 
