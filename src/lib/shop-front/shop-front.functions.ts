@@ -48,6 +48,7 @@ export type ShopFrontDTO = {
     activeCredentialsCount: number;
     lastCheckedAt: string | null;
     identityVerifiedAt: string | null;
+    qualifiedSinceYear: number | null;
     items: Array<{
       kind: "qualification" | "insurance";
       title: string;
