@@ -31,6 +31,8 @@ export type FeaturedProRow = {
   full_name: string;
   avatar_url: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   specialisms: string[];
   city: string | null;
   headline: string | null;
