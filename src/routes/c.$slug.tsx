@@ -429,6 +429,7 @@ function mergeLiveIntoCoach(
     ...base,
     name: sf.full_name ?? base.name,
     firstName: sf.full_name?.trim().split(/\s+/)[0] ?? base.firstName,
+    role: sf.titles.length ? sf.titles.join(" & ") : base.role,
     promise: sf.tagline ?? base.promise,
     subhead: sf.subtitle ?? base.subhead,
     bio: sf.about ? sf.about.split(/\n\n+/).filter(Boolean) : base.bio,
