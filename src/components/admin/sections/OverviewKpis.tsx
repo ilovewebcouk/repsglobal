@@ -9,7 +9,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 import { AdminCard } from "@/components/admin/AdminCard";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
