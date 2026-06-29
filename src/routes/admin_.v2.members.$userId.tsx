@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { Copy, ExternalLink, Mail, RefreshCw, UserCircle } from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { MemberSnapshotCard } from "@/components/admin/v2/MemberSnapshotCard";
 import { Monogram } from "@/components/directory/Monogram";
 import {
@@ -35,6 +36,8 @@ import { getMember360 } from "@/lib/admin/member360.functions";
 import { getMemberTimeline, type TimelineSource } from "@/lib/ops/timeline.functions";
 
 export const Route = createFileRoute("/admin_/v2/members/$userId")({
+  ssr: false,
+  beforeLoad: requireRole(["admin"]),
   head: () => ({ meta: [{ title: "Member 360 — REPs Admin v2" }] }),
   component: Member360Page,
 });
@@ -94,13 +97,14 @@ function Member360Page() {
   const name = snap.data?.full_name ?? snap.data?.email ?? "Member";
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">{name}</h1>
-        <p className="text-sm text-muted-foreground">
-          {snap.data?.email ?? "Loading member identity…"}
-        </p>
-      </header>
+    <DashboardShell
+      role="admin"
+      active="Memberships"
+      title={name}
+      subtitle={snap.data?.email ?? "Loading member identity…"}
+    >
+      <div className="flex flex-col gap-6">
+
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr_240px]">
         {/* Identity column */}
@@ -293,7 +297,8 @@ function Member360Page() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </DashboardShell>
   );
 }
 
