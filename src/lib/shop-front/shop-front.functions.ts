@@ -162,7 +162,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     );
     if (!(await isProPubliclyVisible(pro.id))) return null;
 
-    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, coachingSinceYear] = await Promise.all([
+    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, coachingSinceYear, trust] = await Promise.all([
       supabaseAdmin
         .from("shop_fronts")
         .select(
