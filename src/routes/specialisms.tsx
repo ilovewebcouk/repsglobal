@@ -39,10 +39,9 @@ const heroSpecialisms = heroSpecialismsAsset.url;
 /* ------------------------------------------------------------------ */
 
 const CANONICAL ="https://repsuk.org/specialisms";
-const META_TITLE =
-"Specialisms — verified personal trainers, coaches & nutritionists | REPS";
+const META_TITLE ="Specialisms — verified trainers & coaches | REPS";
 const META_DESC =
-"Browse every REPS specialism — personal trainers, strength coaches, online coaches, nutritionists, yoga teachers and Pilates instructors. Every listing is identity-checked, qualification-verified and insured.";
+"Browse every REPS specialism: personal trainers, strength coaches, online coaches, nutritionists, yoga and Pilates. Every listing is identity-checked, qualified and insured.";
 
 export const Route = createFileRoute("/specialisms")({
   head: () => ({
