@@ -343,6 +343,9 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
   const yearsCoaching = sf.coaching_since_year
     ? Math.max(1, new Date().getFullYear() - sf.coaching_since_year)
     : base.years;
+  const liveModes: ("In-person" | "Online")[] = [];
+  if (sf.in_person_available) liveModes.push("In-person");
+  if (sf.online_available) liveModes.push("Online");
   return {
     ...base,
     name: sf.full_name ?? base.name,
@@ -352,6 +355,7 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     heroImage: sf.hero_image_url ?? base.heroImage,
     aboutImage: sf.avatar_url ?? sf.hero_image_url ?? base.aboutImage,
     city: sf.city ?? base.city,
+    modes: liveModes.length ? liveModes : base.modes,
     specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
     tiers: liveTiers.length ? liveTiers : base.tiers,
     years: yearsCoaching,
