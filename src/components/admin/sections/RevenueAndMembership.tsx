@@ -218,7 +218,20 @@ export function RevenueAndMembership({
                 <XAxis type="number" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <YAxis type="category" dataKey="tier" tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }} tickLine={false} axisLine={false} width={72} />
                 <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} />} />
-                <Bar dataKey="value" fill="var(--reps-orange)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                  {mixData.map((d) => (
+                    <Cell
+                      key={d.tier}
+                      fill={
+                        d.tier === "Core"
+                          ? "var(--reps-orange)"
+                          : d.tier === "Pro"
+                            ? "var(--reps-blue)"
+                            : "var(--reps-green)"
+                      }
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ChartContainer>
           ) : (
