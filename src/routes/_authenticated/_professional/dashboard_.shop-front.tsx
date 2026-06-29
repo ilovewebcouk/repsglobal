@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, Plus, Save, Trash2 } from "lucide-react";
+import { ExternalLink, Plus, Save, Sparkles, Trash2 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -16,6 +16,19 @@ import {
   deleteMyService,
   type ServiceDTO,
 } from "@/lib/shop-front/shop-front.functions";
+import {
+  getMyWebsiteContent,
+  saveMyWebsiteContent,
+  upsertTransformation,
+  deleteTransformation,
+  upsertFaq,
+  deleteFaq,
+  aiDraftMethod,
+  aiDraftFaqs,
+  type MethodPillar,
+  type TransformationDTO,
+  type FaqDTO,
+} from "@/lib/shop-front/website-content.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/shop-front")({
   head: () => ({
