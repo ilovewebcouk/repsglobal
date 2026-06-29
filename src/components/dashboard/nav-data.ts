@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  Gauge,
   Apple,
   AreaChart,
   Briefcase,
@@ -158,9 +157,8 @@ export const ADMIN_NAV = [
     ],
   },
   {
-    title: "Operations",
+    title: "Support & Comms",
     items: [
-      { icon: Gauge, label: "Operations", to: "/admin/ops" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
     ],

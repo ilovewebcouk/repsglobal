@@ -28,7 +28,7 @@ export function OpenTimelineLink({
   if (variant === "button") {
     return (
       <Link
-        to="/admin/ops/member/$userId"
+        to="/admin/members/$userId"
         params={{ userId }}
         className={cn(
           "inline-flex h-7 items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-panel/40 px-2.5 text-[11px] font-semibold text-white/75 transition hover:border-reps-orange/40 hover:text-white",
@@ -42,7 +42,7 @@ export function OpenTimelineLink({
   }
   return (
     <Link
-      to="/admin/ops/member/$userId"
+      to="/admin/members/$userId"
       params={{ userId }}
       className={cn(
         "inline-flex items-center gap-1 text-[12px] font-semibold text-reps-orange hover:underline",

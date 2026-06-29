@@ -13,7 +13,7 @@ interface Props {
   className?: string;
   autoFocus?: boolean;
   // Destination route for the matched member.
-  target?: "/admin/ops/member/$userId" | "/admin/members/$userId";
+  target?: "/admin/members/$userId";
 }
 
 export function MemberFinder({

@@ -65,7 +65,7 @@ async function handle() {
             severity: alert.severity,
             summary,
             openedAt: alert.opened_at,
-            href: "https://repsuk.org/admin/ops/alerts",
+            href: "https://repsuk.org/admin",
           },
         });
         sent++;

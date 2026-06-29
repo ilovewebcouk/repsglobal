@@ -76,7 +76,7 @@ export const sendTestAlertEmail = createServerFn({ method: "POST" })
             severity: "info",
             summary: "This is a test alert from REPS Operations.",
             openedAt: new Date().toISOString(),
-            href: "https://repsuk.org/admin/ops/alerts",
+            href: "https://repsuk.org/admin",
           },
         });
         ok++;

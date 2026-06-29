@@ -51,7 +51,7 @@ export const getActivityStream = createServerFn({ method: "POST" })
     const since = data.since ?? new Date(Date.now() - 24 * 3600_000).toISOString();
 
     const memberHref = (uid: string | null) =>
-      uid ? `/admin/ops/member/${uid}` : null;
+      uid ? `/admin/members/${uid}` : null;
 
     const out: ActivityEvent[] = [];
 
@@ -195,7 +195,7 @@ export const getActivityStream = createServerFn({ method: "POST" })
         severity: e.status === "dlq" ? "crit" : "warn",
         summary: `Email ${e.status}: ${e.template_name ?? "?"} → ${e.recipient_email ?? "?"}`,
         user_id: null,
-        href: "/admin/ops/email",
+        href: "/admin",
       });
     }
 
@@ -206,7 +206,7 @@ export const getActivityStream = createServerFn({ method: "POST" })
         severity: (a.severity as "info" | "warn" | "crit") ?? "warn",
         summary: `Alert opened: ${a.kind}`,
         user_id: null,
-        href: "/admin/ops/alerts",
+        href: "/admin",
       });
     }
 

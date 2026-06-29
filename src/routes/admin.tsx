@@ -10,6 +10,7 @@ import { PeriodSelector } from "@/components/admin/PeriodSelector";
 
 import { OverviewKpis } from "@/components/admin/sections/OverviewKpis";
 import { RevenueAndMembership } from "@/components/admin/sections/RevenueAndMembership";
+import { OverviewOpsHeader } from "@/components/admin/OverviewOpsHeader";
 
 
 import { getAdminOverview } from "@/lib/admin/overview.functions";
@@ -143,9 +144,11 @@ function AdminDashboardPage() {
       actions={<PeriodSelector value={period} />}
     >
       <div className="space-y-6">
+        <OverviewOpsHeader />
         <OverviewKpis data={data} fcastHorizon={fcast} />
         <RevenueAndMembership data={data} periodLabel={periodLabel} />
       </div>
+
 
     </DashboardShell>
   );
