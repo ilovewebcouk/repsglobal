@@ -4,6 +4,7 @@ import {
   AreaChart,
   Bar,
   BarChart,
+  Cell,
   CartesianGrid,
   XAxis,
   YAxis,
@@ -39,7 +40,9 @@ function EmptyState({ msg }: { msg: string }) {
 }
 
 const areaConfig: ChartConfig = {
-  value: { label: "Members", color: "var(--reps-orange)" },
+  verified: { label: "Core", color: "var(--reps-orange)" },
+  pro: { label: "Pro", color: "var(--reps-blue)" },
+  studio: { label: "Studio", color: "var(--reps-green)" },
 };
 const revenueConfig: ChartConfig = {
   value: { label: "Received", color: "var(--reps-orange)" },
@@ -50,6 +53,9 @@ const forecastConfig: ChartConfig = {
 const mixConfig: ChartConfig = {
   value: { label: "Members", color: "var(--reps-orange)" },
 };
+
+const TOOLTIP_CLASSES =
+  "border-reps-border bg-reps-ink text-white shadow-[0_12px_28px_-12px_rgba(0,0,0,0.8)] [&_*]:!text-white [&_.text-muted-foreground]:!text-white/70";
 
 export function RevenueAndMembership({
   data,
@@ -71,9 +77,11 @@ export function RevenueAndMembership({
     day: shortDay(p.day),
     value: p.value / 100,
   }));
-  const membersChart = (data.membersSeries ?? []).map((p) => ({
+  const membersChart = (data.membersByTierSeries ?? []).map((p) => ({
     day: shortDay(p.day),
-    value: p.value,
+    verified: p.verified,
+    pro: p.pro,
+    studio: p.studio,
   }));
 
   return (
@@ -92,6 +100,17 @@ export function RevenueAndMembership({
                 : "No change this period"}
           </span>
         </div>
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-white/55">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block size-2 rounded-[2px] bg-reps-orange" /> Core {data.mix.verified}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block size-2 rounded-[2px] bg-reps-blue" /> Pro {data.mix.pro}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block size-2 rounded-[2px] bg-reps-green" /> Studio {data.mix.studio}
+          </span>
+        </div>
         <div className="mt-4">
           {membersChart.length > 1 ? (
             <ChartContainer config={areaConfig} className="h-[220px] w-full">
@@ -99,14 +118,24 @@ export function RevenueAndMembership({
                 <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="day" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} />
                 <YAxis tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} width={32} allowDecimals={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} indicator="dot" />} />
                 <defs>
-                  <linearGradient id="memArea" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity={0} />
+                  <linearGradient id="memVerified" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity={0.05} />
+                  </linearGradient>
+                  <linearGradient id="memPro" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--reps-blue)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--reps-blue)" stopOpacity={0.05} />
+                  </linearGradient>
+                  <linearGradient id="memStudio" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--reps-green)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--reps-green)" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <Area type="monotone" dataKey="value" stroke="var(--reps-orange)" strokeWidth={2} fill="url(#memArea)" />
+                <Area type="monotone" stackId="m" dataKey="verified" name="Core" stroke="var(--reps-orange)" strokeWidth={1.5} fill="url(#memVerified)" />
+                <Area type="monotone" stackId="m" dataKey="pro" name="Pro" stroke="var(--reps-blue)" strokeWidth={1.5} fill="url(#memPro)" />
+                <Area type="monotone" stackId="m" dataKey="studio" name="Studio" stroke="var(--reps-green)" strokeWidth={1.5} fill="url(#memStudio)" />
               </AreaChart>
             </ChartContainer>
           ) : (
@@ -114,6 +143,7 @@ export function RevenueAndMembership({
           )}
         </div>
       </AdminCard>
+
 
       <AdminCard size="panel">
         <PanelHeader title="Revenue received" />
@@ -130,7 +160,7 @@ export function RevenueAndMembership({
                 <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="day" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} />
                 <YAxis tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} width={40} tickFormatter={(v) => `£${v}`} />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} />} />
                 <Bar dataKey="value" fill="var(--reps-orange)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ChartContainer>
@@ -155,7 +185,7 @@ export function RevenueAndMembership({
                 <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="day" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} />
                 <YAxis tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} width={40} tickFormatter={(v) => `£${v}`} />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} />} />
                 <Bar dataKey="value" fill="var(--reps-blue)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ChartContainer>
@@ -188,8 +218,21 @@ export function RevenueAndMembership({
                 <CartesianGrid horizontal={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis type="number" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <YAxis type="category" dataKey="tier" tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }} tickLine={false} axisLine={false} width={72} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="value" fill="var(--reps-orange)" radius={[0, 4, 4, 0]} />
+                <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} />} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                  {mixData.map((d) => (
+                    <Cell
+                      key={d.tier}
+                      fill={
+                        d.tier === "Core"
+                          ? "var(--reps-orange)"
+                          : d.tier === "Pro"
+                            ? "var(--reps-blue)"
+                            : "var(--reps-green)"
+                      }
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ChartContainer>
           ) : (
