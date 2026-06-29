@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useSessionUser } from "@/hooks/use-session-user";
 import { getShopFrontBySlug, type ServiceDTO, type ShopFrontDTO } from "@/lib/shop-front/shop-front.functions";
+import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -423,6 +424,7 @@ const NAV_ITEMS = [
 function CoachShopFrontPage() {
   const { slug } = Route.useParams();
   const fetchShopFront = useServerFn(getShopFrontBySlug);
+  const fetchReviews = useServerFn(listPublicReviewsBySlug);
   const isFixture = !!COACHES[slug];
 
   // Fixture coach pages (james-wilson) are admin-only mock-up references —
@@ -436,6 +438,13 @@ function CoachShopFrontPage() {
   const { data: live } = useQuery({
     queryKey: ["shop-front", slug],
     queryFn: () => fetchShopFront({ data: { slug } }),
+    staleTime: 60_000,
+    enabled: !isFixture,
+  });
+
+  const { data: reviewsData } = useQuery({
+    queryKey: ["shop-front-reviews", slug],
+    queryFn: () => fetchReviews({ data: { slug } }),
     staleTime: 60_000,
     enabled: !isFixture,
   });
@@ -467,7 +476,14 @@ function CoachShopFrontPage() {
       </div>
     );
   }
-  const coach = live ? mergeLiveIntoCoach(baseCoach ?? COACHES["james-wilson"], live.shopFront, live.services) : baseCoach!;
+  let coach = live ? mergeLiveIntoCoach(baseCoach ?? COACHES["james-wilson"], live.shopFront, live.services) : baseCoach!;
+  if (!isFixture && reviewsData) {
+    coach = {
+      ...coach,
+      rating: reviewsData.count > 0 ? reviewsData.average : 0,
+      reviews: reviewsData.count,
+    };
+  }
   const accent = `var(--coach-accent-${coach.accent})`;
 
   const accentStyle = {
@@ -611,13 +627,21 @@ function HeroSection({
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]">
-              <span className="inline-flex items-center gap-1.5">
-                <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
-                <span className="font-semibold text-reps-text">
-                  {coach.rating.toFixed(1)}
+              {coach.reviews > 0 ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
+                  <span className="font-semibold text-reps-text">
+                    {coach.rating.toFixed(1)}
+                  </span>
+                  <span className="text-reps-muted">
+                    ({coach.reviews} {coach.reviews === 1 ? "review" : "reviews"})
+                  </span>
                 </span>
-                <span className="text-reps-muted">({coach.reviews} reviews)</span>
-              </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-reps-muted">
+                  <Star className="h-4 w-4" /> No reviews yet
+                </span>
+              )}
               <span className="inline-flex items-center gap-1.5 text-reps-muted">
                 <Users className="h-3.5 w-3.5" /> In-person · London
               </span>
