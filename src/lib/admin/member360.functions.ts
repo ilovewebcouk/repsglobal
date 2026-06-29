@@ -11,10 +11,22 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const Input = z.object({ user_id: z.string().uuid() });
 
+const PROFESSION_LABEL: Record<string, string> = {
+  'personal-trainer': 'Personal trainer',
+  'fitness-instructor': 'Fitness instructor',
+  'group-fitness-instructor': 'Group fitness instructor',
+  'strength-coach': 'Strength & conditioning coach',
+  'nutritionist': 'Nutritionist',
+  'pilates-instructor': 'Pilates instructor',
+  'yoga-teacher': 'Yoga teacher',
+};
+
 export type Member360Snapshot = {
   user_id: string;
   email: string | null;
   full_name: string | null;
+  avatar_url: string | null;
+  profession: string | null;
   slug: string | null;
   verification: string | null;
   is_published: boolean;
