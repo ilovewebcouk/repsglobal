@@ -609,11 +609,15 @@ function BillingActions({
       <AlertDialog open={open} onOpenChange={(o) => !o && !pending && reset()}>
         <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this member's account?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {isDestructive ? "Close this member's account?" : "Schedule cancellation?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {hasLiveSub
-                ? "Choose how to wind down the Stripe subscription. The profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone."
-                : "Subscription is already cancelled. This removes the profile, sends a confirmation email, and archives the email. This can't be undone."}
+              {!hasLiveSub
+                ? "Subscription is already cancelled. This removes the profile, sends a confirmation email, and archives the email. This can't be undone."
+                : STRATEGY_TO_MODE[strategy] === "schedule_end_period"
+                  ? "Stripe will stop renewing at the current period end. The profile stays live, the member keeps access, and they can resume from the Stripe portal. The account is NOT deleted."
+                  : "Choose how to wind down the Stripe subscription. The profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -627,7 +631,7 @@ function BillingActions({
                   className="mt-2 flex flex-col gap-2"
                 >
                   {(
-                    ["end_trial", "cancel_period_end", "cancel_now"] as Strategy[]
+                    ["end_trial", "schedule_end_period", "cancel_now"] as Strategy[]
                   )
                     .filter((s) => (s === "end_trial" ? isTrialing : true))
                     .map((s) => (
@@ -668,19 +672,21 @@ function BillingActions({
               />
             </div>
 
-            <div>
-              <Label htmlFor="close-confirm" className="text-[12.5px] text-white/70">
-                Type <span className="font-semibold text-white">{memberName || "the member's name"}</span> to confirm
-              </Label>
-              <Input
-                id="close-confirm"
-                value={typedName}
-                onChange={(e) => setTypedName(e.target.value)}
-                className="mt-1"
-                disabled={pending}
-                autoComplete="off"
-              />
-            </div>
+            {isDestructive && (
+              <div>
+                <Label htmlFor="close-confirm" className="text-[12.5px] text-white/70">
+                  Type <span className="font-semibold text-white">{memberName || "the member's name"}</span> to confirm
+                </Label>
+                <Input
+                  id="close-confirm"
+                  value={typedName}
+                  onChange={(e) => setTypedName(e.target.value)}
+                  className="mt-1"
+                  disabled={pending}
+                  autoComplete="off"
+                />
+              </div>
+            )}
           </div>
 
           <AlertDialogFooter>
@@ -691,9 +697,19 @@ function BillingActions({
                 e.preventDefault();
                 run();
               }}
-              className="bg-rose-500 text-white hover:bg-rose-600"
+              className={cn(
+                isDestructive
+                  ? "bg-rose-500 text-white hover:bg-rose-600"
+                  : "bg-reps-orange text-white hover:bg-reps-orange/90",
+              )}
             >
-              {pending ? "Closing…" : "Delete account"}
+              {pending
+                ? isDestructive
+                  ? "Closing…"
+                  : "Scheduling…"
+                : isDestructive
+                  ? "Delete account"
+                  : "Schedule cancellation"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
