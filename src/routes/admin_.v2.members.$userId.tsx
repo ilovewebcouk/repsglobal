@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { Copy, ExternalLink, Mail, RefreshCw, UserCircle } from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { MemberSnapshotCard } from "@/components/admin/v2/MemberSnapshotCard";
 import { Monogram } from "@/components/directory/Monogram";
 import {
