@@ -33,6 +33,7 @@ import {
   type ClientResultDTO,
   type FaqDTO,
 } from "@/lib/shop-front/website-content.functions";
+import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/shop-front")({
   head: () => ({
@@ -236,12 +237,11 @@ function ShopFrontEditorPage() {
                 placeholder="Tell clients who you help and how."
               />
             </Field>
-            <Field label="Hero image URL" hint="Optional — used as the large hero photo.">
-              <TextInput
-                value={hero}
-                onChange={(e) => setHero(e.target.value)}
-                placeholder="https://…"
-              />
+            <Field
+              label="Hero image"
+              hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
+            >
+              <HeroImageEditor value={hero} onChange={setHero} />
             </Field>
             <Field label="Accent colour" hint="Hex like #f97316. Optional.">
               <TextInput
