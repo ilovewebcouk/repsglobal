@@ -33,13 +33,14 @@ export function HeroImageEditor({
   const [editing, setEditing] = React.useState<string | null>(null); // source data URL for cropper
   const [urlDraft, setUrlDraft] = React.useState(value);
   const [prompt, setPrompt] = React.useState("");
+  const [style, setStyle] = React.useState<"editorial" | "studio" | "action">("editorial");
   const fileRef = React.useRef<HTMLInputElement>(null);
 
   const uploadFn = useServerFn(uploadHeroFromBase64);
   const aiFn = useServerFn(generateHeroFromAi);
 
   const aiMut = useMutation({
-    mutationFn: () => aiFn({ data: { prompt } }),
+    mutationFn: () => aiFn({ data: { prompt, style } }),
     onSuccess: (r) => {
       setEditing(r.dataUrl);
     },
