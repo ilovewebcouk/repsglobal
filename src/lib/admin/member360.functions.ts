@@ -105,6 +105,8 @@ export const getMember360 = createServerFn({ method: "GET" })
       user_id: data.user_id,
       email,
       full_name,
+      avatar_url,
+      profession,
       slug: pro?.slug ?? null,
       verification: pro?.verification ?? null,
       is_published: pro?.is_published ?? false,
