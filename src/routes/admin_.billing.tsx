@@ -30,7 +30,7 @@ import {
   type DisputeRow,
   type RefundRow,
 } from "@/lib/admin/billing-console/list.functions";
-import { CancelStripeSubCard } from "@/components/admin/billing/CancelStripeSubCard";
+
 
 const TAB_VALUES = ["payments", "subscriptions", "disputes", "refunds"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
@@ -261,10 +261,7 @@ function SubscriptionsTab() {
 
   return (
     <div className="space-y-3">
-      <CancelStripeSubCard
-        defaultSubId="sub_1TmXWIAP31Yc4cJj9jb8rduk"
-        defaultReason="Duplicate of £99 sub for jgumbley@hotmail.co.uk (migration-era artifact)"
-      />
+
       <ConsoleToolbar>
         <ChipRow
           options={[
