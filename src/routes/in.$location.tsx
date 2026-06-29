@@ -30,6 +30,7 @@ import { searchProfessionals, getCityProfessionCounts, getCityOnlineCount, getCi
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
 import { getCityPopularGyms } from "@/lib/directory/gyms.functions";
 import { getProfessionLabel } from "@/lib/professions";
+import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 
 
 function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
