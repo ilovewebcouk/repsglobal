@@ -3,9 +3,10 @@
 // border-reps-border, reps-orange accents) rather than shadcn defaults.
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   ExternalLink,
   Mail,
@@ -15,6 +16,10 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Zap,
+  CalendarX,
+  Ban,
+  Undo2,
 } from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
@@ -32,10 +37,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.functions";
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
+import {
+  endMemberTrialNow,
+  setMemberCancelAtPeriodEnd,
+  cancelMemberSubscriptionNow,
+} from "@/lib/admin/billing-actions.functions";
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
 
 export const Route = createFileRoute("/admin_/members/$userId")({
