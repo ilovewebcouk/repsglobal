@@ -55,7 +55,37 @@ export type ShopFrontDTO = {
       dateLabel: string | null;
     }>;
   };
+  // Public social links (derived from professionals.social_*).
+  socials: Array<{
+    kind: "instagram" | "tiktok" | "youtube" | "x" | "website" | "email";
+    href: string;
+    label: string;
+  }>;
 };
+
+function buildSocials(row: {
+  social_instagram?: string | null;
+  social_tiktok?: string | null;
+  social_youtube?: string | null;
+  social_x?: string | null;
+  social_linkedin?: string | null;
+}): ShopFrontDTO["socials"] {
+  const out: ShopFrontDTO["socials"] = [];
+  const ig = (row.social_instagram ?? "").trim();
+  const tt = (row.social_tiktok ?? "").trim();
+  const yt = (row.social_youtube ?? "").trim();
+  const xh = (row.social_x ?? "").trim();
+  const li = (row.social_linkedin ?? "").trim();
+  const toUrl = (h: string, base: string) =>
+    /^https?:\/\//i.test(h) ? h : `${base}${h.replace(/^@/, "")}`;
+  if (ig) out.push({ kind: "instagram", href: toUrl(ig, "https://instagram.com/"), label: "Instagram" });
+  if (tt) out.push({ kind: "tiktok", href: toUrl(tt, "https://tiktok.com/@"), label: "TikTok" });
+  if (yt) out.push({ kind: "youtube", href: toUrl(yt, "https://youtube.com/@"), label: "YouTube" });
+  if (xh) out.push({ kind: "x", href: toUrl(xh, "https://x.com/"), label: "X" });
+  if (li) out.push({ kind: "website", href: toUrl(li, "https://linkedin.com/in/"), label: "LinkedIn" });
+  return out;
+}
+
 
 
 // Helper: earliest year from approved verification submissions whose
@@ -204,7 +234,8 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
+        "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
@@ -275,6 +306,8 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         coaching_since_year: coachingSinceYear,
         tier,
         trust,
+        socials: buildSocials(pro as any),
+
       },
       services: (services ?? []) as ServiceDTO[],
     };
@@ -293,7 +326,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("professionals")
           .select(
-            "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since",
+            "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
           )
           .eq("id", userId)
           .maybeSingle(),
@@ -354,7 +387,9 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           coaching_since_year: coachingSinceYear,
           tier,
           trust,
+          socials: buildSocials(pro as any),
         }
+
       : null;
 
     return { shopFront, services: (services ?? []) as ServiceDTO[] };
