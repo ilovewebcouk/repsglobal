@@ -1,55 +1,43 @@
+# Plan — Trim Admin Overview chrome
 
-# Delete `/admin/ops` — Full Purge
+## 1. Drop the Ops Header
 
-## Verdict
-`/admin/ops` is dead weight post-BD-migration. Delete it. Keep only the **Alerts banner** and **System status strip** by lifting them onto `/admin` (Overview).
+Remove the entire `OverviewOpsHeader` block from `/admin` (both the red **alerts banner** and the 5-tile **status strip**). The Overview becomes: title row → KPI strip → charts.
 
-## What gets deleted
+- Delete `src/components/admin/OverviewOpsHeader.tsx`
+- Delete `src/components/admin/OpsAlertsBanner.tsx`
+- Delete `src/components/admin/SystemStatusStrip.tsx` (only used by the header)
+- Remove the import and the `<OverviewOpsHeader />` line from `src/routes/admin.tsx`
 
-**Routes (9 files):**
-- `src/routes/admin_.ops.tsx` (hub)
-- `src/routes/admin_.ops.activity.tsx`
-- `src/routes/admin_.ops.customer.tsx`
-- `src/routes/admin_.ops.platform.tsx`
-- `src/routes/admin_.ops.email.tsx`
-- `src/routes/admin_.ops.alerts.tsx`
-- `src/routes/admin_.ops.member.$userId.tsx` (replaced by `/admin/members/$userId` M360)
+The 487-emails-in-DLQ alert stops being surfaced on the Overview. That's the explicit tradeoff — if it matters later we can wire a single discreet badge somewhere instead, but it's gone for now.
 
-**Component folder:**
-- `src/components/ops/` — `OpsSubNav`, `SystemStatusStrip`, `MemberFinder`, `source-pill`, etc.
-  - **Lift before delete:** `SystemStatusStrip`, `MemberFinder`, alerts banner → move to `src/components/admin/`
+## 2. Strip the "Reconcile →" link from every KPI tile
 
-**Server-fn folder:**
-- `src/lib/ops/` — `operations.functions`, `activity.functions`, `timeline.functions`, `system-status.functions`
-  - **Keep:** `system-status.functions` (move to `src/lib/admin/`) and `operations.functions`'s `getOpenAlerts` / `runAlertEvaluator` (move to `src/lib/admin/alerts.functions.ts`)
-  - **Delete:** `activity`, `timeline`, `customer-health` server fns + their DB-touching helpers
+`TileShell` in `OverviewKpis.tsx` currently renders a "Reconcile →" link in the top-right corner of each of the 4 KPI cards. Remove it entirely — the prop, the JSX branch, and the `ReconcileLink` import. Tiles become clean: icon · label · value · sparkline.
 
-**API route:**
-- `src/routes/api/public/ops/alert-dispatch.ts` — keep (cron-called); rename folder to `src/routes/api/public/alerts/` for clarity, or leave path stable to avoid breaking pg_cron
+## 3. Reorder the 4 KPI tiles
 
-## What gets lifted to `/admin` Overview
+Current order: Active paying · Revenue received · Projected cash due · Total revenue.
 
-1. **Alerts banner** at top (the green "All systems normal" / red "N open alerts" strip with Re-evaluate button)
-2. **System status strip** (5 tiles: Stripe, Mailgun, Cron, DB, Queues) below the KPI cards
-3. **MemberFinder** stays pinned in the top bar (already there)
+Proposed new order (left → right, money-first):
 
-Member 360 (`/admin/members/$userId`) already replaces the Ops member timeline — no work needed.
+1. **Revenue received** (period actual — what landed in the bank)
+2. **Total revenue** (period gross — including refunds/disputes)
+3. **Projected cash due** (forward-looking — next 30d / 60d / 90d toggle stays)
+4. **Active paying members** (the "who" behind the money)
 
-## Sidebar update
-Remove the "Operations" nav entry from `DashboardShell` admin nav.
+Rationale: an admin overview should read **money first, members second**. Today the page leads with member count, which is a vanity number; revenue is the lead metric on every world-class billing dashboard (Stripe, Paddle, ChartMogul, Baremetrics).
 
-## Cron / external dependencies
-- `pg_cron` calls `alert-dispatch` API route — keep path stable or update the cron job in the same migration
-- Alert evaluator stays running; just the UI moves
+## 4. What stays
+
+- The KPI period selector ("Last 30 days") in the top-right
+- The `RevenueAndMembership` block (revenue chart + members-by-tier chart) below the KPI strip — unchanged
+- The pinned `MemberFinder` in the top bar — unchanged
 
 ## Out of scope
-- Renaming/deleting the `ops_alerts` table (keep — the alert system still runs)
-- Touching `/admin/billing`, `/admin/members/$userId`, or Overview KPI logic
+- A new `/admin/emails` page (we'll do that when you want a DLQ surface; for now you can still query `email_send_log` directly)
+- Changing the sparkline / delta calculations on the tiles
+- Touching the charts below the KPI strip
 
-## Risk
-Low. Ops is a UI-only layer over already-running cron jobs and other admin pages. Only risk is the `alert-dispatch` cron URL — handled by keeping the path.
-
-## Confirmation needed before build
-1. Confirm: delete all 7 Ops routes + `components/ops/` + `lib/ops/` (lifting only alerts + system-status + MemberFinder)?
-2. Confirm: lift alerts banner + system status strip onto `/admin` Overview (top of page)?
-3. Keep `alert-dispatch` API path stable (don't break pg_cron) — yes?
+## After this ships
+The Overview is: heading → 4 clean money-first KPI cards → revenue chart + members chart. No banner, no status pills, no "Reconcile →" noise.
