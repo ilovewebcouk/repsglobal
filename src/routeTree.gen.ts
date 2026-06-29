@@ -104,6 +104,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as BillingSetupTokenRouteImport } from './routes/billing.setup.$token'
+import { Route as AdminV2ChurnRouteImport } from './routes/admin_.v2.churn'
 import { Route as AdminV2BillingRouteImport } from './routes/admin_.v2.billing'
 import { Route as AdminOpsPlatformRouteImport } from './routes/admin_.ops.platform'
 import { Route as AdminOpsEmailRouteImport } from './routes/admin_.ops.email'
@@ -631,6 +632,11 @@ const BillingSetupTokenRoute = BillingSetupTokenRouteImport.update({
   path: '/billing/setup/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminV2ChurnRoute = AdminV2ChurnRouteImport.update({
+  id: '/churn',
+  path: '/churn',
+  getParentRoute: () => AdminV2Route,
+} as any)
 const AdminV2BillingRoute = AdminV2BillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -1019,6 +1025,7 @@ export interface FileRoutesByFullPath {
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
   '/admin/v2/billing': typeof AdminV2BillingRoute
+  '/admin/v2/churn': typeof AdminV2ChurnRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1160,6 +1167,7 @@ export interface FileRoutesByTo {
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
   '/admin/v2/billing': typeof AdminV2BillingRoute
+  '/admin/v2/churn': typeof AdminV2ChurnRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1308,6 +1316,7 @@ export interface FileRoutesById {
   '/admin_/ops/email': typeof AdminOpsEmailRoute
   '/admin_/ops/platform': typeof AdminOpsPlatformRoute
   '/admin_/v2/billing': typeof AdminV2BillingRoute
+  '/admin_/v2/churn': typeof AdminV2ChurnRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1455,6 +1464,7 @@ export interface FileRouteTypes {
     | '/admin/ops/email'
     | '/admin/ops/platform'
     | '/admin/v2/billing'
+    | '/admin/v2/churn'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1596,6 +1606,7 @@ export interface FileRouteTypes {
     | '/admin/ops/email'
     | '/admin/ops/platform'
     | '/admin/v2/billing'
+    | '/admin/v2/churn'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1743,6 +1754,7 @@ export interface FileRouteTypes {
     | '/admin_/ops/email'
     | '/admin_/ops/platform'
     | '/admin_/v2/billing'
+    | '/admin_/v2/churn'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -2563,6 +2575,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingSetupTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/v2/churn': {
+      id: '/admin_/v2/churn'
+      path: '/churn'
+      fullPath: '/admin/v2/churn'
+      preLoaderRoute: typeof AdminV2ChurnRouteImport
+      parentRoute: typeof AdminV2Route
+    }
     '/admin_/v2/billing': {
       id: '/admin_/v2/billing'
       path: '/billing'
@@ -3139,6 +3158,7 @@ const AdminOpsRouteWithChildren = AdminOpsRoute._addFileChildren(
 
 interface AdminV2RouteChildren {
   AdminV2BillingRoute: typeof AdminV2BillingRoute
+  AdminV2ChurnRoute: typeof AdminV2ChurnRoute
   AdminV2IndexRoute: typeof AdminV2IndexRoute
   AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
   AdminV2MembersIndexRoute: typeof AdminV2MembersIndexRoute
@@ -3146,6 +3166,7 @@ interface AdminV2RouteChildren {
 
 const AdminV2RouteChildren: AdminV2RouteChildren = {
   AdminV2BillingRoute: AdminV2BillingRoute,
+  AdminV2ChurnRoute: AdminV2ChurnRoute,
   AdminV2IndexRoute: AdminV2IndexRoute,
   AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
   AdminV2MembersIndexRoute: AdminV2MembersIndexRoute,
