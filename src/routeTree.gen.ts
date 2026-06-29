@@ -113,6 +113,7 @@ import { Route as AdminOpsActivityRouteImport } from './routes/admin_.ops.activi
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
 import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
+import { Route as AdminV2MembersIndexRouteImport } from './routes/admin_.v2.members.index'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -676,6 +677,11 @@ const AuthenticatedProfessionalProRouteRoute =
     id: '/_pro',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AdminV2MembersIndexRoute = AdminV2MembersIndexRouteImport.update({
+  id: '/members/',
+  path: '/members/',
+  getParentRoute: () => AdminV2Route,
+} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -1039,6 +1045,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/admin/v2/members/': typeof AdminV2MembersIndexRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1177,6 +1184,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/admin/v2/members': typeof AdminV2MembersIndexRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1324,6 +1332,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/admin_/v2/members/': typeof AdminV2MembersIndexRoute
   '/_authenticated/_professional/_pro/dashboard_/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/_authenticated/_professional/_pro/dashboard_/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/_authenticated/_professional/_pro/dashboard_/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1469,6 +1478,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/admin/v2/members/'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -1607,6 +1617,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/admin/v2/members'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -1753,6 +1764,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/admin_/v2/members/'
     | '/_authenticated/_professional/_pro/dashboard_/bookings'
     | '/_authenticated/_professional/_pro/dashboard_/business'
     | '/_authenticated/_professional/_pro/dashboard_/calendar'
@@ -2602,6 +2614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalProRouteRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/admin_/v2/members/': {
+      id: '/admin_/v2/members/'
+      path: '/members'
+      fullPath: '/admin/v2/members/'
+      preLoaderRoute: typeof AdminV2MembersIndexRouteImport
+      parentRoute: typeof AdminV2Route
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -3102,11 +3121,13 @@ const AdminOpsRouteWithChildren = AdminOpsRoute._addFileChildren(
 interface AdminV2RouteChildren {
   AdminV2IndexRoute: typeof AdminV2IndexRoute
   AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
+  AdminV2MembersIndexRoute: typeof AdminV2MembersIndexRoute
 }
 
 const AdminV2RouteChildren: AdminV2RouteChildren = {
   AdminV2IndexRoute: AdminV2IndexRoute,
   AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
+  AdminV2MembersIndexRoute: AdminV2MembersIndexRoute,
 }
 
 const AdminV2RouteWithChildren =
