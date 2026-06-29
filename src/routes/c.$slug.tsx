@@ -528,6 +528,7 @@ const NAV_ITEMS = [
 
 function CoachShopFrontPage() {
   const { slug } = Route.useParams();
+  const loaderData = Route.useLoaderData();
   const fetchShopFront = useServerFn(getShopFrontBySlug);
   const fetchReviews = useServerFn(listPublicReviewsBySlug);
   const isFixture = !!COACHES[slug];
@@ -545,6 +546,7 @@ function CoachShopFrontPage() {
     queryFn: () => fetchShopFront({ data: { slug } }),
     staleTime: 60_000,
     enabled: !isFixture,
+    initialData: loaderData?.live ?? undefined,
   });
 
   const { data: reviewsData } = useQuery({
