@@ -1,40 +1,42 @@
-// Richard Bennett regression fixture for the subscription resolver.
+// Richard Bennett regression fixture for the shared member-billing compute.
 //
-// Reproduces the exact failure mode where Member 360 displayed "No subscription"
-// despite a healthy local trialing row (BD rail-swap). The resolver must:
-//   • return source = "local-mirror"
-//   • surface the tier as "Core"
-//   • render "Scheduled Core renewal" + "Renews 28 May 2027"
-//   • NEVER render "No subscription", "BD", "legacy", "migrated", "Trial user",
-//     or "Free trial".
+// Reproduces the failure mode where Member 360 displayed "No subscription"
+// despite a healthy local trialing row (BD rail-swap). The shared compute
+// must:
+//   • return plan = "verified" (Core)
+//   • render isTrial = true with trialDaysLeft > 0
+//   • render renewalDate from current_period_end (source = "stripe")
+//   • adapt to "Scheduled Core renewal" + "Renews 28 May 2027"
+//   • NEVER render "No subscription", "BD", "legacy", "migrated",
+//     "Trial user", or "Free trial".
 //
-// Run with `bun run src/lib/admin/__fixtures__/richard-bennett.ts` for a
-// human-readable trace. Pure-function — no DB / Stripe needed.
+// Pure-function — no DB / Stripe needed.
 
 import {
-  resolveAdminSubscriptionState,
-  type LocalSubscriptionRow,
-} from "@/lib/admin/subscription-resolver.server";
+  computeMemberBillingRow,
+  type SubscriptionRowLite,
+} from "@/lib/admin/member-billing-row.server";
+import { adaptBillingRowToState } from "@/lib/admin/subscription-resolver.server";
 
-const RICHARD: LocalSubscriptionRow = {
-  id: "sub_richard_local",
-  user_id: "89b3285d-3a83-4a55-8aa1-414b870fd5ce",
-  stripe_subscription_id: "sub_richard_stripe",
-  stripe_customer_id: "cus_richard",
-  status: "trialing",
+const RICHARD_USER_ID = "89b3285d-3a83-4a55-8aa1-414b870fd5ce";
+
+const RICHARD_SUB: SubscriptionRowLite = {
+  user_id: RICHARD_USER_ID,
   tier: "verified",
+  status: "trialing",
+  created_at: "2026-05-28T09:15:22.000Z",
   current_period_end: "2027-05-28T09:15:22.000Z",
-  cancel_at_period_end: false,
-  environment: "live",
-  price_lookup_key: "verified_legacy_annual",
+  billing_period: "year",
 };
 
 export function richardFixture() {
-  return resolveAdminSubscriptionState({
-    user_id: RICHARD.user_id!,
-    mirror: null,
-    local: RICHARD,
+  const row = computeMemberBillingRow({
+    user_id: RICHARD_USER_ID,
+    subs: [RICHARD_SUB],
+    bdNextDueIso: null,
+    activePaidTier: null,
   });
+  return adaptBillingRowToState(row);
 }
 
 function assertEq<T>(name: string, actual: T, expected: T) {
@@ -55,7 +57,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const r = richardFixture();
   // eslint-disable-next-line no-console
   console.log("Resolved:", r);
-  assertEq("source", r.source, "local-mirror");
+  assertEq("source", r.source, "shared-compute");
   assertEq("tier", r.tier, "verified");
   assertEq("tier_label", r.tier_label, "Core");
   assertEq("has_active_entitlement", r.has_active_entitlement, true);
