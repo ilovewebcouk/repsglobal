@@ -107,6 +107,9 @@ function BillingPage() {
         {/* BD Workstreams 2 & 3 — setup-link + reactivation */}
         <BdSetupLinkCard />
 
+        {/* Phase A: backfill real Stripe price IDs onto subscriptions rows */}
+        <PriceIdBackfillCard />
+
 
 
 
