@@ -367,7 +367,9 @@ function LocationLanding() {
     staleTime: 60 * 60_000,
   });
   const livePros = featuredResult?.pros ?? [];
+  // Pros without a real avatar are never featured — no demo image substitutes.
   const featured: FeaturedPro[] = livePros
+    .filter((r) => !!r.avatar_url)
     .slice(0, 4)
     .map((r, i) => featuredRowToFeaturedPro(r, fallbackImgs[i % fallbackImgs.length]));
 

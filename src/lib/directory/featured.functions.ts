@@ -235,16 +235,20 @@ async function fetchFeaturedPool(
       };
     });
 
-  const paidPool = enriched.filter((p) => p.is_paid);
+  // Featured rail REQUIRES a real avatar. No avatar = excluded from the rail,
+  // regardless of tier. The card has no monogram variant and we never want
+  // demo placeholder photos shown for real pros.
+  const withAvatar = enriched.filter((p) => !!p.avatar_url);
+  const paidPool = withAvatar.filter((p) => p.is_paid);
   const usePaidOnly = paidPool.length > FEATURED_PAID_THRESHOLD;
 
   if (usePaidOnly) {
     return { pool: paidPool, paidCount: paidPool.length, backfillUsed: false };
   }
 
-  // Backfill: paid pros first (still get priority), then anyone published with
-  // an avatar — backfill keeps the rail full while we grow the paid base.
-  const backfill = enriched.filter((p) => !p.is_paid && p.avatar_url);
+  // Backfill: paid pros first (still get priority), then any published pro
+  // with an avatar — backfill keeps the rail full while we grow the paid base.
+  const backfill = withAvatar.filter((p) => !p.is_paid);
   return {
     pool: [...paidPool, ...backfill],
     paidCount: paidPool.length,
