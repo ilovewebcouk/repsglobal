@@ -180,9 +180,11 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
     );
   }
 
-  const { full_name, email, slug, verification, is_published, subscription } = snapshot;
+  const { full_name, email, slug, verification, is_published, subscription, avatar_url, profession } = snapshot;
   const tier = subscription?.tier ?? null;
   const status = subscription?.status ?? null;
+  const trialEnd = subscription?.trial_end ?? null;
+  const cancelAt = subscription?.cancel_at_period_end ? subscription.current_period_end : null;
   const publicHref = slug ? `/c/${slug}` : null;
   const mailtoHref = email ? `mailto:${email}` : null;
 
@@ -190,16 +192,18 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
     <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
       <div className="flex flex-wrap items-center gap-4">
         <Avatar className="size-14 ring-1 ring-reps-border">
+          {avatar_url && <AvatarImage src={avatar_url} alt={full_name ?? "Member avatar"} />}
           <AvatarFallback className="bg-reps-orange/15 text-base font-semibold text-reps-orange">
             {initialsOf(full_name, email)}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="flex items-baseline gap-3">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
             <h2 className="truncate text-lg font-semibold text-white">{full_name ?? "Unnamed member"}</h2>
-            <span className="truncate text-sm text-white/55">{email ?? "no email on file"}</span>
+            {profession && <span className="truncate text-sm text-white/55">{profession}</span>}
           </div>
+          <div className="truncate text-[13px] text-white/45">{email ?? "no email on file"}</div>
           <div className="flex flex-wrap items-center gap-1.5">
             {verification === "verified" && (
               <Badge variant="outline" className="h-6 border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
@@ -230,6 +234,21 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 )}
               >
                 {status.replace(/_/g, " ")}
+              </Badge>
+            )}
+            {status === "trialing" && trialEnd && (
+              <Badge variant="outline" className="h-6 border-sky-400/30 bg-sky-500/10 text-sky-200">
+                Trial ends {fmtDate(trialEnd)}
+              </Badge>
+            )}
+            {cancelAt && (
+              <Badge variant="outline" className="h-6 border-rose-400/30 bg-rose-500/10 text-rose-200">
+                Cancels {fmtDate(cancelAt)}
+              </Badge>
+            )}
+            {!subscription && (
+              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
+                No subscription
               </Badge>
             )}
             {!is_published && (
