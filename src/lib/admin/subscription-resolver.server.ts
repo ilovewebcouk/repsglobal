@@ -81,6 +81,9 @@ export interface AdminSubscriptionState {
   currency: string | null;
   interval: string | null;
 
+  /** Days remaining until trial_end / current_period_end when trialing. */
+  trial_days_left: number | null;
+
   /** True when the member has a paid entitlement right now. */
   has_active_entitlement: boolean;
 
@@ -109,6 +112,26 @@ const TIER_BY_PRODUCT_ID: Record<string, TierKey> = {
   verified: "verified",
   pro_founding: "pro",
 };
+
+// Catalogue prices used when Stripe doesn't return a price (e.g. local-mirror
+// fallback). These mirror the published REPs prices in src/lib/billing.ts.
+const TIER_CATALOGUE_PRICE: Record<TierKey, { unit_amount_pence: number; currency: string; interval: string } | null> = {
+  verified: { unit_amount_pence: 9900, currency: "gbp", interval: "year" },
+  pro: { unit_amount_pence: 5900, currency: "gbp", interval: "month" },
+  studio: { unit_amount_pence: 14900, currency: "gbp", interval: "month" },
+};
+
+function cataloguePrice(tier: TierKey | null) {
+  if (!tier) return null;
+  return TIER_CATALOGUE_PRICE[tier] ?? null;
+}
+
+function trialDaysLeft(iso: string | null): number | null {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (Number.isNaN(ms)) return null;
+  return Math.max(0, Math.ceil(ms / 86_400_000));
+}
 
 export function tierLabel(tier: TierKey | null): string | null {
   if (!tier) return null;
@@ -226,6 +249,7 @@ export function resolveAdminSubscriptionState(input: ResolveInput): AdminSubscri
       unit_amount_pence: null,
       currency: null,
       interval: null,
+      trial_days_left: null,
       has_active_entitlement: false,
       display_status_label: "No active subscription",
       display_renewal_label: null,
@@ -257,9 +281,10 @@ export function resolveAdminSubscriptionState(input: ResolveInput): AdminSubscri
       cancel_at_period_end: mirror.cancel_at_period_end,
       price_id: mirror.price_id,
       price_lookup_key: mirror.price_lookup_key,
-      unit_amount_pence: mirror.unit_amount_pence,
-      currency: mirror.currency,
-      interval: mirror.interval ?? null,
+      unit_amount_pence: mirror.unit_amount_pence ?? cataloguePrice(tier)?.unit_amount_pence ?? null,
+      currency: mirror.currency ?? cataloguePrice(tier)?.currency ?? null,
+      interval: mirror.interval ?? cataloguePrice(tier)?.interval ?? null,
+      trial_days_left: isTrial ? trialDaysLeft(renewal_at) : null,
       has_active_entitlement: ENTITLED_STATUSES.has(status),
       display_status_label: buildDisplayStatus(status, lbl, mirror.cancel_at_period_end),
       display_renewal_label: renewal_at ? `Renews ${fmtDate(renewal_at)}` : null,
@@ -285,9 +310,10 @@ export function resolveAdminSubscriptionState(input: ResolveInput): AdminSubscri
     cancel_at_period_end: !!local!.cancel_at_period_end,
     price_id: null,
     price_lookup_key: local!.price_lookup_key ?? null,
-    unit_amount_pence: null,
-    currency: null,
-    interval: null,
+    unit_amount_pence: cataloguePrice(tier)?.unit_amount_pence ?? null,
+    currency: cataloguePrice(tier)?.currency ?? null,
+    interval: cataloguePrice(tier)?.interval ?? null,
+    trial_days_left: isTrial ? trialDaysLeft(renewal_at) : null,
     has_active_entitlement: !!status && ENTITLED_STATUSES.has(status),
     display_status_label: buildDisplayStatus(status, lbl, !!local!.cancel_at_period_end),
     display_renewal_label: renewal_at ? `Renews ${fmtDate(renewal_at)}` : null,
@@ -317,21 +343,40 @@ export async function resolveSubscriptionStateForUser(
   userId: string,
 ): Promise<AdminSubscriptionState> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { getMirrorForUser } = await import("@/lib/billing/stripe-mirror.server");
+  const { getMirrorSubscription, getMirrorForUser } = await import(
+    "@/lib/billing/stripe-mirror.server"
+  );
 
-  const [mirror, localRes] = await Promise.all([
-    getMirrorForUser(userId, "live").catch(() => null),
-    supabaseAdmin
-      .from("subscriptions")
-      .select(
-        "id, user_id, stripe_subscription_id, stripe_customer_id, status, tier, current_period_end, cancel_at_period_end, environment",
-      )
-      .eq("user_id", userId)
-      .eq("environment", "live"),
-  ]);
+  const localRes = await supabaseAdmin
+    .from("subscriptions")
+    .select(
+      "id, user_id, stripe_subscription_id, stripe_customer_id, status, tier, current_period_end, cancel_at_period_end, environment",
+    )
+    .eq("user_id", userId)
+    .eq("environment", "live");
 
   const localRows = ((localRes.data ?? []) as unknown as LocalSubscriptionRow[]).filter(Boolean);
   const local = pickLocalRow(localRows);
+
+  // Prefer a direct subscription retrieve when we already know the id
+  // (one Stripe call, far more reliable than a paginated customer list).
+  // Fall back to listing the customer's subs only if the id lookup fails.
+  let mirror: Awaited<ReturnType<typeof getMirrorSubscription>> | null = null;
+  const subId = local?.stripe_subscription_id ?? null;
+  if (subId) {
+    try {
+      mirror = await getMirrorSubscription(subId, "live");
+    } catch (err) {
+      console.warn(`[subscription-resolver] direct retrieve failed for ${subId}`, err);
+    }
+  }
+  if (!mirror) {
+    try {
+      mirror = await getMirrorForUser(userId, "live");
+    } catch (err) {
+      console.warn(`[subscription-resolver] customer-list fallback failed for ${userId}`, err);
+    }
+  }
 
   return resolveAdminSubscriptionState({ user_id: userId, mirror, local });
 }

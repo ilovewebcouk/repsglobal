@@ -188,7 +188,7 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
   const cancelAt = sub.cancel_at_period_end ? sub.renewal_at : null;
   const publicHref = slug ? `/c/${slug}` : null;
   const mailtoHref = email ? `mailto:${email}` : null;
-  const hasDiscrepancy = sub.discrepancies.length > 0;
+  
 
   return (
     <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
@@ -229,11 +229,7 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 )}
               >
                 {sub.display_status_label}
-              </Badge>
-            )}
-            {hasSub && sub.display_renewal_label && (
-              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/70">
-                {sub.display_renewal_label}
+                {sub.trial_days_left != null ? ` · ${sub.trial_days_left}d left` : ""}
               </Badge>
             )}
             {cancelAt && (
@@ -244,25 +240,6 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
             {!hasSub && (
               <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
                 No active subscription
-              </Badge>
-            )}
-            {/* Source badge — neutral for stripe-live and local-mirror; amber only for true mismatch. */}
-            {hasSub && !hasDiscrepancy && (
-              <Badge
-                variant="outline"
-                className="h-6 border-reps-border bg-reps-panel/60 text-white/55"
-                title={sub.fallback_reason ?? "Live Stripe data"}
-              >
-                {sub.source === "stripe-live" ? "Stripe live" : "Local mirror"}
-              </Badge>
-            )}
-            {hasSub && hasDiscrepancy && (
-              <Badge
-                variant="outline"
-                className="h-6 border-amber-400/30 bg-amber-500/15 text-amber-200"
-                title={`Mismatch: ${sub.discrepancies.join(", ")}`}
-              >
-                Source mismatch
               </Badge>
             )}
             {!is_published && (
@@ -345,7 +322,9 @@ function OverviewPane({ snapshot }: { snapshot: Member360Snapshot }) {
       value: fmtDate(sub.renewal_at),
       sub: sub.cancel_at_period_end ? "cancels at period end" : undefined,
     },
-    { label: "Source", value: sub.source === "stripe-live" ? "Stripe live" : sub.source === "local-mirror" ? "Local mirror" : "—" },
+    ...(sub.trial_days_left != null
+      ? [{ label: "Trial", value: `${sub.trial_days_left}d left` as React.ReactNode }]
+      : []),
     { label: "Joined", value: fmtDate(snapshot.created_at) },
     { label: "Last sign-in", value: fmtDate(snapshot.last_sign_in_at) },
   ];
@@ -447,11 +426,9 @@ function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
       value: fmtDate(sub.renewal_at),
       sub: sub.cancel_at_period_end ? "cancels at period end" : undefined,
     },
-    {
-      label: "Source",
-      value: sub.source === "stripe-live" ? "Stripe live" : "Local mirror",
-      sub: sub.fallback_reason ?? undefined,
-    },
+    ...(sub.trial_days_left != null
+      ? [{ label: "Trial", value: `${sub.trial_days_left}d left` as React.ReactNode }]
+      : []),
   ];
 
   return (
@@ -459,18 +436,14 @@ function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
       <div className={cn(PANEL_HEADER, "flex flex-wrap items-start justify-between gap-3")}>
         <div>
           <h3 className={PANEL_TITLE}>Current subscription</h3>
-          <p className={PANEL_DESC}>
-            {sub.source === "stripe-live"
-              ? "Live Stripe mirror — the source of truth for billing."
-              : "Local subscriptions row — Stripe live mirror was unavailable for this read."}
-          </p>
+          <p className={PANEL_DESC}>The live billing position for this member.</p>
         </div>
         <Badge variant="outline" className={statusClass}>{sub.display_status_label}</Badge>
       </div>
       <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
         {sub.discrepancies.length > 0 && (
           <div className="rounded-[12px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-200">
-            Stripe and local mirror disagree on: {sub.discrepancies.join(", ").replace(/_/g, " ")}.
+            Stripe and our copy disagree on: {sub.discrepancies.join(", ").replace(/_/g, " ")}. Open in Stripe to reconcile.
           </div>
         )}
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
