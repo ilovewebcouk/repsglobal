@@ -106,6 +106,7 @@ import { Route as AdminOpsCustomerRouteImport } from './routes/admin_.ops.custom
 import { Route as AdminOpsBillingRouteImport } from './routes/admin_.ops.billing'
 import { Route as AdminOpsAlertsRouteImport } from './routes/admin_.ops.alerts'
 import { Route as AdminOpsActivityRouteImport } from './routes/admin_.ops.activity'
+import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
 import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
@@ -634,6 +635,11 @@ const AdminOpsActivityRoute = AdminOpsActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AdminOpsRoute,
 } as any)
+const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
+  id: '/admin_/members/$userId',
+  path: '/admin/members/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardDesignKitRoute =
   AuthenticatedDashboardDesignKitRouteImport.update({
     id: '/dashboard_/design-kit',
@@ -967,6 +973,7 @@ export interface FileRoutesByFullPath {
   '/resources/': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
+  '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/ops/activity': typeof AdminOpsActivityRoute
   '/admin/ops/alerts': typeof AdminOpsAlertsRoute
   '/admin/ops/billing': typeof AdminOpsBillingRoute
@@ -1102,6 +1109,7 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesIndexRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
+  '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/ops/activity': typeof AdminOpsActivityRoute
   '/admin/ops/alerts': typeof AdminOpsAlertsRoute
   '/admin/ops/billing': typeof AdminOpsBillingRoute
@@ -1243,6 +1251,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
+  '/admin_/members/$userId': typeof AdminMembersUserIdRoute
   '/admin_/ops/activity': typeof AdminOpsActivityRoute
   '/admin_/ops/alerts': typeof AdminOpsAlertsRoute
   '/admin_/ops/billing': typeof AdminOpsBillingRoute
@@ -1383,6 +1392,7 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/dashboard'
     | '/dashboard/design-kit'
+    | '/admin/members/$userId'
     | '/admin/ops/activity'
     | '/admin/ops/alerts'
     | '/admin/ops/billing'
@@ -1518,6 +1528,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/dashboard'
     | '/dashboard/design-kit'
+    | '/admin/members/$userId'
     | '/admin/ops/activity'
     | '/admin/ops/alerts'
     | '/admin/ops/billing'
@@ -1658,6 +1669,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/_pro'
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
+    | '/admin_/members/$userId'
     | '/admin_/ops/activity'
     | '/admin_/ops/alerts'
     | '/admin_/ops/billing'
@@ -1794,6 +1806,7 @@ export interface RootRouteChildren {
   RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
+  AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
   BillingSetupTokenRoute: typeof BillingSetupTokenRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -2492,6 +2505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOpsActivityRouteImport
       parentRoute: typeof AdminOpsRoute
     }
+    '/admin_/members/$userId': {
+      id: '/admin_/members/$userId'
+      path: '/admin/members/$userId'
+      fullPath: '/admin/members/$userId'
+      preLoaderRoute: typeof AdminMembersUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard_/design-kit': {
       id: '/_authenticated/dashboard_/design-kit'
       path: '/dashboard/design-kit'
@@ -3097,6 +3117,7 @@ const rootRouteChildren: RootRouteChildren = {
   RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
+  AdminMembersUserIdRoute: AdminMembersUserIdRoute,
   BillingSetupTokenRoute: BillingSetupTokenRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

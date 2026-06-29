@@ -13,14 +13,14 @@ interface Props {
   className?: string;
   autoFocus?: boolean;
   // Destination route for the matched member.
-  target?: "/admin/ops/member/$userId";
+  target?: "/admin/ops/member/$userId" | "/admin/members/$userId";
 }
 
 export function MemberFinder({
   placeholder = "Find member by email, user id, cus_…, sub_… or BD id",
   className = "",
   autoFocus,
-  target = "/admin/ops/member/$userId",
+  target = "/admin/members/$userId",
 }: Props) {
 
   const navigate = useNavigate();
