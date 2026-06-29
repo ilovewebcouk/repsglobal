@@ -72,6 +72,8 @@ export type MemberBillingRow = {
   hasActiveEntitlement: boolean;
   /** Stripe sub id for the row driving renewalDate (when source = "stripe"). */
   stripeSubscriptionId: string | null;
+  /** Stripe customer id for the row driving renewalDate (when present). */
+  stripeCustomerId: string | null;
   /** Status of the row driving renewalDate (when source = "stripe"). */
   stripeStatus: string | null;
   /** cancel_at_period_end of the row driving renewalDate (when present). */
@@ -171,6 +173,7 @@ export function computeMemberBillingRow(input: MemberBillingRowInput): MemberBil
     trialDaysLeft,
     hasActiveEntitlement: plan !== "free",
     stripeSubscriptionId: null, // not modelled in SubscriptionRowLite; resolver augments
+    stripeCustomerId: null, // not modelled in SubscriptionRowLite; resolver augments
     stripeStatus: subDetail?.status ?? null,
     cancelAtPeriodEnd: false, // not modelled in SubscriptionRowLite; resolver augments
   };
@@ -195,7 +198,7 @@ export async function fetchMemberBillingRow(
     supabaseAdmin
       .from("subscriptions")
       .select(
-        "user_id, tier, status, created_at, current_period_end, billing_period, stripe_subscription_id, cancel_at_period_end, environment",
+        "user_id, tier, status, created_at, current_period_end, billing_period, stripe_subscription_id, stripe_customer_id, cancel_at_period_end, environment",
       )
       .eq("user_id", userId)
       .eq("environment", "live"),
@@ -211,6 +214,7 @@ export async function fetchMemberBillingRow(
   const rawSubs = (subsRes.data ?? []) as Array<
     SubscriptionRowLite & {
       stripe_subscription_id: string | null;
+      stripe_customer_id: string | null;
       cancel_at_period_end: boolean | null;
     }
   >;
@@ -237,10 +241,14 @@ export async function fetchMemberBillingRow(
   });
 
   // Augment Stripe-specific fields from the same entitled row the compute picked.
+  // Fall back to any sub row for customer id so we still surface it for cancelled members.
   const driver = rawSubs.find((s) => ENTITLED_STATUSES.has(s.status)) ?? null;
   if (driver) {
     row.stripeSubscriptionId = driver.stripe_subscription_id ?? null;
     row.cancelAtPeriodEnd = !!driver.cancel_at_period_end;
   }
+  const anyWithCustomer = rawSubs.find((s) => !!s.stripe_customer_id) ?? null;
+  row.stripeCustomerId =
+    driver?.stripe_customer_id ?? anyWithCustomer?.stripe_customer_id ?? null;
   return row;
 }
