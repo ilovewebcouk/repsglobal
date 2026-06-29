@@ -109,17 +109,18 @@ function TileShell({
 }
 
 function ForecastHorizonSelector({ value }: { value: ForecastHorizon }) {
-  const navigate = useNavigate({ from: "/admin" });
+  const navigate = useNavigate();
   return (
     <Select
       value={value}
       onValueChange={(v) =>
         navigate({
+          to: ".",
           search: (prev: Record<string, unknown>) => ({
             ...prev,
             fcast: v as ForecastHorizon,
           }),
-        })
+        } as never)
       }
     >
       <SelectTrigger className="h-6 w-[150px] rounded-[6px] border border-white/10 bg-white/[0.03] px-2 text-[11px] font-medium text-white/70 shadow-none">
