@@ -107,20 +107,44 @@ export function InsuranceUploadDialog({
     }
     setFilename(f.name);
     setStep("extracting");
+
+    let dataUrl: string;
     try {
-      const dataUrl = await fileToDataUrl(f);
-      const [uploaded, extracted] = await Promise.all([
-        upload({ data: { bucket: "insurance-docs", file_data_url: dataUrl, filename: f.name } }),
-        extractDoc({ data: { file_data_url: dataUrl, filename: f.name } }),
-      ]);
-      setDocPath(uploaded.path);
-      applyExtracted(extracted);
-      setStep("confirm");
+      dataUrl = await fileToDataUrl(f);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
+      toast.error(e instanceof Error ? e.message : "Could not read file");
       setStep("pick");
+      return;
     }
+
+    // Step 1 — upload. Hard failure here means we cannot proceed.
+    try {
+      const uploaded = await upload({
+        data: { bucket: "insurance-docs", file_data_url: dataUrl, filename: f.name },
+      });
+      setDocPath(uploaded.path);
+    } catch (e) {
+      toast.error(
+        `Upload failed — ${e instanceof Error ? e.message : "unknown error"}. Please try again or contact support.`,
+      );
+      setStep("pick");
+      return;
+    }
+
+    // Step 2 — AI extract. If this fails (quota, low confidence, bad scan)
+    // we still advance to the confirm step with blank fields so the trainer
+    // can type the details by hand — never bounce them back to the picker.
+    try {
+      const extracted = await extractDoc({ data: { file_data_url: dataUrl, filename: f.name } });
+      applyExtracted(extracted);
+    } catch (e) {
+      toast.message("AI couldn't read the certificate — please fill in the details by hand below.", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    }
+    setStep("confirm");
   };
+
 
   function applyExtracted(e: {
     provider: string | null;
