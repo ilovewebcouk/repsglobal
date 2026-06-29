@@ -104,6 +104,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as BillingSetupTokenRouteImport } from './routes/billing.setup.$token'
+import { Route as AdminV2BillingRouteImport } from './routes/admin_.v2.billing'
 import { Route as AdminOpsPlatformRouteImport } from './routes/admin_.ops.platform'
 import { Route as AdminOpsEmailRouteImport } from './routes/admin_.ops.email'
 import { Route as AdminOpsCustomerRouteImport } from './routes/admin_.ops.customer'
@@ -630,6 +631,11 @@ const BillingSetupTokenRoute = BillingSetupTokenRouteImport.update({
   path: '/billing/setup/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminV2BillingRoute = AdminV2BillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AdminV2Route,
+} as any)
 const AdminOpsPlatformRoute = AdminOpsPlatformRouteImport.update({
   id: '/platform',
   path: '/platform',
@@ -1012,6 +1018,7 @@ export interface FileRoutesByFullPath {
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
+  '/admin/v2/billing': typeof AdminV2BillingRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1152,6 +1159,7 @@ export interface FileRoutesByTo {
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
+  '/admin/v2/billing': typeof AdminV2BillingRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1299,6 +1307,7 @@ export interface FileRoutesById {
   '/admin_/ops/customer': typeof AdminOpsCustomerRoute
   '/admin_/ops/email': typeof AdminOpsEmailRoute
   '/admin_/ops/platform': typeof AdminOpsPlatformRoute
+  '/admin_/v2/billing': typeof AdminV2BillingRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1445,6 +1454,7 @@ export interface FileRouteTypes {
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
+    | '/admin/v2/billing'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1585,6 +1595,7 @@ export interface FileRouteTypes {
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
+    | '/admin/v2/billing'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1731,6 +1742,7 @@ export interface FileRouteTypes {
     | '/admin_/ops/customer'
     | '/admin_/ops/email'
     | '/admin_/ops/platform'
+    | '/admin_/v2/billing'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -2551,6 +2563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingSetupTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/v2/billing': {
+      id: '/admin_/v2/billing'
+      path: '/billing'
+      fullPath: '/admin/v2/billing'
+      preLoaderRoute: typeof AdminV2BillingRouteImport
+      parentRoute: typeof AdminV2Route
+    }
     '/admin_/ops/platform': {
       id: '/admin_/ops/platform'
       path: '/platform'
@@ -3119,12 +3138,14 @@ const AdminOpsRouteWithChildren = AdminOpsRoute._addFileChildren(
 )
 
 interface AdminV2RouteChildren {
+  AdminV2BillingRoute: typeof AdminV2BillingRoute
   AdminV2IndexRoute: typeof AdminV2IndexRoute
   AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
   AdminV2MembersIndexRoute: typeof AdminV2MembersIndexRoute
 }
 
 const AdminV2RouteChildren: AdminV2RouteChildren = {
+  AdminV2BillingRoute: AdminV2BillingRoute,
   AdminV2IndexRoute: AdminV2IndexRoute,
   AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
   AdminV2MembersIndexRoute: AdminV2MembersIndexRoute,
