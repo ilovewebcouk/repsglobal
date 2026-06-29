@@ -23,10 +23,14 @@ import {
   deleteTransformation,
   upsertFaq,
   deleteFaq,
+  upsertClientResult,
+  deleteClientResult,
   aiDraftMethod,
   aiDraftFaqs,
   type MethodPillar,
+  type Venue,
   type TransformationDTO,
+  type ClientResultDTO,
   type FaqDTO,
 } from "@/lib/shop-front/website-content.functions";
 
@@ -121,7 +125,7 @@ function ShopFrontEditorPage() {
         },
       }),
     onSuccess: () => {
-      toast.success("Shop-front saved");
+      toast.success("Website saved");
       qc.invalidateQueries({ queryKey: ["my-shop-front"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
@@ -204,14 +208,14 @@ function ShopFrontEditorPage() {
       ) : !sf ? (
         <PCard>
           <p className="text-[13px] text-white/70">
-            Your shop-front isn't ready yet. Once your identity is approved a Lite shop-front is created automatically.
+            Your Website isn't ready yet. Once your identity, qualifications and insurance are approved, your Lite website is created automatically.
           </p>
         </PCard>
       ) : (
         <div className="space-y-6">
           <PPanel>
             <div className="border-b border-reps-border px-5 py-4">
-              <h3 className="text-[14px] font-semibold text-white">Shop-front basics</h3>
+              <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
               <p className="mt-0.5 text-[12px] text-white/55">
                 Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
               </p>
@@ -246,7 +250,7 @@ function ShopFrontEditorPage() {
                 placeholder="#f97316"
               />
             </Field>
-            <Field label="Layout" hint={isPro ? "Full shop-front available on Pro." : "Lite layout for Verified."}>
+            <Field label="Layout" hint={isPro ? "Full website available on Pro." : "Lite layout for Core."}>
               <select
                 value={layout}
                 onChange={(e) => setLayout(e.target.value as "lite" | "full")}
@@ -439,7 +443,7 @@ function ServicesEditor({
 }
 
 /* ===================================================================== */
-/* Website content editor (Hero subtitle, Method, Transformations, FAQs)  */
+/* Website content editor (Hero subtitle, Method, Venues, Results, FAQs)   */
 /* ===================================================================== */
 
 function WebsiteContentEditor() {
@@ -448,6 +452,8 @@ function WebsiteContentEditor() {
   const save_ = useServerFn(saveMyWebsiteContent);
   const upsertT = useServerFn(upsertTransformation);
   const delT = useServerFn(deleteTransformation);
+  const upsertR = useServerFn(upsertClientResult);
+  const delR = useServerFn(deleteClientResult);
   const upsertF = useServerFn(upsertFaq);
   const delF = useServerFn(deleteFaq);
   const draftMethod = useServerFn(aiDraftMethod);
@@ -462,6 +468,10 @@ function WebsiteContentEditor() {
   const [methodName, setMethodName] = React.useState("");
   const [methodIntro, setMethodIntro] = React.useState("");
   const [pillars, setPillars] = React.useState<MethodPillar[]>([]);
+  const [venues, setVenues] = React.useState<Venue[]>([]);
+  const [cities, setCities] = React.useState("");
+  const [onlineWorldwide, setOnlineWorldwide] = React.useState(false);
+  const [clientResultsIntro, setClientResultsIntro] = React.useState("");
   const [drafting, setDrafting] = React.useState(false);
   const [draftingFaqs, setDraftingFaqs] = React.useState(false);
 
@@ -479,6 +489,10 @@ function WebsiteContentEditor() {
             { title: "", body: "" },
           ],
     );
+    setVenues(data.content.venues.length ? data.content.venues : [{ name: "", address: "" }]);
+    setCities(data.content.coaching_reach.cities.join(", "));
+    setOnlineWorldwide(data.content.coaching_reach.online_worldwide);
+    setClientResultsIntro(data.content.client_results_intro ?? "");
   }, [data]);
 
   const saveMut = useMutation({
@@ -512,6 +526,20 @@ function WebsiteContentEditor() {
       method_intro: methodIntro || null,
       method_pillars: pillars.filter((p) => p.title.trim() && p.body.trim()),
     });
+  const onSaveVenues = () =>
+    saveMut.mutate({
+      venues: venues
+        .map((v) => ({ name: v.name.trim(), address: v.address?.trim() || null }))
+        .filter((v) => v.name),
+      coaching_reach: {
+        cities: cities
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean),
+        online_worldwide: onlineWorldwide,
+      },
+    });
+  const onSaveResultsIntro = () => saveMut.mutate({ client_results_intro: clientResultsIntro || null });
 
   if (isLoading || !data) return <PCard>Loading website content…</PCard>;
 
@@ -541,6 +569,106 @@ function WebsiteContentEditor() {
             onChange={(e) => setSubtitle(e.target.value)}
             maxLength={200}
             placeholder="e.g. Strength + hybrid coaching for busy professionals"
+          />
+        </div>
+      </PPanel>
+
+      {/* Venues + reach */}
+      <PPanel>
+        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-[14px] font-semibold text-white">Where I train</h3>
+            <p className="mt-0.5 text-[12px] text-white/55">Edit in-person venues, cities and online/worldwide availability.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onSaveVenues}
+            disabled={saveMut.isPending}
+            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            Save
+          </button>
+        </div>
+        {venues.map((v, i) => (
+          <Field key={i} label={`Venue ${i + 1}`} hint="Name + optional area/address.">
+            <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+              <TextInput
+                value={v.name}
+                onChange={(e) => {
+                  const next = [...venues];
+                  next[i] = { ...next[i], name: e.target.value };
+                  setVenues(next);
+                }}
+                placeholder="e.g. PureGym Leeds"
+                maxLength={120}
+              />
+              <TextInput
+                value={v.address ?? ""}
+                onChange={(e) => {
+                  const next = [...venues];
+                  next[i] = { ...next[i], address: e.target.value };
+                  setVenues(next);
+                }}
+                placeholder="e.g. Leeds city centre"
+                maxLength={200}
+              />
+              <button
+                type="button"
+                onClick={() => setVenues(venues.filter((_, idx) => idx !== i))}
+                className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
+              >
+                Remove
+              </button>
+            </div>
+          </Field>
+        ))}
+        <Field label="Add venue">
+          <button
+            type="button"
+            onClick={() => setVenues([...venues, { name: "", address: "" }].slice(0, 8))}
+            className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/85 hover:bg-reps-panel"
+          >
+            + Add venue
+          </button>
+        </Field>
+        <Field label="Cities" hint="Comma-separated list shown as chips.">
+          <TextInput value={cities} onChange={(e) => setCities(e.target.value)} placeholder="Leeds, Bradford, Online" />
+        </Field>
+        <Field label="Online worldwide" hint="Adds the online/worldwide chip.">
+          <label className="flex items-center gap-2 text-[13px] text-white/85">
+            <input
+              type="checkbox"
+              checked={onlineWorldwide}
+              onChange={(e) => setOnlineWorldwide(e.target.checked)}
+              className="h-4 w-4 accent-reps-orange"
+            />
+            I coach online and worldwide
+          </label>
+        </Field>
+      </PPanel>
+
+      {/* Results intro */}
+      <PPanel>
+        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
+            <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onSaveResultsIntro}
+            disabled={saveMut.isPending}
+            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            Save
+          </button>
+        </div>
+        <div className="px-5 py-4">
+          <TextArea
+            value={clientResultsIntro}
+            onChange={(e) => setClientResultsIntro(e.target.value)}
+            maxLength={600}
+            placeholder="Use this to explain what clients can expect from the results below."
           />
         </div>
       </PPanel>
@@ -611,6 +739,12 @@ function WebsiteContentEditor() {
         items={data.transformations}
         onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
         onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+      />
+
+      <ClientResultsEditor
+        items={data.clientResults}
+        onSave={(r) => upsertR({ data: r }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+        onDelete={(id) => delR({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
       />
 
       {/* FAQs */}
