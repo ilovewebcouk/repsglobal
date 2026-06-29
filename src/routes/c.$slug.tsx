@@ -343,6 +343,9 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
   const yearsCoaching = sf.coaching_since_year
     ? Math.max(1, new Date().getFullYear() - sf.coaching_since_year)
     : base.years;
+  const liveModes: ("In-person" | "Online")[] = [];
+  if (sf.in_person_available) liveModes.push("In-person");
+  if (sf.online_available) liveModes.push("Online");
   return {
     ...base,
     name: sf.full_name ?? base.name,
@@ -352,6 +355,7 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     heroImage: sf.hero_image_url ?? base.heroImage,
     aboutImage: sf.avatar_url ?? sf.hero_image_url ?? base.aboutImage,
     city: sf.city ?? base.city,
+    modes: liveModes.length ? liveModes : base.modes,
     specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
     tiers: liveTiers.length ? liveTiers : base.tiers,
     years: yearsCoaching,
@@ -642,12 +646,16 @@ function HeroSection({
                   <Star className="h-4 w-4" /> No reviews yet
                 </span>
               )}
-              <span className="inline-flex items-center gap-1.5 text-reps-muted">
-                <Users className="h-3.5 w-3.5" /> In-person · London
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-reps-muted">
-                <Globe className="h-3.5 w-3.5" /> Online · worldwide
-              </span>
+              {coach.modes.includes("In-person") && (
+                <span className="inline-flex items-center gap-1.5 text-reps-muted">
+                  <Users className="h-3.5 w-3.5" /> In-person · {coach.city}
+                </span>
+              )}
+              {coach.modes.includes("Online") && (
+                <span className="inline-flex items-center gap-1.5 text-reps-muted">
+                  <Globe className="h-3.5 w-3.5" /> Online · worldwide
+                </span>
+              )}
             </div>
 
             <div className="mt-7 flex flex-wrap gap-3">
