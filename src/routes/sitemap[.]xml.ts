@@ -5,7 +5,7 @@ import { RESOURCE_ARTICLES } from "@/lib/resources";
 import { HELP_CATEGORIES } from "@/content/help/categories";
 import { getArticleSummaries } from "@/content/help/registry";
 
-const BASE_URL = "https://repsglobal.lovable.app";
+const BASE_URL = "https://repsuk.org";
 
 interface SitemapEntry {
   path: string;
