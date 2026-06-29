@@ -1,164 +1,64 @@
-// Admin v2 — Subscription Data Contract (canonical resolver).
+// Admin — Subscription resolver (Member 360).
 //
-// SINGLE SOURCE OF TRUTH for "what subscription does this member have, right
-// now, for the purposes of admin display and entitlement?".
-//
-// Rules:
-//   1. Active entitlement is derived from the `subscriptions` mirror or the
-//      live Stripe mirror only. `legacy_stripe_link` and `bd_member_seed`
-//      are archive/debug tables and MUST NOT influence active billing state.
-//   2. When live Stripe mirror is available it wins (`source = "stripe-live"`).
-//      When only the local row is available we fall back to it
-//      (`source = "local-mirror"`) — this is acceptable, not a warning.
-//   3. Tier preference order: Stripe price/product/lookup_key mapping when
-//      Stripe data is available, then local `subscriptions.tier`. The
-//      user-facing label always maps internal `verified` → "Core".
-//   4. Discrepancies between Stripe and local (status / period / tier)
-//      surface as `discrepancies` so the UI can show an amber warning. The
-//      "local mirror" badge by itself is NOT a warning.
-//   5. A trialing subscription is a "Scheduled <Tier> renewal" — never a
-//      "free trial" or "trial user".
+// Thin adapter over the SHARED `member-billing-row.server.ts` compute. The
+// Professionals list and Member 360 BOTH compute through that helper, so
+// pricing / renewal / trial / tier readouts cannot diverge between the two
+// surfaces. This file exists to expose the result in the
+// `AdminSubscriptionState` shape that Member 360 + billing actions already
+// consume — it intentionally does NOT add new logic.
 //
 // Server-only. Never import from client code.
 
-import type { MirrorSubscription } from "@/lib/billing/stripe-mirror.server";
 import { TIERS, type TierKey } from "@/lib/billing";
+import {
+  fetchMemberBillingRow,
+  type MemberBillingRow,
+  type MemberBillingPlan,
+} from "@/lib/admin/member-billing-row.server";
 
-export type AdminSubscriptionSource = "stripe-live" | "local-mirror" | "none";
-
-export type AdminSubscriptionDiscrepancy =
-  | "status_mismatch"
-  | "tier_mismatch"
-  | "period_end_mismatch"
-  | "stripe_missing_local_present";
-
-export interface LocalSubscriptionRow {
-  id: string;
-  user_id: string | null;
-  stripe_subscription_id: string | null;
-  stripe_customer_id: string | null;
-  status: string | null;
-  tier: string | null;
-  current_period_end: string | null;
-  cancel_at_period_end: boolean | null;
-  environment: string | null;
-  price_lookup_key?: string | null;
-}
+export type AdminSubscriptionSource = "shared-compute" | "none";
+export type AdminSubscriptionDiscrepancy = never;
 
 export interface AdminSubscriptionState {
-  /** Stable identity. */
   user_id: string;
-
-  /** Where the truth came from. */
   source: AdminSubscriptionSource;
-
-  /** Stripe subscription id (if known). */
   stripe_subscription_id: string | null;
-
-  /** Stripe customer id (if known). */
   stripe_customer_id: string | null;
-
-  /** Canonical status (active | trialing | past_due | canceled | unpaid | incomplete | …). */
   status: string | null;
-
-  /** Internal tier key — "verified" | "pro" | "studio". */
   tier: TierKey | null;
-
-  /** User-facing tier label — "Core" | "Pro" | "Studio". */
   tier_label: string | null;
-
-  /** Renewal anchor — `trial_end` if trialing, otherwise `current_period_end`. */
   renewal_at: string | null;
-
-  /** True when the renewal is a scheduled trial-end conversion. */
   is_scheduled_renewal: boolean;
-
   cancel_at_period_end: boolean;
-
   price_id: string | null;
   price_lookup_key: string | null;
   unit_amount_pence: number | null;
   currency: string | null;
   interval: string | null;
-
-  /** Days remaining until trial_end / current_period_end when trialing. */
   trial_days_left: number | null;
-
-  /** True when the member has a paid entitlement right now. */
   has_active_entitlement: boolean;
-
-  /** Headline label for the status pill — e.g. "Scheduled Core renewal". */
   display_status_label: string;
-
-  /** Secondary line — e.g. "Renews 28 May 2027". */
   display_renewal_label: string | null;
-
   discrepancies: AdminSubscriptionDiscrepancy[];
-
-  /** Set when source = "local-mirror" only (informational, not a warning). */
   fallback_reason: string | null;
 }
 
-/* ───────────────────────── Helpers ───────────────────────── */
-
-const ENTITLED_STATUSES = new Set(["active", "trialing", "past_due"]);
-const TIER_BY_LOOKUP_KEY: Record<string, TierKey> = {
-  verified_annual: "verified",
-  verified_legacy_annual: "verified",
-  pro_monthly: "pro",
-  pro_annual: "pro",
-};
-const TIER_BY_PRODUCT_ID: Record<string, TierKey> = {
-  verified: "verified",
-  pro_founding: "pro",
-};
-
-// Catalogue prices used when Stripe doesn't return a price (e.g. local-mirror
-// fallback). These mirror the published REPs prices in src/lib/billing.ts.
+// Catalogue prices used so the Billing tab shows the published REPs price
+// even when we have no row to read from. Mirror of src/lib/billing.ts.
 const TIER_CATALOGUE_PRICE: Record<TierKey, { unit_amount_pence: number; currency: string; interval: string } | null> = {
   verified: { unit_amount_pence: 9900, currency: "gbp", interval: "year" },
   pro: { unit_amount_pence: 5900, currency: "gbp", interval: "month" },
   studio: { unit_amount_pence: 14900, currency: "gbp", interval: "month" },
 };
 
-function cataloguePrice(tier: TierKey | null) {
-  if (!tier) return null;
-  return TIER_CATALOGUE_PRICE[tier] ?? null;
-}
-
-function trialDaysLeft(iso: string | null): number | null {
-  if (!iso) return null;
-  const ms = new Date(iso).getTime() - Date.now();
-  if (Number.isNaN(ms)) return null;
-  return Math.max(0, Math.ceil(ms / 86_400_000));
+function planToTierKey(plan: MemberBillingPlan): TierKey | null {
+  if (plan === "verified" || plan === "pro" || plan === "studio") return plan;
+  return null;
 }
 
 export function tierLabel(tier: TierKey | null): string | null {
   if (!tier) return null;
   return TIERS[tier]?.label ?? null;
-}
-
-/** Resolve internal tier key from Stripe price metadata, preferring price/product/lookup. */
-export function resolveTierFromStripe(mirror: MirrorSubscription | null): TierKey | null {
-  if (!mirror) return null;
-  if (mirror.price_lookup_key && TIER_BY_LOOKUP_KEY[mirror.price_lookup_key]) {
-    return TIER_BY_LOOKUP_KEY[mirror.price_lookup_key];
-  }
-  if (mirror.product_id && TIER_BY_PRODUCT_ID[mirror.product_id]) {
-    return TIER_BY_PRODUCT_ID[mirror.product_id];
-  }
-  const metaTier = (mirror.metadata?.tier ?? "").toLowerCase();
-  if (metaTier === "verified" || metaTier === "pro" || metaTier === "studio") {
-    return metaTier as TierKey;
-  }
-  return null;
-}
-
-function normalizeLocalTier(t: string | null): TierKey | null {
-  if (!t) return null;
-  const k = t.toLowerCase();
-  if (k === "verified" || k === "pro" || k === "studio") return k;
-  return null;
 }
 
 function fmtDate(iso: string | null): string | null {
@@ -171,77 +71,37 @@ function fmtDate(iso: string | null): string | null {
 }
 
 function buildDisplayStatus(
-  status: string | null,
+  row: MemberBillingRow,
   tierLbl: string | null,
-  cancel_at_period_end: boolean,
 ): string {
   const t = tierLbl ?? "Subscription";
-  switch (status) {
-    case "active":
-      return cancel_at_period_end ? `${t} — cancelling` : `${t} — active`;
-    case "trialing":
-      return `Scheduled ${t} renewal`;
-    case "past_due":
-      return `${t} — past due`;
-    case "canceled":
-      return `${t} — canceled`;
-    case "unpaid":
-      return `${t} — unpaid`;
-    case "incomplete":
-    case "incomplete_expired":
-      return `${t} — incomplete`;
-    case "paused":
-      return `${t} — paused`;
-    default:
-      return status ? `${t} — ${status.replace(/_/g, " ")}` : "No active subscription";
-  }
+  if (row.plan === "free") return "No active subscription";
+  if (row.isTrial) return `Scheduled ${t} renewal`;
+  if (row.billingState === "payment_failed") return `${t} — past due`;
+  if (row.billingState === "renewal_due") return `${t} — renewal due`;
+  if (row.cancelAtPeriodEnd) return `${t} — cancelling`;
+  return `${t} — active`;
 }
 
-function diff(
-  mirror: MirrorSubscription | null,
-  local: LocalSubscriptionRow | null,
-  mirrorTier: TierKey | null,
-  localTier: TierKey | null,
-): AdminSubscriptionDiscrepancy[] {
-  if (!mirror || !local) return [];
-  const out: AdminSubscriptionDiscrepancy[] = [];
-  if (local.status && local.status !== mirror.status) out.push("status_mismatch");
-  if (mirrorTier && localTier && mirrorTier !== localTier) out.push("tier_mismatch");
-  if (
-    local.current_period_end &&
-    mirror.current_period_end &&
-    Math.abs(
-      new Date(local.current_period_end).getTime() -
-        new Date(mirror.current_period_end).getTime(),
-    ) > 60_000
-  ) {
-    out.push("period_end_mismatch");
-  }
-  return out;
-}
+/**
+ * Map a `MemberBillingRow` (canonical shared compute) → `AdminSubscriptionState`
+ * for the Member 360 / Billing-tab UI.
+ */
+export function adaptBillingRowToState(row: MemberBillingRow): AdminSubscriptionState {
+  const tier = planToTierKey(row.plan);
+  const lbl = tierLabel(tier);
+  const catalogue = tier ? TIER_CATALOGUE_PRICE[tier] : null;
 
-/* ───────────────────────── Resolver ───────────────────────── */
-
-export interface ResolveInput {
-  user_id: string;
-  mirror: MirrorSubscription | null;
-  local: LocalSubscriptionRow | null;
-}
-
-export function resolveAdminSubscriptionState(input: ResolveInput): AdminSubscriptionState {
-  const { user_id, mirror, local } = input;
-
-  // No data anywhere → "none".
-  if (!mirror && !local) {
+  if (row.plan === "free") {
     return {
-      user_id,
+      user_id: row.user_id,
       source: "none",
       stripe_subscription_id: null,
       stripe_customer_id: null,
       status: null,
       tier: null,
       tier_label: null,
-      renewal_at: null,
+      renewal_at: row.renewalDate,
       is_scheduled_renewal: false,
       cancel_at_period_end: false,
       price_id: null,
@@ -252,133 +112,50 @@ export function resolveAdminSubscriptionState(input: ResolveInput): AdminSubscri
       trial_days_left: null,
       has_active_entitlement: false,
       display_status_label: "No active subscription",
-      display_renewal_label: null,
+      display_renewal_label: row.renewalDate ? `Renews ${fmtDate(row.renewalDate)}` : null,
       discrepancies: [],
       fallback_reason: null,
     };
   }
 
-  const stripeTier = resolveTierFromStripe(mirror);
-  const localTier = normalizeLocalTier(local?.tier ?? null);
-  const tier: TierKey | null = stripeTier ?? localTier;
-  const lbl = tierLabel(tier);
+  // Derive a UI status that mirrors what the list shows.
+  const status: string =
+    row.isTrial ? "trialing"
+    : row.billingState === "payment_failed" ? "past_due"
+    : row.billingState === "renewal_due" ? "past_due"
+    : "active";
 
-  // Stripe live wins when available.
-  if (mirror) {
-    const status = mirror.status;
-    const isTrial = status === "trialing";
-    const renewal_at = isTrial ? mirror.trial_end : mirror.current_period_end;
-    return {
-      user_id,
-      source: "stripe-live",
-      stripe_subscription_id: mirror.stripe_subscription_id,
-      stripe_customer_id: mirror.stripe_customer_id,
-      status,
-      tier,
-      tier_label: lbl,
-      renewal_at,
-      is_scheduled_renewal: isTrial,
-      cancel_at_period_end: mirror.cancel_at_period_end,
-      price_id: mirror.price_id,
-      price_lookup_key: mirror.price_lookup_key,
-      unit_amount_pence: mirror.unit_amount_pence ?? cataloguePrice(tier)?.unit_amount_pence ?? null,
-      currency: mirror.currency ?? cataloguePrice(tier)?.currency ?? null,
-      interval: mirror.interval ?? cataloguePrice(tier)?.interval ?? null,
-      trial_days_left: isTrial ? trialDaysLeft(renewal_at) : null,
-      has_active_entitlement: ENTITLED_STATUSES.has(status),
-      display_status_label: buildDisplayStatus(status, lbl, mirror.cancel_at_period_end),
-      display_renewal_label: renewal_at ? `Renews ${fmtDate(renewal_at)}` : null,
-      discrepancies: diff(mirror, local, stripeTier, localTier),
-      fallback_reason: null,
-    };
-  }
-
-  // Local-only fallback (e.g. Richard Bennett — local trialing row, Stripe mirror unreachable).
-  const status = local!.status;
-  const isTrial = status === "trialing";
-  const renewal_at = local!.current_period_end;
   return {
-    user_id,
-    source: "local-mirror",
-    stripe_subscription_id: local!.stripe_subscription_id,
-    stripe_customer_id: local!.stripe_customer_id,
+    user_id: row.user_id,
+    source: "shared-compute",
+    stripe_subscription_id: row.stripeSubscriptionId,
+    stripe_customer_id: null,
     status,
     tier,
     tier_label: lbl,
-    renewal_at,
-    is_scheduled_renewal: isTrial,
-    cancel_at_period_end: !!local!.cancel_at_period_end,
+    renewal_at: row.renewalDate,
+    is_scheduled_renewal: row.isTrial,
+    cancel_at_period_end: row.cancelAtPeriodEnd,
     price_id: null,
-    price_lookup_key: local!.price_lookup_key ?? null,
-    unit_amount_pence: cataloguePrice(tier)?.unit_amount_pence ?? null,
-    currency: cataloguePrice(tier)?.currency ?? null,
-    interval: cataloguePrice(tier)?.interval ?? null,
-    trial_days_left: isTrial ? trialDaysLeft(renewal_at) : null,
-    has_active_entitlement: !!status && ENTITLED_STATUSES.has(status),
-    display_status_label: buildDisplayStatus(status, lbl, !!local!.cancel_at_period_end),
-    display_renewal_label: renewal_at ? `Renews ${fmtDate(renewal_at)}` : null,
+    price_lookup_key: null,
+    unit_amount_pence: catalogue?.unit_amount_pence ?? null,
+    currency: catalogue?.currency ?? null,
+    interval: catalogue?.interval ?? null,
+    trial_days_left: row.trialDaysLeft,
+    has_active_entitlement: row.hasActiveEntitlement,
+    display_status_label: buildDisplayStatus(row, lbl),
+    display_renewal_label: row.renewalDate ? `Renews ${fmtDate(row.renewalDate)}` : null,
     discrepancies: [],
-    fallback_reason: "Stripe live mirror unavailable — showing the local subscriptions row.",
+    fallback_reason: null,
   };
 }
 
-/* ───────────────────────── Fetchers ───────────────────────── */
-
-/** Pick the best local row for entitlement. Prefers active/trialing then most recent. */
-function pickLocalRow(rows: LocalSubscriptionRow[]): LocalSubscriptionRow | null {
-  if (!rows.length) return null;
-  const ranked = [...rows].sort((a, b) => {
-    const aLive = ENTITLED_STATUSES.has(a.status ?? "") ? 1 : 0;
-    const bLive = ENTITLED_STATUSES.has(b.status ?? "") ? 1 : 0;
-    if (aLive !== bLive) return bLive - aLive;
-    const at = a.current_period_end ? new Date(a.current_period_end).getTime() : 0;
-    const bt = b.current_period_end ? new Date(b.current_period_end).getTime() : 0;
-    return bt - at;
-  });
-  return ranked[0] ?? null;
-}
-
-/** Resolve one user's subscription state. */
+/** Resolve one user's subscription state via the shared compute. */
 export async function resolveSubscriptionStateForUser(
   userId: string,
 ): Promise<AdminSubscriptionState> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { getMirrorSubscription, getMirrorForUser } = await import(
-    "@/lib/billing/stripe-mirror.server"
-  );
-
-  const localRes = await supabaseAdmin
-    .from("subscriptions")
-    .select(
-      "id, user_id, stripe_subscription_id, stripe_customer_id, status, tier, current_period_end, cancel_at_period_end, environment",
-    )
-    .eq("user_id", userId)
-    .eq("environment", "live");
-
-  const localRows = ((localRes.data ?? []) as unknown as LocalSubscriptionRow[]).filter(Boolean);
-  const local = pickLocalRow(localRows);
-
-  // Prefer a direct subscription retrieve when we already know the id
-  // (one Stripe call, far more reliable than a paginated customer list).
-  // Fall back to listing the customer's subs only if the id lookup fails.
-  let mirror: Awaited<ReturnType<typeof getMirrorSubscription>> | null = null;
-  const subId = local?.stripe_subscription_id ?? null;
-  if (subId) {
-    try {
-      mirror = await getMirrorSubscription(subId, "live");
-    } catch (err) {
-      console.warn(`[subscription-resolver] direct retrieve failed for ${subId}`, err);
-    }
-  }
-  if (!mirror) {
-    try {
-      mirror = await getMirrorForUser(userId, "live");
-    } catch (err) {
-      console.warn(`[subscription-resolver] customer-list fallback failed for ${userId}`, err);
-    }
-  }
-
-  return resolveAdminSubscriptionState({ user_id: userId, mirror, local });
+  const row = await fetchMemberBillingRow(userId);
+  return adaptBillingRowToState(row);
 }
 
 /** Bulk variant. */
@@ -391,7 +168,20 @@ export async function resolveSubscriptionStatesForUsers(
       try {
         out.set(id, await resolveSubscriptionStateForUser(id));
       } catch {
-        out.set(id, resolveAdminSubscriptionState({ user_id: id, mirror: null, local: null }));
+        out.set(id, adaptBillingRowToState({
+          user_id: id,
+          plan: "free",
+          planMrrPence: 0,
+          billingState: "ok",
+          renewalDate: null,
+          renewalDateSource: null,
+          isTrial: false,
+          trialDaysLeft: null,
+          hasActiveEntitlement: false,
+          stripeSubscriptionId: null,
+          stripeStatus: null,
+          cancelAtPeriodEnd: false,
+        }));
       }
     }),
   );
