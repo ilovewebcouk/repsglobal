@@ -47,6 +47,9 @@ export interface AdminOverviewDTO {
   // KPI 3 — Projected Cash Due (independent horizon)
   forecastPence: number;
 
+  // Lifetime — total cash banked across all time (Stripe-mirror)
+  lifetimeRevenuePence: number;
+
   // KPI 4 — Net Member Growth (joinedInPeriod - churnedInPeriod)
   netMemberGrowth: number;
 
