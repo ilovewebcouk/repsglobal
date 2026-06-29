@@ -482,7 +482,7 @@ function WebsiteContentEditor() {
   }, [data]);
 
   const saveMut = useMutation({
-    mutationFn: (patch: Parameters<typeof save_>[0]["data"]) => save_({ data: patch }),
+    mutationFn: (patch: Record<string, unknown>) => save_({ data: patch as never }),
     onSuccess: () => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["my-website-content"] });
