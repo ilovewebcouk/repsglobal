@@ -77,7 +77,7 @@ function AdminCleanupPage() {
   };
 
   return (
-    <DashboardShell>
+    <DashboardShell role="admin" active="Cleanup" title="Cleanup" subtitle="Batch-delete expired BD legacy accounts">
       <div className="space-y-6">
         <div>
           <h1 className="font-display text-3xl font-semibold">Cleanup — expired BD legacy accounts</h1>
