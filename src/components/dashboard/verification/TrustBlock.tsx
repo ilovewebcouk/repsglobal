@@ -254,7 +254,7 @@ function IdentityBody({
   if (identity) {
     const isStripe = identity.vendor === "stripe";
     const ageMs = identity.created_at ? Date.now() - new Date(identity.created_at).getTime() : 0;
-    const staleStripe = ageMs > 60 * 60 * 1000; // 1h → treat the stored URL as expired
+    const staleStripe = isStripe && identity.status === "pending" && ageMs > 60 * 60 * 1000; // 1h → treat the stored URL as expired
     const stripeInProgress =
       isStripe && identity.status === "pending" && !!identity.stripe_vs_url && !staleStripe;
 
