@@ -424,6 +424,7 @@ const NAV_ITEMS = [
 function CoachShopFrontPage() {
   const { slug } = Route.useParams();
   const fetchShopFront = useServerFn(getShopFrontBySlug);
+  const fetchReviews = useServerFn(listPublicReviewsBySlug);
   const isFixture = !!COACHES[slug];
 
   // Fixture coach pages (james-wilson) are admin-only mock-up references —
@@ -437,6 +438,13 @@ function CoachShopFrontPage() {
   const { data: live } = useQuery({
     queryKey: ["shop-front", slug],
     queryFn: () => fetchShopFront({ data: { slug } }),
+    staleTime: 60_000,
+    enabled: !isFixture,
+  });
+
+  const { data: reviewsData } = useQuery({
+    queryKey: ["shop-front-reviews", slug],
+    queryFn: () => fetchReviews({ data: { slug } }),
     staleTime: 60_000,
     enabled: !isFixture,
   });
@@ -468,7 +476,14 @@ function CoachShopFrontPage() {
       </div>
     );
   }
-  const coach = live ? mergeLiveIntoCoach(baseCoach ?? COACHES["james-wilson"], live.shopFront, live.services) : baseCoach!;
+  let coach = live ? mergeLiveIntoCoach(baseCoach ?? COACHES["james-wilson"], live.shopFront, live.services) : baseCoach!;
+  if (!isFixture && reviewsData) {
+    coach = {
+      ...coach,
+      rating: reviewsData.count > 0 ? reviewsData.average : 0,
+      reviews: reviewsData.count,
+    };
+  }
   const accent = `var(--coach-accent-${coach.accent})`;
 
   const accentStyle = {
