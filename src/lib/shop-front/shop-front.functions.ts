@@ -158,6 +158,31 @@ function buildSocials(row: {
   return out;
 }
 
+import { getTitle } from "@/lib/cpd/titles-catalog";
+
+/**
+ * Resolve display-ready title labels for a pro, in priority order
+ * (primary, then secondary if different). Falls back to an empty list
+ * if neither slug maps to a known title.
+ */
+function buildTitleLabels(
+  primarySlug: string | null | undefined,
+  secondarySlug: string | null | undefined,
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const slug of [primarySlug, secondarySlug]) {
+    if (!slug) continue;
+    const entry = getTitle(slug as never);
+    if (!entry) continue;
+    if (seen.has(entry.slug)) continue;
+    seen.add(entry.slug);
+    out.push(entry.label);
+  }
+  return out;
+}
+
+
 
 
 // Helper: earliest year from approved verification submissions whose
