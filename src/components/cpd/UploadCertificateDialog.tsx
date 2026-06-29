@@ -200,20 +200,38 @@ export function UploadCertificateDialog({
       setPreviewUrl(URL.createObjectURL(f));
     }
     setStep("extracting");
+    let dataUrl: string;
     try {
-      const dataUrl = await fileToDataUrl(f);
+      dataUrl = await fileToDataUrl(f);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not read file");
+      setStep("pick");
+      return;
+    }
 
-      const [uploaded, extracted] = await Promise.all([
-        upload({ data: { file_data_url: dataUrl, filename: f.name } }),
-        extract({ data: { file_data_url: dataUrl, filename: f.name } }),
-      ]);
+    // Step 1: upload the file. If this fails we cannot proceed — the user
+    // has to re-pick. Surface the real error instead of a generic toast.
+    let uploaded: { path: string; sha256: string };
+    try {
+      uploaded = await upload({ data: { file_data_url: dataUrl, filename: f.name } });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Upload failed";
+      toast.error(`Upload failed — ${msg}. Please try again or contact support.`);
+      setStep("pick");
+      return;
+    }
+    setUploadPath(uploaded.path);
+    setSha256(uploaded.sha256);
 
-      setUploadPath(uploaded.path);
-      setSha256(uploaded.sha256);
+    // Step 2: AI extract. If this fails (AI down, busy, low confidence) we
+    // do NOT bounce the user back to the picker — we move on to the confirm
+    // step with empty fields so they can type the details manually. This
+    // breaks the "every time I pick a file it just loops back" trap.
+    try {
+      const extracted = await extract({ data: { file_data_url: dataUrl, filename: f.name } });
       setAiRaw(extracted as unknown as Record<string, unknown>);
       setAiConfidence(extracted.confidence ?? null);
       setTrustBadges(extracted.trust_badges ?? []);
-
       setAwardingBodySlug(extracted.awarding_body_slug ?? "other");
       setAwardingBodyOther(
         extracted.awarding_body_slug ? "" : extracted.awarding_body ?? "",
@@ -224,12 +242,17 @@ export function UploadCertificateDialog({
       setExpiryDate(extracted.expiry_date ?? "");
       setCertNumber(extracted.certificate_number ?? "");
       setHolderName(extracted.holder_name ?? "");
-      setStep("confirm");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
-      setStep("pick");
+      toast.message("AI couldn't read the certificate — please fill in the details by hand below.", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+      setAiRaw(null);
+      setAiConfidence(null);
+      setTrustBadges([]);
     }
+    setStep("confirm");
   };
+
 
   const handleSubmit = async () => {
     if (!uploadPath || !sha256) return;
