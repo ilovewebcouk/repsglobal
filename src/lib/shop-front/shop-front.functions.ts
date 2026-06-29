@@ -55,7 +55,37 @@ export type ShopFrontDTO = {
       dateLabel: string | null;
     }>;
   };
+  // Public social links (derived from professionals.social_*).
+  socials: Array<{
+    kind: "instagram" | "tiktok" | "youtube" | "x" | "website" | "email";
+    href: string;
+    label: string;
+  }>;
 };
+
+function buildSocials(row: {
+  social_instagram?: string | null;
+  social_tiktok?: string | null;
+  social_youtube?: string | null;
+  social_x?: string | null;
+  social_linkedin?: string | null;
+}): ShopFrontDTO["socials"] {
+  const out: ShopFrontDTO["socials"] = [];
+  const ig = (row.social_instagram ?? "").trim();
+  const tt = (row.social_tiktok ?? "").trim();
+  const yt = (row.social_youtube ?? "").trim();
+  const xh = (row.social_x ?? "").trim();
+  const li = (row.social_linkedin ?? "").trim();
+  const toUrl = (h: string, base: string) =>
+    /^https?:\/\//i.test(h) ? h : `${base}${h.replace(/^@/, "")}`;
+  if (ig) out.push({ kind: "instagram", href: toUrl(ig, "https://instagram.com/"), label: "Instagram" });
+  if (tt) out.push({ kind: "tiktok", href: toUrl(tt, "https://tiktok.com/@"), label: "TikTok" });
+  if (yt) out.push({ kind: "youtube", href: toUrl(yt, "https://youtube.com/@"), label: "YouTube" });
+  if (xh) out.push({ kind: "x", href: toUrl(xh, "https://x.com/"), label: "X" });
+  if (li) out.push({ kind: "website", href: toUrl(li, "https://linkedin.com/in/"), label: "LinkedIn" });
+  return out;
+}
+
 
 
 // Helper: earliest year from approved verification submissions whose
