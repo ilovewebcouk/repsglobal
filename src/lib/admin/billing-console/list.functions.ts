@@ -357,7 +357,14 @@ export const listSubscriptions = createServerFn({ method: "POST" })
         current_period_end: s.current_period_end,
         billing_period: s.billing_period,
       };
-      const row = computeMemberBillingRow({ user_id: s.user_id, subs: [lite], bdNextDueIso: null, activePaidTier: null });
+      // Treat any entitled (active/trialing/past_due) sub as the active paid tier
+      // so the plan pill resolves to Core/Pro/Studio instead of falling back to Free.
+      const entitledTier =
+        (s.status === "active" || s.status === "trialing" || s.status === "past_due") &&
+        (s.tier === "verified" || s.tier === "pro" || s.tier === "studio")
+          ? (s.tier as MemberBillingPlan)
+          : null;
+      const row = computeMemberBillingRow({ user_id: s.user_id, subs: [lite], bdNextDueIso: null, activePaidTier: entitledTier });
 
       const email = emailMap.get(s.user_id) ?? null;
       const fullName = profMap.get(s.user_id) ?? null;
