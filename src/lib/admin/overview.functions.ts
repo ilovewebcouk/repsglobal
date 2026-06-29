@@ -84,26 +84,27 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       : forecastWindowFor("next_30d");
 
     // -------------------------------------------------------------------
-    // KPI 1 — Active Members (point-in-time)
+    // KPI 1 — Active Members (point-in-time) — STRIPE-MIRROR ONLY (A4b-1)
     //
-    // Canonical Active Paying Member model — unions Stripe subs,
-    // legacy_stripe_link, and bd_member_seed and dedupes to one survivor
-    // per person. See `src/lib/members/active-paying-member.ts`.
+    // Source of truth = `public.subscriptions` (local mirror synced from
+    // Stripe via webhook). Counts one row per user_id with an active or
+    // trialing live subscription in a counted tier. Ghost rows (user_id no
+    // longer in auth.users) are excluded so deleted accounts can't inflate
+    // the tile.
+    //
+    // Legacy unions over `legacy_stripe_link` + `bd_member_seed` are
+    // retired here. BD members in the 44-row setup-link cohort rejoin the
+    // count when their subscription is created on card capture. See
+    // docs/admin-v2/post-bd-migration-admin-audit-2026-06-28.md.
     // -------------------------------------------------------------------
     const { data: subsRaw, error: subsErr } = await supabase
       .from("subscriptions")
-      .select("id, user_id, tier, status, current_period_end, created_at, environment, cancel_at_period_end");
+      .select(
+        "id, user_id, tier, status, current_period_end, created_at, environment, cancel_at_period_end",
+      );
     if (subsErr) throw subsErr;
 
-    const { data: legacyLinksAll } = await supabase
-      .from("legacy_stripe_link")
-      .select("bd_member_id, email, access_expires_at, created_at, stripe_customer_id");
-
-    const { data: bdSeedsAll } = await supabase
-      .from("bd_member_seed")
-      .select("bd_member_id, email, claimed_user_id, bd_next_due_date, legacy_signup_at");
-
-    // Email lookup for subs → email (used for cross-source dedupe).
+    // Anti-ghost filter: drop subs whose user_id no longer resolves in auth.
     const authEmailById = new Map<string, string>();
     try {
       const { supabaseAdmin } = await import(
@@ -121,55 +122,46 @@ export const getAdminOverview = createServerFn({ method: "GET" })
         page += 1;
       }
     } catch {
-      // Email lookup is a best-effort enrichment for dedupe — collection
-      // still works without it (subs vs bd will fall through to bd_member_id).
+      // Lookup is best-effort; without it we keep all subs.
     }
 
-    const nowIso = new Date().toISOString();
-    // Exclude "ghost" subscriptions: rows whose user_id no longer exists in
-    // auth.users (account deleted but Stripe sub never cancelled). They would
-    // otherwise inflate Active Members by 1 per orphan.
-    const subsFiltered = ((subsRaw ?? []) as Array<Record<string, unknown>>).filter((s) => {
-      const uid = (s.user_id as string | null) ?? null;
+    const subsFiltered = (subsRaw ?? []).filter((s) => {
+      const uid = s.user_id ?? null;
       return !uid || authEmailById.has(uid);
     });
-    const activeCollection = buildActivePayingMemberCollection({
-      subs: subsFiltered.map((s) => ({
-        id: String(s.id),
-        user_id: (s.user_id as string | null) ?? null,
-        tier: (s.tier as string | null) ?? null,
-        status: (s.status as string | null) ?? null,
-        environment: (s.environment as string | null) ?? null,
-        created_at: (s.created_at as string | null) ?? null,
-        current_period_end: (s.current_period_end as string | null) ?? null,
-      })),
-      legacyLinks: ((legacyLinksAll ?? []) as Array<Record<string, unknown>>).map(
-        (l) => ({
-          bd_member_id: (l.bd_member_id as number | string | null) ?? null,
-          email: (l.email as string | null) ?? null,
-          claimed_user_id: null, // legacy_stripe_link has no user_id column
-          access_expires_at: (l.access_expires_at as string | null) ?? null,
-          created_at: (l.created_at as string | null) ?? null,
-          stripe_customer_id: (l.stripe_customer_id as string | null) ?? null,
-        }),
-      ),
-      bdSeeds: ((bdSeedsAll ?? []) as Array<Record<string, unknown>>).map((b) => ({
-        bd_member_id: (b.bd_member_id as number | string | null) ?? null,
-        email: (b.email as string | null) ?? null,
-        claimed_user_id: (b.claimed_user_id as string | null) ?? null,
-        bd_next_due_date: (b.bd_next_due_date as string | null) ?? null,
-        bd_signup_date: (b.legacy_signup_at as string | null) ?? null,
-      })),
-      authEmailById,
-      nowIso,
-    });
 
-    const totalMembers = activeCollection.counts.final_active_members;
-    const mix = {
-      verified: activeCollection.counts.by_tier.verified,
-      pro: activeCollection.counts.by_tier.pro,
-      studio: activeCollection.counts.by_tier.studio,
-    };
+    // Dedupe to one survivor per user (keep highest-tier, then most-recent).
+    const tierRank: Record<string, number> = { studio: 3, pro: 2, verified: 1 };
+    const survivorByUser = new Map<
+      string,
+      { tier: string; created_at: string | null }
+    >();
+    for (const s of subsFiltered) {
+      if (!isActiveSubscription(s)) continue;
+      if (!s.user_id || !s.tier) continue;
+      const prev = survivorByUser.get(s.user_id);
+      if (!prev) {
+        survivorByUser.set(s.user_id, { tier: s.tier, created_at: s.created_at });
+        continue;
+      }
+      const better =
+        (tierRank[s.tier] ?? 0) > (tierRank[prev.tier] ?? 0) ||
+        ((tierRank[s.tier] ?? 0) === (tierRank[prev.tier] ?? 0) &&
+          new Date(s.created_at ?? 0).getTime() >
+            new Date(prev.created_at ?? 0).getTime());
+      if (better) {
+        survivorByUser.set(s.user_id, { tier: s.tier, created_at: s.created_at });
+      }
+    }
+
+    const totalMembers = survivorByUser.size;
+    const mix = { verified: 0, pro: 0, studio: 0 };
+    for (const { tier } of survivorByUser.values()) {
+      if (tier === "verified") mix.verified += 1;
+      else if (tier === "pro") mix.pro += 1;
+      else if (tier === "studio") mix.studio += 1;
+    }
+
 
 
 
