@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Trash2,
   TrendingUp,
+  User as UserIcon,
   Users,
   X,
 } from "lucide-react";
