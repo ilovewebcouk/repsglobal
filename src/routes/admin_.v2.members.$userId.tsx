@@ -297,7 +297,8 @@ function Member360Page() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </DashboardShell>
   );
 }
 
