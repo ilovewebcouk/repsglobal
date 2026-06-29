@@ -99,35 +99,55 @@ function MobileInsuranceUploadPage() {
               Or pick a saved PDF / image. We'll send it straight back to your dashboard.
             </p>
 
-            <label
-              htmlFor="ins-mobile-file"
-              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-8 text-center"
-            >
-              {busy ? (
-                <>
-                  <Loader2 className="size-6 animate-spin text-reps-orange" />
-                  <span className="text-[14px] font-semibold text-white">Uploading…</span>
-                </>
-              ) : (
-                <>
+            {busy ? (
+              <div className="flex flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-8 text-center">
+                <Loader2 className="size-6 animate-spin text-reps-orange" />
+                <span className="text-[14px] font-semibold text-white">Uploading…</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <label
+                  htmlFor="ins-mobile-camera"
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-6 text-center"
+                >
+                  <Camera className="size-6 text-reps-orange" />
+                  <span className="text-[13.5px] font-semibold text-white">Take photo</span>
+                  <span className="text-[11px] text-white/55">Use camera</span>
+                  <input
+                    id="ins-mobile-camera"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onClick={(e) => { (e.currentTarget as HTMLInputElement).value = ""; }}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handlePick(f);
+                    }}
+                  />
+                </label>
+                <label
+                  htmlFor="ins-mobile-file"
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-reps-border bg-reps-panel-soft p-6 text-center"
+                >
                   <Upload className="size-6 text-reps-orange" />
-                  <span className="text-[14px] font-semibold text-white">Take photo or choose file</span>
-                  <span className="text-[12px] text-white/55">PDF, JPG or PNG · max 10MB</span>
-                </>
-              )}
-              <input
-                id="ins-mobile-file"
-                type="file"
-                accept="application/pdf,image/jpeg,image/png"
-                capture="environment"
-                disabled={busy}
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void handlePick(f);
-                }}
-              />
-            </label>
+                  <span className="text-[13.5px] font-semibold text-white">Choose file</span>
+                  <span className="text-[11px] text-white/55">PDF, JPG, PNG</span>
+                  <input
+                    id="ins-mobile-file"
+                    type="file"
+                    accept="application/pdf,image/jpeg,image/png"
+                    className="hidden"
+                    onClick={(e) => { (e.currentTarget as HTMLInputElement).value = ""; }}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handlePick(f);
+                    }}
+                  />
+                </label>
+              </div>
+            )}
+            <p className="text-center text-[11px] text-white/45">Max 10MB</p>
             <p className="text-center text-[11px] text-white/45">
               Link expires {new Date(data.expires_at).toLocaleTimeString()}
             </p>
