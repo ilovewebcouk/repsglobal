@@ -72,6 +72,8 @@ export type MemberBillingRow = {
   hasActiveEntitlement: boolean;
   /** Stripe sub id for the row driving renewalDate (when source = "stripe"). */
   stripeSubscriptionId: string | null;
+  /** Stripe customer id for the row driving renewalDate (when present). */
+  stripeCustomerId: string | null;
   /** Status of the row driving renewalDate (when source = "stripe"). */
   stripeStatus: string | null;
   /** cancel_at_period_end of the row driving renewalDate (when present). */
