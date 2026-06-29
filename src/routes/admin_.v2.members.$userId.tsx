@@ -90,7 +90,7 @@ function Member360Page() {
       subtitle={subtitle}
     >
       <div className="flex flex-col gap-6 p-6">
-        <MemberFinder placeholder="Find another member by email, id, cus_, sub_, BD id…" />
+        <MemberFinder target="/admin/v2/members/$userId" placeholder="Find another member by email, id, cus_, sub_, BD id…" />
 
         {snap.isLoading && <Skeleton className="h-64 w-full" />}
         {snap.error && (

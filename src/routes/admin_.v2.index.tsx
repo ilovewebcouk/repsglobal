@@ -43,7 +43,7 @@ function AdminV2Index() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <MemberFinder placeholder="Email, user id, cus_, sub_, BD id…" />
+            <MemberFinder target="/admin/v2/members/$userId" placeholder="Email, user id, cus_, sub_, BD id…" />
           </CardContent>
         </Card>
       </div>
