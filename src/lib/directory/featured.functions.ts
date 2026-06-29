@@ -31,6 +31,8 @@ export type FeaturedProRow = {
   full_name: string;
   avatar_url: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   specialisms: string[];
   city: string | null;
   headline: string | null;
@@ -91,6 +93,8 @@ type ProRow = {
   slug: string | null;
   city: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   specialisms: string[] | null;
   headline: string | null;
   in_person_available: boolean | null;
@@ -121,7 +125,7 @@ async function fetchFeaturedPool(
   let qb = supabaseAdmin
     .from("professionals")
     .select(
-      "id, slug, city, primary_profession, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
+      "id, slug, city, primary_profession, primary_title_slug, secondary_title_slug, specialisms, headline, in_person_available, online_available, identity_status, verification, quality_score",
     )
     .eq("is_published", true)
     .eq("is_demo", false)
@@ -214,6 +218,8 @@ async function fetchFeaturedPool(
         full_name: prof?.full_name ?? "REPs Professional",
         avatar_url: prof?.avatar_url ?? null,
         primary_profession: p.primary_profession,
+        primary_title_slug: p.primary_title_slug,
+        secondary_title_slug: p.secondary_title_slug,
         specialisms: Array.isArray(p.specialisms) ? p.specialisms : [],
         city: p.city,
         town: townById.get(p.id) ?? null,

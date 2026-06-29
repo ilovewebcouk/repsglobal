@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { searchProfessionals } from "@/lib/directory/search.functions";
 import { getProfessionLabel } from "@/lib/professions";
 import { getSpecialismLabel } from "@/lib/specialisms";
+import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 import { searchTaxonomy } from "@/lib/search/taxonomy";
 
 import { useViewerOrigin } from "@/lib/useViewerOrigin";
@@ -278,10 +279,14 @@ function DirectoryPage() {
           const specLabels = (r.specialisms ?? [])
             .map((s) => getSpecialismLabel(s) ?? s)
             .filter(Boolean) as string[];
-          const professionLabel = getProfessionLabel(r.primary_profession);
+          const primaryTitle = getTitleLabel(r.primary_title_slug) ?? getProfessionLabel(r.primary_profession);
+          const secondaryTitle = getTitleLabel(r.secondary_title_slug);
+          const role = secondaryTitle && secondaryTitle !== primaryTitle
+            ? `${primaryTitle} · ${secondaryTitle}`
+            : (primaryTitle || specLabels[0] || "Fitness Professional");
           return {
             name: r.full_name || "REPs Professional",
-            role: professionLabel || specLabels[0] || "Fitness Professional",
+            role,
             distance: town ?? "—",
             town: town ?? undefined,
             coords,

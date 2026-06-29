@@ -49,7 +49,7 @@ export type SearchProfessionalsResult = {
 };
 
 const COLS =
-  "id, slug, headline, bio, primary_profession, specialisms, city, country, hourly_rate_pence, verification, identity_status, in_person_available, online_available, bd_seed_thin, quality_score, created_at, updated_at";
+  "id, slug, headline, bio, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, country, hourly_rate_pence, verification, identity_status, in_person_available, online_available, bd_seed_thin, quality_score, created_at, updated_at";
 
 export type ProGymPill = {
   /** Stable id for React keys. */
@@ -66,6 +66,8 @@ export type SearchProfessionalRow = {
   headline: string | null;
   bio: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   specialisms: string[];
   city: string | null;
   country: string | null;

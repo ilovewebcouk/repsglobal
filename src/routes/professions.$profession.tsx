@@ -36,6 +36,7 @@ import {
   type Specialism,
 } from "@/lib/specialisms";
 import { getProfessionLabel, isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
+import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 
 
 function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
@@ -45,7 +46,9 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
+  const primary = getTitleLabel(r.primary_title_slug) ?? getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
+  const secondary = getTitleLabel(r.secondary_title_slug);
+  const role = secondary && secondary !== primary ? `${primary} · ${secondary}` : primary;
   return {
     name: r.full_name ?? "REPs Professional",
     role,
@@ -68,7 +71,9 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
+  const primary = getTitleLabel(r.primary_title_slug) ?? getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
+  const secondary = getTitleLabel(r.secondary_title_slug);
+  const role = secondary && secondary !== primary ? `${primary} · ${secondary}` : primary;
   return {
     name: r.full_name,
     role,
