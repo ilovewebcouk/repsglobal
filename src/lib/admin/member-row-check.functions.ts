@@ -127,7 +127,7 @@ export const verifyMemberMatchesProfessionalsRow = createServerFn({ method: "GET
         renewal_date: m360.renewal_at,
         is_trial: m360.status === "trialing",
         trial_days_left: m360.trial_days_left,
-        tier: m360.tier_key,
+        tier: (m360.tier as string | null) ?? null,
         pill_text: m360_pill_text,
       },
       mismatches,
