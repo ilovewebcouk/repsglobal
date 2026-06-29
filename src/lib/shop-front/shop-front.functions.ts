@@ -306,6 +306,8 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         coaching_since_year: coachingSinceYear,
         tier,
         trust,
+        socials: buildSocials(pro as any),
+
       },
       services: (services ?? []) as ServiceDTO[],
     };
