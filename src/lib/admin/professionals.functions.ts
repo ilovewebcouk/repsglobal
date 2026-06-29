@@ -296,47 +296,9 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       if (m.user_id) paidTierByUserId.set(m.user_id, m.tier as AdminProRow['plan']);
     }
 
-    // ── Billing-state derivation ──────────────────────────────────────────
-    // Stripe subs whose payment has broken but still represent a Core/Pro/
-    // Studio paying relationship in recovery — Raheela's row today.
-    const FAILED_STRIPE_STATUSES = new Set([
-      'past_due', 'unpaid', 'incomplete', 'incomplete_expired',
-    ]);
-    const COUNTED_TIERS_SET = new Set(['verified', 'pro', 'studio']);
-    const failedSubTier = new Map<string, AdminProRow['plan']>();
-    for (const s of subsData) {
-      if (!FAILED_STRIPE_STATUSES.has(s.status)) continue;
-      if (!COUNTED_TIERS_SET.has(s.tier)) continue;
-      // Only mark as failed if there's no concurrently-active paid record.
-      if (paidTierByUserId.has(s.user_id)) continue;
-      const existing = failedSubTier.get(s.user_id);
-      const cur = (s.tier as AdminProRow['plan']);
-      if (!existing || PLAN_RANK[cur] > PLAN_RANK[existing]) {
-        failedSubTier.set(s.user_id, cur);
-      }
-    }
-    // BD members whose due date has arrived but the renewal cron hasn't yet
-    // converted them into a live Stripe sub — Adam Davis on his due day.
-    const RENEWAL_DUE_GRACE_DAYS = 7;
-    const nowMs = Date.now();
-    const renewalDueUserIds = new Set<string>();
-    for (const [uid, dueIso] of bdDueMap.entries()) {
-      if (paidTierByUserId.has(uid) || failedSubTier.has(uid)) continue;
-      const dueMs = new Date(dueIso).getTime();
-      if (!Number.isFinite(dueMs)) continue;
-      // due today or in the past 7 days = "renewal due, awaiting cron"
-      if (dueMs <= nowMs && nowMs - dueMs <= RENEWAL_DUE_GRACE_DAYS * 86400_000) {
-        renewalDueUserIds.add(uid);
-      }
-    }
-
-    const subDetailMap = new Map<string, { createdAt: string; currentPeriodEnd: string | null; status: string }>();
-    for (const s of subsData) {
-      if (!['active', 'trialing', 'past_due'].includes(s.status)) continue;
-      if (!subDetailMap.has(s.user_id)) {
-        subDetailMap.set(s.user_id, { createdAt: s.created_at, currentPeriodEnd: s.current_period_end, status: s.status });
-      }
-    }
+    // Billing-state, plan, renewal, trial and tier all derive from
+    // `computeMemberBillingRow` per row below — kept in lockstep with
+    // Member 360 via the shared helper in `member-billing-row.server.ts`.
     const ratingAcc = new Map<string, { sum: number; n: number }>();
     for (const r of reviewsData) {
       const cur = ratingAcc.get(r.professional_id) ?? { sum: 0, n: 0 };
