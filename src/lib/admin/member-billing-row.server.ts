@@ -198,7 +198,7 @@ export async function fetchMemberBillingRow(
     supabaseAdmin
       .from("subscriptions")
       .select(
-        "user_id, tier, status, created_at, current_period_end, billing_period, stripe_subscription_id, cancel_at_period_end, environment",
+        "user_id, tier, status, created_at, current_period_end, billing_period, stripe_subscription_id, stripe_customer_id, cancel_at_period_end, environment",
       )
       .eq("user_id", userId)
       .eq("environment", "live"),
