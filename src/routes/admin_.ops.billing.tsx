@@ -13,6 +13,7 @@ import { RenewalEngineCard } from "@/components/ops/RenewalEngineCard";
 import { SiteTimePanel } from "@/components/ops/SiteTimePanel";
 import { BdRailSwapCard } from "@/components/ops/BdRailSwapCard";
 import { BdSetupLinkCard } from "@/components/ops/BdSetupLinkCard";
+import { PriceIdBackfillCard } from "@/components/ops/PriceIdBackfillCard";
 
 const drillEnum = z.enum([
   "payments_today", "refunds_today", "failed_active",
@@ -105,6 +106,9 @@ function BillingPage() {
 
         {/* BD Workstreams 2 & 3 — setup-link + reactivation */}
         <BdSetupLinkCard />
+
+        {/* Phase A: backfill real Stripe price IDs onto subscriptions rows */}
+        <PriceIdBackfillCard />
 
 
 
