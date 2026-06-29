@@ -47,6 +47,9 @@ export interface AdminOverviewDTO {
   // KPI 3 — Projected Cash Due (independent horizon)
   forecastPence: number;
 
+  // Lifetime — total cash banked across all time (Stripe-mirror)
+  lifetimeRevenuePence: number;
+
   // KPI 4 — Net Member Growth (joinedInPeriod - churnedInPeriod)
   netMemberGrowth: number;
 
@@ -262,6 +265,74 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     }
 
     // -------------------------------------------------------------------
+    // Lifetime Revenue — total cash banked across ALL time.
+    // Same dedupe + refund-net logic as KPI 2 but with no date filter.
+    // -------------------------------------------------------------------
+    let lifetimeRevenuePence = 0;
+    {
+      const { data: lifePaid } = await supabase
+        .from("payment_events")
+        .select("stripe_event_id, event_type, payload, created_at")
+        .in("event_type", Array.from(COUNTED_PAYMENT_EVENT_TYPES))
+        .range(0, 49999);
+      const seen = new Set<string>();
+      const byKey = new Map<string, { amount: number; rank: number }>();
+      for (const ev of lifePaid ?? []) {
+        if (ev.stripe_event_id && seen.has(ev.stripe_event_id)) continue;
+        if (ev.stripe_event_id) seen.add(ev.stripe_event_id);
+        const payload = (ev.payload ?? {}) as Record<string, unknown>;
+        const eventData = (payload.data ?? {}) as Record<string, unknown>;
+        const obj = (eventData.object ?? {}) as Record<string, unknown>;
+        let amount =
+          typeof obj.amount_paid === "number"
+            ? obj.amount_paid
+            : typeof obj.amount === "number"
+              ? obj.amount
+              : 0;
+        if (ev.event_type === "charge.succeeded") {
+          if (obj.refunded === true) amount = 0;
+          else if (typeof obj.amount_refunded === "number") {
+            amount = Math.max(0, amount - obj.amount_refunded);
+          }
+        }
+        if (!amount) continue;
+        const objectId = asString(obj.id);
+        const paymentIntent = asString(obj.payment_intent);
+        const chargeId =
+          asString(obj.charge) ??
+          (ev.event_type === "charge.succeeded" ? objectId : null);
+        const key = paymentIntent
+          ? `pi:${paymentIntent}`
+          : chargeId
+            ? `charge:${chargeId}`
+            : objectId
+              ? `object:${objectId}`
+              : `event:${ev.stripe_event_id ?? ev.created_at}`;
+        const rank = ev.event_type === "invoice.payment_succeeded" ? 1 : 2;
+        const prev = byKey.get(key);
+        if (!prev || rank < prev.rank) byKey.set(key, { amount, rank });
+      }
+      for (const v of byKey.values()) lifetimeRevenuePence += v.amount;
+
+      const { data: lifeRefunds } = await supabase
+        .from("payment_events")
+        .select("stripe_event_id, payload")
+        .eq("event_type", "charge.refunded")
+        .range(0, 49999);
+      const seenR = new Set<string>();
+      for (const ev of lifeRefunds ?? []) {
+        if (ev.stripe_event_id && seenR.has(ev.stripe_event_id)) continue;
+        if (ev.stripe_event_id) seenR.add(ev.stripe_event_id);
+        const payload = (ev.payload ?? {}) as Record<string, unknown>;
+        const eventData = (payload.data ?? {}) as Record<string, unknown>;
+        const obj = (eventData.object ?? {}) as Record<string, unknown>;
+        const refunded = typeof obj.amount_refunded === "number" ? obj.amount_refunded : 0;
+        if (refunded) lifetimeRevenuePence = Math.max(0, lifetimeRevenuePence - refunded);
+      }
+    }
+
+
+    // -------------------------------------------------------------------
     // KPI 3 — Projected Cash Due (forecast horizon window)
     // -------------------------------------------------------------------
     const fcastFrom = new Date(fcast.from).getTime();
@@ -453,6 +524,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       netMemberGrowth,
       revenuePence,
       forecastPence,
+      lifetimeRevenuePence,
       newRegistrations,
       membersSeries: membersSeries.length && totalMembers > 0 ? membersSeries : null,
       revenueSeries: hasData(revenueSeriesArr) ? revenueSeriesArr : null,

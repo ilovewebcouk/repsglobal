@@ -1,255 +1,172 @@
 // Admin v2 — Overview.
 //
-// Mirror-first KPI surface rendered inside the existing branded admin shell
-// (`DashboardShell role="admin"`). Same locked sidebar / topbar / user card
-// as legacy /admin — only the page body changes.
+// Mirrors the legacy /admin layout exactly (OverviewKpis + RevenueAndMembership
+// + reconciliation strip) inside the branded admin shell. Adds Lifetime
+// Revenue and a tier-mix card. Period & forecast horizon are URL-driven.
 
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
-import {
-  Activity,
-  ArrowUpRight,
-  CreditCard,
-  PoundSterling,
-  TrendingUp,
-  Users,
-  Wallet,
-} from "lucide-react";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  Tooltip as RechartsTooltip,
-  XAxis,
-} from "recharts";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { queryOptions } from "@tanstack/react-query";
+import { z } from "zod";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PeriodSelector } from "@/components/admin/PeriodSelector";
+import { OverviewKpis } from "@/components/admin/sections/OverviewKpis";
+import { RevenueAndMembership } from "@/components/admin/sections/RevenueAndMembership";
+import { MemberReconciliationStrip } from "@/components/admin/sections/MemberReconciliationStrip";
 import { MemberFinder } from "@/components/ops/MemberFinder";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AdminCard } from "@/components/admin/AdminCard";
 
 import { getAdminOverview } from "@/lib/admin/overview.functions";
-import { resolvePeriod, forecastWindowFor } from "@/lib/admin/overview-period";
+import {
+  PERIOD_OPTIONS,
+  resolvePeriod,
+  forecastWindowFor,
+  type PeriodKey,
+} from "@/lib/admin/overview-period";
+import type { ForecastHorizon } from "@/lib/admin/metrics-definitions";
+
+const searchSchema = z.object({
+  period: fallback(
+    z.enum([
+      "today",
+      "yesterday",
+      "last_7d",
+      "last_30d",
+      "mtd",
+      "prev_month",
+      "qtd",
+      "ytd",
+      "custom",
+    ]),
+    "last_30d",
+  ).default("last_30d"),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  fcast: fallback(
+    z.enum([
+      "remaining_this_month",
+      "next_month",
+      "next_30d",
+      "current_quarter",
+      "current_year",
+      "custom",
+    ]),
+    "next_30d",
+  ).default("next_30d"),
+  fcastFrom: z.string().optional(),
+  fcastTo: z.string().optional(),
+});
+
+function overviewQuery(
+  period: PeriodKey,
+  fcast: ForecastHorizon,
+  from?: string,
+  to?: string,
+  fcastFrom?: string,
+  fcastTo?: string,
+) {
+  const range = resolvePeriod(period, { from, to });
+  const fcastRange = forecastWindowFor(fcast, { from: fcastFrom, to: fcastTo });
+  return queryOptions({
+    queryKey: [
+      "admin-v2-overview",
+      range.from,
+      range.to,
+      fcastRange.from,
+      fcastRange.to,
+    ],
+    queryFn: () =>
+      getAdminOverview({
+        data: {
+          from: range.from,
+          to: range.to,
+          forecastFrom: fcastRange.from,
+          forecastTo: fcastRange.to,
+        },
+      }),
+    staleTime: 60_000,
+  });
+}
 
 export const Route = createFileRoute("/admin_/v2/")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
+  validateSearch: zodValidator(searchSchema),
+  loaderDeps: ({ search }) => ({
+    period: search.period,
+    from: search.from,
+    to: search.to,
+    fcast: search.fcast,
+    fcastFrom: search.fcastFrom,
+    fcastTo: search.fcastTo,
+  }),
+  loader: ({ context, deps }) =>
+    context.queryClient.ensureQueryData(
+      overviewQuery(
+        deps.period as PeriodKey,
+        deps.fcast as ForecastHorizon,
+        deps.from,
+        deps.to,
+        deps.fcastFrom,
+        deps.fcastTo,
+      ),
+    ),
   head: () => ({ meta: [{ title: "Overview — REPs Admin v2" }] }),
   component: AdminV2Overview,
 });
 
-function fmtGBP(pence: number) {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    maximumFractionDigits: 0,
-  }).format(pence / 100);
-}
-function fmtInt(n: number) {
-  return new Intl.NumberFormat("en-GB").format(n);
-}
-
 function AdminV2Overview() {
-  const fetchOverview = useServerFn(getAdminOverview);
+  const { period, fcast } = Route.useSearch();
+  const data = Route.useLoaderData();
+  const periodLabel =
+    PERIOD_OPTIONS.find((o) => o.value === period)?.label ?? "Last 30 days";
 
-  const range = useMemo(() => resolvePeriod("last_30d"), []);
-  const fcast = useMemo(() => forecastWindowFor("next_30d"), []);
-
-  const q = useQuery({
-    queryKey: ["admin-v2-overview", range.from, range.to, fcast.from, fcast.to],
-    queryFn: () =>
-      fetchOverview({
-        data: {
-          from: range.from,
-          to: range.to,
-          forecastFrom: fcast.from,
-          forecastTo: fcast.to,
-        },
-      }),
-  });
+  const mixTotal = data.mix.verified + data.mix.pro + data.mix.studio;
 
   return (
     <DashboardShell
       role="admin"
       active="Overview"
       title="Platform Overview · v2"
-      subtitle="Active paying members, revenue received (30d), projected cash due (30d). Stripe-mirror sourced — matches /admin by construction."
+      subtitle="Active members, revenue, projected cash due and all-time revenue — Stripe-mirror sourced."
+      actions={<PeriodSelector value={period} />}
     >
-      <div className="flex flex-col gap-6">
-        {q.error && (
-          <Alert variant="destructive">
-            <AlertTitle>Failed to load overview</AlertTitle>
-            <AlertDescription>{(q.error as Error).message}</AlertDescription>
-          </Alert>
-        )}
+      <div className="space-y-6">
+        <OverviewKpis data={data} fcastHorizon={fcast} />
+        <RevenueAndMembership data={data} periodLabel={periodLabel} />
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <KpiTile
-            icon={Users}
-            label="Active members"
-            value={q.data ? fmtInt(q.data.totalMembers) : null}
-            loading={q.isLoading}
-            accent
-          />
-          <KpiTile
-            icon={PoundSterling}
-            label="Revenue (30d)"
-            value={q.data ? fmtGBP(q.data.revenuePence) : null}
-            loading={q.isLoading}
-          />
-          <KpiTile
-            icon={Wallet}
-            label="Projected (30d)"
-            value={q.data ? fmtGBP(q.data.forecastPence) : null}
-            loading={q.isLoading}
-          />
-          <KpiTile
-            icon={TrendingUp}
-            label="Net growth"
-            value={
-              q.data
-                ? `${q.data.netMemberGrowth >= 0 ? "+" : ""}${q.data.netMemberGrowth}`
-                : null
-            }
-            loading={q.isLoading}
-          />
-          <KpiTile
-            icon={CreditCard}
-            label="Joined (30d)"
-            value={q.data ? fmtInt(q.data.joinedInPeriod) : null}
-            loading={q.isLoading}
-          />
-          <KpiTile
-            icon={Activity}
-            label="Churned (30d)"
-            value={q.data ? fmtInt(q.data.churnedInPeriod) : null}
-            loading={q.isLoading}
-          />
-        </section>
-
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card className="rounded-[16px] border-reps-border bg-reps-panel text-white lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-white">New members · last 30 days</CardTitle>
-              <CardDescription className="text-white/55">
-                Per-day net additions to the active mirror.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {q.isLoading ? (
-                <Skeleton className="h-40 w-full" />
-              ) : (
-                <Sparkline data={q.data?.signupsSeries ?? []} />
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-[16px] border-reps-border bg-reps-panel text-white">
-            <CardHeader>
-              <CardTitle className="text-white">Tier mix</CardTitle>
-              <CardDescription className="text-white/55">
-                Active subscriptions, by tier.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {q.isLoading ? (
-                <Skeleton className="h-24 w-full" />
-              ) : (
-                <>
-                  <TierRow
-                    label="Verified"
-                    value={q.data?.mix.verified ?? 0}
-                    total={q.data?.totalMembers ?? 0}
-                  />
-                  <TierRow
-                    label="Pro"
-                    value={q.data?.mix.pro ?? 0}
-                    total={q.data?.totalMembers ?? 0}
-                  />
-                  <TierRow
-                    label="Studio"
-                    value={q.data?.mix.studio ?? 0}
-                    total={q.data?.totalMembers ?? 0}
-                  />
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-
-        <Card className="rounded-[16px] border-reps-border bg-reps-panel text-white">
-          <CardHeader>
-            <CardTitle className="text-white">Find a member</CardTitle>
-            <CardDescription className="text-white/55">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <AdminCard className="lg:col-span-2">
+            <div className="text-[12px] font-semibold uppercase tracking-[0.06em] text-white/55">
+              Find a member
+            </div>
+            <div className="mt-1 mb-3 text-[11px] text-white/45">
               Email · cus_ · sub_ · BD id — opens Member 360.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </div>
             <MemberFinder target="/admin/v2/members/$userId" />
-          </CardContent>
-        </Card>
+          </AdminCard>
 
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <DeepLinkCard
-            title="Memberships"
-            description="Per-member cockpit — billing health, lifecycle, disputes."
-            to="/admin/memberships"
-            label="Open memberships cockpit"
-          />
-          <DeepLinkCard
-            title="Reconciliation"
-            description="Mirror vs legacy union — must agree before Phase D cutover."
-            to="/admin/reconciliation"
-            label="Open reconciliation"
-          />
-        </section>
+          <AdminCard>
+            <div className="text-[12px] font-semibold uppercase tracking-[0.06em] text-white/55">
+              Tier mix
+            </div>
+            <div className="mt-1 mb-3 text-[11px] text-white/45">
+              Active subscriptions, by tier.
+            </div>
+            <div className="flex flex-col gap-3">
+              <TierRow label="Verified" value={data.mix.verified} total={mixTotal} />
+              <TierRow label="Pro" value={data.mix.pro} total={mixTotal} />
+              <TierRow label="Studio" value={data.mix.studio} total={mixTotal} />
+            </div>
+          </AdminCard>
+        </div>
+
+        <MemberReconciliationStrip activePayingMembers={data.totalMembers} />
+        <DrillStrip />
       </div>
     </DashboardShell>
-  );
-}
-
-function KpiTile({
-  icon: Icon,
-  label,
-  value,
-  loading,
-  accent,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string | null;
-  loading: boolean;
-  accent?: boolean;
-}) {
-  return (
-    <Card className="rounded-[16px] border-reps-border bg-reps-panel text-white">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardDescription className="text-xs uppercase tracking-wide text-white/55">
-          {label}
-        </CardDescription>
-        <Icon className={accent ? "size-4 text-reps-orange" : "size-4 text-white/45"} />
-      </CardHeader>
-      <CardContent>
-        {loading || !value ? (
-          <Skeleton className="h-8 w-24" />
-        ) : (
-          <div className="font-display text-2xl font-semibold tabular-nums tracking-tight text-white">
-            {value}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
@@ -258,8 +175,8 @@ function TierRow({ label, value, total }: { label: string; value: number; total:
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between">
-        <span className="text-sm text-white/80">{label}</span>
-        <span className="text-sm tabular-nums text-white/55">
+        <span className="text-[13px] text-white/80">{label}</span>
+        <span className="text-[12px] tabular-nums text-white/55">
           {value} · {pct}%
         </span>
       </div>
@@ -270,73 +187,25 @@ function TierRow({ label, value, total }: { label: string; value: number; total:
   );
 }
 
-function Sparkline({ data }: { data: { day: string; value: number }[] }) {
-  if (!data.length) {
-    return (
-      <div className="flex h-40 items-center justify-center text-sm text-white/55">
-        No data in window.
-      </div>
-    );
-  }
+function DrillStrip() {
+  const targets: { label: string; to: string; sub: string }[] = [
+    { label: "Members", to: "/admin/v2/members", sub: "Member 360 · billing · lifecycle" },
+    { label: "Billing", to: "/admin/v2/billing", sub: "Payments · disputes · refunds" },
+    { label: "Reconciliation", to: "/admin/v2/reconciliation", sub: "Row-level audit of every KPI" },
+    { label: "Ops", to: "/admin/v2/ops", sub: "Webhooks · alerts · health" },
+  ];
   return (
-    <div className="h-40 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="sparkOrange" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--reps-orange)" stopOpacity={0.45} />
-              <stop offset="100%" stopColor="var(--reps-orange)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <XAxis dataKey="day" hide />
-          <RechartsTooltip
-            contentStyle={{
-              background: "var(--reps-panel)",
-              border: "1px solid var(--reps-border)",
-              borderRadius: 10,
-              fontSize: 12,
-              color: "white",
-            }}
-            labelStyle={{ color: "rgba(255,255,255,0.55)" }}
-          />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="var(--reps-orange)"
-            strokeWidth={2}
-            fill="url(#sparkOrange)"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function DeepLinkCard({
-  title,
-  description,
-  to,
-  label,
-}: {
-  title: string;
-  description: string;
-  to: string;
-  label: string;
-}) {
-  return (
-    <Card className="rounded-[16px] border-reps-border bg-reps-panel text-white">
-      <CardHeader>
-        <CardTitle className="text-white">{title}</CardTitle>
-        <CardDescription className="text-white/55">{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {targets.map((t) => (
         <Link
-          to={to}
-          className="inline-flex items-center gap-1 text-sm text-white/80 hover:text-reps-orange"
+          key={t.to}
+          to={t.to}
+          className="rounded-[14px] border border-reps-border bg-reps-panel/60 p-4 transition-colors hover:border-reps-orange/40"
         >
-          {label} <ArrowUpRight className="size-4" />
+          <div className="text-[13px] font-semibold text-white">{t.label}</div>
+          <div className="mt-0.5 text-[11px] text-white/55">{t.sub}</div>
         </Link>
-      </CardContent>
-    </Card>
+      ))}
+    </div>
   );
 }
