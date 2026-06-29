@@ -256,8 +256,10 @@ export const listPayments = createServerFn({ method: "POST" })
         chargeId = typeof obj.charge === "string" ? obj.charge : null;
       }
 
-      const prof = e.user_id ? profileMap.get(e.user_id) : null;
-      const email = e.user_id ? emailMap.get(e.user_id) ?? null : null;
+      const resolvedUserId =
+        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
+      const prof = resolvedUserId ? profileMap.get(resolvedUserId) : null;
+      const email = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
 
       // Search filter (client-side over hydrated rows)
       if (data.search) {
@@ -269,7 +271,7 @@ export const listPayments = createServerFn({ method: "POST" })
       out.push({
         id: e.id,
         createdAt: e.created_at,
-        userId: e.user_id,
+        userId: resolvedUserId,
         email,
         fullName: prof?.full_name ?? null,
         amountPence: amount,
