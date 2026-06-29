@@ -70,29 +70,39 @@ function BillingConsole() {
   const kpisFn = useServerFn(getBillingKpis);
   const resyncFn = useServerFn(resyncStripeMirror);
   const queryClient = useQueryClient();
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [syncing, setSyncing] = useState(true);
+  const didRunRef = useRef(false);
+
+  // Live financial snapshot on mount: pull fresh Stripe state once per
+  // page load (and every reload), then invalidate every billing query so
+  // KPIs + tables repaint from the freshly-synced mirror.
+  useEffect(() => {
+    if (didRunRef.current) return;
+    didRunRef.current = true;
+    (async () => {
+      try {
+        await resyncFn();
+      } catch {
+        // Stripe unreachable — surface mirror state silently.
+      } finally {
+        setLastSyncedAt(new Date());
+        setSyncing(false);
+        await queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
+      }
+    })();
+  }, [resyncFn, queryClient]);
+
   const kpisQ = useQuery<BillingKpis>({
     queryKey: ["admin", "billing", "kpis"],
     queryFn: () => kpisFn(),
     staleTime: 60_000,
   });
 
-  const [resyncing, setResyncing] = useState(false);
-  async function handleRefresh() {
-    setResyncing(true);
-    try {
-      const res = await resyncFn();
-      await queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
-      toast.success(`Synced ${res.users} members from Stripe`);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Sync failed");
-    } finally {
-      setResyncing(false);
-    }
-  }
-
   return (
     <DashboardShell role="admin" active="Billing" title="Billing" subtitle="Payments, subscriptions, disputes and refunds — sourced from Stripe.">
-      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} onRefresh={handleRefresh} refreshing={resyncing} />
+      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} syncing={syncing} lastSyncedAt={lastSyncedAt} />
+
 
       <div className="mt-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
