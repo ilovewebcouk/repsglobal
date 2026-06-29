@@ -12,7 +12,6 @@ import {
   Mail,
   ShieldCheck,
   User as UserIcon,
-  MoreHorizontal,
   CheckCircle2,
   XCircle,
   Clock,
@@ -27,14 +26,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -279,30 +270,8 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
               </Link>
             </Button>
           )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                aria-label="More actions"
-                className="size-9 rounded-[10px] border-reps-border bg-white/5 p-0 text-white hover:bg-reps-panel-soft hover:text-white"
-              >
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 border-reps-border bg-reps-panel text-white">
-              <DropdownMenuLabel className="text-white/55">Member actions</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-reps-border" />
-              <DropdownMenuItem disabled>Login as member (soon)</DropdownMenuItem>
-              <DropdownMenuItem disabled>Edit status (soon)</DropdownMenuItem>
-              <DropdownMenuItem disabled>Comp this member (soon)</DropdownMenuItem>
-              <DropdownMenuItem disabled>Refund last charge (soon)</DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-reps-border" />
-              <DropdownMenuItem disabled className="text-rose-300 focus:text-rose-200">
-                Permanently delete (soon)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Overflow menu retired in Phase 6 — destructive actions consolidated into the Delete account dialog. */}
+
         </div>
       </div>
     </div>
