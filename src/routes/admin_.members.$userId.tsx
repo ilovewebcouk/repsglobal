@@ -204,12 +204,10 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
     );
   }
 
-  const { full_name, email, slug, verification, is_published, subscription, avatar_url, profession } = snapshot;
+  const { full_name, email, slug, verification, subscription, avatar_url, profession } = snapshot;
   const sub = subscription;
-  const hasSub = sub.source !== "none";
   const tierLbl = sub.tier_label;
   const status = sub.status;
-  const cancelAt = sub.cancel_at_period_end ? sub.renewal_at : null;
   const publicHref = slug ? `/c/${slug}` : null;
   const mailtoHref = email ? `mailto:${email}` : null;
   
