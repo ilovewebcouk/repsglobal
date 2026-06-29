@@ -287,7 +287,7 @@ function IdentityBody({
           </p>
           <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
         </div>
-        {reason && (
+        {reason && identity.status !== "approved" && (
           <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>{reason}</span>
