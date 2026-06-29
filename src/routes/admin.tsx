@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
@@ -10,7 +10,7 @@ import { PeriodSelector } from "@/components/admin/PeriodSelector";
 
 import { OverviewKpis } from "@/components/admin/sections/OverviewKpis";
 import { RevenueAndMembership } from "@/components/admin/sections/RevenueAndMembership";
-import { MemberReconciliationStrip } from "@/components/admin/sections/MemberReconciliationStrip";
+
 
 import { getAdminOverview } from "@/lib/admin/overview.functions";
 import {
@@ -145,33 +145,9 @@ function AdminDashboardPage() {
       <div className="space-y-6">
         <OverviewKpis data={data} fcastHorizon={fcast} />
         <RevenueAndMembership data={data} periodLabel={periodLabel} />
-        <MemberReconciliationStrip activePayingMembers={data.totalMembers} />
-        <DrillStrip />
       </div>
 
     </DashboardShell>
   );
 }
 
-function DrillStrip() {
-  const targets: { label: string; to: string; sub: string }[] = [
-    { label: "Professionals", to: "/admin/professionals", sub: "Active · Verified · Paid · New" },
-    { label: "Memberships", to: "/admin/memberships", sub: "Entitlement · setup · forecast" },
-    { label: "Reconciliation", to: "/admin/reconciliation", sub: "Row-level audit of every KPI" },
-    { label: "Operations", to: "/admin/ops", sub: "Billing · platform · customer health" },
-  ];
-  return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {targets.map((t) => (
-        <Link
-          key={t.to}
-          to={t.to}
-          className="rounded-[14px] border border-reps-border bg-reps-panel/60 p-4 transition-colors hover:border-reps-orange/40"
-        >
-          <div className="text-[13px] font-semibold text-white">{t.label}</div>
-          <div className="mt-0.5 text-[11px] text-white/55">{t.sub}</div>
-        </Link>
-      ))}
-    </div>
-  );
-}
