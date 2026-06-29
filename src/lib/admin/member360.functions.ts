@@ -80,8 +80,11 @@ export const getMember360 = createServerFn({ method: "GET" })
     const email = authRes.data?.user?.email ?? null;
     const created_at = authRes.data?.user?.created_at ?? null;
     const last_sign_in_at = authRes.data?.user?.last_sign_in_at ?? null;
-    const full_name = (profileRes.data as { full_name?: string | null } | null)?.full_name ?? null;
-    const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null } | null) ?? null;
+    const profile = (profileRes.data as { full_name?: string | null; avatar_url?: string | null } | null) ?? null;
+    const full_name = profile?.full_name ?? null;
+    const avatar_url = profile?.avatar_url ?? null;
+    const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null; primary_profession?: string | null } | null) ?? null;
+    const profession = pro?.primary_profession ? (PROFESSION_LABEL[pro.primary_profession] ?? pro.primary_profession) : null;
 
     // Stripe mirror (live env). Sandbox is intentionally ignored — admin v2
     // surfaces the production billing state only.
