@@ -10,7 +10,7 @@ import { PeriodSelector } from "@/components/admin/PeriodSelector";
 
 import { OverviewKpis } from "@/components/admin/sections/OverviewKpis";
 import { RevenueAndMembership } from "@/components/admin/sections/RevenueAndMembership";
-import { OverviewOpsHeader } from "@/components/admin/OverviewOpsHeader";
+
 
 
 import { getAdminOverview } from "@/lib/admin/overview.functions";
@@ -140,11 +140,10 @@ function AdminDashboardPage() {
       role="admin"
       active="Overview"
       title="Platform Overview"
-      subtitle="The business in 30 seconds — four canonical KPIs, the trend behind them, and a link to the records."
+      subtitle="The business in 30 seconds — revenue, forecast, and members at a glance."
       actions={<PeriodSelector value={period} />}
     >
       <div className="space-y-6">
-        <OverviewOpsHeader />
         <OverviewKpis data={data} fcastHorizon={fcast} />
         <RevenueAndMembership data={data} periodLabel={periodLabel} />
       </div>
