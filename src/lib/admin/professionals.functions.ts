@@ -358,36 +358,39 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       ltvMap.set(p.user_id, (ltvMap.get(p.user_id) ?? 0) + net);
     }
 
+    // Pre-group subs by user_id so the shared compute can see them all.
+    const subsByUser = new Map<string, typeof subsData>();
+    for (const s of subsData) {
+      const list = subsByUser.get(s.user_id) ?? [];
+      list.push(s);
+      subsByUser.set(s.user_id, list);
+    }
+
     let rows: AdminProRow[] = prosFiltered.map(p => {
       const profile = profileMap.get(p.id);
-      // Plan = canonical Active Paying Member tier when present, else fall
-      // back to a billing-recovery tier (failed Stripe sub OR BD renewal due
-      // today) so members in the renewal pipeline don't read as "Free".
-      const activeTier = paidTierByUserId.get(p.id);
-      const failedTier = failedSubTier.get(p.id);
-      const isRenewalDue = renewalDueUserIds.has(p.id);
-      const billingState: AdminProBillingState = activeTier
-        ? 'ok'
-        : failedTier
-          ? 'payment_failed'
-          : isRenewalDue
-            ? 'renewal_due'
-            : 'ok';
-      const tier: AdminProRow['plan'] =
-        activeTier ?? failedTier ?? (isRenewalDue ? 'verified' : 'free');
+
+      // SHARED COMPUTE — identical to Member 360's `fetchMemberBillingRow`.
+      // All pricing/renewal/trial/tier derivation lives in
+      // `member-billing-row.server.ts` so the two surfaces cannot diverge.
+      const billing = computeMemberBillingRow({
+        user_id: p.id,
+        subs: subsByUser.get(p.id) ?? [],
+        bdNextDueIso: bdDueMap.get(p.id) ?? null,
+        activePaidTier: (paidTierByUserId.get(p.id) as MemberBillingPlan | undefined) ?? null,
+      });
+
       const ra = ratingAcc.get(p.id);
       // Policy (no self-removal): a pro's public profile stays live; only their
       // trust badge changes. Admin "suspension", chargebacks, and exhausted
       // payment recovery all surface as Unverified (pending) in the UI.
       const status: AdminProRow['status'] =
-        billingState !== 'ok' ? 'pending'
+        billing.billingState !== 'ok' ? 'pending'
         : p.suspended_at ? 'pending'
         : p.verification === 'verified' && p.is_published ? 'verified'
         : p.verification === 'rejected' && p.is_published ? 'flagged'
         : 'pending';
 
       const name = profile?.full_name ?? 'Unnamed';
-      const subDetail = subDetailMap.get(p.id);
       return {
         id: p.id,
         name,
@@ -396,10 +399,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         
         profession: p.primary_profession ? (PROFESSION_LABEL[p.primary_profession] ?? p.primary_profession) : null,
         professionSlug: p.primary_profession ?? null,
-        plan: tier,
-        planMrrPence: planMrrPence(tier),
+        plan: billing.plan,
+        planMrrPence: billing.planMrrPence,
         status,
-        billingState,
+        billingState: billing.billingState,
         rating: ra ? Math.round((ra.sum / ra.n) * 100) / 100 : null,
         clients: clientCount.get(p.id) ?? 0,
         joined: p.member_since ?? p.created_at,
@@ -409,13 +412,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         verification: p.verification as string,
         email: null,
         lifetimeValuePence: ltvMap.get(p.id) ?? 0,
-        renewalDate: subDetail?.currentPeriodEnd ?? bdDueMap.get(p.id) ?? null,
-        renewalDateSource: subDetail?.currentPeriodEnd ? 'stripe' : bdDueMap.has(p.id) ? 'bd' : null,
-
-        isTrial: subDetail?.status === 'trialing',
-        trialDaysLeft: subDetail?.status === 'trialing' && subDetail.currentPeriodEnd
-          ? Math.max(0, Math.ceil((new Date(subDetail.currentPeriodEnd).getTime() - Date.now()) / 86400000))
-          : null,
+        renewalDate: billing.renewalDate,
+        renewalDateSource: billing.renewalDateSource,
+        isTrial: billing.isTrial,
+        trialDaysLeft: billing.trialDaysLeft,
       };
     });
 
