@@ -406,10 +406,13 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     // Series scaffolding
     // -------------------------------------------------------------------
     const days = enumerateDays(data.from, data.to);
+    // Running-members series: derive joins-per-day from the same mirror
+    // survivor set (first sub created_at per surviving user).
     const joinsByDay = new Map<string, number>();
-    for (const m of activeCollection.members) {
-      if (!m.earliest_activation_at) continue;
-      const key = londonDayKey(m.earliest_activation_at);
+    for (const [uid, survivor] of survivorByUser) {
+      void uid;
+      if (!survivor.created_at) continue;
+      const key = londonDayKey(survivor.created_at);
       joinsByDay.set(key, (joinsByDay.get(key) ?? 0) + 1);
     }
 
