@@ -20,8 +20,8 @@ import {
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/shop-front")({
   head: () => ({
     meta: [
-      { title: "Shop-front — REPS Professional" },
-      { name: "description", content: "Edit your public REPS shop-front, services and pricing." },
+      { title: "Website — REPS Professional" },
+      { name: "description", content: "Edit your public REPS website — services, pricing and content." },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -153,13 +153,13 @@ function ShopFrontEditorPage() {
   return (
     <DashboardShell
       role="trainer"
-      active="Shop-front"
+      active="Website"
       tier={tier}
-      title="Shop-front"
+      title="Website"
       subtitle={
         isPro
-          ? "Full shop-front editor — services, pricing and branding."
-          : "Verified Lite — share a clean public page. Pro is launching soon — join the waitlist to add services and branding."
+          ? "Your public REPS website — services, pricing, method and branding."
+          : "Your public REPS website. Pro unlocks deeper customisation — join the waitlist for the full editor."
       }
       actions={
         <div className="flex items-center gap-2">
