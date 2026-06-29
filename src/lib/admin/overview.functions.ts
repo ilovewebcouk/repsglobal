@@ -15,10 +15,7 @@ import {
   asString,
   type ForecastHorizon,
 } from "./metrics-definitions";
-import {
-  buildActivePayingMemberCollection,
-  isActiveSubscription,
-} from "@/lib/members/active-paying-member";
+import { isActiveSubscription } from "@/lib/members/active-paying-member";
 
 
 const Input = z.object({
