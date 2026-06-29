@@ -195,7 +195,7 @@ function DisputeWorkbenchPage() {
   }
 
   return (
-    <DashboardShell currentPath="/admin/billing">
+    <DashboardShell role="admin" active="Billing" title="Dispute workbench" subtitle="Gather evidence, draft, submit — directly to Stripe.">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
