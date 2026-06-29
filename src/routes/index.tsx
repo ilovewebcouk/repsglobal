@@ -199,7 +199,7 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
     (r.primary_profession ? (PROFESSION_LABEL_HOME[r.primary_profession] ?? "Fitness Professional") : "Fitness Professional");
   const secondaryLabel = getTitleLabel(r.secondary_title_slug);
   const role = secondaryLabel && secondaryLabel !== primaryLabel
-    ? `${primaryLabel} · ${secondaryLabel}`
+    ? `${primaryLabel} & ${secondaryLabel}`
     : primaryLabel;
   return {
     name: r.full_name,
