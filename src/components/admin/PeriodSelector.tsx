@@ -15,8 +15,9 @@ export function PeriodSelector({ value }: { value: PeriodKey }) {
       value={value}
       onValueChange={(v) =>
         navigate({
+          to: ".",
           search: (prev: Record<string, unknown>) => ({ ...prev, period: v as PeriodKey }),
-        })
+        } as never)
       }
     >
       <SelectTrigger
