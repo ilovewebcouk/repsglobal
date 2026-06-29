@@ -269,7 +269,9 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
               </Badge>
             )}
           </div>
+          <ConsistencyBadge userId={snapshot.user_id} />
         </div>
+
 
         <div className="flex flex-wrap items-center gap-2">
           {publicHref && (
