@@ -191,8 +191,17 @@ export const listPayments = createServerFn({ method: "POST" })
       stripe_customer_id: string | null;
     }>;
 
-    // Hydrate names/emails
-    const userIds = Array.from(new Set(events.map((e) => e.user_id).filter(Boolean) as string[]));
+    // Fallback: link customer ids back to users via the subscriptions mirror
+    // so dispute/failed events that arrived without user_id still show a name.
+    const customerIds = Array.from(
+      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
+    );
+    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+    const allUserIds = new Set<string>([
+      ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
+      ...Array.from(customerToUser.values()),
+    ]);
+    const userIds = Array.from(allUserIds);
     let profileMap = new Map<string, { full_name: string | null }>();
     let emailMap = new Map<string, string | null>();
     if (userIds.length) {
