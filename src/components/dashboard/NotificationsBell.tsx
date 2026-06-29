@@ -8,6 +8,7 @@ import { useSupportUnread } from "@/hooks/useSupportUnread";
 import { useMySupportUnread } from "@/hooks/useMySupportUnread";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import { useVerificationUnread } from "@/hooks/useVerificationUnread";
+import { useAdminVerificationPending } from "@/hooks/useAdminVerificationPending";
 import { useSessionUser } from "@/hooks/use-session-user";
 
 
@@ -63,6 +64,7 @@ export function NotificationsBell() {
   const mySupport = useMySupportUnread({ enabled: !!user });
   const reviews = useReviewsUnread({ enabled: !!user });
   const verification = useVerificationUnread({ enabled: !!user && !isAdmin });
+  const adminVerification = useAdminVerificationPending({ enabled: isAdmin });
   const [open, setOpen] = React.useState(false);
 
   const combined = React.useMemo<FeedItem[]>(() => {
@@ -99,10 +101,28 @@ export function NotificationsBell() {
       createdAt: i.createdAt,
       href: i.href,
     }));
-    return [...verificationItems, ...reviewItems, ...adminSupportItems, ...mySupportItems].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-  }, [adminSupport.items, mySupport.items, reviews.items, verification.items]);
+    const adminVerificationItems: FeedItem[] = adminVerification.items.map((i) => ({
+      kind: "verification",
+      key: i.key,
+      title: i.title,
+      preview: i.preview,
+      createdAt: i.createdAt,
+      href: i.href,
+    }));
+    return [
+      ...verificationItems,
+      ...adminVerificationItems,
+      ...reviewItems,
+      ...adminSupportItems,
+      ...mySupportItems,
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [
+    adminSupport.items,
+    mySupport.items,
+    reviews.items,
+    verification.items,
+    adminVerification.items,
+  ]);
 
   const unread = combined.length;
   const [snapshot, setSnapshot] = React.useState<FeedItem[] | null>(null);
@@ -111,7 +131,8 @@ export function NotificationsBell() {
     adminSupport.isLoading ||
     mySupport.isLoading ||
     reviews.isLoading ||
-    verification.isLoading;
+    verification.isLoading ||
+    adminVerification.isLoading;
 
   const handleOpenChange = (next: boolean) => {
     if (next) setSnapshot(combined);

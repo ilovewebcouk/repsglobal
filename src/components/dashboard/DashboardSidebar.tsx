@@ -28,6 +28,7 @@ import { useSessionUser } from "@/hooks/use-session-user";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
 import { useMySupportUnread } from "@/hooks/useMySupportUnread";
+import { useAdminVerificationPending } from "@/hooks/useAdminVerificationPending";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getTrustState } from "@/lib/verification/trust.functions";
@@ -129,9 +130,19 @@ function ReviewsUnreadBadge() {
   return <CountPill>{unread > 99 ? "99+" : unread}</CountPill>;
 }
 
+function AdminVerificationPendingBadge() {
+  const { isAdmin } = useSessionUser();
+  const { total } = useAdminVerificationPending({ enabled: isAdmin });
+  if (!total) return null;
+  return <CountPill>{total > 99 ? "99+" : total}</CountPill>;
+}
+
 function ItemBadge({ item }: { item: NavItem }) {
   if (item.label === "Verification" && item.to === "/dashboard/verification") {
     return <VerificationCountBadge />;
+  }
+  if (item.label === "Verification" && item.to === "/admin/verification") {
+    return <AdminVerificationPendingBadge />;
   }
   if (item.label === "Enquiries" && item.to === "/dashboard/enquiries") {
     return <EnquiriesUnreadBadge />;
