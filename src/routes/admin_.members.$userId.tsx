@@ -181,12 +181,14 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
   }
 
   const { full_name, email, slug, verification, is_published, subscription, avatar_url, profession } = snapshot;
-  const tier = subscription?.tier ?? null;
-  const status = subscription?.status ?? null;
-  const trialEnd = subscription?.trial_end ?? null;
-  const cancelAt = subscription?.cancel_at_period_end ? subscription.current_period_end : null;
+  const sub = subscription;
+  const hasSub = sub.source !== "none";
+  const tierLbl = sub.tier_label;
+  const status = sub.status;
+  const cancelAt = sub.cancel_at_period_end ? sub.renewal_at : null;
   const publicHref = slug ? `/c/${slug}` : null;
   const mailtoHref = email ? `mailto:${email}` : null;
+  const hasDiscrepancy = sub.discrepancies.length > 0;
 
   return (
     <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
@@ -210,35 +212,28 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 <ShieldCheck data-icon="inline-start" /> Verified
               </Badge>
             )}
-            {tier && (
-              <Badge variant="outline" className="h-6 border-reps-orange-border bg-reps-orange/10 text-reps-orange capitalize">
-                {tier}
+            {tierLbl && (
+              <Badge variant="outline" className="h-6 border-reps-orange-border bg-reps-orange/10 text-reps-orange">
+                {tierLbl}
               </Badge>
             )}
-            {status && (
+            {hasSub && (
               <Badge
                 variant="outline"
                 className={cn(
-                  "h-6 capitalize",
-                  status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
-                  status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-300",
+                  "h-6",
+                  sub.has_active_entitlement && status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-200",
+                  sub.has_active_entitlement && status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
                   status === "past_due" && "border-amber-400/30 bg-amber-500/15 text-amber-300",
                   (status === "canceled" || status === "unpaid") && "border-rose-400/30 bg-rose-500/15 text-rose-300",
-                  ![
-                    "active",
-                    "trialing",
-                    "past_due",
-                    "canceled",
-                    "unpaid",
-                  ].includes(status) && "border-reps-border bg-reps-panel/60 text-white/70",
                 )}
               >
-                {status.replace(/_/g, " ")}
+                {sub.display_status_label}
               </Badge>
             )}
-            {status === "trialing" && trialEnd && (
-              <Badge variant="outline" className="h-6 border-sky-400/30 bg-sky-500/10 text-sky-200">
-                Trial ends {fmtDate(trialEnd)}
+            {hasSub && sub.display_renewal_label && (
+              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/70">
+                {sub.display_renewal_label}
               </Badge>
             )}
             {cancelAt && (
@@ -246,9 +241,28 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 Cancels {fmtDate(cancelAt)}
               </Badge>
             )}
-            {!subscription && (
+            {!hasSub && (
               <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
-                No subscription
+                No active subscription
+              </Badge>
+            )}
+            {/* Source badge — neutral for stripe-live and local-mirror; amber only for true mismatch. */}
+            {hasSub && !hasDiscrepancy && (
+              <Badge
+                variant="outline"
+                className="h-6 border-reps-border bg-reps-panel/60 text-white/55"
+                title={sub.fallback_reason ?? "Live Stripe data"}
+              >
+                {sub.source === "stripe-live" ? "Stripe live" : "Local mirror"}
+              </Badge>
+            )}
+            {hasSub && hasDiscrepancy && (
+              <Badge
+                variant="outline"
+                className="h-6 border-amber-400/30 bg-amber-500/15 text-amber-200"
+                title={`Mismatch: ${sub.discrepancies.join(", ")}`}
+              >
+                Source mismatch
               </Badge>
             )}
             {!is_published && (
