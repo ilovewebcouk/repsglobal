@@ -15,29 +15,115 @@ async function requireAdmin(supabase: any, userId: string) {
 }
 
 /**
- * Resolve Stripe customer IDs to REPs user IDs via the local subscriptions
- * mirror. Used by Payments / Disputes / Refunds to fill in "Unknown" rows
- * where the webhook event arrived without a linked user_id but we hold the
- * customer id.
+ * Contact resolution chain for billing rows where the webhook event arrived
+ * without a linked user_id. We walk three sources in priority order:
+ *   1. `subscriptions` mirror   → live REPs member (preferred, has user_id)
+ *   2. `legacy_stripe_link`     → un-migrated BD member (email + bd_member_id)
+ *   3. `legacy_stripe_payments` → historic charge → customer/email map
+ *      (covers chargebacks on legacy charges whose customer is long-gone)
+ * Plus a last-resort extractor that pulls email/name straight off the
+ * Stripe event payload (receipt_email, billing_details, dispute evidence).
  */
-async function resolveUsersByCustomerIds(
+export type ContactHit = {
+  userId: string | null;
+  email: string | null;
+  fullName: string | null;
+  source: "subscription" | "legacy_link" | "legacy_payment" | "payload";
+};
+
+async function resolveContactsByCustomerIds(
   supabase: any,
   customerIds: string[],
-): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
+): Promise<Map<string, ContactHit>> {
+  const out = new Map<string, ContactHit>();
   const ids = Array.from(new Set(customerIds.filter(Boolean)));
   if (!ids.length) return out;
-  const { data } = await supabase
+
+  // 1. subscriptions mirror
+  const { data: subRows } = await supabase
     .from("subscriptions")
     .select("user_id, stripe_customer_id")
     .in("stripe_customer_id", ids)
     .eq("environment", "live");
-  for (const r of (data ?? []) as Array<{ user_id: string; stripe_customer_id: string | null }>) {
+  for (const r of (subRows ?? []) as Array<{ user_id: string; stripe_customer_id: string | null }>) {
     if (r.stripe_customer_id && r.user_id && !out.has(r.stripe_customer_id)) {
-      out.set(r.stripe_customer_id, r.user_id);
+      out.set(r.stripe_customer_id, { userId: r.user_id, email: null, fullName: null, source: "subscription" });
     }
   }
+
+  // 2. legacy_stripe_link (un-migrated BD members) for any remaining ids
+  const missing = ids.filter((id) => !out.has(id));
+  if (missing.length) {
+    const { data: legRows } = await supabase
+      .from("legacy_stripe_link")
+      .select("stripe_customer_id, email, bd_member_id")
+      .in("stripe_customer_id", missing);
+    const bdIds: number[] = [];
+    const byCust = new Map<string, { email: string | null; bd_member_id: number | null }>();
+    for (const r of (legRows ?? []) as Array<{ stripe_customer_id: string; email: string | null; bd_member_id: number | null }>) {
+      byCust.set(r.stripe_customer_id, { email: r.email, bd_member_id: r.bd_member_id });
+      if (r.bd_member_id) bdIds.push(r.bd_member_id);
+    }
+    const nameByBd = new Map<number, string>();
+    if (bdIds.length) {
+      const { data: seedRows } = await supabase
+        .from("bd_member_seed")
+        .select("bd_member_id, first_name, last_name")
+        .in("bd_member_id", bdIds);
+      for (const r of (seedRows ?? []) as Array<{ bd_member_id: number; first_name: string | null; last_name: string | null }>) {
+        const name = [r.first_name, r.last_name].filter(Boolean).join(" ").trim();
+        if (name) nameByBd.set(r.bd_member_id, name);
+      }
+    }
+    for (const [custId, info] of byCust) {
+      out.set(custId, {
+        userId: null,
+        email: info.email,
+        fullName: info.bd_member_id ? nameByBd.get(info.bd_member_id) ?? null : null,
+        source: "legacy_link",
+      });
+    }
+  }
+
   return out;
+}
+
+/**
+ * For events that carry only a charge id (typical of legacy chargebacks),
+ * walk `legacy_stripe_payments` to recover the customer id + email.
+ */
+async function resolveContactsByChargeIds(
+  supabase: any,
+  chargeIds: string[],
+): Promise<Map<string, { stripeCustomerId: string | null; email: string | null }>> {
+  const out = new Map<string, { stripeCustomerId: string | null; email: string | null }>();
+  const ids = Array.from(new Set(chargeIds.filter(Boolean)));
+  if (!ids.length) return out;
+  const { data } = await supabase
+    .from("legacy_stripe_payments")
+    .select("charge_id, stripe_customer_id, email")
+    .in("charge_id", ids);
+  for (const r of (data ?? []) as Array<{ charge_id: string; stripe_customer_id: string | null; email: string | null }>) {
+    if (!out.has(r.charge_id)) out.set(r.charge_id, { stripeCustomerId: r.stripe_customer_id, email: r.email });
+  }
+  return out;
+}
+
+/** Last-resort: pull contact info straight off the Stripe event object. */
+function extractPayloadContact(obj: any): { email: string | null; fullName: string | null } {
+  if (!obj) return { email: null, fullName: null };
+  const email =
+    obj.receipt_email ??
+    obj.billing_details?.email ??
+    obj.customer_email ??
+    obj.evidence?.customer_email_address ??
+    null;
+  const fullName =
+    obj.billing_details?.name ??
+    obj.evidence?.customer_name ??
+    obj.customer_name ??
+    null;
+  return { email: email ?? null, fullName: fullName ?? null };
 }
 
 // ---------------------------------------------------------------------------
@@ -191,30 +277,69 @@ export const listPayments = createServerFn({ method: "POST" })
       stripe_customer_id: string | null;
     }>;
 
-    // Fallback: link customer ids back to users via the subscriptions mirror
-    // so dispute/failed events that arrived without user_id still show a name.
-    const customerIds = Array.from(
-      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
-    );
-    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
-    const allUserIds = new Set<string>([
+    // Per-event metadata pass (so we know charge ids before resolving contacts)
+    type Meta = {
+      e: typeof events[number];
+      obj: any;
+      status: PaymentRow["status"];
+      amount: number;
+      currency: string;
+      chargeId: string | null;
+      piId: string | null;
+      customerId: string | null;
+    };
+    const metas: Meta[] = events.map((e) => {
+      const obj = e.payload?.data?.object ?? {};
+      let status: PaymentRow["status"] = "succeeded";
+      let amount = 0;
+      let currency = "gbp";
+      let chargeId: string | null = null;
+      let piId: string | null = null;
+      if (e.event_type === "invoice.paid") {
+        status = "succeeded"; amount = obj.amount_paid ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = obj.charge ?? null; piId = obj.payment_intent ?? null;
+      } else if (e.event_type === "charge.refunded") {
+        status = "refunded"; amount = obj.amount_refunded ?? obj.amount ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = obj.id ?? null; piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
+      } else if (e.event_type === "charge.failed") {
+        status = "failed"; amount = obj.amount ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = obj.id ?? null; piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
+      } else if (e.event_type === "charge.dispute.created") {
+        status = "disputed"; amount = obj.amount ?? 0; currency = obj.currency ?? "gbp";
+        chargeId = typeof obj.charge === "string" ? obj.charge : null;
+      }
+      return { e, obj, status, amount, currency, chargeId, piId, customerId: e.stripe_customer_id };
+    });
+
+    // Backfill customer ids via legacy_stripe_payments (for legacy chargebacks where
+    // the dispute event has no customer id but we have the charge id locally).
+    const chargeIds = metas.map((m) => m.chargeId).filter(Boolean) as string[];
+    const chargeMap = await resolveContactsByChargeIds(supabaseAdmin, chargeIds);
+    for (const m of metas) {
+      if (!m.customerId && m.chargeId) {
+        const hit = chargeMap.get(m.chargeId);
+        if (hit?.stripeCustomerId) m.customerId = hit.stripeCustomerId;
+      }
+    }
+
+    // Batch contact resolution (subscriptions → legacy_link → bd_member_seed)
+    const customerIds = Array.from(new Set(metas.map((m) => m.customerId).filter(Boolean) as string[]));
+    const contactByCustomer = await resolveContactsByCustomerIds(supabaseAdmin, customerIds);
+
+    // Hydrate profile names + emails for any resolved user_ids
+    const userIds = Array.from(new Set([
       ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
-      ...Array.from(customerToUser.values()),
-    ]);
-    const userIds = Array.from(allUserIds);
-    let profileMap = new Map<string, { full_name: string | null }>();
-    let emailMap = new Map<string, string | null>();
+      ...Array.from(contactByCustomer.values()).map((c) => c.userId).filter(Boolean) as string[],
+    ]));
+    const profileMap = new Map<string, { full_name: string | null }>();
+    const emailMap = new Map<string, string | null>();
     if (userIds.length) {
       const { data: profs } = await supabaseAdmin.from("profiles").select("id, full_name").in("id", userIds);
-      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null }>) {
-        profileMap.set(p.id, { full_name: p.full_name });
-      }
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null }>) profileMap.set(p.id, { full_name: p.full_name });
       try {
-        const { supabaseAdmin: sa } = await import("@/integrations/supabase/client.server");
-        // Pull emails in chunks via auth admin listUsers — best-effort
         let page = 1;
         while (page < 30) {
-          const { data: ud, error } = await sa.auth.admin.listUsers({ page, perPage: 200 });
+          const { data: ud, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
           if (error) break;
           for (const u of ud.users) if (userIds.includes(u.id)) emailMap.set(u.id, u.email ?? null);
           if (ud.users.length < 200) break;
@@ -224,47 +349,20 @@ export const listPayments = createServerFn({ method: "POST" })
     }
 
     const out: PaymentRow[] = [];
-    for (const e of events) {
-      const obj = e.payload?.data?.object ?? {};
-      let status: PaymentRow["status"] = "succeeded";
-      let amount = 0;
-      let currency = "gbp";
-      let chargeId: string | null = null;
-      let piId: string | null = null;
-      if (e.event_type === "invoice.paid") {
-        status = "succeeded";
-        amount = obj.amount_paid ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = obj.charge ?? null;
-        piId = obj.payment_intent ?? null;
-      } else if (e.event_type === "charge.refunded") {
-        status = "refunded";
-        amount = obj.amount_refunded ?? obj.amount ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = obj.id ?? null;
-        piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
-      } else if (e.event_type === "charge.failed") {
-        status = "failed";
-        amount = obj.amount ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = obj.id ?? null;
-        piId = typeof obj.payment_intent === "string" ? obj.payment_intent : null;
-      } else if (e.event_type === "charge.dispute.created") {
-        status = "disputed";
-        amount = obj.amount ?? 0;
-        currency = obj.currency ?? "gbp";
-        chargeId = typeof obj.charge === "string" ? obj.charge : null;
-      }
+    for (const m of metas) {
+      const e = m.e;
+      const custHit = m.customerId ? contactByCustomer.get(m.customerId) : null;
+      const resolvedUserId = e.user_id ?? custHit?.userId ?? null;
+      const profName = resolvedUserId ? profileMap.get(resolvedUserId)?.full_name ?? null : null;
+      const profEmail = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
+      const chargeHit = m.chargeId ? chargeMap.get(m.chargeId) : null;
+      const payload = extractPayloadContact(m.obj);
+      const fullName = profName ?? custHit?.fullName ?? payload.fullName ?? null;
+      const email = profEmail ?? custHit?.email ?? chargeHit?.email ?? payload.email ?? null;
 
-      const resolvedUserId =
-        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
-      const prof = resolvedUserId ? profileMap.get(resolvedUserId) : null;
-      const email = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
-
-      // Search filter (client-side over hydrated rows)
       if (data.search) {
         const q = data.search.toLowerCase();
-        const hay = `${email ?? ""} ${prof?.full_name ?? ""} ${chargeId ?? ""} ${piId ?? ""} ${e.stripe_customer_id ?? ""}`.toLowerCase();
+        const hay = `${email ?? ""} ${fullName ?? ""} ${m.chargeId ?? ""} ${m.piId ?? ""} ${m.customerId ?? ""}`.toLowerCase();
         if (!hay.includes(q)) continue;
       }
 
@@ -273,15 +371,16 @@ export const listPayments = createServerFn({ method: "POST" })
         createdAt: e.created_at,
         userId: resolvedUserId,
         email,
-        fullName: prof?.full_name ?? null,
-        amountPence: amount,
-        currency,
-        status,
-        stripeChargeId: chargeId,
-        stripeCustomerId: e.stripe_customer_id,
-        stripePaymentIntentId: piId,
+        fullName,
+        amountPence: m.amount,
+        currency: m.currency,
+        status: m.status,
+        stripeChargeId: m.chargeId,
+        stripeCustomerId: m.customerId,
+        stripePaymentIntentId: m.piId,
       });
     }
+
 
     return out;
   });
@@ -496,17 +595,23 @@ export const listDisputes = createServerFn({ method: "GET" })
       stripe_customer_id: string | null;
     }>;
 
-    const customerIds = Array.from(
-      new Set(disputes.map((d) => d.stripe_customer_id).filter(Boolean) as string[]),
-    );
-    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+    // Backfill customer_id via charge_id → legacy_stripe_payments for legacy chargebacks.
+    const chargeIds = disputes.map((d) => d.stripe_charge_id).filter(Boolean) as string[];
+    const chargeMap = await resolveContactsByChargeIds(supabaseAdmin, chargeIds);
+    const customerIdByDispute = new Map<string, string | null>();
+    for (const d of disputes) {
+      let cust = d.stripe_customer_id ?? null;
+      if (!cust && d.stripe_charge_id) cust = chargeMap.get(d.stripe_charge_id)?.stripeCustomerId ?? null;
+      customerIdByDispute.set(d.id, cust);
+    }
 
-    const userIds = Array.from(
-      new Set<string>([
-        ...(disputes.map((d) => d.user_id).filter(Boolean) as string[]),
-        ...Array.from(customerToUser.values()),
-      ]),
-    );
+    const customerIds = Array.from(new Set(Array.from(customerIdByDispute.values()).filter(Boolean) as string[]));
+    const contactByCustomer = await resolveContactsByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(new Set<string>([
+      ...(disputes.map((d) => d.user_id).filter(Boolean) as string[]),
+      ...Array.from(contactByCustomer.values()).map((c) => c.userId).filter(Boolean) as string[],
+    ]));
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -525,14 +630,18 @@ export const listDisputes = createServerFn({ method: "GET" })
     }
 
     return disputes.map((d) => {
-      const resolvedUserId =
-        d.user_id ?? (d.stripe_customer_id ? customerToUser.get(d.stripe_customer_id) ?? null : null);
+      const cust = customerIdByDispute.get(d.id) ?? null;
+      const custHit = cust ? contactByCustomer.get(cust) : null;
+      const resolvedUserId = d.user_id ?? custHit?.userId ?? null;
+      const profName = resolvedUserId ? profMap.get(resolvedUserId) ?? null : null;
+      const profEmail = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
+      const chargeHit = d.stripe_charge_id ? chargeMap.get(d.stripe_charge_id) : null;
       return {
         id: d.id,
         openedAt: d.opened_at,
         userId: resolvedUserId,
-        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
-        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
+        email: profEmail ?? custHit?.email ?? chargeHit?.email ?? null,
+        fullName: profName ?? custHit?.fullName ?? null,
         reason: d.reason,
         amountPence: d.amount_pence ?? 0,
         currency: d.currency ?? "gbp",
@@ -544,6 +653,7 @@ export const listDisputes = createServerFn({ method: "GET" })
       };
     });
   });
+
 
 // ---------------------------------------------------------------------------
 // Refunds
@@ -590,17 +700,24 @@ export const listRefunds = createServerFn({ method: "POST" })
       stripe_customer_id: string | null;
     }>;
 
-    const customerIds = Array.from(
-      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
-    );
-    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+    // Pre-derive charge ids so we can backfill customer ids for legacy refunds.
+    const chargeIds = events.map((e) => (e.payload?.data?.object?.id as string | null) ?? null).filter(Boolean) as string[];
+    const chargeMap = await resolveContactsByChargeIds(supabaseAdmin, chargeIds);
+    const customerIdByEvent = new Map<string, string | null>();
+    for (const e of events) {
+      let cust = e.stripe_customer_id;
+      const chId = e.payload?.data?.object?.id as string | null;
+      if (!cust && chId) cust = chargeMap.get(chId)?.stripeCustomerId ?? null;
+      customerIdByEvent.set(e.id, cust);
+    }
 
-    const userIds = Array.from(
-      new Set<string>([
-        ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
-        ...Array.from(customerToUser.values()),
-      ]),
-    );
+    const customerIds = Array.from(new Set(Array.from(customerIdByEvent.values()).filter(Boolean) as string[]));
+    const contactByCustomer = await resolveContactsByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(new Set<string>([
+      ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
+      ...Array.from(contactByCustomer.values()).map((c) => c.userId).filter(Boolean) as string[],
+    ]));
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -620,14 +737,19 @@ export const listRefunds = createServerFn({ method: "POST" })
 
     return events.map((e) => {
       const obj = e.payload?.data?.object ?? {};
-      const resolvedUserId =
-        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
+      const cust = customerIdByEvent.get(e.id) ?? null;
+      const custHit = cust ? contactByCustomer.get(cust) : null;
+      const resolvedUserId = e.user_id ?? custHit?.userId ?? null;
+      const profName = resolvedUserId ? profMap.get(resolvedUserId) ?? null : null;
+      const profEmail = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
+      const chargeHit = obj.id ? chargeMap.get(obj.id) : null;
+      const payload = extractPayloadContact(obj);
       return {
         id: e.id,
         createdAt: e.created_at,
         userId: resolvedUserId,
-        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
-        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
+        email: profEmail ?? custHit?.email ?? chargeHit?.email ?? payload.email ?? null,
+        fullName: profName ?? custHit?.fullName ?? payload.fullName ?? null,
         amountPence: obj.amount_refunded ?? obj.amount ?? 0,
         currency: obj.currency ?? "gbp",
         reason: obj.refunds?.data?.[0]?.reason ?? null,
@@ -635,3 +757,4 @@ export const listRefunds = createServerFn({ method: "POST" })
       };
     });
   });
+
