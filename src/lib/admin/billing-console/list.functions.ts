@@ -15,29 +15,115 @@ async function requireAdmin(supabase: any, userId: string) {
 }
 
 /**
- * Resolve Stripe customer IDs to REPs user IDs via the local subscriptions
- * mirror. Used by Payments / Disputes / Refunds to fill in "Unknown" rows
- * where the webhook event arrived without a linked user_id but we hold the
- * customer id.
+ * Contact resolution chain for billing rows where the webhook event arrived
+ * without a linked user_id. We walk three sources in priority order:
+ *   1. `subscriptions` mirror   → live REPs member (preferred, has user_id)
+ *   2. `legacy_stripe_link`     → un-migrated BD member (email + bd_member_id)
+ *   3. `legacy_stripe_payments` → historic charge → customer/email map
+ *      (covers chargebacks on legacy charges whose customer is long-gone)
+ * Plus a last-resort extractor that pulls email/name straight off the
+ * Stripe event payload (receipt_email, billing_details, dispute evidence).
  */
-async function resolveUsersByCustomerIds(
+export type ContactHit = {
+  userId: string | null;
+  email: string | null;
+  fullName: string | null;
+  source: "subscription" | "legacy_link" | "legacy_payment" | "payload";
+};
+
+async function resolveContactsByCustomerIds(
   supabase: any,
   customerIds: string[],
-): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
+): Promise<Map<string, ContactHit>> {
+  const out = new Map<string, ContactHit>();
   const ids = Array.from(new Set(customerIds.filter(Boolean)));
   if (!ids.length) return out;
-  const { data } = await supabase
+
+  // 1. subscriptions mirror
+  const { data: subRows } = await supabase
     .from("subscriptions")
     .select("user_id, stripe_customer_id")
     .in("stripe_customer_id", ids)
     .eq("environment", "live");
-  for (const r of (data ?? []) as Array<{ user_id: string; stripe_customer_id: string | null }>) {
+  for (const r of (subRows ?? []) as Array<{ user_id: string; stripe_customer_id: string | null }>) {
     if (r.stripe_customer_id && r.user_id && !out.has(r.stripe_customer_id)) {
-      out.set(r.stripe_customer_id, r.user_id);
+      out.set(r.stripe_customer_id, { userId: r.user_id, email: null, fullName: null, source: "subscription" });
     }
   }
+
+  // 2. legacy_stripe_link (un-migrated BD members) for any remaining ids
+  const missing = ids.filter((id) => !out.has(id));
+  if (missing.length) {
+    const { data: legRows } = await supabase
+      .from("legacy_stripe_link")
+      .select("stripe_customer_id, email, bd_member_id")
+      .in("stripe_customer_id", missing);
+    const bdIds: number[] = [];
+    const byCust = new Map<string, { email: string | null; bd_member_id: number | null }>();
+    for (const r of (legRows ?? []) as Array<{ stripe_customer_id: string; email: string | null; bd_member_id: number | null }>) {
+      byCust.set(r.stripe_customer_id, { email: r.email, bd_member_id: r.bd_member_id });
+      if (r.bd_member_id) bdIds.push(r.bd_member_id);
+    }
+    const nameByBd = new Map<number, string>();
+    if (bdIds.length) {
+      const { data: seedRows } = await supabase
+        .from("bd_member_seed")
+        .select("bd_member_id, first_name, last_name")
+        .in("bd_member_id", bdIds);
+      for (const r of (seedRows ?? []) as Array<{ bd_member_id: number; first_name: string | null; last_name: string | null }>) {
+        const name = [r.first_name, r.last_name].filter(Boolean).join(" ").trim();
+        if (name) nameByBd.set(r.bd_member_id, name);
+      }
+    }
+    for (const [custId, info] of byCust) {
+      out.set(custId, {
+        userId: null,
+        email: info.email,
+        fullName: info.bd_member_id ? nameByBd.get(info.bd_member_id) ?? null : null,
+        source: "legacy_link",
+      });
+    }
+  }
+
   return out;
+}
+
+/**
+ * For events that carry only a charge id (typical of legacy chargebacks),
+ * walk `legacy_stripe_payments` to recover the customer id + email.
+ */
+async function resolveContactsByChargeIds(
+  supabase: any,
+  chargeIds: string[],
+): Promise<Map<string, { stripeCustomerId: string | null; email: string | null }>> {
+  const out = new Map<string, { stripeCustomerId: string | null; email: string | null }>();
+  const ids = Array.from(new Set(chargeIds.filter(Boolean)));
+  if (!ids.length) return out;
+  const { data } = await supabase
+    .from("legacy_stripe_payments")
+    .select("charge_id, stripe_customer_id, email")
+    .in("charge_id", ids);
+  for (const r of (data ?? []) as Array<{ charge_id: string; stripe_customer_id: string | null; email: string | null }>) {
+    if (!out.has(r.charge_id)) out.set(r.charge_id, { stripeCustomerId: r.stripe_customer_id, email: r.email });
+  }
+  return out;
+}
+
+/** Last-resort: pull contact info straight off the Stripe event object. */
+function extractPayloadContact(obj: any): { email: string | null; fullName: string | null } {
+  if (!obj) return { email: null, fullName: null };
+  const email =
+    obj.receipt_email ??
+    obj.billing_details?.email ??
+    obj.customer_email ??
+    obj.evidence?.customer_email_address ??
+    null;
+  const fullName =
+    obj.billing_details?.name ??
+    obj.evidence?.customer_name ??
+    obj.customer_name ??
+    null;
+  return { email: email ?? null, fullName: fullName ?? null };
 }
 
 // ---------------------------------------------------------------------------
