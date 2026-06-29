@@ -204,7 +204,7 @@ export const saveMyWebsiteContent = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin
       .from("shop_fronts")
-      .upsert(patch, { onConflict: "professional_id" });
+      .upsert(patch as never, { onConflict: "professional_id" });
     if (error) throw error;
     return { ok: true };
   });
