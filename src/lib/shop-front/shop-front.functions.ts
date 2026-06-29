@@ -408,6 +408,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         avatar_url: prof?.avatar_url ?? null,
         headline: pro.headline,
         primary_profession: pro.primary_profession,
+        titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
         specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
         city: pro.city,
         in_person_available: !!pro.in_person_available,
