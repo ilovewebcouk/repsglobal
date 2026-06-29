@@ -159,7 +159,7 @@ export function RevenueAndMembership({
                 <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="day" tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} />
                 <YAxis tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} tickLine={false} axisLine={false} width={40} tickFormatter={(v) => `£${v}`} />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent className={TOOLTIP_CLASSES} />} />
                 <Bar dataKey="value" fill="var(--reps-orange)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ChartContainer>
