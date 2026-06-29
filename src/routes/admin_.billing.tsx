@@ -135,22 +135,21 @@ function BillingConsole() {
 // KPI strip
 // ---------------------------------------------------------------------------
 
-function KpiStrip({ data, loading, onRefresh, refreshing }: { data?: BillingKpis; loading: boolean; onRefresh: () => void; refreshing?: boolean }) {
+function KpiStrip({ data, loading, syncing, lastSyncedAt }: { data?: BillingKpis; loading: boolean; syncing: boolean; lastSyncedAt: Date | null }) {
+  const stamp = lastSyncedAt
+    ? lastSyncedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : null;
   return (
     <div className="rounded-[12px] border border-reps-border bg-reps-panel/60 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-white/55">
           Live financial snapshot
-          {data?.mirrorAgeSeconds != null && (
-            <Badge variant="outline" className="border-white/15 bg-white/5 text-[10px] text-white/70">
-              Stripe mirror · {formatAge(data.mirrorAgeSeconds)}
-            </Badge>
-          )}
         </div>
-        <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 gap-1 text-white/70 hover:text-white">
-          <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} /> {refreshing ? "Syncing…" : "Refresh from Stripe"}
-        </Button>
+        <div className="text-[11px] text-white/45">
+          {syncing ? "Syncing live from Stripe…" : stamp ? `Live from Stripe · ${stamp}` : null}
+        </div>
       </div>
+
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
         <Kpi label="MRR" value={loading ? "—" : formatGbp(data!.mrrPence)} accent="orange" />
         <Kpi label="Active paying" value={loading ? "—" : data!.activePaying.toString()} />
