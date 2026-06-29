@@ -869,10 +869,11 @@ function ProRow({ row }: { row: AdminProRow }) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white">
-              <Link to="/admin/ops/member/$userId" params={{ userId: row.id }}>
+              <Link to="/admin/members/$userId" params={{ userId: row.id }}>
                 <Activity className="h-4 w-4" /> Open timeline
               </Link>
             </DropdownMenuItem>
+
 
             {slug && slug !== "—" ? (
               <>
