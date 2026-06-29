@@ -94,6 +94,7 @@ import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
+import { Route as AdminV2IndexRouteImport } from './routes/admin_.v2.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
@@ -120,6 +121,7 @@ import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/publ
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
 import { Route as ApiPublicHooksLifecycleCronRouteImport } from './routes/api/public/hooks/lifecycle-cron'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
+import { Route as AdminV2MembersUserIdRouteImport } from './routes/admin_.v2.members.$userId'
 import { Route as AdminOpsMemberUserIdRouteImport } from './routes/admin_.ops.member.$userId'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
@@ -576,6 +578,11 @@ const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => HelpCategoryRoute,
 } as any)
+const AdminV2IndexRoute = AdminV2IndexRouteImport.update({
+  id: '/admin_/v2/',
+  path: '/admin/v2/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
   path: '/u/insurance/$sessionId',
@@ -717,6 +724,11 @@ const ApiPublicHooksLegacyRenewalRoute =
     path: '/api/public/hooks/legacy-renewal',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminV2MembersUserIdRoute = AdminV2MembersUserIdRouteImport.update({
+  id: '/admin_/v2/members/$userId',
+  path: '/admin/v2/members/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminOpsMemberUserIdRoute = AdminOpsMemberUserIdRouteImport.update({
   id: '/member/$userId',
   path: '/member/$userId',
@@ -995,6 +1007,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/admin/v2/': typeof AdminV2IndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1009,6 +1022,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
+  '/admin/v2/members/$userId': typeof AdminV2MembersUserIdRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1132,6 +1146,7 @@ export interface FileRoutesByTo {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/admin/v2': typeof AdminV2IndexRoute
   '/help/$category': typeof HelpCategoryIndexRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1145,6 +1160,7 @@ export interface FileRoutesByTo {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
+  '/admin/v2/members/$userId': typeof AdminV2MembersUserIdRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1275,6 +1291,7 @@ export interface FileRoutesById {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/admin_/v2/': typeof AdminV2IndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1289,6 +1306,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin_/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
+  '/admin_/v2/members/$userId': typeof AdminV2MembersUserIdRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1417,6 +1435,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/admin/v2/'
     | '/help/$category/'
     | '/pro/$slug/'
     | '/checkout/credits'
@@ -1431,6 +1450,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/verification'
     | '/admin/ops/member/$userId'
+    | '/admin/v2/members/$userId'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -1554,6 +1574,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/admin/v2'
     | '/help/$category'
     | '/pro/$slug'
     | '/checkout/credits'
@@ -1567,6 +1588,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/admin/ops/member/$userId'
+    | '/admin/v2/members/$userId'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -1696,6 +1718,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/admin_/v2/'
     | '/help/$category/'
     | '/pro/$slug/'
     | '/_authenticated/_professional/checkout_/credits'
@@ -1710,6 +1733,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/admin_/ops/member/$userId'
+    | '/admin_/v2/members/$userId'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -1825,6 +1849,8 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
+  AdminV2IndexRoute: typeof AdminV2IndexRoute
+  AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicHooksLifecycleCronRoute: typeof ApiPublicHooksLifecycleCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -2434,6 +2460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HelpCategoryIndexRouteImport
       parentRoute: typeof HelpCategoryRoute
     }
+    '/admin_/v2/': {
+      id: '/admin_/v2/'
+      path: '/admin/v2'
+      fullPath: '/admin/v2/'
+      preLoaderRoute: typeof AdminV2IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
       path: '/u/insurance/$sessionId'
@@ -2614,6 +2647,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/legacy-renewal'
       fullPath: '/api/public/hooks/legacy-renewal'
       preLoaderRoute: typeof ApiPublicHooksLegacyRenewalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/v2/members/$userId': {
+      id: '/admin_/v2/members/$userId'
+      path: '/admin/v2/members/$userId'
+      fullPath: '/admin/v2/members/$userId'
+      preLoaderRoute: typeof AdminV2MembersUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/ops/member/$userId': {
@@ -3144,6 +3184,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
+  AdminV2IndexRoute: AdminV2IndexRoute,
+  AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
   ApiPublicHooksLifecycleCronRoute: ApiPublicHooksLifecycleCronRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
