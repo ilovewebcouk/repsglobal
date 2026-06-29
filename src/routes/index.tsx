@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { heroAvatarsQueryOptions, type HeroAvatar } from "@/lib/directory/hero.functions";
 import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
+import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 import {
   Activity,
   Apple,
