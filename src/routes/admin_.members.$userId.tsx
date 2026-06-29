@@ -261,7 +261,7 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
 
         <div className="flex flex-wrap items-center gap-2">
           {publicHref && (
-            <Button asChild size="sm" className="h-9 rounded-[10px] bg-reps-orange text-black hover:bg-reps-orange-hover">
+            <Button asChild size="sm" className="h-9 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover">
               <a href={publicHref} target="_blank" rel="noreferrer">
                 <ExternalLink data-icon="inline-start" /> View public profile
               </a>
@@ -272,7 +272,7 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
               asChild
               size="sm"
               variant="outline"
-              className="h-9 rounded-[10px] border-reps-border bg-reps-panel/40 text-white hover:bg-reps-panel-soft hover:text-white"
+              className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
             >
               <a href={mailtoHref}>
                 <Mail data-icon="inline-start" /> Send email
@@ -285,7 +285,7 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 size="sm"
                 variant="outline"
                 aria-label="More actions"
-                className="size-9 rounded-[10px] border-reps-border bg-reps-panel/40 p-0 text-white hover:bg-reps-panel-soft hover:text-white"
+                className="size-9 rounded-[10px] border-reps-border bg-white/5 p-0 text-white hover:bg-reps-panel-soft hover:text-white"
               >
                 <MoreHorizontal />
               </Button>
