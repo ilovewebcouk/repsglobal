@@ -5,7 +5,7 @@ import {
   Users,
   Wallet,
   CalendarClock,
-  TrendingUp,
+  PoundSterling,
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
