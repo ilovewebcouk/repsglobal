@@ -91,6 +91,15 @@ export type ShopFrontFaqDTO = {
   source: string;
 };
 
+export type ShopFrontClientResultDTO = {
+  id: string;
+  headline: string | null;
+  body: string | null;
+  review_id: string | null;
+  sort_order: number;
+  is_published: boolean;
+};
+
 function asPillars(v: unknown): Array<{ title: string; body: string }> {
   if (!Array.isArray(v)) return [];
   return v
@@ -303,7 +312,7 @@ export type ServiceDTO = {
 
 export const getShopFrontBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
-  .handler(async ({ data }): Promise<{ shopFront: ShopFrontDTO; services: ServiceDTO[]; transformations: ShopFrontTransformationDTO[]; faqs: ShopFrontFaqDTO[] } | null> => {
+  .handler(async ({ data }): Promise<{ shopFront: ShopFrontDTO; services: ServiceDTO[]; transformations: ShopFrontTransformationDTO[]; clientResults: ShopFrontClientResultDTO[]; faqs: ShopFrontFaqDTO[] } | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: pro } = await supabaseAdmin
@@ -323,7 +332,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     );
     if (!(await isProPubliclyVisible(pro.id))) return null;
 
-    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: faqs }, coachingSinceYear, trust] = await Promise.all([
+    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust] = await Promise.all([
       supabaseAdmin
         .from("shop_fronts")
         .select(
@@ -349,6 +358,12 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("shop_front_transformations")
         .select("id, client_first_name, metric, headline, quote, image_url, sort_order, is_published")
+        .eq("user_id", pro.id)
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true }),
+      supabaseAdmin
+        .from("shop_front_client_results")
+        .select("id, headline, body, review_id, sort_order, is_published")
         .eq("user_id", pro.id)
         .eq("is_published", true)
         .order("sort_order", { ascending: true }),
@@ -404,6 +419,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       },
       services: (services ?? []) as ServiceDTO[],
       transformations: (transformations ?? []) as ShopFrontTransformationDTO[],
+      clientResults: (clientResults ?? []) as ShopFrontClientResultDTO[],
       faqs: (faqs ?? []) as ShopFrontFaqDTO[],
     };
   });
