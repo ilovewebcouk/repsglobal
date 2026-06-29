@@ -40,6 +40,14 @@ export type ShopFrontDTO = {
   coaching_since_year: number | null;
   // Subscription tier of the pro (so callers can gate Pro-only surfaces).
   tier: "verified" | "pro" | "studio" | null;
+  // Trust block (public-safe summary).
+  trust: {
+    isVerified: boolean;
+    primaryTitleSlug: string | null;
+    insuranceExpiry: string | null;
+    activeCredentialsCount: number;
+    lastCheckedAt: string | null;
+  };
 };
 
 
@@ -69,6 +77,52 @@ async function fetchCoachingSinceYear(
     if (y != null && (earliest == null || y < earliest)) earliest = y;
   }
   return earliest;
+}
+
+// Helper: public-safe trust summary used by both shop-front readers.
+async function fetchTrustSummary(
+  supabaseAdmin: { from: (t: string) => any },
+  professionalId: string,
+  primaryTitleSlug: string | null,
+): Promise<ShopFrontDTO["trust"]> {
+  const today = new Date().toISOString().slice(0, 10);
+  const [{ data: pro }, { data: ins }, { data: subs }] = await Promise.all([
+    supabaseAdmin
+      .from("professionals")
+      .select("identity_status, identity_verified_at")
+      .eq("id", professionalId)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("insurance_policies")
+      .select("status, expiry_date")
+      .eq("professional_id", professionalId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("verification_submissions")
+      .select("status, reviewed_at")
+      .eq("professional_id", professionalId),
+  ]);
+
+  const allSubs = (subs ?? []) as Array<{ status: string | null; reviewed_at: string | null }>;
+  const approved = allSubs.filter((s) => s.status === "approved");
+  const insRow = ins as { status: string | null; expiry_date: string | null } | null;
+  const insActive =
+    insRow?.status === "active" && (!insRow.expiry_date || insRow.expiry_date >= today);
+  const idApproved = (pro as { identity_status: string | null } | null)?.identity_status === "approved";
+  const reviewedDates = [
+    ...approved.map((s) => s.reviewed_at).filter((x): x is string => !!x),
+    (pro as { identity_verified_at: string | null } | null)?.identity_verified_at ?? null,
+  ].filter((x): x is string => !!x).sort();
+
+  return {
+    isVerified: idApproved && insActive && approved.length > 0,
+    primaryTitleSlug,
+    insuranceExpiry: insActive ? insRow?.expiry_date ?? null : null,
+    activeCredentialsCount: approved.length,
+    lastCheckedAt: reviewedDates.at(-1) ?? null,
+  };
 }
 
 export type ServiceDTO = {
@@ -108,7 +162,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     );
     if (!(await isProPubliclyVisible(pro.id))) return null;
 
-    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, coachingSinceYear] = await Promise.all([
+    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, coachingSinceYear, trust] = await Promise.all([
       supabaseAdmin
         .from("shop_fronts")
         .select(
@@ -132,6 +186,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .eq("user_id", pro.id)
         .maybeSingle(),
       fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+      fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
     ]);
 
     if (!sf) return null;
@@ -164,7 +219,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         member_since: pro.member_since ?? null,
         coaching_since_year: coachingSinceYear,
         tier,
-
+        trust,
       },
       services: (services ?? []) as ServiceDTO[],
     };
@@ -211,11 +266,10 @@ export const getMyShopFront = createServerFn({ method: "GET" })
 
     if (!pro) return { shopFront: null, services: [] };
 
-    const coachingSinceYear = await fetchCoachingSinceYear(
-      supabaseAdmin,
-      userId,
-      pro.primary_title_slug ?? null,
-    );
+    const [coachingSinceYear, trust] = await Promise.all([
+      fetchCoachingSinceYear(supabaseAdmin, userId, pro.primary_title_slug ?? null),
+      fetchTrustSummary(supabaseAdmin, userId, pro.primary_title_slug ?? null),
+    ]);
 
     const tier =
       subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
@@ -244,6 +298,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
           tier,
+          trust,
         }
       : null;
 

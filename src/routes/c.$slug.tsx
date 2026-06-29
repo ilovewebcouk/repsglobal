@@ -107,7 +107,35 @@ type Coach = {
     href: string;
     label: string;
   }[];
+  trust?: {
+    isVerified: boolean;
+    primaryTitleSlug: string | null;
+    insuranceExpiry: string | null;
+    activeCredentialsCount: number;
+    lastCheckedAt: string | null;
+  };
 };
+
+const TITLE_SHORT_LABEL: Record<string, string> = {
+  "personal-trainer": "Level 3 PT",
+  "advanced-personal-trainer": "Level 4 PT",
+  "fitness-instructor": "Level 2 FI",
+  "group-fitness-instructor": "Level 2 GFI",
+  "pilates-instructor": "Level 3 Pilates",
+  "yoga-teacher": "Level 3 Yoga",
+  "strength-coach": "Level 4 S&C",
+  "nutrition-coach": "Level 4 Nutrition",
+  "accredited-sc-coach": "ASCC",
+  "registered-nutritionist": "Registered Nutritionist",
+  "registered-dietitian": "Registered Dietitian",
+};
+
+function formatMonthYear(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+}
 
 const COACHES: Record<string, Coach> = {
   "james-wilson": {
@@ -360,6 +388,7 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     tiers: liveTiers.length ? liveTiers : base.tiers,
     years: yearsCoaching,
     verifiedSince: memberYear ? String(memberYear) : base.verifiedSince,
+    trust: sf.trust,
   };
 }
 
@@ -706,18 +735,34 @@ function HeroSection({
             </div>
 
             {/* Floating credential card */}
-            <div className="absolute -bottom-5 left-5 right-5 hidden rounded-[16px] border border-reps-border bg-reps-panel/95 p-4 shadow-[var(--reps-shadow-card)] backdrop-blur sm:left-6 sm:right-auto sm:block sm:max-w-[280px]">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-reps-green">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Verified by REPS
-              </div>
-              <div className="mt-2 text-[13.5px] font-semibold text-reps-text">
-                Level 3 PT · Insured to Dec 2026
-              </div>
-              <div className="mt-1 text-[12px] text-reps-muted">
-                4 active credentials · Last checked Jun 2026
-              </div>
-            </div>
+            {(() => {
+              const t = coach.trust;
+              const verified = !!t?.isVerified;
+              const shortTitle = t?.primaryTitleSlug ? TITLE_SHORT_LABEL[t.primaryTitleSlug] ?? null : null;
+              const insuredUntil = formatMonthYear(t?.insuranceExpiry ?? null);
+              const lastChecked = formatMonthYear(t?.lastCheckedAt ?? null);
+              const credCount = t?.activeCredentialsCount ?? 0;
+              const headline =
+                verified
+                  ? [shortTitle, insuredUntil ? `Insured to ${insuredUntil}` : null].filter(Boolean).join(" · ") ||
+                    "Verification in progress"
+                  : "Verification pending";
+              const sub = verified
+                ? `${credCount} active ${credCount === 1 ? "qualification" : "qualifications"}${lastChecked ? ` · Last checked ${lastChecked}` : ""}`
+                : "Identity, insurance and qualifications not yet confirmed";
+              return (
+                <div className="absolute -bottom-5 left-5 right-5 hidden rounded-[16px] border border-reps-border bg-reps-panel/95 p-4 shadow-[var(--reps-shadow-card)] backdrop-blur sm:left-6 sm:right-auto sm:block sm:max-w-[280px]">
+                  <div
+                    className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider ${verified ? "text-reps-green" : "text-reps-muted"}`}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {verified ? "Verified by REPS" : "Unverified"}
+                  </div>
+                  <div className="mt-2 text-[13.5px] font-semibold text-reps-text">{headline}</div>
+                  <div className="mt-1 text-[12px] text-reps-muted">{sub}</div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
