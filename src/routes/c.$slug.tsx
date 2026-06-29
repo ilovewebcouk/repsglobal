@@ -614,7 +614,7 @@ function HeroSection({
               </Badge>
               <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted">
                 <MapPin className="h-3.5 w-3.5" />
-                {coach.city}, {coach.region}
+                {coach.city}
               </span>
             </div>
 
