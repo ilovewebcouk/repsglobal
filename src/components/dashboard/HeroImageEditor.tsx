@@ -82,7 +82,6 @@ export function HeroImageEditor({
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[12px] font-semibold text-white/85">Current hero image</div>
-            <div className="mt-0.5 truncate text-[11px] text-white/45">{value}</div>
             <p className="mt-2 text-[12px] text-white/55">
               Locked spec: <span className="text-white/80">Portrait 9:16 · 1080 × 1920</span>. Replace it
               using one of the options below.
