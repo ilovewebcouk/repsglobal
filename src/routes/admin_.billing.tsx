@@ -3,11 +3,13 @@
 // Tab and view live in URL search params so links are deep-linkable from sidebars and emails.
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 import { CreditCard, Receipt, ShieldAlert, Undo2, ExternalLink, RefreshCw, Search } from "lucide-react";
+import { resyncStripeMirror } from "@/lib/admin/resync-stripe.functions";
+import { toast } from "sonner";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -66,15 +68,31 @@ function BillingConsole() {
   const setTab = (next: TabValue) => navigate({ search: { ...search, tab: next } as any });
 
   const kpisFn = useServerFn(getBillingKpis);
+  const resyncFn = useServerFn(resyncStripeMirror);
+  const queryClient = useQueryClient();
   const kpisQ = useQuery<BillingKpis>({
     queryKey: ["admin", "billing", "kpis"],
     queryFn: () => kpisFn(),
     staleTime: 60_000,
   });
 
+  const [resyncing, setResyncing] = useState(false);
+  async function handleRefresh() {
+    setResyncing(true);
+    try {
+      const res = await resyncFn();
+      await queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
+      toast.success(`Synced ${res.users} members from Stripe`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Sync failed");
+    } finally {
+      setResyncing(false);
+    }
+  }
+
   return (
     <DashboardShell role="admin" active="Billing" title="Billing" subtitle="Payments, subscriptions, disputes and refunds — sourced from Stripe.">
-      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} onRefresh={() => kpisQ.refetch()} />
+      <KpiStrip data={kpisQ.data} loading={kpisQ.isLoading} onRefresh={handleRefresh} refreshing={resyncing} />
 
       <div className="mt-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
@@ -107,7 +125,7 @@ function BillingConsole() {
 // KPI strip
 // ---------------------------------------------------------------------------
 
-function KpiStrip({ data, loading, onRefresh }: { data?: BillingKpis; loading: boolean; onRefresh: () => void }) {
+function KpiStrip({ data, loading, onRefresh, refreshing }: { data?: BillingKpis; loading: boolean; onRefresh: () => void; refreshing?: boolean }) {
   return (
     <div className="rounded-[12px] border border-reps-border bg-reps-panel/60 p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -119,8 +137,8 @@ function KpiStrip({ data, loading, onRefresh }: { data?: BillingKpis; loading: b
             </Badge>
           )}
         </div>
-        <Button size="sm" variant="ghost" onClick={onRefresh} className="h-7 gap-1 text-white/70 hover:text-white">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+        <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 gap-1 text-white/70 hover:text-white">
+          <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} /> {refreshing ? "Syncing…" : "Refresh from Stripe"}
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
