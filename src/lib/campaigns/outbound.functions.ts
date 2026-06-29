@@ -208,8 +208,10 @@ async function resolveTierRecipients(
   supabaseAdmin: any,
   tiers: Tier[],
 ): Promise<Array<{ userId: string; email: string; name: string }>> {
-  const wantFree = tiers.includes("free");
-  const paidTiers = tiers.filter((t) => t !== "free");
+  const wantFormer = tiers.includes("former");
+  const liveTiers = tiers.filter((t) => t !== "former");
+  const wantFree = liveTiers.includes("free");
+  const paidTiers = liveTiers.filter((t) => t !== "free");
 
   // Find user IDs with one of the paid tiers
   const paidUserIds = new Set<string>();
