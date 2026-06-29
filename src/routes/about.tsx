@@ -23,21 +23,23 @@ import proDaniel from "@/assets/pro-daniel.jpg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About REPS — The professional platform for the modern fitness industry" },
+      { title: "About REPS — The professional standard for fitness" },
       {
         name: "description",
         content:
-          "REPS is building a new professional home for fitness professionals — combining public trust, professional visibility, education, reviews and business software in one connected platform.",
+          "REPS is the professional home for fitness — combining public trust, visibility, education, reviews and business software in one platform.",
       },
+
       { property: "og:title", content: "About REPS" },
       {
         property: "og:description",
         content: "The professional platform for the modern fitness industry.",
       },
       { property: "og:image", content: heroAsset.url },
-      { property: "og:url", content: "/about" },
+      { property: "og:url", content: "https://repsuk.org/about" },
     ],
-    links: [{ rel: "canonical", href: "/about" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/about" }],
+
   }),
   component: AboutPage,
 });

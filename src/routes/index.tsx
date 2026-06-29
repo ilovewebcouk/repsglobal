@@ -57,11 +57,13 @@ export const Route = createFileRoute("/")({
         content:
           "Search verified personal trainers, Pilates instructors, nutritionists and coaches.",
       },
-      { property: "og:url", content: "/" },
+      { property: "og:url", content: "https://repsuk.org/" },
     ],
     links: [
+      { rel: "canonical", href: "https://repsuk.org/" },
       { rel: "preload", as: "image", href: heroCoaching.url, fetchpriority: "high" },
     ],
+
   }),
   loader: ({ context }) => {
     context.queryClient.ensureQueryData(heroAvatarsQueryOptions);

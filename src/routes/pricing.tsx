@@ -7,6 +7,7 @@ import { FoundingBanner } from"@/components/pricing/FoundingBanner";
 import { PricingPlans } from"@/components/pricing/PricingPlans";
 import { PricingFAQ } from"@/components/pricing/PricingFAQ";
 import { PricingCompare } from"@/components/pricing/PricingCompare";
+import { FAQ } from "@/components/pricing/pricing-data";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -22,12 +23,27 @@ export const Route = createFileRoute("/pricing")({
         property:"og:description",
         content:"Core to get listed. Pro to run your practice. Studio to scale your team.",
       },
-      { property:"og:url", content:"https://repsglobal.lovable.app/pricing" },
+      { property:"og:url", content:"https://repsuk.org/pricing" },
     ],
-    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/pricing" }],
+    links: [{ rel:"canonical", href:"https://repsuk.org/pricing" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQ.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }),
+      },
+    ],
   }),
   component: PricingPage,
 });
+
 
 function PricingPage() {
   return (
