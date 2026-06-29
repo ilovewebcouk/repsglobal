@@ -345,6 +345,7 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
   return {
     ...base,
     name: sf.full_name ?? base.name,
+    firstName: sf.full_name?.trim().split(/\s+/)[0] ?? base.firstName,
     promise: sf.tagline ?? base.promise,
     bio: sf.about ? sf.about.split(/\n\n+/).filter(Boolean) : base.bio,
     heroImage: sf.hero_image_url ?? base.heroImage,
