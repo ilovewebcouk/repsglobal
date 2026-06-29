@@ -113,6 +113,26 @@ const TIER_BY_PRODUCT_ID: Record<string, TierKey> = {
   pro_founding: "pro",
 };
 
+// Catalogue prices used when Stripe doesn't return a price (e.g. local-mirror
+// fallback). These mirror the published REPs prices in src/lib/billing.ts.
+const TIER_CATALOGUE_PRICE: Record<TierKey, { unit_amount_pence: number; currency: string; interval: string } | null> = {
+  verified: { unit_amount_pence: 9900, currency: "gbp", interval: "year" },
+  pro: { unit_amount_pence: 5900, currency: "gbp", interval: "month" },
+  studio: { unit_amount_pence: 14900, currency: "gbp", interval: "month" },
+};
+
+function cataloguePrice(tier: TierKey | null) {
+  if (!tier) return null;
+  return TIER_CATALOGUE_PRICE[tier] ?? null;
+}
+
+function trialDaysLeft(iso: string | null): number | null {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (Number.isNaN(ms)) return null;
+  return Math.max(0, Math.ceil(ms / 86_400_000));
+}
+
 export function tierLabel(tier: TierKey | null): string | null {
   if (!tier) return null;
   return TIERS[tier]?.label ?? null;
