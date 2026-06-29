@@ -627,13 +627,21 @@ function HeroSection({
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]">
-              <span className="inline-flex items-center gap-1.5">
-                <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
-                <span className="font-semibold text-reps-text">
-                  {coach.rating.toFixed(1)}
+              {coach.reviews > 0 ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
+                  <span className="font-semibold text-reps-text">
+                    {coach.rating.toFixed(1)}
+                  </span>
+                  <span className="text-reps-muted">
+                    ({coach.reviews} {coach.reviews === 1 ? "review" : "reviews"})
+                  </span>
                 </span>
-                <span className="text-reps-muted">({coach.reviews} reviews)</span>
-              </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-reps-muted">
+                  <Star className="h-4 w-4" /> No reviews yet
+                </span>
+              )}
               <span className="inline-flex items-center gap-1.5 text-reps-muted">
                 <Users className="h-3.5 w-3.5" /> In-person · London
               </span>
