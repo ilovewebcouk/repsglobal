@@ -113,6 +113,7 @@ type Coach = {
     insuranceExpiry: string | null;
     activeCredentialsCount: number;
     lastCheckedAt: string | null;
+    identityVerifiedAt: string | null;
     items: Array<{
       kind: "qualification" | "insurance";
       title: string;
@@ -394,7 +395,14 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
     specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
     tiers: liveTiers.length ? liveTiers : base.tiers,
     years: yearsCoaching,
-    verifiedSince: memberYear ? String(memberYear) : base.verifiedSince,
+    verifiedSince: (() => {
+      const idAt = sf.trust?.identityVerifiedAt;
+      if (idAt) {
+        const d = new Date(idAt);
+        if (!isNaN(d.getTime())) return String(d.getFullYear());
+      }
+      return memberYear ? String(memberYear) : base.verifiedSince;
+    })(),
     trust: sf.trust,
     socials: sf.socials.length ? sf.socials : base.socials,
   };

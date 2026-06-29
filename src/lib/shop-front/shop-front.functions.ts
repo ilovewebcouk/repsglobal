@@ -47,6 +47,7 @@ export type ShopFrontDTO = {
     insuranceExpiry: string | null;
     activeCredentialsCount: number;
     lastCheckedAt: string | null;
+    identityVerifiedAt: string | null;
     items: Array<{
       kind: "qualification" | "insurance";
       title: string;
@@ -206,8 +207,10 @@ async function fetchTrustSummary(
     insuranceExpiry: insActive ? insRow?.expiry_date ?? null : null,
     activeCredentialsCount: approved.length,
     lastCheckedAt: reviewedDates.at(-1) ?? null,
+    identityVerifiedAt: (pro as { identity_verified_at: string | null } | null)?.identity_verified_at ?? null,
     items,
   };
+
 }
 
 export type ServiceDTO = {
