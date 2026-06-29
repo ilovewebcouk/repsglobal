@@ -36,6 +36,7 @@ import {
   type Specialism,
 } from "@/lib/specialisms";
 import { getProfessionLabel, isProfessionSlug, type ProfessionSlug } from "@/lib/professions";
+import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 
 
 function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): FeaturedPro {
