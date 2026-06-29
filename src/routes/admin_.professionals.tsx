@@ -77,6 +77,32 @@ function NameWithIdTooltip({ id, name }: { id: string; name: string }) {
   );
 }
 
+// Tiny inline sparkline (12-pt monthly series). No deps.
+function Sparkline({ values }: { values: number[] }) {
+  if (!values.length) return <div className="h-7 w-full" />;
+  const w = 120, h = 28, pad = 2;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(1, max - min);
+  const stepX = (w - pad * 2) / Math.max(1, values.length - 1);
+  const pts = values.map((v, i) => {
+    const x = pad + i * stepX;
+    const y = pad + (h - pad * 2) * (1 - (v - min) / range);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const lastX = pad + (values.length - 1) * stepX;
+  const lastY = pad + (h - pad * 2) * (1 - (values[values.length - 1] - min) / range);
+  const areaPath = `M ${pts[0]} L ${pts.join(" L ")} L ${lastX.toFixed(1)},${h - pad} L ${pad},${h - pad} Z`;
+  const linePath = `M ${pts.join(" L ")}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-7 w-full" preserveAspectRatio="none">
+      <path d={areaPath} fill="rgb(255 122 0 / 0.12)" />
+      <path d={linePath} fill="none" stroke="rgb(255 122 0)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={lastX} cy={lastY} r="2" fill="rgb(255 122 0)" />
+    </svg>
+  );
+}
+
 
 
 import { initialsFromName } from "@/lib/initials";
@@ -85,8 +111,6 @@ import {
   listAdminProfessionals,
   setProfessionalSuspension,
   setProfessionalFlag,
-  cancelProfessionalSubscription,
-  deleteProfessional,
   type AdminProRow,
   type AdminProTab,
   type AdminProSort,
@@ -115,11 +139,7 @@ const TABS: { label: string; value: AdminProTab }[] = [
   { label: "Verified", value: "verified" },
   { label: "Unverified", value: "pending" },
   { label: "Payment failed", value: "payment_failed" },
-  { label: "Renewal due", value: "renewal_due" },
-  { label: "Flagged", value: "flagged" },
   { label: "Suspended", value: "suspended" },
-  { label: "Recently joined", value: "recent" },
-  { label: "Demos", value: "demos" },
 ];
 
 const SORT_OPTIONS: { value: AdminProSort; label: string; defaultDir: SortDir }[] = [
@@ -141,8 +161,9 @@ const PROFESSION_OPTIONS = [
   { slug: "yoga-teacher", label: "Yoga" },
 ];
 
-const PLAN_OPTIONS: { value: "free" | "verified" | "pro" | "studio"; label: string }[] = [
-  { value: "free", label: "Free" },
+// "Free" is intentionally absent — every active REPs member must be on a
+// paid Stripe sub. Legacy free / BD-window accounts are deleted, not filtered.
+const PLAN_OPTIONS: { value: "verified" | "pro" | "studio"; label: string }[] = [
   { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
@@ -276,12 +297,14 @@ function AdminProfessionalsPage() {
     (filters.professions?.length ?? 0) +
     (filters.hasAvatar !== undefined ? 1 : 0);
 
+  const series = kpisQ.data?.series;
   const kpis = [
     {
       label: "Active Professionals",
       value: kpisQ.data ? kpisQ.data.activeCount.toLocaleString() : "—",
-      delta: "All confirmed pros, including Free (M2)",
+      delta: "All confirmed pros on a paid Stripe sub",
       icon: Users,
+      series: series?.active,
     },
     {
       label: "Verified Professionals",
@@ -290,12 +313,14 @@ function AdminProfessionalsPage() {
         ? `${kpisQ.data.verifiedCount.toLocaleString()} of ${kpisQ.data.activeCount.toLocaleString()} active`
         : "",
       icon: ShieldCheck,
+      series: series?.verified,
     },
     {
       label: "Paid Professionals",
       value: kpisQ.data ? kpisQ.data.paidCount.toLocaleString() : "—",
       delta: "With active paid entitlement — matches /admin M1",
       icon: CreditCard,
+      series: series?.paid,
     },
     {
       label: "New signups (30d)",
@@ -304,6 +329,7 @@ function AdminProfessionalsPage() {
         ? `${kpisQ.data.newSignupsDeltaPct >= 0 ? "+" : ""}${kpisQ.data.newSignupsDeltaPct.toFixed(1)}% vs prev 30d`
         : "",
       icon: TrendingUp,
+      series: series?.newSignups,
     },
   ];
 
@@ -317,20 +343,40 @@ function AdminProfessionalsPage() {
       actions={<InviteButton />}
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((k) => (
-          <PCard key={k.label}>
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="text-[12px] text-white/55">{k.label}</div>
-                <div className="mt-1 font-display text-[26px] font-bold text-white">{k.value}</div>
-                <div className="mt-1 text-[11px] text-white/55">{k.delta}</div>
+        {kpis.map((k) => {
+          const last = k.series && k.series.length ? k.series[k.series.length - 1] : null;
+          const prev = k.series && k.series.length > 1 ? k.series[k.series.length - 2] : null;
+          const monDelta = last != null && prev != null && prev > 0
+            ? ((last - prev) / prev) * 100
+            : null;
+          const monDeltaTone =
+            monDelta == null ? "text-white/45"
+            : monDelta > 0 ? "text-emerald-300"
+            : monDelta < 0 ? "text-red-400"
+            : "text-white/45";
+          return (
+            <PCard key={k.label}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[12px] text-white/55">{k.label}</div>
+                  <div className="mt-1 font-display text-[26px] font-bold text-white">{k.value}</div>
+                  <div className="mt-1 text-[11px] text-white/55">{k.delta}</div>
+                </div>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                  <k.icon className="h-4 w-4" />
+                </span>
               </div>
-              <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <k.icon className="h-4 w-4" />
-              </span>
-            </div>
-          </PCard>
-        ))}
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <Sparkline values={k.series ?? []} />
+                <span className={`shrink-0 text-[11px] font-semibold tabular-nums ${monDeltaTone}`}>
+                  {monDelta == null
+                    ? "—"
+                    : `${monDelta >= 0 ? "+" : ""}${monDelta.toFixed(1)}% MoM`}
+                </span>
+              </div>
+            </PCard>
+          );
+        })}
       </div>
 
       <PPanel className="mt-6">
@@ -674,12 +720,8 @@ function ProRow({ row }: { row: AdminProRow }) {
   const startFn = useServerFn(startImpersonation);
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
-  const cancelSubFn = useServerFn(cancelProfessionalSubscription);
-  const deleteFn = useServerFn(deleteProfessional);
   const [busy, setBusy] = React.useState(false);
   const [suspendOpen, setSuspendOpen] = React.useState(false);
-  const [cancelOpen, setCancelOpen] = React.useState(false);
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   async function handleViewAs() {
     if (busy) return;
@@ -715,33 +757,9 @@ function ProRow({ row }: { row: AdminProRow }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const cancelSubM = useMutation({
-    mutationFn: (reason?: string) =>
-      cancelSubFn({ data: { professional_id: row.id, reason } }),
-    onSuccess: (res: { cancelled: number }) => {
-      toast.success(
-        res.cancelled > 0
-          ? `Cancelled ${res.cancelled} subscription${res.cancelled === 1 ? "" : "s"} for ${row.name}`
-          : `No active Stripe subscription found for ${row.name}`,
-      );
-      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
-      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
-      setCancelOpen(false);
-    },
-    onError: (e: Error) => toast.error(e.message || "Failed to cancel subscription"),
-  });
+  // Cancel-sub and delete-member are owned by Member 360 (Phase 6 — single
+  // destructive-action surface). The dropdown links there.
 
-  const deleteM = useMutation({
-    mutationFn: (reason?: string) =>
-      deleteFn({ data: { professional_id: row.id, reason } }),
-    onSuccess: () => {
-      toast.success(`${row.name} deleted`);
-      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
-      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
-      setDeleteOpen(false);
-    },
-    onError: (e: Error) => toast.error(e.message || "Failed to delete member"),
-  });
 
   const initials = initialsFromName(row.name);
   const isSuspended = Boolean(row.suspendedAt);
@@ -907,20 +925,10 @@ function ProRow({ row }: { row: AdminProRow }) {
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="bg-reps-border" />
-            <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
-              Billing & account
-            </DropdownMenuLabel>
-            <DropdownMenuItem
-              onSelect={(e) => { e.preventDefault(); setCancelOpen(true); }}
-              className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white"
-            >
-              <CreditCard className="h-4 w-4" /> Cancel subscription…
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={(e) => { e.preventDefault(); setDeleteOpen(true); }}
-              className="cursor-pointer rounded-[6px] text-red-400 focus:bg-red-500/10 focus:text-red-300"
-            >
-              <Trash2 className="h-4 w-4" /> Delete member…
+            <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] text-white/60 focus:bg-white/5 focus:text-white">
+              <Link to="/admin/members/$userId" params={{ userId: row.id }}>
+                <CreditCard className="h-4 w-4" /> Billing & deletion (Member 360)
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -933,28 +941,6 @@ function ProRow({ row }: { row: AdminProRow }) {
           onConfirm={(reason) => suspendM.mutate({ suspended: true, reason })}
         />
 
-        <ConfirmDialog
-          open={cancelOpen}
-          onOpenChange={setCancelOpen}
-          title={`Cancel subscription for ${row.name}?`}
-          description="This cancels any active Stripe subscription immediately and marks their local subscription as canceled. Their account stays active — use Delete member to remove them entirely."
-          confirmLabel="Cancel subscription"
-          confirmTone="amber"
-          pending={cancelSubM.isPending}
-          onConfirm={(reason) => cancelSubM.mutate(reason)}
-        />
-
-        <ConfirmDialog
-          open={deleteOpen}
-          onOpenChange={setDeleteOpen}
-          title={`Delete ${row.name}?`}
-          description="This cancels any active Stripe subscription, then permanently deletes their account, profile, and all associated data. This cannot be undone."
-          confirmLabel="Delete member"
-          confirmTone="red"
-          requireTypedConfirm="DELETE"
-          pending={deleteM.isPending}
-          onConfirm={(reason) => deleteM.mutate(reason)}
-        />
       </td>
     </tr>
   );

@@ -13,12 +13,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const KEEP_USER_IDS = new Set<string>([
-  // Still inside their honoured BD window — let cron auto-expire them later.
-  "c448fa49-31a5-481f-b8a5-b5cacd878444",
-  "8a4828fe-dcde-4569-8f6e-1f1d4e62c8b2",
-  "295a3717-8589-4a6a-8f78-31e89b0e1e9a",
-]);
+// Updated 2026-06-29: founder decision — delete ALL remaining BD-legacy
+// accounts that haven't converted to a live Stripe subscription, including
+// those still inside their honoured BD window. "Free" is no longer a plan
+// REPs supports; every member must be on a paid Stripe sub.
+const KEEP_USER_IDS = new Set<string>([]);
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data: isAdmin } = await ctx.supabase.rpc("has_role", {

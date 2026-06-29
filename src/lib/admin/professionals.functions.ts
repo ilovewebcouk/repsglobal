@@ -80,12 +80,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     // KPI counts only include professionals whose underlying auth user is
     // email-confirmed (i.e. actually signed up — invited-but-unaccepted
     // shells from `generateLink({ type: 'invite' })` are excluded).
-    // "Active" = confirmed signed-up members, regardless of publish status,
-    // so the Verified subtext "N of M" shares the same denominator.
-    //
-    // "Paid members" intentionally consumes the CANONICAL Active Paying Member
-    // collection so it never silently drifts from /admin's "Active paying
-    // members" tile. See docs/11_admin_metric_registry.md.
+    // Demos already excluded by `count_confirmed_professionals` (filters is_demo).
     const [activeRes, verifiedRes, signups30Res, signupsPrev30Res, adminRolesRes, activeCollection] = await Promise.all([
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false }),
       supabaseAdmin.rpc('count_confirmed_professionals', { _only_published: false, _verification: 'verified' }),
@@ -96,11 +91,6 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     ]);
 
     const adminIds = new Set(((adminRolesRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
-    // KPIs exclude platform admins so the totals match the Professionals list.
-    // Only subtract admins who are actually counted by
-    // count_confirmed_professionals — i.e. they have a non-demo professionals
-    // row AND an email-confirmed auth user. Subtracting every admin role
-    // would under-count when an admin has no pro row (e.g. Scott).
     const adminProsRaw = adminIds.size
       ? (await supabaseAdmin.from('professionals').select('id, verification, is_demo').in('id', Array.from(adminIds))).data ?? []
       : [];
@@ -121,17 +111,95 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     const verifiedCount = Math.max(0, ((verifiedRes.data as number | null) ?? 0) - adminVerifiedCount);
     const signups = (signups30Res.data as number | null) ?? 0;
     const prevSignups = (signupsPrev30Res.data as number | null) ?? 0;
-    // Paid members = canonical Active Paying Members whose user_id isn't an admin.
     const paidCount = activeCollection.members.filter(
       (m) => !m.user_id || !adminIds.has(m.user_id),
     ).length;
     const wow = prevSignups ? ((signups - prevSignups) / prevSignups) * 100 : null;
+
+    // 12-month series for sparklines.
+    // active/verified = cumulative confirmed-pro count at each month-end.
+    // paid           = subs with status='active' whose start was on/before
+    //                  month-end (rough cumulative active-paid).
+    // newSignups     = per-month count.
+    const now = new Date();
+    const monthEnds: Date[] = [];
+    for (let i = 11; i >= 0; i--) {
+      // First-of-next-month minus 1ms = month end
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i + 1, 1));
+      d.setUTCMilliseconds(-1);
+      monthEnds.push(d);
+    }
+
+    // Pull a flat list of confirmed, non-demo, non-admin pros with their
+    // signup month + verification status, then bucket client-side.
+    const [allProsRes, allSubsRes] = await Promise.all([
+      supabaseAdmin
+        .from('professionals')
+        .select('id, member_since, created_at, verification, is_demo')
+        .eq('is_demo', false)
+        .limit(5000),
+      supabaseAdmin
+        .from('subscriptions')
+        .select('user_id, status, created_at')
+        .in('status', ['active', 'trialing', 'past_due'])
+        .limit(5000),
+    ]);
+    const allProsRaw = (allProsRes.data ?? []) as Array<{
+      id: string; member_since: string | null; created_at: string;
+      verification: string | null; is_demo: boolean | null;
+    }>;
+    // Filter to confirmed users (single batched RPC call).
+    const proIds = allProsRaw.map(p => p.id);
+    let confirmedSet = new Set<string>();
+    if (proIds.length) {
+      const { data: confirmedIds } = await supabaseAdmin.rpc(
+        'get_confirmed_professional_ids',
+        { _ids: proIds },
+      );
+      confirmedSet = new Set(((confirmedIds ?? []) as string[]).map(String));
+    }
+    const allPros = allProsRaw.filter(p => confirmedSet.has(p.id) && !adminIds.has(p.id));
+    const allSubs = ((allSubsRes.data ?? []) as Array<{
+      user_id: string; status: string; created_at: string;
+    }>).filter(s => !adminIds.has(s.user_id));
+
+    const series = {
+      active: [] as number[],
+      verified: [] as number[],
+      paid: [] as number[],
+      newSignups: [] as number[],
+    };
+    for (let i = 0; i < monthEnds.length; i++) {
+      const me = monthEnds[i];
+      const meIso = me.toISOString();
+      const ms = monthEnds[i].getTime();
+      const monthStart = new Date(Date.UTC(me.getUTCFullYear(), me.getUTCMonth(), 1)).getTime();
+
+      let active = 0, verified = 0, paid = 0, signups = 0;
+      for (const p of allPros) {
+        const signed = new Date(p.member_since ?? p.created_at).getTime();
+        if (signed <= ms) {
+          active++;
+          if (p.verification === 'verified') verified++;
+        }
+        if (signed >= monthStart && signed <= ms) signups++;
+      }
+      for (const s of allSubs) {
+        if (new Date(s.created_at).getTime() <= ms) paid++;
+      }
+      series.active.push(active);
+      series.verified.push(verified);
+      series.paid.push(paid);
+      series.newSignups.push(signups);
+      void meIso;
+    }
 
     return {
       activeCount, verifiedCount,
       verifiedPct: activeCount ? (verifiedCount / activeCount) * 100 : 0,
       paidCount,
       newSignups30: signups, newSignupsDeltaPct: wow,
+      series,
     };
   });
 
