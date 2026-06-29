@@ -266,11 +266,10 @@ export const getMyShopFront = createServerFn({ method: "GET" })
 
     if (!pro) return { shopFront: null, services: [] };
 
-    const coachingSinceYear = await fetchCoachingSinceYear(
-      supabaseAdmin,
-      userId,
-      pro.primary_title_slug ?? null,
-    );
+    const [coachingSinceYear, trust] = await Promise.all([
+      fetchCoachingSinceYear(supabaseAdmin, userId, pro.primary_title_slug ?? null),
+      fetchTrustSummary(supabaseAdmin, userId, pro.primary_title_slug ?? null),
+    ]);
 
     const tier =
       subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
