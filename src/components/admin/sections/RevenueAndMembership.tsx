@@ -39,7 +39,9 @@ function EmptyState({ msg }: { msg: string }) {
 }
 
 const areaConfig: ChartConfig = {
-  value: { label: "Members", color: "var(--reps-orange)" },
+  verified: { label: "Core", color: "var(--reps-orange)" },
+  pro: { label: "Pro", color: "var(--reps-blue)" },
+  studio: { label: "Studio", color: "var(--reps-green)" },
 };
 const revenueConfig: ChartConfig = {
   value: { label: "Received", color: "var(--reps-orange)" },
@@ -50,6 +52,9 @@ const forecastConfig: ChartConfig = {
 const mixConfig: ChartConfig = {
   value: { label: "Members", color: "var(--reps-orange)" },
 };
+
+const TOOLTIP_CLASSES =
+  "border-reps-border bg-reps-ink text-white shadow-[0_12px_28px_-12px_rgba(0,0,0,0.8)] [&_*]:!text-white [&_.text-muted-foreground]:!text-white/70";
 
 export function RevenueAndMembership({
   data,
