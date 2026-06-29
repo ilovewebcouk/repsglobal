@@ -70,7 +70,7 @@ export const getBillingKpis = createServerFn({ method: "GET" })
     const live = subs.filter((s) => (s.status === "active" || s.status === "trialing") && s.tier !== "free");
     const activePaying = subs.filter((s) => s.status === "active" && s.tier !== "free").length;
     const trialing = subs.filter((s) => s.status === "trialing" && s.tier !== "free").length;
-    const pastDue = subs.filter((s) => FAILED_PAYMENT_STATUSES.has(s.status as any)).length;
+    const pastDue = subs.filter((s) => (FAILED_PAYMENT_STATUSES as readonly string[]).includes(s.status)).length;
     let mrr = 0;
     for (const s of live) mrr += monthlyPence(s.tier, s.billing_period);
 
@@ -287,7 +287,7 @@ export const listSubscriptions = createServerFn({ method: "POST" })
     const { data: subsRaw } = await supabaseAdmin
       .from("subscriptions")
       .select(
-        "user_id, tier, status, current_period_end, billing_period, stripe_subscription_id, stripe_customer_id, cancel_at_period_end, created_at, trial_end",
+        "user_id, tier, status, current_period_end, billing_period, stripe_subscription_id, stripe_customer_id, cancel_at_period_end, created_at",
       )
       .eq("environment", "live");
 
@@ -301,7 +301,7 @@ export const listSubscriptions = createServerFn({ method: "POST" })
       stripe_customer_id: string | null;
       cancel_at_period_end: boolean | null;
       created_at: string;
-      trial_end: string | null;
+      
     }>;
 
     // One row per user — pick the highest-priority sub for display.
@@ -365,7 +365,7 @@ export const listSubscriptions = createServerFn({ method: "POST" })
       // View filter
       if (data.view === "trialing" && s.status !== "trialing") continue;
       if (data.view === "active" && s.status !== "active") continue;
-      if (data.view === "past_due" && !FAILED_PAYMENT_STATUSES.has(s.status as any)) continue;
+      if (data.view === "past_due" && !(FAILED_PAYMENT_STATUSES as readonly string[]).includes(s.status)) continue;
       if (data.view === "canceling" && !s.cancel_at_period_end) continue;
       if (data.view === "canceled" && s.status !== "canceled") continue;
       if (data.view === "verified" && s.tier !== "verified") continue;
