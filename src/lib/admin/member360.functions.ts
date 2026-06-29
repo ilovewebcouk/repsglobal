@@ -55,13 +55,21 @@ export const getMember360 = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { getMirrorForUser } = await import("@/lib/billing/stripe-mirror.server");
 
-    const [authRes, profileRes] = await Promise.all([
+    const [authRes, profileRes, proRes] = await Promise.all([
       supabaseAdmin.auth.admin.getUserById(data.user_id),
       supabaseAdmin.from("profiles").select("full_name").eq("id", data.user_id).maybeSingle(),
+      supabaseAdmin
+        .from("professionals")
+        .select("slug, verification, is_published")
+        .eq("id", data.user_id)
+        .maybeSingle(),
     ]);
 
     const email = authRes.data?.user?.email ?? null;
+    const created_at = authRes.data?.user?.created_at ?? null;
+    const last_sign_in_at = authRes.data?.user?.last_sign_in_at ?? null;
     const full_name = (profileRes.data as { full_name?: string | null } | null)?.full_name ?? null;
+    const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null } | null) ?? null;
 
     // Stripe mirror (live env). Sandbox is intentionally ignored — admin v2
     // surfaces the production billing state only.
@@ -82,6 +90,11 @@ export const getMember360 = createServerFn({ method: "GET" })
       user_id: data.user_id,
       email,
       full_name,
+      slug: pro?.slug ?? null,
+      verification: pro?.verification ?? null,
+      is_published: pro?.is_published ?? false,
+      created_at,
+      last_sign_in_at,
       stripe_customer_id: mirror?.stripe_customer_id ?? null,
       has_active_subscription: !!mirror && ["active", "trialing", "past_due"].includes(mirror.status),
       subscription: mirror
