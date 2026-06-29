@@ -179,6 +179,7 @@ export async function resolveSubscriptionStatesForUsers(
           trialDaysLeft: null,
           hasActiveEntitlement: false,
           stripeSubscriptionId: null,
+          stripeCustomerId: null,
           stripeStatus: null,
           cancelAtPeriodEnd: false,
         }));
