@@ -36,7 +36,7 @@ import {
 } from "@/lib/campaigns/outbound-extras.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
-type Tier = "free" | "verified" | "pro" | "studio";
+type Tier = "free" | "verified" | "pro" | "studio" | "former";
 
 interface Recipient {
   email: string;
@@ -65,6 +65,7 @@ const TIERS: { value: Tier; label: string }[] = [
   { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
+  { value: "former", label: "Former members" },
 ];
 
 export interface ComposeInitialDraft {

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Inbox = "support" | "pros" | "partners" | "press";
-type Tier = "free" | "verified" | "pro" | "studio";
+type Tier = "free" | "verified" | "pro" | "studio" | "former";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
   support: { email: "support@repsuk.org", name: "REPS Support", label: "Support" },
@@ -74,7 +74,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     z
       .object({
         q: z.string().max(120).optional(),
-        tier: z.enum(["free", "verified", "pro", "studio"]).optional(),
+        tier: z.enum(["free", "verified", "pro", "studio", "former"]).optional(),
       })
       .parse(d ?? {}),
   )
@@ -190,7 +190,7 @@ export const previewBroadcastCount = createServerFn({ method: "POST" })
     z
       .object({
         tiers: z
-          .array(z.enum(["free", "verified", "pro", "studio"]))
+          .array(z.enum(["free", "verified", "pro", "studio", "former"]))
           .min(1)
           .max(4),
       })
@@ -208,8 +208,10 @@ async function resolveTierRecipients(
   supabaseAdmin: any,
   tiers: Tier[],
 ): Promise<Array<{ userId: string; email: string; name: string }>> {
-  const wantFree = tiers.includes("free");
-  const paidTiers = tiers.filter((t) => t !== "free");
+  const wantFormer = tiers.includes("former");
+  const liveTiers = tiers.filter((t) => t !== "former");
+  const wantFree = liveTiers.includes("free");
+  const paidTiers = liveTiers.filter((t) => t !== "free");
 
   // Find user IDs with one of the paid tiers
   const paidUserIds = new Set<string>();
@@ -278,7 +280,7 @@ async function resolveTierRecipients(
   // Email: always the auth.users login email.
   const emailMap = await resolveUserEmailsById(supabaseAdmin, proSet.map((p: any) => p.id));
 
-  return proSet
+  const live = proSet
     .map((p: any) => {
       const email = (emailMap.get(p.id) ?? "").toLowerCase().trim();
       return {
@@ -288,6 +290,25 @@ async function resolveTierRecipients(
       };
     })
     .filter((r) => r.email && isValidEmail(r.email));
+
+  if (!wantFormer) return live;
+
+  // Former members live in `mailing_list_contacts` (populated by the
+  // cancel-and-delete flow). We use `former_user_id` as a stable userId so
+  // dedupe + downstream send logic don't choke on null ids.
+  const { data: formerRows } = await supabaseAdmin
+    .from("mailing_list_contacts")
+    .select("email, full_name, former_user_id")
+    .eq("marketing_opt_in", true);
+  const seen = new Set(live.map((r) => r.email));
+  const former = ((formerRows ?? []) as any[])
+    .map((r) => ({
+      userId: r.former_user_id ?? `former:${r.email}`,
+      email: (r.email ?? "").toLowerCase().trim(),
+      name: r.full_name ?? "",
+    }))
+    .filter((r) => r.email && isValidEmail(r.email) && !seen.has(r.email));
+  return [...live, ...former];
 }
 
 
@@ -330,7 +351,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             .max(500)
             .optional(),
           tiers: z
-            .array(z.enum(["free", "verified", "pro", "studio"]))
+            .array(z.enum(["free", "verified", "pro", "studio", "former"]))
             .min(1)
             .max(4)
             .optional(),
