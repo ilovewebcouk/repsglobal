@@ -377,8 +377,9 @@ function mergeLiveIntoCoach(base: Coach, sf: ShopFrontDTO, services: ServiceDTO[
   const memberYear = memberSinceDate && !isNaN(memberSinceDate.getTime())
     ? memberSinceDate.getFullYear()
     : null;
-  const yearsCoaching = sf.coaching_since_year
-    ? Math.max(1, new Date().getFullYear() - sf.coaching_since_year)
+  const qualSinceYear = sf.trust?.qualifiedSinceYear ?? sf.coaching_since_year ?? null;
+  const yearsCoaching = qualSinceYear
+    ? Math.max(1, new Date().getFullYear() - qualSinceYear)
     : base.years;
   const liveModes: ("In-person" | "Online")[] = [];
   if (sf.in_person_available) liveModes.push("In-person");
