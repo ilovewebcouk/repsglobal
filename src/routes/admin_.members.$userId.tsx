@@ -396,6 +396,81 @@ function IdRow({ label, value, href, internal }: { label: string; value: string 
   );
 }
 
+
+function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
+  const sub = snapshot.subscription;
+
+  if (!sub) {
+    return (
+      <section className={cn(PANEL, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
+        <h3 className={PANEL_TITLE}>No active subscription</h3>
+        <p className="max-w-md text-sm text-white/55">
+          This member isn't on a paid plan in the live Stripe environment.
+        </p>
+      </section>
+    );
+  }
+
+  const status = sub.status;
+  const statusClass = cn(
+    "h-6 capitalize",
+    status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+    status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-300",
+    status === "past_due" && "border-amber-400/30 bg-amber-500/15 text-amber-300",
+    (status === "canceled" || status === "unpaid") && "border-rose-400/30 bg-rose-500/15 text-rose-300",
+  );
+
+  const stats: { label: string; value: React.ReactNode; sub?: string }[] = [
+    { label: "Plan", value: <span className="capitalize">{sub.tier ?? "—"}</span>, sub: sub.price_lookup_key ?? undefined },
+    { label: "Price", value: fmtMoney(sub.unit_amount_pence, sub.currency), sub: sub.interval ? `per ${sub.interval}` : undefined },
+    { label: "Current period end", value: fmtDate(sub.current_period_end), sub: sub.cancel_at_period_end ? "cancels at period end" : undefined },
+    { label: "Trial end", value: fmtDate(sub.trial_end), sub: sub.trial_end ? undefined : "no trial" },
+  ];
+
+  return (
+    <section className={PANEL}>
+      <div className={cn(PANEL_HEADER, "flex flex-wrap items-start justify-between gap-3")}>
+        <div>
+          <h3 className={PANEL_TITLE}>Current Stripe subscription</h3>
+          <p className={PANEL_DESC}>Live Stripe mirror — the source of truth for billing.</p>
+        </div>
+        <Badge variant="outline" className={statusClass}>{status.replace(/_/g, " ")}</Badge>
+      </div>
+      <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="flex flex-col gap-1 rounded-[12px] border border-reps-border/60 bg-reps-panel/60 px-3 py-2.5"
+            >
+              <span className={LABEL}>{s.label}</span>
+              <span className="text-sm font-medium text-white">{s.value}</span>
+              {s.sub && <span className="text-[11px] text-white/45">{s.sub}</span>}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          <IdRow
+            label="Stripe customer"
+            value={snapshot.stripe_customer_id}
+            href={snapshot.stripe_customer_id ? `https://dashboard.stripe.com/customers/${snapshot.stripe_customer_id}` : undefined}
+          />
+          <IdRow
+            label="Stripe subscription"
+            value={sub.id}
+            href={`https://dashboard.stripe.com/subscriptions/${sub.id}`}
+          />
+          <IdRow
+            label="Price id"
+            value={sub.price_id}
+            href={sub.price_id ? `https://dashboard.stripe.com/prices/${sub.price_id}` : undefined}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function VerificationPane({ snapshot }: { snapshot: Member360Snapshot }) {
   const v = snapshot.verification ?? "missing";
   const tone: "emerald" | "amber" | "rose" | "muted" =
