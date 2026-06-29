@@ -113,6 +113,13 @@ type Coach = {
     insuranceExpiry: string | null;
     activeCredentialsCount: number;
     lastCheckedAt: string | null;
+    items: Array<{
+      kind: "qualification" | "insurance";
+      title: string;
+      issuer: string;
+      id: string | null;
+      dateLabel: string | null;
+    }>;
   };
 };
 
@@ -1291,27 +1298,52 @@ function QualificationsSection({ coach }: { coach: Coach }) {
             </Link>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
-            {coach.qualifications.map((q) => (
-              <li
-                key={q.title}
-                className="flex flex-col rounded-[16px] border border-reps-border bg-reps-midnight p-4"
-              >
-                <div className="flex items-center gap-2">
-                  <BadgeCheck className="h-4 w-4 text-reps-green" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-reps-green">
-                    Verified
-                  </span>
-                </div>
-                <div className="mt-2 text-[14.5px] font-semibold text-reps-text">
-                  {q.title}
-                </div>
-                <div className="mt-1 text-[12px] text-reps-muted">{q.issuer}</div>
-                <div className="mt-3 flex items-center justify-between text-[11px] text-reps-muted">
-                  <span>ID: {q.id}</span>
-                  <span>{q.issued}</span>
-                </div>
-              </li>
-            ))}
+            {(() => {
+              const live = coach.trust?.items ?? [];
+              const rows = live.length
+                ? live.map((it) => ({
+                    key: `${it.kind}-${it.title}-${it.id ?? ""}`,
+                    title: it.title,
+                    issuer: it.issuer,
+                    id: it.id ?? "—",
+                    issued: it.dateLabel ?? "",
+                  }))
+                : coach.qualifications.map((q) => ({
+                    key: q.title,
+                    title: q.title,
+                    issuer: q.issuer,
+                    id: q.id,
+                    issued: q.issued,
+                  }));
+              if (rows.length === 0) {
+                return (
+                  <li className="flex flex-col rounded-[16px] border border-reps-border bg-reps-midnight p-4 text-[13px] text-reps-muted">
+                    No verified credentials yet.
+                  </li>
+                );
+              }
+              return rows.map((q) => (
+                <li
+                  key={q.key}
+                  className="flex flex-col rounded-[16px] border border-reps-border bg-reps-midnight p-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <BadgeCheck className="h-4 w-4 text-reps-green" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-reps-green">
+                      Verified
+                    </span>
+                  </div>
+                  <div className="mt-2 text-[14.5px] font-semibold text-reps-text">
+                    {q.title}
+                  </div>
+                  <div className="mt-1 text-[12px] text-reps-muted">{q.issuer}</div>
+                  <div className="mt-3 flex items-center justify-between text-[11px] text-reps-muted">
+                    <span>ID: {q.id}</span>
+                    <span>{q.issued}</span>
+                  </div>
+                </li>
+              ));
+            })()}
           </ul>
         </div>
       </div>
