@@ -193,11 +193,6 @@ async function assembleWorkbench(
 ): Promise<DisputeWorkbench> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await assertAdmin(supabaseAdmin, context.userId);
-
-    const row = await loadDisputeRow(data.disputeId);
-    const { env, dispute } = await fetchStripeDispute(row.stripe_dispute_id);
 
     const charge = (dispute.charge && typeof dispute.charge !== "string" ? dispute.charge : null) as Stripe.Charge | null;
     const customerId =
