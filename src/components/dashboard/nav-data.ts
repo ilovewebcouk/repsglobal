@@ -167,8 +167,6 @@ export const ADMIN_NAV = [
       { icon: Gauge, label: "Operations", to: "/admin/ops" },
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
-      { icon: Activity, label: "Webhook recovery", to: "/admin/webhook-recovery" },
-      { icon: FileCheck, label: "Migration", to: "/admin/migration", badge: "BD" },
     ],
   },
   {
