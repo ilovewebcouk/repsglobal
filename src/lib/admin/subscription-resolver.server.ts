@@ -343,21 +343,40 @@ export async function resolveSubscriptionStateForUser(
   userId: string,
 ): Promise<AdminSubscriptionState> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { getMirrorForUser } = await import("@/lib/billing/stripe-mirror.server");
+  const { getMirrorSubscription, getMirrorForUser } = await import(
+    "@/lib/billing/stripe-mirror.server"
+  );
 
-  const [mirror, localRes] = await Promise.all([
-    getMirrorForUser(userId, "live").catch(() => null),
-    supabaseAdmin
-      .from("subscriptions")
-      .select(
-        "id, user_id, stripe_subscription_id, stripe_customer_id, status, tier, current_period_end, cancel_at_period_end, environment",
-      )
-      .eq("user_id", userId)
-      .eq("environment", "live"),
-  ]);
+  const localRes = await supabaseAdmin
+    .from("subscriptions")
+    .select(
+      "id, user_id, stripe_subscription_id, stripe_customer_id, status, tier, current_period_end, cancel_at_period_end, environment",
+    )
+    .eq("user_id", userId)
+    .eq("environment", "live");
 
   const localRows = ((localRes.data ?? []) as unknown as LocalSubscriptionRow[]).filter(Boolean);
   const local = pickLocalRow(localRows);
+
+  // Prefer a direct subscription retrieve when we already know the id
+  // (one Stripe call, far more reliable than a paginated customer list).
+  // Fall back to listing the customer's subs only if the id lookup fails.
+  let mirror: Awaited<ReturnType<typeof getMirrorSubscription>> | null = null;
+  const subId = local?.stripe_subscription_id ?? null;
+  if (subId) {
+    try {
+      mirror = await getMirrorSubscription(subId, "live");
+    } catch (err) {
+      console.warn(`[subscription-resolver] direct retrieve failed for ${subId}`, err);
+    }
+  }
+  if (!mirror) {
+    try {
+      mirror = await getMirrorForUser(userId, "live");
+    } catch (err) {
+      console.warn(`[subscription-resolver] customer-list fallback failed for ${userId}`, err);
+    }
+  }
 
   return resolveAdminSubscriptionState({ user_id: userId, mirror, local });
 }
