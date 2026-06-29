@@ -32,9 +32,7 @@ export const resyncStripeMirror = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Forbidden");
 
     const { createStripeClient } = await import("@/lib/billing/stripe.server");
-    const { checkoutOfferForPriceId: lookupTierByPriceId } = await import(
-      "@/lib/billing/prices"
-    );
+    const { lookupTierByPriceId } = await import("@/lib/billing/prices");
     const stripe = createStripeClient("live");
 
     // Map customer -> user_id from existing mirror so we can attach Stripe subs
