@@ -186,6 +186,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .eq("user_id", pro.id)
         .maybeSingle(),
       fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+      fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
     ]);
 
     if (!sf) return null;
@@ -218,7 +219,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         member_since: pro.member_since ?? null,
         coaching_since_year: coachingSinceYear,
         tier,
-
+        trust,
       },
       services: (services ?? []) as ServiceDTO[],
     };
