@@ -194,7 +194,13 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
       : r.online_available
         ? "Online"
         : "In-person";
-  const role = r.primary_profession ? (PROFESSION_LABEL_HOME[r.primary_profession] ?? "Fitness Professional") : "Fitness Professional";
+  const primaryLabel =
+    getTitleLabel(r.primary_title_slug) ??
+    (r.primary_profession ? (PROFESSION_LABEL_HOME[r.primary_profession] ?? "Fitness Professional") : "Fitness Professional");
+  const secondaryLabel = getTitleLabel(r.secondary_title_slug);
+  const role = secondaryLabel && secondaryLabel !== primaryLabel
+    ? `${primaryLabel} · ${secondaryLabel}`
+    : primaryLabel;
   return {
     name: r.full_name,
     role,
