@@ -15,6 +15,11 @@ export type Member360Snapshot = {
   user_id: string;
   email: string | null;
   full_name: string | null;
+  slug: string | null;
+  verification: string | null;
+  is_published: boolean;
+  created_at: string | null;
+  last_sign_in_at: string | null;
   stripe_customer_id: string | null;
   has_active_subscription: boolean;
   subscription: {
