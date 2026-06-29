@@ -126,13 +126,7 @@ function MemberPage() {
           </TabsContent>
 
           <TabsContent value="billing" className="flex flex-col gap-4">
-            {snap.data ? (
-              <div className="[&_[class*='rounded-xl']]:rounded-[18px] [&_.text-card-foreground]:text-white">
-                <MemberSnapshotCard snapshot={snap.data} />
-              </div>
-            ) : (
-              <PaneSkeleton />
-            )}
+            {snap.data ? <BillingPane snapshot={snap.data} /> : <PaneSkeleton />}
           </TabsContent>
 
           <TabsContent value="verification" className="flex flex-col gap-4">
