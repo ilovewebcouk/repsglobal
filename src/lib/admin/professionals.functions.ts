@@ -55,14 +55,6 @@ const PROFESSION_LABEL: Record<string, string> = {
   'yoga-teacher': 'Yoga',
 };
 
-function planMrrPence(tier: string): number {
-  switch (tier) {
-    case 'verified': return 825;
-    case 'pro':      return 5900;
-    case 'studio':   return 14900;
-    default:         return 0;
-  }
-}
 
 const PLAN_RANK: Record<string, number> = { studio: 4, pro: 3, verified: 2, free: 1 };
 
