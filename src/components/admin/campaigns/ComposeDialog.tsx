@@ -65,6 +65,7 @@ const TIERS: { value: Tier; label: string }[] = [
   { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
+  { value: "former", label: "Former members" },
 ];
 
 export interface ComposeInitialDraft {
