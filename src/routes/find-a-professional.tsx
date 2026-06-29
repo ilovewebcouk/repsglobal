@@ -282,7 +282,7 @@ function DirectoryPage() {
           const primaryTitle = getTitleLabel(r.primary_title_slug) ?? getProfessionLabel(r.primary_profession);
           const secondaryTitle = getTitleLabel(r.secondary_title_slug);
           const role = secondaryTitle && secondaryTitle !== primaryTitle
-            ? `${primaryTitle} · ${secondaryTitle}`
+            ? `${primaryTitle} & ${secondaryTitle}`
             : (primaryTitle || specLabels[0] || "Fitness Professional");
           return {
             name: r.full_name || "REPs Professional",

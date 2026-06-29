@@ -37,16 +37,18 @@ async function fetchPrimaryLocations(
 }
 
 const PRO_PUBLIC_COLUMNS =
-  "id, slug, headline, primary_profession, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published, member_since";
+  "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, bio, specialisms, city, country, online_available, in_person_available, hourly_rate_pence, verification_status, is_published, member_since";
 
 const PRO_LIST_COLUMNS =
-  "id, slug, headline, primary_profession, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available";
+  "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, country, hourly_rate_pence, verification_status, in_person_available, online_available";
 
 type ProPublicRow = {
   id: string;
   slug: string | null;
   headline: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   bio: string | null;
   specialisms: string[] | null;
   city: string | null;
@@ -64,6 +66,8 @@ type ProListRow = {
   slug: string | null;
   headline: string | null;
   primary_profession: string | null;
+  primary_title_slug: string | null;
+  secondary_title_slug: string | null;
   specialisms: string[] | null;
   city: string | null;
   country: string | null;
