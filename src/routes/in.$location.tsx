@@ -42,7 +42,7 @@ function rowToFeaturedPro(r: SearchProfessionalRow, fallbackImg: string): Featur
         : "In-person";
   const primary = getTitleLabel(r.primary_title_slug) ?? getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
   const secondary = getTitleLabel(r.secondary_title_slug);
-  const role = secondary && secondary !== primary ? `${primary} &amp; ${secondary}` : primary;
+  const role = secondary && secondary !== primary ? `${primary} & ${secondary}` : primary;
   return {
     name: r.full_name ?? "REPs Professional",
     role,
@@ -67,7 +67,7 @@ function featuredRowToFeaturedPro(r: FeaturedProRow, fallbackImg: string): Featu
         : "In-person";
   const primary = getTitleLabel(r.primary_title_slug) ?? getProfessionLabel(r.primary_profession) ?? "Personal Trainer";
   const secondary = getTitleLabel(r.secondary_title_slug);
-  const role = secondary && secondary !== primary ? `${primary} &amp; ${secondary}` : primary;
+  const role = secondary && secondary !== primary ? `${primary} & ${secondary}` : primary;
   return {
     name: r.full_name,
     role,
