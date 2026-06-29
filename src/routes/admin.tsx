@@ -140,7 +140,7 @@ function AdminDashboardPage() {
       role="admin"
       active="Overview"
       title="Platform Overview"
-      subtitle="The business in 30 seconds — four canonical KPIs, the trend behind them, and a link to the records."
+      subtitle="The business in 30 seconds — revenue, forecast, and members at a glance."
       actions={<PeriodSelector value={period} />}
     >
       <div className="space-y-6">
