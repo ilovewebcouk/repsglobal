@@ -700,17 +700,24 @@ export const listRefunds = createServerFn({ method: "POST" })
       stripe_customer_id: string | null;
     }>;
 
-    const customerIds = Array.from(
-      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
-    );
-    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+    // Pre-derive charge ids so we can backfill customer ids for legacy refunds.
+    const chargeIds = events.map((e) => (e.payload?.data?.object?.id as string | null) ?? null).filter(Boolean) as string[];
+    const chargeMap = await resolveContactsByChargeIds(supabaseAdmin, chargeIds);
+    const customerIdByEvent = new Map<string, string | null>();
+    for (const e of events) {
+      let cust = e.stripe_customer_id;
+      const chId = e.payload?.data?.object?.id as string | null;
+      if (!cust && chId) cust = chargeMap.get(chId)?.stripeCustomerId ?? null;
+      customerIdByEvent.set(e.id, cust);
+    }
 
-    const userIds = Array.from(
-      new Set<string>([
-        ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
-        ...Array.from(customerToUser.values()),
-      ]),
-    );
+    const customerIds = Array.from(new Set(Array.from(customerIdByEvent.values()).filter(Boolean) as string[]));
+    const contactByCustomer = await resolveContactsByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(new Set<string>([
+      ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
+      ...Array.from(contactByCustomer.values()).map((c) => c.userId).filter(Boolean) as string[],
+    ]));
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -730,14 +737,19 @@ export const listRefunds = createServerFn({ method: "POST" })
 
     return events.map((e) => {
       const obj = e.payload?.data?.object ?? {};
-      const resolvedUserId =
-        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
+      const cust = customerIdByEvent.get(e.id) ?? null;
+      const custHit = cust ? contactByCustomer.get(cust) : null;
+      const resolvedUserId = e.user_id ?? custHit?.userId ?? null;
+      const profName = resolvedUserId ? profMap.get(resolvedUserId) ?? null : null;
+      const profEmail = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
+      const chargeHit = obj.id ? chargeMap.get(obj.id) : null;
+      const payload = extractPayloadContact(obj);
       return {
         id: e.id,
         createdAt: e.created_at,
         userId: resolvedUserId,
-        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
-        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
+        email: profEmail ?? custHit?.email ?? chargeHit?.email ?? payload.email ?? null,
+        fullName: profName ?? custHit?.fullName ?? payload.fullName ?? null,
         amountPence: obj.amount_refunded ?? obj.amount ?? 0,
         currency: obj.currency ?? "gbp",
         reason: obj.refunds?.data?.[0]?.reason ?? null,
@@ -745,3 +757,4 @@ export const listRefunds = createServerFn({ method: "POST" })
       };
     });
   });
+
