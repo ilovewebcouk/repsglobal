@@ -179,7 +179,7 @@ export type DisputeWorkbench = {
 
 export const getDisputeWorkbench = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ disputeId: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ disputeId: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }): Promise<DisputeWorkbench> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await assertAdmin(supabaseAdmin, context.userId);
@@ -313,7 +313,7 @@ Do not include the JSON in markdown fences. Return JSON only.`;
 
 export const aiDraftDisputeEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ disputeId: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ disputeId: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }): Promise<DisputeEvidenceText> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await assertAdmin(supabaseAdmin, context.userId);
@@ -420,7 +420,7 @@ async function updateStripeDispute(
 
 export const saveDisputeEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z.object({ disputeId: z.string().uuid(), evidence: evidenceShape }).parse(d),
   )
   .handler(async ({ context, data }) => {
@@ -435,7 +435,7 @@ export const saveDisputeEvidence = createServerFn({ method: "POST" })
 
 export const submitDisputeEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z.object({ disputeId: z.string().uuid(), evidence: evidenceShape }).parse(d),
   )
   .handler(async ({ context, data }) => {
@@ -453,7 +453,7 @@ export const submitDisputeEvidence = createServerFn({ method: "POST" })
 
 export const acceptDispute = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z.object({ disputeId: z.string().uuid(), reason: z.string().max(500).optional() }).parse(d),
   )
   .handler(async ({ context, data }) => {
