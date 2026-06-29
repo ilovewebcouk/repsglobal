@@ -339,7 +339,7 @@ export const getCustomerHealth = createServerFn({ method: "GET" })
         .eq("stage", "recovered").gte("entered_at", start7dIso),
       supabaseAdmin.from("subscriptions").select("id", { count: "exact", head: true })
         .eq("environment", "live").eq("cancel_at_period_end", true),
-      // Canonical "failed payments" definition — shared with /admin/ops/billing
+      // Canonical "failed payments" definition — shared with /admin/billing
       // and /admin red banner via FAILED_PAYMENT_STATUSES.
       supabaseAdmin.from("subscriptions").select("id", { count: "exact", head: true })
         .eq("environment", "live").in("status", [...FAILED_PAYMENT_STATUSES]),

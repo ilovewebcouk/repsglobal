@@ -94,7 +94,7 @@ export const getSystemStatus = createServerFn({ method: "GET" })
             : webhookDlq > 0
             ? `${webhookDlq} webhook DLQ`
             : "All clear",
-          href: "/admin/ops/billing",
+          href: "/admin/billing",
         },
         {
           key: "platform",

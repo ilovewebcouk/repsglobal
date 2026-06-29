@@ -4,7 +4,7 @@ import type { LucideIcon } from "lucide-react";
 
 const ITEMS: Array<{ to: string; label: string; icon: LucideIcon }> = [
   { to: "/admin/ops", label: "Hub", icon: Gauge },
-  { to: "/admin/ops/billing", label: "Billing", icon: CreditCard },
+  { to: "/admin/billing", label: "Billing", icon: CreditCard },
   { to: "/admin/ops/platform", label: "Platform", icon: Activity },
   { to: "/admin/ops/customer", label: "Customer", icon: Users },
   { to: "/admin/ops/email", label: "Email", icon: Mail },

@@ -100,11 +100,9 @@ import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
-import { Route as BillingSetupTokenRouteImport } from './routes/billing.setup.$token'
 import { Route as AdminOpsPlatformRouteImport } from './routes/admin_.ops.platform'
 import { Route as AdminOpsEmailRouteImport } from './routes/admin_.ops.email'
 import { Route as AdminOpsCustomerRouteImport } from './routes/admin_.ops.customer'
-import { Route as AdminOpsBillingRouteImport } from './routes/admin_.ops.billing'
 import { Route as AdminOpsAlertsRouteImport } from './routes/admin_.ops.alerts'
 import { Route as AdminOpsActivityRouteImport } from './routes/admin_.ops.activity'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
@@ -118,8 +116,6 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
-import { Route as ApiPublicHooksLifecycleCronRouteImport } from './routes/api/public/hooks/lifecycle-cron'
-import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
 import { Route as AdminOpsMemberUserIdRouteImport } from './routes/admin_.ops.member.$userId'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
@@ -606,11 +602,6 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   path: '/checkout/credits/return',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BillingSetupTokenRoute = BillingSetupTokenRouteImport.update({
-  id: '/billing/setup/$token',
-  path: '/billing/setup/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminOpsPlatformRoute = AdminOpsPlatformRouteImport.update({
   id: '/platform',
   path: '/platform',
@@ -624,11 +615,6 @@ const AdminOpsEmailRoute = AdminOpsEmailRouteImport.update({
 const AdminOpsCustomerRoute = AdminOpsCustomerRouteImport.update({
   id: '/customer',
   path: '/customer',
-  getParentRoute: () => AdminOpsRoute,
-} as any)
-const AdminOpsBillingRoute = AdminOpsBillingRouteImport.update({
-  id: '/billing',
-  path: '/billing',
   getParentRoute: () => AdminOpsRoute,
 } as any)
 const AdminOpsAlertsRoute = AdminOpsAlertsRouteImport.update({
@@ -703,18 +689,6 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
   ApiPublicHooksSendScheduledCampaignsRouteImport.update({
     id: '/api/public/hooks/send-scheduled-campaigns',
     path: '/api/public/hooks/send-scheduled-campaigns',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksLifecycleCronRoute =
-  ApiPublicHooksLifecycleCronRouteImport.update({
-    id: '/api/public/hooks/lifecycle-cron',
-    path: '/api/public/hooks/lifecycle-cron',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksLegacyRenewalRoute =
-  ApiPublicHooksLegacyRenewalRouteImport.update({
-    id: '/api/public/hooks/legacy-renewal',
-    path: '/api/public/hooks/legacy-renewal',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AdminOpsMemberUserIdRoute = AdminOpsMemberUserIdRouteImport.update({
@@ -983,11 +957,9 @@ export interface FileRoutesByFullPath {
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/ops/activity': typeof AdminOpsActivityRoute
   '/admin/ops/alerts': typeof AdminOpsAlertsRoute
-  '/admin/ops/billing': typeof AdminOpsBillingRoute
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
-  '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1009,8 +981,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
-  '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
-  '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1120,11 +1090,9 @@ export interface FileRoutesByTo {
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/ops/activity': typeof AdminOpsActivityRoute
   '/admin/ops/alerts': typeof AdminOpsAlertsRoute
-  '/admin/ops/billing': typeof AdminOpsBillingRoute
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
-  '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1145,8 +1113,6 @@ export interface FileRoutesByTo {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
-  '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
-  '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1263,11 +1229,9 @@ export interface FileRoutesById {
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
   '/admin_/ops/activity': typeof AdminOpsActivityRoute
   '/admin_/ops/alerts': typeof AdminOpsAlertsRoute
-  '/admin_/ops/billing': typeof AdminOpsBillingRoute
   '/admin_/ops/customer': typeof AdminOpsCustomerRoute
   '/admin_/ops/email': typeof AdminOpsEmailRoute
   '/admin_/ops/platform': typeof AdminOpsPlatformRoute
-  '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1289,8 +1253,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin_/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
-  '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
-  '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1405,11 +1367,9 @@ export interface FileRouteTypes {
     | '/admin/members/$userId'
     | '/admin/ops/activity'
     | '/admin/ops/alerts'
-    | '/admin/ops/billing'
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
-    | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1431,8 +1391,6 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/verification'
     | '/admin/ops/member/$userId'
-    | '/api/public/hooks/legacy-renewal'
-    | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1542,11 +1500,9 @@ export interface FileRouteTypes {
     | '/admin/members/$userId'
     | '/admin/ops/activity'
     | '/admin/ops/alerts'
-    | '/admin/ops/billing'
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
-    | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1567,8 +1523,6 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/admin/ops/member/$userId'
-    | '/api/public/hooks/legacy-renewal'
-    | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1684,11 +1638,9 @@ export interface FileRouteTypes {
     | '/admin_/members/$userId'
     | '/admin_/ops/activity'
     | '/admin_/ops/alerts'
-    | '/admin_/ops/billing'
     | '/admin_/ops/customer'
     | '/admin_/ops/email'
     | '/admin_/ops/platform'
-    | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1710,8 +1662,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/admin_/ops/member/$userId'
-    | '/api/public/hooks/legacy-renewal'
-    | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1820,13 +1770,10 @@ export interface RootRouteChildren {
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
-  BillingSetupTokenRoute: typeof BillingSetupTokenRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
-  ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
-  ApiPublicHooksLifecycleCronRoute: typeof ApiPublicHooksLifecycleCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicOpsAlertDispatchRoute: typeof ApiPublicOpsAlertDispatchRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -2476,13 +2423,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCreditsReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/billing/setup/$token': {
-      id: '/billing/setup/$token'
-      path: '/billing/setup/$token'
-      fullPath: '/billing/setup/$token'
-      preLoaderRoute: typeof BillingSetupTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin_/ops/platform': {
       id: '/admin_/ops/platform'
       path: '/platform'
@@ -2502,13 +2442,6 @@ declare module '@tanstack/react-router' {
       path: '/customer'
       fullPath: '/admin/ops/customer'
       preLoaderRoute: typeof AdminOpsCustomerRouteImport
-      parentRoute: typeof AdminOpsRoute
-    }
-    '/admin_/ops/billing': {
-      id: '/admin_/ops/billing'
-      path: '/billing'
-      fullPath: '/admin/ops/billing'
-      preLoaderRoute: typeof AdminOpsBillingRouteImport
       parentRoute: typeof AdminOpsRoute
     }
     '/admin_/ops/alerts': {
@@ -2600,20 +2533,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/send-scheduled-campaigns'
       fullPath: '/api/public/hooks/send-scheduled-campaigns'
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/lifecycle-cron': {
-      id: '/api/public/hooks/lifecycle-cron'
-      path: '/api/public/hooks/lifecycle-cron'
-      fullPath: '/api/public/hooks/lifecycle-cron'
-      preLoaderRoute: typeof ApiPublicHooksLifecycleCronRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/legacy-renewal': {
-      id: '/api/public/hooks/legacy-renewal'
-      path: '/api/public/hooks/legacy-renewal'
-      fullPath: '/api/public/hooks/legacy-renewal'
-      preLoaderRoute: typeof ApiPublicHooksLegacyRenewalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/ops/member/$userId': {
@@ -3022,7 +2941,6 @@ const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
 interface AdminOpsRouteChildren {
   AdminOpsActivityRoute: typeof AdminOpsActivityRoute
   AdminOpsAlertsRoute: typeof AdminOpsAlertsRoute
-  AdminOpsBillingRoute: typeof AdminOpsBillingRoute
   AdminOpsCustomerRoute: typeof AdminOpsCustomerRoute
   AdminOpsEmailRoute: typeof AdminOpsEmailRoute
   AdminOpsPlatformRoute: typeof AdminOpsPlatformRoute
@@ -3032,7 +2950,6 @@ interface AdminOpsRouteChildren {
 const AdminOpsRouteChildren: AdminOpsRouteChildren = {
   AdminOpsActivityRoute: AdminOpsActivityRoute,
   AdminOpsAlertsRoute: AdminOpsAlertsRoute,
-  AdminOpsBillingRoute: AdminOpsBillingRoute,
   AdminOpsCustomerRoute: AdminOpsCustomerRoute,
   AdminOpsEmailRoute: AdminOpsEmailRoute,
   AdminOpsPlatformRoute: AdminOpsPlatformRoute,
@@ -3139,13 +3056,10 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
-  BillingSetupTokenRoute: BillingSetupTokenRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
-  ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
-  ApiPublicHooksLifecycleCronRoute: ApiPublicHooksLifecycleCronRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicOpsAlertDispatchRoute: ApiPublicOpsAlertDispatchRoute,
