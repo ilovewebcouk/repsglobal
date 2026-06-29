@@ -341,6 +341,10 @@ export function UploadCertificateDialog({
                   accept="application/pdf,image/jpeg,image/png"
                   capture="environment"
                   className="hidden"
+                  onClick={(e) => {
+                    // Allow re-picking the same file after a failed attempt.
+                    (e.currentTarget as HTMLInputElement).value = "";
+                  }}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) void handlePickFile(f);
