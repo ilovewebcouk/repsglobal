@@ -214,6 +214,7 @@ export async function fetchMemberBillingRow(
   const rawSubs = (subsRes.data ?? []) as Array<
     SubscriptionRowLite & {
       stripe_subscription_id: string | null;
+      stripe_customer_id: string | null;
       cancel_at_period_end: boolean | null;
     }
   >;
@@ -240,10 +241,14 @@ export async function fetchMemberBillingRow(
   });
 
   // Augment Stripe-specific fields from the same entitled row the compute picked.
+  // Fall back to any sub row for customer id so we still surface it for cancelled members.
   const driver = rawSubs.find((s) => ENTITLED_STATUSES.has(s.status)) ?? null;
   if (driver) {
     row.stripeSubscriptionId = driver.stripe_subscription_id ?? null;
     row.cancelAtPeriodEnd = !!driver.cancel_at_period_end;
   }
+  const anyWithCustomer = rawSubs.find((s) => !!s.stripe_customer_id) ?? null;
+  row.stripeCustomerId =
+    driver?.stripe_customer_id ?? anyWithCustomer?.stripe_customer_id ?? null;
   return row;
 }
