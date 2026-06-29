@@ -81,9 +81,7 @@ import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
-import { Route as AdminOpsRouteImport } from './routes/admin_.ops'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
-import { Route as AdminHealthRouteImport } from './routes/admin_.health'
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
@@ -101,11 +99,6 @@ import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
-import { Route as AdminOpsPlatformRouteImport } from './routes/admin_.ops.platform'
-import { Route as AdminOpsEmailRouteImport } from './routes/admin_.ops.email'
-import { Route as AdminOpsCustomerRouteImport } from './routes/admin_.ops.customer'
-import { Route as AdminOpsAlertsRouteImport } from './routes/admin_.ops.alerts'
-import { Route as AdminOpsActivityRouteImport } from './routes/admin_.ops.activity'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
@@ -117,7 +110,6 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
-import { Route as AdminOpsMemberUserIdRouteImport } from './routes/admin_.ops.member.$userId'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
@@ -508,19 +500,9 @@ const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   path: '/admin/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminOpsRoute = AdminOpsRouteImport.update({
-  id: '/admin_/ops',
-  path: '/admin/ops',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   id: '/admin_/memberships',
   path: '/admin/memberships',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminHealthRoute = AdminHealthRouteImport.update({
-  id: '/admin_/health',
-  path: '/admin/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminGymsRoute = AdminGymsRouteImport.update({
@@ -608,31 +590,6 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   path: '/checkout/credits/return',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminOpsPlatformRoute = AdminOpsPlatformRouteImport.update({
-  id: '/platform',
-  path: '/platform',
-  getParentRoute: () => AdminOpsRoute,
-} as any)
-const AdminOpsEmailRoute = AdminOpsEmailRouteImport.update({
-  id: '/email',
-  path: '/email',
-  getParentRoute: () => AdminOpsRoute,
-} as any)
-const AdminOpsCustomerRoute = AdminOpsCustomerRouteImport.update({
-  id: '/customer',
-  path: '/customer',
-  getParentRoute: () => AdminOpsRoute,
-} as any)
-const AdminOpsAlertsRoute = AdminOpsAlertsRouteImport.update({
-  id: '/alerts',
-  path: '/alerts',
-  getParentRoute: () => AdminOpsRoute,
-} as any)
-const AdminOpsActivityRoute = AdminOpsActivityRouteImport.update({
-  id: '/activity',
-  path: '/activity',
-  getParentRoute: () => AdminOpsRoute,
-} as any)
 const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
   id: '/admin_/members/$userId',
   path: '/admin/members/$userId',
@@ -697,11 +654,6 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
     path: '/api/public/hooks/send-scheduled-campaigns',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AdminOpsMemberUserIdRoute = AdminOpsMemberUserIdRouteImport.update({
-  id: '/member/$userId',
-  path: '/member/$userId',
-  getParentRoute: () => AdminOpsRoute,
-} as any)
 const AuthenticatedProfessionalDashboardVerificationRoute =
   AuthenticatedProfessionalDashboardVerificationRouteImport.update({
     id: '/dashboard_/verification',
@@ -917,9 +869,7 @@ export interface FileRoutesByFullPath {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
-  '/admin/health': typeof AdminHealthRoute
   '/admin/memberships': typeof AdminMembershipsRoute
-  '/admin/ops': typeof AdminOpsRouteWithChildren
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
@@ -962,11 +912,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
-  '/admin/ops/activity': typeof AdminOpsActivityRoute
-  '/admin/ops/alerts': typeof AdminOpsAlertsRoute
-  '/admin/ops/customer': typeof AdminOpsCustomerRoute
-  '/admin/ops/email': typeof AdminOpsEmailRoute
-  '/admin/ops/platform': typeof AdminOpsPlatformRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -987,7 +932,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
-  '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1053,9 +997,7 @@ export interface FileRoutesByTo {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
-  '/admin/health': typeof AdminHealthRoute
   '/admin/memberships': typeof AdminMembershipsRoute
-  '/admin/ops': typeof AdminOpsRouteWithChildren
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
@@ -1096,11 +1038,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
-  '/admin/ops/activity': typeof AdminOpsActivityRoute
-  '/admin/ops/alerts': typeof AdminOpsAlertsRoute
-  '/admin/ops/customer': typeof AdminOpsCustomerRoute
-  '/admin/ops/email': typeof AdminOpsEmailRoute
-  '/admin/ops/platform': typeof AdminOpsPlatformRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1120,7 +1057,6 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
-  '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1190,9 +1126,7 @@ export interface FileRoutesById {
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
-  '/admin_/health': typeof AdminHealthRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
-  '/admin_/ops': typeof AdminOpsRouteWithChildren
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
@@ -1236,11 +1170,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
-  '/admin_/ops/activity': typeof AdminOpsActivityRoute
-  '/admin_/ops/alerts': typeof AdminOpsAlertsRoute
-  '/admin_/ops/customer': typeof AdminOpsCustomerRoute
-  '/admin_/ops/email': typeof AdminOpsEmailRoute
-  '/admin_/ops/platform': typeof AdminOpsPlatformRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1261,7 +1190,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
-  '/admin_/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1330,9 +1258,7 @@ export interface FileRouteTypes {
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
-    | '/admin/health'
     | '/admin/memberships'
-    | '/admin/ops'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reconciliation'
@@ -1375,11 +1301,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
-    | '/admin/ops/activity'
-    | '/admin/ops/alerts'
-    | '/admin/ops/customer'
-    | '/admin/ops/email'
-    | '/admin/ops/platform'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1400,7 +1321,6 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/support'
     | '/dashboard/verification'
-    | '/admin/ops/member/$userId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1466,9 +1386,7 @@ export interface FileRouteTypes {
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
-    | '/admin/health'
     | '/admin/memberships'
-    | '/admin/ops'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reconciliation'
@@ -1509,11 +1427,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
-    | '/admin/ops/activity'
-    | '/admin/ops/alerts'
-    | '/admin/ops/customer'
-    | '/admin/ops/email'
-    | '/admin/ops/platform'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1533,7 +1446,6 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/shop-front'
     | '/dashboard/verification'
-    | '/admin/ops/member/$userId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1602,9 +1514,7 @@ export interface FileRouteTypes {
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/gyms'
-    | '/admin_/health'
     | '/admin_/memberships'
-    | '/admin_/ops'
     | '/admin_/payments'
     | '/admin_/professionals'
     | '/admin_/reconciliation'
@@ -1648,11 +1558,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members/$userId'
-    | '/admin_/ops/activity'
-    | '/admin_/ops/alerts'
-    | '/admin_/ops/customer'
-    | '/admin_/ops/email'
-    | '/admin_/ops/platform'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1673,7 +1578,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
-    | '/admin_/ops/member/$userId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1742,9 +1646,7 @@ export interface RootRouteChildren {
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
-  AdminHealthRoute: typeof AdminHealthRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
-  AdminOpsRoute: typeof AdminOpsRouteWithChildren
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
@@ -2303,25 +2205,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/ops': {
-      id: '/admin_/ops'
-      path: '/admin/ops'
-      fullPath: '/admin/ops'
-      preLoaderRoute: typeof AdminOpsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin_/memberships': {
       id: '/admin_/memberships'
       path: '/admin/memberships'
       fullPath: '/admin/memberships'
       preLoaderRoute: typeof AdminMembershipsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/health': {
-      id: '/admin_/health'
-      path: '/admin/health'
-      fullPath: '/admin/health'
-      preLoaderRoute: typeof AdminHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/gyms': {
@@ -2443,41 +2331,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCreditsReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/ops/platform': {
-      id: '/admin_/ops/platform'
-      path: '/platform'
-      fullPath: '/admin/ops/platform'
-      preLoaderRoute: typeof AdminOpsPlatformRouteImport
-      parentRoute: typeof AdminOpsRoute
-    }
-    '/admin_/ops/email': {
-      id: '/admin_/ops/email'
-      path: '/email'
-      fullPath: '/admin/ops/email'
-      preLoaderRoute: typeof AdminOpsEmailRouteImport
-      parentRoute: typeof AdminOpsRoute
-    }
-    '/admin_/ops/customer': {
-      id: '/admin_/ops/customer'
-      path: '/customer'
-      fullPath: '/admin/ops/customer'
-      preLoaderRoute: typeof AdminOpsCustomerRouteImport
-      parentRoute: typeof AdminOpsRoute
-    }
-    '/admin_/ops/alerts': {
-      id: '/admin_/ops/alerts'
-      path: '/alerts'
-      fullPath: '/admin/ops/alerts'
-      preLoaderRoute: typeof AdminOpsAlertsRouteImport
-      parentRoute: typeof AdminOpsRoute
-    }
-    '/admin_/ops/activity': {
-      id: '/admin_/ops/activity'
-      path: '/activity'
-      fullPath: '/admin/ops/activity'
-      preLoaderRoute: typeof AdminOpsActivityRouteImport
-      parentRoute: typeof AdminOpsRoute
-    }
     '/admin_/members/$userId': {
       id: '/admin_/members/$userId'
       path: '/admin/members/$userId'
@@ -2554,13 +2407,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/hooks/send-scheduled-campaigns'
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/admin_/ops/member/$userId': {
-      id: '/admin_/ops/member/$userId'
-      path: '/member/$userId'
-      fullPath: '/admin/ops/member/$userId'
-      preLoaderRoute: typeof AdminOpsMemberUserIdRouteImport
-      parentRoute: typeof AdminOpsRoute
     }
     '/_authenticated/_professional/dashboard_/verification': {
       id: '/_authenticated/_professional/dashboard_/verification'
@@ -2958,28 +2804,6 @@ const HelpRouteChildren: HelpRouteChildren = {
 
 const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
 
-interface AdminOpsRouteChildren {
-  AdminOpsActivityRoute: typeof AdminOpsActivityRoute
-  AdminOpsAlertsRoute: typeof AdminOpsAlertsRoute
-  AdminOpsCustomerRoute: typeof AdminOpsCustomerRoute
-  AdminOpsEmailRoute: typeof AdminOpsEmailRoute
-  AdminOpsPlatformRoute: typeof AdminOpsPlatformRoute
-  AdminOpsMemberUserIdRoute: typeof AdminOpsMemberUserIdRoute
-}
-
-const AdminOpsRouteChildren: AdminOpsRouteChildren = {
-  AdminOpsActivityRoute: AdminOpsActivityRoute,
-  AdminOpsAlertsRoute: AdminOpsAlertsRoute,
-  AdminOpsCustomerRoute: AdminOpsCustomerRoute,
-  AdminOpsEmailRoute: AdminOpsEmailRoute,
-  AdminOpsPlatformRoute: AdminOpsPlatformRoute,
-  AdminOpsMemberUserIdRoute: AdminOpsMemberUserIdRoute,
-}
-
-const AdminOpsRouteWithChildren = AdminOpsRoute._addFileChildren(
-  AdminOpsRouteChildren,
-)
-
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -3036,9 +2860,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
-  AdminHealthRoute: AdminHealthRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
-  AdminOpsRoute: AdminOpsRouteWithChildren,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
