@@ -1,5 +1,4 @@
 import {
-  Activity,
   AlertCircle,
   Gauge,
   Apple,
@@ -10,10 +9,9 @@ import {
   ClipboardList,
   CreditCard,
   Dumbbell,
-  FileCheck,
   FileText,
   GraduationCap,
-  
+
   Inbox,
   LayoutDashboard,
   LifeBuoy,
