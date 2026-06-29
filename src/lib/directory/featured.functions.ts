@@ -218,6 +218,8 @@ async function fetchFeaturedPool(
         full_name: prof?.full_name ?? "REPs Professional",
         avatar_url: prof?.avatar_url ?? null,
         primary_profession: p.primary_profession,
+        primary_title_slug: p.primary_title_slug,
+        secondary_title_slug: p.secondary_title_slug,
         specialisms: Array.isArray(p.specialisms) ? p.specialisms : [],
         city: p.city,
         town: townById.get(p.id) ?? null,
