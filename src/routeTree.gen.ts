@@ -73,7 +73,6 @@ import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare
 import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
-import { Route as AdminWebhookRecoveryRouteImport } from './routes/admin_.webhook-recovery'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
@@ -83,7 +82,6 @@ import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconci
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminOpsRouteImport } from './routes/admin_.ops'
-import { Route as AdminMigrationRouteImport } from './routes/admin_.migration'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as AdminHealthRouteImport } from './routes/admin_.health'
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
@@ -94,7 +92,6 @@ import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
-import { Route as AdminV2IndexRouteImport } from './routes/admin_.v2.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
@@ -103,11 +100,6 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as BillingSetupTokenRouteImport } from './routes/billing.setup.$token'
-import { Route as AdminV2SupportRouteImport } from './routes/admin_.v2.support'
-import { Route as AdminV2ReconciliationRouteImport } from './routes/admin_.v2.reconciliation'
-import { Route as AdminV2OpsRouteImport } from './routes/admin_.v2.ops'
-import { Route as AdminV2ChurnRouteImport } from './routes/admin_.v2.churn'
-import { Route as AdminV2BillingRouteImport } from './routes/admin_.v2.billing'
 import { Route as AdminOpsPlatformRouteImport } from './routes/admin_.ops.platform'
 import { Route as AdminOpsEmailRouteImport } from './routes/admin_.ops.email'
 import { Route as AdminOpsCustomerRouteImport } from './routes/admin_.ops.customer'
@@ -117,7 +109,6 @@ import { Route as AdminOpsActivityRouteImport } from './routes/admin_.ops.activi
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
 import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
-import { Route as AdminV2MembersIndexRouteImport } from './routes/admin_.v2.members.index'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -127,7 +118,6 @@ import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/publ
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
 import { Route as ApiPublicHooksLifecycleCronRouteImport } from './routes/api/public/hooks/lifecycle-cron'
 import { Route as ApiPublicHooksLegacyRenewalRouteImport } from './routes/api/public/hooks/legacy-renewal'
-import { Route as AdminV2MembersUserIdRouteImport } from './routes/admin_.v2.members.$userId'
 import { Route as AdminOpsMemberUserIdRouteImport } from './routes/admin_.ops.member.$userId'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
@@ -479,11 +469,6 @@ const CSlugRoute = CSlugRouteImport.update({
   path: '/c/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminWebhookRecoveryRoute = AdminWebhookRecoveryRouteImport.update({
-  id: '/admin_/webhook-recovery',
-  path: '/admin/webhook-recovery',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
   id: '/admin_/verification',
   path: '/admin/verification',
@@ -527,11 +512,6 @@ const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
 const AdminOpsRoute = AdminOpsRouteImport.update({
   id: '/admin_/ops',
   path: '/admin/ops',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminMigrationRoute = AdminMigrationRouteImport.update({
-  id: '/admin_/migration',
-  path: '/admin/migration',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
@@ -584,11 +564,6 @@ const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => HelpCategoryRoute,
 } as any)
-const AdminV2IndexRoute = AdminV2IndexRouteImport.update({
-  id: '/admin_/v2/',
-  path: '/admin/v2/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
   path: '/u/insurance/$sessionId',
@@ -627,31 +602,6 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
 const BillingSetupTokenRoute = BillingSetupTokenRouteImport.update({
   id: '/billing/setup/$token',
   path: '/billing/setup/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminV2SupportRoute = AdminV2SupportRouteImport.update({
-  id: '/admin_/v2/support',
-  path: '/admin/v2/support',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminV2ReconciliationRoute = AdminV2ReconciliationRouteImport.update({
-  id: '/admin_/v2/reconciliation',
-  path: '/admin/v2/reconciliation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminV2OpsRoute = AdminV2OpsRouteImport.update({
-  id: '/admin_/v2/ops',
-  path: '/admin/v2/ops',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminV2ChurnRoute = AdminV2ChurnRouteImport.update({
-  id: '/admin_/v2/churn',
-  path: '/admin/v2/churn',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminV2BillingRoute = AdminV2BillingRouteImport.update({
-  id: '/admin_/v2/billing',
-  path: '/admin/v2/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminOpsPlatformRoute = AdminOpsPlatformRouteImport.update({
@@ -701,11 +651,6 @@ const AuthenticatedProfessionalProRouteRoute =
     id: '/_pro',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
-const AdminV2MembersIndexRoute = AdminV2MembersIndexRouteImport.update({
-  id: '/admin_/v2/members/',
-  path: '/admin/v2/members/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -760,11 +705,6 @@ const ApiPublicHooksLegacyRenewalRoute =
     path: '/api/public/hooks/legacy-renewal',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AdminV2MembersUserIdRoute = AdminV2MembersUserIdRouteImport.update({
-  id: '/admin_/v2/members/$userId',
-  path: '/admin/v2/members/$userId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminOpsMemberUserIdRoute = AdminOpsMemberUserIdRouteImport.update({
   id: '/member/$userId',
   path: '/member/$userId',
@@ -985,7 +925,6 @@ export interface FileRoutesByFullPath {
   '/admin/gyms': typeof AdminGymsRoute
   '/admin/health': typeof AdminHealthRoute
   '/admin/memberships': typeof AdminMembershipsRoute
-  '/admin/migration': typeof AdminMigrationRoute
   '/admin/ops': typeof AdminOpsRouteWithChildren
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
@@ -995,7 +934,6 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
-  '/admin/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -1035,11 +973,6 @@ export interface FileRoutesByFullPath {
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
-  '/admin/v2/billing': typeof AdminV2BillingRoute
-  '/admin/v2/churn': typeof AdminV2ChurnRoute
-  '/admin/v2/ops': typeof AdminV2OpsRoute
-  '/admin/v2/reconciliation': typeof AdminV2ReconciliationRoute
-  '/admin/v2/support': typeof AdminV2SupportRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1048,7 +981,6 @@ export interface FileRoutesByFullPath {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
-  '/admin/v2/': typeof AdminV2IndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1063,7 +995,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
-  '/admin/v2/members/$userId': typeof AdminV2MembersUserIdRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1073,7 +1004,6 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/admin/v2/members/': typeof AdminV2MembersIndexRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1132,7 +1062,6 @@ export interface FileRoutesByTo {
   '/admin/gyms': typeof AdminGymsRoute
   '/admin/health': typeof AdminHealthRoute
   '/admin/memberships': typeof AdminMembershipsRoute
-  '/admin/migration': typeof AdminMigrationRoute
   '/admin/ops': typeof AdminOpsRouteWithChildren
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
@@ -1142,7 +1071,6 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
-  '/admin/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -1180,11 +1108,6 @@ export interface FileRoutesByTo {
   '/admin/ops/customer': typeof AdminOpsCustomerRoute
   '/admin/ops/email': typeof AdminOpsEmailRoute
   '/admin/ops/platform': typeof AdminOpsPlatformRoute
-  '/admin/v2/billing': typeof AdminV2BillingRoute
-  '/admin/v2/churn': typeof AdminV2ChurnRoute
-  '/admin/v2/ops': typeof AdminV2OpsRoute
-  '/admin/v2/reconciliation': typeof AdminV2ReconciliationRoute
-  '/admin/v2/support': typeof AdminV2SupportRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1193,7 +1116,6 @@ export interface FileRoutesByTo {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
-  '/admin/v2': typeof AdminV2IndexRoute
   '/help/$category': typeof HelpCategoryIndexRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1207,7 +1129,6 @@ export interface FileRoutesByTo {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
-  '/admin/v2/members/$userId': typeof AdminV2MembersUserIdRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1217,7 +1138,6 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/admin/v2/members': typeof AdminV2MembersIndexRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1280,7 +1200,6 @@ export interface FileRoutesById {
   '/admin_/gyms': typeof AdminGymsRoute
   '/admin_/health': typeof AdminHealthRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
-  '/admin_/migration': typeof AdminMigrationRoute
   '/admin_/ops': typeof AdminOpsRouteWithChildren
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
@@ -1290,7 +1209,6 @@ export interface FileRoutesById {
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
   '/admin_/verification': typeof AdminVerificationRoute
-  '/admin_/webhook-recovery': typeof AdminWebhookRecoveryRoute
   '/c/$slug': typeof CSlugRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -1331,11 +1249,6 @@ export interface FileRoutesById {
   '/admin_/ops/customer': typeof AdminOpsCustomerRoute
   '/admin_/ops/email': typeof AdminOpsEmailRoute
   '/admin_/ops/platform': typeof AdminOpsPlatformRoute
-  '/admin_/v2/billing': typeof AdminV2BillingRoute
-  '/admin_/v2/churn': typeof AdminV2ChurnRoute
-  '/admin_/v2/ops': typeof AdminV2OpsRoute
-  '/admin_/v2/reconciliation': typeof AdminV2ReconciliationRoute
-  '/admin_/v2/support': typeof AdminV2SupportRoute
   '/billing/setup/$token': typeof BillingSetupTokenRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
@@ -1344,7 +1257,6 @@ export interface FileRoutesById {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
-  '/admin_/v2/': typeof AdminV2IndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1359,7 +1271,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/admin_/ops/member/$userId': typeof AdminOpsMemberUserIdRoute
-  '/admin_/v2/members/$userId': typeof AdminV2MembersUserIdRoute
   '/api/public/hooks/legacy-renewal': typeof ApiPublicHooksLegacyRenewalRoute
   '/api/public/hooks/lifecycle-cron': typeof ApiPublicHooksLifecycleCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1369,7 +1280,6 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/admin_/v2/members/': typeof AdminV2MembersIndexRoute
   '/_authenticated/_professional/_pro/dashboard_/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/_authenticated/_professional/_pro/dashboard_/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/_authenticated/_professional/_pro/dashboard_/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1431,7 +1341,6 @@ export interface FileRouteTypes {
     | '/admin/gyms'
     | '/admin/health'
     | '/admin/memberships'
-    | '/admin/migration'
     | '/admin/ops'
     | '/admin/payments'
     | '/admin/professionals'
@@ -1441,7 +1350,6 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/team'
     | '/admin/verification'
-    | '/admin/webhook-recovery'
     | '/c/$slug'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
@@ -1481,11 +1389,6 @@ export interface FileRouteTypes {
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
-    | '/admin/v2/billing'
-    | '/admin/v2/churn'
-    | '/admin/v2/ops'
-    | '/admin/v2/reconciliation'
-    | '/admin/v2/support'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1494,7 +1397,6 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
-    | '/admin/v2/'
     | '/help/$category/'
     | '/pro/$slug/'
     | '/checkout/credits'
@@ -1509,7 +1411,6 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/verification'
     | '/admin/ops/member/$userId'
-    | '/admin/v2/members/$userId'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -1519,7 +1420,6 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
-    | '/admin/v2/members/'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -1578,7 +1478,6 @@ export interface FileRouteTypes {
     | '/admin/gyms'
     | '/admin/health'
     | '/admin/memberships'
-    | '/admin/migration'
     | '/admin/ops'
     | '/admin/payments'
     | '/admin/professionals'
@@ -1588,7 +1487,6 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/team'
     | '/admin/verification'
-    | '/admin/webhook-recovery'
     | '/c/$slug'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
@@ -1626,11 +1524,6 @@ export interface FileRouteTypes {
     | '/admin/ops/customer'
     | '/admin/ops/email'
     | '/admin/ops/platform'
-    | '/admin/v2/billing'
-    | '/admin/v2/churn'
-    | '/admin/v2/ops'
-    | '/admin/v2/reconciliation'
-    | '/admin/v2/support'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1639,7 +1532,6 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
-    | '/admin/v2'
     | '/help/$category'
     | '/pro/$slug'
     | '/checkout/credits'
@@ -1653,7 +1545,6 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/admin/ops/member/$userId'
-    | '/admin/v2/members/$userId'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -1663,7 +1554,6 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
-    | '/admin/v2/members'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -1725,7 +1615,6 @@ export interface FileRouteTypes {
     | '/admin_/gyms'
     | '/admin_/health'
     | '/admin_/memberships'
-    | '/admin_/migration'
     | '/admin_/ops'
     | '/admin_/payments'
     | '/admin_/professionals'
@@ -1735,7 +1624,6 @@ export interface FileRouteTypes {
     | '/admin_/support'
     | '/admin_/team'
     | '/admin_/verification'
-    | '/admin_/webhook-recovery'
     | '/c/$slug'
     | '/checkout/return'
     | '/compare_/reps-vs-mypthub'
@@ -1776,11 +1664,6 @@ export interface FileRouteTypes {
     | '/admin_/ops/customer'
     | '/admin_/ops/email'
     | '/admin_/ops/platform'
-    | '/admin_/v2/billing'
-    | '/admin_/v2/churn'
-    | '/admin_/v2/ops'
-    | '/admin_/v2/reconciliation'
-    | '/admin_/v2/support'
     | '/billing/setup/$token'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
@@ -1789,7 +1672,6 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
-    | '/admin_/v2/'
     | '/help/$category/'
     | '/pro/$slug/'
     | '/_authenticated/_professional/checkout_/credits'
@@ -1804,7 +1686,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/admin_/ops/member/$userId'
-    | '/admin_/v2/members/$userId'
     | '/api/public/hooks/legacy-renewal'
     | '/api/public/hooks/lifecycle-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -1814,7 +1695,6 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
-    | '/admin_/v2/members/'
     | '/_authenticated/_professional/_pro/dashboard_/bookings'
     | '/_authenticated/_professional/_pro/dashboard_/business'
     | '/_authenticated/_professional/_pro/dashboard_/calendar'
@@ -1876,7 +1756,6 @@ export interface RootRouteChildren {
   AdminGymsRoute: typeof AdminGymsRoute
   AdminHealthRoute: typeof AdminHealthRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
-  AdminMigrationRoute: typeof AdminMigrationRoute
   AdminOpsRoute: typeof AdminOpsRouteWithChildren
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
@@ -1886,7 +1765,6 @@ export interface RootRouteChildren {
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
-  AdminWebhookRecoveryRoute: typeof AdminWebhookRecoveryRoute
   CSlugRoute: typeof CSlugRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
@@ -1916,18 +1794,11 @@ export interface RootRouteChildren {
   RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
-  AdminV2BillingRoute: typeof AdminV2BillingRoute
-  AdminV2ChurnRoute: typeof AdminV2ChurnRoute
-  AdminV2OpsRoute: typeof AdminV2OpsRoute
-  AdminV2ReconciliationRoute: typeof AdminV2ReconciliationRoute
-  AdminV2SupportRoute: typeof AdminV2SupportRoute
   BillingSetupTokenRoute: typeof BillingSetupTokenRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
-  AdminV2IndexRoute: typeof AdminV2IndexRoute
-  AdminV2MembersUserIdRoute: typeof AdminV2MembersUserIdRoute
   ApiPublicHooksLegacyRenewalRoute: typeof ApiPublicHooksLegacyRenewalRoute
   ApiPublicHooksLifecycleCronRoute: typeof ApiPublicHooksLifecycleCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1937,7 +1808,6 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
-  AdminV2MembersIndexRoute: typeof AdminV2MembersIndexRoute
   ApiPublicEmailInboundMailgunRoute: typeof ApiPublicEmailInboundMailgunRoute
 }
 
@@ -2391,13 +2261,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/webhook-recovery': {
-      id: '/admin_/webhook-recovery'
-      path: '/admin/webhook-recovery'
-      fullPath: '/admin/webhook-recovery'
-      preLoaderRoute: typeof AdminWebhookRecoveryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin_/verification': {
       id: '/admin_/verification'
       path: '/admin/verification'
@@ -2459,13 +2322,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/ops'
       fullPath: '/admin/ops'
       preLoaderRoute: typeof AdminOpsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/migration': {
-      id: '/admin_/migration'
-      path: '/admin/migration'
-      fullPath: '/admin/migration'
-      preLoaderRoute: typeof AdminMigrationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/memberships': {
@@ -2538,13 +2394,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HelpCategoryIndexRouteImport
       parentRoute: typeof HelpCategoryRoute
     }
-    '/admin_/v2/': {
-      id: '/admin_/v2/'
-      path: '/admin/v2'
-      fullPath: '/admin/v2/'
-      preLoaderRoute: typeof AdminV2IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
       path: '/u/insurance/$sessionId'
@@ -2599,41 +2448,6 @@ declare module '@tanstack/react-router' {
       path: '/billing/setup/$token'
       fullPath: '/billing/setup/$token'
       preLoaderRoute: typeof BillingSetupTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/v2/support': {
-      id: '/admin_/v2/support'
-      path: '/admin/v2/support'
-      fullPath: '/admin/v2/support'
-      preLoaderRoute: typeof AdminV2SupportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/v2/reconciliation': {
-      id: '/admin_/v2/reconciliation'
-      path: '/admin/v2/reconciliation'
-      fullPath: '/admin/v2/reconciliation'
-      preLoaderRoute: typeof AdminV2ReconciliationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/v2/ops': {
-      id: '/admin_/v2/ops'
-      path: '/admin/v2/ops'
-      fullPath: '/admin/v2/ops'
-      preLoaderRoute: typeof AdminV2OpsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/v2/churn': {
-      id: '/admin_/v2/churn'
-      path: '/admin/v2/churn'
-      fullPath: '/admin/v2/churn'
-      preLoaderRoute: typeof AdminV2ChurnRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/v2/billing': {
-      id: '/admin_/v2/billing'
-      path: '/admin/v2/billing'
-      fullPath: '/admin/v2/billing'
-      preLoaderRoute: typeof AdminV2BillingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/ops/platform': {
@@ -2699,13 +2513,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalProRouteRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
-    '/admin_/v2/members/': {
-      id: '/admin_/v2/members/'
-      path: '/admin/v2/members'
-      fullPath: '/admin/v2/members/'
-      preLoaderRoute: typeof AdminV2MembersIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -2767,13 +2574,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/legacy-renewal'
       fullPath: '/api/public/hooks/legacy-renewal'
       preLoaderRoute: typeof ApiPublicHooksLegacyRenewalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/v2/members/$userId': {
-      id: '/admin_/v2/members/$userId'
-      path: '/admin/v2/members/$userId'
-      fullPath: '/admin/v2/members/$userId'
-      preLoaderRoute: typeof AdminV2MembersUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/ops/member/$userId': {
@@ -3259,7 +3059,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminGymsRoute: AdminGymsRoute,
   AdminHealthRoute: AdminHealthRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
-  AdminMigrationRoute: AdminMigrationRoute,
   AdminOpsRoute: AdminOpsRouteWithChildren,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
@@ -3269,7 +3068,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
   AdminVerificationRoute: AdminVerificationRoute,
-  AdminWebhookRecoveryRoute: AdminWebhookRecoveryRoute,
   CSlugRoute: CSlugRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
@@ -3299,18 +3097,11 @@ const rootRouteChildren: RootRouteChildren = {
   RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
-  AdminV2BillingRoute: AdminV2BillingRoute,
-  AdminV2ChurnRoute: AdminV2ChurnRoute,
-  AdminV2OpsRoute: AdminV2OpsRoute,
-  AdminV2ReconciliationRoute: AdminV2ReconciliationRoute,
-  AdminV2SupportRoute: AdminV2SupportRoute,
   BillingSetupTokenRoute: BillingSetupTokenRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
-  AdminV2IndexRoute: AdminV2IndexRoute,
-  AdminV2MembersUserIdRoute: AdminV2MembersUserIdRoute,
   ApiPublicHooksLegacyRenewalRoute: ApiPublicHooksLegacyRenewalRoute,
   ApiPublicHooksLifecycleCronRoute: ApiPublicHooksLifecycleCronRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
@@ -3321,7 +3112,6 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
-  AdminV2MembersIndexRoute: AdminV2MembersIndexRoute,
   ApiPublicEmailInboundMailgunRoute: ApiPublicEmailInboundMailgunRoute,
 }
 export const routeTree = rootRouteImport

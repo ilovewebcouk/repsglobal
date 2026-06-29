@@ -39,8 +39,8 @@ function CustomerPage() {
     { label: "Churn (7d)", value: h.churn_7d, tone: h.churn_7d > 0 ? "warn" : undefined, drill: { to: "/admin/churn", hint: "Open churn" } },
     { label: "Recoveries (7d)", value: h.recoveries_7d, drill: { to: "/admin/churn", hint: "Open churn" } },
     { label: "Pending cancellations", value: h.pending_cancellations, tone: h.pending_cancellations > 0 ? "warn" : undefined, drill: { to: "/admin/churn", hint: "Open churn" } },
-    { label: "Failed payments", value: h.failed_renewals, sub: "past_due · unpaid · incomplete", tone: h.failed_renewals > 0 ? "crit" : undefined, drill: { to: "/admin/webhook-recovery", hint: "Webhook recovery" } },
-    { label: "Awaiting payment update", value: h.awaiting_payment_update, drill: { to: "/admin/webhook-recovery", hint: "Webhook recovery" } },
+    { label: "Failed payments", value: h.failed_renewals, sub: "past_due · unpaid · incomplete", tone: h.failed_renewals > 0 ? "crit" : undefined, drill: { to: "/admin/ops", hint: "Operations" } },
+    { label: "Awaiting payment update", value: h.awaiting_payment_update, drill: { to: "/admin/ops", hint: "Operations" } },
   ] : [];
 
   return (

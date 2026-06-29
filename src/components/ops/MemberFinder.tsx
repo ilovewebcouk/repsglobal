@@ -12,10 +12,8 @@ interface Props {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
-  // Destination route for the matched member. Defaults to the legacy ops
-  // recorder so existing call-sites are unaffected; Admin v2 surfaces pass
-  // `/admin/v2/members/$userId`.
-  target?: "/admin/ops/member/$userId" | "/admin/v2/members/$userId";
+  // Destination route for the matched member.
+  target?: "/admin/ops/member/$userId";
 }
 
 export function MemberFinder({
