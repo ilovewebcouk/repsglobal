@@ -271,12 +271,14 @@ function AdminProfessionalsPage() {
     (filters.professions?.length ?? 0) +
     (filters.hasAvatar !== undefined ? 1 : 0);
 
+  const series = kpisQ.data?.series;
   const kpis = [
     {
       label: "Active Professionals",
       value: kpisQ.data ? kpisQ.data.activeCount.toLocaleString() : "—",
-      delta: "All confirmed pros, including Free (M2)",
+      delta: "All confirmed pros on a paid Stripe sub",
       icon: Users,
+      series: series?.active,
     },
     {
       label: "Verified Professionals",
@@ -285,12 +287,14 @@ function AdminProfessionalsPage() {
         ? `${kpisQ.data.verifiedCount.toLocaleString()} of ${kpisQ.data.activeCount.toLocaleString()} active`
         : "",
       icon: ShieldCheck,
+      series: series?.verified,
     },
     {
       label: "Paid Professionals",
       value: kpisQ.data ? kpisQ.data.paidCount.toLocaleString() : "—",
       delta: "With active paid entitlement — matches /admin M1",
       icon: CreditCard,
+      series: series?.paid,
     },
     {
       label: "New signups (30d)",
@@ -299,6 +303,7 @@ function AdminProfessionalsPage() {
         ? `${kpisQ.data.newSignupsDeltaPct >= 0 ? "+" : ""}${kpisQ.data.newSignupsDeltaPct.toFixed(1)}% vs prev 30d`
         : "",
       icon: TrendingUp,
+      series: series?.newSignups,
     },
   ];
 
@@ -312,20 +317,40 @@ function AdminProfessionalsPage() {
       actions={<InviteButton />}
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((k) => (
-          <PCard key={k.label}>
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="text-[12px] text-white/55">{k.label}</div>
-                <div className="mt-1 font-display text-[26px] font-bold text-white">{k.value}</div>
-                <div className="mt-1 text-[11px] text-white/55">{k.delta}</div>
+        {kpis.map((k) => {
+          const last = k.series && k.series.length ? k.series[k.series.length - 1] : null;
+          const prev = k.series && k.series.length > 1 ? k.series[k.series.length - 2] : null;
+          const monDelta = last != null && prev != null && prev > 0
+            ? ((last - prev) / prev) * 100
+            : null;
+          const monDeltaTone =
+            monDelta == null ? "text-white/45"
+            : monDelta > 0 ? "text-emerald-300"
+            : monDelta < 0 ? "text-red-400"
+            : "text-white/45";
+          return (
+            <PCard key={k.label}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[12px] text-white/55">{k.label}</div>
+                  <div className="mt-1 font-display text-[26px] font-bold text-white">{k.value}</div>
+                  <div className="mt-1 text-[11px] text-white/55">{k.delta}</div>
+                </div>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
+                  <k.icon className="h-4 w-4" />
+                </span>
               </div>
-              <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-reps-orange-soft text-reps-orange">
-                <k.icon className="h-4 w-4" />
-              </span>
-            </div>
-          </PCard>
-        ))}
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <Sparkline values={k.series ?? []} />
+                <span className={`shrink-0 text-[11px] font-semibold tabular-nums ${monDeltaTone}`}>
+                  {monDelta == null
+                    ? "—"
+                    : `${monDelta >= 0 ? "+" : ""}${monDelta.toFixed(1)}% MoM`}
+                </span>
+              </div>
+            </PCard>
+          );
+        })}
       </div>
 
       <PPanel className="mt-6">
