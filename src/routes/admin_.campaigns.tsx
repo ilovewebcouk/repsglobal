@@ -40,13 +40,33 @@ export const Route = createFileRoute("/admin_/campaigns")({
 
 
 function AdminCampaigns() {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [composeOpen, setComposeOpen] = useState(false);
   const [initialDraft, setInitialDraft] = useState<ComposeInitialDraft | null>(null);
   const qc = useQueryClient();
 
+  // Auto-open the composer when launched from Member 360 ("Send email").
+  // We strip the search params after seeding so a back-nav / refresh
+  // doesn't keep reopening the dialog.
+  useEffect(() => {
+    if (!search.compose || !search.to) return;
+    setInitialDraft({
+      inbox: search.inbox ?? "pros",
+      mode: "direct",
+      subject: "",
+      body: "",
+      format: "text",
+      recipients: [{ email: search.to, name: search.name ?? null }],
+    });
+    setComposeOpen(true);
+    void navigate({ search: {}, replace: true });
+  }, [search.compose, search.to, search.name, search.inbox, navigate]);
+
   const refetch = () => {
     void qc.invalidateQueries({ queryKey: ["admin", "support", "campaigns"] });
   };
+
 
   return (
     <DashboardShell
