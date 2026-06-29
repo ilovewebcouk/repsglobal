@@ -36,7 +36,6 @@ import { cn } from "@/lib/utils";
 
 import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.functions";
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
-import { MemberSnapshotCard } from "@/components/admin/v2/MemberSnapshotCard";
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
 
 export const Route = createFileRoute("/admin_/members/$userId")({
