@@ -121,18 +121,18 @@ function Member360Page() {
             <Separator />
             <div className="flex w-full flex-col gap-2 text-left">
               <IdRow label="User id" value={userId} onCopy={() => copy(userId)} />
-              {snap.data?.snapshot?.customer_id && (
+              {snap.data?.stripe_customer_id && (
                 <IdRow
                   label="Stripe customer"
                   value={snap.data.stripe_customer_id}
-                  onCopy={() => copy(snap.data?.snapshot?.customer_id)}
+                  onCopy={() => copy(snap.data?.stripe_customer_id)}
                 />
               )}
-              {snap.data?.snapshot?.subscription_id && (
+              {snap.data?.subscription?.id && (
                 <IdRow
                   label="Subscription"
                   value={snap.data.subscription?.id}
-                  onCopy={() => copy(snap.data?.snapshot?.subscription_id)}
+                  onCopy={() => copy(snap.data?.subscription?.id)}
                 />
               )}
             </div>
@@ -253,7 +253,7 @@ function Member360Page() {
             <CardDescription>Phase C2 wires the real handlers.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
-            {snap.data?.snapshot?.customer_id && (
+            {snap.data?.stripe_customer_id && (
               <Button asChild variant="outline" className="justify-start rounded-[10px] shadow-none">
                 <a
                   href={`https://dashboard.stripe.com/customers/${snap.data.stripe_customer_id}`}
