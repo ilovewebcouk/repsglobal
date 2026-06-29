@@ -401,11 +401,20 @@ function DisputesTab() {
               <Td><DisputeStagePill stage={d.lifecycleStage} status={d.status} /></Td>
               <Td className="text-white/70">{d.evidenceDueBy ? formatDate(d.evidenceDueBy) : "—"}</Td>
               <Td>
-                {d.stripeDisputeId && (
-                  <a className="inline-flex items-center gap-1 text-white/75 hover:text-reps-orange" target="_blank" rel="noreferrer" href={`https://dashboard.stripe.com/disputes/${d.stripeDisputeId}`}>
-                    dispute <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/admin/billing/disputes/$disputeId"
+                    params={{ disputeId: d.id }}
+                    className="inline-flex items-center gap-1 text-reps-orange hover:underline"
+                  >
+                    Respond
+                  </Link>
+                  {d.stripeDisputeId && (
+                    <a className="inline-flex items-center gap-1 text-white/55 hover:text-white" target="_blank" rel="noreferrer" href={`https://dashboard.stripe.com/disputes/${d.stripeDisputeId}`}>
+                      Stripe <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
               </Td>
             </tr>
           ))}
