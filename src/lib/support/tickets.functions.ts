@@ -133,7 +133,13 @@ export const listRequesterTickets = createServerFn({ method: "POST" })
   .inputValidator((d: { email: string; excludeId?: string }) =>
     z
       .object({
-        email: z.string().trim().toLowerCase().email().max(320).or(z.literal("")),
+        // Accept any string; treat non-emails as empty (handler returns [] for empty).
+        email: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .max(320)
+          .transform((v) => (z.string().email().safeParse(v).success ? v : "")),
         excludeId: z.string().uuid().optional(),
       })
       .parse(d),
