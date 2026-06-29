@@ -58,6 +58,9 @@ export interface AdminOverviewDTO {
 
   // Series for sparklines / supporting charts
   membersSeries: DayPoint[] | null;
+  membersByTierSeries:
+    | { day: string; verified: number; pro: number; studio: number }[]
+    | null;
   revenueSeries: DayPoint[] | null;
   signupsSeries: DayPoint[] | null;
   forecastSeries: DayPoint[] | null;
