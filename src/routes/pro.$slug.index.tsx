@@ -407,6 +407,7 @@ export const Route = createFileRoute("/pro/$slug/")({
     const title = `${pro.name} — ${pro.role} | REPS`;
     const description = `${pro.name}, REPS Verified ${pro.role}${pro.location ? ` in ${pro.location}` : ""}. ${pro.blurb}`;
     const noindex = !!fixture;
+    const url = `https://repsuk.org/pro/${pro.slug}`;
     return {
       meta: [
         { title },
@@ -414,10 +415,31 @@ export const Route = createFileRoute("/pro/$slug/")({
         ...(noindex ? [{ name: "robots", content: "noindex,nofollow" }] : []),
         { property: "og:title", content: title },
         { property: "og:description", content: description },
-        { property: "og:url", content: `/pro/${pro.slug}` },
+        { property: "og:url", content: url },
+        ...(pro.image ? [{ property: "og:image", content: pro.image }] : []),
       ],
-      links: [{ rel: "canonical", href: `/pro/${pro.slug}` }],
+      links: [{ rel: "canonical", href: url }],
+      scripts: noindex
+        ? []
+        : [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Person",
+                name: pro.name,
+                jobTitle: pro.role,
+                url,
+                ...(pro.image ? { image: pro.image } : {}),
+                ...(pro.location
+                  ? { address: { "@type": "PostalAddress", addressLocality: pro.location } }
+                  : {}),
+                description: pro.blurb,
+              }),
+            },
+          ],
     };
+
   },
   notFoundComponent: ProNotFound,
   component: ProProfilePage,
