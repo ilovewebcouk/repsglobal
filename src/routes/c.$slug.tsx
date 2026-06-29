@@ -646,12 +646,16 @@ function HeroSection({
                   <Star className="h-4 w-4" /> No reviews yet
                 </span>
               )}
-              <span className="inline-flex items-center gap-1.5 text-reps-muted">
-                <Users className="h-3.5 w-3.5" /> In-person · London
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-reps-muted">
-                <Globe className="h-3.5 w-3.5" /> Online · worldwide
-              </span>
+              {coach.modes.includes("In-person") && (
+                <span className="inline-flex items-center gap-1.5 text-reps-muted">
+                  <Users className="h-3.5 w-3.5" /> In-person · {coach.city}
+                </span>
+              )}
+              {coach.modes.includes("Online") && (
+                <span className="inline-flex items-center gap-1.5 text-reps-muted">
+                  <Globe className="h-3.5 w-3.5" /> Online · worldwide
+                </span>
+              )}
             </div>
 
             <div className="mt-7 flex flex-wrap gap-3">
