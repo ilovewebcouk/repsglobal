@@ -294,8 +294,14 @@ function badgeFor(awardingBody: string | null, slug: string | null): string {
 
 function proFromDb(row: NonNullable<DbPro>): Pro {
   const template = PROS["james-carter"];
-  const professionLabel =
-    getProfessionLabel(row.primary_profession) ?? "Fitness Professional";
+  const primaryLabel =
+    getTitleLabel((row as { primary_title_slug?: string | null }).primary_title_slug) ??
+    getProfessionLabel(row.primary_profession) ??
+    "Fitness Professional";
+  const secondaryLabel = getTitleLabel((row as { secondary_title_slug?: string | null }).secondary_title_slug);
+  const professionLabel = secondaryLabel && secondaryLabel !== primaryLabel
+    ? `${primaryLabel} & ${secondaryLabel}`
+    : primaryLabel;
   const memberSince = row.member_since ? new Date(row.member_since) : null;
   const years = memberSince
     ? Math.max(
