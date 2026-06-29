@@ -7,6 +7,7 @@ import {
   getShopFrontBySlug,
   type ServiceDTO,
   type ShopFrontDTO,
+  type ShopFrontClientResultDTO,
   type ShopFrontFaqDTO,
   type ShopFrontTransformationDTO,
 } from "@/lib/shop-front/shop-front.functions";
@@ -106,6 +107,7 @@ type Coach = {
   cities: string[];
   transformations: Transformation[];
   testimonials: Testimonial[];
+  clientResultsIntro?: string | null;
   qualifications: { title: string; issuer: string; id: string; issued: string }[];
   faqs: { q: string; a: string }[];
   socials: {
@@ -373,6 +375,7 @@ function mergeLiveIntoCoach(
   sf: ShopFrontDTO,
   services: ServiceDTO[],
   transformations: ShopFrontTransformationDTO[] = [],
+  clientResults: ShopFrontClientResultDTO[] = [],
   faqs: ShopFrontFaqDTO[] = [],
 ): Coach {
   const liveTiers: Tier[] = services.map((s, i) => ({
@@ -414,6 +417,14 @@ function mergeLiveIntoCoach(
       quote: t.quote ?? t.headline ?? "Great progress from consistent coaching.",
     }));
   const liveFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
+  const liveTestimonials = clientResults
+    .filter((r) => r.is_published && (r.headline || r.body))
+    .map((r, i) => ({
+      initials: `C${i + 1}`,
+      name: r.headline ?? `Client ${i + 1}`,
+      role: "Verified client result",
+      quote: r.body ?? r.headline ?? "",
+    }));
   return {
     ...base,
     name: sf.full_name ?? base.name,
@@ -437,6 +448,8 @@ function mergeLiveIntoCoach(
     venues: liveVenues.length ? liveVenues : base.venues,
     cities: liveCities.length ? liveCities : base.cities,
     transformations: liveTransformations.length ? liveTransformations : base.transformations,
+    testimonials: liveTestimonials.length ? liveTestimonials : base.testimonials,
+    clientResultsIntro: sf.client_results_intro ?? base.clientResultsIntro ?? null,
     faqs: liveFaqs.length ? liveFaqs : base.faqs,
     years: yearsCoaching,
     verifiedSince: (() => {
@@ -576,6 +589,7 @@ function CoachShopFrontPage() {
         live.shopFront,
         live.services,
         live.transformations,
+        live.clientResults,
         live.faqs,
       )
     : baseCoach!;
@@ -1222,7 +1236,8 @@ function TransformationsSection({ coach }: { coach: Coach }) {
             Real numbers from real people
           </h2>
           <p className="mt-3 text-[15.5px] leading-relaxed text-reps-text-soft">
-            Every metric below is from a current or past client. Names and photos used with permission.
+            {coach.clientResultsIntro ??
+              "Every metric below is from a current or past client. Names and photos used with permission."}
           </p>
         </div>
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
