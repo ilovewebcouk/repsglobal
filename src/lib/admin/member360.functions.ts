@@ -69,10 +69,10 @@ export const getMember360 = createServerFn({ method: "GET" })
 
     const [authRes, profileRes, proRes] = await Promise.all([
       supabaseAdmin.auth.admin.getUserById(data.user_id),
-      supabaseAdmin.from("profiles").select("full_name").eq("id", data.user_id).maybeSingle(),
+      supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", data.user_id).maybeSingle(),
       supabaseAdmin
         .from("professionals")
-        .select("slug, verification, is_published")
+        .select("slug, verification, is_published, primary_profession")
         .eq("id", data.user_id)
         .maybeSingle(),
     ]);
