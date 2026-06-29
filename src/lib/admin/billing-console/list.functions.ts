@@ -14,6 +14,32 @@ async function requireAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Forbidden");
 }
 
+/**
+ * Resolve Stripe customer IDs to REPs user IDs via the local subscriptions
+ * mirror. Used by Payments / Disputes / Refunds to fill in "Unknown" rows
+ * where the webhook event arrived without a linked user_id but we hold the
+ * customer id.
+ */
+async function resolveUsersByCustomerIds(
+  supabase: any,
+  customerIds: string[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const ids = Array.from(new Set(customerIds.filter(Boolean)));
+  if (!ids.length) return out;
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("user_id, stripe_customer_id")
+    .in("stripe_customer_id", ids)
+    .eq("environment", "live");
+  for (const r of (data ?? []) as Array<{ user_id: string; stripe_customer_id: string | null }>) {
+    if (r.stripe_customer_id && r.user_id && !out.has(r.stripe_customer_id)) {
+      out.set(r.stripe_customer_id, r.user_id);
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // KPIs
 // ---------------------------------------------------------------------------
@@ -165,8 +191,17 @@ export const listPayments = createServerFn({ method: "POST" })
       stripe_customer_id: string | null;
     }>;
 
-    // Hydrate names/emails
-    const userIds = Array.from(new Set(events.map((e) => e.user_id).filter(Boolean) as string[]));
+    // Fallback: link customer ids back to users via the subscriptions mirror
+    // so dispute/failed events that arrived without user_id still show a name.
+    const customerIds = Array.from(
+      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
+    );
+    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+    const allUserIds = new Set<string>([
+      ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
+      ...Array.from(customerToUser.values()),
+    ]);
+    const userIds = Array.from(allUserIds);
     let profileMap = new Map<string, { full_name: string | null }>();
     let emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -221,8 +256,10 @@ export const listPayments = createServerFn({ method: "POST" })
         chargeId = typeof obj.charge === "string" ? obj.charge : null;
       }
 
-      const prof = e.user_id ? profileMap.get(e.user_id) : null;
-      const email = e.user_id ? emailMap.get(e.user_id) ?? null : null;
+      const resolvedUserId =
+        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
+      const prof = resolvedUserId ? profileMap.get(resolvedUserId) : null;
+      const email = resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null;
 
       // Search filter (client-side over hydrated rows)
       if (data.search) {
@@ -234,7 +271,7 @@ export const listPayments = createServerFn({ method: "POST" })
       out.push({
         id: e.id,
         createdAt: e.created_at,
-        userId: e.user_id,
+        userId: resolvedUserId,
         email,
         fullName: prof?.full_name ?? null,
         amountPence: amount,
@@ -439,7 +476,7 @@ export const listDisputes = createServerFn({ method: "GET" })
     const { data: rows } = await supabaseAdmin
       .from("disputes")
       .select(
-        "id, opened_at, user_id, reason, amount_pence, currency, status, lifecycle_stage, evidence_due_by, stripe_dispute_id, stripe_charge_id",
+        "id, opened_at, user_id, reason, amount_pence, currency, status, lifecycle_stage, evidence_due_by, stripe_dispute_id, stripe_charge_id, stripe_customer_id",
       )
       .order("opened_at", { ascending: false })
       .limit(500);
@@ -456,9 +493,20 @@ export const listDisputes = createServerFn({ method: "GET" })
       evidence_due_by: string | null;
       stripe_dispute_id: string | null;
       stripe_charge_id: string | null;
+      stripe_customer_id: string | null;
     }>;
 
-    const userIds = Array.from(new Set(disputes.map((d) => d.user_id).filter(Boolean) as string[]));
+    const customerIds = Array.from(
+      new Set(disputes.map((d) => d.stripe_customer_id).filter(Boolean) as string[]),
+    );
+    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(
+      new Set<string>([
+        ...(disputes.map((d) => d.user_id).filter(Boolean) as string[]),
+        ...Array.from(customerToUser.values()),
+      ]),
+    );
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -476,21 +524,25 @@ export const listDisputes = createServerFn({ method: "GET" })
       } catch { /* best effort */ }
     }
 
-    return disputes.map((d) => ({
-      id: d.id,
-      openedAt: d.opened_at,
-      userId: d.user_id,
-      email: d.user_id ? emailMap.get(d.user_id) ?? null : null,
-      fullName: d.user_id ? profMap.get(d.user_id) ?? null : null,
-      reason: d.reason,
-      amountPence: d.amount_pence ?? 0,
-      currency: d.currency ?? "gbp",
-      status: d.status,
-      lifecycleStage: d.lifecycle_stage,
-      evidenceDueBy: d.evidence_due_by,
-      stripeDisputeId: d.stripe_dispute_id,
-      stripeChargeId: d.stripe_charge_id,
-    }));
+    return disputes.map((d) => {
+      const resolvedUserId =
+        d.user_id ?? (d.stripe_customer_id ? customerToUser.get(d.stripe_customer_id) ?? null : null);
+      return {
+        id: d.id,
+        openedAt: d.opened_at,
+        userId: resolvedUserId,
+        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
+        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
+        reason: d.reason,
+        amountPence: d.amount_pence ?? 0,
+        currency: d.currency ?? "gbp",
+        status: d.status,
+        lifecycleStage: d.lifecycle_stage,
+        evidenceDueBy: d.evidence_due_by,
+        stripeDisputeId: d.stripe_dispute_id,
+        stripeChargeId: d.stripe_charge_id,
+      };
+    });
   });
 
 // ---------------------------------------------------------------------------
@@ -524,15 +576,31 @@ export const listRefunds = createServerFn({ method: "POST" })
     const sinceIso = new Date(Date.now() - data.rangeDays * 86_400_000).toISOString();
     const { data: rows } = await supabaseAdmin
       .from("payment_events")
-      .select("id, created_at, user_id, payload")
+      .select("id, created_at, user_id, payload, stripe_customer_id")
       .eq("event_type", "charge.refunded")
       .gte("created_at", sinceIso)
       .order("created_at", { ascending: false })
       .limit(data.limit);
 
-    const events = (rows ?? []) as Array<{ id: string; created_at: string; user_id: string | null; payload: any }>;
+    const events = (rows ?? []) as Array<{
+      id: string;
+      created_at: string;
+      user_id: string | null;
+      payload: any;
+      stripe_customer_id: string | null;
+    }>;
 
-    const userIds = Array.from(new Set(events.map((e) => e.user_id).filter(Boolean) as string[]));
+    const customerIds = Array.from(
+      new Set(events.map((e) => e.stripe_customer_id).filter(Boolean) as string[]),
+    );
+    const customerToUser = await resolveUsersByCustomerIds(supabaseAdmin, customerIds);
+
+    const userIds = Array.from(
+      new Set<string>([
+        ...(events.map((e) => e.user_id).filter(Boolean) as string[]),
+        ...Array.from(customerToUser.values()),
+      ]),
+    );
     const profMap = new Map<string, string | null>();
     const emailMap = new Map<string, string | null>();
     if (userIds.length) {
@@ -552,12 +620,14 @@ export const listRefunds = createServerFn({ method: "POST" })
 
     return events.map((e) => {
       const obj = e.payload?.data?.object ?? {};
+      const resolvedUserId =
+        e.user_id ?? (e.stripe_customer_id ? customerToUser.get(e.stripe_customer_id) ?? null : null);
       return {
         id: e.id,
         createdAt: e.created_at,
-        userId: e.user_id,
-        email: e.user_id ? emailMap.get(e.user_id) ?? null : null,
-        fullName: e.user_id ? profMap.get(e.user_id) ?? null : null,
+        userId: resolvedUserId,
+        email: resolvedUserId ? emailMap.get(resolvedUserId) ?? null : null,
+        fullName: resolvedUserId ? profMap.get(resolvedUserId) ?? null : null,
         amountPence: obj.amount_refunded ?? obj.amount ?? 0,
         currency: obj.currency ?? "gbp",
         reason: obj.refunds?.data?.[0]?.reason ?? null,
