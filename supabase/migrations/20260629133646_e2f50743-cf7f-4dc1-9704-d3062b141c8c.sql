@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.recompute_pro_verification(uuid) TO authenticated, service_role;
