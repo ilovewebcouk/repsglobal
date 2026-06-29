@@ -48,6 +48,7 @@ export type ShopFrontDTO = {
     activeCredentialsCount: number;
     lastCheckedAt: string | null;
     identityVerifiedAt: string | null;
+    qualifiedSinceYear: number | null;
     items: Array<{
       kind: "qualification" | "insurance";
       title: string;
@@ -201,6 +202,17 @@ async function fetchTrustSummary(
     });
   }
 
+  const qualifiedYears = approved
+    .map((s) => {
+      if (s.issue_date) {
+        const d = new Date(s.issue_date);
+        if (!isNaN(d.getTime())) return d.getFullYear();
+      }
+      return s.year ?? null;
+    })
+    .filter((y): y is number => typeof y === "number" && y > 1900);
+  const qualifiedSinceYear = qualifiedYears.length ? Math.min(...qualifiedYears) : null;
+
   return {
     isVerified: idApproved && insActive && approved.length > 0,
     primaryTitleSlug,
@@ -208,6 +220,7 @@ async function fetchTrustSummary(
     activeCredentialsCount: approved.length,
     lastCheckedAt: reviewedDates.at(-1) ?? null,
     identityVerifiedAt: (pro as { identity_verified_at: string | null } | null)?.identity_verified_at ?? null,
+    qualifiedSinceYear,
     items,
   };
 
