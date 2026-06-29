@@ -50,7 +50,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.functions";
-import { verifyMemberMatchesProfessionalsRow } from "@/lib/admin/member-row-check.functions";
+
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
 import {
   endMemberTrialNow,
@@ -184,54 +184,6 @@ function MemberPage() {
   );
 }
 
-/* ───────────────── Consistency badge (Member 360 ↔ list) ───────────────── */
-
-function ConsistencyBadge({ userId }: { userId: string }) {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-member-row-check", userId],
-    queryFn: () => verifyMemberMatchesProfessionalsRow({ data: { user_id: userId } }),
-    staleTime: 30_000,
-  });
-
-  if (isLoading || isError || !data) return null;
-
-  const fmt = (iso: string | null) =>
-    iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
-
-  if (data.match) {
-    return (
-      <div className="mt-2 inline-flex items-center gap-1.5 rounded-[8px] border border-emerald-400/25 bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-300">
-        <CheckCircle2 className="size-3.5" />
-        <span className="font-medium">Matches professionals list</span>
-        <span className="text-emerald-300/70">· renewal {fmt(data.member360.renewal_date)} · {data.member360.pill_text}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="mt-2 inline-flex max-w-full flex-col gap-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-200"
-      role="status"
-      aria-live="polite"
-    >
-      <div className="inline-flex items-center gap-1.5 font-semibold">
-        <Clock className="size-3.5" />
-        Doesn’t match professionals list ({data.mismatches.join(", ")})
-      </div>
-      <div className="grid grid-cols-1 gap-x-4 gap-y-0.5 text-amber-100/85 sm:grid-cols-2">
-        <div>
-          <span className="text-amber-100/55">List:</span>{" "}
-          {data.list.pill_text} · renewal {fmt(data.list.renewal_date)}
-          {data.list.renewal_date_source ? ` (${data.list.renewal_date_source})` : ""}
-        </div>
-        <div>
-          <span className="text-amber-100/55">Member 360:</span>{" "}
-          {data.member360.pill_text} · renewal {fmt(data.member360.renewal_date)}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ───────────────────────── Sticky header ───────────────────────── */
 
@@ -279,48 +231,26 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
           </div>
           <div className="truncate text-[13px] text-white/45">{email ?? "no email on file"}</div>
           <div className="flex flex-wrap items-center gap-1.5">
-            {verification === "verified" && (
-              <Badge variant="outline" className="h-6 border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
-                <ShieldCheck data-icon="inline-start" /> Verified
-              </Badge>
-            )}
             {tierLbl && (
-              <Badge variant="outline" className="h-6 border-reps-orange-border bg-reps-orange/10 text-reps-orange">
+              <span className="inline-flex items-center rounded-full border border-reps-orange-border bg-reps-orange/10 px-2 py-0.5 text-[11px] font-semibold text-reps-orange">
                 {tierLbl}
-              </Badge>
+              </span>
             )}
-            {hasSub && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  "h-6",
-                  sub.has_active_entitlement && status === "trialing" && "border-sky-400/30 bg-sky-500/15 text-sky-200",
-                  sub.has_active_entitlement && status === "active" && "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
-                  status === "past_due" && "border-amber-400/30 bg-amber-500/15 text-amber-300",
-                  (status === "canceled" || status === "unpaid") && "border-rose-400/30 bg-rose-500/15 text-rose-300",
-                )}
-              >
-                {sub.display_status_label}
-                {sub.trial_days_left != null ? ` · ${sub.trial_days_left}d left` : ""}
-              </Badge>
+            {status === "trialing" && (
+              <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                Trial{sub.trial_days_left != null ? ` · ${sub.trial_days_left}d left` : ""}
+              </span>
             )}
-            {cancelAt && (
-              <Badge variant="outline" className="h-6 border-rose-400/30 bg-rose-500/10 text-rose-200">
-                Cancels {fmtDate(cancelAt)}
-              </Badge>
-            )}
-            {!hasSub && (
-              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
-                No active subscription
-              </Badge>
-            )}
-            {!is_published && (
-              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
-                Unpublished
-              </Badge>
+            {verification === "verified" ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                <CheckCircle2 className="h-3 w-3" /> Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full border border-reps-border bg-reps-panel/60 px-2 py-0.5 text-[11px] font-semibold text-white/65">
+                Unverified
+              </span>
             )}
           </div>
-          <ConsistencyBadge userId={snapshot.user_id} />
         </div>
 
 
