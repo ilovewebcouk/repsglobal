@@ -229,11 +229,7 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
                 )}
               >
                 {sub.display_status_label}
-              </Badge>
-            )}
-            {hasSub && sub.display_renewal_label && (
-              <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/70">
-                {sub.display_renewal_label}
+                {sub.trial_days_left != null ? ` · ${sub.trial_days_left}d left` : ""}
               </Badge>
             )}
             {cancelAt && (
@@ -244,25 +240,6 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
             {!hasSub && (
               <Badge variant="outline" className="h-6 border-reps-border bg-reps-panel/60 text-white/55">
                 No active subscription
-              </Badge>
-            )}
-            {/* Source badge — neutral for stripe-live and local-mirror; amber only for true mismatch. */}
-            {hasSub && !hasDiscrepancy && (
-              <Badge
-                variant="outline"
-                className="h-6 border-reps-border bg-reps-panel/60 text-white/55"
-                title={sub.fallback_reason ?? "Live Stripe data"}
-              >
-                {sub.source === "stripe-live" ? "Stripe live" : "Local mirror"}
-              </Badge>
-            )}
-            {hasSub && hasDiscrepancy && (
-              <Badge
-                variant="outline"
-                className="h-6 border-amber-400/30 bg-amber-500/15 text-amber-200"
-                title={`Mismatch: ${sub.discrepancies.join(", ")}`}
-              >
-                Source mismatch
               </Badge>
             )}
             {!is_published && (
