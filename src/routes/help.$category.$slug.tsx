@@ -20,7 +20,7 @@ export const Route = createFileRoute("/help/$category/$slug")({
   head: ({ params }) => {
     const article = getArticle(params.category, params.slug);
     if (!article) return { meta: [] };
-    const canonical = `https://repsglobal.lovable.app/help/${article.category}/${article.slug}`;
+    const canonical = `https://repsuk.org/help/${article.category}/${article.slug}`;
     const title = `${article.title} — REPS Help`;
     const desc = article.summary;
     const ld: Record<string, unknown>[] = [

@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { HeadToHeadPage } from "@/components/marketing/HeadToHead";
 import trainerizeHero from "@/assets/compare/reps-vs-trainerize-hero.jpg";
 
-const URL = "https://repsglobal.lovable.app/compare/reps-vs-trainerize";
+const URL = "https://repsuk.org/compare/reps-vs-trainerize";
 const TITLE = "Trainerize Alternative for Personal Trainers — REPS vs Trainerize (2026)";
 const DESC =
   "Honest comparison of REPS and Trainerize for personal trainers. Pricing, client limits, hidden add-ons (Stripe Payments, nutrition, branded app) and feature parity, side-by-side.";

@@ -5,7 +5,7 @@ import { PublicHeader } from"@/components/public/PublicHeader";
 import { PublicFooter } from"@/components/public/PublicFooter";
 import { DATA_VERIFIED_DATE } from"@/data/competitor-data";
 
-const URL ="https://repsglobal.lovable.app/comparison-methodology";
+const URL ="https://repsuk.org/comparison-methodology";
 const TITLE ="Comparison Methodology — How REPS Compares Competitor Software";
 const DESC =
 "How REPS compiles, reviews and maintains its competitor comparisons. Based on publicly available information, with a stated 'last checked' date and an open correction-request process.";

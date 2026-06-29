@@ -38,11 +38,10 @@ const heroSpecialisms = heroSpecialismsAsset.url;
 /* Page head                                                           */
 /* ------------------------------------------------------------------ */
 
-const CANONICAL ="https://repsglobal.lovable.app/specialisms";
-const META_TITLE =
-"Specialisms — verified personal trainers, coaches & nutritionists | REPS";
+const CANONICAL ="https://repsuk.org/specialisms";
+const META_TITLE ="Specialisms — verified trainers & coaches | REPS";
 const META_DESC =
-"Browse every REPS specialism — personal trainers, strength coaches, online coaches, nutritionists, yoga teachers and Pilates instructors. Every listing is identity-checked, qualification-verified and insured.";
+"Browse every REPS specialism: personal trainers, strength coaches, online coaches, nutritionists, yoga and Pilates. Every listing is identity-checked, qualified and insured.";
 
 export const Route = createFileRoute("/specialisms")({
   head: () => ({
@@ -78,7 +77,7 @@ function SPEC_LIST_FOR_JSONLD() {
 "@type":"ListItem",
     position: i + 1,
     name: s.plural,
-    url: `https://repsglobal.lovable.app/professions/${s.slug}`,
+    url: `https://repsuk.org/professions/${s.slug}`,
   }));
 }
 

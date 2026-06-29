@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { HeadToHeadPage } from "@/components/marketing/HeadToHead";
 import ptDistinctionHero from "@/assets/compare/reps-vs-pt-distinction-hero.jpg";
 
-const URL = "https://repsglobal.lovable.app/compare/reps-vs-pt-distinction";
+const URL = "https://repsuk.org/compare/reps-vs-pt-distinction";
 const TITLE = "PT Distinction Alternative — REPS vs PT Distinction (2026)";
 const DESC =
   "Honest comparison of REPS and PT Distinction for personal trainers. Pricing, per-client charges, feature density (AI Program Builder, Smart Meal Planner) and where each platform wins.";

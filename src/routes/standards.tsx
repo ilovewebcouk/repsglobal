@@ -26,7 +26,7 @@ import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 import { FinalCta } from "@/components/marketing/FinalCta";
 
-const CANONICAL = "https://repsglobal.lovable.app/standards";
+const CANONICAL = "https://repsuk.org/standards";
 const META_TITLE = "REPS Standards — Code of Conduct & Verification";
 const META_DESC =
   "The conduct, verification and qualification standards every professional listed on REPS is held to — and how concerns are raised and acted on.";

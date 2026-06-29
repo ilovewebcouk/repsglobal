@@ -183,9 +183,9 @@ export const Route = createFileRoute("/features/visibility")({
 "Be found before clients choose who to contact. Verified profile, reviews, directory placement and specialism pages.",
       },
       { property:"og:image", content: heroVisibility.url },
-      { property:"og:url", content:"https://repsglobal.lovable.app/features/visibility" },
+      { property:"og:url", content:"https://repsuk.org/features/visibility" },
     ],
-    links: [{ rel:"canonical", href:"https://repsglobal.lovable.app/features/visibility" }],
+    links: [{ rel:"canonical", href:"https://repsuk.org/features/visibility" }],
   }),
   component: VisibilityPage,
 });

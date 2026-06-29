@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { HeadToHeadPage } from "@/components/marketing/HeadToHead";
 import mypthubHero from "@/assets/compare/reps-vs-mypthub-hero.jpg";
 
-const URL = "https://repsglobal.lovable.app/compare/reps-vs-mypthub";
+const URL = "https://repsuk.org/compare/reps-vs-mypthub";
 const TITLE = "MyPTHub Alternative — REPS vs MyPTHub for Personal Trainers (2026)";
 const DESC =
   "Honest comparison of REPS and MyPTHub for personal trainers. Pricing, client limits, hidden add-ons (branded app, Check-Ins AI, extra trainers) and full feature parity.";
