@@ -257,6 +257,8 @@ function ShopFrontEditorPage() {
             </Field>
           </PPanel>
 
+          <WebsiteContentEditor />
+
           {isPro ? (
             <ServicesEditor
               services={services}
