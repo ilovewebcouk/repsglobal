@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       // Google Search Console META verification
-      { name: "google-site-verification", content: "p-lx33rcSWVnBeZd4OwPJ-MW6wVU6Y2rg8AOoNUbiDU" },
+      { name: "google-site-verification", content: "rqmYYMqMbSi3mFFqyF3RkDISQmBBeaWycJ-vdq4atdg" },
       // NOTE: no og:image / twitter:image at the root — root-level images concatenate into every
       // match and override per-page share previews. Leaf routes own their own og:image.
       { property: "og:title", content: "REPS — The professional standard for fitness" },
