@@ -415,7 +415,7 @@ function IdRow({ label, value, href, internal }: { label: string; value: string 
 }
 
 
-function BillingPane({ snapshot }: { snapshot: Member360Snapshot }) {
+function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId: string }) {
   const sub = snapshot.subscription;
 
   if (sub.source === "none") {
