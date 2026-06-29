@@ -1,52 +1,55 @@
-## Problem
 
-There are **57 professionals without a live Stripe subscription** showing as "Plan: Free" in `/admin/professionals`. 
+# Delete `/admin/ops` — Full Purge
 
-- **52 are BD legacy imports** who never completed Stripe conversion  
-  - 22 have a recorded `legacy_stripe_link.access_expires_at` in the past (fully expired)  
-  - 27 have no expiry recorded (effectively expired — no Stripe linkage ever completed)  
-  - 3 are still inside their honoured BD access window (future-dated `access_expires_at`)
-- **5 are non-BD** (admin account, demo account, test signups — these stay)
+## Verdict
+`/admin/ops` is dead weight post-BD-migration. Delete it. Keep only the **Alerts banner** and **System status strip** by lifting them onto `/admin` (Overview).
 
-These 49 expired accounts should not exist on the platform at all. The public visibility gate already hides them from search, but they clutter the admin register.
+## What gets deleted
 
-## Plan
+**Routes (9 files):**
+- `src/routes/admin_.ops.tsx` (hub)
+- `src/routes/admin_.ops.activity.tsx`
+- `src/routes/admin_.ops.customer.tsx`
+- `src/routes/admin_.ops.platform.tsx`
+- `src/routes/admin_.ops.email.tsx`
+- `src/routes/admin_.ops.alerts.tsx`
+- `src/routes/admin_.ops.member.$userId.tsx` (replaced by `/admin/members/$userId` M360)
 
-### 1. Identify the exact 49 user IDs to delete
-Query the canonical set:
-- BD-claimed professionals (`bd_member_seed.claimed_user_id IS NOT NULL`)
-- With NO active/trialing/past_due subscription in `public.subscriptions`
-- With `legacy_stripe_link.access_expires_at <= now()` OR `access_expires_at IS NULL`
-- Exclude `cruz.pt@icloud.com` (sole admin), `demo-verified@repsuk.org`, and any `email_confirmed_at IS NULL` test signups from the deletion set
+**Component folder:**
+- `src/components/ops/` — `OpsSubNav`, `SystemStatusStrip`, `MemberFinder`, `source-pill`, etc.
+  - **Lift before delete:** `SystemStatusStrip`, `MemberFinder`, alerts banner → move to `src/components/admin/`
 
-### 2. Build a safe batch-deletion server function
-Create `src/lib/admin/batch-cleanup.functions.ts`:
-- Accepts a list of `user_id`s + a single `reason: "admin_delete"`
-- For each ID, calls the **existing** `cancelAndDeleteMember` canonical function (already handles Stripe cancel → archive email → delete auth user → audit log)
-- Since these 49 have **no live Stripe subscription**, `cancelAndDeleteMember` will skip Stripe cancellation (no sub to cancel), archive the contact, send the "member-cancelled" email, delete the auth user, and write the audit log
-- Returns a report: `deleted: string[]`, `failed: {user_id, error}[]`
-- Rate-limit internally (max 5/sec) to avoid hammering auth or Mailgun
+**Server-fn folder:**
+- `src/lib/ops/` — `operations.functions`, `activity.functions`, `timeline.functions`, `system-status.functions`
+  - **Keep:** `system-status.functions` (move to `src/lib/admin/`) and `operations.functions`'s `getOpenAlerts` / `runAlertEvaluator` (move to `src/lib/admin/alerts.functions.ts`)
+  - **Delete:** `activity`, `timeline`, `customer-health` server fns + their DB-touching helpers
 
-### 3. Run the batch (admin-protected)
-Call the batch fn from the admin surface with the 49 IDs. Log the full result to `admin_audit_log`.
+**API route:**
+- `src/routes/api/public/ops/alert-dispatch.ts` — keep (cron-called); rename folder to `src/routes/api/public/alerts/` for clarity, or leave path stable to avoid breaking pg_cron
 
-### 4. Verify
-Re-query the database to confirm:
-- The 49 IDs no longer appear in `auth.users`, `profiles`, `professionals`
-- The 3 still-in-window BD pros remain untouched
-- The admin Professionals KPI count drops from 391 → 342 (or 391 → 342 + 3 grace-period = 345)
+## What gets lifted to `/admin` Overview
 
-### 5. (Optional) Add a "No subscription" filter chip to `/admin/professionals`
-So any future edge cases can be found and actioned without a manual query.
+1. **Alerts banner** at top (the green "All systems normal" / red "N open alerts" strip with Re-evaluate button)
+2. **System status strip** (5 tiles: Stripe, Mailgun, Cron, DB, Queues) below the KPI cards
+3. **MemberFinder** stays pinned in the top bar (already there)
 
-## Safety
+Member 360 (`/admin/members/$userId`) already replaces the Ops member timeline — no work needed.
 
-- The canonical `cancelAndDeleteMember` already archives the email to `mailing_list_contacts` before deletion, so the contact is not lost for future campaigns.
-- It already sends a cancellation email via Mailgun.
-- It already writes an admin audit log entry.
-- No schema changes required.
-- The 3 BD pros still in their honoured window are explicitly excluded from the batch query.
+## Sidebar update
+Remove the "Operations" nav entry from `DashboardShell` admin nav.
 
-## Deliverable
+## Cron / external dependencies
+- `pg_cron` calls `alert-dispatch` API route — keep path stable or update the cron job in the same migration
+- Alert evaluator stays running; just the UI moves
 
-49 expired BD legacy pros permanently removed from the platform. Admin register reflects only paying members + the 3 still in grace period.
+## Out of scope
+- Renaming/deleting the `ops_alerts` table (keep — the alert system still runs)
+- Touching `/admin/billing`, `/admin/members/$userId`, or Overview KPI logic
+
+## Risk
+Low. Ops is a UI-only layer over already-running cron jobs and other admin pages. Only risk is the `alert-dispatch` cron URL — handled by keeping the path.
+
+## Confirmation needed before build
+1. Confirm: delete all 7 Ops routes + `components/ops/` + `lib/ops/` (lifting only alerts + system-status + MemberFinder)?
+2. Confirm: lift alerts banner + system status strip onto `/admin` Overview (top of page)?
+3. Keep `alert-dispatch` API path stable (don't break pg_cron) — yes?
