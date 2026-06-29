@@ -39,6 +39,8 @@ export type ShopFrontDTO = {
   avatar_url: string | null;
   headline: string | null;
   primary_profession: string | null;
+  /** Display-ready professional titles in priority order, e.g. ["Personal Trainer", "Nutrition Coach"]. */
+  titles: string[];
   specialisms: string[];
   city: string | null;
   in_person_available: boolean;
@@ -155,6 +157,31 @@ function buildSocials(row: {
   if (li) out.push({ kind: "website", href: toUrl(li, "https://linkedin.com/in/"), label: "LinkedIn" });
   return out;
 }
+
+import { getTitle } from "@/lib/cpd/titles-catalog";
+
+/**
+ * Resolve display-ready title labels for a pro, in priority order
+ * (primary, then secondary if different). Falls back to an empty list
+ * if neither slug maps to a known title.
+ */
+function buildTitleLabels(
+  primarySlug: string | null | undefined,
+  secondarySlug: string | null | undefined,
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const slug of [primarySlug, secondarySlug]) {
+    if (!slug) continue;
+    const entry = getTitle(slug as never);
+    if (!entry) continue;
+    if (seen.has(entry.slug)) continue;
+    seen.add(entry.slug);
+    out.push(entry.label);
+  }
+  return out;
+}
+
 
 
 
@@ -318,7 +345,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
 
       )
       .eq("slug", data.slug)
@@ -406,6 +433,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         avatar_url: prof?.avatar_url ?? null,
         headline: pro.headline,
         primary_profession: pro.primary_profession,
+        titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
         specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
         city: pro.city,
         in_person_available: !!pro.in_person_available,
@@ -436,9 +464,9 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       await Promise.all([
         supabaseAdmin
           .from("professionals")
-          .select(
-            "id, slug, headline, primary_profession, primary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
-          )
+      .select(
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+      )
           .eq("id", userId)
           .maybeSingle(),
         supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
@@ -515,6 +543,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           avatar_url: prof?.avatar_url ?? null,
           headline: pro.headline,
           primary_profession: pro.primary_profession,
+          titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
           specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
           city: pro.city,
           in_person_available: !!pro.in_person_available,
