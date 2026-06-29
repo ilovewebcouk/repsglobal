@@ -13,6 +13,7 @@ import { RenewalEngineCard } from "@/components/ops/RenewalEngineCard";
 import { SiteTimePanel } from "@/components/ops/SiteTimePanel";
 import { BdRailSwapCard } from "@/components/ops/BdRailSwapCard";
 import { BdSetupLinkCard } from "@/components/ops/BdSetupLinkCard";
+import { PriceIdBackfillCard } from "@/components/ops/PriceIdBackfillCard";
 
 const drillEnum = z.enum([
   "payments_today", "refunds_today", "failed_active",
