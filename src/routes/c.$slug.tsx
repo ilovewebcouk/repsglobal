@@ -107,7 +107,35 @@ type Coach = {
     href: string;
     label: string;
   }[];
+  trust?: {
+    isVerified: boolean;
+    primaryTitleSlug: string | null;
+    insuranceExpiry: string | null;
+    activeCredentialsCount: number;
+    lastCheckedAt: string | null;
+  };
 };
+
+const TITLE_SHORT_LABEL: Record<string, string> = {
+  "personal-trainer": "Level 3 PT",
+  "advanced-personal-trainer": "Level 4 PT",
+  "fitness-instructor": "Level 2 FI",
+  "group-fitness-instructor": "Level 2 GFI",
+  "pilates-instructor": "Level 3 Pilates",
+  "yoga-teacher": "Level 3 Yoga",
+  "strength-coach": "Level 4 S&C",
+  "nutrition-coach": "Level 4 Nutrition",
+  "accredited-sc-coach": "ASCC",
+  "registered-nutritionist": "Registered Nutritionist",
+  "registered-dietitian": "Registered Dietitian",
+};
+
+function formatMonthYear(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+}
 
 const COACHES: Record<string, Coach> = {
   "james-wilson": {
