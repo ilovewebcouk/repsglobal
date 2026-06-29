@@ -387,7 +387,9 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           coaching_since_year: coachingSinceYear,
           tier,
           trust,
+          socials: buildSocials(pro as any),
         }
+
       : null;
 
     return { shopFront, services: (services ?? []) as ServiceDTO[] };
