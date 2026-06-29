@@ -36,6 +36,8 @@ import { getMember360 } from "@/lib/admin/member360.functions";
 import { getMemberTimeline, type TimelineSource } from "@/lib/ops/timeline.functions";
 
 export const Route = createFileRoute("/admin_/v2/members/$userId")({
+  ssr: false,
+  beforeLoad: requireRole(["admin"]),
   head: () => ({ meta: [{ title: "Member 360 — REPs Admin v2" }] }),
   component: Member360Page,
 });
