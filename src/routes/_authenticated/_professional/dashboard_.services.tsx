@@ -182,9 +182,30 @@ function ServicesPage() {
             </div>
           </PPanel>
 
-          {/* 03 — Service cards (Verified + Pro). Up to 3 cards shown on your
-              public profile and in the enquire form. */}
-          <ServiceCardsEditor tier={tier} />
+          {/* 03 — Service cards have moved to your Website */}
+          <PPanel className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-display text-[16px] font-semibold text-white">
+                  Service cards
+                </h2>
+                <p className="mt-1 text-[13px] text-white/55">
+                  Service packages, pricing and bullets now live on your Website editor — alongside
+                  your hero, method and FAQs.
+                </p>
+              </div>
+              <span className="rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold text-reps-orange">
+                03
+              </span>
+            </div>
+            <Link
+              to="/dashboard/shop-front"
+              className="mt-4 inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
+            >
+              Open Website editor →
+            </Link>
+          </PPanel>
+
         </div>
 
         {/* Live preview */}
