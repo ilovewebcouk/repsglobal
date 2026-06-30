@@ -349,18 +349,18 @@ async function ensureDefaultServices(
 ): Promise<ServiceRow[]> {
   const existing = [...(existingRows ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
-  const legacyBadDefault = existing.find((row) => {
+  const legacyBadDefaults = existing.filter((row) => {
     const title = row.title.trim().toLowerCase();
     const description = (row.description ?? "").trim().toLowerCase();
     return (
-      row.sort_order === 0 &&
       title === "personal training at home" &&
-      (description.includes("3 sessions a week") || row.price_label === "£28.33")
+      (description.includes("sessions a week") || description.includes("per 4 week block") || ["£28.33", "£32.50", "£38"].includes(row.price_label ?? ""))
     );
   });
 
-  if (legacyBadDefault) {
-    const card = DEFAULT_SERVICE_CARDS[0];
+  for (const legacyBadDefault of legacyBadDefaults) {
+    const slot = Math.max(0, Math.min(DEFAULT_SERVICE_CARDS.length - 1, legacyBadDefault.sort_order ?? 0));
+    const card = DEFAULT_SERVICE_CARDS[slot];
     const { error } = await supabaseAdmin
       .from("services")
       .update({
