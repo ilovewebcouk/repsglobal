@@ -11,6 +11,7 @@ import {
   type ShopFrontFaqDTO,
   type ShopFrontTransformationDTO,
 } from "@/lib/shop-front/shop-front.functions";
+import { DEFAULT_SERVICE_CARDS } from "@/lib/shop-front/default-services";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import {
   ArrowRight,
@@ -68,11 +69,11 @@ type Tier = {
 
 function priceUnitLabel(u: string | null | undefined): string | null {
   switch (u) {
-    case "per_session": return "per session";
-    case "per_month": return "per month";
-    case "per_week": return "per week";
-    case "per_block": return "per block";
-    case "per_hour": return "per hour";
+    case "per_session": return "/ session";
+    case "per_month": return "/ month";
+    case "per_week": return "/ week";
+    case "per_block": return "/ block";
+    case "per_hour": return "/ hour";
     case "total": return "total";
     case "from": return "from";
     case "custom": return "";
@@ -395,63 +396,21 @@ function mergeLiveIntoCoach(
   faqs: ShopFrontFaqDTO[] = [],
 ): Coach {
   const liveTiers: Tier[] = services.length === 0
-    ? [
-        {
-          slug: "placeholder-online",
-          name: "Online Coaching",
-          eyebrow: "Remote",
-          price: "£160",
-          unit: "per month",
-          blurb: "For people who train themselves but want a coach in their corner.",
-          includes: [
-            "Fully bespoke programme in-app",
-            "Weekly written check-in & adjustments",
-            "Unlimited messaging (Mon–Fri)",
-            "Video form reviews",
-            "Quarterly strategy call",
-          ],
-          highlight: false,
-          ctaLabel: "Enquire about Online Coaching",
-        },
-        {
-          slug: "placeholder-hybrid",
-          name: "Hybrid Coaching",
-          eyebrow: "Most popular",
-          price: "£240",
-          unit: "per month",
-          blurb: "The full programme — two in-person sessions a month, online the rest.",
-          includes: [
-            "Everything in Online Coaching",
-            "2× in-person sessions per month",
-            "Movement screen & progress reviews",
-            "Body composition tracking",
-            "Priority response time",
-          ],
-          highlight: true,
-          ctaLabel: "Start with Hybrid",
-        },
-        {
-          slug: "placeholder-inperson",
-          name: "1-to-1 In Person",
-          eyebrow: "Hands-on",
-          price: "From £75",
-          unit: "per session",
-          blurb: "Train with me in central London. Programming, coaching and accountability in one room.",
-          includes: [
-            "60-minute sessions at Third Space or BXR",
-            "Bespoke programme outside sessions",
-            "Nutrition & recovery rails",
-            "Direct messaging access",
-            "Block discount available (10+ sessions)",
-          ],
-          highlight: false,
-          ctaLabel: "Enquire about 1-to-1 In Person",
-        },
-      ]
+    ? DEFAULT_SERVICE_CARDS.map((card) => ({
+        slug: `default-${card.sort_order}`,
+        name: card.title,
+        eyebrow: card.is_featured ? "Most popular" : card.mode === "online" ? "Remote" : card.mode === "hybrid" ? "Hybrid" : "Hands-on",
+        price: card.price_label,
+        unit: priceUnitLabel(card.price_unit) ?? "",
+        blurb: card.description,
+        includes: card.bullets,
+        highlight: card.is_featured,
+        ctaLabel: card.cta_label,
+      }))
     : services.map((s, i) => ({
         slug: s.id,
         name: s.title,
-        eyebrow: s.is_featured ? "Most popular" : s.mode === "online" ? "Online" : s.mode === "hybrid" ? "Hybrid" : "In person",
+        eyebrow: s.is_featured ? "Most popular" : s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on",
         price: s.price_label ?? (s.price_pence != null ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"),
         unit: priceUnitLabel(s.price_unit) ?? (s.duration_minutes ? `${s.duration_minutes} min` : "per session"),
         blurb: s.description ?? "",
