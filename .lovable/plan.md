@@ -1,41 +1,37 @@
+# Fix Core pricing card + QA Stripe
+
 ## Problem
+On the pricing page, toggling **Monthly** shows Core as **£8.25 / per month · Billed monthly · cancel anytime**. Core is annual-only (£99/yr). The card should show the **same £99 billed yearly** view regardless of which billing toggle is active. Pro/Studio continue to flip monthly ↔ annual as today.
 
-Two issues on the legacy catch-all (`src/routes/$.tsx`):
+Separately, Stripe prices were edited recently and need to be reverted/verified so `verified_annual` is back to £99/yr (one-off annual, no monthly Core SKU).
 
-1. **Colors are broken.** `GonePage` renders white text on the site's default body background. The body uses `var(--color-background)` which is `--reps-ivory` (cream) in light mode — we never apply a `dark` class on `<html>`, so anywhere a route forgets to set its own dark surface, you get white-on-cream. That's exactly what the screenshot shows: orange eyebrow + cream bg + invisible white body text and faded buttons.
+## Frontend fix (src/components/pricing/pricing-data.ts)
+Update the `verified` plan so both `monthly` and `annual` views render the canonical annual offer:
 
-2. **Redirects aren't firing for some legacy URLs.** The catch-all calls `resolveLegacyPath` → checks `legacy_redirects` table → falls back to fuzzy slug match on `professionals.slug`. When a row exists but `resolved_to_slug` is `null` (chain-resolve couldn't match the destination to a live pro at import time), we 410 even when the pro is now live on the new site. We never re-run chain-resolve after new pros publish, so the table goes stale.
+```ts
+pricing: {
+  monthly: { price: "£99", period: "per year", meta: "Billed yearly · cancel anytime" },
+  annual:  { price: "£99", period: "per year", meta: "Billed yearly · cancel anytime" },
+}
+```
 
-## Plan
+No change needed in `PricingPlans.tsx` — it already forces `view = p.pricing.annual` for `tierKey === "verified"`, so once both views match, the card is locked to £99/yr on either toggle. Remove the now-redundant `was`/discount meta if present.
 
-### 1. Fix the 410 page styling
+Compare table row "Live offer" in `COMPARE_GROUPS` already reads `£99/year` — leave as-is.
 
-Wrap `GonePage` in a full-bleed dark surface so it reads correctly regardless of body theme:
+## Stripe QA (read-only first, then revert if drift found)
+1. List active prices on the `verified` product via Stripe API (server-side script or admin tool) and confirm:
+   - lookup_key `verified_annual` → £99.00 GBP, interval `year`, active
+   - lookup_key `verified_legacy_annual` → £34.00 GBP, interval `year`, active (migration honour price — must stay)
+   - No new monthly Core price exists; if one was created in the recent edit, deactivate it.
+2. If `verified_annual` was edited to a different unit_amount, create a fresh £99/yr price, attach lookup_key `verified_annual` (move from the wrong one), and deactivate the bad price. Stripe prices are immutable on amount, so this is the standard swap.
+3. Confirm `src/lib/billing.ts` `CHECKOUT_OFFERS.verified.annual.display` still reads `£99/yr` (it does) and that `getCheckoutOffer("verified","monthly")` correctly returns `null` so the UI can never request a Core monthly checkout.
+4. Sanity-check a Stripe Checkout session creation for `verified_annual` returns £99.00 GBP, one-off annual, no trial.
 
-- Outer `<div className="min-h-screen bg-reps-ink">` wrapping `<main>`.
-- Keep the existing typography; bump `text-white/70` to `text-white/80` for the lede (matches the locked marketing opacity scale).
-- Same treatment for `NotFoundComponent` in `__root.tsx` (same root cause — `bg-background` resolves to cream).
-- Same treatment for `ErrorComponent` in `__root.tsx`.
-
-No new tokens, no design changes — just the missing dark surface.
-
-### 2. Re-run chain-resolve so stale "gone" rows redirect
-
-Add a lightweight admin server fn `rechainLegacyRedirects` in `src/lib/seo/legacy-redirects.functions.ts` that re-walks every existing row against the current `professionals.slug` set and updates `resolved_to_slug`. Same logic as the tail of `importLegacyRedirectsCsv` — extracted so we can run it without re-importing the CSV.
-
-Wire a "Re-run chain resolve" button into `/admin/seo/legacy-redirects` next to the coverage stats. One click rescues every row whose pro has since published.
-
-### 3. Tighten the fallback so live pros never 410
-
-In `resolveLegacyPath`, when a `legacy_redirects` row is found with `resolved_to_slug = null` AND `kind = exercise-professional`, do a live fuzzy lookup against `professionals.slug` (same `slugCandidates` logic the fallback path already uses) BEFORE returning `gone`. If we find a match, redirect AND backfill the row so the next hit is a fast table read.
-
-This makes the redirect layer self-healing — even without clicking the admin button, the first visitor to a stale URL fixes the row for everyone after them.
-
-### 4. QA pass
-
-After shipping, paste the legacy URL from the screenshot (or any sample BD URL) so I can confirm it now 301s instead of 410s, and screenshot the page so we can verify legibility.
+## Technical notes
+- `PricingPlans.tsx` line ~73: `const view = p.pricing[p.tierKey === "verified" ? "annual" : billing];` — already protects Core. Fix is purely in `pricing-data.ts` so the annual view text reads cleanly ("Billed yearly · cancel anytime" instead of the misleading "£99 billed yearly · 2 months free" which implies a monthly equivalent).
+- Stripe price swap procedure: `prices.create` new → `prices.update(old, { lookup_key: null })` → `prices.update(new, { lookup_key: 'verified_annual', transfer_lookup_key: true })` → `prices.update(old, { active: false })`. Existing subscriptions on the old price ID are unaffected.
 
 ## Out of scope
-
-- Changing the global theme (adding `class="dark"` to `<html>`). That's a bigger refactor and would mask other latent contrast bugs on routes that currently happen to work.
-- Editing the curated blog map — those are already correct.
+- Pro/Studio pricing, toggle behaviour, founding badges.
+- Legacy `verified_legacy_annual` £34/yr honour price (must remain for in-flight BD migrations).
