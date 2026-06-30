@@ -323,6 +323,8 @@ export const replyToMyTicket = createServerFn({ method: "POST" })
       .from("support_tickets")
       .select("id, requester_name, requester_email, status")
       .eq("id", data.ticketId)
+      .eq("requester_user_id", context.userId)
+
       .maybeSingle();
     if (tErr) throw new Error(tErr.message);
     if (!ticket) throw new Error("Ticket not found");
