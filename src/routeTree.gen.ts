@@ -89,6 +89,7 @@ import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as AdminChurnRouteImport } from './routes/admin_.churn'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AdminBillingRouteImport } from './routes/admin_.billing'
+import { Route as AdminActivityRouteImport } from './routes/admin_.activity'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
@@ -546,6 +547,11 @@ const AdminBillingRoute = AdminBillingRouteImport.update({
   path: '/admin/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminActivityRoute = AdminActivityRouteImport.update({
+  id: '/admin_/activity',
+  path: '/admin/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedProfessionalRouteRoute =
   AuthenticatedProfessionalRouteRouteImport.update({
     id: '/_professional',
@@ -903,6 +909,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
@@ -1037,6 +1044,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
@@ -1172,6 +1180,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
+  '/admin_/activity': typeof AdminActivityRoute
   '/admin_/billing': typeof AdminBillingRouteWithChildren
   '/admin_/campaigns': typeof AdminCampaignsRoute
   '/admin_/churn': typeof AdminChurnRoute
@@ -1310,6 +1319,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
     | '/admin/churn'
@@ -1444,6 +1454,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
     | '/admin/churn'
@@ -1578,6 +1589,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/verify-email'
     | '/_authenticated/_professional'
+    | '/admin_/activity'
     | '/admin_/billing'
     | '/admin_/campaigns'
     | '/admin_/churn'
@@ -1716,6 +1728,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  AdminActivityRoute: typeof AdminActivityRoute
   AdminBillingRoute: typeof AdminBillingRouteWithChildren
   AdminCampaignsRoute: typeof AdminCampaignsRoute
   AdminChurnRoute: typeof AdminChurnRoute
@@ -2338,6 +2351,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/billing'
       fullPath: '/admin/billing'
       preLoaderRoute: typeof AdminBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/activity': {
+      id: '/admin_/activity'
+      path: '/admin/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_professional': {
@@ -3002,6 +3022,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  AdminActivityRoute: AdminActivityRoute,
   AdminBillingRoute: AdminBillingRouteWithChildren,
   AdminCampaignsRoute: AdminCampaignsRoute,
   AdminChurnRoute: AdminChurnRoute,
