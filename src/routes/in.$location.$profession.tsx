@@ -32,25 +32,106 @@ import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 type CityMeta = { slug: string; name: string; region: string };
 
 const CITIES: Record<string, CityMeta> = {
+  // Capitals / nations
   london: { slug: "london", name: "London", region: "Greater London" },
-  manchester: { slug: "manchester", name: "Manchester", region: "Greater Manchester" },
-  birmingham: { slug: "birmingham", name: "Birmingham", region: "West Midlands" },
   edinburgh: { slug: "edinburgh", name: "Edinburgh", region: "Lothian" },
-  glasgow: { slug: "glasgow", name: "Glasgow", region: "Greater Glasgow" },
-  bristol: { slug: "bristol", name: "Bristol", region: "South West" },
-  leeds: { slug: "leeds", name: "Leeds", region: "West Yorkshire" },
-  liverpool: { slug: "liverpool", name: "Liverpool", region: "Merseyside" },
   cardiff: { slug: "cardiff", name: "Cardiff", region: "South Wales" },
+  belfast: { slug: "belfast", name: "Belfast", region: "Northern Ireland" },
+  // North West
+  manchester: { slug: "manchester", name: "Manchester", region: "Greater Manchester" },
+  liverpool: { slug: "liverpool", name: "Liverpool", region: "Merseyside" },
+  preston: { slug: "preston", name: "Preston", region: "Lancashire" },
+  blackpool: { slug: "blackpool", name: "Blackpool", region: "Lancashire" },
+  bolton: { slug: "bolton", name: "Bolton", region: "Greater Manchester" },
+  warrington: { slug: "warrington", name: "Warrington", region: "Cheshire" },
+  stockport: { slug: "stockport", name: "Stockport", region: "Greater Manchester" },
+  salford: { slug: "salford", name: "Salford", region: "Greater Manchester" },
+  chester: { slug: "chester", name: "Chester", region: "Cheshire" },
+  // North East
   newcastle: { slug: "newcastle", name: "Newcastle", region: "Tyne & Wear" },
-  brighton: { slug: "brighton", name: "Brighton", region: "East Sussex" },
-  nottingham: { slug: "nottingham", name: "Nottingham", region: "East Midlands" },
+  sunderland: { slug: "sunderland", name: "Sunderland", region: "Tyne & Wear" },
+  middlesbrough: { slug: "middlesbrough", name: "Middlesbrough", region: "North Yorkshire" },
+  durham: { slug: "durham", name: "Durham", region: "County Durham" },
+  // Yorkshire & Humber
+  leeds: { slug: "leeds", name: "Leeds", region: "West Yorkshire" },
   sheffield: { slug: "sheffield", name: "Sheffield", region: "South Yorkshire" },
-  oxford: { slug: "oxford", name: "Oxford", region: "Oxfordshire" },
+  bradford: { slug: "bradford", name: "Bradford", region: "West Yorkshire" },
+  hull: { slug: "hull", name: "Hull", region: "East Yorkshire" },
+  york: { slug: "york", name: "York", region: "North Yorkshire" },
+  wakefield: { slug: "wakefield", name: "Wakefield", region: "West Yorkshire" },
+  huddersfield: { slug: "huddersfield", name: "Huddersfield", region: "West Yorkshire" },
+  // West Midlands
+  birmingham: { slug: "birmingham", name: "Birmingham", region: "West Midlands" },
+  coventry: { slug: "coventry", name: "Coventry", region: "West Midlands" },
+  wolverhampton: { slug: "wolverhampton", name: "Wolverhampton", region: "West Midlands" },
+  "stoke-on-trent": { slug: "stoke-on-trent", name: "Stoke-on-Trent", region: "Staffordshire" },
+  solihull: { slug: "solihull", name: "Solihull", region: "West Midlands" },
+  // East Midlands
+  nottingham: { slug: "nottingham", name: "Nottingham", region: "East Midlands" },
+  leicester: { slug: "leicester", name: "Leicester", region: "East Midlands" },
+  derby: { slug: "derby", name: "Derby", region: "East Midlands" },
+  northampton: { slug: "northampton", name: "Northampton", region: "Northamptonshire" },
+  // East of England
   cambridge: { slug: "cambridge", name: "Cambridge", region: "Cambridgeshire" },
+  norwich: { slug: "norwich", name: "Norwich", region: "Norfolk" },
+  ipswich: { slug: "ipswich", name: "Ipswich", region: "Suffolk" },
+  luton: { slug: "luton", name: "Luton", region: "Bedfordshire" },
+  peterborough: { slug: "peterborough", name: "Peterborough", region: "Cambridgeshire" },
+  chelmsford: { slug: "chelmsford", name: "Chelmsford", region: "Essex" },
+  // South East
+  brighton: { slug: "brighton", name: "Brighton", region: "East Sussex" },
+  oxford: { slug: "oxford", name: "Oxford", region: "Oxfordshire" },
+  reading: { slug: "reading", name: "Reading", region: "Berkshire" },
+  "milton-keynes": { slug: "milton-keynes", name: "Milton Keynes", region: "Buckinghamshire" },
+  southampton: { slug: "southampton", name: "Southampton", region: "Hampshire" },
+  portsmouth: { slug: "portsmouth", name: "Portsmouth", region: "Hampshire" },
+  guildford: { slug: "guildford", name: "Guildford", region: "Surrey" },
+  "tunbridge-wells": { slug: "tunbridge-wells", name: "Tunbridge Wells", region: "Kent" },
+  canterbury: { slug: "canterbury", name: "Canterbury", region: "Kent" },
+  maidstone: { slug: "maidstone", name: "Maidstone", region: "Kent" },
+  basingstoke: { slug: "basingstoke", name: "Basingstoke", region: "Hampshire" },
+  crawley: { slug: "crawley", name: "Crawley", region: "West Sussex" },
+  watford: { slug: "watford", name: "Watford", region: "Hertfordshire" },
+  woking: { slug: "woking", name: "Woking", region: "Surrey" },
+  slough: { slug: "slough", name: "Slough", region: "Berkshire" },
+  // South West
+  bristol: { slug: "bristol", name: "Bristol", region: "South West" },
+  bath: { slug: "bath", name: "Bath", region: "Somerset" },
+  plymouth: { slug: "plymouth", name: "Plymouth", region: "Devon" },
+  exeter: { slug: "exeter", name: "Exeter", region: "Devon" },
+  bournemouth: { slug: "bournemouth", name: "Bournemouth", region: "Dorset" },
+  swindon: { slug: "swindon", name: "Swindon", region: "Wiltshire" },
+  gloucester: { slug: "gloucester", name: "Gloucester", region: "Gloucestershire" },
+  cheltenham: { slug: "cheltenham", name: "Cheltenham", region: "Gloucestershire" },
+  // London commuter / Greater London hubs
+  croydon: { slug: "croydon", name: "Croydon", region: "Greater London" },
+  "kingston-upon-thames": { slug: "kingston-upon-thames", name: "Kingston upon Thames", region: "Greater London" },
+  richmond: { slug: "richmond", name: "Richmond", region: "Greater London" },
+  wimbledon: { slug: "wimbledon", name: "Wimbledon", region: "Greater London" },
+  islington: { slug: "islington", name: "Islington", region: "Greater London" },
+  hackney: { slug: "hackney", name: "Hackney", region: "Greater London" },
+  shoreditch: { slug: "shoreditch", name: "Shoreditch", region: "Greater London" },
+  clapham: { slug: "clapham", name: "Clapham", region: "Greater London" },
+  fulham: { slug: "fulham", name: "Fulham", region: "Greater London" },
+  chelsea: { slug: "chelsea", name: "Chelsea", region: "Greater London" },
+  "canary-wharf": { slug: "canary-wharf", name: "Canary Wharf", region: "Greater London" },
+  // Scotland
+  glasgow: { slug: "glasgow", name: "Glasgow", region: "Greater Glasgow" },
+  aberdeen: { slug: "aberdeen", name: "Aberdeen", region: "Aberdeenshire" },
+  dundee: { slug: "dundee", name: "Dundee", region: "Tayside" },
+  stirling: { slug: "stirling", name: "Stirling", region: "Central Scotland" },
+  inverness: { slug: "inverness", name: "Inverness", region: "Highlands" },
+  // Wales
+  swansea: { slug: "swansea", name: "Swansea", region: "South Wales" },
+  newport: { slug: "newport", name: "Newport", region: "South Wales" },
+  wrexham: { slug: "wrexham", name: "Wrexham", region: "North Wales" },
+  // Northern Ireland
+  londonderry: { slug: "londonderry", name: "Londonderry", region: "Northern Ireland" },
+  lisburn: { slug: "lisburn", name: "Lisburn", region: "Northern Ireland" },
 };
 
-export const PROGRAMMATIC_CITY_SLUGS = Object.keys(CITIES);
-export const PROGRAMMATIC_PROFESSION_SLUGS = PROFESSIONS.map((p) => p.slug);
+// Canonical slug lists now live in `@/lib/seo/programmatic-pages` so the
+// sitemap can import them without pulling this route's UI dependencies.
 
 function getCity(slug: string): CityMeta {
   return (
