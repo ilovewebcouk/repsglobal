@@ -330,24 +330,7 @@ function ProfessionInCityPage() {
   const otherProfessions = PROFESSIONS.filter((p) => p.slug !== profession);
   const otherCities = Object.values(CITIES).filter((c) => c.slug !== location);
 
-  const faqs = [
-    {
-      q: `How do I find a ${label.toLowerCase()} in ${city.name}?`,
-      a: `Browse the verified ${plural.toLowerCase()} on this page, open a profile to see services and prices, then message or book directly. Every professional listed has been identity- and qualification-checked by REPS.`,
-    },
-    {
-      q: `How much does a ${label.toLowerCase()} in ${city.name} cost?`,
-      a: `Prices are set by each professional. In ${city.name}, most ${plural.toLowerCase()} list between £45 and £85 per session for in-person work, with online coaching priced separately.`,
-    },
-    {
-      q: `What does REPS-verified mean?`,
-      a: `It means we've checked their identity (via Stripe Identity), confirmed their qualification with the issuing body, and verified active liability insurance. Verification is re-checked annually.`,
-    },
-    {
-      q: `Can I work with a ${label.toLowerCase()} online instead?`,
-      a: `Yes — many ${plural.toLowerCase()} in ${city.name} offer online coaching alongside in-person work. Look for the "Online" badge on each card.`,
-    },
-  ];
+  const faqs = buildFaqs(city.name, label, plural);
 
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
