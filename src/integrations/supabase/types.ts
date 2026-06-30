@@ -1933,6 +1933,36 @@ export type Database = {
           },
         ]
       }
+      legacy_redirects: {
+        Row: {
+          destination_path: string
+          imported_at: string
+          kind: string
+          resolved_to_slug: string | null
+          source_path: string
+          terminal_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          destination_path: string
+          imported_at?: string
+          kind?: string
+          resolved_to_slug?: string | null
+          source_path: string
+          terminal_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          destination_path?: string
+          imported_at?: string
+          kind?: string
+          resolved_to_slug?: string | null
+          source_path?: string
+          terminal_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       legacy_stripe_link: {
         Row: {
           access_expires_at: string | null

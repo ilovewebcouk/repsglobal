@@ -99,6 +99,7 @@ import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
+import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
@@ -591,6 +592,11 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   path: '/checkout/credits/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
+  id: '/admin_/seo/legacy-redirects',
+  path: '/admin/seo/legacy-redirects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
   id: '/admin_/members/$userId',
   path: '/admin/members/$userId',
@@ -919,6 +925,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
+  '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1046,6 +1053,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
+  '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1179,6 +1187,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
+  '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1311,6 +1320,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
+    | '/admin/seo/legacy-redirects'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1438,6 +1448,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
+    | '/admin/seo/legacy-redirects'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1570,6 +1581,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members/$userId'
+    | '/admin_/seo/legacy-redirects'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/lovable/email/suppression'
@@ -1698,6 +1710,7 @@ export interface RootRouteChildren {
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
+  AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
@@ -2344,6 +2357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCreditsReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/seo/legacy-redirects': {
+      id: '/admin_/seo/legacy-redirects'
+      path: '/admin/seo/legacy-redirects'
+      fullPath: '/admin/seo/legacy-redirects'
+      preLoaderRoute: typeof AdminSeoLegacyRedirectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/members/$userId': {
       id: '/admin_/members/$userId'
       path: '/admin/members/$userId'
@@ -2931,6 +2951,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
+  AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
