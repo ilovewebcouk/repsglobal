@@ -157,6 +157,7 @@ export const importLegacyRedirectsCsv = createServerFn({ method: "POST" })
 
     const updates: Array<{
       source_path: string;
+      destination_path: string;
       terminal_path: string;
       resolved_to_slug: string | null;
     }> = [];
@@ -181,7 +182,12 @@ export const importLegacyRedirectsCsv = createServerFn({ method: "POST" })
           }
         }
       }
-      updates.push({ source_path: r.source_path, terminal_path: cur, resolved_to_slug: resolved });
+      updates.push({
+        source_path: r.source_path,
+        destination_path: r.destination_path,
+        terminal_path: cur,
+        resolved_to_slug: resolved,
+      });
     }
 
     for (let i = 0; i < updates.length; i += CHUNK) {
