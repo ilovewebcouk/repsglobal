@@ -193,10 +193,11 @@ async function fetchFeaturedPool(
   const tierById = new Map<string, "studio" | "pro" | "verified">();
   for (const s of subsRes.data ?? []) {
     const t = s.tier as "studio" | "pro" | "verified" | "free" | null;
-    if (!t || t === "free") continue;
+    if (!t || t === "free" || !s.user_id) continue;
     const prev = tierById.get(s.user_id);
     if (!prev || tierRank(t) > tierRank(prev)) tierById.set(s.user_id, t);
   }
+
 
   const reviewAggById = new Map<string, { count: number; sum: number }>();
   for (const r of reviewsRes.data ?? []) {

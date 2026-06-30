@@ -149,7 +149,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
         .select("user_id, tier, status")
         .in("user_id", ids)
         .in("status", ["active", "trialing", "past_due"]);
-      for (const s of subs ?? []) tierMap.set(s.user_id, s.tier);
+      for (const s of subs ?? []) if (s.user_id) tierMap.set(s.user_id, s.tier);
     }
 
     const missingEmailIds = ids.filter((id: string) => !emailById.has(id));
