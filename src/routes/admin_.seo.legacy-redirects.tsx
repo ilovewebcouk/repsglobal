@@ -12,6 +12,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import {
   importLegacyRedirectsCsv,
   getLegacyCoverageStats,
+  rechainLegacyRedirects,
 } from "@/lib/seo/legacy-redirects.functions";
 
 export const Route = createFileRoute("/admin_/seo/legacy-redirects")({
