@@ -429,22 +429,19 @@ type ServiceDraft = Partial<ServiceDTO> & {
 };
 
 function emptyDraft(sort_order: number): ServiceDraft {
-  const p = SERVICE_PLACEHOLDERS[sort_order % 3];
-  const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
-  const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
   return {
-    title: p.title,
-    description: p.description,
+    title: "",
+    description: "",
     price_pence: null,
-    price_label: p.price,
-    price_unit: unitBySlot[sort_order % 3],
+    price_label: "",
+    price_unit: "per_session",
     duration_minutes: null,
-    mode: modeBySlot[sort_order % 3],
+    mode: "in_person",
     sort_order,
     is_published: true,
-    is_featured: sort_order % 3 === 1, // Hybrid = most popular
-    bullets: [...p.bullets].slice(0, 5),
-    cta_label: p.cta,
+    is_featured: false,
+    bullets: ["", "", "", "", ""],
+    cta_label: "",
     image_url: null,
   };
 }
@@ -471,25 +468,21 @@ function ServicesEditor({
 
   function startEdit(s: ServiceDTO) {
     const b = Array.isArray(s.bullets) ? s.bullets.slice(0, 5) : [];
-    const slot = (((s.sort_order ?? 0) % 3) + 3) % 3;
-    const p = SERVICE_PLACEHOLDERS[slot];
-    const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
-    const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
     setEditingId(s.id);
     setDraft({
       id: s.id,
-      title: p.title, // locked to slot
+      title: s.title ?? "",
       description: s.description ?? "",
       price_pence: s.price_pence,
       price_label: s.price_label ?? "",
-      price_unit: unitBySlot[slot],
+      price_unit: s.price_unit ?? "per_session",
       duration_minutes: s.duration_minutes,
-      mode: modeBySlot[slot], // locked to slot
+      mode: (s.mode as ServiceDTO["mode"]) ?? "in_person",
       sort_order: s.sort_order,
       is_published: s.is_published,
-      is_featured: slot === 1, // Hybrid is always Most popular
+      is_featured: s.is_featured,
       bullets: [...b, ...EMPTY_BULLETS].slice(0, 5),
-      cta_label: p.cta, // locked to slot
+      cta_label: s.cta_label ?? "",
       image_url: s.image_url ?? null,
     });
     setOpen(true);
@@ -502,21 +495,13 @@ function ServicesEditor({
   }
 
   function submit() {
-    const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
-    const p = SERVICE_PLACEHOLDERS[slot];
-    const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
-    const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
     onSave({
       ...draft,
-      // Slot-locked fields — never user-editable
-      title: p.title,
-      mode: modeBySlot[slot],
-      cta_label: p.cta,
-      price_unit: unitBySlot[slot],
-      is_featured: slot === 1,
+      title: draft.title.trim(),
       bullets: draft.bullets.map((b) => b.trim()).filter(Boolean),
       price_label: draft.price_label?.trim() || null,
       description: draft.description?.trim() || null,
+      cta_label: draft.cta_label?.trim() || null,
       image_url: draft.image_url || null,
     });
     setOpen(false);
@@ -608,19 +593,23 @@ function ServicesEditor({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className={["text-[13.5px] font-semibold", isEmpty ? "text-white/50" : "text-white"].join(" ")}>
-                    {placeholder.title}{isEmpty ? " (empty)" : ""}
+                    {s?.title || `${placeholder.title} (empty)`}
                   </div>
                   <div className="mt-0.5 text-[12px] text-white/55">
                     {s
                       ? (s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"))
                       : placeholder.price}
-                    {" · "}{i === 0 ? "Remote" : i === 1 ? "Hybrid" : "Hands-on"}
+                    {" · "}
+                    {s
+                      ? (s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on")
+                      : (i === 0 ? "Remote" : i === 1 ? "Hybrid" : "Hands-on")}
                     {s && !s.is_published ? " · Hidden" : ""}
                   </div>
                   <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">
                     {s?.description || placeholder.description}
                   </div>
                 </div>
+
                 <div className="flex shrink-0 items-center gap-2">
                   <button
                     type="button"
@@ -699,51 +688,97 @@ function ServiceEditDialog({
         <DialogHeader>
           <DialogTitle className="text-white">
             {editing ? "Edit service" : "Add a service"}
-            <span className="ml-2 rounded-full bg-reps-orange-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-reps-orange align-middle">
-              {SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].title}
-            </span>
           </DialogTitle>
           <DialogDescription className="text-white/55">
-            The title, delivery mode and button are fixed for this slot. You control the price, description and bullets.
+            Placeholders show an example. Fill in your own title, price, mode and details.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {/* Slot summary (locked) */}
-          <div className="md:col-span-2 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 px-3 py-2 text-[12px] text-white/65">
-            <span className="text-white/80 font-semibold">{SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].title}</span>
-            <span className="mx-1.5 text-white/30">·</span>
-            {(draft.sort_order ?? 0) % 3 === 0 ? "Remote" : (draft.sort_order ?? 0) % 3 === 1 ? "Hybrid" : "Hands-on"}
-            <span className="mx-1.5 text-white/30">·</span>
-            CTA: "{SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].cta}"
-            {(draft.sort_order ?? 0) % 3 === 1 ? (
-              <span className="ml-2 rounded-full bg-reps-orange px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Most popular</span>
-            ) : null}
-          </div>
+          {(() => {
+            const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
+            const p = SERVICE_PLACEHOLDERS[slot];
+            return (
+              <>
+                <div className="md:col-span-2">
+                  <TextInput
+                    value={draft.title ?? ""}
+                    onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                    placeholder={p.title}
+                    maxLength={80}
+                  />
+                  <div className="mt-1 text-[11px] text-white/40">Title</div>
+                </div>
 
-          <div>
-            <TextInput
-              value={draft.price_label ?? ""}
-              onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
-              placeholder={SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].price}
-              maxLength={16}
-            />
-            <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
-          </div>
-          <div className="flex items-center rounded-[12px] border border-reps-border bg-reps-panel-soft/40 px-3 text-[12.5px] text-white/65">
-            Unit: {(draft.sort_order ?? 0) % 3 === 2 ? "per session" : "per month"}
-          </div>
+                <div>
+                  <TextInput
+                    value={draft.price_label ?? ""}
+                    onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
+                    placeholder={p.price}
+                    maxLength={16}
+                  />
+                  <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
+                </div>
+                <div>
+                  <select
+                    value={draft.price_unit ?? "per_session"}
+                    onChange={(e) => setDraft({ ...draft, price_unit: e.target.value as NonNullable<ServiceDTO["price_unit"]> })}
+                    className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-reps-orange"
+                  >
+                    {PRICE_UNIT_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  <div className="mt-1 text-[11px] text-white/40">Unit</div>
+                </div>
 
+                <div>
+                  <select
+                    value={draft.mode ?? "in_person"}
+                    onChange={(e) => setDraft({ ...draft, mode: e.target.value as ServiceDTO["mode"] })}
+                    className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-reps-orange"
+                  >
+                    <option value="online">Remote (online)</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="in_person">Hands-on (in person)</option>
+                  </select>
+                  <div className="mt-1 text-[11px] text-white/40">Delivery mode</div>
+                </div>
+                <div>
+                  <TextInput
+                    value={draft.cta_label ?? ""}
+                    onChange={(e) => setDraft({ ...draft, cta_label: e.target.value })}
+                    placeholder={p.cta}
+                    maxLength={40}
+                  />
+                  <div className="mt-1 text-[11px] text-white/40">Button label</div>
+                </div>
 
-          <div className="md:col-span-2">
-            <TextArea
-              value={draft.description ?? ""}
-              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-              placeholder={SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].description}
-              maxLength={240}
-              className="min-h-[64px] w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
-            />
-          </div>
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-2 text-[13px] text-white/85">
+                    <input
+                      type="checkbox"
+                      checked={!!draft.is_featured}
+                      onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
+                      className="h-4 w-4 accent-reps-orange"
+                    />
+                    Mark as "Most popular" (only one card can be featured)
+                  </label>
+                </div>
+
+                <div className="md:col-span-2">
+                  <TextArea
+                    value={draft.description ?? ""}
+                    onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                    placeholder={p.description}
+                    maxLength={240}
+                    className="min-h-[64px] w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+                  />
+                </div>
+              </>
+            );
+          })()}
+
 
           <div className="md:col-span-2">
             <div className="text-[12px] font-semibold text-white/80">Bullets (up to 5)</div>

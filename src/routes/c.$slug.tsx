@@ -394,17 +394,72 @@ function mergeLiveIntoCoach(
   clientResults: ShopFrontClientResultDTO[] = [],
   faqs: ShopFrontFaqDTO[] = [],
 ): Coach {
-  const liveTiers: Tier[] = services.map((s, i) => ({
-    slug: s.id,
-    name: s.title,
-    eyebrow: s.is_featured ? "Most popular" : s.mode === "online" ? "Online" : s.mode === "hybrid" ? "Hybrid" : "In person",
-    price: s.price_label ?? (s.price_pence != null ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"),
-    unit: priceUnitLabel(s.price_unit) ?? (s.duration_minutes ? `${s.duration_minutes} min` : "per session"),
-    blurb: s.description ?? "",
-    includes: Array.isArray(s.bullets) ? s.bullets.filter((b) => b && b.trim()) : [],
-    highlight: s.is_featured || (services.every((x) => !x.is_featured) && i === 1),
-    ctaLabel: s.cta_label ?? null,
-  }));
+  const liveTiers: Tier[] = services.length === 0
+    ? [
+        {
+          slug: "placeholder-online",
+          name: "Online Coaching",
+          eyebrow: "Remote",
+          price: "£160",
+          unit: "per month",
+          blurb: "For people who train themselves but want a coach in their corner.",
+          includes: [
+            "Fully bespoke programme in-app",
+            "Weekly written check-in & adjustments",
+            "Unlimited messaging (Mon–Fri)",
+            "Video form reviews",
+            "Quarterly strategy call",
+          ],
+          highlight: false,
+          ctaLabel: "Enquire about Online Coaching",
+        },
+        {
+          slug: "placeholder-hybrid",
+          name: "Hybrid Coaching",
+          eyebrow: "Most popular",
+          price: "£240",
+          unit: "per month",
+          blurb: "The full programme — two in-person sessions a month, online the rest.",
+          includes: [
+            "Everything in Online Coaching",
+            "2× in-person sessions per month",
+            "Movement screen & progress reviews",
+            "Body composition tracking",
+            "Priority response time",
+          ],
+          highlight: true,
+          ctaLabel: "Start with Hybrid",
+        },
+        {
+          slug: "placeholder-inperson",
+          name: "1-to-1 In Person",
+          eyebrow: "Hands-on",
+          price: "From £75",
+          unit: "per session",
+          blurb: "Train with me in central London. Programming, coaching and accountability in one room.",
+          includes: [
+            "60-minute sessions at Third Space or BXR",
+            "Bespoke programme outside sessions",
+            "Nutrition & recovery rails",
+            "Direct messaging access",
+            "Block discount available (10+ sessions)",
+          ],
+          highlight: false,
+          ctaLabel: "Enquire about 1-to-1 In Person",
+        },
+      ]
+    : services.map((s, i) => ({
+        slug: s.id,
+        name: s.title,
+        eyebrow: s.is_featured ? "Most popular" : s.mode === "online" ? "Online" : s.mode === "hybrid" ? "Hybrid" : "In person",
+        price: s.price_label ?? (s.price_pence != null ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"),
+        unit: priceUnitLabel(s.price_unit) ?? (s.duration_minutes ? `${s.duration_minutes} min` : "per session"),
+        blurb: s.description ?? "",
+        includes: Array.isArray(s.bullets) ? s.bullets.filter((b) => b && b.trim()) : [],
+        highlight: s.is_featured || (services.every((x) => !x.is_featured) && i === 1),
+        ctaLabel: s.cta_label ?? null,
+      }));
+
 
   const memberSinceDate = sf.member_since ? new Date(sf.member_since) : null;
   const memberYear = memberSinceDate && !isNaN(memberSinceDate.getTime())

@@ -1,40 +1,39 @@
-## Where we are
+## What went wrong
 
-- ✅ Legacy redirect resolver shipped (`/admin/seo/legacy-redirects` + catch-all `src/routes/$.tsx`)
-- ✅ BD-format CSV delivered (`repsuk-legacy-redirects-bd.csv`, 363 rows)
-- ✅ Sitewide `noindex` removed, sitemap fixed, GSC verified
+I locked the 3 service slots to fixed titles, modes, CTAs and "Most popular" — so pros could only edit price/description/bullets. You wanted the opposite: keep the editor fully free, just **show the example content as placeholder text** so an untouched profile still looks like the screenshot.
 
-## What's still open from the SEO rescue plan
+## Fix — two surgical reverts, no UI/UX changes
 
-Three high-leverage items remain. I'd ship them in this order:
+### 1. `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` — un-lock the editor
 
-### 1. Organization JSON-LD with `alternateName` (small, ~20 min)
-Add a single Organization schema block to `src/routes/__root.tsx` listing every brand variant Google might see: "REPs", "REPS UK", "REPs Register", "The Register of Exercise Professionals", "repsuk.org". This tells Google these are all the same entity and helps consolidate brand-search ranking signals.
+- `emptyDraft()`: return a blank draft (`title: ""`, `description: ""`, `bullets: ["","","","",""]`, `mode: "in_person"`, `is_featured: false`, no locked CTA/unit). Stop pre-filling DB values from `SERVICE_PLACEHOLDERS`.
+- `startEdit()`: load the row's actual values back (title, mode, cta_label, price_unit, is_featured, bullets) — no slot override.
+- `submit()`: save exactly what's in the draft. Remove the slot-locked overwrite of title/mode/cta_label/price_unit/is_featured.
+- Restore the editor dialog inputs that were stripped:
+  - Title input (with `placeholder={SERVICE_PLACEHOLDERS[slot].title}`)
+  - Mode select (Remote / Hybrid / Hands-on)
+  - CTA label input (with placeholder)
+  - Price unit select (full `PRICE_UNIT_OPTIONS`)
+  - "Most popular" checkbox
+- Remove the "locked slot summary" strip and the "title/delivery mode/button are fixed" copy from `DialogDescription`.
+- In the list-row preview, keep the placeholder text fallback only when the service is empty (`!s`). When a service exists, render its real `title` / `price_label` / `mode` / `description` — never override with placeholder.
 
-### 2. Per-profile `<title>` + `<meta description>` formula (medium, ~1 hr)
-Right now `/c/$slug` profile pages don't have unique, optimised meta tags — they fall back to defaults. With ~335 published pros, this is the biggest single source of "long-tail" SEO traffic we're leaving on the table.
+### 2. `src/routes/c.$slug.tsx` — placeholder rendering on the public page
 
-Formula:
-- **Title:** `{Name} — {Primary Profession} in {City} | REPs`
-- **Description:** `Book {Name}, a verified {profession(s)} based in {city}. {Tagline or first 100 chars of bio}. Verified on the REPs register.`
+So a brand-new website (no services configured yet) shows the screenshot's example trio instead of an empty Services section:
 
-Wired into the existing `head()` block in `src/routes/c.$slug.tsx`, driven by loader data. Same formula applied to `og:title` / `og:description` / `twitter:*` so social shares match.
+- In `mergeLiveIntoCoach`, if `services.length === 0`, return 3 placeholder `Tier` objects matching the screenshot exactly:
+  1. **Online Coaching** — Remote · £160 / month · "For people who train themselves but want a coach in their corner." · 5 bullets · CTA "Enquire about Online Coaching"
+  2. **Hybrid Coaching** — Hybrid · £240 / month · `highlight: true` (Most popular) · CTA "Start with Hybrid" · 5 bullets
+  3. **1-to-1 In Person** — Hands-on · "From £75" / session · CTA "Enquire about 1-to-1 In Person" · 5 bullets
+- These are display-only placeholders, never written to the DB. As soon as the pro adds a real service, the placeholders disappear.
 
-### 3. Programmatic profession × city landing pages (larger, dedicated turn)
-Routes like `/personal-trainer/manchester`, `/nutrition-coach/london`, etc. These are the pages that catch high-intent searches like "personal trainer manchester". Bigger build — needs a route, a city × profession matrix, a featured-pros list per page, and unique copy/meta per combination to avoid duplicate-content penalties. Worth scoping properly as its own turn rather than rolled in here.
+### Out of scope
 
-## Proposal for this turn
+- No visual or layout changes to the service cards, the editor dialog shell, or the public page.
+- No DB migration. No changes to `shop-front.functions.ts`.
 
-Ship **(1) + (2) together** — they're small, they compound immediately with the redirect work that's already live, and they unblock the per-profile share previews you've been asking about.
+## Result
 
-Queue **(3)** as the next dedicated turn after we see the redirects + meta start moving in GSC (~1–2 weeks for first signal).
-
-## Out of scope (not doing now)
-
-- BD-side import — that's your action in BD admin, no code change
-- Programmatic city pages (separate turn)
-- Article/resource content rewrites (separate editorial pass)
-
----
-
-**Confirm and I'll build (1) + (2), or tell me to reorder.**
+- Brand-new pros see the polished example page exactly like your screenshot, with nothing entered.
+- Pros can edit title, mode, CTA, price unit and "Most popular" freely — placeholders just hint at the example wording.
