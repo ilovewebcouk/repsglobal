@@ -149,7 +149,7 @@ const FeedInput = z.object({
 
 export const getActivityFeed = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => FeedInput.parse(input ?? {}))
+  .inputValidator((input: unknown) => FeedInput.parse(input ?? {}))
   .handler(async ({ context, data }): Promise<ActivityFeedRow[]> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -262,7 +262,7 @@ export type ActivityAggregates = {
 
 export const getActivityAggregates = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
+  .inputValidator((input: unknown) =>
     z.object({ rangeHours: z.number().int().min(1).max(168).default(24) })
       .parse(input ?? {}),
   )
