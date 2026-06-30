@@ -305,7 +305,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (pro?.slug) return { action: "redirect", toSlug: pro.slug };
-    
+    markGone();
     return { action: "gone", reason: "pro-not-migrated" };
   });
 
