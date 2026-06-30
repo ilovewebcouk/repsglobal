@@ -634,7 +634,7 @@ function ServiceEditDialog({
           <div className="md:col-span-2 rounded-[14px] border border-reps-border bg-reps-panel-soft/40 p-3">
             <ServiceImageEditor
               value={draft.image_url ?? null}
-              onChange={(url) => setDraft({ ...draft, image_url: url })}
+              onChange={(url: string | null) => setDraft({ ...draft, image_url: url })}
             />
           </div>
 
