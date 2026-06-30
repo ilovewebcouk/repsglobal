@@ -593,19 +593,23 @@ function ServicesEditor({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className={["text-[13.5px] font-semibold", isEmpty ? "text-white/50" : "text-white"].join(" ")}>
-                    {placeholder.title}{isEmpty ? " (empty)" : ""}
+                    {s?.title || `${placeholder.title} (empty)`}
                   </div>
                   <div className="mt-0.5 text-[12px] text-white/55">
                     {s
                       ? (s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"))
                       : placeholder.price}
-                    {" · "}{i === 0 ? "Remote" : i === 1 ? "Hybrid" : "Hands-on"}
+                    {" · "}
+                    {s
+                      ? (s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on")
+                      : (i === 0 ? "Remote" : i === 1 ? "Hybrid" : "Hands-on")}
                     {s && !s.is_published ? " · Hidden" : ""}
                   </div>
                   <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">
                     {s?.description || placeholder.description}
                   </div>
                 </div>
+
                 <div className="flex shrink-0 items-center gap-2">
                   <button
                     type="button"
