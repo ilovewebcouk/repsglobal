@@ -418,9 +418,17 @@ export type MyUnreadTicket = {
 export const listMyUnreadTickets = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc(
-      "list_my_unread_support_tickets",
-    );
+    // Direct query (not RPC) so impersonation works — RPC uses auth.uid()
+    // which is the admin during impersonation; context.userId is the
+    // impersonated user.
+    const { data, error } = await context.supabase
+      .from("support_tickets")
+      .select("id, ticket_number, subject, last_message_at, created_at")
+      .eq("requester_user_id", context.userId)
+      .eq("requester_unread", true)
+      .is("deleted_at", null)
+      .order("last_message_at", { ascending: false, nullsFirst: false })
+      .limit(50);
     if (error) throw new Error(error.message);
     return { tickets: (data ?? []) as MyUnreadTicket[] };
   });
@@ -431,9 +439,11 @@ export const markMyTicketRead = createServerFn({ method: "POST" })
     z.object({ ticketId: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("mark_my_support_ticket_read", {
-      _ticket_id: data.ticketId,
-    });
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({ requester_unread: false, updated_at: new Date().toISOString() } as never)
+      .eq("id", data.ticketId)
+      .eq("requester_user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -441,7 +451,12 @@ export const markMyTicketRead = createServerFn({ method: "POST" })
 export const markAllMySupportRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
-    const { error } = await context.supabase.rpc("mark_all_my_support_read");
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({ requester_unread: false, updated_at: new Date().toISOString() } as never)
+      .eq("requester_user_id", context.userId)
+      .eq("requester_unread", true);
     if (error) throw new Error(error.message);
     return { ok: true };
+
   });
