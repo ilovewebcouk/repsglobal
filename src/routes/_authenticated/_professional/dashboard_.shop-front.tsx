@@ -650,6 +650,7 @@ function ServiceEditDialog({
   editing: boolean;
   saving: boolean;
   onSubmit: () => void;
+  onSilentSave: () => void;
 }) {
   // ---- Autosave (existing services only) ------------------------------------
   // For brand-new cards we still require an explicit "Done" so we don't create
