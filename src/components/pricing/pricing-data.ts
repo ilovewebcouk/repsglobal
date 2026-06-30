@@ -77,7 +77,7 @@ export const PLANS: PlanCard[] = [
     waitlist: true,
     features: [
       "Everything in Pro",
-      "Personalised shop-front (team accent options)",
+      "Personalised website (team accent options)",
       "Multi-coach roles & seats",
       "Organisation profile",
       "Shared clients across coaches",
@@ -87,7 +87,7 @@ export const PLANS: PlanCard[] = [
     ],
     pricing: {
       monthly: { price: "£149", period: "per month", meta: "Billed monthly · waitlist only" },
-      annual: { price: "£124", period: "per month", meta: "£1,490 billed yearly · 2 months free · waitlist only" },
+      annual: { price: "£124", period: "per month", meta: "£1,490 billed yearly · waitlist only" },
     },
   },
 ];
