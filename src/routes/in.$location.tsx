@@ -248,6 +248,20 @@ export const Route = createFileRoute("/in/$location")({
         { property: "og:description", content: loc.blurb },
         { property: "og:url", content: `https://repsuk.org/in/${loc.slug}` },
       ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqsFor(loc.name).map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
+        },
+      ],
       // Canonical intentionally omitted at the layout level — TanStack
       // concatenates `links` across matched routes, so a canonical here
       // emits a duplicate alongside the leaf `/in/$location/$profession`
