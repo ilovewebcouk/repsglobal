@@ -274,9 +274,27 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       if (row.resolved_to_slug) {
         return { action: "redirect", toSlug: row.resolved_to_slug };
       }
-      // Terminal known but no live pro → 410 Gone (server-side only)
+      // Stale row: chain-resolve at import time couldn't find a live pro.
+      // Re-try live against current professionals.slug — pros may have since
+      // published. Backfill the row so the next hit is a fast table read.
       const terminal = row.terminal_path || row.destination_path;
-      const { kind } = classifyLegacyPath(terminal);
+      const { kind, slug } = classifyLegacyPath(terminal);
+      if (kind === "exercise-professional" && slug) {
+        const cands = slugCandidates(slug);
+        const { data: pro } = await supabaseAdmin
+          .from("professionals")
+          .select("slug")
+          .in("slug", cands)
+          .limit(1)
+          .maybeSingle();
+        if (pro?.slug) {
+          await supabaseAdmin
+            .from("legacy_redirects")
+            .update({ resolved_to_slug: pro.slug })
+            .eq("source_path", path);
+          return { action: "redirect", toSlug: pro.slug };
+        }
+      }
       markGone();
       return {
         action: "gone",
