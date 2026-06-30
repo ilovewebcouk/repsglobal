@@ -22,7 +22,9 @@ import { lovable } from "@/integrations/lovable";
 
 
 type SignupSearch = {
-  tier?: "verified" | "pro";
+  // URL slug for the Core tier is "core" (legacy "verified" still accepted
+  // and normalized below for back-compat with old emails/bookmarks).
+  tier?: "core" | "pro";
   period?: "monthly" | "annual";
   next?: "checkout";
 };
