@@ -2,13 +2,14 @@
 // Restyled to match the REPs dark admin palette (panel/40 surfaces,
 // border-reps-border, reps-orange accents) rather than shadcn defaults.
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   ExternalLink,
+  Eye,
   Mail,
   ShieldCheck,
   User as UserIcon,
@@ -17,6 +18,7 @@ import {
   Clock,
   Trash2,
 } from "lucide-react";
+import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { requireRole } from "@/lib/route-gates";
@@ -49,7 +51,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "@tanstack/react-router";
+
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
 
 export const Route = createFileRoute("/admin_/members/$userId")({
@@ -110,7 +112,7 @@ function MemberPage() {
   return (
     <DashboardShell role="admin" active="Professionals" title="Member 360" subtitle="One workbench for every member action.">
       <div className="flex flex-col gap-6 p-6">
-        <StickyHeader snapshot={snap.data} loading={snap.isLoading} />
+        <StickyHeader userId={userId} snapshot={snap.data} loading={snap.isLoading} />
 
         <Tabs defaultValue="overview" className="flex flex-col gap-5">
           <div className="sticky top-[112px] z-10 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-2 backdrop-blur-md">
@@ -182,7 +184,26 @@ function MemberPage() {
 
 
 
-function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | undefined; loading: boolean }) {
+function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot: Member360Snapshot | undefined; loading: boolean }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const startFn = useServerFn(startImpersonation);
+  const [viewAsBusy, setViewAsBusy] = useState(false);
+
+  async function handleViewAs() {
+    if (viewAsBusy) return;
+    setViewAsBusy(true);
+    try {
+      await startFn({ data: { professional_id: userId } });
+      await qc.invalidateQueries({ queryKey: ["impersonation-status"] });
+      navigate({ to: "/dashboard" });
+    } catch (e) {
+      console.error("startImpersonation failed", e);
+      toast.error((e as Error).message ?? "Could not start view-as session");
+      setViewAsBusy(false);
+    }
+  }
+
   if (loading || !snapshot) {
     return (
       <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md">
@@ -271,6 +292,15 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
               </Link>
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleViewAs}
+            disabled={viewAsBusy}
+            className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+          >
+            <Eye data-icon="inline-start" /> {viewAsBusy ? "Opening…" : "View as"}
+          </Button>
           {/* Overflow menu retired in Phase 6 — destructive actions consolidated into the Delete account dialog. */}
 
         </div>
