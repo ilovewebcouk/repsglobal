@@ -324,7 +324,7 @@ function ProfessionInCityPage() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((p, i) => (
-              <FeaturedProCard key={`${p.name}-${i}`} pro={p} slug={rows[i]?.slug ?? undefined} />
+              <FeaturedProCard key={`${p.name}-${i}`} pro={p} />
             ))}
           </div>
         )}
