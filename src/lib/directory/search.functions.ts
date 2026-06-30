@@ -227,10 +227,12 @@ export const searchProfessionals = createServerFn({ method: "GET" })
         t === "studio" ? 3 : t === "pro" ? 2 : t === "verified" ? 1 : 0;
       const paidTierById = new Map<string, number>();
       for (const s of subsForRank.data ?? []) {
+        if (!s.user_id) continue;
         const r = tierRank(s.tier);
         const prev = paidTierById.get(s.user_id) ?? 0;
         if (r > prev) paidTierById.set(s.user_id, r);
       }
+
       const coordById = new Map<string, { lat: number; lng: number }>();
       for (const l of locsForRank.data ?? []) {
         if (!allIdSet.has(l.professional_id)) continue;
