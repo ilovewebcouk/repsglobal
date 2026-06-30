@@ -1,41 +1,35 @@
-## Problem
+## Goal
+Make Core monthly £9.90/mo so the £99/yr annual offer genuinely saves ~17% (~2 months), restoring the "Save 2 months" badge across all tiers.
 
-Two issues on the legacy catch-all (`src/routes/$.tsx`):
+## Changes
 
-1. **Colors are broken.** `GonePage` renders white text on the site's default body background. The body uses `var(--color-background)` which is `--reps-ivory` (cream) in light mode — we never apply a `dark` class on `<html>`, so anywhere a route forgets to set its own dark surface, you get white-on-cream. That's exactly what the screenshot shows: orange eyebrow + cream bg + invisible white body text and faded buttons.
+### 1. Stripe price
+- Update the `verified_monthly` lookup_key price in both Stripe sandbox and live from £8.25 → **£9.90 GBP / month** (recurring).
+- Keep `verified_annual` unchanged at £99/yr.
+- Archive the old £8.25 price object (lookup_key reassigned to the new one) so existing subscribers stay on their grandfathered price but new checkouts resolve to £9.90.
 
-2. **Redirects aren't firing for some legacy URLs.** The catch-all calls `resolveLegacyPath` → checks `legacy_redirects` table → falls back to fuzzy slug match on `professionals.slug`. When a row exists but `resolved_to_slug` is `null` (chain-resolve couldn't match the destination to a live pro at import time), we 410 even when the pro is now live on the new site. We never re-run chain-resolve after new pros publish, so the table goes stale.
+### 2. `src/components/pricing/pricing-data.ts`
+- Core `pricing.monthly`: `price: "£9.90"`, meta `"Billed monthly · cancel anytime"`.
+- Core `pricing.annual`: `price: "£8.25"` /mo equivalent, meta `"£99 billed yearly · save ~17%"`.
+- `COMPARE_GROUPS` Billing row: "Live offer" Core → `"£9.90/month or £99/year (save ~17%)"`; "Charge today" Core → `"£9.90 or £99"`.
+- FAQ "Which billing periods are planned?" answer: update to "Core is £9.90/month billed monthly, or £99/year billed annually (save ~17% — about 2 months free)."
 
-## Plan
+### 3. `src/components/pricing/PricingPlans.tsx`
+- Remove the Core-specific exclusion on the "Save 2 months" toggle badge so it shows for all tiers again.
 
-### 1. Fix the 410 page styling
+### 4. `src/lib/billing.ts`
+- `CHECKOUT_OFFERS.verified.monthly.display`: `"£9.90/mo"`.
+- Annual offer unchanged.
 
-Wrap `GonePage` in a full-bleed dark surface so it reads correctly regardless of body theme:
+### 5. Sweep for stale £8.25 monthly copy
+- `rg "8\\.25"` across `src/`, `docs/`, help articles, email templates — update any user-facing mention of £8.25/month to £9.90/month (annual "£8.25/mo equivalent" framing stays).
 
-- Outer `<div className="min-h-screen bg-reps-ink">` wrapping `<main>`.
-- Keep the existing typography; bump `text-white/70` to `text-white/80` for the lede (matches the locked marketing opacity scale).
-- Same treatment for `NotFoundComponent` in `__root.tsx` (same root cause — `bg-background` resolves to cream).
-- Same treatment for `ErrorComponent` in `__root.tsx`.
-
-No new tokens, no design changes — just the missing dark surface.
-
-### 2. Re-run chain-resolve so stale "gone" rows redirect
-
-Add a lightweight admin server fn `rechainLegacyRedirects` in `src/lib/seo/legacy-redirects.functions.ts` that re-walks every existing row against the current `professionals.slug` set and updates `resolved_to_slug`. Same logic as the tail of `importLegacyRedirectsCsv` — extracted so we can run it without re-importing the CSV.
-
-Wire a "Re-run chain resolve" button into `/admin/seo/legacy-redirects` next to the coverage stats. One click rescues every row whose pro has since published.
-
-### 3. Tighten the fallback so live pros never 410
-
-In `resolveLegacyPath`, when a `legacy_redirects` row is found with `resolved_to_slug = null` AND `kind = exercise-professional`, do a live fuzzy lookup against `professionals.slug` (same `slugCandidates` logic the fallback path already uses) BEFORE returning `gone`. If we find a match, redirect AND backfill the row so the next hit is a fast table read.
-
-This makes the redirect layer self-healing — even without clicking the admin button, the first visitor to a stale URL fixes the row for everyone after them.
-
-### 4. QA pass
-
-After shipping, paste the legacy URL from the screenshot (or any sample BD URL) so I can confirm it now 301s instead of 410s, and screenshot the page so we can verify legibility.
+## QA
+- `/pricing` toggle: Monthly shows £9.90 on Core; Annual shows £8.25/mo (£99/yr); "Save 2 months" badge visible on toggle.
+- `/signup?tier=verified&period=monthly` → Stripe Checkout resolves £9.90 price.
+- `/signup?tier=verified&period=annual` → Stripe Checkout resolves £99 price.
+- Compare table + FAQ reflect new numbers.
+- Existing £8.25 subscribers unaffected (Stripe keeps their original price).
 
 ## Out of scope
-
-- Changing the global theme (adding `class="dark"` to `<html>`). That's a bigger refactor and would mask other latent contrast bugs on routes that currently happen to work.
-- Editing the curated blog map — those are already correct.
+- No migration/upgrade emails to existing £8.25 monthly subs (none expected — price was only just created). Flag if any exist for a follow-up decision.
