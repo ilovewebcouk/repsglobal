@@ -2,13 +2,14 @@
 // Restyled to match the REPs dark admin palette (panel/40 surfaces,
 // border-reps-border, reps-orange accents) rather than shadcn defaults.
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   ExternalLink,
+  Eye,
   Mail,
   ShieldCheck,
   User as UserIcon,
@@ -17,6 +18,7 @@ import {
   Clock,
   Trash2,
 } from "lucide-react";
+import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { requireRole } from "@/lib/route-gates";
