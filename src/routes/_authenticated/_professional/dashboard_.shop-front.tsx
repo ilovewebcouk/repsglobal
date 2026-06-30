@@ -781,15 +781,6 @@ function ServiceEditDialog({
           </div>
 
 
-          <label className="flex items-center gap-2 text-[13px] text-white/85 md:col-span-2">
-            <input
-              type="checkbox"
-              checked={!!draft.is_featured}
-              onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
-              className="h-4 w-4 accent-reps-orange"
-            />
-            Mark as "Most popular"
-          </label>
         </div>
 
         <DialogFooter>
