@@ -136,6 +136,7 @@ export function SpecialismsDeliveryPanel() {
         </div>
       </div>
     </PPanel>
+    </div>
   );
 }
 
