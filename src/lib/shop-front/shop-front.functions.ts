@@ -328,12 +328,16 @@ export type ServiceDTO = {
   description: string | null;
   price_pence: number | null;
   price_label: string | null;
+  price_unit: string | null;
   duration_minutes: number | null;
   mode: string;
   sort_order: number;
   is_published: boolean;
   is_featured: boolean;
+  bullets: string[];
+  cta_label: string | null;
 };
+
 
 /* ---------------- Public reads ---------------- */
 
