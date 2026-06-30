@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
+import { MemberFinder } from "@/components/ops/MemberFinder";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { DashboardToaster, DashboardTooltipProvider } from "@/components/dashboard/ui";
