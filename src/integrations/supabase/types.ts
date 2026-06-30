@@ -2415,6 +2415,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_signups: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          email: string
+          environment: string
+          full_name: string
+          id: string
+          password: string
+          period: string
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          tier: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          email: string
+          environment: string
+          full_name: string
+          id?: string
+          password: string
+          period: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          tier: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          email?: string
+          environment?: string
+          full_name?: string
+          id?: string
+          password?: string
+          period?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          tier?: string
+        }
+        Relationships: []
+      }
       pro_titles: {
         Row: {
           admin_note: string | null
@@ -4298,6 +4340,7 @@ export type Database = {
           verification_status: string
         }[]
       }
+      cleanup_pending_signups: { Args: never; Returns: undefined }
       clear_pro_review_response: {
         Args: { _review_id: string }
         Returns: undefined
