@@ -52,6 +52,7 @@ import {
   type FaqDTO,
 } from "@/lib/shop-front/website-content.functions";
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
+import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/shop-front")({
   head: () => ({
@@ -342,6 +343,7 @@ function emptyDraft(sort_order: number): ServiceDraft {
     is_featured: false,
     bullets: [...EMPTY_BULLETS],
     cta_label: "",
+    image_url: null,
   };
 }
 
@@ -378,6 +380,7 @@ function ServicesEditor({
       is_featured: s.is_featured,
       bullets: [...b, ...EMPTY_BULLETS].slice(0, 5),
       cta_label: s.cta_label ?? "",
+      image_url: s.image_url ?? null,
     });
     setOpen(true);
   }
@@ -396,6 +399,7 @@ function ServicesEditor({
       price_label: draft.price_label?.trim() || null,
       price_unit: draft.price_unit || null,
       description: draft.description?.trim() || null,
+      image_url: draft.image_url || null,
     });
     setOpen(false);
   }
@@ -626,6 +630,14 @@ function ServiceEditDialog({
               ))}
             </div>
           </div>
+
+          <div className="md:col-span-2 rounded-[14px] border border-reps-border bg-reps-panel-soft/40 p-3">
+            <ServiceImageEditor
+              value={draft.image_url ?? null}
+              onChange={(url: string | null) => setDraft({ ...draft, image_url: url })}
+            />
+          </div>
+
 
           <label className="flex items-center gap-2 text-[13px] text-white/85 md:col-span-2">
             <input

@@ -332,7 +332,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       .map((s) => getSpecialismLabel(s) ?? s)
       .filter(Boolean),
     services: (() => {
-      const live = (row as { services?: Array<{ title: string; description: string | null; price_pence: number | null; price_label: string | null; duration_minutes: number | null; mode: string }> }).services ?? [];
+      const live = (row as { services?: Array<{ title: string; description: string | null; price_pence: number | null; price_label: string | null; duration_minutes: number | null; mode: string; image_url?: string | null }> }).services ?? [];
       if (live.length) {
         return live.slice(0, 3).map((s) => ({
           title: s.title,
@@ -348,7 +348,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
                 : s.mode === "hybrid"
                   ? "hybrid"
                   : "in-person",
-          image: null,
+          image: s.image_url ?? null,
           icon: Users,
         }));
       }
@@ -818,18 +818,16 @@ function ProProfilePage() {
                     key={s.title}
                     className="flex items-stretch gap-4 rounded-[18px] bg-reps-panel p-3 text-white"
                   >
-                    <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/5 ring-1 ring-white/10">
-                      {s.image ? (
+                    {s.image ? (
+                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/5 ring-1 ring-white/10">
                         <img
                           src={s.image}
                           alt=""
                           className="h-full w-full object-cover"
                           loading="lazy"
                         />
-                      ) : (
-                        <s.icon className="h-8 w-8 text-white/40" aria-hidden />
-                      )}
-                    </div>
+                      </div>
+                    ) : null}
                     <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                       <div className="font-display text-[16px] font-bold leading-tight text-white">
                         {s.title}

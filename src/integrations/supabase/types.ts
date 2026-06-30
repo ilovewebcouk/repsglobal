@@ -3238,6 +3238,7 @@ export type Database = {
           description: string | null
           duration_minutes: number | null
           id: string
+          image_url: string | null
           is_featured: boolean
           is_published: boolean
           mode: string
@@ -3256,6 +3257,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          image_url?: string | null
           is_featured?: boolean
           is_published?: boolean
           mode?: string
@@ -3274,6 +3276,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          image_url?: string | null
           is_featured?: boolean
           is_published?: boolean
           mode?: string

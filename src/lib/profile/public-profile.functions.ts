@@ -169,7 +169,7 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
     const { data: serviceRows } = await supabaseAdmin
       .from("services")
       .select(
-        "id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_featured",
+        "id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_featured, bullets, cta_label, image_url",
       )
       .eq("professional_id", r.id)
       .eq("is_published", true)
