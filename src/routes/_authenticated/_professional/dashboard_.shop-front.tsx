@@ -429,19 +429,22 @@ type ServiceDraft = Partial<ServiceDTO> & {
 };
 
 function emptyDraft(sort_order: number): ServiceDraft {
+  const p = SERVICE_PLACEHOLDERS[sort_order % 3];
+  const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
+  const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
   return {
-    title: "",
-    description: "",
+    title: p.title,
+    description: p.description,
     price_pence: null,
-    price_label: "",
-    price_unit: "per_session",
+    price_label: p.price,
+    price_unit: unitBySlot[sort_order % 3],
     duration_minutes: null,
-    mode: "in_person",
+    mode: modeBySlot[sort_order % 3],
     sort_order,
     is_published: true,
-    is_featured: false,
-    bullets: [...EMPTY_BULLETS],
-    cta_label: "",
+    is_featured: sort_order % 3 === 1, // Hybrid = most popular
+    bullets: [...p.bullets].slice(0, 5),
+    cta_label: p.cta,
     image_url: null,
   };
 }
