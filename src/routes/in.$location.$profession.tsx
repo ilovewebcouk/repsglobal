@@ -24,8 +24,26 @@ import {
   searchProfessionals,
   type SearchProfessionalRow,
 } from "@/lib/directory/search.functions";
-import { isProfessionSlug, PROFESSIONS, getProfessionLabel, getProfessionPlural } from "@/lib/professions";
+import { isProfessionSlug, PROFESSIONS, getProfessionLabel, getProfessionPlural, type ProfessionSlug } from "@/lib/professions";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
+
+import ogPersonalTrainer from "@/assets/og/professions/personal-trainer.jpg.asset.json";
+import ogFitnessInstructor from "@/assets/og/professions/fitness-instructor.jpg.asset.json";
+import ogGroupFitnessInstructor from "@/assets/og/professions/group-fitness-instructor.jpg.asset.json";
+import ogStrengthCoach from "@/assets/og/professions/strength-coach.jpg.asset.json";
+import ogNutritionist from "@/assets/og/professions/nutritionist.jpg.asset.json";
+import ogPilatesInstructor from "@/assets/og/professions/pilates-instructor.jpg.asset.json";
+import ogYogaTeacher from "@/assets/og/professions/yoga-teacher.jpg.asset.json";
+
+const OG_BY_PROFESSION: Record<ProfessionSlug, string> = {
+  "personal-trainer": ogPersonalTrainer.url,
+  "fitness-instructor": ogFitnessInstructor.url,
+  "group-fitness-instructor": ogGroupFitnessInstructor.url,
+  "strength-coach": ogStrengthCoach.url,
+  nutritionist: ogNutritionist.url,
+  "pilates-instructor": ogPilatesInstructor.url,
+  "yoga-teacher": ogYogaTeacher.url,
+};
 
 /* ----------------------- City catalogue (curated) ----------------------- */
 
