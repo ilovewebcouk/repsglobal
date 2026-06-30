@@ -398,6 +398,7 @@ function ServicesEditor({
       price_label: draft.price_label?.trim() || null,
       price_unit: draft.price_unit || null,
       description: draft.description?.trim() || null,
+      image_url: draft.image_url || null,
     });
     setOpen(false);
   }
