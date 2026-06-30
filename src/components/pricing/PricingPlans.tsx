@@ -21,7 +21,7 @@ export function PricingPlans() {
   const navigate = useNavigate();
 
   async function handlePaidCta(tierKey: "verified" | "pro") {
-    const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;
+    const checkoutPeriod = billing;
     setCheckoutTier(tierKey);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -76,7 +76,7 @@ export function PricingPlans() {
 
       <div className="grid gap-6 md:grid-cols-3">
         {PLANS.map((p) => {
-          const view = p.pricing[p.tierKey === "verified" ? "annual" : billing];
+          const view = p.pricing[billing];
           const isLoading = checkoutTier === p.tierKey;
           return (
             <Card

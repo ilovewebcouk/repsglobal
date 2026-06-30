@@ -91,10 +91,10 @@ export const Route = createFileRoute("/signup")({
     const requestedPeriod = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
     const validTier = ["verified", "pro"].includes(tier as string) ? tier : undefined;
-    const period = validTier === "verified"
-      ? "annual"
-      : validTier === "pro" && (requestedPeriod === "monthly" || requestedPeriod === "annual")
-        ? requestedPeriod
+    const period = validTier && (requestedPeriod === "monthly" || requestedPeriod === "annual")
+      ? requestedPeriod
+      : validTier === "verified"
+        ? "annual"
         : validTier === "pro"
           ? "monthly"
           : undefined;
