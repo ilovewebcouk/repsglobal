@@ -275,7 +275,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       // Terminal known but no live pro → 410 Gone (server-side only)
       const terminal = row.terminal_path || row.destination_path;
       const { kind } = classifyLegacyPath(terminal);
-      await markGoneStatus();
+      
       return {
         action: "gone",
         reason: kind === "exercise-professional" ? "pro-not-migrated" : `type-not-migrated:${kind}`,
@@ -283,7 +283,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
     }
 
     if (blogSlug) {
-      await markGoneStatus();
+      
       return { action: "gone", reason: "legacy-blog-not-migrated" };
     }
 
@@ -303,7 +303,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (pro?.slug) return { action: "redirect", toSlug: pro.slug };
-    await markGoneStatus();
+    
     return { action: "gone", reason: "pro-not-migrated" };
   });
 
