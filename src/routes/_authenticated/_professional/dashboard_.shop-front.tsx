@@ -324,6 +324,49 @@ const PRICE_UNIT_OPTIONS: { value: NonNullable<ServiceDTO["price_unit"]>; label:
 
 const EMPTY_BULLETS = ["", "", "", "", ""];
 
+const SERVICE_PLACEHOLDERS = [
+  {
+    title: "Online Coaching",
+    price: "£160",
+    cta: "Start online coaching",
+    description: "Remote programming tailored to your goals with weekly check-ins.",
+    bullets: [
+      "Fully bespoke programme every 4 weeks",
+      "Weekly video review + WhatsApp support",
+      "Nutrition plan + habit tracker",
+      "Form check on every lift",
+      "Cancel anytime",
+    ],
+  },
+  {
+    title: "Hybrid Coaching",
+    price: "£240",
+    cta: "Start with hybrid",
+    description: "1 in-person session a week + online programming and accountability the rest of the week.",
+    bullets: [
+      "1× in-person session per week",
+      "Bespoke programme + nutrition plan",
+      "Weekly check-in + WhatsApp support",
+      "Open gym access on session days",
+      "Best results, fastest",
+    ],
+  },
+  {
+    title: "1-to-1 In Person",
+    price: "From £75",
+    cta: "Book a session",
+    description: "Hands-on coaching in the gym — perfect for technique, confidence and accountability.",
+    bullets: [
+      "60-minute private session",
+      "Technique coaching on every lift",
+      "Programme written for you",
+      "Progress tracked session-by-session",
+      "Pay-as-you-go or block discounts",
+    ],
+  },
+];
+
+
 type ServiceDraft = Partial<ServiceDTO> & {
   title: string;
   bullets: string[];
@@ -542,12 +585,16 @@ function ServiceEditDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {(() => null)()}
+        {/* Example placeholders rotate by slot so an empty card looks like the demo
+            (1: Online Coaching · 2: Hybrid Coaching · 3: 1-to-1 In Person). */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {(() => null)()}
           <div className="md:col-span-2">
             <TextInput
               value={draft.title}
               onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              placeholder="Title (e.g. Hybrid Coaching)"
+              placeholder={SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].title}
               maxLength={28}
             />
             <div className="mt-1 text-[11px] text-white/40">{draft.title.length}/28</div>
@@ -557,7 +604,7 @@ function ServiceEditDialog({
             <TextInput
               value={draft.price_label ?? ""}
               onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
-              placeholder="£240"
+              placeholder={SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].price}
               maxLength={16}
             />
             <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
@@ -588,7 +635,7 @@ function ServiceEditDialog({
             <TextInput
               value={draft.cta_label ?? ""}
               onChange={(e) => setDraft({ ...draft, cta_label: e.target.value })}
-              placeholder='Button label (e.g. "Start with hybrid")'
+              placeholder={`Button label (e.g. "${SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].cta}")`}
               maxLength={24}
             />
             <div className="mt-1 text-[11px] text-white/40">
@@ -600,7 +647,7 @@ function ServiceEditDialog({
             <TextArea
               value={draft.description ?? ""}
               onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-              placeholder="Short description (1–2 lines)"
+              placeholder={SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].description}
               maxLength={240}
               className="min-h-[64px] w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
             />
@@ -612,22 +659,25 @@ function ServiceEditDialog({
               Keep each one short so they fit on a single line. 60 char max.
             </p>
             <div className="mt-2 grid gap-2">
-              {draft.bullets.map((b, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="w-4 text-[11px] text-white/40">{i + 1}.</span>
-                  <TextInput
-                    value={b}
-                    onChange={(e) => {
-                      const next = [...draft.bullets];
-                      next[i] = e.target.value;
-                      setDraft({ ...draft, bullets: next });
-                    }}
-                    placeholder={i === 0 ? "Weekly 1-to-1 session" : "Add a bullet"}
-                    maxLength={60}
-                  />
-                  <span className="w-10 text-right text-[11px] text-white/35">{b.length}/60</span>
-                </div>
-              ))}
+              {draft.bullets.map((b, i) => {
+                const examples = SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].bullets;
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="w-4 text-[11px] text-white/40">{i + 1}.</span>
+                    <TextInput
+                      value={b}
+                      onChange={(e) => {
+                        const next = [...draft.bullets];
+                        next[i] = e.target.value;
+                        setDraft({ ...draft, bullets: next });
+                      }}
+                      placeholder={examples[i] ?? "Add a bullet"}
+                      maxLength={60}
+                    />
+                    <span className="w-10 text-right text-[11px] text-white/35">{b.length}/60</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
