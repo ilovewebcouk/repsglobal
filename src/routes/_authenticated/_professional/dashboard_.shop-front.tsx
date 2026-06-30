@@ -469,7 +469,7 @@ function ServicesEditor({
               <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
               <div className="mt-0.5 text-[12px] text-white/55">
                 {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
-                {" · "}{s.mode.replace("_", " ")}
+                {" · "}{s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on"}
                 {s.is_featured ? " · Most popular" : ""}
                 {!s.is_published ? " · Hidden" : ""}
               </div>
