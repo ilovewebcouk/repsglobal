@@ -1135,10 +1135,11 @@ function ProfileEditorPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link
-                  to="/dashboard/services"
+                  to="/dashboard/website"
+                  hash="specialisms"
                   className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:border-reps-orange-border hover:text-reps-orange"
                 >
-                  Services & pricing
+                  Specialisms & services
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
                 <Link

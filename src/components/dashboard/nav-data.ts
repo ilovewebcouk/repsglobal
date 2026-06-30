@@ -20,7 +20,6 @@ import {
   ShieldCheck,
   Star,
   Store,
-  Tag,
   Target,
   UserCheck,
   UserCircle,
@@ -53,7 +52,6 @@ export const VERIFIED_NAV = [
     title: "Deliver",
     items: [
       { icon: Store, label: "Website", to: "/dashboard/website" },
-      { icon: Tag, label: "Services", to: "/dashboard/services" },
       { icon: Inbox, label: "Enquiries", to: "/dashboard/enquiries" },
       { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
     ],
@@ -87,7 +85,6 @@ export const PRO_NAV = [
     title: "Deliver",
     items: [
       { icon: Store, label: "Website", to: "/dashboard/website" },
-      { icon: Tag, label: "Services", to: "/dashboard/services" },
       { icon: Dumbbell, label: "Programs", to: "/dashboard/programs" },
       { icon: Apple, label: "Nutrition", to: "/dashboard/nutrition" },
       { icon: ClipboardList, label: "Check-Ins", to: "/dashboard/check-ins" },

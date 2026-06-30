@@ -811,7 +811,7 @@ export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
         icon={Sparkles}
         action={
           <DashboardButton asChild size="sm" variant="ghost">
-            <Link to="/dashboard/services">Manage services</Link>
+            <Link to="/dashboard/website" hash="specialisms">Manage services</Link>
           </DashboardButton>
         }
       />
