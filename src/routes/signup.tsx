@@ -44,7 +44,7 @@ const PLAN_SUMMARIES: Record<
   NonNullable<SignupSearch["tier"]>,
   Record<NonNullable<SignupSearch["period"]>, PlanSummary>
 > = {
-  verified: {
+  core: {
     monthly: {
       name: "REPS Core",
       tagline: "Monetise your professional trust.",
