@@ -246,9 +246,14 @@ export const Route = createFileRoute("/in/$location")({
         },
         { property: "og:title", content: `REPS-Verified Professionals in ${loc.name}` },
         { property: "og:description", content: loc.blurb },
-        { property: "og:url", content: `/in/${loc.slug}` },
+        { property: "og:url", content: `https://repsuk.org/in/${loc.slug}` },
       ],
-      links: [{ rel: "canonical", href: `/in/${loc.slug}` }],
+      // Canonical intentionally omitted at the layout level — TanStack
+      // concatenates `links` across matched routes, so a canonical here
+      // emits a duplicate alongside the leaf `/in/$location/$profession`
+      // canonical, which Google then ignores. Leaf routes own the
+      // canonical; for direct visits to `/in/$location` the engine falls
+      // back to the page URL.
     };
   },
   component: LocationLanding,
