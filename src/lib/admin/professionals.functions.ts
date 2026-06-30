@@ -382,12 +382,15 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     }
 
     // Pre-group subs by user_id so the shared compute can see them all.
-    const subsByUser = new Map<string, typeof subsData>();
+    const subsByUser = new Map<string, SubscriptionRowLite[]>();
     for (const s of subsData) {
+      if (!s.user_id) continue;
+      const lite: SubscriptionRowLite = { ...s, user_id: s.user_id };
       const list = subsByUser.get(s.user_id) ?? [];
-      list.push(s);
+      list.push(lite);
       subsByUser.set(s.user_id, list);
     }
+
 
     let rows: AdminProRow[] = prosFiltered.map(p => {
       const profile = profileMap.get(p.id);
