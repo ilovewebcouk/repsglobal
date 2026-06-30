@@ -112,7 +112,7 @@ function MemberPage() {
   return (
     <DashboardShell role="admin" active="Professionals" title="Member 360" subtitle="One workbench for every member action.">
       <div className="flex flex-col gap-6 p-6">
-        <StickyHeader snapshot={snap.data} loading={snap.isLoading} />
+        <StickyHeader userId={userId} snapshot={snap.data} loading={snap.isLoading} />
 
         <Tabs defaultValue="overview" className="flex flex-col gap-5">
           <div className="sticky top-[112px] z-10 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-2 backdrop-blur-md">
@@ -184,7 +184,26 @@ function MemberPage() {
 
 
 
-function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | undefined; loading: boolean }) {
+function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot: Member360Snapshot | undefined; loading: boolean }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const startFn = useServerFn(startImpersonation);
+  const [viewAsBusy, setViewAsBusy] = useState(false);
+
+  async function handleViewAs() {
+    if (viewAsBusy) return;
+    setViewAsBusy(true);
+    try {
+      await startFn({ data: { professional_id: userId } });
+      await qc.invalidateQueries({ queryKey: ["impersonation-status"] });
+      navigate({ to: "/dashboard" });
+    } catch (e) {
+      console.error("startImpersonation failed", e);
+      toast.error((e as Error).message ?? "Could not start view-as session");
+      setViewAsBusy(false);
+    }
+  }
+
   if (loading || !snapshot) {
     return (
       <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md">
@@ -273,6 +292,15 @@ function StickyHeader({ snapshot, loading }: { snapshot: Member360Snapshot | und
               </Link>
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleViewAs}
+            disabled={viewAsBusy}
+            className="h-9 rounded-[10px] border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+          >
+            <Eye data-icon="inline-start" /> {viewAsBusy ? "Opening…" : "View as"}
+          </Button>
           {/* Overflow menu retired in Phase 6 — destructive actions consolidated into the Delete account dialog. */}
 
         </div>
