@@ -52,6 +52,7 @@ import {
   type FaqDTO,
 } from "@/lib/shop-front/website-content.functions";
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
+import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/shop-front")({
   head: () => ({
