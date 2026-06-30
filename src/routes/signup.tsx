@@ -212,7 +212,7 @@ function SignupPage() {
     search.next === "checkout" && !!search.tier && !!search.period;
 
   const ctaLabel = wantsCheckout
-    ? search.tier === "verified"
+    ? search.tier === "core"
       ? "Continue to payment"
       : "Continue to secure checkout"
     : "Create account";
