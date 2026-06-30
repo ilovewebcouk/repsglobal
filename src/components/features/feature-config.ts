@@ -78,8 +78,8 @@ export const FEATURES: FeatureLink[] = [
   },
   {
     slug: "shop-front",
-    label: "Personalised shop-front",
-    tag: "Shop-front",
+    label: "Personalised website",
+    tag: "Website",
     oneLiner: "Your own page at /c/your-name — your photo, your method, your tiers.",
     icon: Globe,
     group: "shopfront",
@@ -296,10 +296,10 @@ export const FEATURE_GROUPS: FeatureGroupMeta[] = [
   },
   {
     key: "shopfront",
-    label: "Shop-front",
+    label: "Website",
     desc: "Your own page. Your brand. One link.",
     hero: {
-      eyebrow: "Personalised shop-front",
+      eyebrow: "Personalised website",
       title: "A page that sells you while you sleep.",
       sub: "More than a directory profile — a full single-page site at /c/your-name. Your photo, your method, your tiers, your proof, your accent colour. Every CTA drops straight into your REPS enquiry inbox.",
     },

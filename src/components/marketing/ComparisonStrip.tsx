@@ -9,7 +9,7 @@ type Row = { label: string; reps: boolean; trainerize: boolean; mypthub: boolean
 
 const ROWS: Row[] = [
   { label: "Public verified register", reps: true, trainerize: false, mypthub: false, ptd: false },
-  { label: "Personal shop-front at /c/your-name", reps: true, trainerize: false, mypthub: false, ptd: false },
+  { label: "Personal website at /c/your-name", reps: true, trainerize: false, mypthub: false, ptd: false },
   { label: "Replaces your website (Wix / Squarespace)", reps: true, trainerize: false, mypthub: false, ptd: false },
   { label: "AI Operating System included", reps: true, trainerize: false, mypthub: false, ptd: false },
   { label: "No cut of your bookings", reps: true, trainerize: true, mypthub: true, ptd: true },

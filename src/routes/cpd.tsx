@@ -172,8 +172,8 @@ const PATHWAYS = [
   {
     icon: Sparkles,
     title: "REPS platform & AI skills",
-    outcome: "Use your shop-front, enquiries and AI tools to grow on REPS.",
-    topics: ["Shop-front", "Enquiry conversion", "AI assistant"],
+    outcome: "Use your website, enquiries and AI tools to grow on REPS.",
+    topics: ["Website", "Enquiry conversion", "AI assistant"],
   },
   {
     icon: Monitor,

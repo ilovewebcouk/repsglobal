@@ -8,7 +8,7 @@ import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
  * Redirects Verified-tier trainers off Pro-only dashboard routes.
  *
  * Verified is intentionally minimal: badge + credentials + directory listing
- * + email-only enquiries. Pro-only editor pages (shop-front, services,
+ * + email-only enquiries. Pro-only editor pages (website, services,
  * enquiries inbox, reviews, etc.) call this hook at the top of their
  * component to bounce Verified users back to /dashboard with an upgrade toast.
  *

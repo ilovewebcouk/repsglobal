@@ -54,7 +54,7 @@ const QUICK_ANSWERS = [
   {
     icon: Sparkles,
     title: "Compare Pro vs Studio",
-    body: "Shop-front, bookings, payments, growth tools — see what's in each tier.",
+    body: "Website, bookings, payments, growth tools — see what's in each tier.",
     to: "/pricing" as const,
     cta: "See pricing",
   },
@@ -71,7 +71,7 @@ const CHANNELS = [
   {
     label: "Professional support",
     email: "pros@repsuk.org",
-    scope: "Verification, billing, profile and shop-front.",
+    scope: "Verification, billing, profile and website.",
   },
   {
     label: "Partnerships",

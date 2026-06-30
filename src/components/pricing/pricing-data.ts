@@ -121,18 +121,20 @@ export const COMPARE_GROUPS: CompareGroup[] = [
     ],
   },
   {
-    title: "Your shop-front (/c/your-name)",
+    title: "Your website",
     rows: [
-      { label: "Personalised shop-front page", verified: false, pro: true, studio: true },
-      { label: "Custom accent colour + hero photo", verified: false, pro: true, studio: true },
-      { label: "Three-tier services with 'Most popular' highlight", verified: false, pro: true, studio: true },
-      { label: "Methodology / signature method section", verified: false, pro: true, studio: true },
-      { label: "Transformations & proof cards", verified: false, pro: true, studio: true },
-      { label: "Sticky section nav + mobile CTA bar", verified: false, pro: true, studio: true },
-      { label: "Deep-linked enquiry routing", verified: false, pro: true, studio: true },
+      { label: "Personalised website at repsuk.org/c/your-name", verified: true, pro: true, studio: true },
+      { label: "Custom accent colour + hero photo", verified: true, pro: true, studio: true },
+      { label: "Three-tier services with 'Most popular' highlight", verified: true, pro: true, studio: true },
+      { label: "Methodology / signature method section", verified: true, pro: true, studio: true },
+      { label: "Transformations & proof cards", verified: true, pro: true, studio: true },
+      { label: "Sticky section nav + mobile CTA bar", verified: true, pro: true, studio: true },
+      { label: "Deep-linked enquiry routing", verified: true, pro: true, studio: true },
+      { label: "Connect your own custom domain", verified: false, pro: true, studio: true },
       { label: "Team / studio accent options", verified: false, pro: false, studio: true },
     ],
   },
+
   {
     title: "Business operations",
     rows: [

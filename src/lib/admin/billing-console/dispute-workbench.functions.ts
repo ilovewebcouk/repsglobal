@@ -362,7 +362,7 @@ export const aiDraftDisputeEvidence = createServerFn({ method: "POST" })
         amount: `${(c.amountPence / 100).toFixed(2)} ${wb.currency.toUpperCase()}`,
         status: c.status,
       })),
-      product: "REPs membership (fitness professional directory + verification + Shop Front profile on repsuk.org).",
+      product: "REPs membership (fitness professional directory + verification + Website profile on repsuk.org).",
       cancellation_policy:
         "Members can cancel anytime from /account → Membership; cancellation takes effect at the end of the current billing period. No partial refunds for unused time.",
     };

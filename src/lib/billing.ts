@@ -56,7 +56,7 @@ export const TIERS: Record<TierKey, TierConfig> = {
     stripeProductId: "pro_founding",
     isFounding: true,
     blurb:
-      "Everything in Core plus shop-front, bookings, payments, client records, growth and operations tooling.",
+      "Everything in Core plus website, bookings, payments, client records, growth and operations tooling.",
   },
   studio: {
     key: "studio",

@@ -94,7 +94,7 @@ const FLOW_STEPS = [
   {
     icon: Inbox,
     title:"Client clicks Enquire",
-    body:"Every CTA on the Shop Front — hero, tier card, contact panel — opens the same locked enquiry form.",
+    body:"Every CTA on the Website — hero, tier card, contact panel — opens the same locked enquiry form.",
   },
   {
     icon: Workflow,
@@ -125,7 +125,7 @@ const PROOF_BLOCKS = [
   {
     icon: ShieldCheck,
     title:"Verified badge",
-    body:"The REPS Verified mark — checked by a human, displayed at the top of your Shop Front.",
+    body:"The REPS Verified mark — checked by a human, displayed at the top of your Website.",
     accent:"emerald" as const,
   },
   {
@@ -205,15 +205,15 @@ const USE_CASES = [
 
 const FAQ_ITEMS = [
   {
-    q:"Do I need design skills to build a Shop Front?",
+    q:"Do I need design skills to build a Website?",
     a:"No. The layout, typography, dark theme and mobile behaviour are designed once. You pick an accent colour, upload a hero photo, three transformations and a portrait, and write your method, tiers and bio. REPS handles the rest.",
   },
   {
     q:"Can I use my own brand colour?",
-    a:"You pick an accent from the REPS palette — used for CTAs, ticks, badges and the hero glow. The rest of the page stays on the REPS dark theme so every Shop Front feels premium and consistent.",
+    a:"You pick an accent from the REPS palette — used for CTAs, ticks, badges and the hero glow. The rest of the page stays on the REPS dark theme so every Website feels premium and consistent.",
   },
   {
-    q:"Is the Shop Front separate from my directory profile?",
+    q:"Is the Website separate from my directory profile?",
     a:"It's a separate public page at /c/your-name, connected to the same REPS record. Your verified badge, credentials, reviews and insurance status all read live from the same source — no duplication, no drift.",
   },
   {
@@ -221,12 +221,12 @@ const FAQ_ITEMS = [
     a:"They open the same locked enquiry flow shown on your directory profile. Their answers land in your REPS leads pipeline, scored by AI and tagged by the service they were viewing — not your personal inbox.",
   },
   {
-    q:"Do I need Pro to publish a Shop Front?",
-    a:"Yes. A branded Shop Front at /c/your-name is included in Pro (£59/month — Founding pricing) and Studio (£149/month). Verified gives you the public directory profile and an enquiry inbox, but not the dedicated Shop Front page.",
+    q:"Do I need Pro to publish a Website?",
+    a:"Yes. A branded Website at /c/your-name is included in Pro (£59/month — Founding pricing) and Studio (£149/month). Verified gives you the public directory profile and an enquiry inbox, but not the dedicated Website page.",
   },
   {
     q:"Can I share one URL on Instagram and WhatsApp?",
-    a:"Yes — your Shop Front URL is /c/your-name. Replace your Linktree, your old Wix site and the half-dozen booking links with a single clean URL clients can act on.",
+    a:"Yes — your Website URL is /c/your-name. Replace your Linktree, your old Wix site and the half-dozen booking links with a single clean URL clients can act on.",
   },
 ];
 
@@ -238,16 +238,16 @@ export const Route = createFileRoute("/features/shop-front")({
   head: () => ({
     meta: [
       {
-        title:"Shop-front — Your fitness business website, built into REPS · REPS",
+        title:"Website — Your fitness business website, built into REPS · REPS",
       },
       {
         name:"description",
         content:
-"A professional Shop Front for fitness pros — services, credentials, reviews, packages and booking options in one client-ready page, connected to your REPS enquiries, bookings and clients.",
+"A professional Website for fitness pros — services, credentials, reviews, packages and booking options in one client-ready page, connected to your REPS enquiries, bookings and clients.",
       },
       {
         property:"og:title",
-        content:"Shop-front — Your fitness business website, built into REPS",
+        content:"Website — Your fitness business website, built into REPS",
       },
       {
         property:"og:description",
@@ -289,10 +289,10 @@ function ShopFrontPage() {
       />
 
       <FinalCta
-        heading="Build a Shop Front clients can"
+        heading="Build a Website clients can"
         headingAccent="understand, trust and act on."
         lede="Create a professional website page connected to your REPS profile, services, bookings and client workflow."
-        primary={{ to:"/signup", label:"Create your Shop Front" }}
+        primary={{ to:"/signup", label:"Create your Website" }}
         secondary={{ to:"/pricing", label:"Explore REPS Pro" }}
       />
 
@@ -323,7 +323,7 @@ function Hero() {
             icon={Sparkles}
             style={{ animationDuration:"560ms", animationFillMode:"both" }}
           >
-            Shop-front · Your client-facing page
+            Website · Your client-facing page
           </MarketingHeroEyebrow>
 
           <h1
@@ -338,7 +338,7 @@ function Hero() {
             className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
             style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
-            A professional Shop Front that shows your services, credentials, reviews, packages and
+            A professional Website that shows your services, credentials, reviews, packages and
             booking options in one client-ready page — connected to your enquiries, bookings and
             clients inside REPS.
           </p>
@@ -351,7 +351,7 @@ function Hero() {
               to="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
-              Create your Shop Front <ArrowRight className="h-4 w-4" />
+              Create your Website <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#anatomy"
@@ -399,7 +399,7 @@ function ProblemSection() {
           {/* Before — scattered */}
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/40 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-              <X className="h-3 w-3" /> Today, without a Shop Front
+              <X className="h-3 w-3" /> Today, without a Website
             </span>
             <BlockHeading className="mt-4">Eight tools. One confused client.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -430,7 +430,7 @@ function ProblemSection() {
           {/* After — REPS */}
           <div className="rounded-[22px] border border-reps-orange-border bg-reps-panel/60 p-7">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-              <Check className="h-3 w-3" /> With a REPS Shop Front
+              <Check className="h-3 w-3" /> With a REPS Website
             </span>
             <BlockHeading className="mt-4">One URL. One clear offer. One workflow.</BlockHeading>
             <ul className="mt-6 space-y-2.5">
@@ -454,7 +454,7 @@ function ProblemSection() {
               ))}
             </ul>
             <p className="mt-6 text-[13.5px] leading-relaxed text-white/70">
-              Visibility gets you found. The Shop Front helps clients <em>decide</em> and{""}
+              Visibility gets you found. The Website helps clients <em>decide</em> and{""}
               <em>take action</em>.
             </p>
           </div>
@@ -473,8 +473,8 @@ function AnatomySection() {
     <section id="anatomy" className="scroll-mt-24 bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Anatomy of a Shop Front"
-          heading="An actual REPS Shop Front — six things every client checks."
+          eyebrow="Anatomy of a Website"
+          heading="An actual REPS Website — six things every client checks."
           lede="This isn't a template preview. It's a fully-built Pro-tier page running on REPS right now. Open it in a new tab and scroll, or read the call-outs below."
         />
 
@@ -483,7 +483,7 @@ function AnatomySection() {
             mockup={{
               device:"laptop",
               src:"/c/james-wilson",
-              title:"Live REPS Pro Shop Front for James Wilson",
+              title:"Live REPS Pro Website for James Wilson",
             }}
             callouts={SHOPFRONT_CALLOUTS}
           />
@@ -551,7 +551,7 @@ function FlowSection() {
         <SectionHeader
           eyebrow="Enquire · Book · Pay · Onboard"
           heading="When someone clicks Enquire, they don't disappear into your inbox."
-          lede="Every CTA on your Shop Front connects to the same REPS workflow your existing clients already use. Lead in, client out — without copying anything between four different tools."
+          lede="Every CTA on your Website connects to the same REPS workflow your existing clients already use. Lead in, client out — without copying anything between four different tools."
         />
 
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -603,7 +603,7 @@ function ProofSection() {
         <SectionHeader
           eyebrow="Proof built into the page"
           heading="Your website shouldn't just look good. It should prove why clients can trust you."
-          lede="The Shop Front pulls live from your REPS standards record — every credential, every review, every CPD entry. Visibly. Without you maintaining a second copy."
+          lede="The Website pulls live from your REPS standards record — every credential, every review, every CPD entry. Visibly. Without you maintaining a second copy."
         />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -664,7 +664,7 @@ function PurposeBuiltSection() {
           <div className="rounded-[22px] border border-reps-border bg-reps-panel/60 p-7 lg:p-10">
             <BlockHeading>A page built around the client journey.</BlockHeading>
             <p className="mt-4 text-[14.5px] leading-relaxed text-white/70">
-              Every section on a REPS Shop Front exists to move someone one step further down this
+              Every section on a REPS Website exists to move someone one step further down this
               journey. Nothing decorative. Nothing optional. Nothing missing.
             </p>
 
@@ -742,21 +742,21 @@ function TierComparisonSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Core vs Pro"
-          heading="Verified makes you visible. Pro publishes your Shop Front."
-          lede="A branded Shop Front at /c/your-name is a Pro and Studio feature. Verified still gives you the directory profile, verified credentials, reviews and an enquiry inbox — but not the dedicated client-facing page."
+          heading="Verified makes you visible. Pro publishes your Website."
+          lede="A branded Website at /c/your-name is a Pro and Studio feature. Verified still gives you the directory profile, verified credentials, reviews and an enquiry inbox — but not the dedicated client-facing page."
         />
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           <TierCard
             badge="Core"
             price="£99 / year"
-            blurb="Public verified profile, directory presence, reviews and an enquiry inbox. No dedicated Shop Front page."
+            blurb="Public verified profile, directory presence, reviews and an enquiry inbox. No dedicated Website page."
             cta={{ to:"/features/visibility", label:"See what Verified covers" }}
           />
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus a branded Shop Front, bookings, payments, CRM and client management."
+            blurb="Everything in Verified, plus a branded Website, bookings, payments, CRM and client management."
             highlighted
             cta={{ to:"/pricing", label:"See Pro pricing" }}
           />
@@ -766,7 +766,7 @@ function TierComparisonSection() {
           <div className="overflow-x-auto">
             <div className="min-w-[420px]">
               <div className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                <span>Shop Front capability</span>
+                <span>Website capability</span>
                 <span className="text-center">Core</span>
                 <span className="text-center">Pro</span>
               </div>
@@ -812,7 +812,7 @@ function UseCasesSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Built for every kind of pro"
-          heading="What your Shop Front looks like for…"
+          heading="What your Website looks like for…"
           lede="The structure stays the same. The offer flexes to how you work — whether you're 1:1, online, in a studio or running a team."
         />
 

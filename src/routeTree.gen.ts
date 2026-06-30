@@ -113,6 +113,7 @@ import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
 import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admin_.billing.disputes.$disputeId'
+import { Route as AuthenticatedProfessionalDashboardWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.website'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
@@ -673,6 +674,12 @@ const AdminBillingDisputesDisputeIdRoute =
     path: '/disputes/$disputeId',
     getParentRoute: () => AdminBillingRoute,
   } as any)
+const AuthenticatedProfessionalDashboardWebsiteRoute =
+  AuthenticatedProfessionalDashboardWebsiteRouteImport.update({
+    id: '/dashboard_/website',
+    path: '/dashboard/website',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardVerificationRoute =
   AuthenticatedProfessionalDashboardVerificationRouteImport.update({
     id: '/dashboard_/verification',
@@ -953,6 +960,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
+  '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
@@ -1081,6 +1089,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
+  '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
@@ -1217,6 +1226,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
+  '/_authenticated/_professional/dashboard_/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin_/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
@@ -1351,6 +1361,7 @@ export interface FileRouteTypes {
     | '/dashboard/shop-front'
     | '/dashboard/support'
     | '/dashboard/verification'
+    | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
@@ -1479,6 +1490,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/shop-front'
     | '/dashboard/verification'
+    | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
@@ -1614,6 +1626,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
+    | '/_authenticated/_professional/dashboard_/website'
     | '/admin_/billing/disputes/$disputeId'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
@@ -2467,6 +2480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBillingDisputesDisputeIdRouteImport
       parentRoute: typeof AdminBillingRoute
     }
+    '/_authenticated/_professional/dashboard_/website': {
+      id: '/_authenticated/_professional/dashboard_/website'
+      path: '/dashboard/website'
+      fullPath: '/dashboard/website'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardWebsiteRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/dashboard_/verification': {
       id: '/_authenticated/_professional/dashboard_/verification'
       path: '/dashboard/verification'
@@ -2788,6 +2808,7 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
   AuthenticatedProfessionalDashboardSupportRoute: typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
+  AuthenticatedProfessionalDashboardWebsiteRoute: typeof AuthenticatedProfessionalDashboardWebsiteRoute
 }
 
 const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRouteRouteChildren =
@@ -2816,6 +2837,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardSupportRouteWithChildren,
     AuthenticatedProfessionalDashboardVerificationRoute:
       AuthenticatedProfessionalDashboardVerificationRoute,
+    AuthenticatedProfessionalDashboardWebsiteRoute:
+      AuthenticatedProfessionalDashboardWebsiteRoute,
   }
 
 const AuthenticatedProfessionalRouteRouteWithChildren =
@@ -3000,13 +3023,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

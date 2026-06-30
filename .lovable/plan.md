@@ -1,37 +1,74 @@
-# Fix Core pricing card + QA Stripe
+## Goal
 
-## Problem
-On the pricing page, toggling **Monthly** shows Core as **£8.25 / per month · Billed monthly · cancel anytime**. Core is annual-only (£99/yr). The card should show the **same £99 billed yearly** view regardless of which billing toggle is active. Pro/Studio continue to flip monthly ↔ annual as today.
+1. Kill "Shop-front" / "shop front" terminology everywhere user-facing — replace with **"Website"**.
+2. Update the pricing compare table so **Core gets Website features** too, with **Custom domain** as the Pro/Studio differentiator.
+3. Rename the dashboard route slug `/dashboard/shop-front` → `/dashboard/website` (with redirect).
+4. Code-level cleanup of `shop-front` directories/symbols where safe (lib folders), without touching DB column names.
 
-Separately, Stripe prices were edited recently and need to be reverted/verified so `verified_annual` is back to £99/yr (one-off annual, no monthly Core SKU).
+## Scope of changes
 
-## Frontend fix (src/components/pricing/pricing-data.ts)
-Update the `verified` plan so both `monthly` and `annual` views render the canonical annual offer:
+### A. Pricing compare table (`src/components/pricing/pricing-data.ts`)
 
-```ts
-pricing: {
-  monthly: { price: "£99", period: "per year", meta: "Billed yearly · cancel anytime" },
-  annual:  { price: "£99", period: "per year", meta: "Billed yearly · cancel anytime" },
-}
-```
+Rewrite the "Your shop-front (/c/your-name)" group as **"Your website"**:
 
-No change needed in `PricingPlans.tsx` — it already forces `view = p.pricing.annual` for `tierKey === "verified"`, so once both views match, the card is locked to £99/yr on either toggle. Remove the now-redundant `was`/discount meta if present.
+| Row | Core | Pro | Studio |
+|---|---|---|---|
+| Personalised website page (/c/your-name) | ✓ | ✓ | ✓ |
+| Custom accent colour + hero photo | ✓ | ✓ | ✓ |
+| Three-tier services with 'Most popular' highlight | ✓ | ✓ | ✓ |
+| Methodology / signature method section | ✓ | ✓ | ✓ |
+| Transformations & proof cards | ✓ | ✓ | ✓ |
+| Sticky section nav + mobile CTA bar | ✓ | ✓ | ✓ |
+| Deep-linked enquiry routing | ✓ | ✓ | ✓ |
+| **Connect a custom domain** | — | ✓ | ✓ |
+| Team / studio accent options | — | — | ✓ |
 
-Compare table row "Live offer" in `COMPARE_GROUPS` already reads `£99/year` — leave as-is.
+Also update the "Visibility & trust" row label "Public directory listing (/pro/your-name)" — leave as-is (directory is separate from website).
 
-## Stripe QA (read-only first, then revert if drift found)
-1. List active prices on the `verified` product via Stripe API (server-side script or admin tool) and confirm:
-   - lookup_key `verified_annual` → £99.00 GBP, interval `year`, active
-   - lookup_key `verified_legacy_annual` → £34.00 GBP, interval `year`, active (migration honour price — must stay)
-   - No new monthly Core price exists; if one was created in the recent edit, deactivate it.
-2. If `verified_annual` was edited to a different unit_amount, create a fresh £99/yr price, attach lookup_key `verified_annual` (move from the wrong one), and deactivate the bad price. Stripe prices are immutable on amount, so this is the standard swap.
-3. Confirm `src/lib/billing.ts` `CHECKOUT_OFFERS.verified.annual.display` still reads `£99/yr` (it does) and that `getCheckoutOffer("verified","monthly")` correctly returns `null` so the UI can never request a Core monthly checkout.
-4. Sanity-check a Stripe Checkout session creation for `verified_annual` returns £99.00 GBP, one-off annual, no trial.
+### B. Global copy sweep "Shop-front" → "Website"
 
-## Technical notes
-- `PricingPlans.tsx` line ~73: `const view = p.pricing[p.tierKey === "verified" ? "annual" : billing];` — already protects Core. Fix is purely in `pricing-data.ts` so the annual view text reads cleanly ("Billed yearly · cancel anytime" instead of the misleading "£99 billed yearly · 2 months free" which implies a monthly equivalent).
-- Stripe price swap procedure: `prices.create` new → `prices.update(old, { lookup_key: null })` → `prices.update(new, { lookup_key: 'verified_annual', transfer_lookup_key: true })` → `prices.update(old, { active: false })`. Existing subscriptions on the old price ID are unaffected.
+Files to update (user-facing strings only — leave DB columns, migration files, and `.gen.ts` alone):
 
-## Out of scope
-- Pro/Studio pricing, toggle behaviour, founding badges.
-- Legacy `verified_legacy_annual` £34/yr honour price (must remain for in-flight BD migrations).
+- `src/components/pricing/pricing-data.ts` (group title + features bullets)
+- `src/routes/features.shop-front.tsx` → keep file path (SEO) but update H1/meta/copy to "Website". (Optional: add 301 later — out of scope this pass.)
+- `src/components/features/feature-config.ts` + `feature-content.tsx` — label "Shop-front" → "Website"
+- `src/components/public/PublicHeader.tsx` — nav label
+- `src/components/dashboard/nav-data.ts` — sidebar "Shop-front" → "Website"
+- `src/components/dashboard/hub/index.tsx` — hub tile copy
+- `src/components/dashboard/HeroImageEditor.tsx`, `ServiceImageEditor.tsx` — UI copy
+- `src/routes/_authenticated/_professional/dashboard.tsx`, `dashboard_.profile.tsx`, `dashboard_.services.tsx` — any visible copy
+- `src/routes/c.$slug.tsx`, `pro.$slug.enquire.tsx`, `pro.$slug.review.tsx` — meta/copy
+- `src/routes/for-professionals.tsx`, `features.visibility.tsx`, `features.operations.tsx`, `features.coaching.tsx`, `features.growth.tsx`, `features.ai.tsx`, `about.tsx`, `reviews.tsx`, `cpd.tsx`, `contact.tsx`, `coming-soon.tsx`
+- `src/components/marketing/TierCard.tsx`, `ComparisonStrip.tsx`, `ReplacedStackBoard.tsx`
+- `src/components/contact/ContactForm.tsx`
+- `src/components/features/PillarPage.tsx`, `FeatureGroupLayout.tsx`
+- `src/lib/email-templates/relaunch-announcement.tsx`
+- `public/llms.txt`
+- `tests/seo-snapshot.test.mjs` — update expected strings
+
+### C. Dashboard route rename
+
+- Create new route `src/routes/_authenticated/_professional/dashboard_.website.tsx` (move contents of `dashboard_.shop-front.tsx`).
+- Replace `dashboard_.shop-front.tsx` with a redirect to `/dashboard/website` (preserves any old bookmarks/links).
+- Update all internal `<Link to="/dashboard/shop-front">` → `/dashboard/website` (sidebar, hub, profile page, etc.).
+
+### D. Lib folder rename (optional, low risk)
+
+- Leave `src/lib/shop-front/*` paths intact this pass to avoid wide import churn. Only rename if quick (will assess at build time). DB column `shop_front_*` stays.
+
+### E. Memory updates
+
+- Update `mem://design/coach-shopfront` and `mem://design/locked-shop-front` headers/descriptions to say "Website" (content rules unchanged).
+- Update Core memory line about "Shop-front is a Pro+Studio feature" → "Website is available on all tiers; custom domain is Pro+Studio."
+
+### Out of scope (call out, not doing now)
+
+- Actual custom-domain wiring (DNS / cert provisioning) — pricing claim only; build later.
+- Renaming `lib/shop-front/` folder & `shop_front_*` DB columns — internal only, deferrable.
+- 301 redirect for `/features/shop-front` → `/features/website` — can add in a follow-up.
+
+## Verification
+
+- `bun run build:dev` clean
+- `bun run test:seo` passes (after updating expected strings)
+- Manual: visit `/pricing`, `/dashboard/website`, `/features/shop-front`, `/c/james-wilson` — copy reads "Website" everywhere.

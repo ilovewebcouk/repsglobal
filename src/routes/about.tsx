@@ -62,7 +62,7 @@ const PILLARS: Array<{ label: string; body: string; to: string }> = [
     to: "/features/visibility",
   },
   {
-    label: "Shop Front",
+    label: "Website",
     body: "A client-facing page that presents your services with clarity.",
     to: "/features/shop-front",
   },
@@ -382,7 +382,7 @@ function AboutPage() {
             </p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
               REPS is being built to give those professionals a stronger foundation: a public
-              profile, a Shop Front, a place to manage enquiries, a system for bookings, payments
+              profile, a Website, a place to manage enquiries, a system for bookings, payments
               and onboarding, tools for coaching delivery, and support for reviews, referrals, CPD
               and growth.
             </p>

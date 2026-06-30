@@ -68,7 +68,7 @@ export const FEATURE_GROUPS: Group[] = [
     ],
   },
   {
-    label: "Shop-front · Your own page",
+    label: "Website · Your own page",
     rows: [
       {
         feature: "Public single-page site at a personal URL (/c/your-name)",
@@ -89,7 +89,7 @@ export const FEATURE_GROUPS: Group[] = [
         ],
       },
       {
-        feature: "Enquiries deep-linked from shop-front into CRM",
+        feature: "Enquiries deep-linked from website into CRM",
         cells: [
           { kind: "yes" },
           { kind: "no" },

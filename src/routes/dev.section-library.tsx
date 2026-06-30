@@ -143,7 +143,7 @@ function SectionLibrary() {
         <div className="mt-10 grid gap-16">
           <ProductBlock
             eyebrow="Capability · Verified profile"
-            title="Your verified shop-front on the register"
+            title="Your verified website on the register"
             body="The page clients land on after they search. Qualifications, insurance and reviews — all checked."
             bullets={["Qualifications verified", "Insurance on file", "Reviews on the record"]}
             imageLabel="Pro profile"
@@ -151,12 +151,12 @@ function SectionLibrary() {
           />
           <ProductBlock
             reverse
-            eyebrow="Capability · Coach shop-front"
+            eyebrow="Capability · Coach website"
             title="A premium page for your services"
-            body="Pro-tier shop-front with tiered services, transformations and proof."
+            body="Pro-tier website with tiered services, transformations and proof."
             bullets={["Three-tier services", "Transformation proof", "Embedded booking"]}
-            imageLabel="Coach shop-front"
-            mockup={{ device: "phone", src: "/c/james-wilson", title: "Coach shop-front" }}
+            imageLabel="Coach website"
+            mockup={{ device: "phone", src: "/c/james-wilson", title: "Coach website" }}
           />
         </div>
       </Group>

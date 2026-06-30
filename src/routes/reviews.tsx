@@ -256,7 +256,7 @@ const WHY_PROS = [
   {
     icon: Sparkles,
     title: "Reviews follow you everywhere on REPS.",
-    body: "Verified reviews show on your shop-front, profile, enquire pages, and across profession and city search results. One source of truth.",
+    body: "Verified reviews show on your website, profile, enquire pages, and across profession and city search results. One source of truth.",
   },
 ];
 
@@ -302,7 +302,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Where do reviews show up across REPS?",
-    a: "On the pro's profile and shop-front, on their enquire page, on profession and city search results, and here on the public reviews hub. One verified source — everywhere.",
+    a: "On the pro's profile and website, on their enquire page, on profession and city search results, and here on the public reviews hub. One verified source — everywhere.",
   },
 ];
 

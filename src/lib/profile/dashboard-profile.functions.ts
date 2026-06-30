@@ -18,9 +18,9 @@ export type DashboardProfile = {
   // identity (profiles) — THREE-NAMES MODEL
   /** Legal name — must match ID + certs. Locked after identity approval. */
   full_name: string;
-  /** Public-facing name (directory, shop-front). Defaults to full_name. */
+  /** Public-facing name (directory, website). Defaults to full_name. */
   display_name: string | null;
-  /** Trading / business name (invoices, shop-front header). Optional. */
+  /** Trading / business name (invoices, website header). Optional. */
   business_name: string | null;
   avatar_url: string | null;
   /** Mirror of professionals.identity_status — drives the legal-name lock. */

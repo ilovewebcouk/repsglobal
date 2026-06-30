@@ -4,7 +4,7 @@ import { FeaturePageLayout } from "@/components/features/FeaturePageLayout";
 import { FEATURE_CONTENT } from "@/components/features/feature-content";
 import { FEATURES, type FeatureLink } from "@/components/features/feature-config";
 
-// shop-front has its own static route at /features/shop-front, so exclude from dynamic.
+// website has its own static route at /features/shop-front, so exclude from dynamic.
 const VALID_SLUGS = new Set(
   FEATURES.filter((f) => f.slug !== "shop-front").map((f) => f.slug),
 );

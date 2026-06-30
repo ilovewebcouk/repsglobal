@@ -179,8 +179,8 @@ const PROFILE_BULLETS = [
   "Profile bio drafted from your specialisms and reviews",
   "Service descriptions tightened for clarity and search",
   "Review highlights summarised into trust quotes",
-  "Shop Front sections suggested based on what converts",
-  "On-brand copy across profile, Shop Front and posts",
+  "Website sections suggested based on what converts",
+  "On-brand copy across profile, Website and posts",
 ];
 
 const USE_CASES = [
@@ -226,7 +226,7 @@ const COMPARISON_ROWS: Array<{ feature: string; verified: boolean; pro: boolean 
   { feature: "AI client risk alerts", verified: false, pro: true },
   { feature: "Weekly Next Move cards", verified: false, pro: true },
   { feature: "AI content drafts in your tone", verified: false, pro: true },
-  { feature: "AI profile and Shop Front suggestions", verified: false, pro: true },
+  { feature: "AI profile and Website suggestions", verified: false, pro: true },
 ];
 
 const FAQ_ITEMS = [
@@ -675,7 +675,7 @@ function OperationsSection() {
 }
 
 // -----------------------------------------------------------------------------
-// 8. Profile and Shop Front
+// 8. Profile and Website
 // -----------------------------------------------------------------------------
 
 function ProfileSection() {
@@ -683,13 +683,13 @@ function ProfileSection() {
     <section className="bg-reps-panel/15">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Profile and Shop Front"
+          eyebrow="Profile and Website"
           heading="Your storefront, written in your voice — not a templated AI blurb."
-          lede="REPS AI tightens your bio, sharpens your service copy and surfaces the review quotes that earn trust — so your profile and Shop Front work harder without sounding generic."
+          lede="REPS AI tightens your bio, sharpens your service copy and surfaces the review quotes that earn trust — so your profile and Website work harder without sounding generic."
         />
         <div className="mt-12">
           <ProductBlock
-            eyebrow="Profile and Shop Front"
+            eyebrow="Profile and Website"
             title="The copy that converts — drafted from the words you already publish."
             body="Drafts learn from your real reviews, your real client outcomes and your real tone of voice. So the storefront sounds like you, not a templated assistant."
             bullets={PROFILE_BULLETS}

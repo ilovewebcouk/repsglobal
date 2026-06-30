@@ -19,7 +19,7 @@ const TTL_MS = 30_000;
 
 /** Returns the canonical set of professional IDs that may appear on public
  *  surfaces (directory, profession + city landing pages, hero rail, public
- *  profile, shop-front). Cached briefly to keep page loads fast. */
+ *  profile, website). Cached briefly to keep page loads fast. */
 export async function getPubliclyVisibleProIds(): Promise<Set<string>> {
   const now = Date.now();
   if (_cache && _cache.expires > now) return _cache.ids;

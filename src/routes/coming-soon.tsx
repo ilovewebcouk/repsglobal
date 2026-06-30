@@ -63,7 +63,7 @@ const PROOF = [
   {
     icon: Hammer,
     title: "Built with professionals",
-    body: "Visibility, shop-front, operations, coaching, growth — one connected platform, not another directory.",
+    body: "Visibility, website, operations, coaching, growth — one connected platform, not another directory.",
   },
 ];
 
@@ -75,7 +75,7 @@ const LAUNCHING = [
   },
   {
     icon: Store,
-    label: "Pro shop-fronts",
+    label: "Pro websites",
     body: "A client-facing page that presents services, packages and proof with clarity — and a clean route to enquire, book and pay. No more linktrees and DMs.",
   },
   {
@@ -222,7 +222,7 @@ function ComingSoonPage() {
             </SectionHeading>
             <p className="mt-5 text-[15.5px] leading-relaxed text-white/70">
               Six connected products under one professional standard — public trust, visibility,
-              shop-front, operations, coaching and growth — built around the way fitness
+              website, operations, coaching and growth — built around the way fitness
               professionals actually work today.
             </p>
           </div>

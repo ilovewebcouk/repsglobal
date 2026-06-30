@@ -122,7 +122,7 @@ const SEGMENTS = [
   { key:"pilates", label:"Pilates", src:"/professions/pilates-instructor", device:"laptop" as const, title:"Pilates instructor landing" },
   { key:"yoga", label:"Yoga", src:"/professions/yoga-teacher", device:"laptop" as const, title:"Yoga teacher landing" },
   { key:"group", label:"Group ex", src:"/professions/group-exercise", device:"laptop" as const, title:"Group exercise landing" },
-  { key:"studio", label:"Studio team", src:"/c/james-wilson", device:"laptop" as const, title:"Studio shop-front" },
+  { key:"studio", label:"Studio team", src:"/c/james-wilson", device:"laptop" as const, title:"Studio website" },
 ];
 
 const COMPARISON_ROWS = [
@@ -130,7 +130,7 @@ const COMPARISON_ROWS = [
   { feature:"Reviews from verified clients", verified: true, pro: true },
   { feature:"City + specialism landing pages", verified: true, pro: true },
   { feature:"Enquiry inbox", verified: true, pro: true },
-  { feature:"Branded shop-front at /c/your-name", verified: false, pro: true },
+  { feature:"Branded website at /c/your-name", verified: false, pro: true },
   { feature:"Bookings, forms, payments", verified: false, pro: true },
   { feature:"Client CRM & onboarding", verified: false, pro: true },
   { feature:"Profile-views & enquiry analytics", verified: false, pro: true },
@@ -151,7 +151,7 @@ const FAQ_ITEMS = [
   },
   {
     q:"Do I need Pro to be visible?",
-    a:"No. Verified gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded shop-front and the client management tools that turn enquiries into a working business.",
+    a:"No. Verified gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded website and the client management tools that turn enquiries into a working business.",
   },
   {
     q:"Is my REPS profile indexed by search engines?",
@@ -687,7 +687,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus bookings, payments, branded shop-front, CRM and client management."
+            blurb="Everything in Verified, plus bookings, payments, branded website, CRM and client management."
             highlighted
             cta={{ to:"/features/shop-front", label:"See the Pro shop-front" }}
           />
