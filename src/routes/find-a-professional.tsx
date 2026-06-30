@@ -462,6 +462,7 @@ function DirectoryPage() {
     <div className="min-h-screen bg-reps-ivory">
       <PublicHeader variant="solid" mobileOpaque />
 
+      <h1 className="sr-only">Find a verified fitness professional</h1>
 
       <ResultsSearchBar state={barState} total={visibleTotal} />
 
