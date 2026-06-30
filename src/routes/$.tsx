@@ -13,7 +13,6 @@
  * cleaner than soft-404.
  */
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { setResponseStatus } from "@tanstack/react-start/server";
 import { resolveLegacyPath } from "@/lib/seo/legacy-redirects.functions";
 
 export const Route = createFileRoute("/$")({
@@ -41,7 +40,10 @@ export const Route = createFileRoute("/$")({
 
     if (result.action === "gone") {
       // Set 410 on the SSR response so Google deindexes cleanly.
-      try { setResponseStatus(410); } catch { /* client nav */ }
+      try {
+        const { setResponseStatus } = await import("@tanstack/react-start/server");
+        setResponseStatus(410);
+      } catch { /* client nav */ }
       return { reason: result.reason };
     }
 
