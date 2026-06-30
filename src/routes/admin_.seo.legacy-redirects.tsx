@@ -54,6 +54,16 @@ function LegacyRedirectsPage() {
     },
   });
 
+  const rechainFn = useServerFn(rechainLegacyRedirects);
+  const [rechainResult, setRechainResult] = useState<{ scanned: number; resolved: number; newlyResolved: number } | null>(null);
+  const rechainMut = useMutation({
+    mutationFn: () => rechainFn(),
+    onSuccess: (res) => {
+      setRechainResult({ scanned: res.scanned, resolved: res.resolved, newlyResolved: res.newlyResolved });
+      qc.invalidateQueries({ queryKey: ["legacy-redirects-stats"] });
+    },
+  });
+
   function onFile(file: File) {
     setParseError(null);
     setImportResult(null);
