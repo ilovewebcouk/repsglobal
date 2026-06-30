@@ -93,6 +93,8 @@ export const getMyTicket = createServerFn({ method: "POST" })
         "id, ticket_number, subject, status, priority, last_message_at, created_at, tags, requester_unread",
       )
       .eq("id", data.id)
+      .eq("requester_user_id", context.userId)
+
       .maybeSingle();
     if (tErr) throw new Error(tErr.message);
     if (!ticket) throw new Error("Ticket not found");
