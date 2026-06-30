@@ -82,7 +82,8 @@ export function SpecialismsDeliveryPanel() {
   });
 
   return (
-    <PPanel id="specialisms">
+    <div id="specialisms" className="scroll-mt-24">
+    <PPanel>
       <div className="flex items-start justify-between gap-4 border-b border-reps-border px-5 py-4">
         <div>
           <h3 className="text-[14px] font-semibold text-white">Specialisms & delivery</h3>
