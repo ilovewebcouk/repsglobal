@@ -30,7 +30,6 @@ import {
 import { toast } from "sonner";
 
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
-import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import { myIdentity } from "@/lib/verification/identity.functions";
 import { createStripeIdentitySession } from "@/lib/verification/stripe-identity.functions";
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
@@ -49,12 +48,14 @@ function ProfileCard({
   step,
   children,
   id,
+  badge,
 }: {
   title: string;
   subtitle?: string;
   step?: string;
   children: React.ReactNode;
   id?: string;
+  badge?: React.ReactNode;
 }) {
   return (
     <section
@@ -63,7 +64,10 @@ function ProfileCard({
     >
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="font-display text-[15px] font-semibold text-white">{title}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-[15px] font-semibold text-white">{title}</h2>
+            {badge}
+          </div>
           {subtitle ? <p className="mt-0.5 text-[12px] text-white/55">{subtitle}</p> : null}
         </div>
         {step ? (
@@ -198,6 +202,28 @@ export function IdentityProfileCard({ step }: { step?: string }) {
   const identityQ = useQuery({ queryKey: ["my-identity"], queryFn: () => fetchIdentity() });
   const identity = identityQ.data as IdentityRow | null | undefined;
 
+  const identityBadge = identity ? (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+        identity.status === "approved"
+          ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+          : identity.status === "rejected" || identity.status === "expired"
+            ? "border-red-400/30 bg-red-500/15 text-red-300"
+            : "border-amber-400/30 bg-amber-500/15 text-amber-300"
+      }`}
+    >
+      {identity.status === "approved"
+        ? "ID-checked"
+        : identity.status === "rejected"
+          ? "Rejected"
+          : identity.status === "needs_more_info"
+            ? "More info needed"
+            : identity.status === "expired"
+              ? "Expired"
+              : "In review"}
+    </span>
+  ) : undefined;
+
   // Poll while Stripe Identity is pending.
   const pendingStripe = identity?.vendor === "stripe" && identity?.status === "pending";
   useQuery({
@@ -223,6 +249,7 @@ export function IdentityProfileCard({ step }: { step?: string }) {
       step={step}
       title="Identity"
       subtitle="Confirm who you are with Stripe Identity. Encrypted, never shown on your public profile."
+      badge={identityBadge}
     >
       <IdentityBody identity={identity} onSaved={onSaved} />
     </ProfileCard>
@@ -258,35 +285,14 @@ function IdentityBody({
     const stripeInProgress =
       isStripe && identity.status === "pending" && !!identity.stripe_vs_url && !staleStripe;
 
-    const badgeLabel =
-      identity.status === "approved"
-        ? "ID-checked"
-        : identity.status === "rejected"
-          ? "Rejected"
-          : identity.status === "needs_more_info"
-            ? "More info needed"
-            : identity.status === "expired"
-              ? "Expired"
-              : "In review";
-
-    const badgeClass =
-      identity.status === "approved"
-        ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-        : identity.status === "rejected" || identity.status === "expired"
-          ? "border-red-400/30 bg-red-500/15 text-red-300"
-          : "border-amber-400/30 bg-amber-500/15 text-amber-300";
-
     const reason = identity.admin_note || identity.stripe_reason;
 
     return (
       <div>
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-[12px] text-white/65">
-            Stripe Identity check
-            {identity.name_on_doc ? ` · ${identity.name_on_doc}` : ""}
-          </p>
-          <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
-        </div>
+        <p className="text-[12px] text-white/65">
+          Stripe Identity check
+          {identity.name_on_doc ? ` · ${identity.name_on_doc}` : ""}
+        </p>
         {reason && identity.status !== "approved" && (
           <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -375,6 +381,40 @@ export function InsuranceProfileCard({ step }: { step?: string }) {
   const insurance = insuranceQ.data as InsuranceRow;
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const insuranceBadge = (() => {
+    if (!insurance) return undefined;
+    const today = new Date().toISOString().slice(0, 10);
+    const isExpired = insurance.expiry_date < today;
+    const daysToExpiry = Math.round(
+      (new Date(insurance.expiry_date).getTime() - Date.now()) / 86_400_000,
+    );
+    const expiringSoon = !isExpired && daysToExpiry <= 30;
+
+    const label = isExpired
+      ? "Expired"
+      : insurance.status === "active"
+        ? expiringSoon
+          ? `Expiring in ${daysToExpiry}d`
+          : "Insured"
+        : insurance.status === "rejected"
+          ? "Rejected"
+          : "In review";
+
+    const cls = isExpired || insurance.status === "rejected"
+      ? "border-red-400/30 bg-red-500/15 text-red-300"
+      : insurance.status === "active"
+        ? expiringSoon
+          ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+          : "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+        : "border-amber-400/30 bg-amber-500/15 text-amber-300";
+
+    return (
+      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${cls}`}>
+        {label}
+      </span>
+    );
+  })();
+
   const onSubmitted = () => {
     qc.invalidateQueries({ queryKey: ["my-insurance"] });
     qc.invalidateQueries({ queryKey: ["my-trust-state"] });
@@ -386,6 +426,7 @@ export function InsuranceProfileCard({ step }: { step?: string }) {
       step={step}
       title="Insurance"
       subtitle="Public liability — required to take clients through REPs. Upload your certificate or scan it with your phone; we'll read it for you."
+      badge={insuranceBadge}
     >
       <InsuranceBody insurance={insurance} onOpenDialog={() => setDialogOpen(true)} />
       <InsuranceUploadDialog
@@ -413,32 +454,12 @@ function InsuranceBody({
     );
     const expiringSoon = !isExpired && daysToExpiry <= 30;
 
-    const badgeLabel = isExpired
-      ? "Expired"
-      : insurance.status === "active"
-        ? expiringSoon
-          ? `Expiring in ${daysToExpiry}d`
-          : "Insured"
-        : insurance.status === "rejected"
-          ? "Rejected"
-          : "In review";
-    const badgeClass = isExpired || insurance.status === "rejected"
-      ? "border-red-400/30 bg-red-500/15 text-red-300"
-      : insurance.status === "active"
-        ? expiringSoon
-          ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
-          : "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-        : "border-amber-400/30 bg-amber-500/15 text-amber-300";
-
     return (
       <div>
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-[12px] text-white/65">
-            {insurance.provider} · expires {insurance.expiry_date}
-            {insurance.cover_amount_gbp ? ` · £${insurance.cover_amount_gbp.toLocaleString()} cover` : ""}
-          </p>
-          <Badge variant="neutral" className={badgeClass}>{badgeLabel}</Badge>
-        </div>
+        <p className="text-[12px] text-white/65">
+          {insurance.provider} · expires {insurance.expiry_date}
+          {insurance.cover_amount_gbp ? ` · £${insurance.cover_amount_gbp.toLocaleString()} cover` : ""}
+        </p>
         {insurance.admin_note && (
           <div className="mt-3 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             {insurance.admin_note}
