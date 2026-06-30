@@ -54,7 +54,7 @@ export const PLANS: PlanCard[] = [
     waitlist: true,
     features: [
       "Everything in Core",
-      "Personalised shop-front page (/c/your-name)",
+      "Personalised website (/c/your-name)",
       "Leads CRM & client management",
       "Bookings, calendar & payments",
       "Programmes & advanced nutrition",
