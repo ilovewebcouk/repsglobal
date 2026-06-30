@@ -9,7 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Breadcrumb } from "@/components/Breadcrumb";
+
 import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
