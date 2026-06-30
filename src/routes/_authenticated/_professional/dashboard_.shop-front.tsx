@@ -453,8 +453,8 @@ function ServicesEditor({
     setOpen(true);
   }
 
-  function submit() {
-    onSave({
+  function buildPayload() {
+    return {
       ...draft,
       title: draft.title.trim(),
       bullets: draft.bullets.map((b) => b.trim()).filter(Boolean),
@@ -462,9 +462,18 @@ function ServicesEditor({
       description: draft.description?.trim() || null,
       cta_label: draft.cta_label?.trim() || null,
       image_url: draft.image_url || null,
-    });
+    };
+  }
+
+  function submit() {
+    onSave(buildPayload());
     setOpen(false);
   }
+
+  function silentSave() {
+    onSave(buildPayload());
+  }
+
 
   function handleDrop(targetIndex: number) {
     if (dragIndex === null || dragIndex === targetIndex) {
@@ -593,6 +602,7 @@ function ServicesEditor({
         editing={!!editingId}
         saving={saving}
         onSubmit={submit}
+        onSilentSave={silentSave}
       />
 
       <AlertDialog
@@ -632,6 +642,7 @@ function ServiceEditDialog({
   editing,
   saving,
   onSubmit,
+  onSilentSave,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -640,20 +651,106 @@ function ServiceEditDialog({
   editing: boolean;
   saving: boolean;
   onSubmit: () => void;
+  onSilentSave: () => void;
 }) {
+  // ---- Autosave (existing services only) ------------------------------------
+  // New cards still require an explicit "Save & close" so we never create
+  // half-typed records. Existing edits debounce-save 800ms after the last
+  // change; status is surfaced in the sticky footer.
+  const lastSavedSnapshot = React.useRef<string>("");
+  const [dirty, setDirty] = React.useState(false);
+  const [justSaved, setJustSaved] = React.useState(false);
+  const wasSaving = React.useRef(false);
+  const onSilentSaveRef = React.useRef(onSilentSave);
+  React.useEffect(() => { onSilentSaveRef.current = onSilentSave; }, [onSilentSave]);
+
+  // Reset snapshot whenever the dialog opens for a new draft.
+  React.useEffect(() => {
+    if (open) {
+      lastSavedSnapshot.current = JSON.stringify(draft);
+      setDirty(false);
+      setJustSaved(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Track dirty state vs last-saved snapshot.
+  React.useEffect(() => {
+    if (!open) return;
+    setDirty(JSON.stringify(draft) !== lastSavedSnapshot.current);
+  }, [draft, open]);
+
+  // Debounced autosave for existing records with a valid title.
+  React.useEffect(() => {
+    if (!open || !editing) return;
+    if (!draft.title?.trim()) return;
+    const snap = JSON.stringify(draft);
+    if (snap === lastSavedSnapshot.current) return;
+    const t = setTimeout(() => {
+      lastSavedSnapshot.current = snap;
+      onSilentSaveRef.current();
+    }, 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, open, editing]);
+
+
+  // Detect save completion (saving prop falling edge) → flash "Saved".
+  React.useEffect(() => {
+    if (saving) {
+      wasSaving.current = true;
+      setJustSaved(false);
+    } else if (wasSaving.current) {
+      wasSaving.current = false;
+      setJustSaved(true);
+      const t = setTimeout(() => setJustSaved(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [saving]);
+
+  const status: { label: string; tone: "muted" | "saving" | "saved" | "dirty" } =
+    saving
+      ? { label: "Saving…", tone: "saving" }
+      : dirty
+        ? { label: editing ? "Saving in a moment…" : "Unsaved changes", tone: "dirty" }
+        : justSaved
+          ? { label: "Saved", tone: "saved" }
+          : { label: editing ? "All changes saved" : "Ready", tone: "muted" };
+
+  const toneClass =
+    status.tone === "saving"
+      ? "text-white/70"
+      : status.tone === "saved"
+        ? "text-emerald-300"
+        : status.tone === "dirty"
+          ? "text-amber-300"
+          : "text-white/45";
+
+  function handleDone() {
+    if (!draft.title?.trim()) return;
+    // Always fire the save (covers the "new card" path and any pending edit).
+    onSubmit();
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-reps-border bg-reps-panel text-white sm:max-w-[640px]">
-        <DialogHeader>
-          <DialogTitle className="text-white">
-            Edit service
-          </DialogTitle>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleDone(); else onOpenChange(o); }}>
+      <DialogContent
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+          handleDone();
+        }}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden border-reps-border bg-reps-panel p-0 text-white sm:max-w-[640px] [&>button.absolute]:hidden"
+      >
+        <DialogHeader className="border-b border-reps-border px-6 pb-4 pt-5">
+          <DialogTitle className="text-white">Edit service</DialogTitle>
           <DialogDescription className="text-white/55">
             Edit the default copy or replace it with your own title, price, mode and details.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 overflow-y-auto px-6 py-5 md:grid-cols-2">
           {(() => {
             const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
             const p = DEFAULT_SERVICE_CARDS[slot];
@@ -773,28 +870,29 @@ function ServiceEditDialog({
               onChange={(url: string | null) => setDraft({ ...draft, image_url: url })}
             />
           </div>
-
-
         </div>
 
-        <DialogFooter>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:bg-reps-panel"
-          >
-            Cancel
-          </button>
+        <div className="flex items-center justify-between gap-3 border-t border-reps-border bg-reps-panel/95 px-6 py-3 backdrop-blur">
+          <div className={`flex items-center gap-2 text-[12px] ${toneClass}`}>
+            {status.tone === "saving" ? (
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+            ) : status.tone === "saved" ? (
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            ) : status.tone === "dirty" ? (
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
+            ) : null}
+            {status.label}
+          </div>
           <button
             type="button"
             disabled={!draft.title?.trim() || saving}
-            onClick={onSubmit}
+            onClick={handleDone}
             className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
           >
             <Save className="h-4 w-4" />
-            Save changes
+            {editing ? "Done" : "Save & close"}
           </button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
