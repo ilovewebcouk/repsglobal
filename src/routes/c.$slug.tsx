@@ -63,7 +63,23 @@ type Tier = {
   blurb: string;
   includes: string[];
   highlight?: boolean;
+  ctaLabel?: string | null;
 };
+
+function priceUnitLabel(u: string | null | undefined): string | null {
+  switch (u) {
+    case "per_session": return "per session";
+    case "per_month": return "per month";
+    case "per_week": return "per week";
+    case "per_block": return "per block";
+    case "per_hour": return "per hour";
+    case "total": return "total";
+    case "from": return "from";
+    case "custom": return "";
+    default: return null;
+  }
+}
+
 
 type Transformation = {
   image: string;
