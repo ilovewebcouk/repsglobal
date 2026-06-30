@@ -152,8 +152,32 @@ function ShopFrontEditorPage() {
   });
 
   const upsertServiceMut = useMutation({
-    mutationFn: (s: Partial<ServiceDTO> & { title: string }) =>
-      upsertSvc({
+    mutationFn: async (s: Partial<ServiceDTO> & { title: string }) => {
+      // Enforce single "Most popular": when marking this one featured,
+      // clear is_featured on any other existing services first.
+      if (s.is_featured) {
+        const others = services.filter((x) => x.is_featured && x.id !== s.id);
+        for (const o of others) {
+          await upsertSvc({
+            data: {
+              id: o.id,
+              title: o.title,
+              description: o.description ?? null,
+              price_pence: o.price_pence ?? null,
+              price_label: o.price_label ?? null,
+              price_unit: (o.price_unit as never) ?? null,
+              duration_minutes: o.duration_minutes ?? null,
+              mode: (o.mode as "in_person" | "online" | "hybrid") ?? "in_person",
+              sort_order: o.sort_order ?? 0,
+              is_published: o.is_published ?? true,
+              is_featured: false,
+              bullets: Array.isArray(o.bullets) ? o.bullets : [],
+              cta_label: o.cta_label ?? null,
+            },
+          });
+        }
+      }
+      return upsertSvc({
         data: {
           id: s.id,
           title: s.title,
@@ -169,12 +193,43 @@ function ShopFrontEditorPage() {
           bullets: Array.isArray(s.bullets) ? s.bullets : [],
           cta_label: s.cta_label ?? null,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Service saved");
       qc.invalidateQueries({ queryKey: ["my-shop-front"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save service"),
+  });
+
+  const reorderServicesMut = useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        const o = services.find((x) => x.id === orderedIds[i]);
+        if (!o || o.sort_order === i) continue;
+        await upsertSvc({
+          data: {
+            id: o.id,
+            title: o.title,
+            description: o.description ?? null,
+            price_pence: o.price_pence ?? null,
+            price_label: o.price_label ?? null,
+            price_unit: (o.price_unit as never) ?? null,
+            duration_minutes: o.duration_minutes ?? null,
+            mode: (o.mode as "in_person" | "online" | "hybrid") ?? "in_person",
+            sort_order: i,
+            is_published: o.is_published ?? true,
+            is_featured: o.is_featured ?? false,
+            bullets: Array.isArray(o.bullets) ? o.bullets : [],
+            cta_label: o.cta_label ?? null,
+          },
+        });
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-shop-front"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not reorder"),
   });
 
 
@@ -303,6 +358,7 @@ function ShopFrontEditorPage() {
             services={services}
             onSave={(s) => upsertServiceMut.mutate(s)}
             onDelete={(id) => deleteServiceMut.mutate(id)}
+            onReorder={(ids) => reorderServicesMut.mutate(ids)}
             saving={upsertServiceMut.isPending}
           />
         </div>
@@ -328,40 +384,40 @@ const SERVICE_PLACEHOLDERS = [
   {
     title: "Online Coaching",
     price: "£160",
-    cta: "Start online coaching",
-    description: "Remote programming tailored to your goals with weekly check-ins.",
+    cta: "Enquire about Online Coaching",
+    description: "For people who train themselves but want a coach in their corner.",
     bullets: [
-      "Fully bespoke programme every 4 weeks",
-      "Weekly video review + WhatsApp support",
-      "Nutrition plan + habit tracker",
-      "Form check on every lift",
-      "Cancel anytime",
+      "Fully bespoke programme in-app",
+      "Weekly written check-in & adjustments",
+      "Unlimited messaging (Mon–Fri)",
+      "Video form reviews",
+      "Quarterly strategy call",
     ],
   },
   {
     title: "Hybrid Coaching",
     price: "£240",
-    cta: "Start with hybrid",
-    description: "1 in-person session a week + online programming and accountability the rest of the week.",
+    cta: "Start with Hybrid",
+    description: "The full programme — two in-person sessions a month, online the rest.",
     bullets: [
-      "1× in-person session per week",
-      "Bespoke programme + nutrition plan",
-      "Weekly check-in + WhatsApp support",
-      "Open gym access on session days",
-      "Best results, fastest",
+      "Everything in Online Coaching",
+      "2× in-person sessions per month",
+      "Movement screen & progress reviews",
+      "Body composition tracking",
+      "Priority response time",
     ],
   },
   {
     title: "1-to-1 In Person",
     price: "From £75",
-    cta: "Book a session",
-    description: "Hands-on coaching in the gym — perfect for technique, confidence and accountability.",
+    cta: "Enquire about 1-to-1 In Person",
+    description: "Train with me in central London. Programming, coaching and accountability in one room.",
     bullets: [
-      "60-minute private session",
-      "Technique coaching on every lift",
-      "Programme written for you",
-      "Progress tracked session-by-session",
-      "Pay-as-you-go or block discounts",
+      "60-minute sessions at Third Space or BXR",
+      "Bespoke programme outside sessions",
+      "Nutrition & recovery rails",
+      "Direct messaging access",
+      "Block discount available (10+ sessions)",
     ],
   },
 ];
@@ -394,17 +450,21 @@ function ServicesEditor({
   services,
   onSave,
   onDelete,
+  onReorder,
   saving,
 }: {
   services: ServiceDTO[];
   onSave: (s: Partial<ServiceDTO> & { title: string }) => void;
   onDelete: (id: string) => void;
+  onReorder: (orderedIds: string[]) => void;
   saving: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [draft, setDraft] = React.useState<ServiceDraft>(() => emptyDraft(services.length));
   const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
+  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
 
   function startEdit(s: ServiceDTO) {
     const b = Array.isArray(s.bullets) ? s.bullets.slice(0, 5) : [];
@@ -447,6 +507,20 @@ function ServicesEditor({
     setOpen(false);
   }
 
+  function handleDrop(targetIndex: number) {
+    if (dragIndex === null || dragIndex === targetIndex) {
+      setDragIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+    const ids = services.map((s) => s.id);
+    const [moved] = ids.splice(dragIndex, 1);
+    ids.splice(targetIndex, 0, moved);
+    setDragIndex(null);
+    setDragOverIndex(null);
+    onReorder(ids);
+  }
+
   const atLimit = services.length >= 3;
 
   return (
@@ -454,48 +528,83 @@ function ServicesEditor({
       <div className="px-5 py-4">
         <h3 className="text-[14px] font-semibold text-white">Service cards</h3>
         <p className="mt-0.5 text-[12px] text-white/55">
-          Up to 3 cards. These show on your public profile and as the coaching options on your
-          enquire form. A free Discovery Consultation is added automatically — you don't manage it here.
+          Up to 3 cards. Drag to reorder. Only one card can be marked "Most popular" — it shows
+          with the orange ring on your public website. A free Discovery Consultation is added
+          automatically — you don't manage it here.
         </p>
       </div>
 
       <div className="flex flex-col gap-3 px-5 pb-5">
-        {services.map((s) => (
-          <div
-            key={s.id}
-            className="flex items-start justify-between gap-3 rounded-[14px] border border-reps-border bg-reps-panel-soft px-4 py-3"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
-              <div className="mt-0.5 text-[12px] text-white/55">
-                {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
-                {" · "}{s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on"}
-                {s.is_featured ? " · Most popular" : ""}
-                {!s.is_published ? " · Hidden" : ""}
-              </div>
-              {s.description && (
-                <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">{s.description}</div>
+        {services.map((s, i) => {
+          const featured = !!s.is_featured;
+          const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
+          return (
+            <div
+              key={s.id}
+              draggable
+              onDragStart={() => setDragIndex(i)}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverIndex(i);
+              }}
+              onDragLeave={() => setDragOverIndex((v) => (v === i ? null : v))}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleDrop(i);
+              }}
+              onDragEnd={() => {
+                setDragIndex(null);
+                setDragOverIndex(null);
+              }}
+              className={[
+                "relative flex items-start justify-between gap-3 rounded-[14px] px-4 py-3 transition cursor-grab active:cursor-grabbing",
+                featured
+                  ? "border-2 border-reps-orange bg-reps-orange/5 shadow-[0_0_0_4px_rgba(255,122,0,0.08)]"
+                  : "border border-reps-border bg-reps-panel-soft",
+                isDragOver ? "ring-2 ring-reps-orange/60" : "",
+                dragIndex === i ? "opacity-60" : "",
+              ].join(" ")}
+            >
+              {featured && (
+                <div className="absolute -top-2.5 left-4 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                  <Sparkles className="h-3 w-3" />
+                  Most popular
+                </div>
               )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-white/30 text-[12px] select-none" aria-hidden>⋮⋮</span>
+                  <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
+                </div>
+                <div className="mt-0.5 text-[12px] text-white/55">
+                  {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
+                  {" · "}{s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on"}
+                  {!s.is_published ? " · Hidden" : ""}
+                </div>
+                {s.description && (
+                  <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">{s.description}</div>
+                )}
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => startEdit(s)}
+                  className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteId(s.id)}
+                  aria-label={`Delete ${s.title}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-red-300 hover:bg-reps-panel/80"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <button
-                type="button"
-                onClick={() => startEdit(s)}
-                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDeleteId(s.id)}
-                aria-label={`Delete ${s.title}`}
-                className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-red-300 hover:bg-reps-panel/80"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {services.length === 0 && (
           <div className="rounded-[14px] border border-dashed border-reps-border/70 px-4 py-6 text-center text-[13px] text-white/55">
