@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Save, Star, Trash2 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -13,13 +12,8 @@ import {
   getMyDashboardProfile,
   updateMyDashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
-import {
-  getMyShopFront,
-  upsertMyService,
-  deleteMyService,
-  type ServiceDTO,
-} from "@/lib/shop-front/shop-front.functions";
 import { getSpecialismLabel, type SpecialismSlug } from "@/lib/specialisms";
+
 
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/services")({
