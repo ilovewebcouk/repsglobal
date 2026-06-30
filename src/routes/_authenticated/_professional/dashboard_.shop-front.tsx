@@ -324,6 +324,49 @@ const PRICE_UNIT_OPTIONS: { value: NonNullable<ServiceDTO["price_unit"]>; label:
 
 const EMPTY_BULLETS = ["", "", "", "", ""];
 
+const SERVICE_PLACEHOLDERS = [
+  {
+    title: "Online Coaching",
+    price: "£160",
+    cta: "Start online coaching",
+    description: "Remote programming tailored to your goals with weekly check-ins.",
+    bullets: [
+      "Fully bespoke programme every 4 weeks",
+      "Weekly video review + WhatsApp support",
+      "Nutrition plan + habit tracker",
+      "Form check on every lift",
+      "Cancel anytime",
+    ],
+  },
+  {
+    title: "Hybrid Coaching",
+    price: "£240",
+    cta: "Start with hybrid",
+    description: "1 in-person session a week + online programming and accountability the rest of the week.",
+    bullets: [
+      "1× in-person session per week",
+      "Bespoke programme + nutrition plan",
+      "Weekly check-in + WhatsApp support",
+      "Open gym access on session days",
+      "Best results, fastest",
+    ],
+  },
+  {
+    title: "1-to-1 In Person",
+    price: "From £75",
+    cta: "Book a session",
+    description: "Hands-on coaching in the gym — perfect for technique, confidence and accountability.",
+    bullets: [
+      "60-minute private session",
+      "Technique coaching on every lift",
+      "Programme written for you",
+      "Progress tracked session-by-session",
+      "Pay-as-you-go or block discounts",
+    ],
+  },
+];
+
+
 type ServiceDraft = Partial<ServiceDTO> & {
   title: string;
   bullets: string[];
