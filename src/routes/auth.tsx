@@ -124,7 +124,9 @@ function LoginPage() {
       if (data.user) {
         if (search.next === "checkout" && search.tier && search.period) {
           const { startCheckoutRedirect } = await import("@/lib/billing/startCheckout");
-          await startCheckoutRedirect(search.tier, search.period);
+          // Internal billing enum still uses "verified" for the Core tier.
+          const internalTier = search.tier === "core" ? "verified" : search.tier;
+          await startCheckoutRedirect(internalTier, search.period);
           return; // browser is navigating to Stripe
         }
         const to = await redirectAfterAuth(data.user.id);
