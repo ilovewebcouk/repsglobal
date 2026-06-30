@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,10 @@ interface Props {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
-  // Destination route for the matched member.
+  /** Destination route for the matched member. */
   target?: "/admin/members/$userId";
+  /** Visual variant. `topbar` matches the dashboard search style. */
+  variant?: "default" | "topbar";
 }
 
 export function MemberFinder({
@@ -21,8 +23,8 @@ export function MemberFinder({
   className = "",
   autoFocus,
   target = "/admin/members/$userId",
+  variant = "default",
 }: Props) {
-
   const navigate = useNavigate();
   const find = useServerFn(findMember);
   const [q, setQ] = useState("");
@@ -50,6 +52,71 @@ export function MemberFinder({
     } finally {
       setBusy(false);
     }
+  }
+
+  // ⌘K focuses the topbar variant input.
+  useEffect(() => {
+    if (variant !== "topbar") return;
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [variant]);
+
+  if (variant === "topbar") {
+    return (
+      <div className={`relative ${className}`}>
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
+        {busy ? (
+          <Loader2 className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-white/55" />
+        ) : (
+          <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 py-0.5 text-[10px] font-medium text-white/55">
+            ⌘K
+          </kbd>
+        )}
+        <input
+          ref={inputRef}
+          type="search"
+          value={q}
+          autoFocus={autoFocus}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void go();
+            if (e.key === "Escape") setMatches([]);
+          }}
+          placeholder={placeholder}
+          className="h-10 w-[260px] rounded-[12px] border border-reps-border bg-reps-panel pl-9 pr-12 text-[12.5px] text-white placeholder:text-white/45 shadow-none transition-colors focus-visible:outline-none focus-visible:border-reps-orange/60 focus-visible:bg-reps-panel-soft"
+        />
+        {matches.length > 0 && (
+          <div className="absolute z-30 mt-1 max-h-80 w-[320px] overflow-auto rounded-[12px] border border-reps-border bg-reps-ink/95 p-1 shadow-xl">
+            {matches.map((m) => (
+              <button
+                key={`${m.user_id}-${m.match_kind}`}
+                type="button"
+                onClick={() => {
+                  setMatches([]);
+                  setQ("");
+                  navigate({ to: target, params: { userId: m.user_id } });
+                }}
+                className="flex w-full items-center justify-between gap-3 rounded-[8px] px-3 py-2 text-left text-sm hover:bg-reps-panel/60"
+              >
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-white">{m.full_name ?? "Unnamed"}</div>
+                  <div className="truncate text-xs text-white/60">{m.email ?? m.user_id}</div>
+                </div>
+                <Badge variant="outline" className="shrink-0 text-[10px] uppercase">
+                  {m.match_kind.replace("_", " ")}
+                </Badge>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
