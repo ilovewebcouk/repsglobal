@@ -217,8 +217,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       },
     ],
   },
-
+  {
     slug: "how-reps-verifies-a-fitness-professional",
+
     title: "How REPS verifies a fitness professional",
     excerpt:
       "A behind-the-badge look at the checks every REPS Verified Professional clears before they appear in the public directory.",
