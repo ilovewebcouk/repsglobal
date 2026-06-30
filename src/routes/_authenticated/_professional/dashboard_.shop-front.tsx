@@ -152,8 +152,32 @@ function ShopFrontEditorPage() {
   });
 
   const upsertServiceMut = useMutation({
-    mutationFn: (s: Partial<ServiceDTO> & { title: string }) =>
-      upsertSvc({
+    mutationFn: async (s: Partial<ServiceDTO> & { title: string }) => {
+      // Enforce single "Most popular": when marking this one featured,
+      // clear is_featured on any other existing services first.
+      if (s.is_featured) {
+        const others = services.filter((x) => x.is_featured && x.id !== s.id);
+        for (const o of others) {
+          await upsertSvc({
+            data: {
+              id: o.id,
+              title: o.title,
+              description: o.description ?? null,
+              price_pence: o.price_pence ?? null,
+              price_label: o.price_label ?? null,
+              price_unit: (o.price_unit as never) ?? null,
+              duration_minutes: o.duration_minutes ?? null,
+              mode: (o.mode as "in_person" | "online" | "hybrid") ?? "in_person",
+              sort_order: o.sort_order ?? 0,
+              is_published: o.is_published ?? true,
+              is_featured: false,
+              bullets: Array.isArray(o.bullets) ? o.bullets : [],
+              cta_label: o.cta_label ?? null,
+            },
+          });
+        }
+      }
+      return upsertSvc({
         data: {
           id: s.id,
           title: s.title,
@@ -169,12 +193,43 @@ function ShopFrontEditorPage() {
           bullets: Array.isArray(s.bullets) ? s.bullets : [],
           cta_label: s.cta_label ?? null,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Service saved");
       qc.invalidateQueries({ queryKey: ["my-shop-front"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save service"),
+  });
+
+  const reorderServicesMut = useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        const o = services.find((x) => x.id === orderedIds[i]);
+        if (!o || o.sort_order === i) continue;
+        await upsertSvc({
+          data: {
+            id: o.id,
+            title: o.title,
+            description: o.description ?? null,
+            price_pence: o.price_pence ?? null,
+            price_label: o.price_label ?? null,
+            price_unit: (o.price_unit as never) ?? null,
+            duration_minutes: o.duration_minutes ?? null,
+            mode: (o.mode as "in_person" | "online" | "hybrid") ?? "in_person",
+            sort_order: i,
+            is_published: o.is_published ?? true,
+            is_featured: o.is_featured ?? false,
+            bullets: Array.isArray(o.bullets) ? o.bullets : [],
+            cta_label: o.cta_label ?? null,
+          },
+        });
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-shop-front"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not reorder"),
   });
 
 
