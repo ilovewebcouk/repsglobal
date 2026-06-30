@@ -363,7 +363,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     const tierById = new Map<string, "studio" | "pro" | "verified" | "free">();
     for (const s of subsRes.data ?? []) {
       const t = s.tier as "studio" | "pro" | "verified" | "free" | null;
-      if (!t || t === "free") continue;
+      if (!t || t === "free" || !s.user_id) continue;
       const prev = tierById.get(s.user_id);
       const rank = (x: string) => (x === "studio" ? 3 : x === "pro" ? 2 : x === "verified" ? 1 : 0);
       if (!prev || rank(t) > rank(prev)) tierById.set(s.user_id, t);
