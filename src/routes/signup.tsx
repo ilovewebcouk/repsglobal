@@ -109,11 +109,12 @@ const PLAN_SUMMARIES: Record<
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (search: Record<string, unknown>): SignupSearch => {
-    const tier = search.tier as SignupSearch["tier"];
+    // Back-compat: accept legacy `?tier=verified` and normalize to `core`.
+    const rawTier = search.tier === "verified" ? "core" : (search.tier as SignupSearch["tier"]);
     const requestedPeriod = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
-    const validTier = ["verified", "pro"].includes(tier as string) ? tier : undefined;
-    const period = validTier === "verified"
+    const validTier = ["core", "pro"].includes(rawTier as string) ? rawTier : undefined;
+    const period = validTier === "core"
       ? "annual"
       : validTier === "pro" && (requestedPeriod === "monthly" || requestedPeriod === "annual")
         ? requestedPeriod
