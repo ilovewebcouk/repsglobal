@@ -31,7 +31,8 @@ export const PLANS: PlanCard[] = [
     ctaHref: "/signup",
     features: [
       "Public listing on the REPS register",
-      "Earn the REPS Verified badge",
+      "Earn the REPS Core badge",
+      "Personalised website",
       "Credentials displayed",
       "Reviews enabled",
       "Enhanced directory profile",
