@@ -280,21 +280,12 @@ function ShopFrontEditorPage() {
 
           <WebsiteContentEditor />
 
-          {isPro ? (
-            <ServicesEditor
-              services={services}
-              onSave={(s) => upsertServiceMut.mutate(s)}
-              onDelete={(id) => deleteServiceMut.mutate(id)}
-              saving={upsertServiceMut.isPending}
-            />
-          ) : (
-            <PCard>
-              <div className="text-[14px] font-semibold text-white">Services</div>
-              <p className="mt-1 text-[13px] text-white/65">
-                Service packages and pricing are a Pro feature. Upgrade to add tiers, durations and "Most popular" highlights.
-              </p>
-            </PCard>
-          )}
+          <ServicesEditor
+            services={services}
+            onSave={(s) => upsertServiceMut.mutate(s)}
+            onDelete={(id) => deleteServiceMut.mutate(id)}
+            saving={upsertServiceMut.isPending}
+          />
         </div>
       )}
     </DashboardShell>
