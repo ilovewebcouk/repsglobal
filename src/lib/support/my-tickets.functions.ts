@@ -64,7 +64,7 @@ export type MyTicketMessage = {
 // List my tickets
 // ─────────────────────────────────────────────────────────────────────────────
 export const listMyTickets = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("support_tickets")
@@ -82,7 +82,7 @@ export const listMyTickets = createServerFn({ method: "GET" })
 // Get a single ticket + thread (inbound/outbound only — RLS hides internal notes)
 // ─────────────────────────────────────────────────────────────────────────────
 export const getMyTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: ticket, error: tErr } = await context.supabase
@@ -131,7 +131,7 @@ export const getMyTicket = createServerFn({ method: "POST" })
 // Create a new ticket (with the opening message)
 // ─────────────────────────────────────────────────────────────────────────────
 export const createMyTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { subject: string; body: string; category: string }) =>
     z
       .object({
@@ -302,7 +302,7 @@ async function sendRequesterConfirmation(args: {
 // Reply to my own ticket
 // ─────────────────────────────────────────────────────────────────────────────
 export const replyToMyTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { ticketId: string; body: string }) =>
     z
       .object({
@@ -344,7 +344,7 @@ export const replyToMyTicket = createServerFn({ method: "POST" })
 // Attachments on my own messages
 // ─────────────────────────────────────────────────────────────────────────────
 export const attachToMyMessage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator(
     (d: {
       messageId: string;
@@ -386,7 +386,7 @@ export const attachToMyMessage = createServerFn({ method: "POST" })
 // Signed download URL for a single attachment (15 min)
 // ─────────────────────────────────────────────────────────────────────────────
 export const getMyAttachmentUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { storage_path: string }) =>
     z.object({ storage_path: z.string().min(1).max(500) }).parse(d),
   )
@@ -410,7 +410,7 @@ export type MyUnreadTicket = {
 };
 
 export const listMyUnreadTickets = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase.rpc(
       "list_my_unread_support_tickets",
@@ -420,7 +420,7 @@ export const listMyUnreadTickets = createServerFn({ method: "GET" })
   });
 
 export const markMyTicketRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { ticketId: string }) =>
     z.object({ ticketId: z.string().uuid() }).parse(d),
   )
@@ -433,7 +433,7 @@ export const markMyTicketRead = createServerFn({ method: "POST" })
   });
 
 export const markAllMySupportRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { error } = await context.supabase.rpc("mark_all_my_support_read");
     if (error) throw new Error(error.message);
