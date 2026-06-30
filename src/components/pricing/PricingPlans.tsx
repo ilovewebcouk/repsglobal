@@ -21,7 +21,7 @@ export function PricingPlans() {
   const navigate = useNavigate();
 
   async function handlePaidCta(tierKey: "verified" | "pro") {
-    const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;
+    const checkoutPeriod = billing;
     setCheckoutTier(tierKey);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
