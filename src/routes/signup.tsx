@@ -214,22 +214,11 @@ function SignupPage() {
       : "Continue to secure checkout"
     : "Create account";
 
-  // After we have a session, mint a Stripe Hosted Checkout session and redirect
-  // straight to Stripe (no intermediate REPs review page).
-  const continueAfterAuth = async (userId: string) => {
-    if (search.next === "checkout" && search.tier && search.period) {
-      const { startCheckoutRedirect } = await import("@/lib/billing/startCheckout");
-      try {
-        await startCheckoutRedirect(search.tier, search.period);
-        return; // browser is navigating to Stripe
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not start checkout");
-        return;
-      }
-    }
-    const to = await redirectAfterAuth(userId);
-    navigate({ to, replace: true });
-  };
+  // Deferred signup uses handleSubmit → startDeferredCheckout → Stripe.
+  // No post-auth redirect path is needed here; the user is signed in by
+  // the magic link returned from /checkout/return.
+
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
