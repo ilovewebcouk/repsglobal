@@ -491,9 +491,9 @@ function ServicesEditor({
     setOpen(true);
   }
 
-  function startAdd() {
+  function startAddSlot(slot: number) {
     setEditingId(null);
-    setDraft(emptyDraft(services.length));
+    setDraft(emptyDraft(slot));
     setOpen(true);
   }
 
@@ -524,32 +524,36 @@ function ServicesEditor({
     onReorder(ids);
   }
 
-  const atLimit = services.length >= 3;
+  const slots: Array<ServiceDTO | null> = [0, 1, 2].map((i) => services[i] ?? null);
 
   return (
     <PPanel>
       <div className="px-5 py-4">
         <h3 className="text-[14px] font-semibold text-white">Service cards</h3>
         <p className="mt-0.5 text-[12px] text-white/55">
-          Up to 3 cards. Drag to reorder. Only one card can be marked "Most popular" — it shows
-          with the orange ring on your public website. A free Discovery Consultation is added
+          Three cards on your public website. Drag to reorder. Only one card can be marked
+          "Most popular" — it shows with the orange ring. A free Discovery Consultation is added
           automatically — you don't manage it here.
         </p>
       </div>
 
       <div className="flex flex-col gap-3 px-5 pb-5">
-        {services.map((s, i) => {
-          const featured = !!s.is_featured;
+        {slots.map((s, i) => {
+          const featured = !!s?.is_featured;
           const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
+          const placeholder = SERVICE_PLACEHOLDERS[i % 3];
+          const isEmpty = !s;
           return (
             <div
-              key={s.id}
+              key={s?.id ?? `slot-${i}`}
               onDragOver={(e) => {
+                if (isEmpty) return;
                 e.preventDefault();
                 setDragOverIndex(i);
               }}
               onDragLeave={() => setDragOverIndex((v) => (v === i ? null : v))}
               onDrop={(e) => {
+                if (isEmpty) return;
                 e.preventDefault();
                 handleDrop(i);
               }}
@@ -559,14 +563,17 @@ function ServicesEditor({
               ].join(" ")}
             >
               <div
-                draggable
-                onDragStart={() => setDragIndex(i)}
+                draggable={!isEmpty}
+                onDragStart={() => !isEmpty && setDragIndex(i)}
                 onDragEnd={() => {
                   setDragIndex(null);
                   setDragOverIndex(null);
                 }}
                 aria-label="Drag to reorder"
-                className="flex w-8 shrink-0 cursor-grab items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel-soft/60 text-white/40 hover:text-white/80 active:cursor-grabbing"
+                className={[
+                  "flex w-8 shrink-0 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel-soft/60 text-white/40",
+                  isEmpty ? "opacity-30" : "cursor-grab hover:text-white/80 active:cursor-grabbing",
+                ].join(" ")}
               >
                 <GripVertical className="h-4 w-4" />
               </div>
@@ -575,7 +582,9 @@ function ServicesEditor({
                   "relative flex flex-1 items-start justify-between gap-3 rounded-[14px] px-4 py-3 transition",
                   featured
                     ? "border-2 border-reps-orange bg-reps-orange/5 shadow-[0_0_0_4px_rgba(255,122,0,0.10)]"
-                    : "border border-reps-border bg-reps-panel-soft",
+                    : isEmpty
+                      ? "border border-dashed border-reps-border/70 bg-reps-panel-soft/30"
+                      : "border border-reps-border bg-reps-panel-soft",
                   isDragOver ? "ring-2 ring-reps-orange/60" : "",
                 ].join(" ")}
               >
@@ -586,59 +595,35 @@ function ServicesEditor({
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
-                  <div className="mt-0.5 text-[12px] text-white/55">
-                    {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
-                    {" · "}{s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on"}
-                    {!s.is_published ? " · Hidden" : ""}
+                  <div className={["text-[13.5px] font-semibold", isEmpty ? "text-white/50" : "text-white"].join(" ")}>
+                    {s?.title || `${placeholder.title} (empty)`}
                   </div>
-                  {s.description && (
-                    <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">{s.description}</div>
-                  )}
+                  <div className="mt-0.5 text-[12px] text-white/55">
+                    {s
+                      ? (s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"))
+                      : placeholder.price}
+                    {" · "}{s ? (s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on") : "Not published"}
+                    {s && !s.is_published ? " · Hidden" : ""}
+                  </div>
+                  <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">
+                    {s?.description || placeholder.description}
+                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => startEdit(s)}
+                    onClick={() => (s ? startEdit(s) : startAddSlot(i))}
                     className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
                   >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDeleteId(s.id)}
-                    aria-label={`Delete ${s.title}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-red-300 hover:bg-reps-panel/80"
-                  >
-                    <Trash2 className="h-4 w-4" />
+                    {s ? "Edit" : "Set up"}
                   </button>
                 </div>
               </div>
             </div>
           );
         })}
-
-        {services.length === 0 && (
-          <div className="rounded-[14px] border border-dashed border-reps-border/70 px-4 py-6 text-center text-[13px] text-white/55">
-            No services yet — add your first card to start.
-          </div>
-        )}
-
-        {!atLimit ? (
-          <button
-            type="button"
-            onClick={startAdd}
-            className="flex h-10 items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border/70 text-[13px] font-semibold text-white/75 hover:border-reps-orange-border hover:text-white"
-          >
-            <Plus className="h-4 w-4" />
-            Add a service ({services.length}/3)
-          </button>
-        ) : (
-          <div className="text-center text-[11.5px] text-white/45">
-            3 of 3 — delete a card to add another.
-          </div>
-        )}
       </div>
+
 
       <ServiceEditDialog
         open={open}
