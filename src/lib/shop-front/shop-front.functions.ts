@@ -2,6 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
+import { DEFAULT_SERVICE_CARDS } from "@/lib/shop-front/default-services";
 
 const ShopFrontUpsertSchema = z.object({
   tagline: z.string().trim().max(200).nullable().optional(),
@@ -339,6 +340,101 @@ export type ServiceDTO = {
   image_url: string | null;
 };
 
+type ServiceRow = ServiceDTO;
+
+async function ensureDefaultServices(
+  supabaseAdmin: { from: (table: string) => any },
+  professionalId: string,
+  existingRows: ServiceRow[] | null | undefined,
+): Promise<ServiceRow[]> {
+  const existing = [...(existingRows ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+  const legacyBadDefaults = existing.filter((row) => {
+    const title = row.title.trim().toLowerCase();
+    const description = (row.description ?? "").trim().toLowerCase();
+    return (
+      title === "personal training at home" &&
+      (description.includes("sessions a week") || description.includes("per 4 week block") || ["£28.33", "£32.50", "£38"].includes(row.price_label ?? ""))
+    );
+  });
+
+  for (const legacyBadDefault of legacyBadDefaults) {
+    const slot = Math.max(0, Math.min(DEFAULT_SERVICE_CARDS.length - 1, legacyBadDefault.sort_order ?? 0));
+    const card = DEFAULT_SERVICE_CARDS[slot];
+    const { error } = await supabaseAdmin
+      .from("services")
+      .update({
+        title: card.title,
+        description: card.description,
+        price_pence: null,
+        price_label: card.price_label,
+        price_unit: card.price_unit,
+        duration_minutes: null,
+        mode: card.mode,
+        sort_order: card.sort_order,
+        is_published: true,
+        is_featured: card.is_featured,
+        bullets: card.bullets,
+        cta_label: card.cta_label,
+        image_url: null,
+      })
+      .eq("id", legacyBadDefault.id)
+      .eq("professional_id", professionalId);
+    if (error) throw error;
+    legacyBadDefault.title = card.title;
+    legacyBadDefault.description = card.description;
+    legacyBadDefault.price_pence = null;
+    legacyBadDefault.price_label = card.price_label;
+    legacyBadDefault.price_unit = card.price_unit;
+    legacyBadDefault.duration_minutes = null;
+    legacyBadDefault.mode = card.mode;
+    legacyBadDefault.sort_order = card.sort_order;
+    legacyBadDefault.is_published = true;
+    legacyBadDefault.is_featured = card.is_featured;
+    legacyBadDefault.bullets = card.bullets;
+    legacyBadDefault.cta_label = card.cta_label;
+    legacyBadDefault.image_url = null;
+  }
+
+  if (existing.length >= DEFAULT_SERVICE_CARDS.length) return existing.slice(0, DEFAULT_SERVICE_CARDS.length);
+
+  const existingTitles = new Set(existing.map((row) => row.title.trim().toLowerCase()));
+  const existingOrders = new Set(existing.map((row) => row.sort_order));
+  const inserts = DEFAULT_SERVICE_CARDS
+    .filter((card, index) => !existingTitles.has(card.title.toLowerCase()) && !existingOrders.has(index))
+    .map((card) => ({
+      professional_id: professionalId,
+      title: card.title,
+      description: card.description,
+      price_pence: null,
+      price_label: card.price_label,
+      price_unit: card.price_unit,
+      duration_minutes: null,
+      mode: card.mode,
+      sort_order: card.sort_order,
+      is_published: true,
+      is_featured: card.is_featured,
+      bullets: card.bullets,
+      cta_label: card.cta_label,
+      image_url: null,
+    }));
+
+  if (inserts.length > 0) {
+    const { error } = await supabaseAdmin.from("services").insert(inserts);
+    if (error) throw error;
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("services")
+    .select(
+      "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url",
+    )
+    .eq("professional_id", professionalId)
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ServiceRow[];
+}
+
 
 /* ---------------- Public reads ---------------- */
 
@@ -562,7 +658,13 @@ export const getMyShopFront = createServerFn({ method: "GET" })
 
       : null;
 
-    return { shopFront, services: (services ?? []) as ServiceDTO[] };
+    const resolvedServices = await ensureDefaultServices(
+      supabaseAdmin,
+      userId,
+      (services ?? []) as ServiceDTO[],
+    );
+
+    return { shopFront, services: resolvedServices };
 
   });
 
@@ -606,7 +708,7 @@ const ServiceUpsertSchema = z.object({
   is_published: z.boolean().default(true),
   is_featured: z.boolean().default(false),
   bullets: z.array(z.string().trim().max(60)).max(5).default([]),
-  cta_label: z.string().trim().max(24).nullable().optional(),
+  cta_label: z.string().trim().max(40).nullable().optional(),
   image_url: z.string().trim().url().max(500).nullable().optional(),
 });
 
