@@ -697,25 +697,28 @@ function ServiceEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto border-reps-border bg-reps-panel text-white sm:max-w-[640px]">
         <DialogHeader>
-          <DialogTitle className="text-white">{editing ? "Edit service" : "Add a service"}</DialogTitle>
+          <DialogTitle className="text-white">
+            {editing ? "Edit service" : "Add a service"}
+            <span className="ml-2 rounded-full bg-reps-orange-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-reps-orange align-middle">
+              {SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].title}
+            </span>
+          </DialogTitle>
           <DialogDescription className="text-white/55">
-            Title, price, unit and up to 5 bullets that appear on your public website.
+            The title, delivery mode and button are fixed for this slot. You control the price, description and bullets.
           </DialogDescription>
         </DialogHeader>
 
-        {(() => null)()}
-        {/* Example placeholders rotate by slot so an empty card looks like the demo
-            (1: Online Coaching · 2: Hybrid Coaching · 3: 1-to-1 In Person). */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {(() => null)()}
-          <div className="md:col-span-2">
-            <TextInput
-              value={draft.title}
-              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              placeholder={SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].title}
-              maxLength={28}
-            />
-            <div className="mt-1 text-[11px] text-white/40">{draft.title.length}/28</div>
+          {/* Slot summary (locked) */}
+          <div className="md:col-span-2 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 px-3 py-2 text-[12px] text-white/65">
+            <span className="text-white/80 font-semibold">{SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].title}</span>
+            <span className="mx-1.5 text-white/30">·</span>
+            {(draft.sort_order ?? 0) % 3 === 0 ? "Remote" : (draft.sort_order ?? 0) % 3 === 1 ? "Hybrid" : "Hands-on"}
+            <span className="mx-1.5 text-white/30">·</span>
+            CTA: "{SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].cta}"
+            {(draft.sort_order ?? 0) % 3 === 1 ? (
+              <span className="ml-2 rounded-full bg-reps-orange px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Most popular</span>
+            ) : null}
           </div>
 
           <div>
@@ -727,39 +730,10 @@ function ServiceEditDialog({
             />
             <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
           </div>
-          <div>
-            <select
-              value={draft.price_unit ?? "per_session"}
-              onChange={(e) => setDraft({ ...draft, price_unit: e.target.value as ServiceDTO["price_unit"] })}
-              className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white"
-            >
-              {PRICE_UNIT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-            <div className="mt-1 text-[11px] text-white/40">Unit</div>
+          <div className="flex items-center rounded-[12px] border border-reps-border bg-reps-panel-soft/40 px-3 text-[12.5px] text-white/65">
+            Unit: {(draft.sort_order ?? 0) % 3 === 2 ? "per session" : "per month"}
           </div>
 
-          <select
-            value={draft.mode ?? "in_person"}
-            onChange={(e) => setDraft({ ...draft, mode: e.target.value as ServiceDTO["mode"] })}
-            className="h-10 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white"
-          >
-            <option value="in_person">Hands-on</option>
-            <option value="online">Remote</option>
-            <option value="hybrid">Hybrid</option>
-          </select>
-          <div>
-            <TextInput
-              value={draft.cta_label ?? ""}
-              onChange={(e) => setDraft({ ...draft, cta_label: e.target.value })}
-              placeholder={`Button label (e.g. "${SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].cta}")`}
-              maxLength={24}
-            />
-            <div className="mt-1 text-[11px] text-white/40">
-              {(draft.cta_label ?? "").length}/24 · leave blank for default
-            </div>
-          </div>
 
           <div className="md:col-span-2">
             <TextArea
