@@ -1119,7 +1119,7 @@ function ProfileEditorPage() {
       <div className="flex flex-col gap-4">
         <VerificationStatusPill />
 
-        {/* Page-sections callout — Services + Shop-front editors live here for
+        {/* Page-sections callout — Services + Website editors live here for
             now and will fold into anchored sections of this page in Pass 2.
             Hidden for Verified (Pro-only features). */}
         {tier !== "verified" && (
@@ -1145,7 +1145,7 @@ function ProfileEditorPage() {
                   to="/dashboard/shop-front"
                   className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:border-reps-orange-border hover:text-reps-orange"
                 >
-                  Shop-front extras
+                  Website extras
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </div>

@@ -55,7 +55,7 @@ const DASHBOARD_CALLOUTS: Callout[] = [
     x:"84%",
     y:"20%",
     title:"New leads",
-    body:"Enquiries from your profile, Shop Front and DMs — scored and ready to action.",
+    body:"Enquiries from your profile, Website and DMs — scored and ready to action.",
   },
   {
     x:"14%",
@@ -102,11 +102,11 @@ const PROBLEM_ORGANISED = [
 "Client records with history, notes and next step in one view",
 "Tasks and reminders flag what needs attention before it slips",
 "Documents and agreements stored against the right person",
-"Everything connected to your REPS profile and Shop Front",
+"Everything connected to your REPS profile and Website",
 ];
 
 const PIPELINE_STAGES = [
-  { title:"New enquiry", body:"Captured from your profile, Shop Front, DMs or referral." },
+  { title:"New enquiry", body:"Captured from your profile, Website, DMs or referral." },
   { title:"Consultation booked", body:"Discovery call or in-person meeting on the calendar." },
   { title:"Awaiting form", body:"PAR-Q, screening or goal-setting form still to complete." },
   { title:"Payment pending", body:"Package or first invoice sent — waiting on the client." },
@@ -221,11 +221,11 @@ const USE_CASES = [
 const FAQ_ITEMS = [
   {
     q:"Where do my leads go?",
-    a:"Every enquiry — from your REPS profile, Shop Front, DMs or referral link — lands in one pipeline. Scored by intent, tagged by service, with a status and a next step. Nothing lives in your personal inbox.",
+    a:"Every enquiry — from your REPS profile, Website, DMs or referral link — lands in one pipeline. Scored by intent, tagged by service, with a status and a next step. Nothing lives in your personal inbox.",
   },
   {
     q:"Can my clients book themselves?",
-    a:"Yes. Share a booking link or let them book directly from your Shop Front. You set availability by service, venue and session length. Two-way calendar sync keeps your week clean.",
+    a:"Yes. Share a booking link or let them book directly from your Website. You set availability by service, venue and session length. Two-way calendar sync keeps your week clean.",
   },
   {
     q:"Do I have to use REPS for payments?",
@@ -258,7 +258,7 @@ export const Route = createFileRoute("/features/operations")({
       {
         name:"description",
         content:
-"Manage enquiries, bookings, forms, payments, client records and follow-ups in the same platform that powers your REPS profile and Shop Front. Included in REPS Pro.",
+"Manage enquiries, bookings, forms, payments, client records and follow-ups in the same platform that powers your REPS profile and Website. Included in REPS Pro.",
       },
       {
         property:"og:title",
@@ -308,7 +308,7 @@ function OperationsPage() {
       <FinalCta
         heading="Run the business behind your coaching with"
         headingAccent=" less admin and more control."
-        lede="Manage enquiries, bookings, forms, payments and client records from the same platform that powers your REPS profile and Shop Front."
+        lede="Manage enquiries, bookings, forms, payments and client records from the same platform that powers your REPS profile and Website."
         primary={{ to:"/signup", label:"Start using REPS Pro" }}
         secondary={{ to:"/for-professionals", label:"Explore all features" }}
       />
@@ -356,7 +356,7 @@ function Hero() {
             style={{ animationDuration:"640ms", animationDelay:"180ms", animationFillMode:"both" }}
           >
             Manage enquiries, bookings, forms, payments, client records and follow-ups in the same
-            platform that powers your REPS profile and Shop Front — without stitching together five
+            platform that powers your REPS profile and Website — without stitching together five
             different apps.
           </p>
 
@@ -454,7 +454,7 @@ function ProblemSection() {
               ))}
             </ul>
             <p className="mt-6 text-[13.5px] leading-relaxed text-white/70">
-              The Shop Front helps clients <em>take action</em>. Operations keeps everything behind
+              The Website helps clients <em>take action</em>. Operations keeps everything behind
               that action <em>organised</em>.
             </p>
           </div>
@@ -523,7 +523,7 @@ function PipelineSection() {
         <SectionHeader
           eyebrow="One place for every enquiry"
           heading="Every lead with a status, a next step and a place to live."
-          lede="Enquiries from your REPS profile, Shop Front, DMs and referrals land in one pipeline. You see exactly who's where — and what to do next — without searching six apps."
+          lede="Enquiries from your REPS profile, Website, DMs and referrals land in one pipeline. You see exactly who's where — and what to do next — without searching six apps."
         />
 
         <div className="mt-12 overflow-x-auto pb-2">

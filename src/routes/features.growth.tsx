@@ -93,7 +93,7 @@ const AI_ACTIONS = [
   { icon: Star, title: "Request a review", body: "Sarah J. just hit her 12-week milestone." },
   { icon: RefreshCcw, title: "Offer a renewal", body: "James C.'s package ends in 9 days." },
   { icon: RotateCcw, title: "Reactivate an old enquiry", body: "Dan W. — asked about hybrid in January." },
-  { icon: Eye, title: "Improve a Shop Front section", body: "Your Hybrid service has the lowest enquire-rate." },
+  { icon: Eye, title: "Improve a Website section", body: "Your Hybrid service has the lowest enquire-rate." },
   { icon: Gift, title: "Create a referral prompt", body: "Megan R. — 6 months in, no referral asked." },
   { icon: PoundSterling, title: "Review a package", body: "Online Programming MRR down 4% this month." },
   { icon: Heart, title: "Check an inactive client", body: "Tom B. — adherence dropped to 41%." },
@@ -148,7 +148,7 @@ const COMPARISON_ROWS: Array<{ feature: string; verified: boolean; pro: boolean 
 const FAQ_ITEMS = [
   {
     q: "Is Growth a marketing or ads page?",
-    a: "No. Growth is about improving the business you already have — retention, conversion, reviews, referrals and revenue visibility. It is not about SEO, social media or paid ads. Getting found is covered by Visibility; converting visitors is covered by Shop Front.",
+    a: "No. Growth is about improving the business you already have — retention, conversion, reviews, referrals and revenue visibility. It is not about SEO, social media or paid ads. Getting found is covered by Visibility; converting visitors is covered by Website.",
   },
   {
     q: "How is Growth different from Operations?",
@@ -164,7 +164,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Will this help me get more clients?",
-    a: "Indirectly, yes — through reviews, referrals, better conversion of the enquiries you already have and re-engaging clients you'd otherwise lose. For new audience reach, see Visibility and Shop Front.",
+    a: "Indirectly, yes — through reviews, referrals, better conversion of the enquiries you already have and re-engaging clients you'd otherwise lose. For new audience reach, see Visibility and Website.",
   },
   {
     q: "Is Growth included in Verified or only Pro?",
@@ -573,7 +573,7 @@ function ConversionSection() {
         <SectionHeader
           eyebrow="Lead conversion insights"
           heading="See where enquiries become clients — and where they drop off."
-          lede="Connects the activity in Shop Front and Operations into a single funnel. You stop guessing which step is leaking and start fixing the one that actually costs you clients."
+          lede="Connects the activity in Website and Operations into a single funnel. You stop guessing which step is leaking and start fixing the one that actually costs you clients."
         />
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">

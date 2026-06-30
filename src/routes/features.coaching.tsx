@@ -303,7 +303,7 @@ function Hero() {
           >
             Programmes, exercise library, nutrition, check-ins, habits, wearables, messaging,
             progress and automations — every delivery tool a world-class coach needs, in one
-            workspace that also powers your REPS profile, Shop Front and bookings.
+            workspace that also powers your REPS profile, Website and bookings.
           </p>
 
           <div

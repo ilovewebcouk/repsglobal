@@ -970,7 +970,7 @@ function MobileDrawer({
                 </li>
                 <li>
                   <Link to="/features/shop-front" onClick={onNavigate} className={mobileSubLinkClass}>
-                    Shop-front
+                    Website
                   </Link>
                 </li>
                 <li>

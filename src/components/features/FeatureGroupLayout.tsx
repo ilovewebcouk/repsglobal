@@ -217,7 +217,7 @@ export function FeatureGroupLayout({
                       {f.oneLiner}
                     </p>
                     <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-reps-orange">
-                      {isCross ? "See in Shop-front" : "Learn more"} <ArrowRight className="h-3.5 w-3.5" />
+                      {isCross ? "See in Website" : "Learn more"} <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   </>
                 );

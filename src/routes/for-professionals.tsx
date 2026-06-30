@@ -251,7 +251,7 @@ function ForProsPage() {
       <section>
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <ProductBlock
-            eyebrow="Pillar 2 · Shop-front"
+            eyebrow="Pillar 2 · Website"
             title="The page that turns visitors into clients."
             body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
             bullets={[
@@ -262,7 +262,7 @@ function ForProsPage() {
             ]}
             imageLabel="Personalised coach shop-front with three service tiers"
             mockup={{ device:"laptop", src:"/c/james-wilson", title:"Coach shop-front live example" }}
-            ctaLabel="Explore Shop-front"
+            ctaLabel="Explore Website"
             ctaHref="/features/shop-front"
             reverse
           />
@@ -423,7 +423,7 @@ function ForProsPage() {
                 name:"Pro",
                 price:"£59",
                 cadence:"/ month",
-                tagline:"Shop-front, operations, coaching and the AI layer that runs the rest.",
+                tagline:"Website, operations, coaching and the AI layer that runs the rest.",
                 href:"/pricing",
                 featured: true,
                 badge:"Founding — locked for life",
