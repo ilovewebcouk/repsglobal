@@ -506,25 +506,84 @@ export const Route = createFileRoute("/c/$slug")({
       </div>
     </div>
   ),
-  head: ({ params }) => {
+  head: ({ params, loaderData }) => {
     const coach = COACHES[params.slug];
-    if (!coach) {
+    // Fixture (mock-up) coaches stay noindex — they're admin-only reference pages.
+    if (coach) {
+      const title = `${coach.name} — ${coach.role} | REPS`;
+      const description = `${coach.promise} ${coach.subhead}`;
       return {
         meta: [
-          { title: "Coach not found | REPS" },
+          { title },
+          { name: "description", content: description },
           { name: "robots", content: "noindex,nofollow" },
+          { property: "og:title", content: title },
+          { property: "og:description", content: description },
         ],
       };
     }
-    const title = `${coach.name} — ${coach.role} | REPS`;
-    const description = `${coach.promise} ${coach.subhead}`;
+
+    const sf = loaderData?.live?.shopFront;
+    const canonical = `https://repsuk.org/c/${params.slug}`;
+
+    if (!sf) {
+      return {
+        meta: [
+          { title: "Profile not found | REPS" },
+          { name: "robots", content: "noindex,nofollow" },
+        ],
+        links: [{ rel: "canonical", href: canonical }],
+      };
+    }
+
+    const name = sf.full_name?.trim() || "REPS Professional";
+    const titleLabel = sf.titles?.length
+      ? sf.titles.join(" & ")
+      : sf.primary_profession || "Personal Trainer";
+    const cityPart = sf.city ? ` in ${sf.city}` : "";
+    const pageTitle = `${name} — ${titleLabel}${cityPart} | REPS`;
+
+    const bioSnippet = (sf.tagline || sf.subtitle || sf.about || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 110);
+    const description = bioSnippet
+      ? `Book ${name}, a verified ${titleLabel.toLowerCase()}${cityPart}. ${bioSnippet}${bioSnippet.length === 110 ? "…" : ""} Verified on the REPS register.`
+      : `Book ${name}, a verified ${titleLabel.toLowerCase()}${cityPart}. Verified on the REPS register.`;
+
+    const ogImage = sf.hero_image_url || sf.avatar_url || undefined;
+
+    const meta: Array<Record<string, string>> = [
+      { title: pageTitle },
+      { name: "description", content: description.slice(0, 300) },
+      { property: "og:title", content: pageTitle },
+      { property: "og:description", content: description.slice(0, 300) },
+      { property: "og:url", content: canonical },
+      { property: "og:type", content: "profile" },
+      { name: "twitter:title", content: pageTitle },
+      { name: "twitter:description", content: description.slice(0, 200) },
+    ];
+    if (ogImage) {
+      meta.push({ property: "og:image", content: ogImage });
+      meta.push({ name: "twitter:image", content: ogImage });
+    }
+
+    const personJsonLd: Record<string, unknown> = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name,
+      url: canonical,
+      jobTitle: titleLabel,
+      ...(ogImage ? { image: ogImage } : {}),
+      ...(sf.city ? { address: { "@type": "PostalAddress", addressLocality: sf.city } } : {}),
+      ...(sf.tagline ? { description: sf.tagline } : {}),
+    };
+
     return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { name: "robots", content: "noindex,nofollow" },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
+      meta,
+      links: [{ rel: "canonical", href: canonical }],
+      scripts: [
+        { type: "application/ld+json", children: JSON.stringify(personJsonLd) },
       ],
     };
   },
