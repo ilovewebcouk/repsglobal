@@ -642,7 +642,6 @@ function ServiceEditDialog({
   editing,
   saving,
   onSubmit,
-  onSilentSave,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -651,51 +650,35 @@ function ServiceEditDialog({
   editing: boolean;
   saving: boolean;
   onSubmit: () => void;
-  onSilentSave: () => void;
 }) {
-  // ---- Autosave (existing services only) ------------------------------------
-  // New cards still require an explicit "Save & close" so we never create
-  // half-typed records. Existing edits debounce-save 800ms after the last
-  // change; status is surfaced in the sticky footer.
-  const lastSavedSnapshot = React.useRef<string>("");
+  // ---- Explicit save model --------------------------------------------------
+  // No autosave. The dialog snapshots the original draft on open; "Cancel"
+  // restores it. Closing via Esc / backdrop / Cancel while dirty triggers a
+  // confirm step so changes are never silently lost OR silently kept.
+  const originalSnapshot = React.useRef<string>("");
   const [dirty, setDirty] = React.useState(false);
   const [justSaved, setJustSaved] = React.useState(false);
+  const [confirmDiscard, setConfirmDiscard] = React.useState(false);
   const wasSaving = React.useRef(false);
-  const onSilentSaveRef = React.useRef(onSilentSave);
-  React.useEffect(() => { onSilentSaveRef.current = onSilentSave; }, [onSilentSave]);
 
-  // Reset snapshot whenever the dialog opens for a new draft.
+  // Snapshot the original draft whenever the dialog opens.
   React.useEffect(() => {
     if (open) {
-      lastSavedSnapshot.current = JSON.stringify(draft);
+      originalSnapshot.current = JSON.stringify(draft);
       setDirty(false);
       setJustSaved(false);
+      setConfirmDiscard(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Track dirty state vs last-saved snapshot.
+  // Track dirty state vs original snapshot.
   React.useEffect(() => {
     if (!open) return;
-    setDirty(JSON.stringify(draft) !== lastSavedSnapshot.current);
+    setDirty(JSON.stringify(draft) !== originalSnapshot.current);
   }, [draft, open]);
 
-  // Debounced autosave for existing records with a valid title.
-  React.useEffect(() => {
-    if (!open || !editing) return;
-    if (!draft.title?.trim()) return;
-    const snap = JSON.stringify(draft);
-    if (snap === lastSavedSnapshot.current) return;
-    const t = setTimeout(() => {
-      lastSavedSnapshot.current = snap;
-      onSilentSaveRef.current();
-    }, 800);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft, open, editing]);
-
-
-  // Detect save completion (saving prop falling edge) → flash "Saved".
+  // Detect save completion (saving falling edge) → flash "Saved" briefly.
   React.useEffect(() => {
     if (saving) {
       wasSaving.current = true;
@@ -712,10 +695,10 @@ function ServiceEditDialog({
     saving
       ? { label: "Saving…", tone: "saving" }
       : dirty
-        ? { label: editing ? "Saving in a moment…" : "Unsaved changes", tone: "dirty" }
+        ? { label: "Unsaved changes", tone: "dirty" }
         : justSaved
           ? { label: "Saved", tone: "saved" }
-          : { label: editing ? "All changes saved" : "Ready", tone: "muted" };
+          : { label: editing ? "No changes" : "Ready", tone: "muted" };
 
   const toneClass =
     status.tone === "saving"
@@ -726,177 +709,239 @@ function ServiceEditDialog({
           ? "text-amber-300"
           : "text-white/45";
 
-  function handleDone() {
+  function handleSave() {
     if (!draft.title?.trim()) return;
-    // Always fire the save (covers the "new card" path and any pending edit).
     onSubmit();
   }
 
+  function discardAndClose() {
+    // Restore original draft, then close.
+    try {
+      const original = JSON.parse(originalSnapshot.current) as ServiceDraft;
+      setDraft(original);
+    } catch {
+      /* noop */
+    }
+    setConfirmDiscard(false);
+    onOpenChange(false);
+  }
+
+  function attemptClose() {
+    if (saving) return;
+    if (dirty) {
+      setConfirmDiscard(true);
+    } else {
+      onOpenChange(false);
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) handleDone(); else onOpenChange(o); }}>
-      <DialogContent
-        onEscapeKeyDown={(e) => {
-          e.preventDefault();
-          handleDone();
+    <>
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          if (!o) attemptClose();
+          else onOpenChange(o);
         }}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden border-reps-border bg-reps-panel p-0 text-white sm:max-w-[640px] [&>button.absolute]:hidden"
       >
-        <DialogHeader className="border-b border-reps-border px-6 pb-4 pt-5">
-          <DialogTitle className="text-white">Edit service</DialogTitle>
-          <DialogDescription className="text-white/55">
-            Edit the default copy or replace it with your own title, price, mode and details.
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent
+          onEscapeKeyDown={(e) => {
+            e.preventDefault();
+            attemptClose();
+          }}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+          className="flex max-h-[90vh] flex-col gap-0 overflow-hidden border-reps-border bg-reps-panel p-0 text-white sm:max-w-[640px] [&>button.absolute]:hidden"
+        >
+          <DialogHeader className="border-b border-reps-border px-6 pb-4 pt-5">
+            <DialogTitle className="text-white">Edit service</DialogTitle>
+            <DialogDescription className="text-white/55">
+              Edit the default copy or replace it with your own title, price, mode and details.
+              Nothing saves until you click Save.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-3 overflow-y-auto px-6 py-5 md:grid-cols-2">
-          {(() => {
-            const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
-            const p = DEFAULT_SERVICE_CARDS[slot];
-            return (
-              <>
-                <div className="md:col-span-2">
-                  <TextInput
-                    value={draft.title ?? ""}
-                    onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                    placeholder={p.title}
-                    maxLength={80}
-                  />
-                  <div className="mt-1 text-[11px] text-white/40">Title</div>
-                </div>
-
-                <div>
-                  <TextInput
-                    value={draft.price_label ?? ""}
-                    onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
-                    placeholder={p.price_label}
-                    maxLength={16}
-                  />
-                  <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
-                </div>
-                <div>
-                  <select
-                    value={draft.price_unit ?? "per_session"}
-                    onChange={(e) => setDraft({ ...draft, price_unit: e.target.value as NonNullable<ServiceDTO["price_unit"]> })}
-                    className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-reps-orange"
-                  >
-                    {PRICE_UNIT_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
-                  <div className="mt-1 text-[11px] text-white/40">Unit</div>
-                </div>
-
-                <div>
-                  <select
-                    value={draft.mode ?? "in_person"}
-                    onChange={(e) => setDraft({ ...draft, mode: e.target.value as ServiceDTO["mode"] })}
-                    className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-reps-orange"
-                  >
-                    <option value="online">Remote (online)</option>
-                    <option value="hybrid">Hybrid</option>
-                    <option value="in_person">Hands-on (in person)</option>
-                  </select>
-                  <div className="mt-1 text-[11px] text-white/40">Delivery mode</div>
-                </div>
-                <div>
-                  <TextInput
-                    value={draft.cta_label ?? ""}
-                    onChange={(e) => setDraft({ ...draft, cta_label: e.target.value })}
-                    placeholder={p.cta_label}
-                    maxLength={40}
-                  />
-                  <div className="mt-1 text-[11px] text-white/40">Button label</div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="flex items-center gap-2 text-[13px] text-white/85">
-                    <input
-                      type="checkbox"
-                      checked={!!draft.is_featured}
-                      onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
-                      className="h-4 w-4 accent-reps-orange"
-                    />
-                    Mark as "Most popular" (only one card can be featured)
-                  </label>
-                </div>
-
-                <div className="md:col-span-2">
-                  <TextArea
-                    value={draft.description ?? ""}
-                    onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-                    placeholder={p.description}
-                    maxLength={240}
-                    className="min-h-[64px] w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
-                  />
-                </div>
-              </>
-            );
-          })()}
-
-
-          <div className="md:col-span-2">
-            <div className="text-[12px] font-semibold text-white/80">Bullets (up to 5)</div>
-            <p className="mt-0.5 text-[11.5px] text-white/45">
-              Keep each one short so they fit on a single line. 60 char max.
-            </p>
-            <div className="mt-2 grid gap-2">
-              {draft.bullets.map((b, i) => {
-                const examples = DEFAULT_SERVICE_CARDS[(draft.sort_order ?? 0) % 3].bullets;
-                return (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="w-4 text-[11px] text-white/40">{i + 1}.</span>
+          <div className="grid grid-cols-1 gap-3 overflow-y-auto px-6 py-5 md:grid-cols-2">
+            {(() => {
+              const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
+              const p = DEFAULT_SERVICE_CARDS[slot];
+              return (
+                <>
+                  <div className="md:col-span-2">
                     <TextInput
-                      value={b}
-                      onChange={(e) => {
-                        const next = [...draft.bullets];
-                        next[i] = e.target.value;
-                        setDraft({ ...draft, bullets: next });
-                      }}
-                      placeholder={examples[i] ?? "Add a bullet"}
-                      maxLength={60}
+                      value={draft.title ?? ""}
+                      onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                      placeholder={p.title}
+                      maxLength={80}
                     />
-                    <span className="w-10 text-right text-[11px] text-white/35">{b.length}/60</span>
+                    <div className="mt-1 text-[11px] text-white/40">Title</div>
                   </div>
-                );
-              })}
+
+                  <div>
+                    <TextInput
+                      value={draft.price_label ?? ""}
+                      onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
+                      placeholder={p.price_label}
+                      maxLength={16}
+                    />
+                    <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
+                  </div>
+                  <div>
+                    <select
+                      value={draft.price_unit ?? "per_session"}
+                      onChange={(e) => setDraft({ ...draft, price_unit: e.target.value as NonNullable<ServiceDTO["price_unit"]> })}
+                      className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-reps-orange"
+                    >
+                      {PRICE_UNIT_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                    <div className="mt-1 text-[11px] text-white/40">Unit</div>
+                  </div>
+
+                  <div>
+                    <select
+                      value={draft.mode ?? "in_person"}
+                      onChange={(e) => setDraft({ ...draft, mode: e.target.value as ServiceDTO["mode"] })}
+                      className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-reps-orange"
+                    >
+                      <option value="online">Remote (online)</option>
+                      <option value="hybrid">Hybrid</option>
+                      <option value="in_person">Hands-on (in person)</option>
+                    </select>
+                    <div className="mt-1 text-[11px] text-white/40">Delivery mode</div>
+                  </div>
+                  <div>
+                    <TextInput
+                      value={draft.cta_label ?? ""}
+                      onChange={(e) => setDraft({ ...draft, cta_label: e.target.value })}
+                      placeholder={p.cta_label}
+                      maxLength={40}
+                    />
+                    <div className="mt-1 text-[11px] text-white/40">Button label</div>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="flex items-center gap-2 text-[13px] text-white/85">
+                      <input
+                        type="checkbox"
+                        checked={!!draft.is_featured}
+                        onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
+                        className="h-4 w-4 accent-reps-orange"
+                      />
+                      Mark as "Most popular" (only one card can be featured)
+                    </label>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <TextArea
+                      value={draft.description ?? ""}
+                      onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                      placeholder={p.description}
+                      maxLength={240}
+                      className="min-h-[64px] w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+                    />
+                  </div>
+                </>
+              );
+            })()}
+
+
+            <div className="md:col-span-2">
+              <div className="text-[12px] font-semibold text-white/80">Bullets (up to 5)</div>
+              <p className="mt-0.5 text-[11.5px] text-white/45">
+                Keep each one short so they fit on a single line. 60 char max.
+              </p>
+              <div className="mt-2 grid gap-2">
+                {draft.bullets.map((b, i) => {
+                  const examples = DEFAULT_SERVICE_CARDS[(draft.sort_order ?? 0) % 3].bullets;
+                  return (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="w-4 text-[11px] text-white/40">{i + 1}.</span>
+                      <TextInput
+                        value={b}
+                        onChange={(e) => {
+                          const next = [...draft.bullets];
+                          next[i] = e.target.value;
+                          setDraft({ ...draft, bullets: next });
+                        }}
+                        placeholder={examples[i] ?? "Add a bullet"}
+                        maxLength={60}
+                      />
+                      <span className="w-10 text-right text-[11px] text-white/35">{b.length}/60</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="md:col-span-2 rounded-[14px] border border-reps-border bg-reps-panel-soft/40 p-3">
+              <ServiceImageEditor
+                value={draft.image_url ?? null}
+                onChange={(url: string | null) => setDraft({ ...draft, image_url: url })}
+              />
             </div>
           </div>
 
-          <div className="md:col-span-2 rounded-[14px] border border-reps-border bg-reps-panel-soft/40 p-3">
-            <ServiceImageEditor
-              value={draft.image_url ?? null}
-              onChange={(url: string | null) => setDraft({ ...draft, image_url: url })}
-            />
+          <div className="flex items-center justify-between gap-3 border-t border-reps-border bg-reps-panel/95 px-6 py-3 backdrop-blur">
+            <div className={`flex items-center gap-2 text-[12px] ${toneClass}`}>
+              {status.tone === "saving" ? (
+                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+              ) : status.tone === "saved" ? (
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              ) : status.tone === "dirty" ? (
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
+              ) : null}
+              {status.label}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={attemptClose}
+                className="flex h-10 items-center rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white hover:bg-reps-panel disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!draft.title?.trim() || saving || (!dirty && editing)}
+                onClick={handleSave}
+                className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+              >
+                <Save className="h-4 w-4" />
+                {editing ? "Save & close" : "Save & close"}
+              </button>
+            </div>
           </div>
-        </div>
+        </DialogContent>
+      </Dialog>
 
-        <div className="flex items-center justify-between gap-3 border-t border-reps-border bg-reps-panel/95 px-6 py-3 backdrop-blur">
-          <div className={`flex items-center gap-2 text-[12px] ${toneClass}`}>
-            {status.tone === "saving" ? (
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-            ) : status.tone === "saved" ? (
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            ) : status.tone === "dirty" ? (
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
-            ) : null}
-            {status.label}
-          </div>
-          <button
-            type="button"
-            disabled={!draft.title?.trim() || saving}
-            onClick={handleDone}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            <Save className="h-4 w-4" />
-            {editing ? "Done" : "Save & close"}
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <AlertDialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
+        <AlertDialogContent className="border-reps-border bg-reps-panel text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Discard unsaved changes?</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/55">
+              You have edits that haven't been saved. If you close now, those changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-reps-border bg-reps-panel-soft text-white hover:bg-reps-panel hover:text-white">
+              Keep editing
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={discardAndClose}
+              className="bg-red-500 text-white hover:bg-red-500/90"
+            >
+              Discard changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
+
 
 
 /* ===================================================================== */
