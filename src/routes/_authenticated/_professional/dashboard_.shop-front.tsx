@@ -34,6 +34,7 @@ import {
   deleteMyService,
   type ServiceDTO,
 } from "@/lib/shop-front/shop-front.functions";
+import { DEFAULT_SERVICE_CARDS, defaultServiceForSlot } from "@/lib/shop-front/default-services";
 import {
   getMyWebsiteContent,
   saveMyWebsiteContent,
@@ -380,68 +381,26 @@ const PRICE_UNIT_OPTIONS: { value: NonNullable<ServiceDTO["price_unit"]>; label:
 
 const EMPTY_BULLETS = ["", "", "", "", ""];
 
-const SERVICE_PLACEHOLDERS = [
-  {
-    title: "Online Coaching",
-    price: "£160",
-    cta: "Enquire about Online Coaching",
-    description: "For people who train themselves but want a coach in their corner.",
-    bullets: [
-      "Fully bespoke programme in-app",
-      "Weekly written check-in & adjustments",
-      "Unlimited messaging (Mon–Fri)",
-      "Video form reviews",
-      "Quarterly strategy call",
-    ],
-  },
-  {
-    title: "Hybrid Coaching",
-    price: "£240",
-    cta: "Start with Hybrid",
-    description: "The full programme — two in-person sessions a month, online the rest.",
-    bullets: [
-      "Everything in Online Coaching",
-      "2× in-person sessions per month",
-      "Movement screen & progress reviews",
-      "Body composition tracking",
-      "Priority response time",
-    ],
-  },
-  {
-    title: "1-to-1 In Person",
-    price: "From £75",
-    cta: "Enquire about 1-to-1 In Person",
-    description: "Train with me in central London. Programming, coaching and accountability in one room.",
-    bullets: [
-      "60-minute sessions at Third Space or BXR",
-      "Bespoke programme outside sessions",
-      "Nutrition & recovery rails",
-      "Direct messaging access",
-      "Block discount available (10+ sessions)",
-    ],
-  },
-];
-
-
 type ServiceDraft = Partial<ServiceDTO> & {
   title: string;
   bullets: string[];
 };
 
 function emptyDraft(sort_order: number): ServiceDraft {
+  const p = defaultServiceForSlot(sort_order);
   return {
-    title: "",
-    description: "",
+    title: p.title,
+    description: p.description,
     price_pence: null,
-    price_label: "",
-    price_unit: "per_session",
+    price_label: p.price_label,
+    price_unit: p.price_unit,
     duration_minutes: null,
-    mode: "in_person",
+    mode: p.mode,
     sort_order,
     is_published: true,
-    is_featured: false,
-    bullets: ["", "", "", "", ""],
-    cta_label: "",
+    is_featured: p.is_featured,
+    bullets: [...p.bullets, ...EMPTY_BULLETS].slice(0, 5),
+    cta_label: p.cta_label,
     image_url: null,
   };
 }
@@ -538,7 +497,7 @@ function ServicesEditor({
         {slots.map((s, i) => {
           const featured = !!s?.is_featured;
           const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
-          const placeholder = SERVICE_PLACEHOLDERS[i % 3];
+          const placeholder = DEFAULT_SERVICE_CARDS[i % 3];
           const isEmpty = !s;
           return (
             <div
@@ -593,12 +552,12 @@ function ServicesEditor({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className={["text-[13.5px] font-semibold", isEmpty ? "text-white/50" : "text-white"].join(" ")}>
-                    {s?.title || `${placeholder.title} (empty)`}
+                    {s?.title || placeholder.title}
                   </div>
                   <div className="mt-0.5 text-[12px] text-white/55">
                     {s
                       ? (s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"))
-                      : placeholder.price}
+                      : placeholder.price_label}
                     {" · "}
                     {s
                       ? (s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on")
@@ -616,7 +575,7 @@ function ServicesEditor({
                     onClick={() => (s ? startEdit(s) : startAddSlot(i))}
                     className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
                   >
-                    {s ? "Edit" : "Set up"}
+                    Edit
                   </button>
                 </div>
               </div>
@@ -687,17 +646,17 @@ function ServiceEditDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto border-reps-border bg-reps-panel text-white sm:max-w-[640px]">
         <DialogHeader>
           <DialogTitle className="text-white">
-            {editing ? "Edit service" : "Add a service"}
+            Edit service
           </DialogTitle>
           <DialogDescription className="text-white/55">
-            Placeholders show an example. Fill in your own title, price, mode and details.
+            Edit the default copy or replace it with your own title, price, mode and details.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {(() => {
             const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
-            const p = SERVICE_PLACEHOLDERS[slot];
+            const p = DEFAULT_SERVICE_CARDS[slot];
             return (
               <>
                 <div className="md:col-span-2">
@@ -714,7 +673,7 @@ function ServiceEditDialog({
                   <TextInput
                     value={draft.price_label ?? ""}
                     onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
-                    placeholder={p.price}
+                    placeholder={p.price_label}
                     maxLength={16}
                   />
                   <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
@@ -748,7 +707,7 @@ function ServiceEditDialog({
                   <TextInput
                     value={draft.cta_label ?? ""}
                     onChange={(e) => setDraft({ ...draft, cta_label: e.target.value })}
-                    placeholder={p.cta}
+                    placeholder={p.cta_label}
                     maxLength={40}
                   />
                   <div className="mt-1 text-[11px] text-white/40">Button label</div>
@@ -787,7 +746,7 @@ function ServiceEditDialog({
             </p>
             <div className="mt-2 grid gap-2">
               {draft.bullets.map((b, i) => {
-                const examples = SERVICE_PLACEHOLDERS[(draft.sort_order ?? 0) % 3].bullets;
+                const examples = DEFAULT_SERVICE_CARDS[(draft.sort_order ?? 0) % 3].bullets;
                 return (
                   <div key={i} className="flex items-center gap-2">
                     <span className="w-4 text-[11px] text-white/40">{i + 1}.</span>
@@ -832,8 +791,8 @@ function ServiceEditDialog({
             onClick={onSubmit}
             className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
           >
-            {editing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {editing ? "Save changes" : "Add service"}
+            <Save className="h-4 w-4" />
+            Save changes
           </button>
         </DialogFooter>
       </DialogContent>
