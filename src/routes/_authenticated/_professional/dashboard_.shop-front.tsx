@@ -486,15 +486,15 @@ function ServicesEditor({
         open={!!confirmDeleteId}
         onOpenChange={(o) => !o && setConfirmDeleteId(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="border-reps-border bg-reps-panel text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this service?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">Delete this service?</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/55">
               This removes the card from your public website. You can add a new one in its place.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-reps-border bg-reps-panel-soft text-white hover:bg-reps-panel hover:text-white">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (confirmDeleteId) onDelete(confirmDeleteId);
