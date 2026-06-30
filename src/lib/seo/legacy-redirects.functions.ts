@@ -365,3 +365,86 @@ export const getLegacyCoverageStats = createServerFn({ method: "GET" })
       lastImportedAt: latest?.[0]?.imported_at ?? null,
     };
   });
+
+// ─── Re-run chain resolve (admin only) ───────────────────────────────────────
+// Re-walks every legacy_redirects row against the current professionals.slug
+// set and updates resolved_to_slug. Use after new pros publish so previously
+// "gone" URLs start redirecting.
+
+export const rechainLegacyRedirects = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: all } = await supabaseAdmin
+      .from("legacy_redirects")
+      .select("source_path, destination_path, terminal_path, resolved_to_slug");
+
+    const map = new Map<string, string>();
+    for (const r of all ?? []) map.set(r.source_path, r.destination_path);
+
+    const { data: pros } = await supabaseAdmin
+      .from("professionals")
+      .select("slug")
+      .not("slug", "is", null);
+    const proSlugs = new Set<string>();
+    for (const p of pros ?? []) if (p.slug) proSlugs.add(p.slug.toLowerCase());
+
+    const updates: Array<{
+      source_path: string;
+      destination_path: string;
+      terminal_path: string;
+      resolved_to_slug: string | null;
+    }> = [];
+    let newlyResolved = 0;
+
+    for (const r of all ?? []) {
+      let cur = r.destination_path;
+      const seen = new Set<string>([r.source_path]);
+      for (let hop = 0; hop < 5; hop++) {
+        if (seen.has(cur)) break;
+        seen.add(cur);
+        const next = map.get(cur);
+        if (!next) break;
+        cur = next;
+      }
+      const { kind, slug } = classifyLegacyPath(cur);
+      let resolved: string | null = null;
+      if (kind === "exercise-professional" && slug) {
+        for (const c of slugCandidates(slug)) {
+          if (proSlugs.has(c)) {
+            resolved = c;
+            break;
+          }
+        }
+      }
+      if (resolved && !r.resolved_to_slug) newlyResolved++;
+      updates.push({
+        source_path: r.source_path,
+        destination_path: r.destination_path,
+        terminal_path: cur,
+        resolved_to_slug: resolved,
+      });
+    }
+
+    const CHUNK = 500;
+    for (let i = 0; i < updates.length; i += CHUNK) {
+      const { error } = await supabaseAdmin
+        .from("legacy_redirects")
+        .upsert(updates.slice(i, i + CHUNK), { onConflict: "source_path" });
+      if (error) throw new Error(`Rechain upsert failed at row ${i}: ${error.message}`);
+    }
+
+    return {
+      ok: true as const,
+      scanned: updates.length,
+      resolved: updates.filter((u) => u.resolved_to_slug).length,
+      newlyResolved,
+    };
+  });
