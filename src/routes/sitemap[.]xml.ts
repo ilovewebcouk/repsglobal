@@ -70,11 +70,36 @@ export const Route = createFileRoute("/sitemap.xml")({
           priority: "0.5",
         }));
 
+        // Public professional profiles — the SEO heart of the rebuild.
+        // These are the canonical destinations for the legacy redirects in /$.
+        let proEntries: SitemapEntry[] = [];
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: pros } = await supabaseAdmin
+            .from("professionals")
+            .select("slug, updated_at")
+            .not("slug", "is", null)
+            .eq("is_public", true)
+            .limit(5000);
+          proEntries = (pros ?? [])
+            .filter((p) => p.slug)
+            .map((p) => ({
+              path: `/c/${p.slug}`,
+              lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : undefined,
+              changefreq: "weekly",
+              priority: "0.85",
+            }));
+        } catch {
+          // Don't fail the whole sitemap if the DB hiccups.
+          proEntries = [];
+        }
+
         const entries = [
           ...STATIC_ROUTES,
           ...articleEntries,
           ...helpCategoryEntries,
           ...helpArticleEntries,
+          ...proEntries,
         ];
 
         const urls = entries.map((e) =>
