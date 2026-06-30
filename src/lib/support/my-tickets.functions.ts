@@ -71,9 +71,11 @@ export const listMyTickets = createServerFn({ method: "GET" })
       .select(
         "id, ticket_number, subject, status, priority, last_message_at, created_at, tags, requester_unread",
       )
+      .eq("requester_user_id", context.userId)
       .is("deleted_at", null)
       .order("last_message_at", { ascending: false })
       .limit(100);
+
     if (error) throw new Error(error.message);
     return (data ?? []) as MyTicketRow[];
   });
