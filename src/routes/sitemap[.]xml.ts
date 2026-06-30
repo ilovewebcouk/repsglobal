@@ -95,12 +95,28 @@ export const Route = createFileRoute("/sitemap.xml")({
           proEntries = [];
         }
 
+        // Programmatic profession × city landing pages.
+        const { PROGRAMMATIC_CITY_SLUGS, PROGRAMMATIC_PROFESSION_SLUGS } = await import(
+          "@/routes/in.$location.$profession"
+        );
+        const cityProfessionEntries: SitemapEntry[] = [];
+        for (const citySlug of PROGRAMMATIC_CITY_SLUGS) {
+          for (const profSlug of PROGRAMMATIC_PROFESSION_SLUGS) {
+            cityProfessionEntries.push({
+              path: `/in/${citySlug}/${profSlug}`,
+              changefreq: "weekly",
+              priority: "0.7",
+            });
+          }
+        }
+
         const entries = [
           ...STATIC_ROUTES,
           ...articleEntries,
           ...helpCategoryEntries,
           ...helpArticleEntries,
           ...proEntries,
+          ...cityProfessionEntries,
         ];
 
         const urls = entries.map((e) =>
