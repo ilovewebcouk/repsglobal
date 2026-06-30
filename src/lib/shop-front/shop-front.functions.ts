@@ -607,6 +607,7 @@ const ServiceUpsertSchema = z.object({
   is_featured: z.boolean().default(false),
   bullets: z.array(z.string().trim().max(60)).max(5).default([]),
   cta_label: z.string().trim().max(24).nullable().optional(),
+  image_url: z.string().trim().url().max(500).nullable().optional(),
 });
 
 
