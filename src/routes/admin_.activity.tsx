@@ -89,7 +89,7 @@ function AdminActivityPage() {
   const counts = data?.counts.bySeverity ?? { info: 0, success: 0, warning: 0, critical: 0 };
 
   return (
-    <DashboardShell role="admin" active="Activity">
+    <DashboardShell role="admin" active="Activity" title="Activity" subtitle="Operational intelligence — what's happening across REPS right now.">
       <div className="space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
