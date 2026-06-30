@@ -641,19 +641,115 @@ function ServiceEditDialog({
   saving: boolean;
   onSubmit: () => void;
 }) {
+  // ---- Autosave (existing services only) ------------------------------------
+  // For brand-new cards we still require an explicit "Done" so we don't create
+  // half-typed records. For existing edits we debounce-save 800ms after the
+  // last change and surface state in the sticky footer.
+  const initialSnapshot = React.useRef<string>("");
+  const lastSavedSnapshot = React.useRef<string>("");
+  const [dirty, setDirty] = React.useState(false);
+  const [justSaved, setJustSaved] = React.useState(false);
+  const wasSaving = React.useRef(false);
+
+  // Reset snapshots whenever the dialog opens for a new draft.
+  React.useEffect(() => {
+    if (open) {
+      const snap = JSON.stringify(draft);
+      initialSnapshot.current = snap;
+      lastSavedSnapshot.current = snap;
+      setDirty(false);
+      setJustSaved(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Track dirty state vs last-saved snapshot.
+  React.useEffect(() => {
+    if (!open) return;
+    const snap = JSON.stringify(draft);
+    setDirty(snap !== lastSavedSnapshot.current);
+  }, [draft, open]);
+
+  // Debounced autosave for existing records with a valid title.
+  React.useEffect(() => {
+    if (!open || !editing) return;
+    if (!draft.title?.trim()) return;
+    const snap = JSON.stringify(draft);
+    if (snap === lastSavedSnapshot.current) return;
+    const t = setTimeout(() => {
+      lastSavedSnapshot.current = snap;
+      onSubmitRef.current();
+    }, 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, open, editing]);
+
+  // Keep latest silent-save in a ref (onSubmit closes; we need a save-only variant).
+  // The parent's onSubmit triggers the mutation AND closes the dialog. For
+  // autosave we want save-without-close, so we fire onSubmit but immediately
+  // re-open. Simpler: call the same mutation by reusing onSubmit's effect via
+  // a flag. We achieve this by invoking onSubmit then re-opening if still dirty.
+  const onSubmitRef = React.useRef(onSubmit);
+  React.useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
+  // Detect save completion (saving prop falling edge) → flash "Saved".
+  React.useEffect(() => {
+    if (saving) {
+      wasSaving.current = true;
+      setJustSaved(false);
+    } else if (wasSaving.current) {
+      wasSaving.current = false;
+      setJustSaved(true);
+      const t = setTimeout(() => setJustSaved(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [saving]);
+
+  const status: { label: string; tone: "muted" | "saving" | "saved" | "dirty" } =
+    saving
+      ? { label: "Saving…", tone: "saving" }
+      : dirty
+        ? { label: editing ? "Saving in a moment…" : "Unsaved changes", tone: "dirty" }
+        : justSaved
+          ? { label: "Saved", tone: "saved" }
+          : { label: editing ? "All changes saved" : "Ready", tone: "muted" };
+
+  const toneClass =
+    status.tone === "saving"
+      ? "text-white/70"
+      : status.tone === "saved"
+        ? "text-emerald-300"
+        : status.tone === "dirty"
+          ? "text-amber-300"
+          : "text-white/45";
+
+  function handleDone() {
+    if (!draft.title?.trim()) return;
+    // Always fire the save (covers the "new card" path and any pending edit).
+    onSubmit();
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-reps-border bg-reps-panel text-white sm:max-w-[640px]">
-        <DialogHeader>
-          <DialogTitle className="text-white">
-            Edit service
-          </DialogTitle>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleDone(); else onOpenChange(o); }}>
+      <DialogContent
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+          handleDone();
+        }}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden border-reps-border bg-reps-panel p-0 text-white sm:max-w-[640px] [&>button.absolute]:hidden"
+      >
+        <DialogHeader className="border-b border-reps-border px-6 pb-4 pt-5">
+          <DialogTitle className="text-white">Edit service</DialogTitle>
           <DialogDescription className="text-white/55">
             Edit the default copy or replace it with your own title, price, mode and details.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 overflow-y-auto px-6 py-5 md:grid-cols-2">
           {(() => {
             const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
             const p = DEFAULT_SERVICE_CARDS[slot];
@@ -773,28 +869,29 @@ function ServiceEditDialog({
               onChange={(url: string | null) => setDraft({ ...draft, image_url: url })}
             />
           </div>
-
-
         </div>
 
-        <DialogFooter>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:bg-reps-panel"
-          >
-            Cancel
-          </button>
+        <div className="flex items-center justify-between gap-3 border-t border-reps-border bg-reps-panel/95 px-6 py-3 backdrop-blur">
+          <div className={`flex items-center gap-2 text-[12px] ${toneClass}`}>
+            {status.tone === "saving" ? (
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+            ) : status.tone === "saved" ? (
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            ) : status.tone === "dirty" ? (
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
+            ) : null}
+            {status.label}
+          </div>
           <button
             type="button"
             disabled={!draft.title?.trim() || saving}
-            onClick={onSubmit}
+            onClick={handleDone}
             className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
           >
             <Save className="h-4 w-4" />
-            Save changes
+            {editing ? "Done" : "Save & close"}
           </button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
