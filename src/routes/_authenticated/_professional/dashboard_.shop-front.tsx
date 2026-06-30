@@ -541,8 +541,6 @@ function ServicesEditor({
           return (
             <div
               key={s.id}
-              draggable
-              onDragStart={() => setDragIndex(i)}
               onDragOver={(e) => {
                 e.preventDefault();
                 setDragOverIndex(i);
@@ -552,55 +550,66 @@ function ServicesEditor({
                 e.preventDefault();
                 handleDrop(i);
               }}
-              onDragEnd={() => {
-                setDragIndex(null);
-                setDragOverIndex(null);
-              }}
               className={[
-                "relative flex items-start justify-between gap-3 rounded-[14px] px-4 py-3 transition cursor-grab active:cursor-grabbing",
-                featured
-                  ? "border-2 border-reps-orange bg-reps-orange/5 shadow-[0_0_0_4px_rgba(255,122,0,0.08)]"
-                  : "border border-reps-border bg-reps-panel-soft",
-                isDragOver ? "ring-2 ring-reps-orange/60" : "",
-                dragIndex === i ? "opacity-60" : "",
+                "flex items-stretch gap-2 transition",
+                dragIndex === i ? "opacity-50" : "",
               ].join(" ")}
             >
-              {featured && (
-                <div className="absolute -top-2.5 left-4 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                  <Sparkles className="h-3 w-3" />
-                  Most popular
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-white/30 text-[12px] select-none" aria-hidden>⋮⋮</span>
-                  <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
-                </div>
-                <div className="mt-0.5 text-[12px] text-white/55">
-                  {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
-                  {" · "}{s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on"}
-                  {!s.is_published ? " · Hidden" : ""}
-                </div>
-                {s.description && (
-                  <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">{s.description}</div>
-                )}
+              <div
+                draggable
+                onDragStart={() => setDragIndex(i)}
+                onDragEnd={() => {
+                  setDragIndex(null);
+                  setDragOverIndex(null);
+                }}
+                aria-label="Drag to reorder"
+                className="flex w-8 shrink-0 cursor-grab items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel-soft/60 text-white/40 hover:text-white/80 active:cursor-grabbing"
+              >
+                <GripVertical className="h-4 w-4" />
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => startEdit(s)}
-                  className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDeleteId(s.id)}
-                  aria-label={`Delete ${s.title}`}
-                  className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-red-300 hover:bg-reps-panel/80"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+              <div
+                className={[
+                  "relative flex flex-1 items-start justify-between gap-3 rounded-[14px] px-4 py-3 transition",
+                  featured
+                    ? "border-2 border-reps-orange bg-reps-orange/5 shadow-[0_0_0_4px_rgba(255,122,0,0.10)]"
+                    : "border border-reps-border bg-reps-panel-soft",
+                  isDragOver ? "ring-2 ring-reps-orange/60" : "",
+                ].join(" ")}
+              >
+                {featured && (
+                  <div className="absolute -top-2.5 left-4 inline-flex items-center gap-1 rounded-full bg-reps-orange px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                    <Sparkles className="h-3 w-3" />
+                    Most popular
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
+                  <div className="mt-0.5 text-[12px] text-white/55">
+                    {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
+                    {" · "}{s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on"}
+                    {!s.is_published ? " · Hidden" : ""}
+                  </div>
+                  {s.description && (
+                    <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">{s.description}</div>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(s)}
+                    className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDeleteId(s.id)}
+                    aria-label={`Delete ${s.title}`}
+                    className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-red-300 hover:bg-reps-panel/80"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
           );
