@@ -13,7 +13,11 @@ function Cell({ value, dim = false }: { value: CellValue; dim?: boolean }) {
     );
   }
   if (value === false) {
-    return <Minus className="h-3.5 w-3.5 text-white/25" />;
+    return (
+      <span className="inline-flex h-5 w-5 items-center justify-center">
+        <Minus className="h-3.5 w-3.5 text-white/25" />
+      </span>
+    );
   }
   return <span className={`text-[13px] ${dim ? "text-white/55" : "text-white/80"}`}>{value}</span>;
 }
