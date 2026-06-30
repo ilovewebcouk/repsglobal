@@ -379,6 +379,7 @@ function ServicesEditor({
       is_featured: s.is_featured,
       bullets: [...b, ...EMPTY_BULLETS].slice(0, 5),
       cta_label: s.cta_label ?? "",
+      image_url: s.image_url ?? null,
     });
     setOpen(true);
   }
