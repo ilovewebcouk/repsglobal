@@ -28,7 +28,7 @@ const PAGES = [
   { path: "/pricing", titleIncludes: "pricing" },
   { path: "/about", titleIncludes: "about" },
   { path: "/for-professionals", titleIncludes: "professional" },
-  { path: "/features/shop-front", titleIncludes: "shop-front" },
+  { path: "/features/shop-front", titleIncludes: "website" },
   { path: "/in/london/personal-trainer", titleIncludes: "london" },
   { path: "/professions/personal-trainer", titleIncludes: "personal trainer" },
 ];
