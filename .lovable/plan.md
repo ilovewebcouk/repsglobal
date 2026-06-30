@@ -1,39 +1,29 @@
-## What went wrong
+Plan to fix the broken Google result and stop this class of SEO/redirect issue:
 
-I locked the 3 service slots to fixed titles, modes, CTAs and "Most popular" — so pros could only edit price/description/bullets. You wanted the opposite: keep the editor fully free, just **show the example content as placeholder text** so an untouched profile still looks like the screenshot.
+1. **Fix the exact Google 404 immediately**
+   - Add a deterministic redirect for:
+     `/reps/blog/the-register-of-exercise-professionals-reps-relaunched-to-support-fitness-professionals-to-grow-and-succeed`
+   - Destination: a live, indexable REPS article/resource page rather than the homepage or a generic 404.
+   - Use a true permanent redirect so Google transfers the old result instead of keeping a dead URL.
 
-## Fix — two surgical reverts, no UI/UX changes
+2. **Handle the whole legacy blog pattern**
+   - Extend the legacy catch-all resolver so old `/reps/blog/*` and likely `/blog/*` URLs are treated as legacy content, not random misses.
+   - Add a small curated mapping layer for high-value legacy articles first, then fallback unknown legacy blog posts to a clean `410 Gone` with `noindex,follow` rather than a soft/default 404.
+   - Keep professional profile redirects separate so the existing `/c/{slug}` redirect logic is not disturbed.
 
-### 1. `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` — un-lock the editor
+3. **Repair current article SEO metadata**
+   - Fix the current resource article route which is still generating canonical/OG URLs against `https://staging.repsuk.org` in source.
+   - Change it to `https://repsuk.org` so crawlers see the correct canonical, OG URL, Article JSON-LD publisher URL, and breadcrumb URLs.
 
-- `emptyDraft()`: return a blank draft (`title: ""`, `description: ""`, `bullets: ["","","","",""]`, `mode: "in_person"`, `is_featured: false`, no locked CTA/unit). Stop pre-filling DB values from `SERVICE_PLACEHOLDERS`.
-- `startEdit()`: load the row's actual values back (title, mode, cta_label, price_unit, is_featured, bullets) — no slot override.
-- `submit()`: save exactly what's in the draft. Remove the slot-locked overwrite of title/mode/cta_label/price_unit/is_featured.
-- Restore the editor dialog inputs that were stripped:
-  - Title input (with `placeholder={SERVICE_PLACEHOLDERS[slot].title}`)
-  - Mode select (Remote / Hybrid / Hands-on)
-  - CTA label input (with placeholder)
-  - Price unit select (full `PRICE_UNIT_OPTIONS`)
-  - "Most popular" checkbox
-- Remove the "locked slot summary" strip and the "title/delivery mode/button are fixed" copy from `DialogDescription`.
-- In the list-row preview, keep the placeholder text fallback only when the service is empty (`!s`). When a service exists, render its real `title` / `price_label` / `mode` / `description` — never override with placeholder.
+4. **Sitemap sanity check**
+   - Confirm the sitemap only advertises canonical current URLs (`/resources/...`, `/c/...`, `/in/...`) and does **not** include dead legacy `/reps/blog/...` URLs.
+   - Keep `https://repsuk.org/sitemap.xml` as the sitemap target.
 
-### 2. `src/routes/c.$slug.tsx` — placeholder rendering on the public page
+5. **QA before claiming fixed**
+   - Verify the exact URL from your screenshot returns a redirect, not a 404.
+   - Verify the destination page returns `200`, self-referencing canonical, correct title/meta description, and Article JSON-LD.
+   - Verify the sitemap still serves correctly.
 
-So a brand-new website (no services configured yet) shows the screenshot's example trio instead of an empty Services section:
-
-- In `mergeLiveIntoCoach`, if `services.length === 0`, return 3 placeholder `Tier` objects matching the screenshot exactly:
-  1. **Online Coaching** — Remote · £160 / month · "For people who train themselves but want a coach in their corner." · 5 bullets · CTA "Enquire about Online Coaching"
-  2. **Hybrid Coaching** — Hybrid · £240 / month · `highlight: true` (Most popular) · CTA "Start with Hybrid" · 5 bullets
-  3. **1-to-1 In Person** — Hands-on · "From £75" / session · CTA "Enquire about 1-to-1 In Person" · 5 bullets
-- These are display-only placeholders, never written to the DB. As soon as the pro adds a real service, the placeholders disappear.
-
-### Out of scope
-
-- No visual or layout changes to the service cards, the editor dialog shell, or the public page.
-- No DB migration. No changes to `shop-front.functions.ts`.
-
-## Result
-
-- Brand-new pros see the polished example page exactly like your screenshot, with nothing entered.
-- Pros can edit title, mode, CTA, price unit and "Most popular" freely — placeholders just hint at the example wording.
+Technical notes:
+- Files likely touched: `src/lib/seo/legacy-redirects.functions.ts`, `src/routes/resources.$slug.tsx`, and possibly `src/lib/resources.ts` if the best destination article needs to be created rather than mapped to an existing one.
+- I will not change the public design/UI for this; this is routing + SEO metadata only.

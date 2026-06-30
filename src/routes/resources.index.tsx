@@ -8,6 +8,8 @@ import { PublicHeader } from"@/components/public/PublicHeader";
 import { PublicFooter } from"@/components/public/PublicFooter";
 import { RESOURCE_ARTICLES, RESOURCE_CATEGORIES, getHeroFeatured, type ResourceCategory } from"@/lib/resources";
 
+const SITE_URL = "https://repsuk.org";
+
 type SortMode ="newest" |"oldest" |"az";
 type Filter ="All" | ResourceCategory;
 
@@ -35,10 +37,10 @@ export const Route = createFileRoute("/resources/")({
         content:
 "Practical guides for hiring personal trainers, fitness coaches and Pilates instructors — plus business, CPD and standards advice from the REPS editorial team.",
       },
-      { property:"og:url", content:"https://staging.repsuk.org/resources" },
+      { property:"og:url", content:`${SITE_URL}/resources` },
       { property:"og:type", content:"website" },
     ],
-    links: [{ rel:"canonical", href:"https://staging.repsuk.org/resources" }],
+    links: [{ rel:"canonical", href:`${SITE_URL}/resources` }],
   }),
   component: ResourcesPage,
 });

@@ -5,6 +5,8 @@ import { PublicHeader } from"@/components/public/PublicHeader";
 import { PublicFooter } from"@/components/public/PublicFooter";
 import { getArticle, getRelated, type ResourceArticle } from"@/lib/resources";
 
+const SITE_URL = "https://repsuk.org";
+
 export const Route = createFileRoute("/resources/$slug")({
   loader: ({ params }) => {
     const article = getArticle(params.slug);
@@ -14,7 +16,7 @@ export const Route = createFileRoute("/resources/$slug")({
   head: ({ params, loaderData }) => {
     const article = loaderData?.article;
     if (!article) return { meta: [{ title:"Resource not found — REPS" }] };
-    const baseUrl ="https://staging.repsuk.org";
+    const baseUrl = SITE_URL;
     const url = `${baseUrl}/resources/${params.slug}`;
     const imageUrl = article.cover.startsWith("http") ? article.cover : `${baseUrl}${article.cover}`;
     return {
