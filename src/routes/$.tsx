@@ -40,8 +40,8 @@ export const Route = createFileRoute("/$")({
     }
 
     if (result.action === "gone") {
-      // Status 410 is set server-side inside the server fn via response
-      // headers when possible; the noindex meta below guarantees deindexing.
+      // Set 410 on the SSR response so Google deindexes cleanly.
+      try { setResponseStatus(410); } catch { /* client nav */ }
       return { reason: result.reason };
     }
 
