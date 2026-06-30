@@ -530,10 +530,10 @@ function ServiceEditDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-reps-border bg-reps-panel text-white sm:max-w-[640px]">
         <DialogHeader>
-          <DialogTitle>{editing ? "Edit service" : "Add a service"}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-white">{editing ? "Edit service" : "Add a service"}</DialogTitle>
+          <DialogDescription className="text-white/55">
             Title, price, unit and up to 5 bullets that appear on your public website.
           </DialogDescription>
         </DialogHeader>
