@@ -471,21 +471,25 @@ function ServicesEditor({
 
   function startEdit(s: ServiceDTO) {
     const b = Array.isArray(s.bullets) ? s.bullets.slice(0, 5) : [];
+    const slot = (((s.sort_order ?? 0) % 3) + 3) % 3;
+    const p = SERVICE_PLACEHOLDERS[slot];
+    const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
+    const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
     setEditingId(s.id);
     setDraft({
       id: s.id,
-      title: s.title,
+      title: p.title, // locked to slot
       description: s.description ?? "",
       price_pence: s.price_pence,
       price_label: s.price_label ?? "",
-      price_unit: (s.price_unit as ServiceDTO["price_unit"]) ?? "per_session",
+      price_unit: unitBySlot[slot],
       duration_minutes: s.duration_minutes,
-      mode: s.mode as ServiceDTO["mode"],
+      mode: modeBySlot[slot], // locked to slot
       sort_order: s.sort_order,
       is_published: s.is_published,
-      is_featured: s.is_featured,
+      is_featured: slot === 1, // Hybrid is always Most popular
       bullets: [...b, ...EMPTY_BULLETS].slice(0, 5),
-      cta_label: s.cta_label ?? "",
+      cta_label: p.cta, // locked to slot
       image_url: s.image_url ?? null,
     });
     setOpen(true);
@@ -498,12 +502,20 @@ function ServicesEditor({
   }
 
   function submit() {
+    const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
+    const p = SERVICE_PLACEHOLDERS[slot];
+    const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
+    const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
     onSave({
       ...draft,
+      // Slot-locked fields — never user-editable
+      title: p.title,
+      mode: modeBySlot[slot],
+      cta_label: p.cta,
+      price_unit: unitBySlot[slot],
+      is_featured: slot === 1,
       bullets: draft.bullets.map((b) => b.trim()).filter(Boolean),
-      cta_label: draft.cta_label?.trim() || null,
       price_label: draft.price_label?.trim() || null,
-      price_unit: draft.price_unit || null,
       description: draft.description?.trim() || null,
       image_url: draft.image_url || null,
     });
