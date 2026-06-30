@@ -13,7 +13,6 @@
  * cleaner than soft-404.
  */
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { setResponseStatus } from "@tanstack/react-start/server";
 import { resolveLegacyPath } from "@/lib/seo/legacy-redirects.functions";
 
 export const Route = createFileRoute("/$")({
