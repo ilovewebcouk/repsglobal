@@ -376,7 +376,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("services")
         .select(
-          "id, professional_id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_published, is_featured",
+          "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label",
         )
         .eq("professional_id", pro.id)
         .eq("is_published", true)
@@ -484,7 +484,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("services")
           .select(
-            "id, professional_id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_published, is_featured",
+            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label",
           )
           .eq("professional_id", userId)
           .order("sort_order", { ascending: true }),
