@@ -219,6 +219,22 @@ const ResolveInput = z.object({ path: z.string().min(1).max(800) });
 const CURATED_LEGACY_BLOG_REDIRECTS: Record<string, string> = {
   "the-register-of-exercise-professionals-reps-relaunched-to-support-fitness-professionals-to-grow-and-succeed":
     "/resources/behind-the-scenes-how-we-built-the-public-register",
+  // Consumer guides
+  "how-to-become-a-personal-trainer-a-beginners-guide": "/resources/choosing-level-4-specialism",
+  "how-to-choose-a-personal-trainer": "/resources/choosing-the-right-personal-trainer",
+  "how-to-find-a-personal-trainer": "/resources/choosing-the-right-personal-trainer",
+  "personal-trainer-cost-uk": "/resources/personal-trainer-cost-uk-2026",
+  "how-much-does-a-personal-trainer-cost": "/resources/personal-trainer-cost-uk-2026",
+  "online-vs-in-person-personal-training": "/resources/online-vs-in-person-coaching",
+  "what-to-expect-from-your-first-pt-session": "/resources/what-to-expect-first-pt-session",
+  "red-flags-when-hiring-a-personal-trainer": "/resources/red-flags-hiring-personal-trainer",
+  "why-insurance-matters-for-fitness-professionals": "/resources/why-insurance-matters-fitness-coach",
+  "recognised-vs-unrecognised-fitness-qualifications": "/resources/recognised-vs-unrecognised-qualifications",
+  "what-reps-verified-means": "/resources/what-reps-verified-actually-means",
+  "how-reps-verifies-fitness-professionals": "/resources/how-reps-verifies-a-fitness-professional",
+  // Pro / business guides
+  "how-to-grow-your-personal-training-business": "/resources/grow-your-pt-business-in-2026",
+  "how-to-price-personal-training-sessions": "/resources/how-to-price-12-week-programme",
 };
 
 function legacyBlogSlug(path: string): string | null {
@@ -228,14 +244,8 @@ function legacyBlogSlug(path: string): string | null {
   return null;
 }
 
-async function markGoneStatus() {
-  try {
-    const { setResponseStatus } = await import("@tanstack/react-start/server");
-    setResponseStatus(410);
-  } catch {
-    /* client navigation — status not applicable */
-  }
-}
+// NOTE: 410 status is set in the route loader (src/routes/$.tsx), not here.
+// setResponseStatus() from a server fn does not reach the SSR page response.
 
 export const resolveLegacyPath = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => ResolveInput.parse(d))
@@ -265,7 +275,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       // Terminal known but no live pro → 410 Gone (server-side only)
       const terminal = row.terminal_path || row.destination_path;
       const { kind } = classifyLegacyPath(terminal);
-      await markGoneStatus();
+      
       return {
         action: "gone",
         reason: kind === "exercise-professional" ? "pro-not-migrated" : `type-not-migrated:${kind}`,
@@ -273,7 +283,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
     }
 
     if (blogSlug) {
-      await markGoneStatus();
+      
       return { action: "gone", reason: "legacy-blog-not-migrated" };
     }
 
@@ -293,7 +303,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (pro?.slug) return { action: "redirect", toSlug: pro.slug };
-    await markGoneStatus();
+    
     return { action: "gone", reason: "pro-not-migrated" };
   });
 
