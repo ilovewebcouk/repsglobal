@@ -470,9 +470,8 @@ function ServicesEditor({
     setOpen(false);
   }
 
-  function silentSave() {
-    onSave(buildPayload());
-  }
+
+
 
 
   function handleDrop(targetIndex: number) {
