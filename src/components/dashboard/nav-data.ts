@@ -20,7 +20,6 @@ import {
   ShieldCheck,
   Star,
   Store,
-  Tag,
   Target,
   UserCheck,
   UserCircle,
