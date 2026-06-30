@@ -40,7 +40,10 @@ export const Route = createFileRoute("/$")({
 
     if (result.action === "gone") {
       // Set 410 on the SSR response so Google deindexes cleanly.
-      try { setResponseStatus(410); } catch { /* client nav */ }
+      try {
+        const { setResponseStatus } = await import("@tanstack/react-start/server");
+        setResponseStatus(410);
+      } catch { /* client nav */ }
       return { reason: result.reason };
     }
 
