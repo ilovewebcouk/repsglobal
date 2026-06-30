@@ -358,6 +358,7 @@ function ShopFrontEditorPage() {
             services={services}
             onSave={(s) => upsertServiceMut.mutate(s)}
             onDelete={(id) => deleteServiceMut.mutate(id)}
+            onReorder={(ids) => reorderServicesMut.mutate(ids)}
             saving={upsertServiceMut.isPending}
           />
         </div>
