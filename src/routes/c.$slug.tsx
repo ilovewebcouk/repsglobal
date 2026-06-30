@@ -383,11 +383,13 @@ function mergeLiveIntoCoach(
     name: s.title,
     eyebrow: s.is_featured ? "Most popular" : s.mode === "online" ? "Online" : s.mode === "hybrid" ? "Hybrid" : "In person",
     price: s.price_label ?? (s.price_pence != null ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"),
-    unit: s.duration_minutes ? `${s.duration_minutes} min` : "per session",
+    unit: priceUnitLabel(s.price_unit) ?? (s.duration_minutes ? `${s.duration_minutes} min` : "per session"),
     blurb: s.description ?? "",
-    includes: [],
-    highlight: s.is_featured || i === 1,
+    includes: Array.isArray(s.bullets) ? s.bullets.filter((b) => b && b.trim()) : [],
+    highlight: s.is_featured || (services.every((x) => !x.is_featured) && i === 1),
+    ctaLabel: s.cta_label ?? null,
   }));
+
   const memberSinceDate = sf.member_since ? new Date(sf.member_since) : null;
   const memberYear = memberSinceDate && !isNaN(memberSinceDate.getTime())
     ? memberSinceDate.getFullYear()
