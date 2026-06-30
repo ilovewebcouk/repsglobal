@@ -234,9 +234,15 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       if (row.resolved_to_slug) {
         return { action: "redirect", toSlug: row.resolved_to_slug };
       }
-      // Terminal known but no live pro
+      // Terminal known but no live pro → 410 Gone (server-side only)
       const terminal = row.terminal_path || row.destination_path;
       const { kind } = classifyLegacyPath(terminal);
+      try {
+        const { setResponseStatus } = await import("@tanstack/react-start/server");
+        setResponseStatus(410);
+      } catch {
+        /* client navigation — status not applicable */
+      }
       return {
         action: "gone",
         reason: kind === "exercise-professional" ? "pro-not-migrated" : `type-not-migrated:${kind}`,
