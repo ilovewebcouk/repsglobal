@@ -249,7 +249,8 @@ function SignupPage() {
           fullName: fullName.trim(),
           email: email.trim(),
           password,
-          tier: search.tier,
+          // Internal billing enum still uses "verified" for the Core tier.
+          tier: search.tier === "core" ? "verified" : search.tier,
           period: search.period,
           environment,
         },
