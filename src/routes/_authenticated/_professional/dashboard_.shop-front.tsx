@@ -491,9 +491,9 @@ function ServicesEditor({
     setOpen(true);
   }
 
-  function startAdd() {
+  function startAddSlot(slot: number) {
     setEditingId(null);
-    setDraft(emptyDraft(services.length));
+    setDraft(emptyDraft(slot));
     setOpen(true);
   }
 
