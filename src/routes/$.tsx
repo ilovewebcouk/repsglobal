@@ -13,7 +13,6 @@
  * cleaner than soft-404.
  */
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { setResponseStatus, setResponseHeader } from "@tanstack/react-start/server";
 import { resolveLegacyPath } from "@/lib/seo/legacy-redirects.functions";
 
 export const Route = createFileRoute("/$")({
@@ -33,8 +32,8 @@ export const Route = createFileRoute("/$")({
     }
 
     if (result.action === "gone") {
-      setResponseStatus(410);
-      setResponseHeader("Cache-Control", "public, max-age=86400");
+      // Status 410 is set server-side inside the server fn via response
+      // headers when possible; the noindex meta below guarantees deindexing.
       return { reason: result.reason };
     }
 
