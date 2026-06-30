@@ -265,6 +265,12 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (pro?.slug) return { action: "redirect", toSlug: pro.slug };
+    try {
+      const { setResponseStatus } = await import("@tanstack/react-start/server");
+      setResponseStatus(410);
+    } catch {
+      /* client navigation */
+    }
     return { action: "gone", reason: "pro-not-migrated" };
   });
 
