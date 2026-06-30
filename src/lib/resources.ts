@@ -140,6 +140,84 @@ const MARK = {
 
 export const RESOURCE_ARTICLES: ResourceArticle[] = [
   {
+    slug: "personal-trainer-insurance",
+    title: "Personal trainer insurance in the UK: what you actually need",
+    excerpt:
+      "A plain-English guide to public liability and professional indemnity cover for UK personal trainers and fitness instructors — what it costs, what it covers, and why REPS verifies it.",
+    category: "Verification & Standards",
+    ...STANDARDS,
+    date: "2026-06-30",
+    dateLabel: "30 June 2026",
+    readTime: "7 min read",
+    cover: coverWhyInsuranceMattersFitnessCoach,
+    featured: true,
+    body: [
+      {
+        type: "p",
+        text: "If you coach people for money in the UK — in a gym, in a park, in a private studio or online — you need insurance. Not because it's a nice-to-have, and not because a gym told you to, but because one slipped weight, one tweaked back, or one disputed nutrition claim can end your career without it. This guide covers exactly what cover you need, what it costs, and how it ties into REPS verification.",
+      },
+      { type: "h2", text: "The two policies every personal trainer needs" },
+      {
+        type: "p",
+        text: "There are two core policies every UK personal trainer, fitness instructor and coach should hold. Most reputable specialist insurers bundle them into a single fitness instructor policy, but it's worth knowing what each one actually does.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Public liability insurance — covers you if a client or member of the public is injured, or their property is damaged, during a session you're running. Typical cover is £5m–£10m. This is what gyms and venues check before they let you train clients on the floor.",
+          "Professional indemnity insurance — covers you if a client claims your advice, programme or coaching caused them loss or harm (a poorly prescribed exercise, a nutrition claim that backfires, a returning-from-injury programme that flares an old issue). Typical cover is £1m–£2m.",
+        ],
+      },
+      { type: "h2", text: "What about online coaching?" },
+      {
+        type: "p",
+        text: "Online coaching does not remove the need for insurance — it changes which policy does the heavy lifting. If you write programmes, deliver video check-ins, or sell a 12-week plan, the risk shifts from \"someone got hurt in the room\" to \"someone followed my advice and something went wrong.\" That's a professional indemnity claim. Make sure your policy explicitly covers online and remote delivery — not all entry-level fitness policies do.",
+      },
+      { type: "h2", text: "Optional cover worth considering" },
+      {
+        type: "ul",
+        items: [
+          "Equipment cover — for kit you own (TRX, kettlebells, cameras, laptop) used in your work.",
+          "Personal accident — pays out if you're injured and can't coach for a period.",
+          "Legal expenses — helps with disputes, debt recovery and contract issues.",
+          "Cyber cover — if you store client data, take payments online or run a coaching app, this becomes increasingly relevant.",
+        ],
+      },
+      { type: "h2", text: "Roughly what it costs" },
+      {
+        type: "p",
+        text: "For a self-employed UK personal trainer, a bundled public liability + professional indemnity policy from a specialist fitness insurer typically lands between £80 and £180 per year, depending on cover limits, claims history and the scope of what you do (in-person only vs. online, group classes vs. 1-2-1, working with under-18s, etc.). Group exercise instructors and fitness instructors usually sit at the lower end; strength coaches, nutrition-led coaches and those working with vulnerable populations sit higher.",
+      },
+      { type: "h2", text: "Why REPS verifies your insurance" },
+      {
+        type: "p",
+        text: "Insurance is one of the four checks every REPS Verified Professional has to clear before their profile is searchable on the public register. We don't just take a screenshot — our standards team checks the cover is current, that it includes both public liability and professional indemnity, and that it covers the way you actually work (in-person, online or both). When cover expires, the badge comes down automatically until it's renewed. That's the whole point of the badge: the public doesn't have to take your word for it.",
+      },
+      {
+        type: "quote",
+        text: "If a coach can't show you they're insured, they aren't coaching you — they're rolling the dice with your body and your wallet.",
+        cite: "REPS Standards Charter",
+      },
+      { type: "h2", text: "How to choose a policy (a 5-minute checklist)" },
+      {
+        type: "ul",
+        items: [
+          "Use a specialist fitness insurer, not a generic small-business policy — claim outcomes are far better.",
+          "Confirm public liability is at least £5m (£10m if you work in commercial gyms or council venues).",
+          "Confirm professional indemnity covers programme design, nutrition guidance within scope, and online delivery if you coach remotely.",
+          "Check the territorial limit covers where you actually work (UK only vs. worldwide ex-US/Canada).",
+          "Disclose every specialism honestly — pre/postnatal, over-50s, returning from injury, strength, S&C, nutrition — under-disclosing can void a claim.",
+          "Save the certificate as a PDF and upload it to REPS — it triggers the verification check automatically and renews annually.",
+        ],
+      },
+      { type: "h2", text: "What clients should look for" },
+      {
+        type: "p",
+        text: "If you're hiring a personal trainer or coach, the question is simple: \"Are you insured, and can I see proof?\" A professional will answer instantly. On REPS, you don't have to ask — the Verified badge already confirms current public liability and professional indemnity cover are on file. If a coach can't or won't show insurance, that's your answer.",
+      },
+    ],
+  },
+
     slug: "how-reps-verifies-a-fitness-professional",
     title: "How REPS verifies a fitness professional",
     excerpt:
