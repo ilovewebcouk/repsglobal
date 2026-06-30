@@ -244,14 +244,8 @@ function legacyBlogSlug(path: string): string | null {
   return null;
 }
 
-async function markGoneStatus() {
-  try {
-    const { setResponseStatus } = await import("@tanstack/react-start/server");
-    setResponseStatus(410);
-  } catch {
-    /* client navigation — status not applicable */
-  }
-}
+// NOTE: 410 status is set in the route loader (src/routes/$.tsx), not here.
+// setResponseStatus() from a server fn does not reach the SSR page response.
 
 export const resolveLegacyPath = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => ResolveInput.parse(d))
