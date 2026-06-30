@@ -277,7 +277,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       // Terminal known but no live pro → 410 Gone (server-side only)
       const terminal = row.terminal_path || row.destination_path;
       const { kind } = classifyLegacyPath(terminal);
-      
+      markGone();
       return {
         action: "gone",
         reason: kind === "exercise-professional" ? "pro-not-migrated" : `type-not-migrated:${kind}`,
