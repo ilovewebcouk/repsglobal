@@ -109,7 +109,12 @@ function LegacyRedirectsPage() {
   }
 
   return (
-    <DashboardShell title="Legacy 301 redirects">
+    <DashboardShell
+      role="admin"
+      active="Settings"
+      title="Legacy 301 redirects"
+      subtitle="Import BD redirect rules so legacy URLs map to current pros (or 410 cleanly)."
+    >
       <div className="mx-auto w-full max-w-[1100px] space-y-6 px-4 py-6">
         <PCard>
           <div className="px-5 py-4">
