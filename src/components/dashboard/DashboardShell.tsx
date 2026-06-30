@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
+import { MemberFinder } from "@/components/ops/MemberFinder";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { DashboardToaster, DashboardTooltipProvider } from "@/components/dashboard/ui";
@@ -111,6 +112,10 @@ function TopBar({
             <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[6px] border border-reps-border bg-reps-panel-soft px-1.5 py-0.5 text-[10px] font-medium text-white/55">
               ⌘K
             </kbd>
+          </div>
+        ) : role === "admin" ? (
+          <div className="hidden lg:block w-[320px]">
+            <MemberFinder placeholder="Search members by email, user id, cus_…, sub_…" />
           </div>
         ) : (
           <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 lg:flex">
