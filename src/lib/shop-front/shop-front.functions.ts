@@ -348,6 +348,54 @@ async function ensureDefaultServices(
   existingRows: ServiceRow[] | null | undefined,
 ): Promise<ServiceRow[]> {
   const existing = [...(existingRows ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+  const legacyBadDefault = existing.find((row) => {
+    const title = row.title.trim().toLowerCase();
+    const description = (row.description ?? "").trim().toLowerCase();
+    return (
+      row.sort_order === 0 &&
+      title === "personal training at home" &&
+      (description.includes("3 sessions a week") || row.price_label === "£28.33")
+    );
+  });
+
+  if (legacyBadDefault) {
+    const card = DEFAULT_SERVICE_CARDS[0];
+    const { error } = await supabaseAdmin
+      .from("services")
+      .update({
+        title: card.title,
+        description: card.description,
+        price_pence: null,
+        price_label: card.price_label,
+        price_unit: card.price_unit,
+        duration_minutes: null,
+        mode: card.mode,
+        sort_order: card.sort_order,
+        is_published: true,
+        is_featured: card.is_featured,
+        bullets: card.bullets,
+        cta_label: card.cta_label,
+        image_url: null,
+      })
+      .eq("id", legacyBadDefault.id)
+      .eq("professional_id", professionalId);
+    if (error) throw error;
+    legacyBadDefault.title = card.title;
+    legacyBadDefault.description = card.description;
+    legacyBadDefault.price_pence = null;
+    legacyBadDefault.price_label = card.price_label;
+    legacyBadDefault.price_unit = card.price_unit;
+    legacyBadDefault.duration_minutes = null;
+    legacyBadDefault.mode = card.mode;
+    legacyBadDefault.sort_order = card.sort_order;
+    legacyBadDefault.is_published = true;
+    legacyBadDefault.is_featured = card.is_featured;
+    legacyBadDefault.bullets = card.bullets;
+    legacyBadDefault.cta_label = card.cta_label;
+    legacyBadDefault.image_url = null;
+  }
+
   if (existing.length >= DEFAULT_SERVICE_CARDS.length) return existing.slice(0, DEFAULT_SERVICE_CARDS.length);
 
   const existingTitles = new Set(existing.map((row) => row.title.trim().toLowerCase()));
