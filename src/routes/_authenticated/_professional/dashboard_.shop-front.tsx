@@ -602,8 +602,8 @@ function ServicesEditor({
         editing={!!editingId}
         saving={saving}
         onSubmit={submit}
-        onSilentSave={silentSave}
       />
+
 
       <AlertDialog
         open={!!confirmDeleteId}
