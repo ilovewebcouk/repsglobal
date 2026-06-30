@@ -194,7 +194,7 @@ function ServicesPage() {
               </span>
             </div>
             <Link
-              to="/dashboard/shop-front"
+              to="/dashboard/website"
               className="mt-4 inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
             >
               Open Website editor →
