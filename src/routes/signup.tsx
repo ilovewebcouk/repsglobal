@@ -22,7 +22,9 @@ import { lovable } from "@/integrations/lovable";
 
 
 type SignupSearch = {
-  tier?: "verified" | "pro";
+  // URL slug for the Core tier is "core" (legacy "verified" still accepted
+  // and normalized below for back-compat with old emails/bookmarks).
+  tier?: "core" | "pro";
   period?: "monthly" | "annual";
   next?: "checkout";
 };
@@ -42,7 +44,7 @@ const PLAN_SUMMARIES: Record<
   NonNullable<SignupSearch["tier"]>,
   Record<NonNullable<SignupSearch["period"]>, PlanSummary>
 > = {
-  verified: {
+  core: {
     monthly: {
       name: "REPS Core",
       tagline: "Monetise your professional trust.",
@@ -107,11 +109,12 @@ const PLAN_SUMMARIES: Record<
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (search: Record<string, unknown>): SignupSearch => {
-    const tier = search.tier as SignupSearch["tier"];
+    // Back-compat: accept legacy `?tier=verified` and normalize to `core`.
+    const rawTier = search.tier === "verified" ? "core" : (search.tier as SignupSearch["tier"]);
     const requestedPeriod = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
-    const validTier = ["verified", "pro"].includes(tier as string) ? tier : undefined;
-    const period = validTier === "verified"
+    const validTier = ["core", "pro"].includes(rawTier as string) ? rawTier : undefined;
+    const period = validTier === "core"
       ? "annual"
       : validTier === "pro" && (requestedPeriod === "monthly" || requestedPeriod === "annual")
         ? requestedPeriod
@@ -209,7 +212,7 @@ function SignupPage() {
     search.next === "checkout" && !!search.tier && !!search.period;
 
   const ctaLabel = wantsCheckout
-    ? search.tier === "verified"
+    ? search.tier === "core"
       ? "Continue to payment"
       : "Continue to secure checkout"
     : "Create account";
@@ -246,7 +249,8 @@ function SignupPage() {
           fullName: fullName.trim(),
           email: email.trim(),
           password,
-          tier: search.tier,
+          // Internal billing enum still uses "verified" for the Core tier.
+          tier: search.tier === "core" ? "verified" : search.tier,
           period: search.period,
           environment,
         },
