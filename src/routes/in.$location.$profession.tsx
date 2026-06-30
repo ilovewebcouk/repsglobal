@@ -263,12 +263,6 @@ export const Route = createFileRoute("/in/$location/$profession")({
         { name: "twitter:description", content: description },
         { name: "twitter:image", content: ogImage },
       ],
-        { property: "og:description", content: description },
-        { property: "og:url", content: canonical },
-        { property: "og:type", content: "website" },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: description },
-      ],
       links: [{ rel: "canonical", href: canonical }],
       scripts: [
         {
