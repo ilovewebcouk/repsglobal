@@ -1,0 +1,19 @@
+widget,page_section,source_event,aggregation,filters,depends_on
+Anonymous page views (24h),admin/activity right rail,$pageview,count distinct ($session_id),"date>=now-24h, is_bot=false, is_internal=false",PostHog
+Anonymous page views (7d),admin/activity right rail,$pageview,count by day,same as above,PostHog
+Top public profiles (7d),admin/activity right rail,profile_view,count by slug,"date>=now-7d, is_bot=false",PostHog
+Top professions (7d),admin/activity right rail,profession_page_view,count by profession,"date>=now-7d, is_bot=false",PostHog
+Top locations (7d),admin/activity right rail,city_page_view,count by location,"date>=now-7d, is_bot=false",PostHog
+Top specialisms (7d),admin/activity right rail,specialism_page_view,count by (location+profession),"date>=now-7d, is_bot=false",PostHog
+Top referrers (7d),admin/activity right rail,referrer_seen,count by referrer_host,"date>=now-7d, is_bot=false, is_internal=false",PostHog
+Top landing pages (7d),admin/activity right rail,$pageview,count by path where is_landing,"date>=now-7d",PostHog
+Searches with no results (7d),admin/activity needs-attention,directory_no_results,count by q,"date>=now-7d",PostHog
+Directory search volume (7d),admin/activity right rail,directory_search,count by day,"date>=now-7d",PostHog
+Public -> enquiry conversion %,admin/activity Funnel tab,profile_view + enquiry_submit,(enquiry_submit/profile_view) by profession,date>=now-30d,PostHog + Supabase enquiries
+Profile-view -> enquiry % (per profile),admin members page,profile_view + enquiry_submit,(enquiry_submit/profile_view) where slug=X,date>=now-90d,PostHog + Supabase enquiries
+Anonymous -> member %,admin/activity Funnel tab,signup_complete with alias,(aliased_signups/distinct visitors),date>=now-30d,PostHog
+Member page views 24h (V1),admin/activity KPI strip,member_session_event,count where created_at>=now-24h,operational only,Supabase member_session_events
+Online now (V1),admin/activity right rail,user_sessions,count where last_seen_at>=now-5m,operational only,Supabase user_sessions
+Sign-ins today (V1),admin/activity KPI strip,auth_event(sign_in),count where created_at::date=today,operational only,Supabase auth_events
+New members 24h (V1),admin/activity KPI strip,subscriptions / auth users,count new accounts,operational only,Supabase
+Needs attention (V1),admin/activity right rail,multi,union of unresolved business signals,operational,Supabase multi-source

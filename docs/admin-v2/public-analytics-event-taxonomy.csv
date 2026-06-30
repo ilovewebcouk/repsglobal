@@ -1,0 +1,18 @@
+event_name,event_family,trigger,properties,consent_required,retention_days,source,notes
+$pageview,page,Route change,"path,referrer,utm_source,utm_medium,utm_campaign,device,country",yes,365,PostHog,Base event for traffic & landing-page reports
+directory_search,search,Search form submit,"q,profession,location,results_count,page",yes,365,PostHog,q stored verbatim only when results_count>0
+directory_no_results,search,Search returns 0 results,"q,profession,location",yes,365,PostHog,Drives 'searches with no results' alert
+directory_result_click,search,Click on a search result,"profession,location,position,target_pro_slug",yes,365,PostHog,Powers click-through ranking
+profile_view,profile,/pro/$slug mounted,"slug,profession,location,is_featured",yes,365,PostHog,Source for top public profiles
+profile_cta_click,profile,CTA click on a profile,"slug,cta(enquire|book|whatsapp|website)",yes,365,PostHog,Powers profile->enquiry funnel
+enquiry_start,conversion,/pro/$slug/enquire mounted,"slug",yes,365,PostHog,Funnel step 1
+enquiry_submit,conversion,Enquiry form success,"slug,with_message,goal,timeline",yes,365,PostHog,Funnel step 2; matched to Supabase enquiries by slug+ts window
+signup_start,conversion,/signup mounted,"tier,from_path",yes,365,PostHog,Funnel step 1 for signup
+signup_complete,conversion,Account created,"tier,from_path",yes,365,PostHog,posthog.alias(userId,anonId) called here
+coming_soon_waitlist,conversion,Waitlist form success,"tier",yes,365,PostHog,
+city_page_view,page,/in/$location mounted,"location",yes,365,PostHog,Source for top locations
+profession_page_view,page,/professions/$profession mounted,"profession",yes,365,PostHog,Source for top professions
+specialism_page_view,page,/in/$location/$profession mounted,"location,profession",yes,365,PostHog,Source for top specialisms
+referrer_seen,page,$pageview with external referrer,"referrer_host,landing_path",yes,365,PostHog,Derived; used for top-referrers widget
+auth_event,operational,Sign-in / sign-out / failed,"event,device,country",no,365,Supabase auth_events,V1 capture - operational only, no consent needed
+member_session_event,operational,Logged-in member page change,"path,session_id,device,country",no,90,Supabase member_session_events,V1 capture - operational only, no consent needed

@@ -146,7 +146,6 @@ export type Database = {
       auth_events: {
         Row: {
           browser: string | null
-          city: string | null
           country_code: string | null
           created_at: string
           device: string | null
@@ -160,7 +159,6 @@ export type Database = {
         }
         Insert: {
           browser?: string | null
-          city?: string | null
           country_code?: string | null
           created_at?: string
           device?: string | null
@@ -174,7 +172,6 @@ export type Database = {
         }
         Update: {
           browser?: string | null
-          city?: string | null
           country_code?: string | null
           created_at?: string
           device?: string | null
@@ -2202,6 +2199,102 @@ export type Database = {
         }
         Relationships: []
       }
+      member_session_events: {
+        Row: {
+          browser: string | null
+          country_code: string | null
+          created_at: string
+          device: string | null
+          duration_ms: number | null
+          id: string
+          ip_hash: string | null
+          os: string | null
+          path: string
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          country_code?: string | null
+          created_at?: string
+          device?: string | null
+          duration_ms?: number | null
+          id?: string
+          ip_hash?: string | null
+          os?: string | null
+          path: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          country_code?: string | null
+          created_at?: string
+          device?: string | null
+          duration_ms?: number | null
+          id?: string
+          ip_hash?: string | null
+          os?: string | null
+          path?: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      metrics_monthly_activity: {
+        Row: {
+          computed_at: string
+          countries: Json | null
+          devices: Json | null
+          disputes: number
+          enquiries: number
+          member_page_views: number
+          month: string
+          payments: number
+          reviews: number
+          sign_ins: number
+          signed_in_users: number
+          support_messages: number
+          unique_members_seen: number
+        }
+        Insert: {
+          computed_at?: string
+          countries?: Json | null
+          devices?: Json | null
+          disputes?: number
+          enquiries?: number
+          member_page_views?: number
+          month: string
+          payments?: number
+          reviews?: number
+          sign_ins?: number
+          signed_in_users?: number
+          support_messages?: number
+          unique_members_seen?: number
+        }
+        Update: {
+          computed_at?: string
+          countries?: Json | null
+          devices?: Json | null
+          disputes?: number
+          enquiries?: number
+          member_page_views?: number
+          month?: string
+          payments?: number
+          reviews?: number
+          sign_ins?: number
+          signed_in_users?: number
+          support_messages?: number
+          unique_members_seen?: number
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -4004,9 +4097,8 @@ export type Database = {
       }
       user_sessions: {
         Row: {
-          anon_id: string
+          anon_id: string | null
           browser: string | null
-          city: string | null
           country_code: string | null
           current_path: string | null
           device: string | null
@@ -4023,9 +4115,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          anon_id: string
+          anon_id?: string | null
           browser?: string | null
-          city?: string | null
           country_code?: string | null
           current_path?: string | null
           device?: string | null
@@ -4042,9 +4133,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          anon_id?: string
+          anon_id?: string | null
           browser?: string | null
-          city?: string | null
           country_code?: string | null
           current_path?: string | null
           device?: string | null
@@ -4836,6 +4926,14 @@ export type Database = {
         }
       }
       platform_health_snapshot: { Args: never; Returns: Json }
+      purge_activity_detail: {
+        Args: never
+        Returns: {
+          deleted_auth_events: number
+          deleted_session_events: number
+          deleted_user_sessions: number
+        }[]
+      }
       purge_orphan_professional_signups: {
         Args: { _min_age_hours?: number }
         Returns: {
