@@ -31,7 +31,8 @@ export const PLANS: PlanCard[] = [
     ctaHref: "/signup",
     features: [
       "Public listing on the REPS register",
-      "Earn the REPS Verified badge",
+      "Earn the REPS Core badge",
+      "Personalised website",
       "Credentials displayed",
       "Reviews enabled",
       "Enhanced directory profile",
@@ -53,7 +54,7 @@ export const PLANS: PlanCard[] = [
     waitlist: true,
     features: [
       "Everything in Core",
-      "Personalised shop-front page (/c/your-name)",
+      "Personalised website (/c/your-name)",
       "Leads CRM & client management",
       "Bookings, calendar & payments",
       "Programmes & advanced nutrition",
@@ -76,7 +77,7 @@ export const PLANS: PlanCard[] = [
     waitlist: true,
     features: [
       "Everything in Pro",
-      "Personalised shop-front (team accent options)",
+      "Personalised website (team accent options)",
       "Multi-coach roles & seats",
       "Organisation profile",
       "Shared clients across coaches",
@@ -86,7 +87,7 @@ export const PLANS: PlanCard[] = [
     ],
     pricing: {
       monthly: { price: "£149", period: "per month", meta: "Billed monthly · waitlist only" },
-      annual: { price: "£124", period: "per month", meta: "£1,490 billed yearly · 2 months free · waitlist only" },
+      annual: { price: "£124", period: "per month", meta: "£1,490 billed yearly · waitlist only" },
     },
   },
 ];

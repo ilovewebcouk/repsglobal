@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { redirectAfterAuth } from "@/lib/auth-redirect";
+
 
 type SignupSearch = {
   tier?: "verified" | "pro";
@@ -49,15 +49,25 @@ const PLAN_SUMMARIES: Record<
       price: "£99",
       unit: "/year",
       meta: "Annual membership · charged today",
-      highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
+      highlights: [
+        "Earn the REPS Core badge",
+        "Personalised website",
+        "Credentials & reviews displayed",
+        "Enquiries inbox",
+      ],
     },
     annual: {
       name: "REPS Core",
       tagline: "Monetise your professional trust.",
       price: "£8.25",
       unit: "/month",
-      meta: "£99 billed yearly · 2 months free",
-      highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
+      meta: "£99 billed yearly",
+      highlights: [
+        "Earn the REPS Core badge",
+        "Personalised website",
+        "Credentials & reviews displayed",
+        "Enquiries inbox",
+      ],
     },
   },
   pro: {
@@ -69,7 +79,12 @@ const PLAN_SUMMARIES: Record<
       unit: "/month",
       meta: "30-day free trial · then £59/month unless cancelled",
       founding: true,
-      highlights: ["Everything in Core", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
+      highlights: [
+        "Everything in Core",
+        "Personalised website",
+        "Leads CRM & bookings",
+        "AI across the platform",
+      ],
     },
     annual: {
       name: "Founding Pro",
@@ -77,9 +92,14 @@ const PLAN_SUMMARIES: Record<
       price: "£49",
       was: "£66",
       unit: "/month",
-      meta: "£590 billed yearly · 2 months free",
+      meta: "£590 billed yearly",
       founding: true,
-      highlights: ["Everything in Core", "Leads CRM & bookings", "Advanced check-ins & nutrition", "AI across the platform"],
+      highlights: [
+        "Everything in Core",
+        "Personalised website",
+        "Leads CRM & bookings",
+        "AI across the platform",
+      ],
     },
   },
 };
@@ -194,22 +214,11 @@ function SignupPage() {
       : "Continue to secure checkout"
     : "Create account";
 
-  // After we have a session, mint a Stripe Hosted Checkout session and redirect
-  // straight to Stripe (no intermediate REPs review page).
-  const continueAfterAuth = async (userId: string) => {
-    if (search.next === "checkout" && search.tier && search.period) {
-      const { startCheckoutRedirect } = await import("@/lib/billing/startCheckout");
-      try {
-        await startCheckoutRedirect(search.tier, search.period);
-        return; // browser is navigating to Stripe
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not start checkout");
-        return;
-      }
-    }
-    const to = await redirectAfterAuth(userId);
-    navigate({ to, replace: true });
-  };
+  // Deferred signup uses handleSubmit → startDeferredCheckout → Stripe.
+  // No post-auth redirect path is needed here; the user is signed in by
+  // the magic link returned from /checkout/return.
+
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -217,43 +226,40 @@ function SignupPage() {
     setInfo(null);
     setLoading(true);
     try {
-      // Preserve checkout intent across email-verification redirect
-      const redirectPath = wantsCheckout
-        ? `/signup?tier=${search.tier}&period=${search.period}&next=checkout`
-        : "/dashboard";
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}${redirectPath}`,
-          data: {
-            full_name: fullName,
-            signup_kind: "professional",
-            account_type: "pro",
-            intended_tier: search.tier ?? null,
-            intended_period: search.period ?? null,
-          },
+      if (!search.tier || !search.period) {
+        navigate({ to: "/pricing", replace: true });
+        return;
+      }
+      // Deferred signup (Option 1, June 2026): no auth.users row is created
+      // here. We stash the credentials in `pending_signups` and only mint the
+      // real account after Stripe payment succeeds — see
+      // src/lib/billing/deferred-signup.functions.ts and the
+      // checkout.session.completed branch of the Stripe webhook.
+      const environment =
+        ((import.meta as unknown as { env?: { VITE_STRIPE_ENV?: string } }).env
+          ?.VITE_STRIPE_ENV as "sandbox" | "live" | undefined) ?? "live";
+      const { startDeferredCheckout } = await import(
+        "@/lib/billing/deferred-signup.functions"
+      );
+      const result = await startDeferredCheckout({
+        data: {
+          fullName: fullName.trim(),
+          email: email.trim(),
+          password,
+          tier: search.tier,
+          period: search.period,
+          environment,
         },
       });
-      if (signUpError) throw signUpError;
-      if (data.session && data.user) {
-        await continueAfterAuth(data.user.id);
-      } else {
-        setInfo("Check your inbox to verify, then we'll bring you back to checkout.");
-        navigate({
-          to: "/verify-email",
-          search: { email: email.trim(), redirect: redirectPath },
-          replace: true,
-        });
+      if ("error" in result) {
+        setError(result.error);
+        return;
       }
+      // Go straight to Stripe Hosted Checkout — the account doesn't exist yet.
+      window.location.assign(result.url);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";
-      // Friendly mapping for the most common case
-      if (/already\s+registered|already\s+exists|user.*exists/i.test(message)) {
-        setError("An account already exists for this email. Sign in instead — we'll bring you back to checkout.");
-      } else {
-        setError(message);
-      }
+      setError(message);
     } finally {
       setLoading(false);
     }

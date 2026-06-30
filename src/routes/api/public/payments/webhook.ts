@@ -534,6 +534,21 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   userId = topupUserId;
                 }
               } else if (session.mode === "subscription" && session.subscription) {
+                // Deferred signup (Option 1): if this checkout was started
+                // from /signup before any auth.users row existed, mint the
+                // real user now from the pending_signups row. Idempotent —
+                // /checkout/return may have already done this if it ran first.
+                const pendingId = meta.reps_pending_signup_id;
+                if (pendingId) {
+                  try {
+                    const { ensureUserFromPendingSignup } = await import(
+                      "@/lib/billing/deferred-signup.server"
+                    );
+                    await ensureUserFromPendingSignup(pendingId, env);
+                  } catch (e) {
+                    console.error("[deferred-signup] ensureUser failed:", e);
+                  }
+                }
                 const subId = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
                 const sub = await stripe.subscriptions.retrieve(subId);
                 userId = await upsertSubscriptionFromStripe(sub, stripe, env);
