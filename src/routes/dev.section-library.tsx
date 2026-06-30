@@ -151,12 +151,12 @@ function SectionLibrary() {
           />
           <ProductBlock
             reverse
-            eyebrow="Capability · Coach shop-front"
+            eyebrow="Capability · Coach website"
             title="A premium page for your services"
             body="Pro-tier website with tiered services, transformations and proof."
             bullets={["Three-tier services", "Transformation proof", "Embedded booking"]}
-            imageLabel="Coach shop-front"
-            mockup={{ device: "phone", src: "/c/james-wilson", title: "Coach shop-front" }}
+            imageLabel="Coach website"
+            mockup={{ device: "phone", src: "/c/james-wilson", title: "Coach website" }}
           />
         </div>
       </Group>

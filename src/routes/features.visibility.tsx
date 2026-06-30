@@ -122,7 +122,7 @@ const SEGMENTS = [
   { key:"pilates", label:"Pilates", src:"/professions/pilates-instructor", device:"laptop" as const, title:"Pilates instructor landing" },
   { key:"yoga", label:"Yoga", src:"/professions/yoga-teacher", device:"laptop" as const, title:"Yoga teacher landing" },
   { key:"group", label:"Group ex", src:"/professions/group-exercise", device:"laptop" as const, title:"Group exercise landing" },
-  { key:"studio", label:"Studio team", src:"/c/james-wilson", device:"laptop" as const, title:"Studio shop-front" },
+  { key:"studio", label:"Studio team", src:"/c/james-wilson", device:"laptop" as const, title:"Studio website" },
 ];
 
 const COMPARISON_ROWS = [

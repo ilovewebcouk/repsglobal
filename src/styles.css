@@ -141,7 +141,7 @@
   --reps-red: #F05D5E;
   --reps-blue: #5FA8FF;
 
-  /* Coach shop-front accent palette — trainer-pickable accent for /c/$slug.
+  /* Coach website accent palette — trainer-pickable accent for /c/$slug.
      Page chrome stays REPS-locked; only the primary CTA + accent strokes shift. */
   --coach-accent-orange: #FF7A00;
   --coach-accent-teal: #0E8E86;
