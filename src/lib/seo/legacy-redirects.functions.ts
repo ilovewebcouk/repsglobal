@@ -209,17 +209,45 @@ export const importLegacyRedirectsCsv = createServerFn({ method: "POST" })
 // ─── Public resolver (called from /$) ────────────────────────────────────────
 
 export type LegacyResolution =
-  | { action: "redirect"; toSlug: string }
+  | { action: "redirect"; toSlug: string; toPath?: never }
+  | { action: "redirect"; toPath: string; toSlug?: never }
   | { action: "gone"; reason: string }
   | { action: "miss" };
 
 const ResolveInput = z.object({ path: z.string().min(1).max(800) });
+
+const CURATED_LEGACY_BLOG_REDIRECTS: Record<string, string> = {
+  "the-register-of-exercise-professionals-reps-relaunched-to-support-fitness-professionals-to-grow-and-succeed":
+    "/resources/behind-the-scenes-how-we-built-the-public-register",
+};
+
+function legacyBlogSlug(path: string): string | null {
+  for (const prefix of ["/reps/blog/", "/blog/"] as const) {
+    if (path.startsWith(prefix)) return path.slice(prefix.length).split("/")[0] || null;
+  }
+  return null;
+}
+
+async function markGoneStatus() {
+  try {
+    const { setResponseStatus } = await import("@tanstack/react-start/server");
+    setResponseStatus(410);
+  } catch {
+    /* client navigation — status not applicable */
+  }
+}
 
 export const resolveLegacyPath = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => ResolveInput.parse(d))
   .handler(async ({ data }): Promise<LegacyResolution> => {
     const path = normalisePath(data.path);
     if (!path) return { action: "miss" };
+
+    const blogSlug = legacyBlogSlug(path);
+    if (blogSlug) {
+      const toPath = CURATED_LEGACY_BLOG_REDIRECTS[blogSlug];
+      if (toPath) return { action: "redirect", toPath };
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -237,16 +265,16 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       // Terminal known but no live pro → 410 Gone (server-side only)
       const terminal = row.terminal_path || row.destination_path;
       const { kind } = classifyLegacyPath(terminal);
-      try {
-        const { setResponseStatus } = await import("@tanstack/react-start/server");
-        setResponseStatus(410);
-      } catch {
-        /* client navigation — status not applicable */
-      }
+      await markGoneStatus();
       return {
         action: "gone",
         reason: kind === "exercise-professional" ? "pro-not-migrated" : `type-not-migrated:${kind}`,
       };
+    }
+
+    if (blogSlug) {
+      await markGoneStatus();
+      return { action: "gone", reason: "legacy-blog-not-migrated" };
     }
 
     // No table row — fallback: try direct slug match for exercise-professional shape
@@ -265,12 +293,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (pro?.slug) return { action: "redirect", toSlug: pro.slug };
-    try {
-      const { setResponseStatus } = await import("@tanstack/react-start/server");
-      setResponseStatus(410);
-    } catch {
-      /* client navigation */
-    }
+    await markGoneStatus();
     return { action: "gone", reason: "pro-not-migrated" };
   });
 

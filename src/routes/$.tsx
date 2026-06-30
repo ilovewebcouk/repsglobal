@@ -24,6 +24,13 @@ export const Route = createFileRoute("/$")({
     const result = await resolveLegacyPath({ data: { path } });
 
     if (result.action === "redirect") {
+      if (result.toPath) {
+        throw redirect({
+          href: result.toPath,
+          statusCode: 301,
+        });
+      }
+
       throw redirect({
         to: "/c/$slug",
         params: { slug: result.toSlug },
