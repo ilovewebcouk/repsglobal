@@ -324,8 +324,9 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     const [profilesData, subsData, reviewsData, ccData, paymentsData, bdSeedData, activeCollection] = await Promise.all([
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
-      fetchAll<{ user_id: string; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
+      fetchAll<{ user_id: string | null; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
         supabaseAdmin.from('subscriptions').select('user_id, tier, status, created_at, current_period_end, billing_period').in('user_id', c)),
+
       fetchAll<{ professional_id: string; rating: number }>((c) =>
         supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', c).eq('status', 'published')),
       fetchAll<{ professional_id: string; status: string }>((c) =>
