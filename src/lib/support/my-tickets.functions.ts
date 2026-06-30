@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // User-facing support tickets. All ops scoped to the signed-in user via RLS.
@@ -63,16 +64,18 @@ export type MyTicketMessage = {
 // List my tickets
 // ─────────────────────────────────────────────────────────────────────────────
 export const listMyTickets = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("support_tickets")
       .select(
         "id, ticket_number, subject, status, priority, last_message_at, created_at, tags, requester_unread",
       )
+      .eq("requester_user_id", context.userId)
       .is("deleted_at", null)
       .order("last_message_at", { ascending: false })
       .limit(100);
+
     if (error) throw new Error(error.message);
     return (data ?? []) as MyTicketRow[];
   });
@@ -81,7 +84,7 @@ export const listMyTickets = createServerFn({ method: "GET" })
 // Get a single ticket + thread (inbound/outbound only — RLS hides internal notes)
 // ─────────────────────────────────────────────────────────────────────────────
 export const getMyTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: ticket, error: tErr } = await context.supabase
@@ -90,6 +93,8 @@ export const getMyTicket = createServerFn({ method: "POST" })
         "id, ticket_number, subject, status, priority, last_message_at, created_at, tags, requester_unread",
       )
       .eq("id", data.id)
+      .eq("requester_user_id", context.userId)
+
       .maybeSingle();
     if (tErr) throw new Error(tErr.message);
     if (!ticket) throw new Error("Ticket not found");
@@ -130,7 +135,7 @@ export const getMyTicket = createServerFn({ method: "POST" })
 // Create a new ticket (with the opening message)
 // ─────────────────────────────────────────────────────────────────────────────
 export const createMyTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { subject: string; body: string; category: string }) =>
     z
       .object({
@@ -301,7 +306,7 @@ async function sendRequesterConfirmation(args: {
 // Reply to my own ticket
 // ─────────────────────────────────────────────────────────────────────────────
 export const replyToMyTicket = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { ticketId: string; body: string }) =>
     z
       .object({
@@ -318,6 +323,8 @@ export const replyToMyTicket = createServerFn({ method: "POST" })
       .from("support_tickets")
       .select("id, requester_name, requester_email, status")
       .eq("id", data.ticketId)
+      .eq("requester_user_id", context.userId)
+
       .maybeSingle();
     if (tErr) throw new Error(tErr.message);
     if (!ticket) throw new Error("Ticket not found");
@@ -343,7 +350,7 @@ export const replyToMyTicket = createServerFn({ method: "POST" })
 // Attachments on my own messages
 // ─────────────────────────────────────────────────────────────────────────────
 export const attachToMyMessage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator(
     (d: {
       messageId: string;
@@ -385,7 +392,7 @@ export const attachToMyMessage = createServerFn({ method: "POST" })
 // Signed download URL for a single attachment (15 min)
 // ─────────────────────────────────────────────────────────────────────────────
 export const getMyAttachmentUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { storage_path: string }) =>
     z.object({ storage_path: z.string().min(1).max(500) }).parse(d),
   )
@@ -409,32 +416,47 @@ export type MyUnreadTicket = {
 };
 
 export const listMyUnreadTickets = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc(
-      "list_my_unread_support_tickets",
-    );
+    // Direct query (not RPC) so impersonation works — RPC uses auth.uid()
+    // which is the admin during impersonation; context.userId is the
+    // impersonated user.
+    const { data, error } = await context.supabase
+      .from("support_tickets")
+      .select("id, ticket_number, subject, last_message_at, created_at")
+      .eq("requester_user_id", context.userId)
+      .eq("requester_unread", true)
+      .is("deleted_at", null)
+      .order("last_message_at", { ascending: false, nullsFirst: false })
+      .limit(50);
     if (error) throw new Error(error.message);
     return { tickets: (data ?? []) as MyUnreadTicket[] };
   });
 
 export const markMyTicketRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: { ticketId: string }) =>
     z.object({ ticketId: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("mark_my_support_ticket_read", {
-      _ticket_id: data.ticketId,
-    });
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({ requester_unread: false, updated_at: new Date().toISOString() } as never)
+      .eq("id", data.ticketId)
+      .eq("requester_user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const markAllMySupportRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
-    const { error } = await context.supabase.rpc("mark_all_my_support_read");
+    const { error } = await context.supabase
+      .from("support_tickets")
+      .update({ requester_unread: false, updated_at: new Date().toISOString() } as never)
+      .eq("requester_user_id", context.userId)
+      .eq("requester_unread", true);
     if (error) throw new Error(error.message);
     return { ok: true };
+
   });

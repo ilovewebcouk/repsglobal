@@ -56,7 +56,7 @@ export function useMySupportUnread(options: { enabled?: boolean } = {}) {
 
   const items: MySupportNotification[] = React.useMemo(() => {
     const tickets = query.data?.tickets ?? [];
-    return tickets.map((t) => ({
+    return tickets.map((t: { id: string; ticket_number: string; subject: string; last_message_at: string | null; created_at: string }) => ({
       key: `my-t:${t.id}`,
       ticketId: t.id,
       ticketNumber: t.ticket_number,
