@@ -342,12 +342,12 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
             (s.price_pence ? `From £${(s.price_pence / 100).toFixed(0)}` : "Enquire"),
           unit:
             s.duration_minutes
-              ? `${s.duration_minutes}-min · ${s.mode.replace("_", " ")}`
+              ? `${s.duration_minutes}-min · ${s.mode === "online" ? "Remote" : s.mode === "hybrid" ? "Hybrid" : "Hands-on"}`
               : s.mode === "online"
-                ? "online"
+                ? "Remote"
                 : s.mode === "hybrid"
-                  ? "hybrid"
-                  : "in-person",
+                  ? "Hybrid"
+                  : "Hands-on",
           image: s.image_url ?? null,
           icon: Users,
         }));
