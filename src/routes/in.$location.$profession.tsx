@@ -245,11 +245,24 @@ export const Route = createFileRoute("/in/$location/$profession")({
     const countPhrase = count > 0 ? `${count}+ REPS-verified ${plural.toLowerCase()}` : `REPS-verified ${plural.toLowerCase()}`;
     const title = `${plural} in ${city.name} | REPS-Verified`;
     const description = `${countPhrase} in ${city.name}. Identity, qualifications and insurance checked. Find, message and book your ${label.toLowerCase()} on REPS.`;
+    const ogImage = `https://repsuk.org${OG_BY_PROFESSION[loaderData.profession as ProfessionSlug] ?? ogPersonalTrainer.url}`;
     return {
       meta: [
         { title },
         { name: "description", content: description },
         { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: canonical },
+        { property: "og:type", content: "website" },
+        { property: "og:image", content: ogImage },
+        { property: "og:image:width", content: "1216" },
+        { property: "og:image:height", content: "640" },
+        { property: "og:image:alt", content: `${plural} in ${city.name} — REPS-verified` },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: ogImage },
+      ],
         { property: "og:description", content: description },
         { property: "og:url", content: canonical },
         { property: "og:type", content: "website" },
