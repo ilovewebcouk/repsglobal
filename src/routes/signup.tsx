@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { redirectAfterAuth } from "@/lib/auth-redirect";
+
 
 type SignupSearch = {
   tier?: "verified" | "pro";
