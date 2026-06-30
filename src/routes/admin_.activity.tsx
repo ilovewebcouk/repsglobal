@@ -295,7 +295,7 @@ function FeedTab({ kind, range, q }: { kind: "all" | "page_view" | "auth"; range
               <Td>
                 {r.userId ? (
                   <Link
-                    to="/admin/members/$userId"
+                    to="/admin_/members/$userId"
                     params={{ userId: r.userId }}
                     className="text-white hover:text-reps-orange"
                   >
@@ -402,7 +402,7 @@ function OnlineTab() {
               <Td className="text-white/70 whitespace-nowrap">{formatRelative(r.lastSeenAt)}</Td>
               <Td>
                 {r.userId ? (
-                  <Link to="/admin/members/$userId" params={{ userId: r.userId }} className="text-white hover:text-reps-orange">
+                  <Link to="/admin_/members/$userId" params={{ userId: r.userId }} className="text-white hover:text-reps-orange">
                     {r.userName ?? r.userEmail ?? "Member"}
                   </Link>
                 ) : (
