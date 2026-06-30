@@ -38,8 +38,8 @@ export const PLANS: PlanCard[] = [
       "Enquiries inbox",
     ],
     pricing: {
-      monthly: { price: "£9.90", period: "per month", meta: "Billed monthly · cancel anytime" },
-      annual: { price: "£8.25", period: "per month", meta: "£99 billed yearly · save ~17%" },
+      monthly: { price: "£99", period: "per year", meta: "Annual membership" },
+      annual: { price: "£8.25", period: "per month", meta: "£99 billed yearly · 2 months free" },
     },
   },
   {
@@ -103,8 +103,8 @@ export const COMPARE_GROUPS: CompareGroup[] = [
   {
     title: "Billing",
     rows: [
-      { label: "Live offer", verified: "£9.90/month or £99/year (save ~17%)", pro: "£59/month or £590/year · waitlist", studio: "£149/month or £1,490/year · waitlist" },
-      { label: "Charge today", verified: "£9.90 or £99", pro: "—", studio: "—" },
+      { label: "Live offer", verified: "£99/year", pro: "£59/month or £590/year · waitlist", studio: "£149/month or £1,490/year · waitlist" },
+      { label: "Charge today", verified: "£99", pro: "—", studio: "—" },
     ],
   },
   {
@@ -219,7 +219,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are planned?",
-    a: "Core is £9.90/month billed monthly, or £99/year billed annually (save ~17% — about 2 months free). Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
+    a: "Core is billed annually at £99. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",

@@ -46,9 +46,9 @@ const PLAN_SUMMARIES: Record<
     monthly: {
       name: "REPS Core",
       tagline: "Monetise your professional trust.",
-      price: "£9.90",
-      unit: "/month",
-      meta: "Billed monthly · cancel anytime",
+      price: "£99",
+      unit: "/year",
+      meta: "Annual membership · charged today",
       highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
     },
     annual: {
@@ -56,7 +56,7 @@ const PLAN_SUMMARIES: Record<
       tagline: "Monetise your professional trust.",
       price: "£8.25",
       unit: "/month",
-      meta: "£99 billed yearly · save ~17%",
+      meta: "£99 billed yearly · 2 months free",
       highlights: ["Verified badge", "Credentials displayed", "Reviews enabled", "Enquiries inbox"],
     },
   },
@@ -91,10 +91,10 @@ export const Route = createFileRoute("/signup")({
     const requestedPeriod = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
     const validTier = ["verified", "pro"].includes(tier as string) ? tier : undefined;
-    const period = validTier && (requestedPeriod === "monthly" || requestedPeriod === "annual")
-      ? requestedPeriod
-      : validTier === "verified"
-        ? "annual"
+    const period = validTier === "verified"
+      ? "annual"
+      : validTier === "pro" && (requestedPeriod === "monthly" || requestedPeriod === "annual")
+        ? requestedPeriod
         : validTier === "pro"
           ? "monthly"
           : undefined;
