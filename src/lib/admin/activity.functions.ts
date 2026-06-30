@@ -231,7 +231,7 @@ export const getActivityFeed = createServerFn({ method: "GET" })
         .select("id, full_name, email")
         .in("id", ids);
       const map = new Map<string, { full_name: string | null; email: string | null }>();
-      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; email: string | null }>) {
+      for (const p of (profs ?? []) as unknown as Array<{ id: string; full_name: string | null; email: string | null }>) {
         map.set(p.id, { full_name: p.full_name, email: p.email });
       }
       for (const r of rows) {
@@ -379,7 +379,7 @@ export const getOnlineNow = createServerFn({ method: "GET" })
         .select("id, full_name, email")
         .in("id", ids);
       const map = new Map<string, { full_name: string | null; email: string | null }>();
-      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; email: string | null }>) {
+      for (const p of (profs ?? []) as unknown as Array<{ id: string; full_name: string | null; email: string | null }>) {
         map.set(p.id, { full_name: p.full_name, email: p.email });
       }
       for (const r of rows) {
