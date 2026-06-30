@@ -24,7 +24,7 @@ type Audience = "pro" | "partner";
 const PRO_REASONS = [
   { value: "verification", label: "Verification help", eta: "Under 2h" },
   { value: "upgrade", label: "Join Pro or Studio waitlist", eta: "~2h" },
-  { value: "profile", label: "Profile / shop-front issue", eta: "~3h" },
+  { value: "profile", label: "Profile / website issue", eta: "~3h" },
   { value: "billing", label: "Billing", eta: "Under 2h" },
   { value: "safeguarding", label: "Safeguarding / conduct", eta: "Same day" },
   { value: "other", label: "Something else", eta: "Same day" },

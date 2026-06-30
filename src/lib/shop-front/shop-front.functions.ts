@@ -1,4 +1,4 @@
-// Server functions for shop-front (/c/$slug) + services management.
+// Server functions for website (/c/$slug) + services management.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
@@ -214,7 +214,7 @@ async function fetchCoachingSinceYear(
   return earliest;
 }
 
-// Helper: public-safe trust summary used by both shop-front readers.
+// Helper: public-safe trust summary used by both website readers.
 async function fetchTrustSummary(
   supabaseAdmin: { from: (t: string) => any },
   professionalId: string,
@@ -454,7 +454,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!pro) return null;
 
-    // Phase 5 public-visibility gate: hide shop-fronts for pros with no active sub.
+    // Phase 5 public-visibility gate: hide websites for pros with no active sub.
     const { isProPubliclyVisible } = await import(
       "@/lib/visibility/public-gate.server"
     );

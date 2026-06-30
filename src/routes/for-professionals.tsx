@@ -253,15 +253,15 @@ function ForProsPage() {
           <ProductBlock
             eyebrow="Pillar 2 · Website"
             title="The page that turns visitors into clients."
-            body="Pro and Studio plans include a personalised shop-front at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
+            body="Pro and Studio plans include a personalised website at /c/your-name — your story, your method, your tiers, your proof. Designed to convert. Indexed by Google. Nothing to build, nothing to host."
             bullets={[
 "Outcome-led hero with your photo and verified badge",
 "Three-tier services with a 'Most popular' lane",
 "Foundation method, transformation proof, testimonials",
 "Replaces your Wix or Squarespace site — one less bill, one less login",
             ]}
-            imageLabel="Personalised coach shop-front with three service tiers"
-            mockup={{ device:"laptop", src:"/c/james-wilson", title:"Coach shop-front live example" }}
+            imageLabel="Personalised coach website with three service tiers"
+            mockup={{ device:"laptop", src:"/c/james-wilson", title:"Coach website live example" }}
             ctaLabel="Explore Website"
             ctaHref="/features/shop-front"
             reverse

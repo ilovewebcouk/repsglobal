@@ -1,5 +1,5 @@
 // Phase 5/7: Website editor — content fields + child sections + AI drafting.
-// Lives alongside shop-front.functions.ts; the editor at /dashboard/shop-front
+// Lives alongside website.functions.ts; the editor at /dashboard/shop-front
 // calls these to manage subtitle, method, venues, transformations, client
 // results, FAQs, plus AI-assisted draft helpers.
 

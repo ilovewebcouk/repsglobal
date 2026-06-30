@@ -121,9 +121,9 @@ export const COMPARE_GROUPS: CompareGroup[] = [
     ],
   },
   {
-    title: "Your shop-front (/c/your-name)",
+    title: "Your website (/c/your-name)",
     rows: [
-      { label: "Personalised shop-front page", verified: false, pro: true, studio: true },
+      { label: "Personalised website page", verified: false, pro: true, studio: true },
       { label: "Custom accent colour + hero photo", verified: false, pro: true, studio: true },
       { label: "Three-tier services with 'Most popular' highlight", verified: false, pro: true, studio: true },
       { label: "Methodology / signature method section", verified: false, pro: true, studio: true },

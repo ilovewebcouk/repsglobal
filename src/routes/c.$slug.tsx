@@ -504,7 +504,7 @@ export const Route = createFileRoute("/c/$slug")({
   loader: async ({ params }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const, live: null };
-    // DB-backed: any paying tier (Verified, Pro, Studio) can publish a shop-front.
+    // DB-backed: any paying tier (Verified, Pro, Studio) can publish a website.
     const live = await getShopFrontBySlug({ data: { slug: params.slug } });
     if (!live) throw notFound();
     if (!live.shopFront.tier || !["verified", "pro", "studio"].includes(live.shopFront.tier)) {
@@ -516,7 +516,7 @@ export const Route = createFileRoute("/c/$slug")({
     <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
       <div>
         <h1 className="font-display text-2xl font-bold text-white">Page not found</h1>
-        <p className="mt-2 text-sm">This shop-front is not available.</p>
+        <p className="mt-2 text-sm">This website is not available.</p>
       </div>
     </div>
   ),
@@ -657,7 +657,7 @@ function CoachShopFrontPage() {
         <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
           <div>
             <h1 className="font-display text-2xl font-bold text-white">Page not found</h1>
-            <p className="mt-2 text-sm">This shop-front is not available.</p>
+            <p className="mt-2 text-sm">This website is not available.</p>
           </div>
         </div>
       );
@@ -670,7 +670,7 @@ function CoachShopFrontPage() {
       <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
         <div>
           <h1 className="font-display text-2xl font-bold text-white">Page not found</h1>
-          <p className="mt-2 text-sm">This shop-front is not available.</p>
+          <p className="mt-2 text-sm">This website is not available.</p>
         </div>
       </div>
     );

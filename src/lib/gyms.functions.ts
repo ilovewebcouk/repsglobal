@@ -5,7 +5,7 @@
  * - GymPicker in the dashboard profile editor
  * - Admin moderation queue
  * - Static "Where I train" chips on public profiles
- * - getGymDensity for Phase 2 shop-front consumption (computed live)
+ * - getGymDensity for Phase 2 website consumption (computed live)
  */
 
 import { createServerFn } from "@tanstack/react-start";

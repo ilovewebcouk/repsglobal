@@ -26,7 +26,7 @@ const RelaunchAnnouncement = ({
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>
-      REPs is back — verified status, your public shop-front, and a full business OS on the way.
+      REPs is back — verified status, your public website, and a full business OS on the way.
     </Preview>
     <Body style={main}>
       <Container style={card}>
@@ -44,7 +44,7 @@ const RelaunchAnnouncement = ({
         <Section style={{ padding: "36px 32px 8px 32px" }}>
           <Heading as="h1" style={h1}>REPs has relaunched.</Heading>
           <Text style={p}>
-            You're one of the first members of the new REPs — and we've been busy. New register. New verification. A public shop-front for every pro. Real protection for the trainers behind it. This is the platform you always deserved.
+            You're one of the first members of the new REPs — and we've been busy. New register. New verification. A public website for every pro. Real protection for the trainers behind it. This is the platform you always deserved.
           </Text>
         </Section>
 
@@ -54,7 +54,7 @@ const RelaunchAnnouncement = ({
           <ul style={ul}>
             <li><strong style={ink}>A real register</strong> — every member listed, searchable by city and specialism.</li>
             <li><strong style={ink}>3-pillar verification</strong> — ID, qualifications and insurance, all checked.</li>
-            <li><strong style={ink}>Your public shop-front</strong> — your profile is now a page that wins clients.</li>
+            <li><strong style={ink}>Your public website</strong> — your profile is now a page that wins clients.</li>
             <li><strong style={ink}>World-class admin behind the scenes</strong> — so things just work.</li>
           </ul>
         </Section>

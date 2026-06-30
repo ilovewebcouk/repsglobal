@@ -71,7 +71,7 @@ const CHANNELS = [
   {
     label: "Professional support",
     email: "pros@repsuk.org",
-    scope: "Verification, billing, profile and shop-front.",
+    scope: "Verification, billing, profile and website.",
   },
   {
     label: "Partnerships",

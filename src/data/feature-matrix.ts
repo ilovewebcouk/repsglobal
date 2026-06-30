@@ -89,7 +89,7 @@ export const FEATURE_GROUPS: Group[] = [
         ],
       },
       {
-        feature: "Enquiries deep-linked from shop-front into CRM",
+        feature: "Enquiries deep-linked from website into CRM",
         cells: [
           { kind: "yes" },
           { kind: "no" },

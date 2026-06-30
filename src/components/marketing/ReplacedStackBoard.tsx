@@ -31,7 +31,7 @@ const BEFORE: Before[] = [
 
 const AFTER = [
   "Verified directory listing",
-  "Personal shop-front at /c/your-name",
+  "Personal website at /c/your-name",
   "Leads CRM",
   "Calendar & bookings",
   "Payments & subscriptions",
