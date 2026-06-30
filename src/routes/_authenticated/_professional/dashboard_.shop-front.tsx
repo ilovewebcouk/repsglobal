@@ -338,8 +338,10 @@ function ServicesEditor({
   onDelete: (id: string) => void;
   saving: boolean;
 }) {
+  const [open, setOpen] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [draft, setDraft] = React.useState<ServiceDraft>(() => emptyDraft(services.length));
+  const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
 
   function startEdit(s: ServiceDTO) {
     const b = Array.isArray(s.bullets) ? s.bullets.slice(0, 5) : [];
@@ -359,11 +361,13 @@ function ServicesEditor({
       bullets: [...b, ...EMPTY_BULLETS].slice(0, 5),
       cta_label: s.cta_label ?? "",
     });
+    setOpen(true);
   }
 
-  function reset() {
+  function startAdd() {
     setEditingId(null);
     setDraft(emptyDraft(services.length));
+    setOpen(true);
   }
 
   function submit() {
@@ -375,88 +379,149 @@ function ServicesEditor({
       price_unit: draft.price_unit || null,
       description: draft.description?.trim() || null,
     });
-    reset();
+    setOpen(false);
   }
+
+  const atLimit = services.length >= 3;
 
   return (
     <PPanel>
-      <div className="border-b border-reps-border px-5 py-4">
-        <h3 className="text-[14px] font-semibold text-white">Services</h3>
+      <div className="px-5 py-4">
+        <h3 className="text-[14px] font-semibold text-white">Service cards</h3>
         <p className="mt-0.5 text-[12px] text-white/55">
-          Up to 3 cards on your public page. Each card has a title, price + unit, up to 5 bullets and a custom button label.
+          Up to 3 cards. These show on your public profile and as the coaching options on your
+          enquire form. A free Discovery Consultation is added automatically — you don't manage it here.
         </p>
       </div>
 
-      <div className="divide-y divide-reps-border/60">
+      <div className="flex flex-col gap-3 px-5 pb-5">
         {services.map((s) => (
-          <div key={s.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
-            <div>
-              <div className="text-[13px] font-semibold text-white">{s.title}</div>
+          <div
+            key={s.id}
+            className="flex items-start justify-between gap-3 rounded-[14px] border border-reps-border bg-reps-panel-soft px-4 py-3"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-[13.5px] font-semibold text-white">{s.title}</div>
               <div className="mt-0.5 text-[12px] text-white/55">
                 {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
-                {s.price_unit ? ` · ${s.price_unit.replace("_", " ")}` : ""}
                 {" · "}{s.mode.replace("_", " ")}
-                {s.is_featured ? " · Featured" : ""}
+                {s.is_featured ? " · Most popular" : ""}
                 {!s.is_published ? " · Hidden" : ""}
               </div>
-              {Array.isArray(s.bullets) && s.bullets.length > 0 && (
-                <ul className="mt-1.5 grid gap-0.5 text-[12px] text-white/65">
-                  {s.bullets.slice(0, 5).map((b, i) => (
-                    <li key={i}>• {b}</li>
-                  ))}
-                </ul>
+              {s.description && (
+                <div className="mt-1.5 text-[12.5px] text-white/65 line-clamp-2">{s.description}</div>
               )}
             </div>
-            <div className="flex items-start gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
                 onClick={() => startEdit(s)}
-                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
+                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
               >
                 Edit
               </button>
               <button
                 type="button"
-                onClick={() => onSave({ ...s, is_featured: !s.is_featured })}
-                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
+                onClick={() => setConfirmDeleteId(s.id)}
+                aria-label={`Delete ${s.title}`}
+                className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel text-red-300 hover:bg-reps-panel/80"
               >
-                {s.is_featured ? "Unfeature" : "Feature"}
-              </button>
-              <button
-                type="button"
-                onClick={() => onSave({ ...s, is_published: !s.is_published })}
-                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
-              >
-                {s.is_published ? "Hide" : "Show"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm(`Delete "${s.title}"?`)) onDelete(s.id);
-                }}
-                className="flex h-9 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
         ))}
+
         {services.length === 0 && (
-          <div className="px-5 py-4 text-[13px] text-white/55">No services yet — add your first below.</div>
+          <div className="rounded-[14px] border border-dashed border-reps-border/70 px-4 py-6 text-center text-[13px] text-white/55">
+            No services yet — add your first card to start.
+          </div>
+        )}
+
+        {!atLimit ? (
+          <button
+            type="button"
+            onClick={startAdd}
+            className="flex h-10 items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border/70 text-[13px] font-semibold text-white/75 hover:border-reps-orange-border hover:text-white"
+          >
+            <Plus className="h-4 w-4" />
+            Add a service ({services.length}/3)
+          </button>
+        ) : (
+          <div className="text-center text-[11.5px] text-white/45">
+            3 of 3 — delete a card to add another.
+          </div>
         )}
       </div>
 
-      <div className="border-t border-reps-border px-5 py-5">
-        <div className="text-[13px] font-semibold text-white">
-          {editingId ? "Edit service" : "Add a service"}
-          {!editingId && services.length >= 3 && (
-            <span className="ml-2 text-[11.5px] font-normal text-white/45">
-              3 of 3 — delete one to add another
-            </span>
-          )}
-        </div>
-        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div>
+      <ServiceEditDialog
+        open={open}
+        onOpenChange={setOpen}
+        draft={draft}
+        setDraft={setDraft}
+        editing={!!editingId}
+        saving={saving}
+        onSubmit={submit}
+      />
+
+      <AlertDialog
+        open={!!confirmDeleteId}
+        onOpenChange={(o) => !o && setConfirmDeleteId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this service?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the card from your public website. You can add a new one in its place.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmDeleteId) onDelete(confirmDeleteId);
+                setConfirmDeleteId(null);
+              }}
+              className="bg-red-500 text-white hover:bg-red-500/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </PPanel>
+  );
+}
+
+function ServiceEditDialog({
+  open,
+  onOpenChange,
+  draft,
+  setDraft,
+  editing,
+  saving,
+  onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  draft: ServiceDraft;
+  setDraft: (d: ServiceDraft) => void;
+  editing: boolean;
+  saving: boolean;
+  onSubmit: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
+        <DialogHeader>
+          <DialogTitle>{editing ? "Edit service" : "Add a service"}</DialogTitle>
+          <DialogDescription>
+            Title, price, unit and up to 5 bullets that appear on your public website.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="md:col-span-2">
             <TextInput
               value={draft.title}
               onChange={(e) => setDraft({ ...draft, title: e.target.value })}
@@ -465,29 +530,29 @@ function ServicesEditor({
             />
             <div className="mt-1 text-[11px] text-white/40">{draft.title.length}/28</div>
           </div>
-          <div className="grid grid-cols-[1fr_1fr] gap-2">
-            <div>
-              <TextInput
-                value={draft.price_label ?? ""}
-                onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
-                placeholder="£240"
-                maxLength={16}
-              />
-              <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
-            </div>
-            <div>
-              <select
-                value={draft.price_unit ?? "per_session"}
-                onChange={(e) => setDraft({ ...draft, price_unit: e.target.value as ServiceDTO["price_unit"] })}
-                className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white"
-              >
-                {PRICE_UNIT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-              <div className="mt-1 text-[11px] text-white/40">Unit</div>
-            </div>
+
+          <div>
+            <TextInput
+              value={draft.price_label ?? ""}
+              onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
+              placeholder="£240"
+              maxLength={16}
+            />
+            <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
           </div>
+          <div>
+            <select
+              value={draft.price_unit ?? "per_session"}
+              onChange={(e) => setDraft({ ...draft, price_unit: e.target.value as ServiceDTO["price_unit"] })}
+              className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white"
+            >
+              {PRICE_UNIT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <div className="mt-1 text-[11px] text-white/40">Unit</div>
+          </div>
+
           <select
             value={draft.mode ?? "in_person"}
             onChange={(e) => setDraft({ ...draft, mode: e.target.value as ServiceDTO["mode"] })}
@@ -508,6 +573,7 @@ function ServicesEditor({
               {(draft.cta_label ?? "").length}/24 · leave blank for default
             </div>
           </div>
+
           <div className="md:col-span-2">
             <TextArea
               value={draft.description ?? ""}
@@ -517,6 +583,7 @@ function ServicesEditor({
               className="min-h-[64px] w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
             />
           </div>
+
           <div className="md:col-span-2">
             <div className="text-[12px] font-semibold text-white/80">Bullets (up to 5)</div>
             <p className="mt-0.5 text-[11.5px] text-white/45">
@@ -525,7 +592,7 @@ function ServicesEditor({
             <div className="mt-2 grid gap-2">
               {draft.bullets.map((b, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="text-[11px] text-white/40 w-4">{i + 1}.</span>
+                  <span className="w-4 text-[11px] text-white/40">{i + 1}.</span>
                   <TextInput
                     value={b}
                     onChange={(e) => {
@@ -536,11 +603,12 @@ function ServicesEditor({
                     placeholder={i === 0 ? "Weekly 1-to-1 session" : "Add a bullet"}
                     maxLength={60}
                   />
-                  <span className="text-[11px] text-white/35 w-10 text-right">{b.length}/60</span>
+                  <span className="w-10 text-right text-[11px] text-white/35">{b.length}/60</span>
                 </div>
               ))}
             </div>
           </div>
+
           <label className="flex items-center gap-2 text-[13px] text-white/85 md:col-span-2">
             <input
               type="checkbox"
@@ -551,28 +619,27 @@ function ServicesEditor({
             Mark as "Most popular"
           </label>
         </div>
-        <div className="mt-4 flex justify-end gap-2">
-          {editingId && (
-            <button
-              type="button"
-              onClick={reset}
-              className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:bg-reps-panel"
-            >
-              Cancel
-            </button>
-          )}
+
+        <DialogFooter>
           <button
             type="button"
-            disabled={!draft.title?.trim() || saving || (!editingId && services.length >= 3)}
-            onClick={submit}
+            onClick={() => onOpenChange(false)}
+            className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:bg-reps-panel"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!draft.title?.trim() || saving}
+            onClick={onSubmit}
             className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
           >
-            {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {editingId ? "Save changes" : "Add service"}
+            {editing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {editing ? "Save changes" : "Add service"}
           </button>
-        </div>
-      </div>
-    </PPanel>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
