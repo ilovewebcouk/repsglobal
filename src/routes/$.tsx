@@ -61,31 +61,33 @@ export const Route = createFileRoute("/$")({
 
 function GonePage() {
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-6 py-24 text-center text-white">
-      <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
-        410 · Permanently moved
-      </p>
-      <h1 className="mt-4 font-display text-[32px] leading-[1.1] lg:text-[44px]">
-        This page is no longer available
-      </h1>
-      <p className="mt-4 max-w-md text-[15px] text-white/70">
-        The REPS register has been rebuilt. The original page either wasn't migrated
-        or the professional chose not to re-list.
-      </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <a
-          href="/find-a-professional"
-          className="inline-flex h-11 items-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
-        >
-          Find a professional
-        </a>
-        <a
-          href="/"
-          className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel-soft px-5 text-[14px] font-semibold text-white/85 hover:text-white"
-        >
-          Home
-        </a>
-      </div>
-    </main>
+    <div className="min-h-screen bg-reps-ink">
+      <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-6 py-24 text-center text-white">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-reps-orange">
+          410 · Permanently moved
+        </p>
+        <h1 className="mt-4 font-display text-[32px] leading-[1.1] lg:text-[44px]">
+          This page is no longer available
+        </h1>
+        <p className="mt-4 max-w-md text-[15px] text-white/80">
+          The REPS register has been rebuilt. The original page either wasn't migrated
+          or the professional chose not to re-list.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href="/find-a-professional"
+            className="inline-flex h-11 items-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+          >
+            Find a professional
+          </a>
+          <a
+            href="/"
+            className="inline-flex h-11 items-center rounded-[10px] border border-reps-border bg-reps-panel-soft px-5 text-[14px] font-semibold text-white/85 hover:text-white"
+          >
+            Home
+          </a>
+        </div>
+      </main>
+    </div>
   );
 }

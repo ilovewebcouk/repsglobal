@@ -12,6 +12,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import {
   importLegacyRedirectsCsv,
   getLegacyCoverageStats,
+  rechainLegacyRedirects,
 } from "@/lib/seo/legacy-redirects.functions";
 
 export const Route = createFileRoute("/admin_/seo/legacy-redirects")({
@@ -49,6 +50,16 @@ function LegacyRedirectsPage() {
     mutationFn: (rows: ParsedRow[]) => importFn({ data: { rows, replace: true } }),
     onSuccess: (res) => {
       setImportResult({ imported: res.imported, dropped: res.dropped, resolved: res.resolved });
+      qc.invalidateQueries({ queryKey: ["legacy-redirects-stats"] });
+    },
+  });
+
+  const rechainFn = useServerFn(rechainLegacyRedirects);
+  const [rechainResult, setRechainResult] = useState<{ scanned: number; resolved: number; newlyResolved: number } | null>(null);
+  const rechainMut = useMutation({
+    mutationFn: () => rechainFn(),
+    onSuccess: (res) => {
+      setRechainResult({ scanned: res.scanned, resolved: res.resolved, newlyResolved: res.newlyResolved });
       qc.invalidateQueries({ queryKey: ["legacy-redirects-stats"] });
     },
   });
@@ -164,6 +175,26 @@ function LegacyRedirectsPage() {
               </div>
             </div>
           )}
+          <div className="flex flex-wrap items-center gap-3 border-t border-reps-border px-5 py-3">
+            <Button onClick={() => rechainMut.mutate()} disabled={rechainMut.isPending}>
+              {rechainMut.isPending ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Re-running…
+                </>
+              ) : (
+                <>Re-run chain resolve</>
+              )}
+            </Button>
+            <p className="text-[11.5px] text-white/55">
+              Re-matches every row against current professionals. Use after new pros publish.
+            </p>
+            {rechainResult && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-0.5 text-[11.5px] text-emerald-300">
+                <CheckCircle2 className="h-3 w-3" />
+                {rechainResult.newlyResolved} newly resolved · {rechainResult.resolved}/{rechainResult.scanned} total
+              </span>
+            )}
+          </div>
         </PPanel>
 
         {/* Import */}

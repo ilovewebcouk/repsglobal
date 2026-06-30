@@ -1,40 +1,41 @@
-## Add Cancel (discard) to the Service editor
+## Problem
 
-Right now the dialog autosaves edits to existing services every 800ms and the footer only has **Done**. That's great for confidence, but there's no escape hatch — if a pro tweaks a price or rewrites a bullet and then thinks "actually, no", the change is already saved.
+Two issues on the legacy catch-all (`src/routes/$.tsx`):
 
-### What I'll change
+1. **Colors are broken.** `GonePage` renders white text on the site's default body background. The body uses `var(--color-background)` which is `--reps-ivory` (cream) in light mode — we never apply a `dark` class on `<html>`, so anywhere a route forgets to set its own dark surface, you get white-on-cream. That's exactly what the screenshot shows: orange eyebrow + cream bg + invisible white body text and faded buttons.
 
-In `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` → `ServiceEditDialog`:
+2. **Redirects aren't firing for some legacy URLs.** The catch-all calls `resolveLegacyPath` → checks `legacy_redirects` table → falls back to fuzzy slug match on `professionals.slug`. When a row exists but `resolved_to_slug` is `null` (chain-resolve couldn't match the destination to a live pro at import time), we 410 even when the pro is now live on the new site. We never re-run chain-resolve after new pros publish, so the table goes stale.
 
-1. **Snapshot the original on open.** When the dialog opens for an existing service, keep a deep copy of the row as it was loaded from the DB (`originalSnapshot`). For brand-new cards, the "original" is empty.
+## Plan
 
-2. **Disable autosave by default; opt-in.** Replace silent debounced autosave with an explicit model:
-   - Edits stay local until the user clicks **Save** (or **Save & close** / **Done**).
-   - Footer status pill becomes: `Unsaved changes` (amber) → `Saving…` → `Saved` (emerald, transient).
-   - This removes the "it already saved, too late to cancel" trap.
+### 1. Fix the 410 page styling
 
-3. **Sticky footer buttons (left → right):**
-   - **Cancel** (ghost) — discards local edits, restores `originalSnapshot` into the draft, closes the dialog. No DB write.
-   - **Save** (primary) — persists and keeps the dialog open (for users editing multiple fields).
-   - **Save & close** (primary, default action) — persists and closes.
-   - For a brand-new card, **Cancel** simply closes without creating the row.
+Wrap `GonePage` in a full-bleed dark surface so it reads correctly regardless of body theme:
 
-4. **Dirty-state guards:**
-   - **Esc key** and **backdrop click**: if dirty, show a small shadcn `AlertDialog` — "Discard unsaved changes?" with **Keep editing** / **Discard**. If clean, close immediately.
-   - **Cancel button**: same confirm when dirty; instant close when clean.
-   - Browser-level `beforeunload` is out of scope — this is a modal, not a route.
+- Outer `<div className="min-h-screen bg-reps-ink">` wrapping `<main>`.
+- Keep the existing typography; bump `text-white/70` to `text-white/80` for the lede (matches the locked marketing opacity scale).
+- Same treatment for `NotFoundComponent` in `__root.tsx` (same root cause — `bg-background` resolves to cream).
+- Same treatment for `ErrorComponent` in `__root.tsx`.
 
-5. **Revert helper.** A small **Revert** link next to the status pill (only visible when dirty and editing an existing card) resets the draft to `originalSnapshot` without closing — useful when a pro wants to undo a single field change mid-edit.
+No new tokens, no design changes — just the missing dark surface.
 
-### Out of scope
+### 2. Re-run chain-resolve so stale "gone" rows redirect
 
-- No changes to the public `/c/$slug` rendering.
-- No changes to the default-seeded service content or the parent list page.
-- No schema changes.
+Add a lightweight admin server fn `rechainLegacyRedirects` in `src/lib/seo/legacy-redirects.functions.ts` that re-walks every existing row against the current `professionals.slug` set and updates `resolved_to_slug`. Same logic as the tail of `importLegacyRedirectsCsv` — extracted so we can run it without re-importing the CSV.
 
-### Technical notes
+Wire a "Re-run chain resolve" button into `/admin/seo/legacy-redirects` next to the coverage stats. One click rescues every row whose pro has since published.
 
-- `originalSnapshot` lives in a `useRef` so it doesn't trigger renders; cleared on `open` transition.
-- Dirty check stays as `JSON.stringify(draft) !== JSON.stringify(originalSnapshot.current)`.
-- Remove the existing 800ms `setTimeout` autosave effect and the `onSilentSave` prop wiring from the parent (or keep `onSilentSave` and call it only from the explicit **Save** button — simpler: collapse into a single `onSubmit({ close: boolean })` signature).
-- AlertDialog uses shadcn primitive; no new deps.
+### 3. Tighten the fallback so live pros never 410
+
+In `resolveLegacyPath`, when a `legacy_redirects` row is found with `resolved_to_slug = null` AND `kind = exercise-professional`, do a live fuzzy lookup against `professionals.slug` (same `slugCandidates` logic the fallback path already uses) BEFORE returning `gone`. If we find a match, redirect AND backfill the row so the next hit is a fast table read.
+
+This makes the redirect layer self-healing — even without clicking the admin button, the first visitor to a stale URL fixes the row for everyone after them.
+
+### 4. QA pass
+
+After shipping, paste the legacy URL from the screenshot (or any sample BD URL) so I can confirm it now 301s instead of 410s, and screenshot the page so we can verify legibility.
+
+## Out of scope
+
+- Changing the global theme (adding `class="dark"` to `<html>`). That's a bigger refactor and would mask other latent contrast bugs on routes that currently happen to work.
+- Editing the curated blog map — those are already correct.
