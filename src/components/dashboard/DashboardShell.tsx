@@ -112,6 +112,10 @@ function TopBar({
               ⌘K
             </kbd>
           </div>
+        ) : role === "admin" ? (
+          <div className="hidden lg:block w-[320px]">
+            <MemberFinder placeholder="Search members by email, user id, cus_…, sub_…" />
+          </div>
         ) : (
           <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 lg:flex">
             <Search className="h-4 w-4" />
