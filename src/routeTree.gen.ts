@@ -116,6 +116,7 @@ import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admi
 import { Route as AuthenticatedProfessionalDashboardWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.website'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
+import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
 import { Route as AuthenticatedProfessionalDashboardReviewsRouteImport } from './routes/_authenticated/_professional/dashboard_.reviews'
@@ -691,6 +692,12 @@ const AuthenticatedProfessionalDashboardSupportRoute =
     path: '/dashboard/support',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalDashboardShopFrontRoute =
+  AuthenticatedProfessionalDashboardShopFrontRouteImport.update({
+    id: '/dashboard_/shop-front',
+    path: '/dashboard/shop-front',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardSettingsRoute =
   AuthenticatedProfessionalDashboardSettingsRouteImport.update({
     id: '/dashboard_/settings',
@@ -950,6 +957,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -1079,6 +1087,7 @@ export interface FileRoutesByTo {
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
@@ -1214,6 +1223,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
+  '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/_authenticated/_professional/dashboard_/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -1348,6 +1358,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/services'
     | '/dashboard/settings'
+    | '/dashboard/shop-front'
     | '/dashboard/support'
     | '/dashboard/verification'
     | '/dashboard/website'
@@ -1477,6 +1488,7 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/services'
     | '/dashboard/settings'
+    | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
@@ -1611,6 +1623,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/reviews'
     | '/_authenticated/_professional/dashboard_/services'
     | '/_authenticated/_professional/dashboard_/settings'
+    | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/_authenticated/_professional/dashboard_/website'
@@ -2488,6 +2501,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSupportRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/dashboard_/shop-front': {
+      id: '/_authenticated/_professional/dashboard_/shop-front'
+      path: '/dashboard/shop-front'
+      fullPath: '/dashboard/shop-front'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardShopFrontRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/dashboard_/settings': {
       id: '/_authenticated/_professional/dashboard_/settings'
       path: '/dashboard/settings'
@@ -2785,6 +2805,7 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardReviewsRoute: typeof AuthenticatedProfessionalDashboardReviewsRoute
   AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
+  AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
   AuthenticatedProfessionalDashboardSupportRoute: typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
   AuthenticatedProfessionalDashboardWebsiteRoute: typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -2810,6 +2831,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardServicesRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
       AuthenticatedProfessionalDashboardSettingsRoute,
+    AuthenticatedProfessionalDashboardShopFrontRoute:
+      AuthenticatedProfessionalDashboardShopFrontRoute,
     AuthenticatedProfessionalDashboardSupportRoute:
       AuthenticatedProfessionalDashboardSupportRouteWithChildren,
     AuthenticatedProfessionalDashboardVerificationRoute:
