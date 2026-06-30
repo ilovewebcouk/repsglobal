@@ -488,21 +488,7 @@ function ProfessionInCityPage() {
             ))}
           </Accordion>
         </div>
-        {/* FAQPage JSON-LD */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: faqs.map((f) => ({
-                "@type": "Question",
-                name: f.q,
-                acceptedAnswer: { "@type": "Answer", text: f.a },
-              })),
-            }),
-          }}
-        />
+        {/* FAQPage JSON-LD is emitted in head().scripts for SSR. */}
       </section>
 
       <PublicFooter />
