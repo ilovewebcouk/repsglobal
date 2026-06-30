@@ -55,7 +55,7 @@ import {
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
 import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/shop-front")({
+export const Route = createFileRoute("/_authenticated/_professional/dashboard_/website")({
   head: () => ({
     meta: [
       { title: "Website — REPS Professional" },
