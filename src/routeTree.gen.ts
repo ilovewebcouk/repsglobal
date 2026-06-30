@@ -97,6 +97,7 @@ import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as InLocationProfessionRouteImport } from './routes/in.$location.$profession'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
@@ -582,6 +583,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InLocationProfessionRoute = InLocationProfessionRouteImport.update({
+  id: '/$profession',
+  path: '/$profession',
+  getParentRoute: () => InLocationRoute,
+} as any)
 const HelpCategorySlugRoute = HelpCategorySlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -907,7 +913,7 @@ export interface FileRoutesByFullPath {
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
-  '/in/$location': typeof InLocationRoute
+  '/in/$location': typeof InLocationRouteWithChildren
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
@@ -928,6 +934,7 @@ export interface FileRoutesByFullPath {
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
+  '/in/$location/$profession': typeof InLocationProfessionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -1036,7 +1043,7 @@ export interface FileRoutesByTo {
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
-  '/in/$location': typeof InLocationRoute
+  '/in/$location': typeof InLocationRouteWithChildren
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
@@ -1056,6 +1063,7 @@ export interface FileRoutesByTo {
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
+  '/in/$location/$profession': typeof InLocationProfessionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -1168,7 +1176,7 @@ export interface FileRoutesById {
   '/features/visibility': typeof FeaturesVisibilityRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
-  '/in/$location': typeof InLocationRoute
+  '/in/$location': typeof InLocationRouteWithChildren
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
   '/portal_/nutrition': typeof PortalNutritionRoute
@@ -1190,6 +1198,7 @@ export interface FileRoutesById {
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
+  '/in/$location/$profession': typeof InLocationProfessionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
@@ -1323,6 +1332,7 @@ export interface FileRouteTypes {
     | '/admin/seo/legacy-redirects'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
+    | '/in/$location/$profession'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1451,6 +1461,7 @@ export interface FileRouteTypes {
     | '/admin/seo/legacy-redirects'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
+    | '/in/$location/$profession'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1584,6 +1595,7 @@ export interface FileRouteTypes {
     | '/admin_/seo/legacy-redirects'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
+    | '/in/$location/$profession'
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
@@ -1695,7 +1707,7 @@ export interface RootRouteChildren {
   FeaturesShopFrontRoute: typeof FeaturesShopFrontRoute
   FeaturesVisibilityRoute: typeof FeaturesVisibilityRoute
   GymsSlugRoute: typeof GymsSlugRoute
-  InLocationRoute: typeof InLocationRoute
+  InLocationRoute: typeof InLocationRouteWithChildren
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNutritionRoute: typeof PortalNutritionRoute
@@ -2343,6 +2355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/in/$location/$profession': {
+      id: '/in/$location/$profession'
+      path: '/$profession'
+      fullPath: '/in/$location/$profession'
+      preLoaderRoute: typeof InLocationProfessionRouteImport
+      parentRoute: typeof InLocationRoute
+    }
     '/help/$category/$slug': {
       id: '/help/$category/$slug'
       path: '/$slug'
@@ -2856,6 +2875,18 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
+interface InLocationRouteChildren {
+  InLocationProfessionRoute: typeof InLocationProfessionRoute
+}
+
+const InLocationRouteChildren: InLocationRouteChildren = {
+  InLocationProfessionRoute: InLocationProfessionRoute,
+}
+
+const InLocationRouteWithChildren = InLocationRoute._addFileChildren(
+  InLocationRouteChildren,
+)
+
 interface ProSlugRouteChildren {
   ProSlugEnquireRoute: typeof ProSlugEnquireRoute
   ProSlugReviewRoute: typeof ProSlugReviewRoute
@@ -2936,7 +2967,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesShopFrontRoute: FeaturesShopFrontRoute,
   FeaturesVisibilityRoute: FeaturesVisibilityRoute,
   GymsSlugRoute: GymsSlugRoute,
-  InLocationRoute: InLocationRoute,
+  InLocationRoute: InLocationRouteWithChildren,
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,
   PortalNutritionRoute: PortalNutritionRoute,
