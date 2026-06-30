@@ -97,7 +97,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         // Programmatic profession × city landing pages.
         const { PROGRAMMATIC_CITY_SLUGS, PROGRAMMATIC_PROFESSION_SLUGS } = await import(
-          "@/routes/in.$location.$profession"
+          "@/lib/seo/programmatic-pages"
         );
         const cityProfessionEntries: SitemapEntry[] = [];
         for (const citySlug of PROGRAMMATIC_CITY_SLUGS) {
