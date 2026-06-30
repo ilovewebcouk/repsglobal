@@ -453,8 +453,8 @@ function ServicesEditor({
     setOpen(true);
   }
 
-  function submit() {
-    onSave({
+  function buildPayload() {
+    return {
       ...draft,
       title: draft.title.trim(),
       bullets: draft.bullets.map((b) => b.trim()).filter(Boolean),
@@ -462,9 +462,18 @@ function ServicesEditor({
       description: draft.description?.trim() || null,
       cta_label: draft.cta_label?.trim() || null,
       image_url: draft.image_url || null,
-    });
+    };
+  }
+
+  function submit() {
+    onSave(buildPayload());
     setOpen(false);
   }
+
+  function silentSave() {
+    onSave(buildPayload());
+  }
+
 
   function handleDrop(targetIndex: number) {
     if (dragIndex === null || dragIndex === targetIndex) {
