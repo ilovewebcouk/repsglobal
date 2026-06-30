@@ -342,6 +342,7 @@ function emptyDraft(sort_order: number): ServiceDraft {
     is_featured: false,
     bullets: [...EMPTY_BULLETS],
     cta_label: "",
+    image_url: null,
   };
 }
 
