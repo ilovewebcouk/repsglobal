@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { redirectAfterAuth } from "@/lib/auth-redirect";
 
 type AuthSearch = {
-  tier?: "verified" | "pro";
+  // URL slug "core" (legacy "verified" accepted and normalized for back-compat).
+  tier?: "core" | "pro";
   period?: "monthly" | "annual";
   next?: "checkout";
 };
@@ -20,7 +21,8 @@ type AuthSearch = {
 export const Route = createFileRoute("/auth")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): AuthSearch => {
-    const tier = search.tier === "verified" || search.tier === "pro" ? search.tier : undefined;
+    const raw = search.tier === "verified" ? "core" : search.tier;
+    const tier = raw === "core" || raw === "pro" ? raw : undefined;
     const period =
       search.period === "monthly" || search.period === "annual" ? search.period : undefined;
     const next = search.next === "checkout" ? "checkout" : undefined;
