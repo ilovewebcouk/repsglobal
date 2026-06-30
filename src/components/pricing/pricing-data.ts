@@ -219,7 +219,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are planned?",
-    a: "Core is billed annually at £99. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
+    a: "Core is £8.25/month billed monthly, or £99/year billed annually — same price either way. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",
