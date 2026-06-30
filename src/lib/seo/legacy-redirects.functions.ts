@@ -244,8 +244,10 @@ function legacyBlogSlug(path: string): string | null {
   return null;
 }
 
-// NOTE: 410 status is set in the route loader (src/routes/$.tsx), not here.
-// setResponseStatus() from a server fn does not reach the SSR page response.
+import { setResponseStatus } from "@tanstack/react-start/server";
+function markGone() {
+  try { setResponseStatus(410); } catch { /* client nav */ }
+}
 
 export const resolveLegacyPath = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => ResolveInput.parse(d))
@@ -275,7 +277,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       // Terminal known but no live pro → 410 Gone (server-side only)
       const terminal = row.terminal_path || row.destination_path;
       const { kind } = classifyLegacyPath(terminal);
-      
+      markGone();
       return {
         action: "gone",
         reason: kind === "exercise-professional" ? "pro-not-migrated" : `type-not-migrated:${kind}`,
@@ -283,7 +285,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
     }
 
     if (blogSlug) {
-      
+      markGone();
       return { action: "gone", reason: "legacy-blog-not-migrated" };
     }
 
@@ -303,7 +305,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (pro?.slug) return { action: "redirect", toSlug: pro.slug };
-    
+    markGone();
     return { action: "gone", reason: "pro-not-migrated" };
   });
 
