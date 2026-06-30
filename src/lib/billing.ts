@@ -80,6 +80,13 @@ export type CheckoutOffer = {
 
 export const CHECKOUT_OFFERS: Record<PurchasableTier, Partial<Record<BillingPeriod, CheckoutOffer>>> = {
   verified: {
+    monthly: {
+      period: "monthly",
+      priceId: "verified_monthly",
+      display: "£8.25/mo",
+      trialDays: 0,
+      founding: false,
+    },
     annual: {
       period: "annual",
       priceId: "verified_annual",
