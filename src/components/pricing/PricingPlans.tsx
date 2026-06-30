@@ -22,13 +22,15 @@ export function PricingPlans() {
 
   async function handlePaidCta(tierKey: "verified" | "pro") {
     const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;
+    // Public URL slug: "core" for the Verified/Core tier, "pro" otherwise.
+    const urlTier = tierKey === "verified" ? "core" : tierKey;
     setCheckoutTier(tierKey);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
         navigate({
           to: "/signup",
-          search: { tier: tierKey, period: checkoutPeriod, next: "checkout" } as never,
+          search: { tier: urlTier, period: checkoutPeriod, next: "checkout" } as never,
         });
         return;
       }
