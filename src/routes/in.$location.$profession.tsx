@@ -130,8 +130,8 @@ const CITIES: Record<string, CityMeta> = {
   lisburn: { slug: "lisburn", name: "Lisburn", region: "Northern Ireland" },
 };
 
-export const PROGRAMMATIC_CITY_SLUGS = Object.keys(CITIES);
-export const PROGRAMMATIC_PROFESSION_SLUGS = PROFESSIONS.map((p) => p.slug);
+// Canonical slug lists now live in `@/lib/seo/programmatic-pages` so the
+// sitemap can import them without pulling this route's UI dependencies.
 
 function getCity(slug: string): CityMeta {
   return (
