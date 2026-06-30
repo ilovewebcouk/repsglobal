@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // User-facing support tickets. All ops scoped to the signed-in user via RLS.
