@@ -12,8 +12,8 @@ import type { ProfessionSlug } from "@/lib/professions";
  * picker only renders relevant specialisms; when null, shows an empty
  * state asking the user to set their profession first.
  *
- * Used by both the Public Profile editor (section 05) and the
- * Services page (`/dashboard/services`) so they stay in sync.
+ * Used by both the Public Profile editor (section 05) and the Website
+ * editor (`/dashboard/website#specialisms`) so they stay in sync.
  */
 export function SpecialismsPicker({
   values,
