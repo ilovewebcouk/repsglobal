@@ -332,7 +332,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
       .map((s) => getSpecialismLabel(s) ?? s)
       .filter(Boolean),
     services: (() => {
-      const live = (row as { services?: Array<{ title: string; description: string | null; price_pence: number | null; price_label: string | null; duration_minutes: number | null; mode: string }> }).services ?? [];
+      const live = (row as { services?: Array<{ title: string; description: string | null; price_pence: number | null; price_label: string | null; duration_minutes: number | null; mode: string; image_url?: string | null }> }).services ?? [];
       if (live.length) {
         return live.slice(0, 3).map((s) => ({
           title: s.title,
@@ -348,7 +348,7 @@ function proFromDb(row: NonNullable<DbPro>): Pro {
                 : s.mode === "hybrid"
                   ? "hybrid"
                   : "in-person",
-          image: null,
+          image: s.image_url ?? null,
           icon: Users,
         }));
       }
