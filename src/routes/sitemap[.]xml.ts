@@ -79,7 +79,8 @@ export const Route = createFileRoute("/sitemap.xml")({
             .from("professionals")
             .select("slug, updated_at")
             .not("slug", "is", null)
-            .eq("is_public", true)
+            .eq("is_published", true)
+            .eq("is_demo", false)
             .limit(5000);
           proEntries = (pros ?? [])
             .filter((p) => p.slug)
