@@ -336,6 +336,7 @@ export type ServiceDTO = {
   is_featured: boolean;
   bullets: string[];
   cta_label: string | null;
+  image_url: string | null;
 };
 
 
