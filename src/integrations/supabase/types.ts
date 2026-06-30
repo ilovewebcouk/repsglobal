@@ -143,51 +143,6 @@ export type Database = {
         }
         Relationships: []
       }
-      auth_events: {
-        Row: {
-          browser: string | null
-          city: string | null
-          country_code: string | null
-          created_at: string
-          device: string | null
-          email: string | null
-          event: string
-          id: string
-          ip_hash: string | null
-          os: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          browser?: string | null
-          city?: string | null
-          country_code?: string | null
-          created_at?: string
-          device?: string | null
-          email?: string | null
-          event: string
-          id?: string
-          ip_hash?: string | null
-          os?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          browser?: string | null
-          city?: string | null
-          country_code?: string | null
-          created_at?: string
-          device?: string | null
-          email?: string | null
-          event?: string
-          id?: string
-          ip_hash?: string | null
-          os?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       bd_member_seed: {
         Row: {
           about_me: string | null
@@ -2415,68 +2370,6 @@ export type Database = {
         }
         Relationships: []
       }
-      page_view_events: {
-        Row: {
-          anon_id: string
-          browser: string | null
-          city: string | null
-          country_code: string | null
-          created_at: string
-          device: string | null
-          id: string
-          ip_hash: string | null
-          is_admin_view: boolean
-          os: string | null
-          path: string
-          referrer: string | null
-          session_id: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          anon_id: string
-          browser?: string | null
-          city?: string | null
-          country_code?: string | null
-          created_at?: string
-          device?: string | null
-          id?: string
-          ip_hash?: string | null
-          is_admin_view?: boolean
-          os?: string | null
-          path: string
-          referrer?: string | null
-          session_id?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          anon_id?: string
-          browser?: string | null
-          city?: string | null
-          country_code?: string | null
-          created_at?: string
-          device?: string | null
-          id?: string
-          ip_hash?: string | null
-          is_admin_view?: boolean
-          os?: string | null
-          path?: string
-          referrer?: string | null
-          session_id?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "page_view_events_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "user_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       payment_events: {
         Row: {
           created_at: string
@@ -3999,66 +3892,6 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
-        }
-        Relationships: []
-      }
-      user_sessions: {
-        Row: {
-          anon_id: string
-          browser: string | null
-          city: string | null
-          country_code: string | null
-          current_path: string | null
-          device: string | null
-          ended_at: string | null
-          id: string
-          ip_hash: string | null
-          is_admin_view: boolean
-          last_seen_at: string
-          os: string | null
-          pages_viewed: number
-          referrer: string | null
-          started_at: string
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          anon_id: string
-          browser?: string | null
-          city?: string | null
-          country_code?: string | null
-          current_path?: string | null
-          device?: string | null
-          ended_at?: string | null
-          id?: string
-          ip_hash?: string | null
-          is_admin_view?: boolean
-          last_seen_at?: string
-          os?: string | null
-          pages_viewed?: number
-          referrer?: string | null
-          started_at?: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          anon_id?: string
-          browser?: string | null
-          city?: string | null
-          country_code?: string | null
-          current_path?: string | null
-          device?: string | null
-          ended_at?: string | null
-          id?: string
-          ip_hash?: string | null
-          is_admin_view?: boolean
-          last_seen_at?: string
-          os?: string | null
-          pages_viewed?: number
-          referrer?: string | null
-          started_at?: string
-          user_agent?: string | null
-          user_id?: string | null
         }
         Relationships: []
       }

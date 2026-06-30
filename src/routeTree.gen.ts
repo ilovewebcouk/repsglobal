@@ -89,7 +89,6 @@ import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
 import { Route as AdminChurnRouteImport } from './routes/admin_.churn'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AdminBillingRouteImport } from './routes/admin_.billing'
-import { Route as AdminActivityRouteImport } from './routes/admin_.activity'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
@@ -113,8 +112,6 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
-import { Route as ApiPublicActivityPageviewRouteImport } from './routes/api/public/activity/pageview'
-import { Route as ApiPublicActivityAuthEventRouteImport } from './routes/api/public/activity/auth-event'
 import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admin_.billing.disputes.$disputeId'
 import { Route as AuthenticatedProfessionalDashboardWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.website'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
@@ -547,11 +544,6 @@ const AdminBillingRoute = AdminBillingRouteImport.update({
   path: '/admin/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminActivityRoute = AdminActivityRouteImport.update({
-  id: '/admin_/activity',
-  path: '/admin/activity',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedProfessionalRouteRoute =
   AuthenticatedProfessionalRouteRouteImport.update({
     id: '/_professional',
@@ -674,18 +666,6 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
   ApiPublicHooksSendScheduledCampaignsRouteImport.update({
     id: '/api/public/hooks/send-scheduled-campaigns',
     path: '/api/public/hooks/send-scheduled-campaigns',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicActivityPageviewRoute =
-  ApiPublicActivityPageviewRouteImport.update({
-    id: '/api/public/activity/pageview',
-    path: '/api/public/activity/pageview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicActivityAuthEventRoute =
-  ApiPublicActivityAuthEventRouteImport.update({
-    id: '/api/public/activity/auth-event',
-    path: '/api/public/activity/auth-event',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AdminBillingDisputesDisputeIdRoute =
@@ -909,7 +889,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
@@ -983,8 +962,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
-  '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
-  '/api/public/activity/pageview': typeof ApiPublicActivityPageviewRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1044,7 +1021,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/churn': typeof AdminChurnRoute
@@ -1115,8 +1091,6 @@ export interface FileRoutesByTo {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
-  '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
-  '/api/public/activity/pageview': typeof ApiPublicActivityPageviewRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1180,7 +1154,6 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
-  '/admin_/activity': typeof AdminActivityRoute
   '/admin_/billing': typeof AdminBillingRouteWithChildren
   '/admin_/campaigns': typeof AdminCampaignsRoute
   '/admin_/churn': typeof AdminChurnRoute
@@ -1255,8 +1228,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/_authenticated/_professional/dashboard_/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin_/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
-  '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
-  '/api/public/activity/pageview': typeof ApiPublicActivityPageviewRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1319,7 +1290,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
-    | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
     | '/admin/churn'
@@ -1393,8 +1363,6 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
-    | '/api/public/activity/auth-event'
-    | '/api/public/activity/pageview'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1454,7 +1422,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
-    | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
     | '/admin/churn'
@@ -1525,8 +1492,6 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
-    | '/api/public/activity/auth-event'
-    | '/api/public/activity/pageview'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1589,7 +1554,6 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/verify-email'
     | '/_authenticated/_professional'
-    | '/admin_/activity'
     | '/admin_/billing'
     | '/admin_/campaigns'
     | '/admin_/churn'
@@ -1664,8 +1628,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/verification'
     | '/_authenticated/_professional/dashboard_/website'
     | '/admin_/billing/disputes/$disputeId'
-    | '/api/public/activity/auth-event'
-    | '/api/public/activity/pageview'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1728,7 +1690,6 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
-  AdminActivityRoute: typeof AdminActivityRoute
   AdminBillingRoute: typeof AdminBillingRouteWithChildren
   AdminCampaignsRoute: typeof AdminCampaignsRoute
   AdminChurnRoute: typeof AdminChurnRoute
@@ -1779,8 +1740,6 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
-  ApiPublicActivityAuthEventRoute: typeof ApiPublicActivityAuthEventRoute
-  ApiPublicActivityPageviewRoute: typeof ApiPublicActivityPageviewRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicOpsAlertDispatchRoute: typeof ApiPublicOpsAlertDispatchRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -2353,13 +2312,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/activity': {
-      id: '/admin_/activity'
-      path: '/admin/activity'
-      fullPath: '/admin/activity'
-      preLoaderRoute: typeof AdminActivityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/_professional': {
       id: '/_authenticated/_professional'
       path: ''
@@ -2519,20 +2471,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/send-scheduled-campaigns'
       fullPath: '/api/public/hooks/send-scheduled-campaigns'
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/activity/pageview': {
-      id: '/api/public/activity/pageview'
-      path: '/api/public/activity/pageview'
-      fullPath: '/api/public/activity/pageview'
-      preLoaderRoute: typeof ApiPublicActivityPageviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/activity/auth-event': {
-      id: '/api/public/activity/auth-event'
-      path: '/api/public/activity/auth-event'
-      fullPath: '/api/public/activity/auth-event'
-      preLoaderRoute: typeof ApiPublicActivityAuthEventRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/billing/disputes/$disputeId': {
@@ -3022,7 +2960,6 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
-  AdminActivityRoute: AdminActivityRoute,
   AdminBillingRoute: AdminBillingRouteWithChildren,
   AdminCampaignsRoute: AdminCampaignsRoute,
   AdminChurnRoute: AdminChurnRoute,
@@ -3073,8 +3010,6 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
-  ApiPublicActivityAuthEventRoute: ApiPublicActivityAuthEventRoute,
-  ApiPublicActivityPageviewRoute: ApiPublicActivityPageviewRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicOpsAlertDispatchRoute: ApiPublicOpsAlertDispatchRoute,
@@ -3088,3 +3023,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

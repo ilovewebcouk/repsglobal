@@ -203,23 +203,10 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-
-      // Activity capture — fire-and-forget.
-      import("@/lib/activity/beacon")
-        .then(({ reportAuthEvent }) => {
-          const map = {
-            SIGNED_IN: "sign_in",
-            SIGNED_OUT: "sign_out",
-            USER_UPDATED: "user_updated",
-          } as const;
-          return reportAuthEvent(map[event], session?.user?.email ?? null);
-        })
-        .catch(() => {});
-
       // Fire-and-forget welcome email on confirmed sign-in. Idempotent server-side
       // via `welcome-signup:${userId}` key in email_send_log.
       if (event === "SIGNED_IN") {
@@ -231,33 +218,6 @@ function RootComponent() {
     return () => subscription.unsubscribe();
   }, [router, queryClient]);
 
-  // Page-view beacon. router.subscribe('onResolved') fires on every navigation
-  // including the initial load.
-  useEffect(() => {
-    let cancelled = false;
-    const fire = (path: string) => {
-      if (cancelled) return;
-      import("@/lib/activity/beacon")
-        .then(({ reportPageView }) =>
-          reportPageView(path, document.referrer || null),
-        )
-        .catch(() => {});
-    };
-    // Initial load
-    fire(window.location.pathname + window.location.search);
-    const unsub = router.subscribe("onResolved", (e) => {
-      const loc = (e as unknown as { toLocation?: { pathname: string; search?: string } })
-        .toLocation;
-      const path = loc
-        ? loc.pathname + (typeof loc.search === "string" ? loc.search : "")
-        : window.location.pathname + window.location.search;
-      fire(path);
-    });
-    return () => {
-      cancelled = true;
-      unsub();
-    };
-  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>

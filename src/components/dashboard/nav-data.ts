@@ -129,7 +129,6 @@ export const ADMIN_NAV = [
     title: "Overview",
     items: [
       { icon: LayoutDashboard, label: "Overview", to: "/admin" },
-      { icon: AreaChart, label: "Activity", to: "/admin/activity" },
     ],
   },
   {
