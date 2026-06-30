@@ -285,7 +285,7 @@ export const resolveLegacyPath = createServerFn({ method: "GET" })
     }
 
     if (blogSlug) {
-      
+      markGone();
       return { action: "gone", reason: "legacy-blog-not-migrated" };
     }
 
