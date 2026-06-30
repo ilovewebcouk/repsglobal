@@ -429,22 +429,19 @@ type ServiceDraft = Partial<ServiceDTO> & {
 };
 
 function emptyDraft(sort_order: number): ServiceDraft {
-  const p = SERVICE_PLACEHOLDERS[sort_order % 3];
-  const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
-  const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
   return {
-    title: p.title,
-    description: p.description,
+    title: "",
+    description: "",
     price_pence: null,
-    price_label: p.price,
-    price_unit: unitBySlot[sort_order % 3],
+    price_label: "",
+    price_unit: "per_session",
     duration_minutes: null,
-    mode: modeBySlot[sort_order % 3],
+    mode: "in_person",
     sort_order,
     is_published: true,
-    is_featured: sort_order % 3 === 1, // Hybrid = most popular
-    bullets: [...p.bullets].slice(0, 5),
-    cta_label: p.cta,
+    is_featured: false,
+    bullets: ["", "", "", "", ""],
+    cta_label: "",
     image_url: null,
   };
 }
@@ -471,25 +468,21 @@ function ServicesEditor({
 
   function startEdit(s: ServiceDTO) {
     const b = Array.isArray(s.bullets) ? s.bullets.slice(0, 5) : [];
-    const slot = (((s.sort_order ?? 0) % 3) + 3) % 3;
-    const p = SERVICE_PLACEHOLDERS[slot];
-    const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
-    const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
     setEditingId(s.id);
     setDraft({
       id: s.id,
-      title: p.title, // locked to slot
+      title: s.title ?? "",
       description: s.description ?? "",
       price_pence: s.price_pence,
       price_label: s.price_label ?? "",
-      price_unit: unitBySlot[slot],
+      price_unit: s.price_unit ?? "per_session",
       duration_minutes: s.duration_minutes,
-      mode: modeBySlot[slot], // locked to slot
+      mode: (s.mode as ServiceDTO["mode"]) ?? "in_person",
       sort_order: s.sort_order,
       is_published: s.is_published,
-      is_featured: slot === 1, // Hybrid is always Most popular
+      is_featured: s.is_featured,
       bullets: [...b, ...EMPTY_BULLETS].slice(0, 5),
-      cta_label: p.cta, // locked to slot
+      cta_label: s.cta_label ?? "",
       image_url: s.image_url ?? null,
     });
     setOpen(true);
@@ -502,21 +495,13 @@ function ServicesEditor({
   }
 
   function submit() {
-    const slot = (((draft.sort_order ?? 0) % 3) + 3) % 3;
-    const p = SERVICE_PLACEHOLDERS[slot];
-    const modeBySlot: ServiceDTO["mode"][] = ["online", "hybrid", "in_person"];
-    const unitBySlot: NonNullable<ServiceDTO["price_unit"]>[] = ["per_month", "per_month", "per_session"];
     onSave({
       ...draft,
-      // Slot-locked fields — never user-editable
-      title: p.title,
-      mode: modeBySlot[slot],
-      cta_label: p.cta,
-      price_unit: unitBySlot[slot],
-      is_featured: slot === 1,
+      title: draft.title.trim(),
       bullets: draft.bullets.map((b) => b.trim()).filter(Boolean),
       price_label: draft.price_label?.trim() || null,
       description: draft.description?.trim() || null,
+      cta_label: draft.cta_label?.trim() || null,
       image_url: draft.image_url || null,
     });
     setOpen(false);
