@@ -4669,6 +4669,13 @@ export type Database = {
         }
       }
       platform_health_snapshot: { Args: never; Returns: Json }
+      purge_orphan_professional_signups: {
+        Args: { _min_age_hours?: number }
+        Returns: {
+          deleted_user_id: string
+          email: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
