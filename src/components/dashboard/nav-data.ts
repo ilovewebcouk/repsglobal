@@ -1,4 +1,5 @@
 import {
+  Activity,
   AlertCircle,
   Apple,
   AreaChart,
@@ -129,6 +130,7 @@ export const ADMIN_NAV = [
     title: "Overview",
     items: [
       { icon: LayoutDashboard, label: "Overview", to: "/admin" },
+      { icon: Activity, label: "Activity", to: "/admin/activity" },
     ],
   },
   {

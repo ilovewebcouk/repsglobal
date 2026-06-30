@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { LAUNCH_GATE_ENABLED, isAllowlistedPath, hasPreviewUnlock } from "@/lib/launch";
+import { useActivityBeacon } from "@/hooks/useActivityBeacon";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -218,6 +219,8 @@ function RootComponent() {
     return () => subscription.unsubscribe();
   }, [router, queryClient]);
 
+  // Admin Activity v1 — privacy-safe operational beacon (logged-in only).
+  useActivityBeacon();
 
   return (
     <QueryClientProvider client={queryClient}>
