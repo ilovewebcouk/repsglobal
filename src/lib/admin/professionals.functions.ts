@@ -3,7 +3,9 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import {
   computeMemberBillingRow,
   type MemberBillingPlan,
+  type SubscriptionRowLite,
 } from '@/lib/admin/member-billing-row.server';
+
 
 export type AdminProBillingState = 'ok' | 'payment_failed' | 'renewal_due';
 
