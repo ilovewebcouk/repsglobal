@@ -328,12 +328,16 @@ export type ServiceDTO = {
   description: string | null;
   price_pence: number | null;
   price_label: string | null;
+  price_unit: string | null;
   duration_minutes: number | null;
   mode: string;
   sort_order: number;
   is_published: boolean;
   is_featured: boolean;
+  bullets: string[];
+  cta_label: string | null;
 };
+
 
 /* ---------------- Public reads ---------------- */
 
@@ -372,7 +376,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("services")
         .select(
-          "id, professional_id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_published, is_featured",
+          "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label",
         )
         .eq("professional_id", pro.id)
         .eq("is_published", true)
@@ -480,7 +484,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("services")
           .select(
-            "id, professional_id, title, description, price_pence, price_label, duration_minutes, mode, sort_order, is_published, is_featured",
+            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label",
           )
           .eq("professional_id", userId)
           .order("sort_order", { ascending: true }),
@@ -587,16 +591,23 @@ export const upsertMyShopFront = createServerFn({ method: "POST" })
 
 const ServiceUpsertSchema = z.object({
   id: z.string().uuid().optional(),
-  title: z.string().trim().min(1).max(120),
+  title: z.string().trim().min(1).max(28),
   description: z.string().trim().max(2000).nullable().optional(),
   price_pence: z.number().int().min(0).max(10_000_00).nullable().optional(),
-  price_label: z.string().trim().max(60).nullable().optional(),
+  price_label: z.string().trim().max(16).nullable().optional(),
+  price_unit: z
+    .enum(["per_session", "per_month", "per_week", "per_block", "per_hour", "total", "from", "custom"])
+    .nullable()
+    .optional(),
   duration_minutes: z.number().int().min(0).max(600).nullable().optional(),
   mode: z.enum(["in_person", "online", "hybrid"]).default("in_person"),
   sort_order: z.number().int().min(0).max(99).default(0),
   is_published: z.boolean().default(true),
   is_featured: z.boolean().default(false),
+  bullets: z.array(z.string().trim().max(60)).max(5).default([]),
+  cta_label: z.string().trim().max(24).nullable().optional(),
 });
+
 
 export const upsertMyService = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])

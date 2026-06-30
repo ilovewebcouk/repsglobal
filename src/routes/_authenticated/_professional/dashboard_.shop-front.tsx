@@ -141,11 +141,14 @@ function ShopFrontEditorPage() {
           description: s.description ?? null,
           price_pence: s.price_pence ?? null,
           price_label: s.price_label ?? null,
+          price_unit: (s.price_unit as never) ?? null,
           duration_minutes: s.duration_minutes ?? null,
           mode: (s.mode as "in_person" | "online" | "hybrid") ?? "in_person",
           sort_order: s.sort_order ?? 0,
           is_published: s.is_published ?? true,
           is_featured: s.is_featured ?? false,
+          bullets: Array.isArray(s.bullets) ? s.bullets : [],
+          cta_label: s.cta_label ?? null,
         },
       }),
     onSuccess: () => {
@@ -154,6 +157,7 @@ function ShopFrontEditorPage() {
     },
     onError: (e: Error) => toast.error(e.message || "Could not save service"),
   });
+
 
   const deleteServiceMut = useMutation({
     mutationFn: (id: string) => deleteSvc({ data: { id } }),
@@ -276,25 +280,51 @@ function ShopFrontEditorPage() {
 
           <WebsiteContentEditor />
 
-          {isPro ? (
-            <ServicesEditor
-              services={services}
-              onSave={(s) => upsertServiceMut.mutate(s)}
-              onDelete={(id) => deleteServiceMut.mutate(id)}
-              saving={upsertServiceMut.isPending}
-            />
-          ) : (
-            <PCard>
-              <div className="text-[14px] font-semibold text-white">Services</div>
-              <p className="mt-1 text-[13px] text-white/65">
-                Service packages and pricing are a Pro feature. Upgrade to add tiers, durations and "Most popular" highlights.
-              </p>
-            </PCard>
-          )}
+          <ServicesEditor
+            services={services}
+            onSave={(s) => upsertServiceMut.mutate(s)}
+            onDelete={(id) => deleteServiceMut.mutate(id)}
+            saving={upsertServiceMut.isPending}
+          />
         </div>
       )}
     </DashboardShell>
   );
+}
+
+const PRICE_UNIT_OPTIONS: { value: NonNullable<ServiceDTO["price_unit"]>; label: string }[] = [
+  { value: "per_session", label: "per session" },
+  { value: "per_month", label: "per month" },
+  { value: "per_week", label: "per week" },
+  { value: "per_block", label: "per block" },
+  { value: "per_hour", label: "per hour" },
+  { value: "total", label: "total (one-off)" },
+  { value: "from", label: "from" },
+  { value: "custom", label: "no unit" },
+];
+
+const EMPTY_BULLETS = ["", "", "", "", ""];
+
+type ServiceDraft = Partial<ServiceDTO> & {
+  title: string;
+  bullets: string[];
+};
+
+function emptyDraft(sort_order: number): ServiceDraft {
+  return {
+    title: "",
+    description: "",
+    price_pence: null,
+    price_label: "",
+    price_unit: "per_session",
+    duration_minutes: null,
+    mode: "in_person",
+    sort_order,
+    is_published: true,
+    is_featured: false,
+    bullets: [...EMPTY_BULLETS],
+    cta_label: "",
+  };
 }
 
 function ServicesEditor({
@@ -308,23 +338,53 @@ function ServicesEditor({
   onDelete: (id: string) => void;
   saving: boolean;
 }) {
-  const [draft, setDraft] = React.useState<Partial<ServiceDTO> & { title: string }>({
-    title: "",
-    description: "",
-    price_pence: null,
-    price_label: "",
-    duration_minutes: 60,
-    mode: "in_person",
-    sort_order: services.length,
-    is_published: true,
-    is_featured: false,
-  });
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [draft, setDraft] = React.useState<ServiceDraft>(() => emptyDraft(services.length));
+
+  function startEdit(s: ServiceDTO) {
+    const b = Array.isArray(s.bullets) ? s.bullets.slice(0, 5) : [];
+    setEditingId(s.id);
+    setDraft({
+      id: s.id,
+      title: s.title,
+      description: s.description ?? "",
+      price_pence: s.price_pence,
+      price_label: s.price_label ?? "",
+      price_unit: (s.price_unit as ServiceDTO["price_unit"]) ?? "per_session",
+      duration_minutes: s.duration_minutes,
+      mode: s.mode as ServiceDTO["mode"],
+      sort_order: s.sort_order,
+      is_published: s.is_published,
+      is_featured: s.is_featured,
+      bullets: [...b, ...EMPTY_BULLETS].slice(0, 5),
+      cta_label: s.cta_label ?? "",
+    });
+  }
+
+  function reset() {
+    setEditingId(null);
+    setDraft(emptyDraft(services.length));
+  }
+
+  function submit() {
+    onSave({
+      ...draft,
+      bullets: draft.bullets.map((b) => b.trim()).filter(Boolean),
+      cta_label: draft.cta_label?.trim() || null,
+      price_label: draft.price_label?.trim() || null,
+      price_unit: draft.price_unit || null,
+      description: draft.description?.trim() || null,
+    });
+    reset();
+  }
 
   return (
     <PPanel>
       <div className="border-b border-reps-border px-5 py-4">
         <h3 className="text-[14px] font-semibold text-white">Services</h3>
-        <p className="mt-0.5 text-[12px] text-white/55">Up to your service tiers — shown on your public page.</p>
+        <p className="mt-0.5 text-[12px] text-white/55">
+          Up to 3 cards on your public page. Each card has a title, price + unit, up to 5 bullets and a custom button label.
+        </p>
       </div>
 
       <div className="divide-y divide-reps-border/60">
@@ -334,14 +394,27 @@ function ServicesEditor({
               <div className="text-[13px] font-semibold text-white">{s.title}</div>
               <div className="mt-0.5 text-[12px] text-white/55">
                 {s.price_label ?? (s.price_pence ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry")}
-                {" · "}
-                {s.duration_minutes ? `${s.duration_minutes} min` : "—"} · {s.mode}
+                {s.price_unit ? ` · ${s.price_unit.replace("_", " ")}` : ""}
+                {" · "}{s.mode.replace("_", " ")}
                 {s.is_featured ? " · Featured" : ""}
                 {!s.is_published ? " · Hidden" : ""}
               </div>
-              {s.description && <p className="mt-1 text-[12px] text-white/65 line-clamp-2">{s.description}</p>}
+              {Array.isArray(s.bullets) && s.bullets.length > 0 && (
+                <ul className="mt-1.5 grid gap-0.5 text-[12px] text-white/65">
+                  {s.bullets.slice(0, 5).map((b, i) => (
+                    <li key={i}>• {b}</li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
+              <button
+                type="button"
+                onClick={() => startEdit(s)}
+                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
+              >
+                Edit
+              </button>
               <button
                 type="button"
                 onClick={() => onSave({ ...s, is_featured: !s.is_featured })}
@@ -364,7 +437,6 @@ function ServicesEditor({
                 className="flex h-9 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                Delete
               </button>
             </div>
           </div>
@@ -375,28 +447,47 @@ function ServicesEditor({
       </div>
 
       <div className="border-t border-reps-border px-5 py-5">
-        <div className="text-[13px] font-semibold text-white">Add a service</div>
+        <div className="text-[13px] font-semibold text-white">
+          {editingId ? "Edit service" : "Add a service"}
+          {!editingId && services.length >= 3 && (
+            <span className="ml-2 text-[11.5px] font-normal text-white/45">
+              3 of 3 — delete one to add another
+            </span>
+          )}
+        </div>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-          <TextInput
-            value={draft.title ?? ""}
-            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-            placeholder="Title (e.g. 12-week transformation)"
-            maxLength={120}
-          />
-          <TextInput
-            value={draft.price_label ?? ""}
-            onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
-            placeholder="Price label (e.g. From £180/mo)"
-            maxLength={60}
-          />
-          <TextInput
-            type="number"
-            value={draft.duration_minutes ?? 60}
-            onChange={(e) => setDraft({ ...draft, duration_minutes: Number(e.target.value) || null })}
-            placeholder="Duration (minutes)"
-            min={0}
-            max={600}
-          />
+          <div>
+            <TextInput
+              value={draft.title}
+              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              placeholder="Title (e.g. Hybrid Coaching)"
+              maxLength={28}
+            />
+            <div className="mt-1 text-[11px] text-white/40">{draft.title.length}/28</div>
+          </div>
+          <div className="grid grid-cols-[1fr_1fr] gap-2">
+            <div>
+              <TextInput
+                value={draft.price_label ?? ""}
+                onChange={(e) => setDraft({ ...draft, price_label: e.target.value })}
+                placeholder="£240"
+                maxLength={16}
+              />
+              <div className="mt-1 text-[11px] text-white/40">Price (≤16)</div>
+            </div>
+            <div>
+              <select
+                value={draft.price_unit ?? "per_session"}
+                onChange={(e) => setDraft({ ...draft, price_unit: e.target.value as ServiceDTO["price_unit"] })}
+                className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white"
+              >
+                {PRICE_UNIT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+              <div className="mt-1 text-[11px] text-white/40">Unit</div>
+            </div>
+          </div>
           <select
             value={draft.mode ?? "in_person"}
             onChange={(e) => setDraft({ ...draft, mode: e.target.value as ServiceDTO["mode"] })}
@@ -406,41 +497,85 @@ function ServicesEditor({
             <option value="online">Online</option>
             <option value="hybrid">Hybrid</option>
           </select>
-          <TextArea
-            value={draft.description ?? ""}
-            onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-            placeholder="Short description"
-            maxLength={2000}
-          />
+          <div>
+            <TextInput
+              value={draft.cta_label ?? ""}
+              onChange={(e) => setDraft({ ...draft, cta_label: e.target.value })}
+              placeholder='Button label (e.g. "Start with hybrid")'
+              maxLength={24}
+            />
+            <div className="mt-1 text-[11px] text-white/40">
+              {(draft.cta_label ?? "").length}/24 · leave blank for default
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <TextArea
+              value={draft.description ?? ""}
+              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+              placeholder="Short description (1–2 lines)"
+              maxLength={240}
+              className="min-h-[64px] w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <div className="text-[12px] font-semibold text-white/80">Bullets (up to 5)</div>
+            <p className="mt-0.5 text-[11.5px] text-white/45">
+              Keep each one short so they fit on a single line. 60 char max.
+            </p>
+            <div className="mt-2 grid gap-2">
+              {draft.bullets.map((b, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-[11px] text-white/40 w-4">{i + 1}.</span>
+                  <TextInput
+                    value={b}
+                    onChange={(e) => {
+                      const next = [...draft.bullets];
+                      next[i] = e.target.value;
+                      setDraft({ ...draft, bullets: next });
+                    }}
+                    placeholder={i === 0 ? "Weekly 1-to-1 session" : "Add a bullet"}
+                    maxLength={60}
+                  />
+                  <span className="text-[11px] text-white/35 w-10 text-right">{b.length}/60</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-[13px] text-white/85 md:col-span-2">
+            <input
+              type="checkbox"
+              checked={!!draft.is_featured}
+              onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
+              className="h-4 w-4 accent-reps-orange"
+            />
+            Mark as "Most popular"
+          </label>
         </div>
-        <div className="mt-3 flex justify-end">
+        <div className="mt-4 flex justify-end gap-2">
+          {editingId && (
+            <button
+              type="button"
+              onClick={reset}
+              className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:bg-reps-panel"
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="button"
-            disabled={!draft.title?.trim() || saving}
-            onClick={() => {
-              onSave({ ...draft, sort_order: services.length });
-              setDraft({
-                title: "",
-                description: "",
-                price_pence: null,
-                price_label: "",
-                duration_minutes: 60,
-                mode: "in_person",
-                sort_order: services.length + 1,
-                is_published: true,
-                is_featured: false,
-              });
-            }}
+            disabled={!draft.title?.trim() || saving || (!editingId && services.length >= 3)}
+            onClick={submit}
             className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
           >
-            <Plus className="h-4 w-4" />
-            Add service
+            {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {editingId ? "Save changes" : "Add service"}
           </button>
         </div>
       </div>
     </PPanel>
   );
 }
+
 
 /* ===================================================================== */
 /* Website content editor (Hero subtitle, Method, Venues, Results, FAQs)   */

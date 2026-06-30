@@ -3232,7 +3232,9 @@ export type Database = {
       }
       services: {
         Row: {
+          bullets: string[]
           created_at: string
+          cta_label: string | null
           description: string | null
           duration_minutes: number | null
           id: string
@@ -3241,13 +3243,16 @@ export type Database = {
           mode: string
           price_label: string | null
           price_pence: number | null
+          price_unit: string | null
           professional_id: string
           sort_order: number
           title: string
           updated_at: string
         }
         Insert: {
+          bullets?: string[]
           created_at?: string
+          cta_label?: string | null
           description?: string | null
           duration_minutes?: number | null
           id?: string
@@ -3256,13 +3261,16 @@ export type Database = {
           mode?: string
           price_label?: string | null
           price_pence?: number | null
+          price_unit?: string | null
           professional_id: string
           sort_order?: number
           title: string
           updated_at?: string
         }
         Update: {
+          bullets?: string[]
           created_at?: string
+          cta_label?: string | null
           description?: string | null
           duration_minutes?: number | null
           id?: string
@@ -3271,6 +3279,7 @@ export type Database = {
           mode?: string
           price_label?: string | null
           price_pence?: number | null
+          price_unit?: string | null
           professional_id?: string
           sort_order?: number
           title?: string

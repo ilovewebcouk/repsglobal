@@ -63,7 +63,23 @@ type Tier = {
   blurb: string;
   includes: string[];
   highlight?: boolean;
+  ctaLabel?: string | null;
 };
+
+function priceUnitLabel(u: string | null | undefined): string | null {
+  switch (u) {
+    case "per_session": return "per session";
+    case "per_month": return "per month";
+    case "per_week": return "per week";
+    case "per_block": return "per block";
+    case "per_hour": return "per hour";
+    case "total": return "total";
+    case "from": return "from";
+    case "custom": return "";
+    default: return null;
+  }
+}
+
 
 type Transformation = {
   image: string;
@@ -383,11 +399,13 @@ function mergeLiveIntoCoach(
     name: s.title,
     eyebrow: s.is_featured ? "Most popular" : s.mode === "online" ? "Online" : s.mode === "hybrid" ? "Hybrid" : "In person",
     price: s.price_label ?? (s.price_pence != null ? `£${(s.price_pence / 100).toFixed(0)}` : "On enquiry"),
-    unit: s.duration_minutes ? `${s.duration_minutes} min` : "per session",
+    unit: priceUnitLabel(s.price_unit) ?? (s.duration_minutes ? `${s.duration_minutes} min` : "per session"),
     blurb: s.description ?? "",
-    includes: [],
-    highlight: s.is_featured || i === 1,
+    includes: Array.isArray(s.bullets) ? s.bullets.filter((b) => b && b.trim()) : [],
+    highlight: s.is_featured || (services.every((x) => !x.is_featured) && i === 1),
+    ctaLabel: s.cta_label ?? null,
   }));
+
   const memberSinceDate = sf.member_since ? new Date(sf.member_since) : null;
   const memberYear = memberSinceDate && !isNaN(memberSinceDate.getTime())
     ? memberSinceDate.getFullYear()
@@ -1042,9 +1060,10 @@ function TierCard({
           ].join(" ")}
           style={isHighlight ? { backgroundColor: "var(--accent-color)" } : undefined}
         >
-          {isHighlight ? "Start with Hybrid" : `Enquire about ${tier.name}`}
+          {tier.ctaLabel || (isHighlight ? `Start with ${tier.name}` : `Enquire about ${tier.name}`)}
           <ArrowRight className="h-4 w-4" />
         </Link>
+
       </div>
     </article>
   );
