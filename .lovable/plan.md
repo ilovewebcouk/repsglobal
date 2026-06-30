@@ -1,33 +1,40 @@
-## Brutal truth
+## Add Cancel (discard) to the Service editor
 
-The dialog has no sticky footer, so on a laptop the Save button sits below the fold and you have to scroll to find it. The close "X" in the corner is also ambiguous — does it discard or save? That's a trust problem on an editor users will touch every week. World-class editors (Linear, Notion, Stripe Dashboard) solve this with a **sticky footer + autosave + clear exit**, not with a floating X.
+Right now the dialog autosaves edits to existing services every 800ms and the footer only has **Done**. That's great for confidence, but there's no escape hatch — if a pro tweaks a price or rewrites a bullet and then thinks "actually, no", the change is already saved.
 
-## Recommendation
+### What I'll change
 
-Go with **sticky footer + debounced autosave + explicit Done button**. Best of both worlds: nothing is ever lost, the primary action is always visible, and the X is removed so there's no "did I just discard my work?" moment.
+In `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` → `ServiceEditDialog`:
 
-## Plan
+1. **Snapshot the original on open.** When the dialog opens for an existing service, keep a deep copy of the row as it was loaded from the DB (`originalSnapshot`). For brand-new cards, the "original" is empty.
 
-1. **Restructure `EditServiceDialog`** (in `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx`) into three regions:
-   - Sticky header (title + subtitle)
-   - Scrollable body (all the form fields)
-   - Sticky footer (left: autosave status "Saved · just now" / "Saving…" / "Unsaved changes"; right: `Done` primary button + `Delete` ghost on the left)
+2. **Disable autosave by default; opt-in.** Replace silent debounced autosave with an explicit model:
+   - Edits stay local until the user clicks **Save** (or **Save & close** / **Done**).
+   - Footer status pill becomes: `Unsaved changes` (amber) → `Saving…` → `Saved` (emerald, transient).
+   - This removes the "it already saved, too late to cancel" trap.
 
-2. **Add debounced autosave** (800ms after last change) that calls the existing `upsertService` server fn. Track a local `saveState: 'idle' | 'dirty' | 'saving' | 'saved' | 'error'`.
+3. **Sticky footer buttons (left → right):**
+   - **Cancel** (ghost) — discards local edits, restores `originalSnapshot` into the draft, closes the dialog. No DB write.
+   - **Save** (primary) — persists and keeps the dialog open (for users editing multiple fields).
+   - **Save & close** (primary, default action) — persists and closes.
+   - For a brand-new card, **Cancel** simply closes without creating the row.
 
-3. **Remove the corner `X`** from this specific dialog. Closing happens via:
-   - `Done` button (flushes any pending save first)
-   - `Esc` key (flushes pending save, then closes — never silently discards)
-   - Click outside is disabled to prevent accidental dismissal mid-edit
+4. **Dirty-state guards:**
+   - **Esc key** and **backdrop click**: if dirty, show a small shadcn `AlertDialog` — "Discard unsaved changes?" with **Keep editing** / **Discard**. If clean, close immediately.
+   - **Cancel button**: same confirm when dirty; instant close when clean.
+   - Browser-level `beforeunload` is out of scope — this is a modal, not a route.
 
-4. **Visual polish**: footer uses `sticky bottom-0 border-t border-reps-border bg-reps-panel/95 backdrop-blur` so it floats above the scroll. Body gets `max-h-[calc(90vh-140px)] overflow-y-auto` so the footer is always visible at any viewport height.
-
-5. **Apply the same pattern** to `EditFaqDialog` in the same file for consistency (smaller dialog, same problem class).
+5. **Revert helper.** A small **Revert** link next to the status pill (only visible when dirty and editing an existing card) resets the draft to `originalSnapshot` without closing — useful when a pro wants to undo a single field change mid-edit.
 
 ### Out of scope
-- No changes to the underlying `upsertService` schema or server fn.
-- No changes to the public `/c/$slug` rendering.
-- Other dashboard dialogs stay as-is for now (can roll the pattern out later if you like it).
 
-### Files touched
-- `src/routes/_authenticated/_professional/dashboard_.shop-front.tsx` (dialog markup + autosave hook)
+- No changes to the public `/c/$slug` rendering.
+- No changes to the default-seeded service content or the parent list page.
+- No schema changes.
+
+### Technical notes
+
+- `originalSnapshot` lives in a `useRef` so it doesn't trigger renders; cleared on `open` transition.
+- Dirty check stays as `JSON.stringify(draft) !== JSON.stringify(originalSnapshot.current)`.
+- Remove the existing 800ms `setTimeout` autosave effect and the `onSilentSave` prop wiring from the parent (or keep `onSilentSave` and call it only from the explicit **Save** button — simpler: collapse into a single `onSubmit({ close: boolean })` signature).
+- AlertDialog uses shadcn primitive; no new deps.
