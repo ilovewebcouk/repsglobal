@@ -1060,9 +1060,10 @@ function TierCard({
           ].join(" ")}
           style={isHighlight ? { backgroundColor: "var(--accent-color)" } : undefined}
         >
-          {isHighlight ? "Start with Hybrid" : `Enquire about ${tier.name}`}
+          {tier.ctaLabel || (isHighlight ? `Start with ${tier.name}` : `Enquire about ${tier.name}`)}
           <ArrowRight className="h-4 w-4" />
         </Link>
+
       </div>
     </article>
   );
