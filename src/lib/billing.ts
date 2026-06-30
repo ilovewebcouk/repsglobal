@@ -83,7 +83,7 @@ export const CHECKOUT_OFFERS: Record<PurchasableTier, Partial<Record<BillingPeri
     monthly: {
       period: "monthly",
       priceId: "verified_monthly",
-      display: "£8.25/mo",
+      display: "£9.90/mo",
       trialDays: 0,
       founding: false,
     },
