@@ -181,6 +181,27 @@ const TRUST = [
   { icon: Users, title: "Real reviews", sub: "Verified clients only." },
 ];
 
+function buildFaqs(cityName: string, label: string, plural: string) {
+  return [
+    {
+      q: `How do I find a ${label.toLowerCase()} in ${cityName}?`,
+      a: `Browse the verified ${plural.toLowerCase()} on this page, open a profile to see services and prices, then message or book directly. Every professional listed has been identity- and qualification-checked by REPS.`,
+    },
+    {
+      q: `How much does a ${label.toLowerCase()} in ${cityName} cost?`,
+      a: `Prices are set by each professional. In ${cityName}, most ${plural.toLowerCase()} list between £45 and £85 per session for in-person work, with online coaching priced separately.`,
+    },
+    {
+      q: `What does REPS-verified mean?`,
+      a: `It means we've checked their identity (via Stripe Identity), confirmed their qualification with the issuing body, and verified active liability insurance. Verification is re-checked annually.`,
+    },
+    {
+      q: `Can I work with a ${label.toLowerCase()} online instead?`,
+      a: `Yes — many ${plural.toLowerCase()} in ${cityName} offer online coaching alongside in-person work. Look for the "Online" badge on each card.`,
+    },
+  ];
+}
+
 /* --------------------------------- Route -------------------------------- */
 
 export const Route = createFileRoute("/in/$location/$profession")({
@@ -252,6 +273,18 @@ export const Route = createFileRoute("/in/$location/$profession")({
             ],
           }),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: buildFaqs(city.name, label, plural).map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
+        },
       ],
     };
   },
@@ -297,24 +330,7 @@ function ProfessionInCityPage() {
   const otherProfessions = PROFESSIONS.filter((p) => p.slug !== profession);
   const otherCities = Object.values(CITIES).filter((c) => c.slug !== location);
 
-  const faqs = [
-    {
-      q: `How do I find a ${label.toLowerCase()} in ${city.name}?`,
-      a: `Browse the verified ${plural.toLowerCase()} on this page, open a profile to see services and prices, then message or book directly. Every professional listed has been identity- and qualification-checked by REPS.`,
-    },
-    {
-      q: `How much does a ${label.toLowerCase()} in ${city.name} cost?`,
-      a: `Prices are set by each professional. In ${city.name}, most ${plural.toLowerCase()} list between £45 and £85 per session for in-person work, with online coaching priced separately.`,
-    },
-    {
-      q: `What does REPS-verified mean?`,
-      a: `It means we've checked their identity (via Stripe Identity), confirmed their qualification with the issuing body, and verified active liability insurance. Verification is re-checked annually.`,
-    },
-    {
-      q: `Can I work with a ${label.toLowerCase()} online instead?`,
-      a: `Yes — many ${plural.toLowerCase()} in ${city.name} offer online coaching alongside in-person work. Look for the "Online" badge on each card.`,
-    },
-  ];
+  const faqs = buildFaqs(city.name, label, plural);
 
   return (
     <div className="min-h-screen bg-reps-ivory text-reps-charcoal">
@@ -472,21 +488,7 @@ function ProfessionInCityPage() {
             ))}
           </Accordion>
         </div>
-        {/* FAQPage JSON-LD */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: faqs.map((f) => ({
-                "@type": "Question",
-                name: f.q,
-                acceptedAnswer: { "@type": "Answer", text: f.a },
-              })),
-            }),
-          }}
-        />
+        {/* FAQPage JSON-LD is emitted in head().scripts for SSR. */}
       </section>
 
       <PublicFooter />
