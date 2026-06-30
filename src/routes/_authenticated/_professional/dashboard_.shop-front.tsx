@@ -141,11 +141,14 @@ function ShopFrontEditorPage() {
           description: s.description ?? null,
           price_pence: s.price_pence ?? null,
           price_label: s.price_label ?? null,
+          price_unit: (s.price_unit as never) ?? null,
           duration_minutes: s.duration_minutes ?? null,
           mode: (s.mode as "in_person" | "online" | "hybrid") ?? "in_person",
           sort_order: s.sort_order ?? 0,
           is_published: s.is_published ?? true,
           is_featured: s.is_featured ?? false,
+          bullets: Array.isArray(s.bullets) ? s.bullets : [],
+          cta_label: s.cta_label ?? null,
         },
       }),
     onSuccess: () => {
@@ -154,6 +157,7 @@ function ShopFrontEditorPage() {
     },
     onError: (e: Error) => toast.error(e.message || "Could not save service"),
   });
+
 
   const deleteServiceMut = useMutation({
     mutationFn: (id: string) => deleteSvc({ data: { id } }),
