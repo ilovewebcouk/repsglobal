@@ -642,6 +642,7 @@ function ServiceEditDialog({
   editing,
   saving,
   onSubmit,
+  onSilentSave,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -653,21 +654,20 @@ function ServiceEditDialog({
   onSilentSave: () => void;
 }) {
   // ---- Autosave (existing services only) ------------------------------------
-  // For brand-new cards we still require an explicit "Done" so we don't create
-  // half-typed records. For existing edits we debounce-save 800ms after the
-  // last change and surface state in the sticky footer.
-  const initialSnapshot = React.useRef<string>("");
+  // New cards still require an explicit "Save & close" so we never create
+  // half-typed records. Existing edits debounce-save 800ms after the last
+  // change; status is surfaced in the sticky footer.
   const lastSavedSnapshot = React.useRef<string>("");
   const [dirty, setDirty] = React.useState(false);
   const [justSaved, setJustSaved] = React.useState(false);
   const wasSaving = React.useRef(false);
+  const onSilentSaveRef = React.useRef(onSilentSave);
+  React.useEffect(() => { onSilentSaveRef.current = onSilentSave; }, [onSilentSave]);
 
-  // Reset snapshots whenever the dialog opens for a new draft.
+  // Reset snapshot whenever the dialog opens for a new draft.
   React.useEffect(() => {
     if (open) {
-      const snap = JSON.stringify(draft);
-      initialSnapshot.current = snap;
-      lastSavedSnapshot.current = snap;
+      lastSavedSnapshot.current = JSON.stringify(draft);
       setDirty(false);
       setJustSaved(false);
     }
@@ -677,8 +677,7 @@ function ServiceEditDialog({
   // Track dirty state vs last-saved snapshot.
   React.useEffect(() => {
     if (!open) return;
-    const snap = JSON.stringify(draft);
-    setDirty(snap !== lastSavedSnapshot.current);
+    setDirty(JSON.stringify(draft) !== lastSavedSnapshot.current);
   }, [draft, open]);
 
   // Debounced autosave for existing records with a valid title.
@@ -689,21 +688,12 @@ function ServiceEditDialog({
     if (snap === lastSavedSnapshot.current) return;
     const t = setTimeout(() => {
       lastSavedSnapshot.current = snap;
-      onSubmitRef.current();
+      onSilentSaveRef.current();
     }, 800);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, open, editing]);
 
-  // Keep latest silent-save in a ref (onSubmit closes; we need a save-only variant).
-  // The parent's onSubmit triggers the mutation AND closes the dialog. For
-  // autosave we want save-without-close, so we fire onSubmit but immediately
-  // re-open. Simpler: call the same mutation by reusing onSubmit's effect via
-  // a flag. We achieve this by invoking onSubmit then re-opening if still dirty.
-  const onSubmitRef = React.useRef(onSubmit);
-  React.useEffect(() => {
-    onSubmitRef.current = onSubmit;
-  }, [onSubmit]);
 
   // Detect save completion (saving prop falling edge) → flash "Saved".
   React.useEffect(() => {
