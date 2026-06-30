@@ -237,43 +237,40 @@ function SignupPage() {
     setInfo(null);
     setLoading(true);
     try {
-      // Preserve checkout intent across email-verification redirect
-      const redirectPath = wantsCheckout
-        ? `/signup?tier=${search.tier}&period=${search.period}&next=checkout`
-        : "/dashboard";
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}${redirectPath}`,
-          data: {
-            full_name: fullName,
-            signup_kind: "professional",
-            account_type: "pro",
-            intended_tier: search.tier ?? null,
-            intended_period: search.period ?? null,
-          },
+      if (!search.tier || !search.period) {
+        navigate({ to: "/pricing", replace: true });
+        return;
+      }
+      // Deferred signup (Option 1, June 2026): no auth.users row is created
+      // here. We stash the credentials in `pending_signups` and only mint the
+      // real account after Stripe payment succeeds — see
+      // src/lib/billing/deferred-signup.functions.ts and the
+      // checkout.session.completed branch of the Stripe webhook.
+      const environment =
+        ((import.meta as unknown as { env?: { VITE_STRIPE_ENV?: string } }).env
+          ?.VITE_STRIPE_ENV as "sandbox" | "live" | undefined) ?? "live";
+      const { startDeferredCheckout } = await import(
+        "@/lib/billing/deferred-signup.functions"
+      );
+      const result = await startDeferredCheckout({
+        data: {
+          fullName: fullName.trim(),
+          email: email.trim(),
+          password,
+          tier: search.tier,
+          period: search.period,
+          environment,
         },
       });
-      if (signUpError) throw signUpError;
-      if (data.session && data.user) {
-        await continueAfterAuth(data.user.id);
-      } else {
-        setInfo("Check your inbox to verify, then we'll bring you back to checkout.");
-        navigate({
-          to: "/verify-email",
-          search: { email: email.trim(), redirect: redirectPath },
-          replace: true,
-        });
+      if ("error" in result) {
+        setError(result.error);
+        return;
       }
+      // Go straight to Stripe Hosted Checkout — the account doesn't exist yet.
+      window.location.assign(result.url);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";
-      // Friendly mapping for the most common case
-      if (/already\s+registered|already\s+exists|user.*exists/i.test(message)) {
-        setError("An account already exists for this email. Sign in instead — we'll bring you back to checkout.");
-      } else {
-        setError(message);
-      }
+      setError(message);
     } finally {
       setLoading(false);
     }
