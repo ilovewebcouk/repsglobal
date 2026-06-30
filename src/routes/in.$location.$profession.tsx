@@ -409,8 +409,6 @@ function ProfessionInCityPage() {
       </section>
 
       <PublicFooter />
-      {/* Suppress unused-import warning for Breadcrumb during refactor */}
-      <span className="hidden">{Breadcrumb ? "" : ""}</span>
     </div>
   );
 }
