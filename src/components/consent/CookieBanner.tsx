@@ -64,60 +64,65 @@ export function CookieBanner() {
 
   return (
     <>
-      <div
-        role="dialog"
-        aria-live="polite"
-        aria-label="Cookie preferences"
-        className="fixed inset-x-0 bottom-0 z-[80] px-4 pb-4 pt-3 sm:px-6 sm:pb-6"
-      >
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 rounded-[18px] border border-white/10 bg-[#0B0B0F]/95 p-4 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-4 sm:p-5">
-          <div className="flex-1 text-[13px] leading-relaxed text-white/80">
-            <p className="font-semibold text-white">Cookies on REPS</p>
-            <p className="mt-1">
-              We use essential cookies to make REPS work, and — if you agree — anonymous analytics
-              cookies to understand which pages help pros and clients most. No advertising cookies.{" "}
-              <Link to="/cookies" className="underline underline-offset-2 hover:text-white">
-                Learn more
-              </Link>
-              .
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setCustomiseOpen(true)}
-              className="h-9 rounded-[10px] text-white/70 hover:text-white"
-            >
-              Customise
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={rejectAll}
-              className="h-9 rounded-[10px] border-white/15 bg-transparent text-white hover:bg-white/5"
-            >
-              Reject non-essential
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={acceptAll}
-              className="h-9 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
-            >
-              Accept all
-            </Button>
+      {!customiseOpen && (
+        <div
+          role="dialog"
+          aria-live="polite"
+          aria-label="Cookie preferences"
+          className="fixed inset-x-0 bottom-0 z-[80] px-4 pb-4 pt-3 sm:px-6 sm:pb-6"
+        >
+          <div className="mx-auto flex max-w-5xl flex-col gap-3 rounded-[18px] border border-white/10 bg-[#0B0B0F]/95 p-4 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+            <div className="flex-1 text-[13px] leading-relaxed text-white/80">
+              <p className="font-semibold text-white">Cookies on REPS</p>
+              <p className="mt-1">
+                We use essential cookies to make REPS work, and — if you agree — anonymous analytics
+                cookies to understand which pages help pros and clients most. No advertising cookies.{" "}
+                <Link to="/cookies" className="underline underline-offset-2 hover:text-white">
+                  Learn more
+                </Link>
+                .
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setCustomiseOpen(true)}
+                className="h-9 rounded-[10px] text-white/70 hover:text-white"
+              >
+                Customise
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={rejectAll}
+                className="h-9 rounded-[10px] border-white/15 bg-transparent text-white hover:bg-white/5"
+              >
+                Reject non-essential
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={acceptAll}
+                className="h-9 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
+              >
+                Accept all
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <Sheet open={customiseOpen} onOpenChange={setCustomiseOpen}>
-        <SheetContent side="bottom" className="rounded-t-[22px]">
+        <SheetContent
+          side="bottom"
+          className="rounded-t-[22px] border-t border-white/10 bg-[#0B0B0F] text-white"
+        >
           <SheetHeader>
-            <SheetTitle>Cookie preferences</SheetTitle>
-            <SheetDescription>
+            <SheetTitle className="text-white">Cookie preferences</SheetTitle>
+            <SheetDescription className="text-white/70">
               Choose what you're happy for REPS to store on your device. You can change this any time
               from the footer.
             </SheetDescription>
@@ -151,13 +156,18 @@ export function CookieBanner() {
           </div>
 
           <SheetFooter className="mt-6 flex-row justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setCustomiseOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCustomiseOpen(false)}
+              className="border-white/15 bg-transparent text-white hover:bg-white/5"
+            >
               Cancel
             </Button>
             <Button
               type="button"
               onClick={saveCustom}
-              className="bg-reps-orange hover:bg-reps-orange-hover"
+              className="bg-reps-orange text-white hover:bg-reps-orange-hover"
             >
               Save preferences
             </Button>
@@ -167,6 +177,7 @@ export function CookieBanner() {
     </>
   );
 }
+
 
 /**
  * Fire from the footer link to reopen the banner.
