@@ -84,33 +84,29 @@ export function CookieBanner() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
                 onClick={() => setCustomiseOpen(true)}
-                className="h-9 rounded-[10px] text-white/70 hover:text-white"
+                className="inline-flex h-9 items-center rounded-[10px] px-3 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
               >
                 Customise
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={rejectAll}
-                className="h-9 rounded-[10px] border-white/15 bg-transparent text-white hover:bg-white/5"
+                className="inline-flex h-9 items-center rounded-[10px] border border-white/15 bg-transparent px-3 text-[13px] font-medium text-white transition-colors hover:border-white/25 hover:bg-white/10"
               >
                 Reject non-essential
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                size="sm"
                 onClick={acceptAll}
-                className="h-9 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
+                className="inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-3 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-hover"
               >
                 Accept all
-              </Button>
+              </button>
             </div>
+
           </div>
         </div>
       )}
