@@ -140,7 +140,16 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
               height={500}
               style={{ width: "100%", height: "100%" }}
             >
-              <ZoomableGroup center={[10, 20]} zoom={1} minZoom={0.9} maxZoom={4}>
+              <ZoomableGroup
+                key={viewKey}
+                center={view.center}
+                zoom={view.zoom}
+                minZoom={0.9}
+                maxZoom={6}
+                onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) =>
+                  setOverride({ center: coordinates, zoom })
+                }
+              >
                 <Geographies geography={GEO_URL} onError={() => setMapError(true)}>
                   {({ geographies }: { geographies: Array<{ rsmKey: string; properties: { name?: string } }> }) =>
                     geographies.map((geo) => (
