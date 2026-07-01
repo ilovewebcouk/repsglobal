@@ -26,6 +26,16 @@ export interface PublicCountryPoint {
   views_5m: number;
 }
 
+export interface MapCityPoint {
+  city: string;
+  region: string | null;
+  country_code: string;
+  latitude: number;
+  longitude: number;
+  online: number;
+  views_5m?: number;
+}
+
 export interface WorldMapPanelProps {
   countries: GeoRow[];
   loading: boolean;
@@ -33,7 +43,9 @@ export interface WorldMapPanelProps {
   onSelectCountry: (cc: string | undefined) => void;
   layer?: MapLayer;
   onLayerChange?: (l: MapLayer) => void;
+  memberCities?: MapCityPoint[];
   publicCountries?: PublicCountryPoint[];
+  publicCities?: MapCityPoint[];
   publicOnline?: number;
   publicStale?: boolean;
   updatedAt?: number | null;
@@ -41,21 +53,24 @@ export interface WorldMapPanelProps {
 
 
 interface Bubble {
+  id: string;
   cc: string;
   name: string;
+  detail: string | null;
   lng: number;
   lat: number;
   online: number;
   views: number;
   radius: number;
   kind: "member" | "public";
+  precision: "city" | "country";
 }
 
 
 export function WorldMapPanel({
   countries, loading, selectedCountry, onSelectCountry,
   layer = "members", onLayerChange,
-  publicCountries = [], publicOnline = 0, publicStale = false,
+  memberCities = [], publicCountries = [], publicCities = [], publicOnline = 0, publicStale = false,
   updatedAt = null,
 }: WorldMapPanelProps) {
 
@@ -63,6 +78,23 @@ export function WorldMapPanel({
   const [hoverCc, setHoverCc] = useState<string | null>(null);
 
   const memberBubbles = useMemo<Bubble[]>(() => {
+    const precise = memberCities
+      .filter((c) => c.city && c.country_code && Number.isFinite(c.latitude) && Number.isFinite(c.longitude))
+      .map((c) => ({
+        id: `member-city-${c.city}-${c.country_code}-${c.latitude.toFixed(3)}-${c.longitude.toFixed(3)}`,
+        cc: c.country_code,
+        name: c.city,
+        detail: [c.region, COUNTRY_NAMES[c.country_code] ?? c.country_code].filter(Boolean).join(", ") || null,
+        lng: c.longitude,
+        lat: c.latitude,
+        online: c.online,
+        views: c.views_5m ?? c.online,
+        radius: Math.min(5.5, Math.max(3, 3 + Math.log1p(c.online) * 1.4)),
+        kind: "member" as const,
+        precision: "city" as const,
+      }));
+    if (precise.length > 0) return precise;
+
     const withGeo = countries
       .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
       .map((c) => {
@@ -77,21 +109,40 @@ export function WorldMapPanel({
     return withGeo.map(({ c, centroid }) => {
       const scale = denom > 0 ? Math.log1p(c.page_views_24h) / denom : 0;
       return {
+        id: `member-country-${c.country_code}`,
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
+        detail: "country fallback",
         lng: centroid.lng,
         lat: centroid.lat,
         online: c.online_now,
         views: c.page_views_24h,
-        // v2.1: restrained cap so single-country traffic never renders as a blob.
-        radius: Math.min(9, Math.max(3, 3 + scale * 6)),
+        radius: Math.min(5.5, Math.max(2.75, 2.75 + scale * 2.75)),
         kind: "member" as const,
+        precision: "country" as const,
       };
     });
-  }, [countries]);
+  }, [countries, memberCities]);
 
 
   const publicBubbles = useMemo<Bubble[]>(() => {
+    const precise = publicCities
+      .filter((c) => c.city && c.country_code && Number.isFinite(c.latitude) && Number.isFinite(c.longitude))
+      .map((c) => ({
+        id: `public-city-${c.city}-${c.country_code}-${c.latitude.toFixed(3)}-${c.longitude.toFixed(3)}`,
+        cc: c.country_code,
+        name: c.city,
+        detail: [c.region, COUNTRY_NAMES[c.country_code] ?? c.country_code].filter(Boolean).join(", ") || null,
+        lng: c.longitude,
+        lat: c.latitude,
+        online: c.online,
+        views: c.views_5m ?? c.online,
+        radius: Math.min(5.5, Math.max(3, 3 + Math.log1p(Math.max(c.online, c.views_5m ?? 0)) * 1.25)),
+        kind: "public" as const,
+        precision: "city" as const,
+      }));
+    if (precise.length > 0) return precise;
+
     const withGeo = publicCountries
       .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
       .map((c) => {
@@ -105,17 +156,20 @@ export function WorldMapPanel({
     return withGeo.map(({ c, centroid }) => {
       const scale = denom > 0 ? Math.log1p(c.views_5m) / denom : 0;
       return {
+        id: `public-country-${c.country_code}`,
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
+        detail: "country fallback",
         lng: centroid.lng,
         lat: centroid.lat,
         online: c.online,
         views: c.views_5m,
-        radius: Math.min(9, Math.max(3, 3 + scale * 5.5)),
+        radius: Math.min(5.5, Math.max(2.75, 2.75 + scale * 2.75)),
         kind: "public" as const,
+        precision: "country" as const,
       };
     });
-  }, [publicCountries]);
+  }, [publicCountries, publicCities]);
 
 
   const bubbles = useMemo<Bubble[]>(() => {
@@ -134,7 +188,7 @@ export function WorldMapPanel({
     if (pool.length === 0) return { center: [10, 20] as [number, number], zoom: 1 };
     if (pool.length === 1) {
       const b = pool[0]!;
-      return { center: [b.lng, b.lat] as [number, number], zoom: 2.2 };
+      return { center: [b.lng, b.lat] as [number, number], zoom: b.precision === "city" ? 4.2 : 2.2 };
     }
     const lngs = pool.map((b) => b.lng);
     const lats = pool.map((b) => b.lat);
@@ -143,7 +197,7 @@ export function WorldMapPanel({
     const spanLng = Math.max(...lngs) - Math.min(...lngs);
     const spanLat = Math.max(...lats) - Math.min(...lats);
     const span = Math.max(spanLng, spanLat);
-    const zoom = span < 20 ? 2.4 : span < 60 ? 1.8 : span < 120 ? 1.4 : 1;
+    const zoom = span < 4 ? 5 : span < 12 ? 3.8 : span < 25 ? 2.8 : span < 60 ? 1.8 : span < 120 ? 1.4 : 1;
     return { center: [cx, cy] as [number, number], zoom };
   }, [bubbles]);
 
