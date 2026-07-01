@@ -237,6 +237,45 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "website-analytics",
+    title: "Website analytics (PostHog EU)",
+    body: (
+      <>
+        <p>
+          If you accept analytics cookies, REPs uses PostHog — hosted in the
+          EU — to understand how visitors use our public website. This helps us
+          improve pages that connect clients to the right professionals.
+        </p>
+        <ul>
+          <li>Analytics is optional. It is off until you accept.</li>
+          <li>
+            We route all analytics through our own domain
+            (<code>repsuk.org/_a</code>) and strip your IP address before it
+            reaches PostHog. Your country is derived from a network-level
+            header only.
+          </li>
+          <li>
+            We do not use analytics cookies for advertising, and we never sell
+            your data.
+          </li>
+          <li>
+            We honour Do Not Track and Global Privacy Control signals — if
+            either is on, we do not capture analytics regardless of your
+            cookie choice.
+          </li>
+          <li>
+            You can withdraw consent at any time from the "Cookie preferences"
+            link in the footer. Withdrawing consent immediately stops capture
+            and clears PostHog cookies from your device.
+          </li>
+        </ul>
+        <p>
+          Lawful basis: consent (UK GDPR Art. 6(1)(a)) and PECR reg. 6.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "changes",
     title: "Changes to this policy",
     body: (
