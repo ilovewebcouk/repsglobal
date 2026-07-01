@@ -87,10 +87,11 @@ function Sparkline({ values, tone = "neutral" }: { values: number[]; tone?: "neu
 }
 
 export function KpiStrip({ tiles, loading }: { tiles: KpiTileData[]; loading: boolean }) {
+  const gridClass = "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7";
   if (loading && !tiles.length) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
-        {Array.from({ length: 8 }).map((_, i) => (
+      <div className={gridClass}>
+        {Array.from({ length: 7 }).map((_, i) => (
           <div key={i} className="rounded-[16px] border border-reps-border bg-reps-panel p-4">
             <Skeleton className="h-3 w-20" />
             <Skeleton className="mt-3 h-6 w-14" />
@@ -101,7 +102,7 @@ export function KpiStrip({ tiles, loading }: { tiles: KpiTileData[]; loading: bo
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+    <div className={gridClass}>
       {tiles.map((t) => {
         const tone = t.tone ?? "info";
         const toneRing =
