@@ -195,8 +195,8 @@ function AdminActivityPage() {
 
   return (
     <DashboardShell role="admin" active="Activity" title="Activity" subtitle="Realtime command centre">
-      <div className="mx-auto max-w-[1500px] space-y-5 p-4 md:p-6">
-        {/* ── Controls row (page title lives in the shell header) ── */}
+      <div className="mx-auto max-w-[1500px] space-y-4 px-4 pb-6 pt-3 md:px-6 md:pt-4">
+        {/* ── Controls row (compact — page title lives in the shell header) ── */}
         <header className="flex flex-wrap items-center justify-end gap-2">
           <LiveFreshnessChip
             updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt}
@@ -215,6 +215,7 @@ function AdminActivityPage() {
             Refresh
           </Button>
         </header>
+
 
 
         {/* ── Ops banner ── */}
