@@ -349,30 +349,35 @@ export function WorldMapPanel({
             </div>
 
 
-            {/* Legend */}
-            <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2.5 rounded-full border border-white/10 bg-black/60 px-3 py-1.5 text-[10.5px] text-white/80 backdrop-blur-md">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-reps-orange opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-reps-orange" />
-                </span>
-                Live · online now
-              </span>
-              <span className="text-white/25">·</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-300/70 ring-1 ring-sky-200/80" /> 24h activity</span>
-              {selectedCountry ? (
-                <>
-                  <span className="text-white/25">·</span>
-                  <button
-                    type="button"
-                    onClick={() => onSelectCountry(undefined)}
-                    className="pointer-events-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-white/20"
-                  >
-                    Clear filter <X className="h-2.5 w-2.5" />
-                  </button>
-                </>
-              ) : null}
+            {/* Compact live overlay (v2.1) */}
+            <div className="pointer-events-none absolute left-3 top-3 flex flex-col gap-0.5 rounded-[10px] border border-white/10 bg-black/65 px-2.5 py-1.5 text-[10.5px] leading-tight text-white/85 backdrop-blur-md">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                <span className="text-white/55">Public</span>
+                <span className="ml-auto tabular-nums font-semibold">{publicOnline}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                <span className="text-white/55">Members</span>
+                <span className="ml-auto tabular-nums font-semibold">{memberBubbles.reduce((s, b) => s + b.online, 0)}</span>
+              </div>
+              <div className="mt-0.5 text-[9.5px] text-white/40">
+                {updatedAt ? `Updated ${Math.max(0, Math.floor((Date.now() - updatedAt) / 1000))}s ago` : "Waiting for data"}
+              </div>
             </div>
+
+            {selectedCountry ? (
+              <div className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-[10.5px] text-white/80 backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => onSelectCountry(undefined)}
+                  className="inline-flex items-center gap-1 text-white hover:text-white/80"
+                >
+                  Filter: {selectedCountry} <X className="h-2.5 w-2.5" />
+                </button>
+              </div>
+            ) : null}
+
 
             {loading && bubbles.length === 0 ? (
               <div className="absolute inset-0 flex items-center justify-center text-[11px] text-white/40">
