@@ -52,7 +52,7 @@ async function loadPostHog(): Promise<PostHogLike | null> {
       const posthog = (mod.default ?? mod) as unknown as PostHogLike;
       const origin = window.location.origin;
       posthog.init(POSTHOG_KEY, {
-        api_host: `${origin}/_a`,
+        api_host: `${origin}/api/public/_a`,
         ui_host: "https://eu.posthog.com",
         person_profiles: "identified_only",
         capture_pageview: false, // we do it manually to attach session_id
