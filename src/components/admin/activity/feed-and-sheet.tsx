@@ -59,9 +59,39 @@ export function ActivityFeedV2({
   /** Compact = drop the outer PanelShell (parent already wraps it). */
   compact?: boolean;
 }) {
+  // Collapse runs of low-signal auth/session events from the same user
+  // within a 15-minute window into a single summary row. Business-critical
+  // events (payments, disputes, verification, support, reviews, enquiries,
+  // account deletions, admin actions, alerts) stay individual.
+  const collapsed = useMemo(() => {
+    const NOISY = new Set(["auth", "session"]);
+    const WINDOW_MS = 15 * 60_000;
+    const out: (ActivityEvent & { _grouped?: number })[] = [];
+    for (const e of events) {
+      const last = out[out.length - 1];
+      if (
+        last &&
+        NOISY.has(e.source) &&
+        NOISY.has(last.source) &&
+        e.user_id &&
+        last.user_id === e.user_id &&
+        Math.abs(new Date(last.ts).getTime() - new Date(e.ts).getTime()) < WINDOW_MS
+      ) {
+        const n = (last._grouped ?? 1) + 1;
+        last._grouped = n;
+        last.summary = last.user_label
+          ? `${last.user_label} signed in and started a session · ${n} events in 15 min`
+          : `${n} sign-in / session events in 15 min`;
+        continue;
+      }
+      out.push({ ...e });
+    }
+    return out;
+  }, [events]);
+
   const grouped = useMemo(() => {
     const map = new Map<string, ActivityEvent[]>();
-    for (const e of events) {
+    for (const e of collapsed) {
       const k = groupKey(e.ts);
       const arr = map.get(k) ?? [];
       arr.push(e);
@@ -69,7 +99,7 @@ export function ActivityFeedV2({
     }
     const order = ["Now", "Last 15 minutes", "Today", "Yesterday", "Older"];
     return order.filter((k) => map.has(k)).map((k) => [k, map.get(k)!] as const);
-  }, [events]);
+  }, [collapsed]);
 
   const body = (
     <>

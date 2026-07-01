@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ComposableMap, Geographies, Geography, Marker, ZoomableGroup,
 } from "react-simple-maps";
-import { AlertTriangle, Globe, X } from "lucide-react";
+import { AlertTriangle, Globe, Minus, Plus, X, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { countryDisplay, COUNTRY_NAMES } from "@/lib/activity/labels";
 import { COUNTRY_CENTROIDS, centroidFor } from "@/lib/geo/country-centroids";
@@ -64,6 +64,36 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
     });
   }, [countries]);
 
+  // Auto-fit: pick a viewport based on where activity actually is. Prefer
+  // live (online > 0); fall back to any 24h activity. This gives GB-only
+  // traffic a gentle zoom toward GB, and multi-country traffic a bounds-fit.
+  const autoView = useMemo(() => {
+    const live = bubbles.filter((b) => b.online > 0);
+    const pool = live.length > 0 ? live : bubbles;
+    if (pool.length === 0) return { center: [10, 20] as [number, number], zoom: 1 };
+    if (pool.length === 1) {
+      const b = pool[0]!;
+      return { center: [b.lng, b.lat] as [number, number], zoom: 3.2 };
+    }
+    const lngs = pool.map((b) => b.lng);
+    const lats = pool.map((b) => b.lat);
+    const cx = (Math.min(...lngs) + Math.max(...lngs)) / 2;
+    const cy = (Math.min(...lats) + Math.max(...lats)) / 2;
+    const spanLng = Math.max(...lngs) - Math.min(...lngs);
+    const spanLat = Math.max(...lats) - Math.min(...lats);
+    const span = Math.max(spanLng, spanLat);
+    // Rough heuristic: broader spread → smaller zoom, capped for context.
+    const zoom = span < 20 ? 3 : span < 60 ? 2 : span < 120 ? 1.5 : 1;
+    return { center: [cx, cy] as [number, number], zoom };
+  }, [bubbles]);
+
+  // Local zoom/center override so admins can pan and reset.
+  const [override, setOverride] = useState<{ center: [number, number]; zoom: number } | null>(null);
+  const view = override ?? autoView;
+  // Re-key ZoomableGroup so react-simple-maps applies the new center/zoom
+  // when the fitted view changes (e.g. new live activity arrives).
+  const viewKey = `${view.center[0].toFixed(1)}:${view.center[1].toFixed(1)}:${view.zoom.toFixed(2)}`;
+
   const totalOnline = bubbles.reduce((s, b) => s + b.online, 0);
   const totalViews = bubbles.reduce((s, b) => s + b.views, 0);
   const unknownCountry = countries.find((c) => c.country_code === "??" || c.country_code === "XX");
@@ -110,7 +140,16 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
               height={500}
               style={{ width: "100%", height: "100%" }}
             >
-              <ZoomableGroup center={[10, 20]} zoom={1} minZoom={0.9} maxZoom={4}>
+              <ZoomableGroup
+                key={viewKey}
+                center={view.center}
+                zoom={view.zoom}
+                minZoom={0.9}
+                maxZoom={6}
+                onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) =>
+                  setOverride({ center: coordinates, zoom })
+                }
+              >
                 <Geographies geography={GEO_URL} onError={() => setMapError(true)}>
                   {({ geographies }: { geographies: Array<{ rsmKey: string; properties: { name?: string } }> }) =>
                     geographies.map((geo) => (
@@ -182,6 +221,36 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
 
             {/* Hover tooltip */}
             {hoverCc ? <MapTooltip bubble={bubbles.find((b) => b.cc === hoverCc) ?? null} /> : null}
+
+            {/* Zoom controls */}
+            <div className="absolute right-3 top-3 flex flex-col gap-1 rounded-[10px] border border-white/10 bg-black/60 p-1 backdrop-blur-md">
+              <button
+                type="button"
+                aria-label="Zoom in"
+                onClick={() => setOverride({ center: view.center, zoom: Math.min(6, view.zoom * 1.5) })}
+                className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label="Zoom out"
+                onClick={() => setOverride({ center: view.center, zoom: Math.max(0.9, view.zoom / 1.5) })}
+                className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label="Reset to world view"
+                onClick={() => setOverride({ center: [10, 20], zoom: 1 })}
+                className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
+                title="Reset to world view"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
 
             {/* Legend */}
             <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2.5 rounded-full border border-white/10 bg-black/60 px-3 py-1.5 text-[10.5px] text-white/80 backdrop-blur-md">
