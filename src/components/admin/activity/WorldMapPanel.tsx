@@ -36,7 +36,9 @@ export interface WorldMapPanelProps {
   publicCountries?: PublicCountryPoint[];
   publicOnline?: number;
   publicStale?: boolean;
+  updatedAt?: number | null;
 }
+
 
 interface Bubble {
   cc: string;
@@ -54,7 +56,9 @@ export function WorldMapPanel({
   countries, loading, selectedCountry, onSelectCountry,
   layer = "members", onLayerChange,
   publicCountries = [], publicOnline = 0, publicStale = false,
+  updatedAt = null,
 }: WorldMapPanelProps) {
+
   const [mapError, setMapError] = useState(false);
   const [hoverCc, setHoverCc] = useState<string | null>(null);
 
