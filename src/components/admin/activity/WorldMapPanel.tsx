@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ComposableMap, Geographies, Geography, Marker, ZoomableGroup,
 } from "react-simple-maps";
-import { AlertTriangle, Globe } from "lucide-react";
+import { AlertTriangle, Globe, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { countryDisplay, COUNTRY_NAMES } from "@/lib/activity/labels";
 import { COUNTRY_CENTROIDS, centroidFor } from "@/lib/geo/country-centroids";
