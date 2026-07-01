@@ -259,6 +259,38 @@ export function EventDetailSheet({ event, onClose }: { event: ActivityEvent | nu
             </section>
           ) : null}
 
+          {/* Location & network */}
+          {(() => {
+            if (!detail.data?.metadata_json) return null;
+            let m: Record<string, unknown> = {};
+            try { m = JSON.parse(detail.data.metadata_json); } catch { return null; }
+            const city = (m.city as string) ?? null;
+            const region = (m.region as string) ?? null;
+            const country = (m.country_code as string) ?? null;
+            const ip = (m.ip as string) ?? null;
+            const tz = (m.timezone as string) ?? null;
+            const lat = m.latitude as number | null | undefined;
+            const lng = m.longitude as number | null | undefined;
+            const src = (m.geo_source as string) ?? null;
+            if (!city && !region && !country && !ip && !tz) return null;
+            const loc = [city, region, country].filter(Boolean).join(", ");
+            return (
+              <section className="rounded-[14px] border border-reps-border bg-reps-panel p-4">
+                <div className="text-[10.5px] font-semibold uppercase tracking-wide text-white/50">Location & network</div>
+                <dl className="mt-2 grid grid-cols-[110px_1fr] gap-y-1.5 text-[11.5px]">
+                  {loc ? (<><dt className="text-white/45">Location</dt><dd className="text-white">{loc}</dd></>) : null}
+                  {typeof lat === "number" && typeof lng === "number" ? (
+                    <><dt className="text-white/45">Coords</dt>
+                      <dd className="font-mono text-white/80">{lat.toFixed(3)}, {lng.toFixed(3)}</dd></>
+                  ) : null}
+                  {tz ? (<><dt className="text-white/45">Timezone</dt><dd className="font-mono text-white/80">{tz}</dd></>) : null}
+                  {ip ? (<><dt className="text-white/45">IP</dt><dd className="font-mono text-white/80">{ip}</dd></>) : null}
+                  {src ? (<><dt className="text-white/45">Source</dt><dd className="font-mono text-white/50">{src}</dd></>) : null}
+                </dl>
+              </section>
+            );
+          })()}
+
           {/* Metadata */}
           <Collapsible>
             <CollapsibleTrigger className="flex w-full items-center justify-between rounded-[14px] border border-reps-border bg-reps-panel px-4 py-3 text-[11.5px] font-medium text-white/70 hover:bg-white/5">
