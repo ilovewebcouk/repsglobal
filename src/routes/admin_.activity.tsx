@@ -10,7 +10,7 @@
 // Never surfaces raw IPs, "verified" tier, "trialing" status, or "??" country.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ChevronRight, Filter, RefreshCcw, X } from "lucide-react";
@@ -168,15 +168,21 @@ function AdminActivityPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <LiveFreshnessChip
+              updatedAt={realtimeQ.dataUpdatedAt}
+              isFetching={realtimeQ.isFetching || kpisQ.isFetching}
+              isError={Boolean(realtimeQ.error || kpisQ.error)}
+              degraded={degraded.length > 0 || feedDegraded.length > 0}
+            />
             <RangeSwitcher value={range.hours} onChange={(h) => setSearch({ range: h })} />
             <FiltersPopover
               source={source} severity={severity} country={country}
               onChange={(patch) => setSearch(patch)}
               onClear={() => setSearch({ source: undefined, severity: undefined, country: undefined })}
             />
-            <Button variant="outline" size="sm" onClick={refreshAll} className="gap-1.5">
+            <Button variant="ghost" size="sm" onClick={refreshAll} className="gap-1.5 text-white/70 hover:text-white">
               <RefreshCcw className={cn("h-3.5 w-3.5", (feedQ.isFetching || kpisQ.isFetching) && "animate-spin")} />
-              Refresh
+              Refresh now
             </Button>
           </div>
         </header>
@@ -411,3 +417,53 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
     </button>
   );
 }
+
+// ── Live freshness chip ── F6
+function LiveFreshnessChip({
+  updatedAt, isFetching, isError, degraded,
+}: { updatedAt: number; isFetching: boolean; isError: boolean; degraded: boolean }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const ageSec = updatedAt ? Math.max(0, Math.round((now - updatedAt) / 1000)) : null;
+  const stale = ageSec !== null && ageSec > 30;
+  const label = isError
+    ? "Reconnecting…"
+    : degraded
+      ? "Partial data"
+      : ageSec === null
+        ? "Waiting…"
+        : `Live · updated ${ageSec}s ago`;
+  const tone = isError
+    ? "border-amber-500/50 bg-amber-500/10 text-amber-100"
+    : degraded
+      ? "border-amber-500/40 bg-amber-500/10 text-amber-100"
+      : stale
+        ? "border-white/15 bg-white/5 text-white/60"
+        : "border-emerald-400/30 bg-emerald-500/10 text-emerald-200";
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+        tone,
+      )}
+      aria-live="polite"
+    >
+      <span
+        className={cn(
+          "h-1.5 w-1.5 rounded-full",
+          isError || degraded ? "bg-amber-300" : "bg-emerald-400",
+          !isError && !degraded && "animate-pulse",
+        )}
+      />
+      {label}
+      {isFetching && !isError && <span className="text-white/40">·</span>}
+    </span>
+  );
+}
+
+
