@@ -1,28 +1,63 @@
-// /admin/activity — Admin Activity v1 console.
+// /admin/activity — Admin Activity v1.1 (World-Class Command Centre).
 //
-// Read-only operational intelligence. Source-of-truth for billing/visibility
-// remains elsewhere; this page renders intelligence from getActivityFeed.
+// Read-only realtime operations console. Source-of-truth for billing and
+// visibility lives elsewhere; this page composes focused panel functions.
 
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, Filter, RefreshCcw, X } from "lucide-react";
+import { z } from "zod";
+
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { PPanel } from "@/components/dashboard/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCcw, Wifi } from "lucide-react";
-import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
-  getActivityFeed,
-  type ActivityEvent,
-  type ActivityFeedResult,
-  type ActivitySeverity,
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+
+import {
+  getActivityFeed, type ActivityEvent, type ActivitySource, type ActivitySeverity,
 } from "@/lib/ops/activity-feed.functions";
+import {
+  getActivityKpis, getOnlineNow, getCurrentPages, getTopMemberPages,
+  getGeoActivity, getNeedsAttention,
+} from "@/lib/ops/activity-panels.functions";
+
+import {
+  KpiStrip, GeoPanel, OnlineNowRail, CurrentPagesPanel, TopMemberPagesPanel, NeedsAttentionPanel,
+} from "@/components/admin/activity/panels";
+import {
+  ActivityFeedV2, EventDetailSheet,
+} from "@/components/admin/activity/feed-and-sheet";
+
+const SOURCES: ActivitySource[] = [
+  "auth", "session", "payment", "subscription", "dispute", "review",
+  "verification", "support", "enquiry", "admin_audit", "impersonation", "email",
+];
+const SEVERITIES: ActivitySeverity[] = ["critical", "warning", "success", "info"];
+const RANGES = [
+  { label: "1h", hours: 1 },
+  { label: "24h", hours: 24 },
+  { label: "7d", hours: 24 * 7 },
+  { label: "30d", hours: 24 * 30 },
+] as const;
+
+const searchSchema = z.object({
+  source: z.string().optional(),
+  severity: z.enum(["critical", "warning", "success", "info"]).optional(),
+  country: z.string().length(2).optional(),
+  range: z.number().int().optional(),
+  event: z.string().optional(),
+});
 
 export const Route = createFileRoute("/admin_/activity")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
+  validateSearch: (s) => searchSchema.parse(s ?? {}),
   head: () => ({
     meta: [
       { title: "Activity — REPS Admin" },
@@ -32,221 +67,278 @@ export const Route = createFileRoute("/admin_/activity")({
   component: AdminActivityPage,
 });
 
-const SEVERITY_CLASS: Record<ActivitySeverity, string> = {
-  info: "bg-white/10 text-white/80",
-  success: "bg-emerald-500/15 text-emerald-200",
-  warning: "bg-amber-500/15 text-amber-200",
-  critical: "bg-rose-500/15 text-rose-200",
-};
-
-const SOURCES = [
-  "all", "auth", "session", "payment", "subscription",
-  "dispute", "review", "verification", "support",
-  "enquiry", "admin_audit", "impersonation", "email",
-] as const;
-
-function timeAgo(iso: string): string {
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return `${s}s ago`;
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  return `${Math.floor(s / 86400)}d ago`;
-}
-
 function AdminActivityPage() {
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+
+  const source = (search.source ?? undefined) as ActivitySource | undefined;
+  const severity = search.severity;
+  const country = search.country;
+  const range = RANGES.find((r) => r.hours === search.range) ?? RANGES[1];
+
+  const setSearch = useCallback((patch: Partial<z.infer<typeof searchSchema>>) => {
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  }, [navigate]);
+
+  const [selectedEvent, setSelectedEvent] = useState<ActivityEvent | null>(null);
+
+  // ── Server function bindings
+  const runKpis = useServerFn(getActivityKpis);
+  const runOnline = useServerFn(getOnlineNow);
+  const runCurrent = useServerFn(getCurrentPages);
+  const runTop = useServerFn(getTopMemberPages);
+  const runGeo = useServerFn(getGeoActivity);
+  const runAttention = useServerFn(getNeedsAttention);
   const runFeed = useServerFn(getActivityFeed);
-  const [data, setData] = useState<ActivityFeedResult | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [source, setSource] = useState<(typeof SOURCES)[number]>("all");
-  const [hours, setHours] = useState(24);
 
-  async function refresh() {
-    setBusy(true);
-    try {
-      const res = await runFeed({
-        data: {
-          since_hours: hours,
-          limit: 200,
-          source: source === "all" ? undefined : source,
-        },
-      });
-      setData(res);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to load activity");
-    } finally {
-      setBusy(false);
-    }
-  }
+  // ── Queries. Each panel is independent; a slow panel degrades alone.
+  const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis({ data: {} }), refetchInterval: 30_000 });
+  const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 15_000 });
+  const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 20_000 });
+  const topQ = useQuery({ queryKey: ["a-top"], queryFn: () => runTop({ data: { limit: 10 } }), refetchInterval: 60_000 });
+  const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo({ data: {} }), refetchInterval: 45_000 });
+  const attentionQ = useQuery({ queryKey: ["a-attention"], queryFn: () => runAttention({ data: {} }), refetchInterval: 30_000 });
 
-  useEffect(() => {
-    void refresh();
-    const t = setInterval(() => void refresh(), 60_000);
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, hours]);
+  const feedQ = useQuery({
+    queryKey: ["a-feed", source ?? "all", severity ?? "all", range.hours],
+    queryFn: () => runFeed({ data: { limit: 200, since_hours: range.hours, source, severity } }),
+    refetchInterval: 20_000,
+  });
 
-  const events = data?.events ?? [];
-  const counts = data?.counts.bySeverity ?? { info: 0, success: 0, warning: 0, critical: 0 };
+  const events = useMemo(() => {
+    const list = feedQ.data?.events ?? [];
+    if (!country) return list;
+    // Country filter uses currently online cross-lookup as a soft signal (event
+    // rows themselves don't carry country except auth/session).
+    const online = onlineQ.data?.users ?? [];
+    const usersInCountry = new Set(online.filter((u) => u.country_code === country).map((u) => u.user_id).filter(Boolean));
+    return list.filter((e) => e.user_id && usersInCountry.has(e.user_id));
+  }, [feedQ.data, country, onlineQ.data]);
+
+  // ── Timing / degraded panel notes for the ops banner
+  const timings = useMemo(() => {
+    return [
+      kpisQ.data?.timing, onlineQ.data?.timing, currentQ.data?.timing,
+      topQ.data?.timing, geoQ.data?.timing, attentionQ.data?.timing,
+    ].filter((t): t is NonNullable<typeof t> => Boolean(t));
+  }, [kpisQ.data, onlineQ.data, currentQ.data, topQ.data, geoQ.data, attentionQ.data]);
+  const degraded = timings.filter((t) => t.degraded);
+  const slow = timings.filter((t) => !t.degraded && t.ms > 1500);
+
+  const feedDegraded = feedQ.data?.degraded_sources ?? [];
+
+  const refreshAll = useCallback(() => {
+    kpisQ.refetch(); onlineQ.refetch(); currentQ.refetch(); topQ.refetch();
+    geoQ.refetch(); attentionQ.refetch(); feedQ.refetch();
+  }, [kpisQ, onlineQ, currentQ, topQ, geoQ, attentionQ, feedQ]);
+
+  const filterChipsActive = Boolean(source || severity || country || search.range);
 
   return (
-    <DashboardShell role="admin" active="Activity" title="Activity" subtitle="Operational intelligence — what's happening across REPS right now.">
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+    <DashboardShell>
+      <div className="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6">
+        {/* ── Header row ── */}
+        <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-white">Activity</h1>
-            <p className="text-sm text-white/60">
-              Operational intelligence — what's happening across REPS right now. Read-only.
+            <h1 className="font-display text-[24px] font-bold text-white">Activity</h1>
+            <p className="mt-1 text-[12.5px] text-white/55">
+              Realtime operations command centre — members, sessions, billing, support.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => void refresh()} disabled={busy}>
-              <RefreshCcw className="mr-2 h-3.5 w-3.5" />
+            <RangeSwitcher value={range.hours} onChange={(h) => setSearch({ range: h })} />
+            <FiltersPopover
+              source={source} severity={severity} country={country}
+              onChange={(patch) => setSearch(patch)}
+              onClear={() => setSearch({ source: undefined, severity: undefined, country: undefined })}
+            />
+            <Button variant="outline" size="sm" onClick={refreshAll} className="gap-1.5">
+              <RefreshCcw className={cn("h-3.5 w-3.5", (feedQ.isFetching || kpisQ.isFetching) && "animate-spin")} />
               Refresh
             </Button>
           </div>
-        </div>
+        </header>
 
-        {/* KPI strip */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          <KpiTile label="Online now" value={data?.online_now ?? 0} icon={<Wifi className="h-4 w-4" />} />
-          <KpiTile label="Total events" value={data?.counts.total ?? 0} />
-          <KpiTile label="Critical" value={counts.critical} tone="critical" />
-          <KpiTile label="Warnings" value={counts.warning} tone="warning" />
-          <KpiTile label="Success" value={counts.success} tone="success" />
-        </div>
-
-        {/* Degraded sources banner */}
-        {data?.degraded_sources && data.degraded_sources.length > 0 ? (
-          <PPanel className="border-amber-500/40 bg-amber-500/5">
-            <div className="flex items-start gap-3 p-4">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-              <div className="text-sm text-amber-100">
-                <div className="font-medium">Partial feed</div>
-                <div className="text-amber-200/80">
-                  Some sources failed to load: {data.degraded_sources.join(", ")}. Logged to
-                  ops_alerts.
-                </div>
+        {/* ── Ops banner ── */}
+        {(degraded.length > 0 || feedDegraded.length > 0) ? (
+          <div className="flex items-start gap-2 rounded-[14px] border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-100">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <div className="font-medium">Partial data</div>
+              <div className="mt-0.5 text-[11.5px] text-amber-100/80">
+                Degraded panels: {[...degraded.map((d) => d.panel), ...feedDegraded].join(", ")}. Other panels are live.
               </div>
             </div>
-          </PPanel>
-        ) : null}
-
-        {/* Needs attention */}
-        {data && data.needs_attention.length > 0 ? (
-          <PPanel>
-            <div className="border-b border-white/10 px-4 py-3 text-sm font-medium text-white">
-              Needs attention
-            </div>
-            <ul className="divide-y divide-white/5">
-              {data.needs_attention.map((e) => (
-                <EventRow key={`a:${e.id}`} e={e} />
-              ))}
-            </ul>
-          </PPanel>
-        ) : null}
-
-        {/* Filters */}
-        <PPanel>
-          <div className="flex flex-wrap items-center gap-2 px-4 py-3">
-            <div className="flex flex-wrap gap-1">
-              {SOURCES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSource(s)}
-                  className={
-                    "rounded-full px-3 py-1 text-xs " +
-                    (source === s
-                      ? "bg-white text-reps-ink"
-                      : "bg-white/5 text-white/70 hover:bg-white/10")
-                  }
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-            <div className="ml-auto flex items-center gap-1">
-              {[1, 6, 24, 24 * 7].map((h) => (
-                <button
-                  key={h}
-                  onClick={() => setHours(h)}
-                  className={
-                    "rounded-md px-2 py-1 text-xs " +
-                    (hours === h ? "bg-white text-reps-ink" : "bg-white/5 text-white/70 hover:bg-white/10")
-                  }
-                >
-                  {h === 1 ? "1h" : h === 6 ? "6h" : h === 24 ? "24h" : "7d"}
-                </button>
-              ))}
-            </div>
           </div>
+        ) : slow.length > 0 ? (
+          <div className="rounded-[14px] border border-reps-border bg-white/5 px-3 py-2 text-[11px] text-white/60">
+            Slow panels: {slow.map((s) => `${s.panel} (${s.ms}ms)`).join(" · ")}
+          </div>
+        ) : null}
 
-          {/* Feed */}
-          {events.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-white/50">
-              {busy ? "Loading…" : "No events in this window."}
-            </div>
-          ) : (
-            <ul className="divide-y divide-white/5">
-              {events.map((e) => (
-                <EventRow key={e.id} e={e} />
-              ))}
-            </ul>
-          )}
+        {filterChipsActive ? (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {source ? <FilterChip label={`source: ${source}`} onClear={() => setSearch({ source: undefined })} /> : null}
+            {severity ? <FilterChip label={`severity: ${severity}`} onClear={() => setSearch({ severity: undefined })} /> : null}
+            {country ? <FilterChip label={`country: ${country}`} onClear={() => setSearch({ country: undefined })} /> : null}
+          </div>
+        ) : null}
 
-          {data ? (
-            <div className="border-t border-white/10 px-4 py-2 text-[11px] text-white/40">
-              Updated {timeAgo(data.generated_at)} · auto-refresh 60s · read-only intelligence; not billing or
-              visibility truth.
-            </div>
-          ) : null}
-        </PPanel>
+        {/* ── KPI strip ── */}
+        <KpiStrip tiles={kpisQ.data?.tiles ?? []} loading={kpisQ.isLoading} />
+
+        {/* ── Row: Online Now (left) · Geo + Current Pages (center) · Needs Attention (right) ── */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          <div className="xl:col-span-4">
+            <OnlineNowRail users={onlineQ.data?.users ?? []} loading={onlineQ.isLoading} />
+          </div>
+          <div className="space-y-4 xl:col-span-4">
+            <GeoPanel
+              countries={geoQ.data?.countries ?? []}
+              loading={geoQ.isLoading}
+              selectedCountry={country}
+              onSelectCountry={(cc) => setSearch({ country: cc })}
+            />
+            <CurrentPagesPanel pages={currentQ.data?.pages ?? []} loading={currentQ.isLoading} />
+          </div>
+          <div className="xl:col-span-4">
+            <NeedsAttentionPanel rows={attentionQ.data?.rows ?? []} loading={attentionQ.isLoading} />
+          </div>
+        </div>
+
+        {/* ── Row: Top pages + Feed ── */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          <div className="xl:col-span-5">
+            <TopMemberPagesPanel pages={topQ.data?.pages ?? []} loading={topQ.isLoading} />
+          </div>
+          <div className="xl:col-span-7">
+            <ActivityFeedV2
+              events={events}
+              loading={feedQ.isLoading}
+              onOpenEvent={(e) => setSelectedEvent(e)}
+            />
+          </div>
+        </div>
+
+        {/* ── Footer meta ── */}
+        <div className="flex items-center justify-between border-t border-reps-border/60 pt-3 text-[10.5px] text-white/40">
+          <span>
+            {events.length} events in view · online now {kpisQ.data?.tiles.find((t) => t.key === "online_now")?.value ?? 0}
+          </span>
+          <span>
+            Anonymous public analytics disabled · logged-in member activity only
+          </span>
+        </div>
       </div>
+
+      <EventDetailSheet event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </DashboardShell>
   );
 }
 
-function KpiTile({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string;
-  value: number;
-  icon?: React.ReactNode;
-  tone?: ActivitySeverity;
-}) {
-  const toneClass =
-    tone === "critical" ? "text-rose-200" :
-    tone === "warning" ? "text-amber-200" :
-    tone === "success" ? "text-emerald-200" :
-    "text-white";
+// ─────────────────────────────────────────────────────── controls ──
+
+function RangeSwitcher({ value, onChange }: { value: number; onChange: (h: number) => void }) {
   return (
-    <PPanel>
-      <div className="p-4">
-        <div className="flex items-center gap-2 text-xs text-white/60">
-          {icon}
-          {label}
-        </div>
-        <div className={`mt-1 text-2xl font-semibold ${toneClass}`}>{value.toLocaleString()}</div>
-      </div>
-    </PPanel>
+    <div className="inline-flex rounded-[10px] border border-reps-border bg-reps-panel p-0.5">
+      {RANGES.map((r) => (
+        <button
+          key={r.hours}
+          type="button"
+          onClick={() => onChange(r.hours)}
+          className={cn(
+            "px-2.5 py-1 text-[11px] font-medium rounded-[8px] transition",
+            value === r.hours ? "bg-reps-orange text-white" : "text-white/60 hover:text-white/90",
+          )}
+        >
+          {r.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
-function EventRow({ e }: { e: ActivityEvent }) {
+function FiltersPopover({
+  source, severity, country, onChange, onClear,
+}: {
+  source?: ActivitySource; severity?: ActivitySeverity; country?: string;
+  onChange: (patch: Partial<z.infer<typeof searchSchema>>) => void;
+  onClear: () => void;
+}) {
+  const active = Number(Boolean(source)) + Number(Boolean(severity)) + Number(Boolean(country));
   return (
-    <li className="flex items-start gap-3 px-4 py-3 text-sm">
-      <Badge className={`mt-0.5 shrink-0 ${SEVERITY_CLASS[e.severity]}`}>{e.source}</Badge>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-white">{e.summary}</div>
-        <div className="text-[11px] text-white/40">{e.type} · {timeAgo(e.ts)}</div>
-      </div>
-      {e.url ? (
-        <a href={e.url} className="text-xs text-reps-orange hover:underline">
-          Open
-        </a>
-      ) : null}
-    </li>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <Filter className="h-3.5 w-3.5" />
+          Filters {active > 0 ? <Badge className="ml-1 h-4 min-w-4 bg-reps-orange px-1 text-[9.5px] text-white">{active}</Badge> : null}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 space-y-3 border border-reps-border bg-reps-panel p-4">
+        <div>
+          <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/50">Source</div>
+          <div className="flex flex-wrap gap-1">
+            {SOURCES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onChange({ source: source === s ? undefined : s })}
+                className={cn(
+                  "rounded-full border px-2 py-0.5 text-[10.5px]",
+                  source === s
+                    ? "border-reps-orange bg-reps-orange text-white"
+                    : "border-reps-border bg-white/5 text-white/70 hover:bg-white/10",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/50">Severity</div>
+          <div className="flex flex-wrap gap-1">
+            {SEVERITIES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onChange({ severity: severity === s ? undefined : s })}
+                className={cn(
+                  "rounded-full border px-2 py-0.5 text-[10.5px] capitalize",
+                  severity === s
+                    ? "border-reps-orange bg-reps-orange text-white"
+                    : "border-reps-border bg-white/5 text-white/70 hover:bg-white/10",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+        {country ? (
+          <div className="rounded-[10px] bg-white/5 px-2 py-1.5 text-[11px] text-white/75">
+            Country filter: <span className="font-semibold">{country}</span>
+          </div>
+        ) : null}
+        <div className="flex justify-end">
+          <Button variant="ghost" size="sm" onClick={onClear} className="text-[11px] text-white/60 hover:text-white">
+            Clear all
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      className="inline-flex items-center gap-1 rounded-full border border-reps-border bg-reps-panel px-2 py-0.5 text-[10.5px] text-white/70 hover:bg-white/10"
+    >
+      {label}
+      <X className="h-3 w-3" />
+    </button>
   );
 }
