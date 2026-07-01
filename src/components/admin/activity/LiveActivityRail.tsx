@@ -45,13 +45,21 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
   const publicOnline = publicRealtime?.online_now ?? 0;
   const membersOnline = realtime?.online_now ?? members.length;
 
-  const countriesLive = useMemo(() => {
-    const map = new Map<string, { online: number; kind: "public" | "member" | "both" }>();
-    (publicRealtime?.countries ?? []).forEach((c) => {
-      if (c.online > 0) map.set(c.country_code, { online: c.online, kind: "public" });
-    });
-    // Member country breakdown lives in the map panel; here we just show public.
-    return Array.from(map.entries()).map(([cc, v]) => ({ cc, ...v })).slice(0, 8);
+  const locationsLive = useMemo(() => {
+    const cities = (publicRealtime?.cities ?? [])
+      .filter((c) => c.online > 0)
+      .map((c) => ({
+        id: `${c.city}-${c.country_code}`,
+        label: c.city,
+        cc: c.country_code,
+        online: c.online,
+        detail: c.region,
+      }));
+    if (cities.length > 0) return cities.slice(0, 8);
+    return (publicRealtime?.countries ?? [])
+      .filter((c) => c.online > 0)
+      .map((c) => ({ id: c.country_code, label: countryDisplay(c.country_code).label, cc: c.country_code, online: c.online, detail: "country fallback" }))
+      .slice(0, 8);
   }, [publicRealtime]);
 
   const devices = realtime?.devices;
@@ -126,19 +134,20 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
 
         {(tab === "all" || tab === "public") ? (
           <RailSection
-            title="Countries live"
+            title="Towns live"
             icon={Globe}
             accent="blue"
             loading={publicLoading}
-            empty="No country activity right now"
-            items={countriesLive}
+            empty="No town-level public activity right now"
+            items={locationsLive}
             render={(c) => {
               const d = countryDisplay(c.cc);
               return (
                 <div className="flex items-center justify-between gap-2 py-1.5">
-                  <span className="inline-flex items-center gap-1.5 truncate text-[12px] text-white/85">
+                  <span className="min-w-0 inline-flex items-center gap-1.5 truncate text-[12px] text-white/85">
                     <span>{d.flag}</span>
-                    <span className="truncate">{d.label}</span>
+                    <span className="truncate">{c.label}</span>
+                    {c.detail ? <span className="truncate text-[10px] text-white/40">· {c.detail}</span> : null}
                   </span>
                   <span className="shrink-0 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-200 tabular-nums">
                     {c.online}
@@ -146,7 +155,7 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
                 </div>
               );
             }}
-            keyFn={(c) => c.cc}
+            keyFn={(c) => c.id}
           />
         ) : null}
 
@@ -170,6 +179,7 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
                   </div>
                   <div className="truncate text-[10.5px] text-white/50">
                     {u.current_path ? <span className="font-mono">{u.current_path}</span> : "—"}
+                    {u.city ? <span className="font-sans text-white/40"> · {u.city}</span> : null}
                   </div>
                 </div>
                 {u.user_id ? (

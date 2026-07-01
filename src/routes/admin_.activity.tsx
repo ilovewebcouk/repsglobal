@@ -159,6 +159,32 @@ function AdminActivityPage() {
   const attentionCount = attentionRows.length;
   const criticalCount = attentionRows.filter((r) => r.severity === "critical").length;
 
+  const memberMapCities = useMemo(() => {
+    const map = new Map<string, {
+      city: string;
+      region: string | null;
+      country_code: string;
+      latitude: number;
+      longitude: number;
+      online: number;
+    }>();
+    for (const u of onlineQ.data?.users ?? []) {
+      if (!u.city || !u.country_code || typeof u.latitude !== "number" || typeof u.longitude !== "number") continue;
+      const key = `${u.city}|${u.region ?? ""}|${u.country_code}|${u.latitude.toFixed(3)}|${u.longitude.toFixed(3)}`;
+      const existing = map.get(key);
+      if (existing) existing.online += 1;
+      else map.set(key, {
+        city: u.city,
+        region: u.region,
+        country_code: u.country_code,
+        latitude: u.latitude,
+        longitude: u.longitude,
+        online: 1,
+      });
+    }
+    return Array.from(map.values()).sort((a, b) => b.online - a.online);
+  }, [onlineQ.data]);
+
   // High-value events today = enquiries + signup completes from kpi tiles if available;
   // otherwise fall back to a simple sum from feed events (auth signup, enquiry sources).
   const highValueToday = useMemo(() => {
@@ -195,7 +221,7 @@ function AdminActivityPage() {
 
   return (
     <DashboardShell role="admin" active="Activity" title="Activity" subtitle="Realtime command centre">
-      <div className="mx-auto max-w-[1500px] space-y-4 px-4 pb-6 pt-3 md:px-6 md:pt-4">
+      <div className="mx-auto -mt-4 max-w-[1500px] space-y-3 px-4 pb-6 md:px-6">
         {/* ── Controls row (compact — page title lives in the shell header) ── */}
         <header className="flex flex-wrap items-center justify-end gap-2">
           <LiveFreshnessChip
@@ -265,7 +291,9 @@ function AdminActivityPage() {
               onSelectCountry={(cc) => setSearch({ country: cc })}
               layer={mapLayer}
               onLayerChange={setMapLayer}
+              memberCities={memberMapCities}
               publicCountries={publicRealtimeQ.data?.countries ?? []}
+              publicCities={publicRealtimeQ.data?.cities ?? []}
               publicOnline={publicOnline}
               publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
               updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
