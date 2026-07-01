@@ -497,13 +497,16 @@ export function NeedsAttentionPanel({ rows, loading }: { rows: AttentionRow[]; l
 // ─────────────────────────────────────────────────────────── EMPTY ──
 
 export function EmptyState({
-  icon: Icon, title, hint,
-}: { icon: React.ComponentType<{ className?: string }>; title: string; hint?: string }) {
+  icon: Icon, title, hint, action,
+}: { icon: React.ComponentType<{ className?: string }>; title: string; hint?: string; action?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
-      <Icon className="h-6 w-6 text-white/30" />
-      <div className="text-[13px] font-medium text-white/70">{title}</div>
-      {hint ? <div className="max-w-[280px] text-[11.5px] text-white/45">{hint}</div> : null}
+      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-reps-border/60 bg-white/[0.03]">
+        <Icon className="h-5 w-5 text-white/40" />
+      </div>
+      <div className="text-[13px] font-medium text-white/80">{title}</div>
+      {hint ? <div className="max-w-[300px] text-[11.5px] leading-relaxed text-white/50">{hint}</div> : null}
+      {action ? <div className="mt-1">{action}</div> : null}
     </div>
   );
 }
