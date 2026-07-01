@@ -512,16 +512,17 @@ function ProProfilePage() {
   }
 
   const pro = PROS[slug] ?? (db ? proFromDb(db) : null);
-  if (!pro) return <ProNotFound />;
 
-  // Public analytics — fire once per slug per session.
+  // Public analytics — fire once per slug per session. Must run before any
+  // early return to keep hook order stable.
   React.useEffect(() => {
-    if (!pro) return;
-    if (isFixture) return;
+    if (!pro || isFixture) return;
     void import("@/lib/analytics/track").then(({ track }) =>
       track.profileView({ slug, professional_id: db?.id ?? null }),
     );
-  }, [slug, db?.id, isFixture]);
+  }, [slug, db?.id, isFixture, pro]);
+
+  if (!pro) return <ProNotFound />;
 
 
 
