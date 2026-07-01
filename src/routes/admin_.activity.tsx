@@ -36,6 +36,8 @@ import {
   getGeoActivity, getNeedsAttention,
 } from "@/lib/ops/activity-panels.functions";
 import { getRealtimeSummary } from "@/lib/ops/activity-realtime.functions";
+import { getPublicRealtime } from "@/lib/admin/public-realtime.functions";
+
 
 import {
   KpiStrip, GeoPanel, OnlineNowRail, CurrentPagesPanel, TopMemberPagesPanel, NeedsAttentionPanel,
