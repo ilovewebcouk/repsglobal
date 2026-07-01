@@ -506,52 +506,5 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
   );
 }
 
-// ── Live freshness chip ── F6
-function LiveFreshnessChip({
-  updatedAt, isFetching, isError, degraded,
-}: { updatedAt: number; isFetching: boolean; isError: boolean; degraded: boolean }) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const ageSec = updatedAt ? Math.max(0, Math.round((now - updatedAt) / 1000)) : null;
-  const stale = ageSec !== null && ageSec > 30;
-  const label = isError
-    ? "Reconnecting…"
-    : degraded
-      ? "Partial data"
-      : ageSec === null
-        ? "Waiting…"
-        : `Live · updated ${ageSec}s ago`;
-  const tone = isError
-    ? "border-amber-500/50 bg-amber-500/10 text-amber-100"
-    : degraded
-      ? "border-amber-500/40 bg-amber-500/10 text-amber-100"
-      : stale
-        ? "border-white/15 bg-white/5 text-white/60"
-        : "border-emerald-400/30 bg-emerald-500/10 text-emerald-200";
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
-        tone,
-      )}
-      aria-live="polite"
-    >
-      <span
-        className={cn(
-          "h-1.5 w-1.5 rounded-full",
-          isError || degraded ? "bg-amber-300" : "bg-emerald-400",
-          !isError && !degraded && "animate-pulse",
-        )}
-      />
-      {label}
-      {isFetching && !isError && <span className="text-white/40">·</span>}
-    </span>
-  );
-}
 
 
