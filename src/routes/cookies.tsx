@@ -24,37 +24,33 @@ export const Route = createFileRoute("/cookies")({
 
 const CATEGORIES: {
   name: string;
-  required: boolean;
+  provider: string;
   purpose: string;
-  examples: string;
+  duration: string;
+  required: boolean;
 }[] = [
   {
-    name: "Essential",
+    name: "reps.consent.v1",
+    provider: "REPS (essential)",
+    purpose: "Remembers your cookie choice.",
+    duration: "12 months",
     required: true,
-    purpose:
-      "Authentication, security and load balancing. The platform cannot function without these.",
-    examples: "reps_session, csrf_token",
   },
   {
-    name: "Functional",
-    required: false,
+    name: "reps.public.session_id",
+    provider: "REPS (essential, session)",
     purpose:
-      "Remember preferences such as language, region and saved professionals.",
-    examples: "reps_locale, reps_saved_pros",
+      "Groups a single visit for analytics rollups (only used if analytics accepted).",
+    duration: "Until browser tab closes",
+    required: true,
   },
   {
-    name: "Analytics",
-    required: false,
+    name: "ph_*",
+    provider: "PostHog (EU), routed via repsuk.org/_a",
     purpose:
-      "Help us understand how the platform is used so we can improve it. Aggregated, not used to identify you.",
-    examples: "Anonymous usage IDs",
-  },
-  {
-    name: "Marketing",
+      "Anonymous usage analytics (page views, referrers, enquiry conversions). No IP stored.",
+    duration: "Up to 12 months",
     required: false,
-    purpose:
-      "Measure the performance of REPs campaigns and surface relevant content.",
-    examples: "Campaign attribution IDs",
   },
 ];
 
