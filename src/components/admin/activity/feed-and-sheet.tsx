@@ -237,8 +237,8 @@ export function EventDetailSheet({ event, onClose }: { event: ActivityEvent | nu
             Source · <span className="font-mono">{event?.source}</span> · id{" "}
             <span className="font-mono">{rawId.slice(0, 12)}</span>
           </div>
-          {event?.country_code ? (
-            <div className="text-[10.5px] text-white/50">Country: {countryFlag(event.country_code)} {event.country_code}</div>
+          {detail.data?.country_code ? (
+            <div className="text-[10.5px] text-white/50">Country: {countryFlag(detail.data.country_code)} {detail.data.country_code}</div>
           ) : null}
         </div>
       </SheetContent>
