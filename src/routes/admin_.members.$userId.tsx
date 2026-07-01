@@ -133,6 +133,7 @@ function MemberPage() {
                 { v: "profile", l: "Profile" },
                 { v: "reviews", l: "Reviews" },
                 { v: "activity", l: "Activity" },
+                { v: "sessions", l: "Sessions" },
                 { v: "notes", l: "Notes" },
               ].map(({ v, l }) => (
                 <TabsTrigger
