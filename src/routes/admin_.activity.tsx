@@ -232,6 +232,11 @@ function AdminActivityPage() {
               loading={geoQ.isLoading}
               selectedCountry={country}
               onSelectCountry={(cc) => setSearch({ country: cc })}
+              layer={mapLayer}
+              onLayerChange={setMapLayer}
+              publicCountries={publicRealtimeQ.data?.countries ?? []}
+              publicOnline={publicRealtimeQ.data?.online_now ?? 0}
+              publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
             />
           </div>
           <div className="xl:col-span-1">
@@ -242,8 +247,12 @@ function AdminActivityPage() {
         {/* ── KPI strip (below hero — supporting metrics, no duplication of Online now) ── */}
         <KpiStrip tiles={dedupedKpis} loading={kpisQ.isLoading} />
 
-        {/* ── Public visitor analytics (anonymous — separate from member data) ── */}
-        <PublicVisitorsPanel />
+        {/* ── Public visitor analytics (realtime + rollup) ── */}
+        <PublicVisitorsPanel
+          realtime={publicRealtimeQ.data ?? null}
+          realtimeLoading={publicRealtimeQ.isLoading}
+        />
+
 
 
         {/* ── ROW 2: Online now (4) · Pages now (4) · Country list (4) ── */}
