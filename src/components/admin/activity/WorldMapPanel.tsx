@@ -96,12 +96,18 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
         {mapError ? (
           <MapFallback bubbles={bubbles} loading={loading} onSelect={onSelectCountry} selected={selectedCountry} />
         ) : (
-          <div className="relative h-[380px] w-full bg-[#0b0f14]">
+          <div
+            className="relative h-[460px] w-full"
+            style={{
+              background:
+                "radial-gradient(circle at 30% 20%, #1a2436 0%, #0e141d 55%, #080c13 100%)",
+            }}
+          >
             <ComposableMap
               projection="geoEqualEarth"
-              projectionConfig={{ scale: 160 }}
+              projectionConfig={{ scale: 175 }}
               width={980}
-              height={420}
+              height={500}
               style={{ width: "100%", height: "100%" }}
             >
               <ZoomableGroup center={[10, 20]} zoom={1} minZoom={0.9} maxZoom={4}>
@@ -112,9 +118,9 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
                         key={geo.rsmKey}
                         geography={geo}
                         style={{
-                          default: { fill: "#141b23", stroke: "#1e2732", strokeWidth: 0.5, outline: "none" },
-                          hover:   { fill: "#1a232e", stroke: "#2a3644", strokeWidth: 0.6, outline: "none" },
-                          pressed: { fill: "#1a232e", stroke: "#2a3644", strokeWidth: 0.6, outline: "none" },
+                          default: { fill: "#243244", stroke: "#3a4a60", strokeWidth: 0.6, outline: "none" },
+                          hover:   { fill: "#2c3c52", stroke: "#4a5c76", strokeWidth: 0.8, outline: "none" },
+                          pressed: { fill: "#2c3c52", stroke: "#4a5c76", strokeWidth: 0.8, outline: "none" },
                         }}
                       />
                     ))
@@ -124,39 +130,50 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
                   const isSelected = selectedCountry === b.cc;
                   const isHover = hoverCc === b.cc;
                   const isLive = b.online > 0;
+                  const dim = selectedCountry && !isSelected ? 0.35 : 1;
                   return (
                     <Marker key={b.cc} coordinates={[b.lng, b.lat]}
                       onMouseEnter={() => setHoverCc(b.cc)}
                       onMouseLeave={() => setHoverCc((v) => (v === b.cc ? null : v))}
                       onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
-                      style={{ default: { cursor: "pointer" }, hover: { cursor: "pointer" }, pressed: { cursor: "pointer" } }}
+                      style={{ default: { cursor: "pointer", opacity: dim }, hover: { cursor: "pointer", opacity: 1 }, pressed: { cursor: "pointer" } }}
                     >
                       {isLive ? (
-                        <circle
-                          r={b.radius + 6}
-                          fill="rgba(249, 115, 22, 0.15)"
-                          className="animate-pulse"
-                        />
+                        <>
+                          <circle r={b.radius + 12} fill="rgba(249,115,22,0.08)" className="animate-ping" style={{ animationDuration: "2.4s" }} />
+                          <circle r={b.radius + 6} fill="rgba(249,115,22,0.18)" />
+                        </>
                       ) : null}
                       <circle
                         r={b.radius}
-                        fill={isSelected ? "#F97316" : (isLive ? "rgba(249,115,22,0.85)" : "rgba(148,163,184,0.55)")}
-                        stroke={isSelected || isHover ? "#fff" : "rgba(255,255,255,0.4)"}
-                        strokeWidth={isSelected ? 2 : 1}
+                        fill={
+                          isSelected
+                            ? "#F97316"
+                            : isLive
+                              ? "rgba(249,115,22,0.95)"
+                              : "rgba(125,211,252,0.55)"
+                        }
+                        stroke={isSelected || isHover ? "#fff" : isLive ? "rgba(255,255,255,0.85)" : "rgba(125,211,252,0.9)"}
+                        strokeWidth={isSelected ? 2.5 : isHover ? 1.8 : 1.2}
                       />
-                      <text
-                        y={-b.radius - 4}
-                        textAnchor="middle"
-                        style={{
-                          fontFamily: "system-ui, sans-serif",
-                          fontSize: "10px",
-                          fontWeight: 600,
-                          fill: "#fff",
-                          pointerEvents: "none",
-                        }}
-                      >
-                        {b.cc}
-                      </text>
+                      {isHover || isSelected || b.radius > 10 ? (
+                        <text
+                          y={-b.radius - 5}
+                          textAnchor="middle"
+                          style={{
+                            fontFamily: "system-ui, sans-serif",
+                            fontSize: "10.5px",
+                            fontWeight: 700,
+                            fill: "#fff",
+                            paintOrder: "stroke",
+                            stroke: "rgba(0,0,0,0.65)",
+                            strokeWidth: 3,
+                            pointerEvents: "none",
+                          }}
+                        >
+                          {b.cc}
+                        </text>
+                      ) : null}
                     </Marker>
                   );
                 })}
@@ -167,10 +184,28 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
             {hoverCc ? <MapTooltip bubble={bubbles.find((b) => b.cc === hoverCc) ?? null} /> : null}
 
             {/* Legend */}
-            <div className="pointer-events-none absolute bottom-2 left-2 flex items-center gap-2 rounded-full bg-black/50 px-2.5 py-1 text-[10px] text-white/70 backdrop-blur">
-              <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-reps-orange" /> live activity</span>
-              <span className="text-white/30">·</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-slate-400/60" /> 24h only</span>
+            <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2.5 rounded-full border border-white/10 bg-black/60 px-3 py-1.5 text-[10.5px] text-white/80 backdrop-blur-md">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-reps-orange opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-reps-orange" />
+                </span>
+                Live · online now
+              </span>
+              <span className="text-white/25">·</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-300/70 ring-1 ring-sky-200/80" /> 24h activity</span>
+              {selectedCountry ? (
+                <>
+                  <span className="text-white/25">·</span>
+                  <button
+                    type="button"
+                    onClick={() => onSelectCountry(undefined)}
+                    className="pointer-events-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-white/20"
+                  >
+                    Clear filter <X className="h-2.5 w-2.5" />
+                  </button>
+                </>
+              ) : null}
             </div>
 
             {loading && bubbles.length === 0 ? (
