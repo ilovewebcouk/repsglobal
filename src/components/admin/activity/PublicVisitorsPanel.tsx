@@ -220,6 +220,9 @@ export function PublicVisitorsPanel({
       <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
         <Kpi label="Checkout starts 24h" value={fmt(data?.conversions_24h.checkout_starts ?? 0)} hint="rollup" />
         <Kpi label="Signup completes 24h" value={fmt(data?.conversions_24h.signup_completes ?? 0)} hint="rollup" />
+      </div>
+
+
 
 
       {/* Top lists */}
