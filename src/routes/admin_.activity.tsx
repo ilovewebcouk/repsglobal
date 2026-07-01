@@ -144,7 +144,15 @@ function AdminActivityPage() {
   const compactEvents = useMemo(() => events.slice(0, 8), [events]);
 
   // ── Command strip metrics
-  const publicOnline = publicRealtimeQ.data?.online_now ?? 0;
+  // Reconcile: sometimes `online_now` lags behind the sum of per-country
+  // online counts (or vice versa). Show the max so the strip never reads 0
+  // when the map clearly shows live users.
+  const rawPublicOnline = publicRealtimeQ.data?.online_now ?? 0;
+  const publicCountrySum = (publicRealtimeQ.data?.countries ?? []).reduce(
+    (sum, c) => sum + (c.online ?? 0),
+    0,
+  );
+  const publicOnline = Math.max(rawPublicOnline, publicCountrySum);
   const membersOnline = realtimeQ.data?.online_now ?? 0;
   const pageViews5m = publicRealtimeQ.data?.page_views_5m ?? 0;
   const attentionRows = attentionQ.data?.rows ?? [];
@@ -171,11 +179,17 @@ function AdminActivityPage() {
   const slow = timings.filter((t) => !t.degraded && t.ms > 1500);
   const feedDegraded = feedQ.data?.degraded_sources ?? [];
 
+  const ingestStatus: "healthy" | "degraded" | "down" =
+    realtimeQ.error || publicRealtimeQ.error ? "down"
+    : degraded.length > 0 || feedDegraded.length > 0 ? "degraded"
+    : "healthy";
+
   const refreshAll = useCallback(() => {
     realtimeQ.refetch(); kpisQ.refetch(); onlineQ.refetch(); currentQ.refetch();
     topQ.refetch(); geoQ.refetch(); attentionQ.refetch(); feedQ.refetch();
     publicRealtimeQ.refetch();
   }, [realtimeQ, kpisQ, onlineQ, currentQ, topQ, geoQ, attentionQ, feedQ, publicRealtimeQ]);
+
 
   const filterChipsActive = Boolean(source || severity || country || search.range);
 
