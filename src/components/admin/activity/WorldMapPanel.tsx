@@ -215,12 +215,13 @@ export function WorldMapPanel({
           <MapFallback bubbles={bubbles} loading={loading} onSelect={onSelectCountry} selected={selectedCountry} />
         ) : (
           <div
-            className="relative h-[460px] w-full"
+            className="relative h-[380px] w-full"
             style={{
               background:
                 "radial-gradient(circle at 30% 20%, #1a2436 0%, #0e141d 55%, #080c13 100%)",
             }}
           >
+
             <ComposableMap
               projection="geoEqualEarth"
               projectionConfig={{ scale: 175 }}
@@ -279,35 +280,36 @@ export function WorldMapPanel({
                     >
                       {isLive ? (
                         <>
-                          <circle r={b.radius + 12} fill={`rgba(${pulseRGB},0.08)`} className="animate-ping" style={{ animationDuration: "2.4s" }} />
-                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.18)`} />
+                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.06)`} className="animate-ping" style={{ animationDuration: "3s" }} />
+                          <circle r={b.radius + 3} fill={`rgba(${pulseRGB},0.14)`} />
                         </>
                       ) : null}
                       <circle
                         r={b.radius}
                         fill={solid}
                         stroke={isSelected || isHover ? "#fff" : `rgba(${pulseRGB},0.9)`}
-                        strokeWidth={isSelected ? 2.5 : isHover ? 1.8 : 1.2}
+                        strokeWidth={isSelected ? 2.2 : isHover ? 1.5 : 1}
                       />
 
-                      {isHover || isSelected || b.radius > 10 ? (
+                      {isHover || isSelected ? (
                         <text
-                          y={-b.radius - 5}
+                          y={-b.radius - 4}
                           textAnchor="middle"
                           style={{
                             fontFamily: "system-ui, sans-serif",
-                            fontSize: "10.5px",
-                            fontWeight: 700,
+                            fontSize: "9px",
+                            fontWeight: 600,
                             fill: "#fff",
                             paintOrder: "stroke",
-                            stroke: "rgba(0,0,0,0.65)",
-                            strokeWidth: 3,
+                            stroke: "rgba(0,0,0,0.7)",
+                            strokeWidth: 2.5,
                             pointerEvents: "none",
                           }}
                         >
                           {b.cc}
                         </text>
                       ) : null}
+
                     </Marker>
                   );
                 })}
