@@ -210,11 +210,6 @@ function AdminActivityPage() {
     : degraded.length > 0 || feedDegraded.length > 0 ? "degraded"
     : "healthy";
 
-  const refreshAll = useCallback(() => {
-    realtimeQ.refetch(); kpisQ.refetch(); onlineQ.refetch(); currentQ.refetch();
-    topQ.refetch(); geoQ.refetch(); attentionQ.refetch(); feedQ.refetch();
-    publicRealtimeQ.refetch();
-  }, [realtimeQ, kpisQ, onlineQ, currentQ, topQ, geoQ, attentionQ, feedQ, publicRealtimeQ]);
 
 
   const filterChipsActive = Boolean(source || severity || country || search.range);
