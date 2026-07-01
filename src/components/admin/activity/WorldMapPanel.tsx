@@ -64,6 +64,36 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
     });
   }, [countries]);
 
+  // Auto-fit: pick a viewport based on where activity actually is. Prefer
+  // live (online > 0); fall back to any 24h activity. This gives GB-only
+  // traffic a gentle zoom toward GB, and multi-country traffic a bounds-fit.
+  const autoView = useMemo(() => {
+    const live = bubbles.filter((b) => b.online > 0);
+    const pool = live.length > 0 ? live : bubbles;
+    if (pool.length === 0) return { center: [10, 20] as [number, number], zoom: 1 };
+    if (pool.length === 1) {
+      const b = pool[0]!;
+      return { center: [b.lng, b.lat] as [number, number], zoom: 3.2 };
+    }
+    const lngs = pool.map((b) => b.lng);
+    const lats = pool.map((b) => b.lat);
+    const cx = (Math.min(...lngs) + Math.max(...lngs)) / 2;
+    const cy = (Math.min(...lats) + Math.max(...lats)) / 2;
+    const spanLng = Math.max(...lngs) - Math.min(...lngs);
+    const spanLat = Math.max(...lats) - Math.min(...lats);
+    const span = Math.max(spanLng, spanLat);
+    // Rough heuristic: broader spread → smaller zoom, capped for context.
+    const zoom = span < 20 ? 3 : span < 60 ? 2 : span < 120 ? 1.5 : 1;
+    return { center: [cx, cy] as [number, number], zoom };
+  }, [bubbles]);
+
+  // Local zoom/center override so admins can pan and reset.
+  const [override, setOverride] = useState<{ center: [number, number]; zoom: number } | null>(null);
+  const view = override ?? autoView;
+  // Re-key ZoomableGroup so react-simple-maps applies the new center/zoom
+  // when the fitted view changes (e.g. new live activity arrives).
+  const viewKey = `${view.center[0].toFixed(1)}:${view.center[1].toFixed(1)}:${view.zoom.toFixed(2)}`;
+
   const totalOnline = bubbles.reduce((s, b) => s + b.online, 0);
   const totalViews = bubbles.reduce((s, b) => s + b.views, 0);
   const unknownCountry = countries.find((c) => c.country_code === "??" || c.country_code === "XX");
