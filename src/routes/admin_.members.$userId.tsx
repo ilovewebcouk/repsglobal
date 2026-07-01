@@ -874,7 +874,149 @@ function ActivityPane({ data, loading }: { data: TimelineBundle | undefined; loa
   );
 }
 
+/* ───────────────────────── Sessions ───────────────────────── */
+
+type SessionsBundle = Awaited<ReturnType<typeof getMemberSessions>>;
+
+function fmtDateTime(iso: string) {
+  return new Date(iso).toLocaleString("en-GB", {
+    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+  });
+}
+
+function fmtDuration(fromIso: string, toIso: string) {
+  const ms = Math.max(0, new Date(toIso).getTime() - new Date(fromIso).getTime());
+  const mins = Math.round(ms / 60_000);
+  if (mins < 1) return "< 1 min";
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h}h ${m}m`;
+}
+
+function SessionsPane({ data, loading, error }: { data: SessionsBundle | undefined; loading: boolean; error: Error | null }) {
+  if (loading) return <PaneSkeleton />;
+  if (error) {
+    return (
+      <section className={cn(PANEL, "px-5 py-6 text-sm text-rose-200")}>
+        Could not load sessions: {error.message}
+      </section>
+    );
+  }
+  if (!data || data.sessions.length === 0) {
+    return (
+      <SoonEmpty
+        title="No sessions captured yet"
+        description="Sessions appear here once the member signs in and browses. Anonymous, admin, and impersonation traffic is excluded by design."
+      />
+    );
+  }
+
+  return (
+    <section className={cn(PANEL, "flex flex-col gap-4 p-5")}>
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <div>
+          <h3 className="text-[15px] font-semibold text-white">Recent sessions</h3>
+          <p className={PANEL_DESC}>
+            Showing {data.sessions.length} of {data.total}. Admin and impersonation sessions are filtered out. No raw IPs are stored — only salted hashes.
+          </p>
+        </div>
+      </div>
+
+      <ol className="flex flex-col gap-3">
+        {data.sessions.map((s: MemberSessionRow) => (
+          <li key={s.session_id} className="rounded-[14px] border border-reps-border bg-reps-panel/40 p-4">
+            <header className="flex flex-wrap items-center gap-2">
+              {s.is_active ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  </span>
+                  Active now
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full border border-reps-border bg-reps-panel-soft/60 px-2 py-0.5 text-[11px] font-medium text-white/65">
+                  Ended
+                </span>
+              )}
+              <span className="text-[12.5px] tabular-nums text-white/70">{fmtDateTime(s.started_at)}</span>
+              <span className="text-[11px] text-white/40">·</span>
+              <span className="text-[12px] text-white/55">{fmtDuration(s.started_at, s.ended_at ?? s.last_seen_at)}</span>
+              <span className="ml-auto text-[11px] font-mono text-white/35">{s.session_id.slice(0, 8)}</span>
+            </header>
+
+            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[12px] md:grid-cols-4">
+              <div>
+                <div className={LABEL}>Device</div>
+                <div className="text-white/85">{s.device ?? "—"}{s.os ? ` · ${s.os}` : ""}</div>
+              </div>
+              <div>
+                <div className={LABEL}>Browser</div>
+                <div className="text-white/85">{s.browser ?? "—"}</div>
+              </div>
+              <div>
+                <div className={LABEL}>Country</div>
+                <div className="text-white/85">
+                  {s.country_code ?? "—"}
+                  {s.city ? <span className="text-white/55"> · {s.city}</span> : null}
+                </div>
+              </div>
+              <div>
+                <div className={LABEL}>Pages viewed</div>
+                <div className="text-white/85">{s.pages_viewed}</div>
+              </div>
+            </div>
+
+            {s.limited_detail && (
+              <div className="mt-3">
+                <DntGpcBadge />
+              </div>
+            )}
+
+            {s.page_trail.length > 0 && (
+              <div className="mt-3">
+                <div className={cn(LABEL, "mb-1.5")}>Page trail</div>
+                <ol className="flex flex-col gap-1 rounded-[10px] border border-reps-border/60 bg-reps-ink/40 p-2">
+                  {s.page_trail.map((p, i) => (
+                    <li key={`${p.ts}-${i}`} className="flex items-baseline gap-2 text-[12px]">
+                      <span className="tabular-nums text-white/45">{p.ts.slice(11, 19)}</span>
+                      <span className="truncate font-mono text-white/85">{p.path}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+
+            {s.auth_events.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {s.auth_events.map((a, i) => (
+                  <span
+                    key={`${a.ts}-${i}`}
+                    className="inline-flex items-center gap-1 rounded-full border border-reps-border bg-reps-panel-soft/60 px-2 py-0.5 text-[11px] text-white/70"
+                  >
+                    <span className="font-mono">{a.event}</span>
+                    <span className="text-white/40">·</span>
+                    <span className="tabular-nums">{a.ts.slice(11, 16)}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {s.ip_hash_prefix && (
+              <div className="mt-2 text-[10.5px] text-white/35">
+                IP hash · <span className="font-mono">{s.ip_hash_prefix}…</span> (salted SHA-256, first 8 chars)
+              </div>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 /* ───────────────────────── Helpers ───────────────────────── */
+
 
 function PaneSkeleton() {
   return (
