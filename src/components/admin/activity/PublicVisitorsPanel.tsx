@@ -189,22 +189,22 @@ export function PublicVisitorsPanel({
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
 
         <Kpi
-          label="Page views (24h)"
+          label="Public page views 24h"
           value={fmt(rollup?.public_page_views ?? 0)}
           hint={today ? "today" : yesterday ? "yesterday" : "no data yet"}
         />
         <Kpi
-          label="Unique sessions"
+          label="Unique sessions 24h"
           value={fmt(rollup?.public_unique_sessions ?? 0)}
           hint={today ? "today" : "yesterday"}
         />
         <Kpi
-          label="Profile views"
+          label="Public profile views 24h"
           value={fmt(rollup?.public_profile_views ?? 0)}
-          hint="24h"
+          hint="rollup"
         />
         <Kpi
-          label="Enquiries created"
+          label="Enquiries created 24h"
           value={fmt(data?.conversions_24h.enquiries_created ?? 0)}
           hint={`${data?.conversions_24h.total ?? 0} conversions today`}
         />
@@ -212,11 +212,15 @@ export function PublicVisitorsPanel({
 
       {/* Secondary KPI row */}
       <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
-        <Kpi label="Searches" value={fmt(rollup?.directory_searches ?? 0)} hint="24h" />
-        <Kpi label="No-result" value={fmt(rollup?.searches_no_results ?? 0)} hint="needs attention" />
-        <Kpi label="Signup starts" value={fmt(data?.conversions_24h.signup_starts ?? 0)} hint="24h" />
-        <Kpi label="Checkout starts" value={fmt(data?.conversions_24h.checkout_starts ?? 0)} hint="24h" />
+        <Kpi label="Directory searches 24h" value={fmt(rollup?.directory_searches ?? 0)} hint="rollup" />
+        <Kpi label="No-result searches 24h" value={fmt(rollup?.searches_no_results ?? 0)} hint="needs attention" />
+        <Kpi label="Result clicks 24h" value={fmt(rollup?.result_clicks ?? 0)} hint="rollup" />
+        <Kpi label="Signup starts 24h" value={fmt(data?.conversions_24h.signup_starts ?? 0)} hint="rollup" />
       </div>
+      <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
+        <Kpi label="Checkout starts 24h" value={fmt(data?.conversions_24h.checkout_starts ?? 0)} hint="rollup" />
+        <Kpi label="Signup completes 24h" value={fmt(data?.conversions_24h.signup_completes ?? 0)} hint="rollup" />
+
 
       {/* Top lists */}
       <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
