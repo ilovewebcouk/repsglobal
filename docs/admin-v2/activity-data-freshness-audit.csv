@@ -1,0 +1,9 @@
+panel,source_function,source_table,expected_rows,actual_rows,latest_event_ts,date_window,why_empty,pass_fail,fix_needed
+Realtime summary,getRealtimeSummary,user_sessions + member_session_events + auth_events + subscriptions,any logged-in member activity,0 online / 0 events / 0 signins,none,5m/30m/24h,No members currently browsing AND capture pipeline gaps (F1 auth-event race, F2 admin leak, no session data),FAIL,Fix capture: F1 auth-event race, ensure member beacon actually inserts
+Online Now,getOnlineMembers,user_sessions,rows with last_seen_at > now-5m,0 (only legacy admin row 2026-06-30 filtered by admin path),2026-06-30 17:15,5 min,No non-admin members active in last 5m + legacy anon row from pre-v1.2 code,FAIL,Purge 2 legacy user_sessions rows; verify member beacon fires
+Map,getGeoActivity,user_sessions + member_session_events grouped by country_code,country buckets,0 buckets,none,24h,No member_session_events rows in 24h,FAIL,Depends on capture fix; also add Cloudflare CF-IPCountry env verification
+Pages Being Viewed Now,getCurrentPages,user_sessions.current_path,live paths,0,none,5 min,Same as Online Now,FAIL,Same
+Top Member Pages,getTopMemberPages,member_session_events grouped by path,24h/7d/30d top paths,0,none,switchable 24h/7d/30d,No events in table,FAIL,Same
+Country Activity table,getGeoActivity,same as Map,country buckets,0,none,24h,Same as Map,FAIL,Same
+Needs Attention,ops_alerts + open disputes + failed payments,ops_alerts / disputes / payment_events,any open items,varies (independent of activity pipeline),n/a,live,N/A - this panel is independent and works,PASS,No fix needed
+Recent Activity feed,getActivityFeed,unified across 12 sources,any events,varies (auth_events=0 is a gap but other sources fill in),varies,720h default,Auth events missing; some sources fine,PARTIAL,Fix auth-event capture

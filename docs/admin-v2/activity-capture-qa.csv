@@ -1,0 +1,17 @@
+scenario,browser,logged_in,role,route_visited,expected_capture,actual_auth_events,actual_member_session_events,actual_user_sessions,appears_in_online_now,appears_on_map,appears_in_pages_now,pass_fail,notes
+A1 Anonymous public - home,Safari private,false,none,/,none,0,0,0,no,no,no,PASS,Endpoint 204s when ctx.userId is null
+A2 Anonymous public - profile,Safari private,false,none,/pro/james-wilson,none,0,0,0,no,no,no,PASS,Same as A1
+A3 Anonymous public - directory,Safari private,false,none,/find-a-professional,none,0,0,0,no,no,no,PASS,Same as A1
+B1 Logged-in member - dashboard,Chrome,true,member,/dashboard,session_event + heartbeat,0,expected 1,expected 1,YES if within 5m,YES if country_code present,YES,PENDING LIVE TEST,Not yet re-verified after latest deploy
+B2 Logged-in member - profile edit,Chrome,true,member,/dashboard/website,session_event,0,expected 1,updated heartbeat,YES,YES,YES,PENDING,-
+B3 Logged-in member - billing,Chrome,true,member,/dashboard/account,session_event,0,expected 1,updated,YES,YES,YES,PENDING,-
+B4 Logged-in member - 5 routes,Chrome,true,member,various,5 session_events,0,expected 5,1 row 5 last_seen updates,YES,YES,YES depending on latest path,PENDING,-
+C1 Admin on /admin/activity,Chrome,true,admin,/admin/activity,none,0,0,0,no,no,no,PASS,Server-side /admin filter + client skip
+C2 Admin on non-admin route,Chrome,true,admin,/pro/james-wilson,SHOULD be none,0,LEAKS as member,LEAKS,YES (bug),YES (bug),YES (bug),FAIL,Bug: no admin role check server-side for non-/admin routes
+D1 Admin impersonating member - dashboard,Chrome,true,admin(impersonating),/dashboard,none,0,0,0,no,no,no,PASS,ctx.isImpersonating short-circuits both endpoints
+D2 Admin impersonating - profile edit,Chrome,true,admin(impersonating),/dashboard/website,none,0,0,0,no,no,no,PASS,-
+E1 Member with DNT enabled,Firefox,true,member,/dashboard,heartbeat only,0,0,1 upsert,YES,YES,YES,PASS,No page-view detail; correct
+E2 Member with GPC enabled,Brave,true,member,/dashboard,heartbeat only,0,0,1 upsert,YES,YES,YES,PASS,Same as E1
+F1 Sign-in failed,Chrome,false,none,/auth,sign_in_failed row,0,0,0,no,no,no,FAIL,Not implemented in client - schema supports but nothing posts it
+F2 Sign-in successful,Chrome,true,member,/auth then /dashboard,sign_in row,0 (0 rows in table currently),expected,expected,YES,YES,YES,FAIL,auth_events table is empty - beacon likely racing navigate; fire before redirect
+G1 Live DB snapshot 2026-07-01,-,-,-,-,-,0 (empty),0 (empty),2 rows (1 admin legacy /admin/activity + 1 anon NL),-,-,-,INVESTIGATE,Legacy anon row with user_id=NULL shouldn't exist under v1.2 rules - stale from pre-v1.2 code; safe to purge
