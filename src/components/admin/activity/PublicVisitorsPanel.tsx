@@ -258,9 +258,10 @@ export function PublicVisitorsPanel({
 
       {/* Data-source explainer */}
       <div className="mt-4 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-[11.5px] text-white/55">
-        Data source: <span className="text-white/75">daily rollup from PostHog</span>. Today's row
-        auto-refreshes when this panel loads (if older than 10 min). Realtime "visitors online",
-        live pages, and public map bubbles arrive in <span className="text-white/75">v1.1</span>.
+        Realtime tiles come from a server-side PostHog HogQL query (20s cache, admin-only).
+        Rollup tiles and top-lists come from the Supabase daily rollup; today's row auto-refreshes
+        when this panel loads (if older than 10 min). No raw visitor IDs or IPs are exposed.
+
       </div>
 
       {/* 7d totals + ingest status */}
