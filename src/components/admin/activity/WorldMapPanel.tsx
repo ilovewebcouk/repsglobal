@@ -251,8 +251,15 @@ export function WorldMapPanel({
                   const isHover = hoverCc === b.cc;
                   const isLive = b.online > 0;
                   const dim = selectedCountry && !isSelected ? 0.35 : 1;
+                  const isPublic = b.kind === "public";
+                  const pulseRGB = isPublic ? "56,189,248" : "249,115,22"; // sky-400 / orange
+                  const solid = isSelected
+                    ? isPublic ? "#38BDF8" : "#F97316"
+                    : isLive
+                      ? isPublic ? "rgba(56,189,248,0.95)" : "rgba(249,115,22,0.95)"
+                      : isPublic ? "rgba(56,189,248,0.5)" : "rgba(125,211,252,0.55)";
                   return (
-                    <Marker key={b.cc} coordinates={[b.lng, b.lat]}
+                    <Marker key={`${b.kind}-${b.cc}`} coordinates={[b.lng, b.lat]}
                       onMouseEnter={() => setHoverCc(b.cc)}
                       onMouseLeave={() => setHoverCc((v) => (v === b.cc ? null : v))}
                       onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
@@ -260,22 +267,17 @@ export function WorldMapPanel({
                     >
                       {isLive ? (
                         <>
-                          <circle r={b.radius + 12} fill="rgba(249,115,22,0.08)" className="animate-ping" style={{ animationDuration: "2.4s" }} />
-                          <circle r={b.radius + 6} fill="rgba(249,115,22,0.18)" />
+                          <circle r={b.radius + 12} fill={`rgba(${pulseRGB},0.08)`} className="animate-ping" style={{ animationDuration: "2.4s" }} />
+                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.18)`} />
                         </>
                       ) : null}
                       <circle
                         r={b.radius}
-                        fill={
-                          isSelected
-                            ? "#F97316"
-                            : isLive
-                              ? "rgba(249,115,22,0.95)"
-                              : "rgba(125,211,252,0.55)"
-                        }
-                        stroke={isSelected || isHover ? "#fff" : isLive ? "rgba(255,255,255,0.85)" : "rgba(125,211,252,0.9)"}
+                        fill={solid}
+                        stroke={isSelected || isHover ? "#fff" : `rgba(${pulseRGB},0.9)`}
                         strokeWidth={isSelected ? 2.5 : isHover ? 1.8 : 1.2}
                       />
+
                       {isHover || isSelected || b.radius > 10 ? (
                         <text
                           y={-b.radius - 5}
