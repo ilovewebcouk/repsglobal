@@ -254,7 +254,22 @@ function EnquirePage() {
 
   const mutation = useMutation({
     mutationFn: (vars: EnquiryInput) => submitEnquiry({ data: vars }),
-    onSuccess: () => {
+    onSuccess: (result: unknown) => {
+      // Public Analytics v1 — link this enquiry to the anonymous browsing session.
+      void import("@/lib/analytics/public-conversion").then(({ trackConversion }) => {
+        const enquiryId =
+          typeof result === "object" && result && "id" in result
+            ? String((result as { id?: string }).id ?? "")
+            : undefined;
+        void trackConversion({
+          event_kind: "enquiry_created",
+          enquiry_id: enquiryId && enquiryId.length === 36 ? enquiryId : undefined,
+          properties: { slug },
+        });
+      });
+      void import("@/hooks/usePublicAnalyticsBeacon").then(({ capturePublic }) => {
+        void capturePublic("enquiry_submit", { slug });
+      });
       toast.success(`Enquiry sent to ${pro.name.split(" ")[0]} — they'll reply by email.`);
       router.navigate({ to: "/pro/$slug", params: { slug } });
     },

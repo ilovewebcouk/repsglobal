@@ -14,6 +14,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { LAUNCH_GATE_ENABLED, isAllowlistedPath, hasPreviewUnlock } from "@/lib/launch";
 import { useActivityBeacon } from "@/hooks/useActivityBeacon";
+import { usePublicAnalyticsBeacon } from "@/hooks/usePublicAnalyticsBeacon";
+import { CookieBanner } from "@/components/consent/CookieBanner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -221,6 +223,8 @@ function RootComponent() {
 
   // Admin Activity v1 — privacy-safe operational beacon (logged-in only).
   useActivityBeacon();
+  // Public Analytics v1 — anonymous public visitor beacon (consent-gated).
+  usePublicAnalyticsBeacon();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -229,6 +233,7 @@ function RootComponent() {
         <div id="main-content" tabIndex={-1} className="outline-none">
           <Outlet />
         </div>
+        <CookieBanner />
         <Toaster richColors position="top-right" />
       </TooltipProvider>
     </QueryClientProvider>

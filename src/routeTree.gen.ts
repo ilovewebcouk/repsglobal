@@ -113,8 +113,12 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
+import { Route as ApiPublicCronPullPosthogDailyRouteImport } from './routes/api/public/cron/pull-posthog-daily'
+import { Route as ApiPublicConsentLogRouteImport } from './routes/api/public/consent/log'
 import { Route as ApiPublicActivitySessionEventRouteImport } from './routes/api/public/activity/session-event'
+import { Route as ApiPublicActivityPublicConversionRouteImport } from './routes/api/public/activity/public-conversion'
 import { Route as ApiPublicActivityAuthEventRouteImport } from './routes/api/public/activity/auth-event'
+import { Route as ApiPublicASplatRouteImport } from './routes/api/public/_a/$'
 import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admin_.billing.disputes.$disputeId'
 import { Route as AuthenticatedProfessionalDashboardWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.website'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
@@ -676,10 +680,27 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
     path: '/api/public/hooks/send-scheduled-campaigns',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronPullPosthogDailyRoute =
+  ApiPublicCronPullPosthogDailyRouteImport.update({
+    id: '/api/public/cron/pull-posthog-daily',
+    path: '/api/public/cron/pull-posthog-daily',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicConsentLogRoute = ApiPublicConsentLogRouteImport.update({
+  id: '/api/public/consent/log',
+  path: '/api/public/consent/log',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicActivitySessionEventRoute =
   ApiPublicActivitySessionEventRouteImport.update({
     id: '/api/public/activity/session-event',
     path: '/api/public/activity/session-event',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicActivityPublicConversionRoute =
+  ApiPublicActivityPublicConversionRouteImport.update({
+    id: '/api/public/activity/public-conversion',
+    path: '/api/public/activity/public-conversion',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicActivityAuthEventRoute =
@@ -688,6 +709,11 @@ const ApiPublicActivityAuthEventRoute =
     path: '/api/public/activity/auth-event',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicASplatRoute = ApiPublicASplatRouteImport.update({
+  id: '/api/public/_a/$',
+  path: '/api/public/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminBillingDisputesDisputeIdRoute =
   AdminBillingDisputesDisputeIdRouteImport.update({
     id: '/disputes/$disputeId',
@@ -983,8 +1009,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
+  '/api/public/$': typeof ApiPublicASplatRoute
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
+  '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
+  '/api/public/consent/log': typeof ApiPublicConsentLogRoute
+  '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1115,8 +1145,12 @@ export interface FileRoutesByTo {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
+  '/api/public/$': typeof ApiPublicASplatRoute
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
+  '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
+  '/api/public/consent/log': typeof ApiPublicConsentLogRoute
+  '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1255,8 +1289,12 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/_authenticated/_professional/dashboard_/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin_/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
+  '/api/public/_a/$': typeof ApiPublicASplatRoute
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
+  '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
+  '/api/public/consent/log': typeof ApiPublicConsentLogRoute
+  '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1393,8 +1431,12 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
+    | '/api/public/$'
     | '/api/public/activity/auth-event'
+    | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
+    | '/api/public/consent/log'
+    | '/api/public/cron/pull-posthog-daily'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1525,8 +1567,12 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
+    | '/api/public/$'
     | '/api/public/activity/auth-event'
+    | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
+    | '/api/public/consent/log'
+    | '/api/public/cron/pull-posthog-daily'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1664,8 +1710,12 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/verification'
     | '/_authenticated/_professional/dashboard_/website'
     | '/admin_/billing/disputes/$disputeId'
+    | '/api/public/_a/$'
     | '/api/public/activity/auth-event'
+    | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
+    | '/api/public/consent/log'
+    | '/api/public/cron/pull-posthog-daily'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1779,8 +1829,12 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
+  ApiPublicASplatRoute: typeof ApiPublicASplatRoute
   ApiPublicActivityAuthEventRoute: typeof ApiPublicActivityAuthEventRoute
+  ApiPublicActivityPublicConversionRoute: typeof ApiPublicActivityPublicConversionRoute
   ApiPublicActivitySessionEventRoute: typeof ApiPublicActivitySessionEventRoute
+  ApiPublicConsentLogRoute: typeof ApiPublicConsentLogRoute
+  ApiPublicCronPullPosthogDailyRoute: typeof ApiPublicCronPullPosthogDailyRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicOpsAlertDispatchRoute: typeof ApiPublicOpsAlertDispatchRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -2521,6 +2575,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/pull-posthog-daily': {
+      id: '/api/public/cron/pull-posthog-daily'
+      path: '/api/public/cron/pull-posthog-daily'
+      fullPath: '/api/public/cron/pull-posthog-daily'
+      preLoaderRoute: typeof ApiPublicCronPullPosthogDailyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/consent/log': {
+      id: '/api/public/consent/log'
+      path: '/api/public/consent/log'
+      fullPath: '/api/public/consent/log'
+      preLoaderRoute: typeof ApiPublicConsentLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/activity/session-event': {
       id: '/api/public/activity/session-event'
       path: '/api/public/activity/session-event'
@@ -2528,11 +2596,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicActivitySessionEventRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/activity/public-conversion': {
+      id: '/api/public/activity/public-conversion'
+      path: '/api/public/activity/public-conversion'
+      fullPath: '/api/public/activity/public-conversion'
+      preLoaderRoute: typeof ApiPublicActivityPublicConversionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/activity/auth-event': {
       id: '/api/public/activity/auth-event'
       path: '/api/public/activity/auth-event'
       fullPath: '/api/public/activity/auth-event'
       preLoaderRoute: typeof ApiPublicActivityAuthEventRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/_a/$': {
+      id: '/api/public/_a/$'
+      path: '/api/public/$'
+      fullPath: '/api/public/$'
+      preLoaderRoute: typeof ApiPublicASplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/billing/disputes/$disputeId': {
@@ -3073,8 +3155,13 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
+  ApiPublicASplatRoute: ApiPublicASplatRoute,
   ApiPublicActivityAuthEventRoute: ApiPublicActivityAuthEventRoute,
+  ApiPublicActivityPublicConversionRoute:
+    ApiPublicActivityPublicConversionRoute,
   ApiPublicActivitySessionEventRoute: ApiPublicActivitySessionEventRoute,
+  ApiPublicConsentLogRoute: ApiPublicConsentLogRoute,
+  ApiPublicCronPullPosthogDailyRoute: ApiPublicCronPullPosthogDailyRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicOpsAlertDispatchRoute: ApiPublicOpsAlertDispatchRoute,
