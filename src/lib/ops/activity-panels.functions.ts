@@ -599,7 +599,8 @@ export interface EventDetail {
   ts: string;
   summary: string;
   member: { user_id: string; name: string; email: string | null; avatar_url: string | null } | null;
-  metadata: Record<string, unknown>;
+  /** Raw row serialised as a JSON string so the RPC layer can pass it through. */
+  metadata_json: string;
   stripe_url: string | null;
   related_url: string | null;
 }
@@ -610,7 +611,7 @@ export const getActivityEventDetail = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<EventDetail | null> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const tableMap: Record<string, { table: string; ts: string; userCol?: string; url?: (id: string) => string; stripe?: (row: Record<string, unknown>) => string | null }> = {
+    const tableMap: Record<string, { table: string; ts: string; userCol?: string; url?: (id: string) => string }> = {
       payment: { table: "payment_events", ts: "created_at", userCol: "user_id" },
       dispute: { table: "disputes", ts: "opened_at", userCol: "user_id", url: (id) => `/admin/billing/disputes/${id}` },
       subscription: { table: "subscriptions", ts: "updated_at", userCol: "user_id" },
@@ -624,16 +625,29 @@ export const getActivityEventDetail = createServerFn({ method: "POST" })
     };
     const cfg = tableMap[data.source];
     if (!cfg) return null;
-    const { data: row } = await supabaseAdmin.from(cfg.table).select("*").eq("id", data.id).maybeSingle();
+    // Dynamic table name — the generated types can't infer this, so we escape
+    // to a loose client for this one lookup.
+    const admin = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (c: string) => {
+          eq: (col: string, v: string) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null }> };
+        };
+      };
+    };
+    const { data: row } = await admin.from(cfg.table).select("*").eq("id", data.id).maybeSingle();
     if (!row) return null;
-    const r = row as Record<string, unknown>;
+    const r = row;
     const userId = cfg.userCol ? (r[cfg.userCol] as string | null) : null;
     let member: EventDetail["member"] = null;
     if (userId) {
-      const { data: p } = await supabaseAdmin.from("profiles").select("id, full_name, display_name, avatar_url, email").eq("id", userId).maybeSingle();
+      const { data: p } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, display_name, avatar_url")
+        .eq("id", userId)
+        .maybeSingle();
       if (p) {
-        const pp = p as { id: string; full_name: string | null; display_name: string | null; avatar_url: string | null; email: string | null };
-        member = { user_id: pp.id, name: pp.full_name || pp.display_name || pp.id.slice(0, 8), email: pp.email, avatar_url: pp.avatar_url };
+        const pp = p as { id: string; full_name: string | null; display_name: string | null; avatar_url: string | null };
+        member = { user_id: pp.id, name: pp.full_name || pp.display_name || pp.id.slice(0, 8), email: null, avatar_url: pp.avatar_url };
       }
     }
     return {
@@ -642,8 +656,9 @@ export const getActivityEventDetail = createServerFn({ method: "POST" })
       ts: (r[cfg.ts] as string) ?? new Date().toISOString(),
       summary: `${data.source} · ${data.id.slice(0, 8)}`,
       member,
-      metadata: r,
+      metadata_json: JSON.stringify(r, null, 2),
       stripe_url: null,
       related_url: cfg.url ? cfg.url(data.id) : (userId ? `/admin/members/${userId}` : null),
     };
   });
+
