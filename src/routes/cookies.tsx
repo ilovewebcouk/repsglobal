@@ -57,38 +57,37 @@ const CATEGORIES: {
 function CookieTable() {
   return (
     <div className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
-      <div className="hidden grid-cols-[140px_1fr_180px_120px] gap-4 border-b border-reps-border bg-reps-panel/80 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55 lg:grid">
-        <span>Category</span>
+      <div className="hidden grid-cols-[180px_1fr_180px_140px] gap-4 border-b border-reps-border bg-reps-panel/80 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55 lg:grid">
+        <span>Cookie</span>
         <span>Purpose</span>
-        <span>Examples</span>
-        <span>Status</span>
+        <span>Provider</span>
+        <span>Duration</span>
       </div>
       <ul>
         {CATEGORIES.map((cat, i) => (
           <li
             key={cat.name}
-            className={`grid gap-2 px-5 py-5 lg:grid-cols-[140px_1fr_180px_120px] lg:items-start lg:gap-4 ${
+            className={`grid gap-2 px-5 py-5 lg:grid-cols-[180px_1fr_180px_140px] lg:items-start lg:gap-4 ${
               i > 0 ? "border-t border-reps-border" : ""
             }`}
           >
-            <span className="font-display text-[15px] font-semibold text-white">
-              {cat.name}
-            </span>
-            <span className="text-[14px] leading-relaxed text-white/75">
-              {cat.purpose}
-            </span>
-            <span className="text-[13px] text-white/60">{cat.examples}</span>
-            <span>
+            <span className="font-display text-[14px] font-semibold text-white">
+              <code>{cat.name}</code>
               <span
                 className={
                   cat.required
-                    ? "inline-flex items-center rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-reps-orange"
-                    : "inline-flex items-center rounded-full border border-reps-border bg-reps-ink px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/70"
+                    ? "ml-2 inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-300"
+                    : "ml-2 inline-flex items-center rounded-full border border-reps-border bg-reps-ink px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/70"
                 }
               >
                 {cat.required ? "Always on" : "Optional"}
               </span>
             </span>
+            <span className="text-[14px] leading-relaxed text-white/75">
+              {cat.purpose}
+            </span>
+            <span className="text-[13px] text-white/60">{cat.provider}</span>
+            <span className="text-[13px] text-white/60">{cat.duration}</span>
           </li>
         ))}
       </ul>
