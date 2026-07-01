@@ -2,7 +2,7 @@
 // Auth: Supabase publishable key in `apikey` header (canonical cron pattern).
 
 import { createFileRoute } from "@tanstack/react-router";
-import { pullPostHogDaily } from "@/lib/ops/pull-posthog-daily.functions";
+import { runPostHogDailyRollup } from "@/lib/ops/pull-posthog-daily.functions";
 
 export const Route = createFileRoute("/api/public/cron/pull-posthog-daily")({
   server: {
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/public/cron/pull-posthog-daily")({
         } catch {
           /* empty body ok */
         }
-        const result = await pullPostHogDaily({ data: { date } });
+        const result = await runPostHogDailyRollup(date);
         return Response.json(result);
       },
     },

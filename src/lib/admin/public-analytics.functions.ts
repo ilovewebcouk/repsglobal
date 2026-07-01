@@ -87,7 +87,31 @@ export const getPublicAnalyticsSummary = createServerFn({ method: "POST" })
         .maybeSingle(),
     ]);
 
-    const rollups = (rollupsRes.data ?? []) as Array<Record<string, unknown>>;
+    let rollups = (rollupsRes.data ?? []) as Array<Record<string, unknown>>;
+    let ingest = ingestRes.data as Record<string, unknown> | null;
+
+    const lastRunAt = ingest?.last_run_at ? Date.parse(String(ingest.last_run_at)) : 0;
+    const hasToday = rollups.some((r) => r.metric_date === today);
+    const rollupStale = !lastRunAt || Date.now() - lastRunAt > 10 * 60_000;
+    if (configured && (!hasToday || rollupStale)) {
+      const { runPostHogDailyRollup } = await import("@/lib/ops/pull-posthog-daily.functions");
+      await runPostHogDailyRollup(today);
+      const [freshRollupsRes, freshIngestRes] = await Promise.all([
+        supabaseAdmin
+          .from("metrics_daily_public_analytics")
+          .select("*")
+          .gte("metric_date", sevenDaysAgo)
+          .order("metric_date", { ascending: false }),
+        supabaseAdmin
+          .from("public_analytics_ingest_state")
+          .select("*")
+          .eq("id", "posthog_daily")
+          .maybeSingle(),
+      ]);
+      rollups = (freshRollupsRes.data ?? []) as Array<Record<string, unknown>>;
+      ingest = freshIngestRes.data as Record<string, unknown> | null;
+    }
+
     const findRollup = (d: string): PublicAnalyticsRollup | null => {
       const row = rollups.find((r) => r.metric_date === d);
       if (!row) return null;
@@ -138,8 +162,6 @@ export const getPublicAnalyticsSummary = createServerFn({ method: "POST" })
       checkout_starts: convs.filter((c) => c.event_kind === "checkout_started").length,
       signup_completes: convs.filter((c) => c.event_kind === "signup_complete").length,
     };
-
-    const ingest = ingestRes.data as Record<string, unknown> | null;
 
     return {
       configured,
