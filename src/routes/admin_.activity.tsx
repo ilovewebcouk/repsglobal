@@ -36,6 +36,8 @@ import {
   getGeoActivity, getNeedsAttention,
 } from "@/lib/ops/activity-panels.functions";
 import { getRealtimeSummary } from "@/lib/ops/activity-realtime.functions";
+import { getPublicRealtime } from "@/lib/admin/public-realtime.functions";
+
 
 import {
   KpiStrip, GeoPanel, OnlineNowRail, CurrentPagesPanel, TopMemberPagesPanel, NeedsAttentionPanel,
@@ -106,10 +108,19 @@ function AdminActivityPage() {
   const runGeo = useServerFn(getGeoActivity);
   const runAttention = useServerFn(getNeedsAttention);
   const runFeed = useServerFn(getActivityFeed);
+  const runPublicRealtime = useServerFn(getPublicRealtime);
+
+  const [mapLayer, setMapLayer] = useState<"members" | "public" | "both">("both");
 
   // ── Queries. Each panel independent; a slow panel degrades alone.
   const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 10_000 });
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
+  const publicRealtimeQ = useQuery({
+    queryKey: ["a-public-realtime"],
+    queryFn: () => runPublicRealtime(),
+    refetchInterval: 30_000, // TTL is 20s on the server; poll a touch slower.
+  });
+
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 15_000 });
   const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 20_000 });
   const topQ = useQuery({ queryKey: ["a-top", topWindow], queryFn: () => runTop({ data: { limit: 10, hours: topWindow } }), refetchInterval: 60_000 });
@@ -221,6 +232,11 @@ function AdminActivityPage() {
               loading={geoQ.isLoading}
               selectedCountry={country}
               onSelectCountry={(cc) => setSearch({ country: cc })}
+              layer={mapLayer}
+              onLayerChange={setMapLayer}
+              publicCountries={publicRealtimeQ.data?.countries ?? []}
+              publicOnline={publicRealtimeQ.data?.online_now ?? 0}
+              publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
             />
           </div>
           <div className="xl:col-span-1">
@@ -231,8 +247,12 @@ function AdminActivityPage() {
         {/* ── KPI strip (below hero — supporting metrics, no duplication of Online now) ── */}
         <KpiStrip tiles={dedupedKpis} loading={kpisQ.isLoading} />
 
-        {/* ── Public visitor analytics (anonymous — separate from member data) ── */}
-        <PublicVisitorsPanel />
+        {/* ── Public visitor analytics (realtime + rollup) ── */}
+        <PublicVisitorsPanel
+          realtime={publicRealtimeQ.data ?? null}
+          realtimeLoading={publicRealtimeQ.isLoading}
+        />
+
 
 
         {/* ── ROW 2: Online now (4) · Pages now (4) · Country list (4) ── */}

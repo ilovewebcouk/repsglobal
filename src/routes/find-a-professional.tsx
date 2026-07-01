@@ -415,6 +415,34 @@ function DirectoryPage() {
     }
   }, [page]);
 
+  // Public analytics — fire directory_search / directory_no_results once per
+  // (query, city, profession, visibleTotal) settle. Guard against duplicate
+  // fires on unrelated re-renders.
+  const searchFireRef = React.useRef<string>("");
+  React.useEffect(() => {
+    const trimmed = (q ?? "").trim();
+    if (!trimmed && !city && !profession) return;
+    const key = `${trimmed}|${city ?? ""}|${profession ?? ""}|${visibleTotal}`;
+    if (searchFireRef.current === key) return;
+    searchFireRef.current = key;
+    void import("@/lib/analytics/track").then(({ track }) => {
+      track.directorySearch({
+        q: trimmed || "",
+        result_count: visibleTotal,
+        location: city ?? null,
+        profession: profession ?? null,
+      });
+      if (visibleTotal === 0) {
+        track.directoryNoResults({
+          q: trimmed || "",
+          location: city ?? null,
+          profession: profession ?? null,
+        });
+      }
+    });
+  }, [q, city, profession, visibleTotal]);
+
+
 
   const barState: ResultsBarState = {
     profession,
@@ -1012,6 +1040,12 @@ function ProCard({
           <Link
             to="/pro/$slug"
             params={{ slug: pro.slug ?? proSlug(pro.name) }}
+            onClick={() => {
+              const s = pro.slug ?? proSlug(pro.name);
+              void import("@/lib/analytics/track").then(({ track }) =>
+                track.directoryResultClick({ clicked_result_slug: s }),
+              );
+            }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             View profile
@@ -1022,10 +1056,17 @@ function ProCard({
         <Link
           to="/pro/$slug"
           params={{ slug: pro.slug ?? proSlug(pro.name) }}
+          onClick={() => {
+            const s = pro.slug ?? proSlug(pro.name);
+            void import("@/lib/analytics/track").then(({ track }) =>
+              track.directoryResultClick({ clicked_result_slug: s }),
+            );
+          }}
           className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
         >
           View profile
         </Link>
+
       </div>
     </article>
   );

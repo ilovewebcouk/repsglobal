@@ -18,11 +18,24 @@ import type { GeoRow } from "@/lib/ops/activity-panels.functions";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+export type MapLayer = "members" | "public" | "both";
+
+export interface PublicCountryPoint {
+  country_code: string;
+  online: number;
+  views_5m: number;
+}
+
 export interface WorldMapPanelProps {
   countries: GeoRow[];
   loading: boolean;
   selectedCountry?: string;
   onSelectCountry: (cc: string | undefined) => void;
+  layer?: MapLayer;
+  onLayerChange?: (l: MapLayer) => void;
+  publicCountries?: PublicCountryPoint[];
+  publicOnline?: number;
+  publicStale?: boolean;
 }
 
 interface Bubble {
@@ -33,13 +46,19 @@ interface Bubble {
   online: number;
   views: number;
   radius: number;
+  kind: "member" | "public";
 }
 
-export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCountry }: WorldMapPanelProps) {
+
+export function WorldMapPanel({
+  countries, loading, selectedCountry, onSelectCountry,
+  layer = "members", onLayerChange,
+  publicCountries = [], publicOnline = 0, publicStale = false,
+}: WorldMapPanelProps) {
   const [mapError, setMapError] = useState(false);
   const [hoverCc, setHoverCc] = useState<string | null>(null);
 
-  const bubbles = useMemo<Bubble[]>(() => {
+  const memberBubbles = useMemo<Bubble[]>(() => {
     const withGeo = countries
       .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
       .map((c) => {
@@ -60,9 +79,44 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
         online: c.online_now,
         views: c.page_views_24h,
         radius: Math.max(4, 4 + scale * 22),
+        kind: "member" as const,
       };
     });
   }, [countries]);
+
+  const publicBubbles = useMemo<Bubble[]>(() => {
+    const withGeo = publicCountries
+      .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
+      .map((c) => {
+        const centroid = centroidFor(c.country_code);
+        if (!centroid) return null;
+        return { c, centroid };
+      })
+      .filter((x): x is { c: PublicCountryPoint; centroid: NonNullable<ReturnType<typeof centroidFor>> } => x !== null);
+    const maxViews = Math.max(1, ...withGeo.map(({ c }) => c.views_5m));
+    return withGeo.map(({ c, centroid }) => {
+      const scale = Math.sqrt(c.views_5m / maxViews);
+      return {
+        cc: c.country_code,
+        name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
+        lng: centroid.lng,
+        lat: centroid.lat,
+        online: c.online,
+        views: c.views_5m,
+        radius: Math.max(4, 4 + scale * 20),
+        kind: "public" as const,
+      };
+    });
+  }, [publicCountries]);
+
+  const bubbles = useMemo<Bubble[]>(() => {
+    if (layer === "members") return memberBubbles;
+    if (layer === "public") return publicBubbles;
+    // both — render public first (blue) then members (orange) so live members
+    // sit on top; each keeps its own colour.
+    return [...publicBubbles, ...memberBubbles];
+  }, [layer, memberBubbles, publicBubbles]);
+
 
   // Auto-fit: pick a viewport based on where activity actually is. Prefer
   // live (online > 0); fall back to any 24h activity. This gives GB-only
@@ -94,33 +148,60 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
   // when the fitted view changes (e.g. new live activity arrives).
   const viewKey = `${view.center[0].toFixed(1)}:${view.center[1].toFixed(1)}:${view.zoom.toFixed(2)}`;
 
-  const totalOnline = bubbles.reduce((s, b) => s + b.online, 0);
-  const totalViews = bubbles.reduce((s, b) => s + b.views, 0);
+  void bubbles;
+
   const unknownCountry = countries.find((c) => c.country_code === "??" || c.country_code === "XX");
 
   return (
     <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
-      <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <Globe className="h-4 w-4 shrink-0 text-white/60" />
           <div className="min-w-0">
             <h2 className="truncate font-display text-[14px] font-semibold text-white">
-              Realtime member activity map
+              Realtime activity map
             </h2>
             <p className="truncate text-[11px] text-white/45">
-              Country-level bubbles · logged-in member activity only
+              <span className="text-orange-300">Members</span> · <span className="text-blue-300">public visitors</span> · country bubbles
+              {publicStale ? <span className="ml-1 text-amber-300">· public live query stale</span> : null}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[10.5px] text-white/55">
+        <div className="flex items-center gap-3 text-[10.5px] text-white/55">
+          {onLayerChange ? (
+            <div className="inline-flex overflow-hidden rounded-full border border-white/15 bg-black/40 text-[10.5px]">
+              {(["members", "public", "both"] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => onLayerChange(l)}
+                  className={cn(
+                    "px-2.5 py-1 font-medium capitalize transition-colors",
+                    layer === l
+                      ? l === "public"
+                        ? "bg-blue-500/25 text-blue-100"
+                        : l === "members"
+                          ? "bg-orange-500/25 text-orange-100"
+                          : "bg-white/15 text-white"
+                      : "text-white/55 hover:text-white",
+                  )}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            {totalOnline} online
+            <span className="h-2 w-2 rounded-full bg-orange-400" />
+            {memberBubbles.reduce((s, b) => s + b.online, 0)} members
           </span>
-          <span className="text-white/25">·</span>
-          <span>{totalViews.toLocaleString()} views 24h</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-sky-400" />
+            {publicOnline} public
+          </span>
         </div>
       </header>
+
 
       <div className="relative">
         {mapError ? (
@@ -170,8 +251,15 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
                   const isHover = hoverCc === b.cc;
                   const isLive = b.online > 0;
                   const dim = selectedCountry && !isSelected ? 0.35 : 1;
+                  const isPublic = b.kind === "public";
+                  const pulseRGB = isPublic ? "56,189,248" : "249,115,22"; // sky-400 / orange
+                  const solid = isSelected
+                    ? isPublic ? "#38BDF8" : "#F97316"
+                    : isLive
+                      ? isPublic ? "rgba(56,189,248,0.95)" : "rgba(249,115,22,0.95)"
+                      : isPublic ? "rgba(56,189,248,0.5)" : "rgba(125,211,252,0.55)";
                   return (
-                    <Marker key={b.cc} coordinates={[b.lng, b.lat]}
+                    <Marker key={`${b.kind}-${b.cc}`} coordinates={[b.lng, b.lat]}
                       onMouseEnter={() => setHoverCc(b.cc)}
                       onMouseLeave={() => setHoverCc((v) => (v === b.cc ? null : v))}
                       onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
@@ -179,22 +267,17 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
                     >
                       {isLive ? (
                         <>
-                          <circle r={b.radius + 12} fill="rgba(249,115,22,0.08)" className="animate-ping" style={{ animationDuration: "2.4s" }} />
-                          <circle r={b.radius + 6} fill="rgba(249,115,22,0.18)" />
+                          <circle r={b.radius + 12} fill={`rgba(${pulseRGB},0.08)`} className="animate-ping" style={{ animationDuration: "2.4s" }} />
+                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.18)`} />
                         </>
                       ) : null}
                       <circle
                         r={b.radius}
-                        fill={
-                          isSelected
-                            ? "#F97316"
-                            : isLive
-                              ? "rgba(249,115,22,0.95)"
-                              : "rgba(125,211,252,0.55)"
-                        }
-                        stroke={isSelected || isHover ? "#fff" : isLive ? "rgba(255,255,255,0.85)" : "rgba(125,211,252,0.9)"}
+                        fill={solid}
+                        stroke={isSelected || isHover ? "#fff" : `rgba(${pulseRGB},0.9)`}
                         strokeWidth={isSelected ? 2.5 : isHover ? 1.8 : 1.2}
                       />
+
                       {isHover || isSelected || b.radius > 10 ? (
                         <text
                           y={-b.radius - 5}

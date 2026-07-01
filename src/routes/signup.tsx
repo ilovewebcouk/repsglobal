@@ -11,7 +11,7 @@ import {
   Sparkles,
   User,
 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -201,6 +201,14 @@ function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
+  // Public analytics — signup_start once per mount.
+  useEffect(() => {
+    void import("@/lib/analytics/track").then(({ track }) =>
+      track.signupStart({ plan: search.tier ?? null, path: "/signup" }),
+    );
+  }, [search.tier]);
+
+
   const planSummary: PlanSummary | null =
     search.tier && search.period && search.tier in PLAN_SUMMARIES
       ? PLAN_SUMMARIES[search.tier as NonNullable<SignupSearch["tier"]>][
@@ -260,6 +268,12 @@ function SignupPage() {
         return;
       }
       // Go straight to Stripe Hosted Checkout — the account doesn't exist yet.
+      void import("@/lib/analytics/track").then(({ track }) =>
+        track.checkoutStarted({
+          plan: search.tier ?? "core",
+          interval: search.period === "yearly" ? "yearly" : search.period === "monthly" ? "monthly" : null,
+        }),
+      );
       window.location.assign(result.url);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";

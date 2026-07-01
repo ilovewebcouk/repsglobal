@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   BadgeCheck,
@@ -134,6 +134,14 @@ function EnquirePage() {
   const { slug } = Route.useParams();
   const router = useRouter();
   const fallbackPro = getPro(slug);
+
+  // Public analytics — enquiry_start fires once per slug per mount.
+  useEffect(() => {
+    void import("@/lib/analytics/track").then(({ track }) =>
+      track.enquiryStart({ slug }),
+    );
+  }, [slug]);
+
 
   // Live overlay (name, avatar, services). Falls back to static if not found.
   const liveQuery = useQuery({

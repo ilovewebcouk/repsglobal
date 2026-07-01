@@ -512,6 +512,16 @@ function ProProfilePage() {
   }
 
   const pro = PROS[slug] ?? (db ? proFromDb(db) : null);
+
+  // Public analytics — fire once per slug per session. Must run before any
+  // early return to keep hook order stable.
+  React.useEffect(() => {
+    if (!pro || isFixture) return;
+    void import("@/lib/analytics/track").then(({ track }) =>
+      track.profileView({ slug, professional_id: db?.id ?? null }),
+    );
+  }, [slug, db?.id, isFixture, pro]);
+
   if (!pro) return <ProNotFound />;
 
 
@@ -663,6 +673,11 @@ function ProProfilePage() {
                 <Link
                   to="/pro/$slug/enquire"
                   params={{ slug }}
+                  onClick={() => {
+                    void import("@/lib/analytics/track").then(({ track }) =>
+                      track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
+                    );
+                  }}
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
                 >
                   <MessageCircle className="h-4 w-4" />
