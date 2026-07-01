@@ -223,7 +223,7 @@ export function WorldMapPanel({
               Realtime activity map
             </h2>
             <p className="truncate text-[11px] text-white/45">
-              <span className="text-orange-300">Members</span> · <span className="text-blue-300">public visitors</span> · country bubbles
+              <span className="text-orange-300">Members</span> · <span className="text-blue-300">public visitors</span> · town dots
               {publicStale ? <span className="ml-1 text-amber-300">· public live query stale</span> : null}
             </p>
           </div>
@@ -326,7 +326,7 @@ export function WorldMapPanel({
                       ? isPublic ? "rgba(56,189,248,0.95)" : "rgba(249,115,22,0.95)"
                       : isPublic ? "rgba(56,189,248,0.5)" : "rgba(125,211,252,0.55)";
                   return (
-                    <Marker key={`${b.kind}-${b.cc}`} coordinates={[b.lng, b.lat]}
+                    <Marker key={`${b.kind}-${b.id}`} coordinates={[b.lng, b.lat]}
                       onMouseEnter={() => setHoverCc(b.cc)}
                       onMouseLeave={() => setHoverCc((v) => (v === b.cc ? null : v))}
                       onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
@@ -360,7 +360,7 @@ export function WorldMapPanel({
                             pointerEvents: "none",
                           }}
                         >
-                          {b.cc}
+                          {b.precision === "city" ? b.name : b.cc}
                         </text>
                       ) : null}
 
@@ -442,7 +442,7 @@ export function WorldMapPanel({
                 <Globe className="h-6 w-6 text-white/25" />
                 <div className="text-[12px] font-medium text-white/60">No country activity yet</div>
                 <div className="max-w-[280px] text-[10.5px] text-white/40">
-                  Country bubbles appear here as logged-in members are active.
+                  Town dots appear here as visitors and members become active.
                 </div>
               </div>
             ) : null}
