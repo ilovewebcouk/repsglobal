@@ -94,6 +94,7 @@ function AdminActivityPage() {
 
   const [selectedEvent, setSelectedEvent] = useState<ActivityEvent | null>(null);
   const [feedOpen, setFeedOpen] = useState(false);
+  const [topWindow, setTopWindow] = useState<24 | 168 | 720>(24);
 
   // ── Server function bindings
   const runKpis = useServerFn(getActivityKpis);
@@ -110,7 +111,7 @@ function AdminActivityPage() {
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 15_000 });
   const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 20_000 });
-  const topQ = useQuery({ queryKey: ["a-top"], queryFn: () => runTop({ data: { limit: 10 } }), refetchInterval: 60_000 });
+  const topQ = useQuery({ queryKey: ["a-top", topWindow], queryFn: () => runTop({ data: { limit: 10, hours: topWindow } }), refetchInterval: 60_000 });
   const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo(), refetchInterval: 30_000 });
   const attentionQ = useQuery({ queryKey: ["a-attention"], queryFn: () => runAttention(), refetchInterval: 30_000 });
 
@@ -128,7 +129,13 @@ function AdminActivityPage() {
     return list.filter((e) => e.user_id && usersInCountry.has(e.user_id));
   }, [feedQ.data, country, onlineQ.data]);
 
-  const compactEvents = useMemo(() => events.slice(0, 8), [events]);
+  const compactEvents = useMemo(() => events.slice(0, 6), [events]);
+
+  // Drop `online_now` from the KPI strip — the Realtime card owns it.
+  const dedupedKpis = useMemo(
+    () => (kpisQ.data?.tiles ?? []).filter((t) => t.key !== "online_now"),
+    [kpisQ.data],
+  );
 
   // ── Timing / degraded panels
   const timings = useMemo(() => {
