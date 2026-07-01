@@ -268,6 +268,12 @@ function SignupPage() {
         return;
       }
       // Go straight to Stripe Hosted Checkout — the account doesn't exist yet.
+      void import("@/lib/analytics/track").then(({ track }) =>
+        track.checkoutStarted({
+          plan: search.tier ?? "core",
+          interval: search.period === "yearly" ? "yearly" : search.period === "monthly" ? "monthly" : null,
+        }),
+      );
       window.location.assign(result.url);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";
