@@ -182,9 +182,16 @@ export function PublicVisitorsPanel() {
         />
       </div>
 
-      {/* 7d totals */}
+      {/* Data-source explainer */}
+      <div className="mt-4 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-[11.5px] text-white/55">
+        Data source: <span className="text-white/75">daily rollup from PostHog</span>. Today's row
+        auto-refreshes when this panel loads (if older than 10 min). Realtime "visitors online",
+        live pages, and public map bubbles arrive in <span className="text-white/75">v1.1</span>.
+      </div>
+
+      {/* 7d totals + ingest status */}
       {data ? (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-[11.5px] text-white/60">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-[11.5px] text-white/60">
           <span>
             <span className="font-medium text-white/80">Last 7 days:</span>{" "}
             {fmt(data.last_7d.public_page_views)} views ·{" "}
@@ -192,14 +199,45 @@ export function PublicVisitorsPanel() {
             {fmt(data.last_7d.enquiries_created)} enquiries ·{" "}
             {fmt(data.last_7d.signup_starts)} signup starts
           </span>
-          {data.last_ingest ? (
-            <span className="text-white/40">
-              Ingest: {data.last_ingest.last_status ?? "never"}
-              {data.last_ingest.last_pulled_date
-                ? ` · ${data.last_ingest.last_pulled_date}`
-                : ""}
-            </span>
-          ) : null}
+          {data.last_ingest ? (() => {
+            const status = data.last_ingest.last_status ?? "never";
+            const runAt = data.last_ingest.last_run_at
+              ? new Date(data.last_ingest.last_run_at)
+              : null;
+            const mins = runAt ? Math.round((Date.now() - runAt.getTime()) / 60000) : null;
+            const refreshed =
+              mins === null ? "never" : mins < 1 ? "just now" : mins < 60 ? `${mins}m ago` : `${Math.round(mins / 60)}h ago`;
+            const ok = status === "ok";
+            return (
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                <span className="text-white/50">
+                  Today refreshed <span className="text-white/75">{refreshed}</span>
+                </span>
+                <span className="text-white/50">
+                  Nightly last ran{" "}
+                  <span className="text-white/75">
+                    {data.last_ingest.last_pulled_date ?? "—"}
+                  </span>
+                </span>
+                <span
+                  className={
+                    ok
+                      ? "inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-emerald-300"
+                      : "inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-500/15 px-2 py-0.5 text-red-300"
+                  }
+                  title={data.last_ingest.last_error ?? undefined}
+                >
+                  Ingest: {status}
+                </span>
+              </span>
+            );
+          })() : null}
+        </div>
+      ) : null}
+      {data?.last_ingest?.last_status === "error" && data.last_ingest.last_error ? (
+        <div className="mt-2 rounded-[12px] border border-red-400/30 bg-red-500/10 px-3 py-2 text-[11px] text-red-200">
+          <span className="font-semibold">Rollup error:</span>{" "}
+          <span className="font-mono text-red-100/90">{data.last_ingest.last_error}</span>
         </div>
       ) : null}
     </section>
