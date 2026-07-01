@@ -148,8 +148,8 @@ export function WorldMapPanel({
   // when the fitted view changes (e.g. new live activity arrives).
   const viewKey = `${view.center[0].toFixed(1)}:${view.center[1].toFixed(1)}:${view.zoom.toFixed(2)}`;
 
-  const totalOnline = bubbles.reduce((s, b) => s + b.online, 0);
-  const totalViews = bubbles.reduce((s, b) => s + b.views, 0);
+  void bubbles;
+
   const unknownCountry = countries.find((c) => c.country_code === "??" || c.country_code === "XX");
 
   return (
