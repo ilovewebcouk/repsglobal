@@ -73,8 +73,9 @@ export function WorldMapPanel({
       .filter((x): x is { c: GeoRow; centroid: NonNullable<ReturnType<typeof centroidFor>> } => x !== null);
 
     const maxViews = Math.max(1, ...withGeo.map(({ c }) => c.page_views_24h));
+    const denom = Math.log1p(maxViews);
     return withGeo.map(({ c, centroid }) => {
-      const scale = Math.sqrt(c.page_views_24h / maxViews);
+      const scale = denom > 0 ? Math.log1p(c.page_views_24h) / denom : 0;
       return {
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
@@ -82,12 +83,13 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online_now,
         views: c.page_views_24h,
-        // v2.0: cap radius so a single-country day doesn't render as a "blob".
-        radius: Math.min(14, Math.max(3.5, 3.5 + scale * 9)),
+        // v2.1: restrained cap so single-country traffic never renders as a blob.
+        radius: Math.min(9, Math.max(3, 3 + scale * 6)),
         kind: "member" as const,
       };
     });
   }, [countries]);
+
 
   const publicBubbles = useMemo<Bubble[]>(() => {
     const withGeo = publicCountries
@@ -99,8 +101,9 @@ export function WorldMapPanel({
       })
       .filter((x): x is { c: PublicCountryPoint; centroid: NonNullable<ReturnType<typeof centroidFor>> } => x !== null);
     const maxViews = Math.max(1, ...withGeo.map(({ c }) => c.views_5m));
+    const denom = Math.log1p(maxViews);
     return withGeo.map(({ c, centroid }) => {
-      const scale = Math.sqrt(c.views_5m / maxViews);
+      const scale = denom > 0 ? Math.log1p(c.views_5m) / denom : 0;
       return {
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
@@ -108,11 +111,12 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online,
         views: c.views_5m,
-        radius: Math.min(13, Math.max(3.5, 3.5 + scale * 8)),
+        radius: Math.min(9, Math.max(3, 3 + scale * 5.5)),
         kind: "public" as const,
       };
     });
   }, [publicCountries]);
+
 
   const bubbles = useMemo<Bubble[]>(() => {
     if (layer === "members") return memberBubbles;
