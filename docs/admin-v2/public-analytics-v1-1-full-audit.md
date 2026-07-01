@@ -196,3 +196,43 @@ Rollup counts match PostHog raw counts exactly. **Rollup writer is correct.** Th
 ## Deliverable status
 
 Verdict: **F. Mixed partial failure — two P1 blockers listed above.** Not marking v1.1 complete. Ready to patch Bug 1 (proxy form-encoded body parsing) and instrument Bug 2 (custom event drop) in a follow-up. Awaiting your call on whether to apply those fixes now or in a separate scoped pass.
+
+---
+
+## Patch — 2026-07-01 (P1 blockers)
+
+### Bug 1 fix — proxy now mutates real posthog-js payloads
+
+`src/routes/api/public/[_]a/$.ts` rewritten:
+
+- Detects `application/x-www-form-urlencoded` bodies (posthog-js default with `disable_compression:true`), parses `data=<base64 JSON>`, mutates, re-encodes, and forwards with the same content type.
+- Also handles JSON POSTs and GET `?data=` beacons through the same mutator.
+- Mutator always: `delete properties.$ip` + `delete properties.ip`; sets `is_internal` (`true` when the caller's bearer resolves to an admin, `false` otherwise); when `cf-ipcountry` is present, injects `$geoip_country_code` and mirrors to `country_code`.
+- Batch payloads (`{ batch: [...] }`) mutated per-event.
+- Compressed / gzip / brotli bodies now **fail closed** (204) rather than forward un-mutated — client is configured `disable_compression:true` so this branch should never fire in prod, but if it ever does, admin exclusion + geo enrichment are preserved.
+- Never forwards `authorization`, `cookie`, `x-forwarded-for`, `cf-connecting-ip`, `true-client-ip`, `x-real-ip`, or `content-encoding`. Only `user-agent` and the rewritten `content-type` are forwarded.
+- Decode failures are logged and fail closed (204).
+
+### Bug 2 fix — custom events now queued until PostHog `loaded`
+
+`src/hooks/usePublicAnalyticsBeacon.ts` rewritten:
+
+- `capturePublic` no longer races the init callback. New flow:
+  - If `window.__repsPhReady` is true, capture immediately.
+  - Otherwise push the event into `window.__repsPhQueue`, then await `loadPostHog()`.
+  - The posthog `loaded` callback sets `__repsPhReady=true` and flushes the queue in order.
+  - Sign-out clears the queue.
+- `capture_pageleave` set to **false** — the built-in listener was firing on every unload regardless of surface and leaking admin/dashboard pageleaves into public analytics. Our own `$pageview` beacon already gates on `isPublicSurface` + consent + auth.
+- Debug instrumentation added behind `import.meta.env.DEV` OR `localStorage['reps.analytics.debug'] = '1'`. Logs event name + consent state + capture path only; no PII, silent in production by default.
+
+### QA to run against production after deploy
+
+Reproduce with an accepted-consent incognito session and confirm via HogQL:
+
+1. Any event in the last 15 minutes has `properties.is_internal = false` and `properties.$geoip_country_code` matching the visitor's country (not `US`).
+2. `properties.$ip` and `properties.ip` absent on every recent event.
+3. `profile_view`, `directory_search`, `directory_result_click`, `profile_cta_click`, `enquiry_start`, `signup_start`, `checkout_started` counts move above zero when the corresponding public flows are exercised.
+4. Signed-in admin browsing `/admin/*` produces either no events (client-side surface gate) or `is_internal=true` (never `false` / `null`).
+5. Realtime tiles + rollup totals on `/admin/activity` match PostHog raw counts for today.
+
+Verdict cannot flip to **A** until the above HogQL checks pass in production. Patch shipped; awaiting live traffic verification.
