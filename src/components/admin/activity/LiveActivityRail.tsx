@@ -35,10 +35,11 @@ export interface LiveActivityRailProps {
   publicLoading: boolean;
   realtime: RealtimeSummary | undefined;
   updatedAt: number | null;
+  className?: string;
 }
 
 export function LiveActivityRail(props: LiveActivityRailProps) {
-  const { members, memberPages, membersLoading, publicRealtime, publicLoading, realtime, updatedAt } = props;
+  const { members, memberPages, membersLoading, publicRealtime, publicLoading, realtime, updatedAt, className } = props;
   const [tab, setTab] = useState<Tab>("all");
 
   const publicOnline = publicRealtime?.online_now ?? 0;
@@ -57,7 +58,8 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
   const totalDevices = devices ? devices.mobile + devices.desktop + devices.tablet + devices.unknown : 0;
 
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
+    <section className={cn("flex h-full w-full flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel", className)}>
+
       <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <div className="relative flex h-6 w-6 items-center justify-center">

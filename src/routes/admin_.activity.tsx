@@ -262,9 +262,9 @@ function AdminActivityPage() {
           loading={publicRealtimeQ.isLoading && realtimeQ.isLoading}
         />
 
-        {/* ── 2. COCKPIT: Map (col-8) + right rail split (col-4) ── */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-          <div className="xl:col-span-8">
+        {/* ── 2. COCKPIT: Left = Map + Needs Attention · Right = full-height Live rail ── */}
+        <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
+          <div className="flex flex-col gap-4 xl:col-span-8">
             <ClientOnlyMap
               countries={geoQ.data?.countries ?? []}
               loading={geoQ.isLoading}
@@ -277,9 +277,11 @@ function AdminActivityPage() {
               publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
               updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
             />
+            <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
           </div>
-          <div className="flex flex-col gap-4 xl:col-span-4">
+          <div className="flex xl:col-span-4">
             <LiveActivityRail
+              className="h-full w-full"
               members={onlineQ.data?.users ?? []}
               memberPages={currentQ.data?.pages ?? []}
               membersLoading={onlineQ.isLoading}
@@ -288,7 +290,6 @@ function AdminActivityPage() {
               realtime={realtimeQ.data}
               updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
             />
-            <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
           </div>
         </div>
 
