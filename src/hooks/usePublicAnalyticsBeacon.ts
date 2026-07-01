@@ -58,6 +58,12 @@ async function loadPostHog(): Promise<PostHogLike | null> {
         capture_pageview: false, // we do it manually to attach session_id
         capture_pageleave: true,
         disable_session_recording: true,
+        disable_surveys: true,
+        disable_web_experiments: true,
+        disable_external_dependency_loading: true,
+        advanced_disable_decide: true,
+        advanced_disable_feature_flags: true,
+        advanced_disable_feature_flags_on_first_load: true,
         autocapture: false,
         loaded: (ph: PostHogLike) => {
           window.__repsPh = ph;
