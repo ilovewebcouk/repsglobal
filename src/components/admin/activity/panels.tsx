@@ -271,7 +271,11 @@ export function OnlineNowRail({ users, loading }: { users: OnlineNowUser[]; load
       right={<Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-[10.5px] text-emerald-300">{users.filter((u) => u.badges.includes("Online")).length} live</Badge>}
     >
       {users.length === 0 ? (
-        <EmptyState icon={Users} title="Nobody logged in right now" hint="Live sessions appear as members interact with the app." />
+        <EmptyState
+          icon={Users}
+          title="No members online right now"
+          hint="Live sessions will appear here as logged-in members move through the app."
+        />
       ) : (
         <ul className="max-h-[520px] divide-y divide-reps-border/60 overflow-auto">
           {users.map((u) => (
