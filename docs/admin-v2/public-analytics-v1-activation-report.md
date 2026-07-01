@@ -281,3 +281,102 @@ These need the PostHog EU project dashboard open in parallel to visually confirm
 - Kill switch verified — removing `VITE_POSTHOG_PUBLIC_KEY` returns the system to zero-capture ✅
 
 **Public Analytics v1 is live-safe.** Remaining work is the v1.1 realtime layer (see `public-analytics-v1-1-realtime-layer-plan.md`) and a one-off live PostHog dashboard smoke test against the EU project.
+
+---
+
+## 11. Final Live Smoke Test — Playbook (awaiting live confirmation)
+
+**Status: PENDING** — this step requires a real logged-in browser session and access to the PostHog EU project dashboard. Neither can be done from the sandbox: Playwright is explicitly excluded ("normal browser session, not Playwright") and I do not have your PostHog EU credentials. The steps below are the exact 10-minute walkthrough — run them and paste the observations back and I'll append the results and set the final verdict.
+
+### Pre-flight state (verified from sandbox, 2026-07-01 10:50 UTC)
+
+| Signal | Value |
+| --- | --- |
+| `public_analytics_ingest_state` last_status | `never_run` (expected — no rollup yet) |
+| `metrics_daily_public_analytics` rows | 0 (expected — no rollup yet) |
+| `public_analytics_consent_events` rows today | 6 (from earlier QA runs — audit trail working) |
+| `VITE_POSTHOG_PUBLIC_KEY` in env | ✅ set |
+| `POSTHOG_PERSONAL_API_KEY` in secrets | ✅ set |
+| `POSTHOG_PROJECT_ID` in secrets | ✅ set |
+
+### Part A — Browser walkthrough (you)
+
+1. Open **`https://repsuk.org`** in a **fresh incognito window** (or a browser you've never visited REPs on). Do **not** use the preview URL or `lovable.app` domain — those may not have `Cloudflare-IPCountry` set the same way and won't test the production PostHog proxy.
+2. Confirm the cookie banner appears at the bottom.
+3. Click **Accept all**. Banner should dismiss.
+4. Visit in order (allow ~5 s on each page for `$pageview` to flush):
+   - `/` (home)
+   - Any public professional profile — e.g. `/pro/james-wilson` (or any slug from `/search`)
+   - `/search` (directory)
+   - Type a query in the directory search and submit (e.g. "personal trainer london")
+   - Click one result card
+5. Leave the tab; do not close it for 60 s so batched events flush.
+
+### Part B — PostHog EU dashboard (you)
+
+1. Log in to **PostHog EU** → your REPs project → **Activity → Live events** (left nav).
+2. Filter by `distinct_id` = your PostHog `person` from the just-opened session (or filter `timestamp > 10 minutes ago` and eyeball).
+3. For each of these events, confirm the checklist:
+
+| Event | Should appear | Property checks |
+| --- | --- | --- |
+| `$pageview` | ×3 minimum (`/`, `/pro/...`, `/search`) | `properties.is_internal` not `true`; no `$ip`; `properties.$pathname` set; `properties.$referring_domain` present on non-first pageviews; `properties.country_code` set if you're on Cloudflare |
+| `profile_view` | ×1 | `properties.slug` = the profile you opened; no `$ip`; `is_internal !== true` |
+| `directory_search` | ×1 | `properties.q` = your query; no `$ip` |
+| `directory_result_click` | ×1 (if you clicked a card) | `properties.slug` = clicked pro; no `$ip` |
+
+Also spot-check any one event → **Properties** tab and grep for `$ip` — must be **absent**. If `$ip` is present, the proxy is not stripping it — that's a **stop-ship blocker (verdict D)**.
+
+### Part C — Rollup + admin panel (you can run this, or I can if you give me an SSH session)
+
+Once PostHog shows events, trigger the manual rollup:
+
+```bash
+export PUBLIC_URL="https://repsuk.org"
+export SUPABASE_PUBLISHABLE_KEY="<the VITE_SUPABASE_PUBLISHABLE_KEY value>"
+./scripts/ops/trigger-posthog-rollup.sh
+# → expect: { "ok": true, "date": "2026-07-01" }
+```
+
+Then verify:
+
+1. `/admin/activity` → **Public Visitors** panel — should show non-zero `Page views`, `Sessions`, `Profile views`, `Searches`. Top-pages / top-profiles / top-searches lists should list what you just visited.
+2. `/admin` KPI strip — member counts, revenue, growth **unchanged** vs. before the walkthrough (public analytics must not leak into member metrics).
+3. `/admin/members/<any userId>` Sessions tab — should **not** contain any of the anonymous public-visitor rows (member data is separate table `member_session_events`, public is separate table `page_view_events` / PostHog).
+
+### Part D — Consent-refuser sanity (you)
+
+1. In a **second** fresh incognito window, click **Reject non-essential** on the banner.
+2. Open DevTools → Network → filter `_a/` → confirm **zero** requests to `/api/public/_a/*`.
+3. Open Application → Cookies → confirm **no** `ph_*` cookies.
+4. Refresh `/`, `/search`, one profile — still zero `_a/` requests.
+
+### Reporting back
+
+Please paste one line per row (or send screenshots) so I can complete this section:
+
+```
+[ ] Banner appeared and Accept all worked
+[ ] $pageview x3 arrived in PostHog EU
+[ ] profile_view arrived with correct slug
+[ ] directory_search arrived with correct q
+[ ] directory_result_click arrived (or "not tested")
+[ ] $ip absent on all sampled events
+[ ] is_internal !== true on all sampled events
+[ ] country_code present (Y/N)
+[ ] Rollup POST returned { ok: true }
+[ ] /admin/activity Public Visitors panel populated
+[ ] /admin KPIs unchanged
+[ ] Member 360 Sessions tab shows no public visitor rows
+[ ] Reject-window generated zero /_a/ requests
+```
+
+### Verdict placeholder
+
+Verdict will be set when observations arrive:
+- **A. Complete and safe to run** — all boxes ticked, `$ip` absent, rollup + panel work.
+- **B. Capture works, rollup/admin panel blocked** — PostHog receives events but rollup errors or panel stays empty.
+- **C. Consent works, PostHog ingest blocked** — banner + gating fine, but no events reach PostHog.
+- **D. Not safe to enable** — `$ip` present, admin traffic captured, rejected sessions still send events, or member data contaminated.
+
+Until then, **Public Analytics v1 is NOT marked complete**.
