@@ -345,38 +345,6 @@ function AdminActivityPage() {
           </div>
         </section>
 
-          </div>
-        </div>
-
-        {/* ── 4. PUBLIC ANALYTICS · 24h rollup + discovery ── */}
-        <PublicVisitorsPanel />
-
-        {/* ── 5. MEMBER ACTIVITY ── */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-orange-400" />
-            <h2 className="font-display text-[15px] font-semibold text-white">Member activity</h2>
-            <span className="text-[11px] text-white/45">Logged-in members only</span>
-          </div>
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-            <div className="xl:col-span-7">
-              <TopMemberPagesPanel
-                pages={topQ.data?.pages ?? []}
-                loading={topQ.isLoading}
-                window={topWindow}
-                onWindowChange={setTopWindow}
-              />
-            </div>
-            <div className="xl:col-span-5">
-              <GeoPanel
-                countries={geoQ.data?.countries ?? []}
-                loading={geoQ.isLoading}
-                selectedCountry={country}
-                onSelectCountry={(cc) => setSearch({ country: cc })}
-              />
-            </div>
-          </div>
-        </section>
 
         {/* Footer meta */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-reps-border/60 pt-3 text-[10.5px] text-white/40">
