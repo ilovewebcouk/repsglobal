@@ -1,15 +1,18 @@
 // Admin — Public Visitor Analytics panel for /admin/activity.
-// Reads Supabase rollups + conversions. Live PostHog "who's on now" arrives
-// once POSTHOG_PERSONAL_API_KEY is configured.
+// Combines Supabase rollups (24h/7d) with an admin-only PostHog realtime
+// query (last 5 min). Realtime tiles are clearly labelled and separate
+// from rollup tiles per Amendment (v1.1 Phase 5).
 
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Globe2, Search, TrendingUp, ExternalLink, AlertCircle } from "lucide-react";
+import { Globe2, Search, TrendingUp, ExternalLink, AlertCircle, Radio, Eye } from "lucide-react";
 import { getPublicAnalyticsSummary } from "@/lib/admin/public-analytics.functions";
+import type { PublicRealtime } from "@/lib/admin/public-realtime.functions";
 
 function fmt(n: number): string {
   return new Intl.NumberFormat("en-GB").format(n);
 }
+
 
 function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
