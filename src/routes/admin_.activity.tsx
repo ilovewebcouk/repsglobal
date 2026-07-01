@@ -77,7 +77,7 @@ function AdminActivityPage() {
   const range = RANGES.find((r) => r.hours === search.range) ?? RANGES[1];
 
   const setSearch = useCallback((patch: Partial<z.infer<typeof searchSchema>>) => {
-    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+    navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, ...patch }), replace: true });
   }, [navigate]);
 
   const [selectedEvent, setSelectedEvent] = useState<ActivityEvent | null>(null);
