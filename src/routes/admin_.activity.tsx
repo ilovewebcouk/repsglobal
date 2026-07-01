@@ -11,7 +11,7 @@
 // All logic/data sources unchanged from v1.1 — layout & UX polish only.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ChevronRight, Filter, RefreshCcw, X } from "lucide-react";
