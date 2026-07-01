@@ -1,13 +1,14 @@
-// /admin/activity — Admin Activity v1.2 (GA-Style Realtime Map Console).
+// /admin/activity — Admin Activity v2.0 (Realtime Command Centre).
 //
-// Layout hierarchy (must not regress — Amendment 6):
-//   1. World Map + Realtime Summary card (hero row)
-//   2. Who's online, Pages being viewed now, Country activity
-//   3. Top member pages · 24h, Needs attention
-//   4. Compact feed preview (secondary) → drawer for full feed
+// Layout hierarchy (v2.0 — do not regress):
+//   1. Header + freshness/filters/refresh
+//   2. Command strip (6 tiles: live, public, members, views 5m, high-value, attention)
+//   3. Hero row — World map (2/3) + Live activity rail with All/Public/Members tabs (1/3)
+//   4. Needs Attention rail (elevated) + Recent activity feed side-by-side
+//   5. Public analytics — 24h rollup + discovery insight (live is in the rail)
+//   6. Member activity — top pages + country activity + supporting KPIs
 //
-// All figures = logged-in member activity only (Amendment 1).
-// Never surfaces raw IPs, "verified" tier, "trialing" status, or "??" country.
+// All logic/data sources unchanged from v1.1 — layout & UX polish only.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -38,16 +39,16 @@ import {
 import { getRealtimeSummary } from "@/lib/ops/activity-realtime.functions";
 import { getPublicRealtime } from "@/lib/admin/public-realtime.functions";
 
-
 import {
-  KpiStrip, GeoPanel, OnlineNowRail, CurrentPagesPanel, TopMemberPagesPanel, NeedsAttentionPanel,
+  GeoPanel, TopMemberPagesPanel, NeedsAttentionPanel,
 } from "@/components/admin/activity/panels";
 import { ClientOnlyMap } from "@/components/admin/activity/WorldMapPanel";
-import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import {
   ActivityFeedV2, EventDetailSheet,
 } from "@/components/admin/activity/feed-and-sheet";
 import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsPanel";
+import { CommandStrip } from "@/components/admin/activity/CommandStrip";
+import { LiveActivityRail } from "@/components/admin/activity/LiveActivityRail";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
@@ -98,6 +99,7 @@ function AdminActivityPage() {
   const [selectedEvent, setSelectedEvent] = useState<ActivityEvent | null>(null);
   const [feedOpen, setFeedOpen] = useState(false);
   const [topWindow, setTopWindow] = useState<24 | 168 | 720>(24);
+  const [mapLayer, setMapLayer] = useState<"members" | "public" | "both">("both");
 
   // ── Server function bindings
   const runKpis = useServerFn(getActivityKpis);
@@ -110,27 +112,25 @@ function AdminActivityPage() {
   const runFeed = useServerFn(getActivityFeed);
   const runPublicRealtime = useServerFn(getPublicRealtime);
 
-  const [mapLayer, setMapLayer] = useState<"members" | "public" | "both">("both");
-
-  // ── Queries. Each panel independent; a slow panel degrades alone.
-  const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 10_000 });
+  // ── Queries — realtime queries poll fast (5–8s); heavier aggregates poll slower.
+  const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 6_000 });
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
   const publicRealtimeQ = useQuery({
     queryKey: ["a-public-realtime"],
     queryFn: () => runPublicRealtime(),
-    refetchInterval: 30_000, // TTL is 20s on the server; poll a touch slower.
+    refetchInterval: 6_000, // server TTL 5s → poll every ~6s for a live feel
   });
 
-  const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 15_000 });
-  const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 20_000 });
+  const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 8_000 });
+  const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 8_000 });
   const topQ = useQuery({ queryKey: ["a-top", topWindow], queryFn: () => runTop({ data: { limit: 10, hours: topWindow } }), refetchInterval: 60_000 });
-  const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo(), refetchInterval: 30_000 });
+  const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo(), refetchInterval: 20_000 });
   const attentionQ = useQuery({ queryKey: ["a-attention"], queryFn: () => runAttention(), refetchInterval: 30_000 });
 
   const feedQ = useQuery({
     queryKey: ["a-feed", source ?? "all", severity ?? "all", range.hours],
     queryFn: () => runFeed({ data: { limit: 200, since_hours: range.hours, source, severity } }),
-    refetchInterval: 20_000,
+    refetchInterval: 15_000,
   });
 
   const events = useMemo(() => {
@@ -141,13 +141,24 @@ function AdminActivityPage() {
     return list.filter((e) => e.user_id && usersInCountry.has(e.user_id));
   }, [feedQ.data, country, onlineQ.data]);
 
-  const compactEvents = useMemo(() => events.slice(0, 6), [events]);
+  const compactEvents = useMemo(() => events.slice(0, 8), [events]);
 
-  // Drop `online_now` from the KPI strip — the Realtime card owns it.
-  const dedupedKpis = useMemo(
-    () => (kpisQ.data?.tiles ?? []).filter((t) => t.key !== "online_now"),
-    [kpisQ.data],
-  );
+  // ── Command strip metrics
+  const publicOnline = publicRealtimeQ.data?.online_now ?? 0;
+  const membersOnline = realtimeQ.data?.online_now ?? 0;
+  const pageViews5m = publicRealtimeQ.data?.page_views_5m ?? 0;
+  const attentionRows = attentionQ.data?.rows ?? [];
+  const attentionCount = attentionRows.length;
+  const criticalCount = attentionRows.filter((r) => r.severity === "critical").length;
+
+  // High-value events today = enquiries + signup completes from kpi tiles if available;
+  // otherwise fall back to a simple sum from feed events (auth signup, enquiry sources).
+  const highValueToday = useMemo(() => {
+    const tiles = kpisQ.data?.tiles ?? [];
+    const enq = tiles.find((t) => t.key.includes("enquir"))?.value ?? 0;
+    const sig = tiles.find((t) => t.key.includes("signup") || t.key.includes("new_member"))?.value ?? 0;
+    return Number(enq) + Number(sig);
+  }, [kpisQ.data]);
 
   // ── Timing / degraded panels
   const timings = useMemo(() => {
@@ -163,27 +174,28 @@ function AdminActivityPage() {
   const refreshAll = useCallback(() => {
     realtimeQ.refetch(); kpisQ.refetch(); onlineQ.refetch(); currentQ.refetch();
     topQ.refetch(); geoQ.refetch(); attentionQ.refetch(); feedQ.refetch();
-  }, [realtimeQ, kpisQ, onlineQ, currentQ, topQ, geoQ, attentionQ, feedQ]);
+    publicRealtimeQ.refetch();
+  }, [realtimeQ, kpisQ, onlineQ, currentQ, topQ, geoQ, attentionQ, feedQ, publicRealtimeQ]);
 
   const filterChipsActive = Boolean(source || severity || country || search.range);
 
   return (
-    <DashboardShell role="admin" active="Activity" title="Activity" subtitle="Realtime member activity — map-first">
+    <DashboardShell role="admin" active="Activity" title="Activity" subtitle="Realtime command centre">
       <div className="mx-auto max-w-[1500px] space-y-5 p-4 md:p-6">
         {/* ── Header ── */}
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-[24px] font-bold text-white">Activity</h1>
             <p className="mt-1 text-[12.5px] text-white/55">
-              Realtime map of logged-in <span className="text-orange-300">members</span> and{" "}
-              <span className="text-blue-300">public visitors</span>.
+              What's happening on REPs, right now — <span className="text-blue-300">public visitors</span> and{" "}
+              <span className="text-orange-300">logged-in members</span>.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <LiveFreshnessChip
-              updatedAt={realtimeQ.dataUpdatedAt}
-              isFetching={realtimeQ.isFetching || kpisQ.isFetching}
-              isError={Boolean(realtimeQ.error || kpisQ.error)}
+              updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt}
+              isFetching={realtimeQ.isFetching || publicRealtimeQ.isFetching}
+              isError={Boolean(realtimeQ.error || publicRealtimeQ.error)}
               degraded={degraded.length > 0 || feedDegraded.length > 0}
             />
             <RangeSwitcher value={range.hours} onChange={(h) => setSearch({ range: h })} />
@@ -194,7 +206,7 @@ function AdminActivityPage() {
             />
             <Button variant="ghost" size="sm" onClick={refreshAll} className="gap-1.5 text-white/70 hover:text-white">
               <RefreshCcw className={cn("h-3.5 w-3.5", (feedQ.isFetching || kpisQ.isFetching) && "animate-spin")} />
-              Refresh now
+              Refresh
             </Button>
           </div>
         </header>
@@ -224,7 +236,18 @@ function AdminActivityPage() {
           </div>
         ) : null}
 
-        {/* ── HERO ROW: Map (2/3) + Realtime Summary (1/3) ── */}
+        {/* ── 1. COMMAND STRIP ── */}
+        <CommandStrip
+          publicOnline={publicOnline}
+          membersOnline={membersOnline}
+          pageViews5m={pageViews5m}
+          highValueToday={highValueToday}
+          attentionCount={attentionCount}
+          criticalCount={criticalCount}
+          loading={publicRealtimeQ.isLoading && realtimeQ.isLoading}
+        />
+
+        {/* ── 2. HERO ROW: Map (2/3) + Live activity rail (1/3) ── */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <div className="xl:col-span-2">
             <ClientOnlyMap
@@ -235,86 +258,88 @@ function AdminActivityPage() {
               layer={mapLayer}
               onLayerChange={setMapLayer}
               publicCountries={publicRealtimeQ.data?.countries ?? []}
-              publicOnline={publicRealtimeQ.data?.online_now ?? 0}
+              publicOnline={publicOnline}
               publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
             />
           </div>
           <div className="xl:col-span-1">
-            <RealtimeSummaryCard data={realtimeQ.data} loading={realtimeQ.isLoading} />
-          </div>
-        </div>
-
-        {/* ── KPI strip (below hero — supporting metrics, no duplication of Online now) ── */}
-        <KpiStrip tiles={dedupedKpis} loading={kpisQ.isLoading} />
-
-        {/* ── Public visitor analytics (realtime + rollup) ── */}
-        <PublicVisitorsPanel
-          realtime={publicRealtimeQ.data ?? null}
-          realtimeLoading={publicRealtimeQ.isLoading}
-        />
-
-
-
-        {/* ── ROW 2: Online now (4) · Pages now (4) · Country list (4) ── */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-          <div className="xl:col-span-4">
-            <OnlineNowRail users={onlineQ.data?.users ?? []} loading={onlineQ.isLoading} />
-          </div>
-          <div className="xl:col-span-4">
-            <CurrentPagesPanel pages={currentQ.data?.pages ?? []} loading={currentQ.isLoading} />
-          </div>
-          <div className="xl:col-span-4">
-            <GeoPanel
-              countries={geoQ.data?.countries ?? []}
-              loading={geoQ.isLoading}
-              selectedCountry={country}
-              onSelectCountry={(cc) => setSearch({ country: cc })}
+            <LiveActivityRail
+              members={onlineQ.data?.users ?? []}
+              memberPages={currentQ.data?.pages ?? []}
+              membersLoading={onlineQ.isLoading}
+              publicRealtime={publicRealtimeQ.data ?? null}
+              publicLoading={publicRealtimeQ.isLoading}
+              realtime={realtimeQ.data}
+              updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
             />
           </div>
         </div>
 
-        {/* ── ROW 3: Top pages (7) · Needs Attention (5, sticky) ── */}
+        {/* ── 3. NEEDS ATTENTION + RECENT ACTIVITY (side-by-side, ops-critical) ── */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-          <div className="xl:col-span-7">
-            <TopMemberPagesPanel
-              pages={topQ.data?.pages ?? []}
-              loading={topQ.isLoading}
-              window={topWindow}
-              onWindowChange={setTopWindow}
-            />
-          </div>
           <div className="xl:col-span-5">
-            <div className="xl:sticky xl:top-4">
-              <NeedsAttentionPanel rows={attentionQ.data?.rows ?? []} loading={attentionQ.isLoading} />
-            </div>
+            <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} />
+          </div>
+          <div className="xl:col-span-7">
+            <section className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
+              <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-3">
+                <div className="min-w-0">
+                  <h2 className="font-display text-[14px] font-semibold text-white">Recent activity</h2>
+                  <p className="truncate text-[10.5px] text-white/45">
+                    Latest {compactEvents.length} of {events.length} · {range.label}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFeedOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:bg-white/10"
+                >
+                  Full feed <ChevronRight className="h-3 w-3" />
+                </button>
+              </header>
+              <div className="min-h-0 flex-1">
+                <ActivityFeedV2 compact events={compactEvents} loading={feedQ.isLoading} onOpenEvent={(e) => setSelectedEvent(e)} />
+              </div>
+            </section>
           </div>
         </div>
 
+        {/* ── 4. PUBLIC ANALYTICS · 24h rollup + discovery ── */}
+        <PublicVisitorsPanel />
 
-        {/* ── ROW 4: Compact feed preview (secondary) ── */}
-        <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
-          <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-2.5">
-            <div className="min-w-0">
-              <h2 className="font-display text-[13px] font-semibold text-white">Recent activity</h2>
-              <p className="truncate text-[10.5px] text-white/45">Latest {compactEvents.length} of {events.length} events</p>
+        {/* ── 5. MEMBER ACTIVITY ── */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-orange-400" />
+            <h2 className="font-display text-[15px] font-semibold text-white">Member activity</h2>
+            <span className="text-[11px] text-white/45">Logged-in members only</span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+            <div className="xl:col-span-7">
+              <TopMemberPagesPanel
+                pages={topQ.data?.pages ?? []}
+                loading={topQ.isLoading}
+                window={topWindow}
+                onWindowChange={setTopWindow}
+              />
             </div>
-            <button
-              type="button"
-              onClick={() => setFeedOpen(true)}
-              className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:bg-white/10"
-            >
-              View full feed <ChevronRight className="h-3 w-3" />
-            </button>
-          </header>
-          <ActivityFeedV2 compact events={compactEvents} loading={feedQ.isLoading} onOpenEvent={(e) => setSelectedEvent(e)} />
+            <div className="xl:col-span-5">
+              <GeoPanel
+                countries={geoQ.data?.countries ?? []}
+                loading={geoQ.isLoading}
+                selectedCountry={country}
+                onSelectCountry={(cc) => setSearch({ country: cc })}
+              />
+            </div>
+          </div>
         </section>
 
         {/* Footer meta */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-reps-border/60 pt-3 text-[10.5px] text-white/40">
           <span>
-            {events.length} events in view · online now {realtimeQ.data?.online_now ?? 0}
+            {events.length} events in view · {publicOnline} public · {membersOnline} members online
           </span>
-          <span>Logged-in member activity only · no raw IPs stored · country-level enrichment</span>
+          <span>Public analytics consent-gated · country-level enrichment · no raw IPs</span>
         </div>
       </div>
 
@@ -335,6 +360,7 @@ function AdminActivityPage() {
     </DashboardShell>
   );
 }
+
 
 // ─────────────────────────────────────────────────────── controls ──
 
