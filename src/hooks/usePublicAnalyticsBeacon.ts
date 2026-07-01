@@ -30,9 +30,13 @@ type PostHogLike = {
   get_distinct_id?: () => string;
 };
 
+type QueuedEvent = { event: string; props: Record<string, unknown> };
+
 declare global {
   interface Window {
     __repsPh?: PostHogLike;
+    __repsPhReady?: boolean;
+    __repsPhQueue?: QueuedEvent[];
     __repsPhInitPromise?: Promise<PostHogLike | null>;
   }
 }
@@ -40,11 +44,37 @@ declare global {
 const POSTHOG_KEY =
   (import.meta.env.VITE_POSTHOG_PUBLIC_KEY as string | undefined) ?? "";
 
+const DEBUG =
+  (import.meta.env.DEV as boolean | undefined) === true ||
+  (typeof window !== "undefined" &&
+    typeof window.localStorage !== "undefined" &&
+    window.localStorage.getItem("reps.analytics.debug") === "1");
+
+function dbg(...args: unknown[]) {
+  if (DEBUG) console.debug("[analytics]", ...args);
+}
+
+function flushQueue(ph: PostHogLike) {
+  const q = (typeof window !== "undefined" && window.__repsPhQueue) || [];
+  if (!q.length) return;
+  dbg("flushing queued events", q.length);
+  for (const item of q) {
+    try {
+      ph.capture(item.event, item.props);
+    } catch (err) {
+      if (DEBUG) console.warn("[analytics] flush failed", item.event, err);
+    }
+  }
+  window.__repsPhQueue = [];
+}
+
 async function loadPostHog(): Promise<PostHogLike | null> {
   if (typeof window === "undefined") return null;
-  if (window.__repsPh) return window.__repsPh;
+  if (window.__repsPh && window.__repsPhReady) return window.__repsPh;
   if (window.__repsPhInitPromise) return window.__repsPhInitPromise;
   if (!POSTHOG_KEY) return null;
+
+  window.__repsPhQueue = window.__repsPhQueue ?? [];
 
   window.__repsPhInitPromise = (async () => {
     try {
@@ -56,7 +86,10 @@ async function loadPostHog(): Promise<PostHogLike | null> {
         ui_host: "https://eu.posthog.com",
         person_profiles: "identified_only",
         capture_pageview: false, // we do it manually to attach session_id
-        capture_pageleave: true,
+        // Built-in pageleave fires on every unload regardless of surface —
+        // leaks admin/dashboard events into public analytics. We keep this
+        // off and rely on our own $pageview beacon.
+        capture_pageleave: false,
         disable_compression: true,
         disable_session_recording: true,
         disable_surveys: true,
@@ -68,11 +101,17 @@ async function loadPostHog(): Promise<PostHogLike | null> {
         autocapture: false,
         loaded: (ph: PostHogLike) => {
           window.__repsPh = ph;
+          window.__repsPhReady = true;
+          dbg("posthog loaded, flushing queue");
+          flushQueue(ph);
         },
       });
       window.__repsPh = posthog;
+      // Do NOT set __repsPhReady here — wait for the loaded callback so
+      // captures made before flush get queued instead of silently dropped.
       return posthog;
-    } catch {
+    } catch (err) {
+      if (DEBUG) console.warn("[analytics] posthog load failed", err);
       return null;
     }
   })();
@@ -80,26 +119,43 @@ async function loadPostHog(): Promise<PostHogLike | null> {
 }
 
 /**
- * capturePublic — safe to call from anywhere. No-ops if consent missing or
- * PostHog not loaded. Attaches session_id automatically.
+ * capturePublic — safe to call from anywhere. No-ops if consent missing.
+ * Queues events until PostHog's `loaded` callback fires; flushes on load.
  */
 export async function capturePublic(
   event: string,
   props: Record<string, unknown> = {},
 ): Promise<void> {
   if (typeof window === "undefined") return;
-  if (!hasAnalyticsConsent()) return;
+  if (!hasAnalyticsConsent()) {
+    dbg("skip (no consent)", event);
+    return;
+  }
+  const finalProps = { ...props, session_id: getOrCreateSessionId() };
+
+  // If SDK is already fully loaded, capture immediately.
+  if (window.__repsPhReady && window.__repsPh) {
+    dbg("capture (ready)", event);
+    try {
+      window.__repsPh.capture(event, finalProps);
+    } catch (err) {
+      if (DEBUG) console.warn("[analytics] capture failed", event, err);
+    }
+    return;
+  }
+
+  // Otherwise queue and kick off / wait on init.
+  window.__repsPhQueue = window.__repsPhQueue ?? [];
+  window.__repsPhQueue.push({ event, props: finalProps });
+  dbg("queued", event, "queue size", window.__repsPhQueue.length);
   const ph = await loadPostHog();
   if (!ph) return;
-  ph.capture(event, {
-    ...props,
-    session_id: getOrCreateSessionId(),
-  });
+  // If loaded callback already fired between push and here, flush now.
+  if (window.__repsPhReady) flushQueue(ph);
 }
 
 /**
- * aliasOnSignup — link the anonymous distinct_id to the new user_id so we
- * can attribute the signup back to the pre-signup browsing.
+ * aliasOnSignup — link the anonymous distinct_id to the new user_id.
  */
 export async function aliasOnSignup(userId: string): Promise<void> {
   if (!hasAnalyticsConsent()) return;
@@ -126,13 +182,14 @@ export function usePublicAnalyticsBeacon() {
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       memberRef.current = Boolean(session);
-      // On sign-out, reset PostHog distinct_id.
       if (event === "SIGNED_OUT" && typeof window !== "undefined" && window.__repsPh) {
         try {
           window.__repsPh.reset();
         } catch {
           /* no-op */
         }
+        // Clear any queued events on sign-out.
+        window.__repsPhQueue = [];
       }
     });
     return () => {
