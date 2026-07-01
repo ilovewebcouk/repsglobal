@@ -41,13 +41,20 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   const upstreamHost = splat.startsWith("array/") || splat.startsWith("static/")
     ? POSTHOG_ASSET_HOST
     : POSTHOG_INGEST_HOST;
-  const url = `${upstreamHost}/${splat}${new URL(request.url).search}`;
+  const requestUrl = new URL(request.url);
+  const url = `${upstreamHost}/${splat}${requestUrl.search}`;
+  const isCompressedRequest =
+    Boolean(requestUrl.searchParams.get("compression")) ||
+    (request.headers.get("content-encoding") ?? "").toLowerCase().includes("gzip");
 
   // Only mutate JSON POST bodies. GET (decide, etc.) passes through unchanged.
   let outboundBody: BodyInit | null = null;
   if (request.method !== "GET" && request.method !== "HEAD") {
-    const text = await request.text();
-    if (text.length > 0) {
+    if (isCompressedRequest) {
+      outboundBody = await request.arrayBuffer();
+    } else {
+      const text = await request.text();
+      if (text.length > 0) {
       try {
         const parsed = JSON.parse(text) as Record<string, unknown>;
         const admin = await isAdmin(request);
@@ -71,11 +78,14 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       } catch {
         outboundBody = text;
       }
+      }
     }
   }
 
   const headers = new Headers();
   headers.set("content-type", request.headers.get("content-type") ?? "application/json");
+  const contentEncoding = request.headers.get("content-encoding");
+  if (contentEncoding) headers.set("content-encoding", contentEncoding);
   if (ua) headers.set("user-agent", ua);
   // Deliberately do NOT forward Authorization, Cookie, or client IP.
 
