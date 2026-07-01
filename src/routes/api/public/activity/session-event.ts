@@ -36,6 +36,14 @@ export const Route = createFileRoute("/api/public/activity/session-event")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+        // F2 — admins browsing non-/admin routes must not leak into member analytics.
+        // Server-side role check; client cannot bypass by lying about the path.
+        const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+          _user_id: ctx.userId,
+          _role: "admin",
+        });
+        if (isAdmin === true) return new Response(null, { status: 204 });
+
         // Always upsert the user_session heartbeat so "online now" works
         // even when DNT/GPC suppresses per-page detail.
         await supabaseAdmin
