@@ -17,6 +17,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { tierLabel, subscriptionStatusLabel, countryDisplay } from "@/lib/activity/labels";
 
 async function assertAdmin(ctx: { supabase: unknown; userId: string }) {
   const supa = ctx.supabase as { rpc: (n: string, p: object) => Promise<{ data: unknown }> };
@@ -278,7 +279,7 @@ export const getActivityFeed = createServerFn({ method: "POST" })
         source: "session",
         type: "session_started",
         severity: "info",
-        summary: `Session · ${userLabels.get(r.user_id ?? "") ?? "unknown"} · ${r.device ?? "device?"} · ${r.country_code ?? "??"}`,
+        summary: `Session · ${userLabels.get(r.user_id ?? "") ?? "unknown"} · ${r.device ?? "device?"} · ${countryDisplay(r.country_code).label}`,
         user_id: r.user_id,
         user_label: userLabels.get(r.user_id ?? "") ?? null,
       });
@@ -310,7 +311,7 @@ export const getActivityFeed = createServerFn({ method: "POST" })
         source: "subscription",
         type: `subscription_${r.status}`,
         severity: sev,
-        summary: `${r.tier ?? "—"} · ${r.status} · ${userLabels.get(r.user_id ?? "") ?? "unknown"}`,
+        summary: `${tierLabel(r.tier, r.status) ?? "—"} · ${subscriptionStatusLabel(r.status)} · ${userLabels.get(r.user_id ?? "") ?? "unknown"}`,
         user_id: r.user_id,
         user_label: userLabels.get(r.user_id ?? "") ?? null,
       });
