@@ -151,6 +151,7 @@ export type DashboardShellProps = {
   actions?: React.ReactNode;
   search?: DashboardSearch;
   member?: DashboardShellMember;
+  mainClassName?: string;
   children: React.ReactNode;
 };
 
@@ -166,6 +167,7 @@ export function DashboardShell({
   actions,
   search,
   member,
+  mainClassName,
   children,
 }: DashboardShellProps) {
   const searchPlaceholder =
@@ -193,7 +195,7 @@ export function DashboardShell({
               searchPlaceholder={searchPlaceholder}
               search={search}
             />
-            <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">{children}</main>
+            <main className={cn("flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8", mainClassName)}>{children}</main>
           </SidebarInset>
         </SidebarProvider>
       </div>
