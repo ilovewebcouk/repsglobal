@@ -258,12 +258,13 @@ function AdminActivityPage() {
           highValueToday={highValueToday}
           attentionCount={attentionCount}
           criticalCount={criticalCount}
+          ingestStatus={ingestStatus}
           loading={publicRealtimeQ.isLoading && realtimeQ.isLoading}
         />
 
-        {/* ── 2. HERO ROW: Map (2/3) + Live activity rail (1/3) ── */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-          <div className="xl:col-span-2">
+        {/* ── 2. COCKPIT: Map (col-8) + right rail split (col-4) ── */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          <div className="xl:col-span-8">
             <ClientOnlyMap
               countries={geoQ.data?.countries ?? []}
               loading={geoQ.isLoading}
@@ -274,9 +275,10 @@ function AdminActivityPage() {
               publicCountries={publicRealtimeQ.data?.countries ?? []}
               publicOnline={publicOnline}
               publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
+              updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
             />
           </div>
-          <div className="xl:col-span-1">
+          <div className="flex flex-col gap-4 xl:col-span-4">
             <LiveActivityRail
               members={onlineQ.data?.users ?? []}
               memberPages={currentQ.data?.pages ?? []}
@@ -286,35 +288,63 @@ function AdminActivityPage() {
               realtime={realtimeQ.data}
               updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
             />
+            <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
           </div>
         </div>
 
-        {/* ── 3. NEEDS ATTENTION + RECENT ACTIVITY (side-by-side, ops-critical) ── */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-          <div className="xl:col-span-5">
-            <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} />
+        {/* ── 3. PUBLIC ANALYTICS · 24h rollup ── */}
+        <PublicVisitorsPanel />
+
+        {/* ── 4. MEMBER ACTIVITY (secondary) ── */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-orange-400" />
+            <h2 className="font-display text-[14px] font-semibold text-white">Member activity</h2>
+            <span className="text-[11px] text-white/45">Logged-in members only</span>
           </div>
-          <div className="xl:col-span-7">
-            <section className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
-              <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-3">
-                <div className="min-w-0">
-                  <h2 className="font-display text-[14px] font-semibold text-white">Recent activity</h2>
-                  <p className="truncate text-[10.5px] text-white/45">
-                    Latest {compactEvents.length} of {events.length} · {range.label}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setFeedOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:bg-white/10"
-                >
-                  Full feed <ChevronRight className="h-3 w-3" />
-                </button>
-              </header>
-              <div className="min-h-0 flex-1">
-                <ActivityFeedV2 compact events={compactEvents} loading={feedQ.isLoading} onOpenEvent={(e) => setSelectedEvent(e)} />
-              </div>
-            </section>
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+            <div className="xl:col-span-7">
+              <TopMemberPagesPanel
+                pages={topQ.data?.pages ?? []}
+                loading={topQ.isLoading}
+                window={topWindow}
+                onWindowChange={setTopWindow}
+              />
+            </div>
+            <div className="xl:col-span-5">
+              <GeoPanel
+                countries={geoQ.data?.countries ?? []}
+                loading={geoQ.isLoading}
+                selectedCountry={country}
+                onSelectCountry={(cc) => setSearch({ country: cc })}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. RECENT ACTIVITY (audit feed — below the fold) ── */}
+        <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
+          <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-2.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-white/40" />
+              <h2 className="font-display text-[13.5px] font-semibold text-white">Recent activity</h2>
+              <span className="truncate text-[10.5px] text-white/45">
+                Latest {compactEvents.length} of {events.length} · {range.label}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFeedOpen(true)}
+              className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:bg-white/10"
+            >
+              Full feed <ChevronRight className="h-3 w-3" />
+            </button>
+          </header>
+          <div>
+            <ActivityFeedV2 compact events={compactEvents} loading={feedQ.isLoading} onOpenEvent={(e) => setSelectedEvent(e)} />
+          </div>
+        </section>
+
           </div>
         </div>
 
