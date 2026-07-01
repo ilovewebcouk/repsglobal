@@ -26,6 +26,16 @@ export interface PublicCountryPoint {
   views_5m: number;
 }
 
+export interface MapCityPoint {
+  city: string;
+  region: string | null;
+  country_code: string;
+  latitude: number;
+  longitude: number;
+  online: number;
+  views_5m?: number;
+}
+
 export interface WorldMapPanelProps {
   countries: GeoRow[];
   loading: boolean;
@@ -33,7 +43,9 @@ export interface WorldMapPanelProps {
   onSelectCountry: (cc: string | undefined) => void;
   layer?: MapLayer;
   onLayerChange?: (l: MapLayer) => void;
+  memberCities?: MapCityPoint[];
   publicCountries?: PublicCountryPoint[];
+  publicCities?: MapCityPoint[];
   publicOnline?: number;
   publicStale?: boolean;
   updatedAt?: number | null;
@@ -41,28 +53,48 @@ export interface WorldMapPanelProps {
 
 
 interface Bubble {
+  id: string;
   cc: string;
   name: string;
+  detail: string | null;
   lng: number;
   lat: number;
   online: number;
   views: number;
   radius: number;
   kind: "member" | "public";
+  precision: "city" | "country";
 }
 
 
 export function WorldMapPanel({
   countries, loading, selectedCountry, onSelectCountry,
   layer = "members", onLayerChange,
-  publicCountries = [], publicOnline = 0, publicStale = false,
+  memberCities = [], publicCountries = [], publicCities = [], publicOnline = 0, publicStale = false,
   updatedAt = null,
 }: WorldMapPanelProps) {
 
   const [mapError, setMapError] = useState(false);
-  const [hoverCc, setHoverCc] = useState<string | null>(null);
+  const [hoverBubbleId, setHoverBubbleId] = useState<string | null>(null);
 
   const memberBubbles = useMemo<Bubble[]>(() => {
+    const precise = memberCities
+      .filter((c) => c.city && c.country_code && Number.isFinite(c.latitude) && Number.isFinite(c.longitude))
+      .map((c) => ({
+        id: `member-city-${c.city}-${c.country_code}-${c.latitude.toFixed(3)}-${c.longitude.toFixed(3)}`,
+        cc: c.country_code,
+        name: c.city,
+        detail: [c.region, COUNTRY_NAMES[c.country_code] ?? c.country_code].filter(Boolean).join(", ") || null,
+        lng: c.longitude,
+        lat: c.latitude,
+        online: c.online,
+        views: c.views_5m ?? c.online,
+        radius: Math.min(5.5, Math.max(3, 3 + Math.log1p(c.online) * 1.4)),
+        kind: "member" as const,
+        precision: "city" as const,
+      }));
+    if (precise.length > 0) return precise;
+
     const withGeo = countries
       .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
       .map((c) => {
@@ -77,21 +109,40 @@ export function WorldMapPanel({
     return withGeo.map(({ c, centroid }) => {
       const scale = denom > 0 ? Math.log1p(c.page_views_24h) / denom : 0;
       return {
+        id: `member-country-${c.country_code}`,
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
+        detail: "country fallback",
         lng: centroid.lng,
         lat: centroid.lat,
         online: c.online_now,
         views: c.page_views_24h,
-        // v2.1: restrained cap so single-country traffic never renders as a blob.
-        radius: Math.min(9, Math.max(3, 3 + scale * 6)),
+        radius: Math.min(5.5, Math.max(2.75, 2.75 + scale * 2.75)),
         kind: "member" as const,
+        precision: "country" as const,
       };
     });
-  }, [countries]);
+  }, [countries, memberCities]);
 
 
   const publicBubbles = useMemo<Bubble[]>(() => {
+    const precise = publicCities
+      .filter((c) => c.city && c.country_code && Number.isFinite(c.latitude) && Number.isFinite(c.longitude))
+      .map((c) => ({
+        id: `public-city-${c.city}-${c.country_code}-${c.latitude.toFixed(3)}-${c.longitude.toFixed(3)}`,
+        cc: c.country_code,
+        name: c.city,
+        detail: [c.region, COUNTRY_NAMES[c.country_code] ?? c.country_code].filter(Boolean).join(", ") || null,
+        lng: c.longitude,
+        lat: c.latitude,
+        online: c.online,
+        views: c.views_5m ?? c.online,
+        radius: Math.min(5.5, Math.max(3, 3 + Math.log1p(Math.max(c.online, c.views_5m ?? 0)) * 1.25)),
+        kind: "public" as const,
+        precision: "city" as const,
+      }));
+    if (precise.length > 0) return precise;
+
     const withGeo = publicCountries
       .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
       .map((c) => {
@@ -105,17 +156,20 @@ export function WorldMapPanel({
     return withGeo.map(({ c, centroid }) => {
       const scale = denom > 0 ? Math.log1p(c.views_5m) / denom : 0;
       return {
+        id: `public-country-${c.country_code}`,
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
+        detail: "country fallback",
         lng: centroid.lng,
         lat: centroid.lat,
         online: c.online,
         views: c.views_5m,
-        radius: Math.min(9, Math.max(3, 3 + scale * 5.5)),
+        radius: Math.min(5.5, Math.max(2.75, 2.75 + scale * 2.75)),
         kind: "public" as const,
+        precision: "country" as const,
       };
     });
-  }, [publicCountries]);
+  }, [publicCountries, publicCities]);
 
 
   const bubbles = useMemo<Bubble[]>(() => {
@@ -134,7 +188,7 @@ export function WorldMapPanel({
     if (pool.length === 0) return { center: [10, 20] as [number, number], zoom: 1 };
     if (pool.length === 1) {
       const b = pool[0]!;
-      return { center: [b.lng, b.lat] as [number, number], zoom: 2.2 };
+      return { center: [b.lng, b.lat] as [number, number], zoom: b.precision === "city" ? 4.2 : 2.2 };
     }
     const lngs = pool.map((b) => b.lng);
     const lats = pool.map((b) => b.lat);
@@ -143,7 +197,7 @@ export function WorldMapPanel({
     const spanLng = Math.max(...lngs) - Math.min(...lngs);
     const spanLat = Math.max(...lats) - Math.min(...lats);
     const span = Math.max(spanLng, spanLat);
-    const zoom = span < 20 ? 2.4 : span < 60 ? 1.8 : span < 120 ? 1.4 : 1;
+    const zoom = span < 4 ? 5 : span < 12 ? 3.8 : span < 25 ? 2.8 : span < 60 ? 1.8 : span < 120 ? 1.4 : 1;
     return { center: [cx, cy] as [number, number], zoom };
   }, [bubbles]);
 
@@ -169,7 +223,7 @@ export function WorldMapPanel({
               Realtime activity map
             </h2>
             <p className="truncate text-[11px] text-white/45">
-              <span className="text-orange-300">Members</span> · <span className="text-blue-300">public visitors</span> · country bubbles
+              <span className="text-orange-300">Members</span> · <span className="text-blue-300">public visitors</span> · town dots
               {publicStale ? <span className="ml-1 text-amber-300">· public live query stale</span> : null}
             </p>
           </div>
@@ -261,7 +315,7 @@ export function WorldMapPanel({
                 </Geographies>
                 {bubbles.map((b) => {
                   const isSelected = selectedCountry === b.cc;
-                  const isHover = hoverCc === b.cc;
+                  const isHover = hoverBubbleId === b.id;
                   const isLive = b.online > 0;
                   const dim = selectedCountry && !isSelected ? 0.35 : 1;
                   const isPublic = b.kind === "public";
@@ -272,9 +326,9 @@ export function WorldMapPanel({
                       ? isPublic ? "rgba(56,189,248,0.95)" : "rgba(249,115,22,0.95)"
                       : isPublic ? "rgba(56,189,248,0.5)" : "rgba(125,211,252,0.55)";
                   return (
-                    <Marker key={`${b.kind}-${b.cc}`} coordinates={[b.lng, b.lat]}
-                      onMouseEnter={() => setHoverCc(b.cc)}
-                      onMouseLeave={() => setHoverCc((v) => (v === b.cc ? null : v))}
+                    <Marker key={`${b.kind}-${b.id}`} coordinates={[b.lng, b.lat]}
+                      onMouseEnter={() => setHoverBubbleId(b.id)}
+                      onMouseLeave={() => setHoverBubbleId((v) => (v === b.id ? null : v))}
                       onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
                       style={{ default: { cursor: "pointer", opacity: dim }, hover: { cursor: "pointer", opacity: 1 }, pressed: { cursor: "pointer" } }}
                     >
@@ -306,7 +360,7 @@ export function WorldMapPanel({
                             pointerEvents: "none",
                           }}
                         >
-                          {b.cc}
+                          {b.precision === "city" ? b.name : b.cc}
                         </text>
                       ) : null}
 
@@ -317,7 +371,7 @@ export function WorldMapPanel({
             </ComposableMap>
 
             {/* Hover tooltip */}
-            {hoverCc ? <MapTooltip bubble={bubbles.find((b) => b.cc === hoverCc) ?? null} /> : null}
+            {hoverBubbleId ? <MapTooltip bubble={bubbles.find((b) => b.id === hoverBubbleId) ?? null} /> : null}
 
             {/* Zoom controls */}
             <div className="absolute right-3 top-3 flex flex-col gap-1 rounded-[10px] border border-white/10 bg-black/60 p-1 backdrop-blur-md">
@@ -386,9 +440,9 @@ export function WorldMapPanel({
             ) : bubbles.length === 0 && !loading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center">
                 <Globe className="h-6 w-6 text-white/25" />
-                <div className="text-[12px] font-medium text-white/60">No country activity yet</div>
+                <div className="text-[12px] font-medium text-white/60">No town activity yet</div>
                 <div className="max-w-[280px] text-[10.5px] text-white/40">
-                  Country bubbles appear here as logged-in members are active.
+                  Town dots appear here as visitors and members become active.
                 </div>
               </div>
             ) : null}
@@ -418,11 +472,12 @@ function MapTooltip({ bubble }: { bubble: Bubble | null }) {
     <div className="pointer-events-none absolute right-3 top-3 rounded-[10px] border border-reps-border bg-reps-panel/95 px-3 py-2 text-[11px] text-white/85 shadow-xl backdrop-blur">
       <div className="flex items-center gap-2 font-semibold text-white">
         <span className="text-[14px]">{d.flag}</span>
-        {d.label}
+        {bubble.name}
       </div>
+      {bubble.detail ? <div className="mt-0.5 text-[10.5px] text-white/45">{bubble.detail}</div> : null}
       <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-white/60">
         <span>Online now</span><span className="text-right font-medium text-emerald-300">{bubble.online}</span>
-        <span>Views 24h</span><span className="text-right font-medium text-white/85">{bubble.views.toLocaleString()}</span>
+        <span>{bubble.kind === "public" ? "Views 5m" : "Activity"}</span><span className="text-right font-medium text-white/85">{bubble.views.toLocaleString()}</span>
       </div>
     </div>
   );
@@ -442,7 +497,7 @@ function MapFallback({
       ) : (
         <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
           {bubbles.map((b) => (
-            <li key={b.cc}>
+            <li key={b.id}>
               <button
                 type="button"
                 onClick={() => onSelect(selected === b.cc ? undefined : b.cc)}

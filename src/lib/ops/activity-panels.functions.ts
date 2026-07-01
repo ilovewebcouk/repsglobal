@@ -66,6 +66,9 @@ export interface OnlineNowUser {
   browser: string | null;
   country_code: string | null;
   city: string | null;
+  region: string | null;
+  latitude: number | null;
+  longitude: number | null;
   started_at: string;
   last_seen_at: string;
   pages_viewed: number;
@@ -206,7 +209,7 @@ export const getOnlineNow = createServerFn({ method: "POST" })
       const iso30min = new Date(Date.now() - 30 * 60_000).toISOString();
       const { data: sessions, error } = await supabaseAdmin
         .from("user_sessions")
-        .select("id, user_id, started_at, last_seen_at, current_path, device, browser, country_code, city, pages_viewed")
+        .select("id, user_id, started_at, last_seen_at, current_path, device, browser, country_code, city, region, latitude, longitude, pages_viewed")
         .gte("last_seen_at", iso30min)
         .is("ended_at", null)
         .order("last_seen_at", { ascending: false })
@@ -215,7 +218,8 @@ export const getOnlineNow = createServerFn({ method: "POST" })
       const rows = (sessions ?? []) as Array<{
         id: string; user_id: string | null; started_at: string; last_seen_at: string;
         current_path: string | null; device: string | null; browser: string | null;
-        country_code: string | null; city: string | null; pages_viewed: number;
+        country_code: string | null; city: string | null; region: string | null;
+        latitude: number | null; longitude: number | null; pages_viewed: number;
       }>;
       const userIds = Array.from(new Set(rows.map((r) => r.user_id).filter((x): x is string => Boolean(x))));
       const [profilesRes, subsRes] = await Promise.all([
@@ -254,6 +258,9 @@ export const getOnlineNow = createServerFn({ method: "POST" })
           browser: r.browser,
           country_code: r.country_code,
           city: r.city,
+          region: r.region,
+          latitude: r.latitude,
+          longitude: r.longitude,
           started_at: r.started_at,
           last_seen_at: r.last_seen_at,
           pages_viewed: r.pages_viewed ?? 0,

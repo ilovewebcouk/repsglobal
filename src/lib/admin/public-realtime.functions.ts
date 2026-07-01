@@ -6,6 +6,7 @@
 //   - visitors online now (5-min active sessions)
 //   - current pages being viewed
 //   - live country bubbles (with $geoip_country_code)
+//   - live town/city dots when PostHog geo properties include coordinates
 //   - stale / error flag if PostHog live query fails
 //
 // No raw visitor IDs or IPs are returned. Session IDs are hashed to short
@@ -51,6 +52,15 @@ export interface PublicLiveCountry {
   online: number;
   views_5m: number;
 }
+export interface PublicLiveCity {
+  city: string;
+  region: string | null;
+  country_code: string;
+  latitude: number;
+  longitude: number;
+  online: number;
+  views_5m: number;
+}
 export interface PublicRealtime {
   configured: boolean;
   ok: boolean;
@@ -61,6 +71,7 @@ export interface PublicRealtime {
   page_views_5m: number;
   current_pages: PublicLivePage[];  // top pages last 5 min
   countries: PublicLiveCountry[];
+  cities: PublicLiveCity[];
   session_tokens: string[];         // hashed short tokens, for count dedupe only
 }
 
@@ -78,7 +89,7 @@ async function fetchLive(): Promise<PublicRealtime> {
   if (!configured) {
     return {
       configured: false, ok: false, stale: true, error: "POSTHOG_PERSONAL_API_KEY missing",
-      fetched_at: now, online_now: 0, page_views_5m: 0, current_pages: [], countries: [],
+      fetched_at: now, online_now: 0, page_views_5m: 0, current_pages: [], countries: [], cities: [],
       session_tokens: [],
     };
   }
@@ -108,15 +119,44 @@ async function fetchLive(): Promise<PublicRealtime> {
         views_5m: Number(r[2] ?? 0),
       }));
 
+    let cities: PublicLiveCity[] = [];
+    try {
+      const citiesRes = await hogql(`SELECT
+        coalesce(nullIf(toString(properties.$geoip_city_name), ''), nullIf(toString(properties.city), '')) AS city,
+        coalesce(nullIf(toString(properties.$geoip_country_code), ''), nullIf(toString(properties.country_code), '')) AS cc,
+        coalesce(nullIf(toString(properties.$geoip_subdivision_1_name), ''), nullIf(toString(properties.region), '')) AS region,
+        avg(toFloat64OrNull(toString(properties.$geoip_latitude))) AS lat,
+        avg(toFloat64OrNull(toString(properties.$geoip_longitude))) AS lng,
+        count(DISTINCT $session_id) AS online,
+        count() AS views
+        FROM events ${where}
+        GROUP BY city, cc, region
+        HAVING city IS NOT NULL AND city != '' AND lat IS NOT NULL AND lng IS NOT NULL
+        ORDER BY online DESC, views DESC LIMIT 50`);
+      cities = (citiesRes.results ?? [])
+        .map((r) => ({
+          city: String(r[0] ?? ""),
+          country_code: String(r[1] ?? "").toUpperCase(),
+          region: r[2] ? String(r[2]) : null,
+          latitude: Number(r[3]),
+          longitude: Number(r[4]),
+          online: Number(r[5] ?? 0),
+          views_5m: Number(r[6] ?? 0),
+        }))
+        .filter((c) => c.city && c.country_code && Number.isFinite(c.latitude) && Number.isFinite(c.longitude));
+    } catch (cityError) {
+      console.warn("[public-realtime] city geo query unavailable", cityError);
+    }
+
     return {
       configured: true, ok: true, stale: false, error: null, fetched_at: now,
-      online_now, page_views_5m, current_pages, countries, session_tokens,
+      online_now, page_views_5m, current_pages, countries, cities, session_tokens,
     };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
       configured: true, ok: false, stale: true, error: msg,
-      fetched_at: now, online_now: 0, page_views_5m: 0, current_pages: [], countries: [],
+      fetched_at: now, online_now: 0, page_views_5m: 0, current_pages: [], countries: [], cities: [],
       session_tokens: [],
     };
   }

@@ -53,6 +53,7 @@ function TopBar({
   actions,
   searchPlaceholder,
   search,
+  showSearch = true,
 }: {
   role: Role;
   title: string;
@@ -60,6 +61,7 @@ function TopBar({
   actions?: React.ReactNode;
   searchPlaceholder: string;
   search?: DashboardSearch;
+  showSearch?: boolean;
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
@@ -98,7 +100,7 @@ function TopBar({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {search ? (
+        {showSearch && search ? (
           <div className="relative hidden lg:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
             <input
@@ -113,11 +115,11 @@ function TopBar({
               ⌘K
             </kbd>
           </div>
-        ) : role === "admin" ? (
+        ) : showSearch && role === "admin" ? (
           <div className="hidden lg:block">
             <MemberFinder variant="topbar" placeholder={searchPlaceholder} />
           </div>
-        ) : (
+        ) : showSearch ? (
           <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 lg:flex">
             <Search className="h-4 w-4" />
             <span className="flex-1">{searchPlaceholder}</span>
@@ -125,7 +127,7 @@ function TopBar({
               ⌘K
             </kbd>
           </div>
-        )}
+        ) : null}
 
         {actions}
         <NotificationsBell />
@@ -151,6 +153,8 @@ export type DashboardShellProps = {
   actions?: React.ReactNode;
   search?: DashboardSearch;
   member?: DashboardShellMember;
+  mainClassName?: string;
+  showTopbarSearch?: boolean;
   children: React.ReactNode;
 };
 
@@ -166,6 +170,8 @@ export function DashboardShell({
   actions,
   search,
   member,
+  mainClassName,
+  showTopbarSearch = true,
   children,
 }: DashboardShellProps) {
   const searchPlaceholder =
@@ -192,8 +198,9 @@ export function DashboardShell({
               actions={actions}
               searchPlaceholder={searchPlaceholder}
               search={search}
+              showSearch={showTopbarSearch}
             />
-            <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">{children}</main>
+            <main className={cn("flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8", mainClassName)}>{children}</main>
           </SidebarInset>
         </SidebarProvider>
       </div>
