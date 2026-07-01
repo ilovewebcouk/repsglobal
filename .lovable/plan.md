@@ -1,124 +1,71 @@
-## Activity Command Centre v2.1 — Final Composition Pass
+## Activity Command Centre v2.2 — Hero Layout Fix
 
-Locked: no changes to `src/lib/ops/*`, `src/lib/admin/public-realtime.functions.ts`, `src/routes/api/public/_a/*`, `src/routes/api/public/activity/*`, `src/lib/activity/capture.server.ts`, consent, or any Supabase migration/rollup. This pass is composition, density, and hierarchy only.
+Scope: composition only. No backend, PostHog, consent, rollup, server-function, Supabase, capture, or proxy changes.
 
-Files in scope:
-- `src/routes/admin_.activity.tsx`
-- `src/components/admin/activity/CommandStrip.tsx`
-- `src/components/admin/activity/WorldMapPanel.tsx`
-- `src/components/admin/activity/LiveActivityRail.tsx`
-- `src/components/admin/activity/PublicVisitorsPanel.tsx`
-- `src/components/admin/activity/panels.tsx` (NeedsAttention + Geo density)
-- `src/components/admin/activity/feed-and-sheet.tsx` (compact row variant only)
+### Problem
 
----
+Current hero grid: map (col-span 8, ~380px) beside a right column stack of Live Rail + Needs Attention (~640px). The left column collapses under the map, leaving a large dead void. Public Analytics has also been over-collapsed and now feels sparse.
 
-### 1. New above-the-fold layout (fits 1440×900)
-
-Replace the current stacked grid with a single deliberate cockpit block:
+### Fix — new hero grid (Option A, preferred)
 
 ```text
-┌────────────────────────────────────────────────────────────┐
-│ Header (title + LiveChip · Range · Filters · Refresh)      │
-├────────────────────────────────────────────────────────────┤
-│ Command strip — 7 tiles, one row, fixed 84px height        │
-├──────────────────────────────────────┬─────────────────────┤
-│                                      │ Live rail           │
-│           Map  (col-span 8)          │ (col-span 4, top)   │
-│           height ≈ 380px             │                     │
-│                                      ├─────────────────────┤
-│                                      │ Needs Attention     │
-│                                      │ top-5 + View all    │
-└──────────────────────────────────────┴─────────────────────┘
+Header + LiveChip + range/filters
+Command strip (7 tiles, one row)
+
+┌─────────────────────────────────────┬───────────────────┐
+│ Realtime map            (col 8)     │                   │
+│ height ≈ 380px                      │  Live Activity    │
+├─────────────────────────────────────┤  rail (col 4)     │
+│ Needs Attention         (col 8)     │  full hero height │
+│ compact top-5 + "View all"          │  internal scroll  │
+└─────────────────────────────────────┴───────────────────┘
 ```
 
-- Right column split vertically so total right height = map height. No above-the-fold Recent Activity.
-- Ops banner + filter chips are inline one-line strips directly under header (no fat card).
-- Grid becomes `xl:grid-cols-12` with an outer `space-y-4` (was `space-y-5+`).
+Implementation in `src/routes/admin_.activity.tsx`:
+- Outer hero: `grid xl:grid-cols-12 gap-4 items-stretch`.
+- Left wrapper: `xl:col-span-8 flex flex-col gap-4` containing `<WorldMapPanel />` then `<NeedsAttentionPanel compact maxRows={5} />`.
+- Right wrapper: `xl:col-span-4 flex` containing `<LiveActivityRail className="h-full" />`.
+- Live rail becomes full height of the left stack via `items-stretch` + `h-full` on the panel wrapper — no fixed pixel height.
+- Remove the current right-column vertical split; delete the wrapper that stacked Live Rail + Needs Attention on the right.
 
-### 2. Command strip — 7 tiles, tightened (`CommandStrip.tsx`)
+### Panel-level tweaks
 
-Tiles: Live sessions · Public now · Members now · Views 5m · Key events · Action queue · Ingest.
+`src/components/admin/activity/LiveActivityRail.tsx`
+- Add `className` prop pass-through; ensure the root uses `flex flex-col h-full` and the tab body uses `flex-1 min-h-0 overflow-y-auto` so it fills the hero height without overflowing the page.
 
-- Live sessions = `publicOnline + membersOnline` (client add).
-- Ingest tile: green Healthy / amber Degraded / red Down, derived from existing `isError`/`degraded` props passed from route (no new query).
-- Zero-value tiles render in "quiet" style (muted number, no ring, no accent bg) so alert/live tiles dominate the eye.
-- Public = blue, Members = orange, Alerts = amber/red, Health = emerald.
-- Compact microcopy per spec ("Public now", "Members now", "Views 5m", "Key events", "Action queue", "Ingest"). No "anonymous visitors now" phrasing.
-- **Public-online reconciliation (display-only fallback)**: read `publicOnline = Math.max(publicRealtimeQ.data?.online_now ?? 0, sum(countries[].online))`. This fixes cases where the top counter shows 0 while country rows show live sessions. Purely a presentation adapter in the route — server functions untouched.
+`src/components/admin/activity/panels.tsx` (`NeedsAttentionPanel`)
+- Keep top-5 + "View all N" toggle from v2.1.
+- Ensure the compact card sits naturally below the map with matching radius (`rounded-[18px]`) and internal density (`py-2` rows).
+- Header shows `1 critical · N warnings` inline.
 
-### 3. Map — smaller and more restrained (`WorldMapPanel.tsx`)
+`src/components/admin/activity/WorldMapPanel.tsx`
+- Keep the ~380px map, log1p bubble scaling, 10px cap, and compact top-left overlay from v2.1. No further changes.
 
-- Container height reduced ~12% (from ~440px → ~380px via `min-h`/`h` tokens).
-- Bubble scale switched to `log1p` normalized; hard cap **10px** radius for both member and public bubbles (down from 13–14).
-- Pulse ring: reduce max radius +opacity so a single visitor is a subtle dot, not a cartoon blob.
-- Country hover label: `text-[10px]`, muted bg, no drop-shadow.
-- Members/Public/Both toggle: restyled as segmented pill matching `RangeSwitcher`.
-- Compact top-left overlay (single card): `Public N · Members N · Updated Xs ago` — replaces existing verbose legend.
-- Simplified legend row: two dots + counts on one line at bottom-right.
+### Public Analytics — un-collapse the useful bits
 
-### 4. Live rail (`LiveActivityRail.tsx`)
+`src/components/admin/activity/PublicVisitorsPanel.tsx`
+- Keep primary KPI row visible: page views, sessions, profile views, enquiries.
+- Move Top public pages, Top referrers, Top countries OUT of the `<details>` disclosure so they render by default in a compact 3-column grid directly under the KPIs.
+- Keep behind the disclosure (`Show discovery details`): searches, no-result searches, signup/checkout zero metrics, top public profiles when empty, and any other zero-heavy secondary lists.
+- Zero-value KPI cards stay in "quiet" style; non-zero secondary metrics still promote to tiles.
 
-- Height = top ~55% of right column; internal scroll.
-- Tabs get an active underline + count badge.
-- Empty state = one elegant row: "No member sessions right now" / "Waiting for consented traffic" — never a tall empty block.
-- Row density: `py-2`, live green dot only for rows updated < 60s ago.
+### Below-the-fold order (unchanged from v2.1)
 
-### 5. Needs Attention — compact priority queue (`panels.tsx`)
-
-- Header shows `1 critical · 10 warnings` derived from rows.
-- Top 5 rows only; footer button `View all 11` opens the existing full list in a Sheet reusing the same panel (no data change).
-- Row density: single line where possible, second line only for critical items.
-- Critical rows: solid amber-red left border + bold label. Warning: subtle border. Info: muted single line.
-- Action buttons pushed to a fixed right-aligned column so they stack cleanly.
-- Total panel height bounded so it never dominates the right column.
-
-### 6. Below the fold — cleaner grouping (`admin_.activity.tsx`)
-
-New order (each preceded by a slim divider + a single section header):
-
-- **Section A — Public analytics (compact by default)** → uses updated `PublicVisitorsPanel`.
-- **Section B — Member activity (secondary)** → `TopMemberPagesPanel` + `GeoPanel`, tighter density.
-- **Section C — Audit feed** → the moved Recent Activity card + `Full feed` drawer button. Renders as a compact feed (row height ≈ 44px). When events < 5, panel collapses to natural height instead of a fixed tall card.
-
-### 7. Public analytics rollup — collapsible detail (`PublicVisitorsPanel.tsx`)
-
-Default (always visible):
-- Page views, Sessions, Profile views, Enquiries — as a single 4-tile compact row.
-- Top pages, Top referrers.
-
-Behind a `Show discovery details` disclosure (`<details>` or shadcn Collapsible):
-- Countries, searches, no-result searches, other zero-heavy metrics.
-
-Zero-metric cards render in "quiet" row style — never full-size panels. Empty strings updated to spec ("No public profile views today", "No searches recorded in 24h", "Realtime updates when visitors accept analytics cookies").
-
-### 8. Vertical rhythm sweep (all components)
-
-- Outer route spacing: `space-y-4` cockpit block → `space-y-6` between below-fold sections (was 8+).
-- Card radius standardised: panels `rounded-[18px]`, inner blocks `rounded-[14px]`.
-- Section headers unified: colored dot + `font-display text-[14px]` + eyebrow. No repeated headers within a section.
-- Muted text = `text-white/55`; eyebrows = `text-[10.5px] uppercase tracking-wide text-white/50`.
-- Row hover: `hover:bg-white/[0.04]` everywhere.
-- No `space-y-*` on flex columns; use `gap-*`.
-
-### 9. Loading & refresh polish
-
-- Skeleton rows match final row heights → no jitter.
-- Command-strip tiles keep last number + faint pulse ring on refetch (no collapse to "—").
-- Map keeps prior bubbles during refetch — no full remount.
-
-### 10. Acceptance verification
-
-- `bunx tsgo --noEmit` must pass.
-- Playwright screenshot at 1440×900 confirming: full cockpit above the fold (strip + map + rail + attention), map visibly smaller, bubbles small and restrained, no Recent Activity above the fold, zero-value tiles muted, public rollup collapsed by default, page noticeably shorter overall.
-- Return: single screenshot, short layout-change summary, explicit confirmation that no backend / analytics / consent / proxy / Supabase / rollup files were modified, tsgo result.
+1. Public analytics (now with visible top pages / referrers / countries)
+2. Member activity (Top member pages + Geo)
+3. Audit feed (compact Recent Activity + Full feed drawer)
 
 ### Explicitly untouched
 
-- `src/lib/ops/activity-*.functions.ts`
-- `src/lib/admin/public-realtime.functions.ts`
-- `src/routes/api/public/_a/*`
-- `src/routes/api/public/activity/*`
+- `src/lib/ops/*`
+- `src/lib/admin/public-realtime.functions.ts` and other analytics functions
+- `src/routes/api/public/_a/*`, `src/routes/api/public/activity/*`
 - `src/lib/activity/capture.server.ts`
-- `CookieBanner.tsx` / consent code
-- Any Supabase migration or SQL rollup
+- Consent code / `CookieBanner.tsx`
+- Any Supabase migration or rollup SQL
+
+### Acceptance
+
+- `bunx tsgo --noEmit` passes.
+- Playwright screenshot at 1440×900 shows: command strip, map + Needs Attention stacked on the left, Live Activity as a single full-height rail on the right, no empty void anywhere in the hero, Public Analytics starting immediately below with top pages/referrers/countries visible by default.
+- Return: single screenshot, short layout diff, explicit confirmation no backend/analytics/consent/proxy files changed, tsgo result.
