@@ -6,7 +6,8 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
-const POSTHOG_HOST = "https://eu.i.posthog.com";
+const POSTHOG_INGEST_HOST = "https://eu.i.posthog.com";
+const POSTHOG_ASSET_HOST = "https://eu-assets.i.posthog.com";
 const BOT_UA =
   /bot|crawl|spider|slurp|facebookexternalhit|pingdom|uptimerobot|headless|puppeteer|playwright|lighthouse|semrush|ahrefs|dataforseo|screaming\s?frog|preview\s?bot/i;
 
@@ -37,7 +38,10 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   const ua = request.headers.get("user-agent");
   if (isBot(ua)) return new Response(null, { status: 204 });
 
-  const url = `${POSTHOG_HOST}/${splat}${new URL(request.url).search}`;
+  const upstreamHost = splat.startsWith("array/") || splat.startsWith("static/")
+    ? POSTHOG_ASSET_HOST
+    : POSTHOG_INGEST_HOST;
+  const url = `${upstreamHost}/${splat}${new URL(request.url).search}`;
 
   // Only mutate JSON POST bodies. GET (decide, etc.) passes through unchanged.
   let outboundBody: BodyInit | null = null;
