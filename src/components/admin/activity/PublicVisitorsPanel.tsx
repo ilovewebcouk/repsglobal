@@ -60,7 +60,14 @@ function TopList({
   );
 }
 
-export function PublicVisitorsPanel() {
+export function PublicVisitorsPanel({
+  realtime = null,
+  realtimeLoading = false,
+}: {
+  realtime?: PublicRealtime | null;
+  realtimeLoading?: boolean;
+} = {}) {
+
   const runSummary = useServerFn(getPublicAnalyticsSummary);
   const q = useQuery({
     queryKey: ["public-analytics-summary"],
