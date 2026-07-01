@@ -415,6 +415,34 @@ function DirectoryPage() {
     }
   }, [page]);
 
+  // Public analytics — fire directory_search / directory_no_results once per
+  // (query, city, profession, visibleTotal) settle. Guard against duplicate
+  // fires on unrelated re-renders.
+  const searchFireRef = React.useRef<string>("");
+  React.useEffect(() => {
+    const trimmed = (q ?? "").trim();
+    if (!trimmed && !city && !profession) return;
+    const key = `${trimmed}|${city ?? ""}|${profession ?? ""}|${visibleTotal}`;
+    if (searchFireRef.current === key) return;
+    searchFireRef.current = key;
+    void import("@/lib/analytics/track").then(({ track }) => {
+      track.directorySearch({
+        q: trimmed || "",
+        result_count: visibleTotal,
+        location: city ?? null,
+        profession: profession ?? null,
+      });
+      if (visibleTotal === 0) {
+        track.directoryNoResults({
+          q: trimmed || "",
+          location: city ?? null,
+          profession: profession ?? null,
+        });
+      }
+    });
+  }, [q, city, profession, visibleTotal]);
+
+
 
   const barState: ResultsBarState = {
     profession,
