@@ -118,7 +118,7 @@ import { Route as ApiPublicConsentLogRouteImport } from './routes/api/public/con
 import { Route as ApiPublicActivitySessionEventRouteImport } from './routes/api/public/activity/session-event'
 import { Route as ApiPublicActivityPublicConversionRouteImport } from './routes/api/public/activity/public-conversion'
 import { Route as ApiPublicActivityAuthEventRouteImport } from './routes/api/public/activity/auth-event'
-import { Route as ApiPublicASplatRouteImport } from './routes/api/public/_a/$'
+import { Route as ApiPublicASplatRouteImport } from './routes/api/public/[_]a/$'
 import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admin_.billing.disputes.$disputeId'
 import { Route as AuthenticatedProfessionalDashboardWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.website'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
@@ -711,7 +711,7 @@ const ApiPublicActivityAuthEventRoute =
   } as any)
 const ApiPublicASplatRoute = ApiPublicASplatRouteImport.update({
   id: '/api/public/_a/$',
-  path: '/api/public/$',
+  path: '/api/public/_a/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBillingDisputesDisputeIdRoute =
@@ -1009,7 +1009,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
-  '/api/public/$': typeof ApiPublicASplatRoute
+  '/api/public/_a/$': typeof ApiPublicASplatRoute
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
   '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
@@ -1145,7 +1145,7 @@ export interface FileRoutesByTo {
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
-  '/api/public/$': typeof ApiPublicASplatRoute
+  '/api/public/_a/$': typeof ApiPublicASplatRoute
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
   '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
@@ -1431,7 +1431,7 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
-    | '/api/public/$'
+    | '/api/public/_a/$'
     | '/api/public/activity/auth-event'
     | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
@@ -1567,7 +1567,7 @@ export interface FileRouteTypes {
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
-    | '/api/public/$'
+    | '/api/public/_a/$'
     | '/api/public/activity/auth-event'
     | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
@@ -2612,8 +2612,8 @@ declare module '@tanstack/react-router' {
     }
     '/api/public/_a/$': {
       id: '/api/public/_a/$'
-      path: '/api/public/$'
-      fullPath: '/api/public/$'
+      path: '/api/public/_a/$'
+      fullPath: '/api/public/_a/$'
       preLoaderRoute: typeof ApiPublicASplatRouteImport
       parentRoute: typeof rootRouteImport
     }
