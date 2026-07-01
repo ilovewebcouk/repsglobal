@@ -673,6 +673,11 @@ function ProProfilePage() {
                 <Link
                   to="/pro/$slug/enquire"
                   params={{ slug }}
+                  onClick={() => {
+                    void import("@/lib/analytics/track").then(({ track }) =>
+                      track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
+                    );
+                  }}
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
                 >
                   <MessageCircle className="h-4 w-4" />
