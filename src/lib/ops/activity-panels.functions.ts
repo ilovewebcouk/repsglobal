@@ -443,8 +443,8 @@ export const getNeedsAttention = createServerFn({ method: "POST" })
       const [disputes, failed, support, verif, failedAuth] = await Promise.all([
         supabaseAdmin.from("disputes").select("id, user_id, status, reason, amount_pence, opened_at").in("status", ["needs_response", "warning_needs_response", "under_review", "warning_under_review"]).order("opened_at", { ascending: false }).limit(20),
         supabaseAdmin.from("payment_events").select("id, user_id, event_type, created_at, payload").ilike("event_type", "%failed%").gte("created_at", iso48).order("created_at", { ascending: false }).limit(20),
-        supabaseAdmin.from("support_tickets").select("id, ticket_number, subject, status, priority, requester_user_id, requester_name, last_message_at, created_at").in("status", ["open", "pending", "waiting_customer", "new"]).order("last_message_at", { ascending: false, nullsFirst: false }).limit(20),
-        supabaseAdmin.from("verification_submissions").select("id, professional_id, status, created_at").in("status", ["under_review", "pending", "submitted"]).order("created_at", { ascending: false }).limit(20),
+        supabaseAdmin.from("support_tickets").select("id, ticket_number, subject, status, priority, requester_user_id, requester_name, last_message_at, created_at").in("status", ["open", "new", "pending"] as const).order("last_message_at", { ascending: false, nullsFirst: false }).limit(20),
+        supabaseAdmin.from("verification_submissions").select("id, professional_id, status, created_at").in("status", ["submitted", "changes_requested"] as const).order("created_at", { ascending: false }).limit(20),
         supabaseAdmin.from("auth_events").select("user_id, email, created_at").eq("event", "sign_in_failed").gte("created_at", iso15m),
       ]);
 
