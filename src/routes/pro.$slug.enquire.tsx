@@ -135,6 +135,14 @@ function EnquirePage() {
   const router = useRouter();
   const fallbackPro = getPro(slug);
 
+  // Public analytics — enquiry_start fires once per slug per mount.
+  useEffect(() => {
+    void import("@/lib/analytics/track").then(({ track }) =>
+      track.enquiryStart({ slug }),
+    );
+  }, [slug]);
+
+
   // Live overlay (name, avatar, services). Falls back to static if not found.
   const liveQuery = useQuery({
     queryKey: ["shop-front-public", slug],
