@@ -18,11 +18,24 @@ import type { GeoRow } from "@/lib/ops/activity-panels.functions";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+export type MapLayer = "members" | "public" | "both";
+
+export interface PublicCountryPoint {
+  country_code: string;
+  online: number;
+  views_5m: number;
+}
+
 export interface WorldMapPanelProps {
   countries: GeoRow[];
   loading: boolean;
   selectedCountry?: string;
   onSelectCountry: (cc: string | undefined) => void;
+  layer?: MapLayer;
+  onLayerChange?: (l: MapLayer) => void;
+  publicCountries?: PublicCountryPoint[];
+  publicOnline?: number;
+  publicStale?: boolean;
 }
 
 interface Bubble {
@@ -33,7 +46,9 @@ interface Bubble {
   online: number;
   views: number;
   radius: number;
+  kind: "member" | "public";
 }
+
 
 export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCountry }: WorldMapPanelProps) {
   const [mapError, setMapError] = useState(false);
