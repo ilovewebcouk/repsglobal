@@ -2,7 +2,8 @@
 // - Strips $ip before forwarding.
 // - Drops DNT / GPC / known bots (204).
 // - Tags is_internal=true when caller carries an admin bearer.
-// - Adds country_code from Cloudflare header.
+// - Adds canonical `$geoip_country_code` from Cloudflare `cf-ipcountry` header.
+//   (Also mirrors to legacy `country_code` for back-compat during v1.1 rollout.)
 
 import { createFileRoute } from "@tanstack/react-router";
 
