@@ -41,6 +41,8 @@ import {
 import { cn } from "@/lib/utils";
 
 import { getMember360, type Member360Snapshot } from "@/lib/admin/member360.functions";
+import { getMemberSessions, type MemberSessionRow } from "@/lib/admin/member-sessions.functions";
+import { DntGpcBadge } from "@/components/admin/DntGpcBadge";
 
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
 import {
