@@ -201,6 +201,14 @@ function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
+  // Public analytics — signup_start once per mount.
+  useEffect(() => {
+    void import("@/lib/analytics/track").then(({ track }) =>
+      track.signupStart({ plan: search.tier ?? null, path: "/signup" }),
+    );
+  }, [search.tier]);
+
+
   const planSummary: PlanSummary | null =
     search.tier && search.period && search.tier in PLAN_SUMMARIES
       ? PLAN_SUMMARIES[search.tier as NonNullable<SignupSearch["tier"]>][
