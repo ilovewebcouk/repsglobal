@@ -84,33 +84,29 @@ export function CookieBanner() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
                 onClick={() => setCustomiseOpen(true)}
-                className="h-9 rounded-[10px] text-white/70 hover:text-white"
+                className="inline-flex h-9 items-center rounded-[10px] px-3 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
               >
                 Customise
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={rejectAll}
-                className="h-9 rounded-[10px] border-white/15 bg-transparent text-white hover:bg-white/5"
+                className="inline-flex h-9 items-center rounded-[10px] border border-white/15 bg-transparent px-3 text-[13px] font-medium text-white transition-colors hover:border-white/25 hover:bg-white/10"
               >
                 Reject non-essential
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                size="sm"
                 onClick={acceptAll}
-                className="h-9 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
+                className="inline-flex h-9 items-center rounded-[10px] bg-reps-orange px-3 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-hover"
               >
                 Accept all
-              </Button>
+              </button>
             </div>
+
           </div>
         </div>
       )}
@@ -136,8 +132,11 @@ export function CookieBanner() {
                   Sign-in, security, and preferences. Required for REPS to work.
                 </p>
               </div>
-              <Switch checked disabled aria-label="Essential (always on)" />
+              <span className="inline-flex h-6 shrink-0 items-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 text-[11px] font-medium text-emerald-300">
+                Always on
+              </span>
             </div>
+
 
             <div className="flex items-start justify-between gap-4 rounded-[14px] border border-white/10 bg-white/5 p-4">
               <div>
