@@ -135,7 +135,7 @@ function AdminActivityPage() {
   const filterChipsActive = Boolean(source || severity || country || search.range);
 
   return (
-    <DashboardShell>
+    <DashboardShell role="admin" active="Activity" title="Activity" subtitle="Realtime operations command centre">
       <div className="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6">
         {/* ── Header row ── */}
         <header className="flex flex-wrap items-end justify-between gap-3">
