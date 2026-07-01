@@ -45,6 +45,7 @@ import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummary
 import {
   ActivityFeedV2, EventDetailSheet,
 } from "@/components/admin/activity/feed-and-sheet";
+import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsPanel";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
@@ -163,8 +164,8 @@ function AdminActivityPage() {
           <div>
             <h1 className="font-display text-[24px] font-bold text-white">Activity</h1>
             <p className="mt-1 text-[12.5px] text-white/55">
-              Realtime map of logged-in member activity.{" "}
-              <span className="text-white/40">Anonymous public analytics is disabled in v1.2.</span>
+              Realtime map of logged-in <span className="text-orange-300">members</span> and{" "}
+              <span className="text-blue-300">public visitors</span>.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -229,6 +230,10 @@ function AdminActivityPage() {
 
         {/* ── KPI strip (below hero — supporting metrics, no duplication of Online now) ── */}
         <KpiStrip tiles={dedupedKpis} loading={kpisQ.isLoading} />
+
+        {/* ── Public visitor analytics (anonymous — separate from member data) ── */}
+        <PublicVisitorsPanel />
+
 
         {/* ── ROW 2: Online now (4) · Pages now (4) · Country list (4) ── */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
