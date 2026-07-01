@@ -210,6 +210,8 @@ export function GeoPanel({
         <ul className="max-h-[420px] divide-y divide-reps-border/60 overflow-auto">
           {countries.map((c) => {
             const isSelected = selectedCountry === c.country_code;
+            const isUnknown = c.country_code === "??" || c.country_code === "XX";
+            const label = isUnknown ? "Unknown country" : (COUNTRY_NAMES[c.country_code] ?? c.country_code);
             return (
               <li key={c.country_code}>
                 <button
@@ -218,18 +220,20 @@ export function GeoPanel({
                   className={cn(
                     "flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-white/5",
                     isSelected && "bg-reps-orange/10",
+                    isUnknown && "opacity-80",
                   )}
                 >
-                  <span className="text-[20px] leading-none">{flag(c.country_code)}</span>
+                  <span className="text-[20px] leading-none">{isUnknown ? "🌐" : flag(c.country_code)}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="truncate text-[13px] font-medium text-white">
-                        {COUNTRY_NAMES[c.country_code] ?? c.country_code}
+                        {label}
+                        {isUnknown ? <span className="ml-1.5 text-[10px] font-normal text-white/40">Location unresolved</span> : null}
                       </span>
                       <span className="shrink-0 text-[11px] text-white/45">{c.share_pct}%</span>
                     </div>
                     <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-                      <div className="h-full rounded-full bg-reps-orange/70" style={{ width: `${Math.max(4, (c.page_views_24h / max) * 100)}%` }} />
+                      <div className={cn("h-full rounded-full", isUnknown ? "bg-white/25" : "bg-reps-orange/70")} style={{ width: `${Math.max(4, (c.page_views_24h / max) * 100)}%` }} />
                     </div>
                     <div className="mt-1.5 flex items-center gap-3 text-[10.5px] text-white/55">
                       <span className="inline-flex items-center gap-1"><Circle className="h-1.5 w-1.5 fill-emerald-400 text-emerald-400" />{c.online_now} online</span>
@@ -290,7 +294,7 @@ export function OnlineNowRail({ users, loading }: { users: OnlineNowUser[]; load
                     {u.device ?? "device?"}{u.browser ? ` · ${u.browser}` : ""}
                   </span>
                   <span>·</span>
-                  <span>{u.country_code ? <>{flag(u.country_code)} {u.country_code}</> : "🌐 —"}</span>
+                  <span>{u.country_code && u.country_code !== "??" ? <>{flag(u.country_code)} {u.country_code}</> : <span className="italic text-white/40">Unknown country</span>}</span>
                   <span>·</span>
                   <span>{u.pages_viewed} pages · {durationLabel(u.started_at)}</span>
                 </div>

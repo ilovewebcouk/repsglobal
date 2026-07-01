@@ -179,9 +179,9 @@ export const getActivityKpis = createServerFn({ method: "POST" })
 
       const tiles: KpiTileData[] = [
         { key: "online_now", label: "Online now", value: onlineCount, delta_pct: null, sparkline: [], tone: "success" },
-        { key: "active_sessions", label: "Active sessions 24h", value: activeSessionsToday, delta_pct: null, sparkline: sparklineFromRows(((sessions14.data ?? []) as Array<{ started_at: string }>).map((r) => ({ created_at: r.started_at }))) },
+        { key: "active_sessions", label: "Member sessions 24h", value: activeSessionsToday, delta_pct: null, sparkline: sparklineFromRows(((sessions14.data ?? []) as Array<{ started_at: string }>).map((r) => ({ created_at: r.started_at }))) },
         { key: "member_views", label: "Member page views 24h", value: memberViews24, delta_pct: pctDelta(memberViews24, memberViewsPrev), sparkline: sparklineFromRows((sessionEvents14.data ?? []) as Array<{ created_at: string }>) },
-        { key: "sign_ins", label: "Sign-ins today", value: signInsToday, delta_pct: pctDelta(signInsToday, signInsPrev), sparkline: sparklineFromRows(signInRows) },
+        { key: "sign_ins", label: "Member sign-ins today", value: signInsToday, delta_pct: pctDelta(signInsToday, signInsPrev), sparkline: sparklineFromRows(signInRows) },
         { key: "new_members", label: "New members 24h", value: newMembers24, delta_pct: pctDelta(newMembers24, newMembersPrev), sparkline: sparklineFromRows(newMemberRows), tone: "success" },
         { key: "high_value", label: "High-value events today", value: newMembers24 + disputes24Count, delta_pct: null, sparkline: [] },
         { key: "failed_payments", label: "Failed payments 24h", value: failed24, delta_pct: pctDelta(failed24, failedPrev), sparkline: [], tone: failed24 > 0 ? "warning" : "info" },
@@ -226,10 +226,11 @@ export const getOnlineNow = createServerFn({ method: "POST" })
       for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null; avatar_url: string | null }>) {
         pMap.set(p.id, { name: p.full_name || p.display_name || p.id.slice(0, 8), email: null, avatar_url: p.avatar_url });
       }
-      const sMap = new Map<string, { tier: string | null; created_at: string }>();
-      for (const s of (subsRes.data ?? []) as Array<{ user_id: string; tier: string | null; created_at: string }>) {
-        sMap.set(s.user_id, { tier: s.tier, created_at: s.created_at });
+      const sMap = new Map<string, { tier: string | null; status: string | null; created_at: string }>();
+      for (const s of (subsRes.data ?? []) as Array<{ user_id: string; tier: string | null; status: string | null; created_at: string }>) {
+        sMap.set(s.user_id, { tier: s.tier, status: s.status, created_at: s.created_at });
       }
+      const { tierLabel } = await import("@/lib/activity/labels");
       const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
       return rows.map<OnlineNowUser>((r) => {
         const p = r.user_id ? pMap.get(r.user_id) : undefined;
@@ -256,7 +257,7 @@ export const getOnlineNow = createServerFn({ method: "POST" })
           started_at: r.started_at,
           last_seen_at: r.last_seen_at,
           pages_viewed: r.pages_viewed ?? 0,
-          tier: s?.tier ?? null,
+          tier: tierLabel(s?.tier ?? null, s?.status ?? null),
           badges,
         };
       });
@@ -391,20 +392,24 @@ export const getGeoActivity = createServerFn({ method: "POST" })
         supabaseAdmin.from("auth_events").select("country_code, event").gte("created_at", iso24).eq("event", "sign_in"),
       ]);
       const bucket = new Map<string, { online: Set<string>; views: number; signins: number }>();
+      const norm = (cc: string | null): string => {
+        const v = (cc ?? "").toUpperCase();
+        return v && v.length === 2 && v !== "XX" ? v : "??";
+      };
       for (const r of ((online.data ?? []) as Array<{ country_code: string | null; user_id: string | null }>)) {
-        const cc = r.country_code ?? "??";
+        const cc = norm(r.country_code);
         const b = bucket.get(cc) ?? { online: new Set(), views: 0, signins: 0 };
         if (r.user_id) b.online.add(r.user_id);
         bucket.set(cc, b);
       }
       for (const r of ((views.data ?? []) as Array<{ country_code: string | null }>)) {
-        const cc = r.country_code ?? "??";
+        const cc = norm(r.country_code);
         const b = bucket.get(cc) ?? { online: new Set(), views: 0, signins: 0 };
         b.views++;
         bucket.set(cc, b);
       }
       for (const r of ((signins.data ?? []) as Array<{ country_code: string | null }>)) {
-        const cc = r.country_code ?? "??";
+        const cc = norm(r.country_code);
         const b = bucket.get(cc) ?? { online: new Set(), views: 0, signins: 0 };
         b.signins++;
         bucket.set(cc, b);

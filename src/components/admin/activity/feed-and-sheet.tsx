@@ -52,10 +52,12 @@ function initials(name: string): string {
 }
 
 export function ActivityFeedV2({
-  events, loading, onOpenEvent,
+  events, loading, onOpenEvent, compact = false,
 }: {
   events: ActivityEvent[]; loading: boolean;
   onOpenEvent: (e: ActivityEvent) => void;
+  /** Compact = drop the outer PanelShell (parent already wraps it). */
+  compact?: boolean;
 }) {
   const grouped = useMemo(() => {
     const map = new Map<string, ActivityEvent[]>();
@@ -69,14 +71,14 @@ export function ActivityFeedV2({
     return order.filter((k) => map.has(k)).map((k) => [k, map.get(k)!] as const);
   }, [events]);
 
-  return (
-    <PanelShell title="Live activity feed" subtitle="Every business event across REPS" icon={Radio}>
+  const body = (
+    <>
       {loading && !events.length ? (
         <div className="space-y-2 p-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
       ) : events.length === 0 ? (
         <EmptyState icon={Activity} title="No events in this window" hint="Try widening the time range or clearing filters." />
       ) : (
-        <div className="max-h-[720px] divide-y divide-reps-border/60 overflow-auto">
+        <div className={cn("divide-y divide-reps-border/60 overflow-auto", compact ? "max-h-[420px]" : "max-h-[720px]") }>
           {grouped.map(([label, list]) => (
             <div key={label}>
               <div className="sticky top-0 z-[1] flex items-center justify-between border-b border-reps-border/60 bg-reps-panel/95 px-4 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/50 backdrop-blur">
@@ -126,6 +128,13 @@ export function ActivityFeedV2({
           ))}
         </div>
       )}
+    </>
+  );
+
+  if (compact) return body;
+  return (
+    <PanelShell title="Live activity feed" subtitle="Every business event across REPS" icon={Radio}>
+      {body}
     </PanelShell>
   );
 }
