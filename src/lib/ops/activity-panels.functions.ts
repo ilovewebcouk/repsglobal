@@ -219,12 +219,12 @@ export const getOnlineNow = createServerFn({ method: "POST" })
       }>;
       const userIds = Array.from(new Set(rows.map((r) => r.user_id).filter((x): x is string => Boolean(x))));
       const [profilesRes, subsRes] = await Promise.all([
-        userIds.length ? supabaseAdmin.from("profiles").select("id, full_name, display_name, avatar_url, email").in("id", userIds) : Promise.resolve({ data: [] as unknown[] }),
+        userIds.length ? supabaseAdmin.from("profiles").select("id, full_name, display_name, avatar_url").in("id", userIds) : Promise.resolve({ data: [] as unknown[] }),
         userIds.length ? supabaseAdmin.from("subscriptions").select("user_id, tier, status, created_at").in("user_id", userIds) : Promise.resolve({ data: [] as unknown[] }),
       ]);
       const pMap = new Map<string, { name: string; email: string | null; avatar_url: string | null }>();
-      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null; avatar_url: string | null; email: string | null }>) {
-        pMap.set(p.id, { name: p.full_name || p.display_name || p.id.slice(0, 8), email: p.email, avatar_url: p.avatar_url });
+      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null; avatar_url: string | null }>) {
+        pMap.set(p.id, { name: p.full_name || p.display_name || p.id.slice(0, 8), email: null, avatar_url: p.avatar_url });
       }
       const sMap = new Map<string, { tier: string | null; created_at: string }>();
       for (const s of (subsRes.data ?? []) as Array<{ user_id: string; tier: string | null; created_at: string }>) {
