@@ -132,8 +132,11 @@ export function CookieBanner() {
                   Sign-in, security, and preferences. Required for REPS to work.
                 </p>
               </div>
-              <Switch checked disabled aria-label="Essential (always on)" />
+              <span className="inline-flex h-6 shrink-0 items-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 text-[11px] font-medium text-emerald-300">
+                Always on
+              </span>
             </div>
+
 
             <div className="flex items-start justify-between gap-4 rounded-[14px] border border-white/10 bg-white/5 p-4">
               <div>
