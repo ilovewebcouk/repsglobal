@@ -70,7 +70,7 @@ export const Route = createFileRoute("/api/public/activity/public-conversion")({
             device: body.device ?? null,
             browser: body.browser ?? null,
             ip_hash: hashIp(ip),
-            properties: body.properties ?? {},
+            properties: (body.properties ?? {}) as unknown as never,
           });
 
           return new Response(null, { status: 204 });

@@ -113,25 +113,22 @@ export const getPublicAnalyticsSummary = createServerFn({ method: "POST" })
       };
     };
 
-    const last_7d = rollups.reduce(
-      (acc, r) => {
-        acc.public_page_views += Number(r.public_page_views ?? 0);
-        acc.public_profile_views += Number(r.public_profile_views ?? 0);
-        acc.public_unique_sessions += Number(r.public_unique_sessions ?? 0);
-        acc.enquiries_created += Number(r.enquiries_created ?? 0);
-        acc.signup_starts += Number(r.signup_starts ?? 0);
-        acc.checkout_starts += Number(r.checkout_starts ?? 0);
-        return acc;
-      },
-      {
-        public_page_views: 0,
-        public_profile_views: 0,
-        public_unique_sessions: 0,
-        enquiries_created: 0,
-        signup_starts: 0,
-        checkout_starts: 0,
-      },
-    );
+    const last_7d: PublicAnalyticsSummary["last_7d"] = {
+      public_page_views: 0,
+      public_profile_views: 0,
+      public_unique_sessions: 0,
+      enquiries_created: 0,
+      signup_starts: 0,
+      checkout_starts: 0,
+    };
+    for (const r of rollups) {
+      last_7d.public_page_views += Number(r.public_page_views ?? 0);
+      last_7d.public_profile_views += Number(r.public_profile_views ?? 0);
+      last_7d.public_unique_sessions += Number(r.public_unique_sessions ?? 0);
+      last_7d.enquiries_created += Number(r.enquiries_created ?? 0);
+      last_7d.signup_starts += Number(r.signup_starts ?? 0);
+      last_7d.checkout_starts += Number(r.checkout_starts ?? 0);
+    }
 
     const convs = (convRes.data ?? []) as Array<{ event_kind: string }>;
     const conversions_24h = {

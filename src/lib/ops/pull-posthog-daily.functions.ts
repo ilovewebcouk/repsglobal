@@ -104,30 +104,29 @@ export const pullPostHogDaily = createServerFn({ method: "POST" })
         devMap[String(r[0] ?? "unknown")] = Number(r[1]);
       }
 
-      await supabaseAdmin
-        .from("metrics_daily_public_analytics")
-        .upsert({
-          metric_date: target,
-          public_page_views: totalMap.get("$pageview") ?? 0,
-          public_profile_views: totalMap.get("profile_view") ?? 0,
-          public_unique_sessions: uniqueSessions,
-          directory_searches: totalMap.get("directory_search") ?? 0,
-          searches_no_results: totalMap.get("directory_no_results") ?? 0,
-          result_clicks: totalMap.get("directory_result_click") ?? 0,
-          enquiries_started: totalMap.get("enquiry_start") ?? 0,
-          enquiries_created: totalMap.get("enquiry_submit") ?? 0,
-          signup_starts: totalMap.get("signup_start") ?? 0,
-          checkout_starts: totalMap.get("checkout_started") ?? 0,
-          signup_completes: totalMap.get("signup_complete") ?? 0,
-          top_pages: toTopN(topPages.results),
-          top_profiles: toTopN(topProfiles.results),
-          top_searches: toTopN(topSearches.results),
-          top_no_result_searches: toTopN(topNoResult.results),
-          top_referrers: toTopN(topReferrers.results),
-          top_landing_pages: toTopN(topLanding.results),
-          countries: toTopN(countries.results, 30),
-          devices: devMap,
-        });
+      const rollupRow = {
+        metric_date: target,
+        public_page_views: totalMap.get("$pageview") ?? 0,
+        public_profile_views: totalMap.get("profile_view") ?? 0,
+        public_unique_sessions: uniqueSessions,
+        directory_searches: totalMap.get("directory_search") ?? 0,
+        searches_no_results: totalMap.get("directory_no_results") ?? 0,
+        result_clicks: totalMap.get("directory_result_click") ?? 0,
+        enquiries_started: totalMap.get("enquiry_start") ?? 0,
+        enquiries_created: totalMap.get("enquiry_submit") ?? 0,
+        signup_starts: totalMap.get("signup_start") ?? 0,
+        checkout_starts: totalMap.get("checkout_started") ?? 0,
+        signup_completes: totalMap.get("signup_complete") ?? 0,
+        top_pages: toTopN(topPages.results) as unknown as never,
+        top_profiles: toTopN(topProfiles.results) as unknown as never,
+        top_searches: toTopN(topSearches.results) as unknown as never,
+        top_no_result_searches: toTopN(topNoResult.results) as unknown as never,
+        top_referrers: toTopN(topReferrers.results) as unknown as never,
+        top_landing_pages: toTopN(topLanding.results) as unknown as never,
+        countries: toTopN(countries.results, 30) as unknown as never,
+        devices: devMap as unknown as never,
+      };
+      await supabaseAdmin.from("metrics_daily_public_analytics").upsert(rollupRow);
 
       await supabaseAdmin
         .from("public_analytics_ingest_state")
