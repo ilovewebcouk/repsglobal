@@ -383,29 +383,63 @@ export function CurrentPagesPanel({ pages, loading }: { pages: CurrentPageRow[];
 
 // ─────────────────────────────────────────────────────── TOP MEMBER PAGES ──
 
-export function TopMemberPagesPanel({ pages, loading }: { pages: TopPageRow[]; loading: boolean }) {
+export function TopMemberPagesPanel({
+  pages, loading, window, onWindowChange, fallbackHint,
+}: {
+  pages: TopPageRow[];
+  loading: boolean;
+  window: 24 | 168 | 720;
+  onWindowChange: (h: 24 | 168 | 720) => void;
+  fallbackHint?: string | null;
+}) {
+  const label = window === 24 ? "24h" : window === 168 ? "7d" : "30d";
   return (
     <PanelShell
-      title="Top member pages · 24h"
+      title={`Top member pages · ${label}`}
       subtitle="Logged-in member activity only"
       icon={Activity}
       right={
-        <TooltipProvider delayDuration={100}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10.5px] font-medium text-white/60">Member pages</span>
-            </TooltipTrigger>
-            <TooltipContent side="left" className="max-w-[280px] text-xs">
-              Logged-in member traffic only. Public anonymous analytics is planned once privacy approval lands.
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="inline-flex rounded-full border border-reps-border bg-white/[0.03] p-0.5">
+          {([24, 168, 720] as const).map((h) => (
+            <button
+              key={h}
+              type="button"
+              onClick={() => onWindowChange(h)}
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10.5px] font-medium transition",
+                window === h ? "bg-reps-orange text-white" : "text-white/55 hover:text-white/85",
+              )}
+            >
+              {h === 24 ? "24h" : h === 168 ? "7d" : "30d"}
+            </button>
+          ))}
+        </div>
       }
     >
       {loading && !pages.length ? (
         <div className="space-y-2 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div>
       ) : pages.length === 0 ? (
-        <EmptyState icon={Activity} title="No member page views in the last 24h" />
+        <EmptyState
+          icon={Activity}
+          title={`No member page views in the last ${label}`}
+          hint={
+            fallbackHint
+              ?? (window === 24
+                ? "Try 7d or 30d to review recent member activity."
+                : "Nothing recorded in this window yet.")
+          }
+          action={
+            window !== 720 ? (
+              <button
+                type="button"
+                onClick={() => onWindowChange(window === 24 ? 168 : 720)}
+                className="rounded-full border border-reps-border bg-white/5 px-2.5 py-1 text-[10.5px] font-medium text-white/80 hover:bg-white/10"
+              >
+                Switch to {window === 24 ? "7d" : "30d"}
+              </button>
+            ) : null
+          }
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-[12px]">
@@ -446,30 +480,49 @@ export function TopMemberPagesPanel({ pages, loading }: { pages: TopPageRow[]; l
 
 export function NeedsAttentionPanel({ rows, loading }: { rows: AttentionRow[]; loading: boolean }) {
   const critical = useMemo(() => rows.filter((r) => r.severity === "critical").length, [rows]);
+  const warning = useMemo(() => rows.filter((r) => r.severity === "warning").length, [rows]);
   return (
     <PanelShell
       title="Needs attention"
-      subtitle="Actionable issues across billing, support, verification, and auth"
+      subtitle="Billing, support, verification & auth issues"
       icon={AlertTriangle}
-      className={critical > 0 ? "ring-1 ring-rose-500/30" : undefined}
-      right={<Badge variant="outline" className={cn(critical > 0 ? "border-rose-500/50 bg-rose-500/15 text-rose-200" : "border-reps-border bg-white/5 text-white/60", "text-[10.5px]")}>{rows.length} open</Badge>}
+      className={critical > 0 ? "ring-1 ring-rose-500/40" : undefined}
+      right={
+        <div className="flex items-center gap-1.5">
+          {critical > 0 ? (
+            <Badge className="border-rose-500/50 bg-rose-500/15 text-[10px] font-semibold uppercase tracking-wide text-rose-200">
+              {critical} critical
+            </Badge>
+          ) : null}
+          {warning > 0 ? (
+            <Badge className="border-amber-500/40 bg-amber-500/15 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
+              {warning} warning
+            </Badge>
+          ) : null}
+          {rows.length === 0 ? (
+            <Badge className="border-emerald-500/40 bg-emerald-500/15 text-[10px] font-semibold uppercase tracking-wide text-emerald-200">
+              All clear
+            </Badge>
+          ) : null}
+        </div>
+      }
     >
       {loading && !rows.length ? (
         <div className="space-y-2 p-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
       ) : rows.length === 0 ? (
         <EmptyState icon={Circle} title="All clear" hint="No open disputes, failed payments, or pending support right now." />
       ) : (
-        <ul className="max-h-[520px] divide-y divide-reps-border/60 overflow-auto">
+        <ul className="max-h-[560px] divide-y divide-reps-border/60 overflow-auto">
           {rows.map((r) => (
             <li key={r.id} className={cn(
-              "relative flex items-start gap-3 px-4 py-3",
-              r.severity === "critical" ? "border-l-2 border-l-rose-500" : "border-l-2 border-l-amber-500",
+              "relative flex items-start gap-3 px-4 py-3 transition hover:bg-white/[0.02]",
+              r.severity === "critical" ? "border-l-2 border-l-rose-500 bg-rose-500/[0.04]" : "border-l-2 border-l-amber-500",
             )}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Badge className={cn(
                     "text-[9.5px] uppercase",
-                    r.severity === "critical" ? "bg-rose-500/15 text-rose-200" : "bg-amber-500/15 text-amber-200",
+                    r.severity === "critical" ? "bg-rose-500/20 text-rose-100" : "bg-amber-500/15 text-amber-200",
                   )}>{r.source}</Badge>
                   <span className="truncate text-[12.5px] font-medium text-white">{r.title}</span>
                 </div>
