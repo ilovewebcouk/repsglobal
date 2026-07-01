@@ -14,8 +14,15 @@ import type { Database } from "@/integrations/supabase/types";
 
 export interface CaptureContext {
   userId: string | null;
+  ip: string | null;         // raw client IP (admin-only tables — RLS enforced)
   ipHash: string | null;
   countryCode: string | null;
+  region: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  timezone: string | null;
+  geoSource: string | null;  // 'cloudflare' | null
   device: string | null;
   browser: string | null;
   os: string | null;
