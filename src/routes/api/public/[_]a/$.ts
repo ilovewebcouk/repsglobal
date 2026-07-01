@@ -66,7 +66,10 @@ async function proxy(request: Request, splat: string): Promise<Response> {
             if (props && typeof props === "object") {
               delete props.$ip;
               props.is_internal = admin;
-              if (country) props.country_code = country;
+              if (country) {
+                props.$geoip_country_code = country;
+                props.country_code = country; // legacy mirror
+              }
             }
           }
         };
