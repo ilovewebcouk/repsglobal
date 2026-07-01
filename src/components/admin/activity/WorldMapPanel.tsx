@@ -226,9 +226,14 @@ export function WorldMapPanel({
                 zoom={view.zoom}
                 minZoom={0.9}
                 maxZoom={6}
-                onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) =>
-                  setOverride({ center: coordinates, zoom })
-                }
+                onMoveStart={(_, event) => { if (event) setUserMoving(true); }}
+                onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => {
+                  // Only lock as override if the move came from user input.
+                  if (userMoving) {
+                    setOverride({ center: coordinates, zoom });
+                    setUserMoving(false);
+                  }
+                }}
               >
                 <Geographies geography={GEO_URL} onError={() => setMapError(true)}>
                   {({ geographies }: { geographies: Array<{ rsmKey: string; properties: { name?: string } }> }) =>
