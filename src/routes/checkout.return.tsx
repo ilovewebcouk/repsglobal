@@ -51,6 +51,9 @@ function CheckoutReturn() {
         for (let i = 0; i < 6; i++) {
           const result = await claimDeferredCheckout({ data: { session_id } });
           if ("url" in result) {
+            void import("@/lib/analytics/track").then(({ track }) =>
+              track.signupComplete({}),
+            );
             if (!cancelled) window.location.assign(result.url);
             return;
           }
