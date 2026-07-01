@@ -347,7 +347,7 @@ export function CurrentPagesPanel({ pages, loading }: { pages: CurrentPageRow[];
       {loading && !pages.length ? (
         <div className="space-y-2 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
       ) : pages.length === 0 ? (
-        <EmptyState icon={Eye} title="No live page activity" hint="Member pages appear here as sessions move around the app." />
+        <EmptyState icon={Eye} title="No members viewing a page right now" hint="Live locations appear the moment a logged-in member opens a page." />
       ) : (
         <ul className="divide-y divide-reps-border/60">
           {pages.map((p) => (
