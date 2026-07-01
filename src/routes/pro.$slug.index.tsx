@@ -514,6 +514,15 @@ function ProProfilePage() {
   const pro = PROS[slug] ?? (db ? proFromDb(db) : null);
   if (!pro) return <ProNotFound />;
 
+  // Public analytics — fire once per slug per session.
+  React.useEffect(() => {
+    if (!pro) return;
+    if (isFixture) return;
+    void import("@/lib/analytics/track").then(({ track }) =>
+      track.profileView({ slug, professional_id: db?.id ?? null }),
+    );
+  }, [slug, db?.id, isFixture]);
+
 
 
   // Real reviews — only used to override fixtures when the DB has any.
