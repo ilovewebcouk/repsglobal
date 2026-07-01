@@ -1,7 +1,7 @@
 // Admin Activity v1.1 — panel components.
 // Read-only ops console primitives. Honest empty states, no fake data.
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight,
@@ -483,13 +483,25 @@ export function TopMemberPagesPanel({
 
 // ─────────────────────────────────────────────────────── NEEDS ATTENTION ──
 
-export function NeedsAttentionPanel({ rows, loading }: { rows: AttentionRow[]; loading: boolean }) {
+export function NeedsAttentionPanel({
+  rows,
+  loading,
+  maxRows,
+}: {
+  rows: AttentionRow[];
+  loading: boolean;
+  maxRows?: number;
+}) {
   const critical = useMemo(() => rows.filter((r) => r.severity === "critical").length, [rows]);
   const warning = useMemo(() => rows.filter((r) => r.severity === "warning").length, [rows]);
+  const [showAll, setShowAll] = useState(false);
+  const visible = maxRows && !showAll ? rows.slice(0, maxRows) : rows;
+  const hiddenCount = maxRows ? Math.max(0, rows.length - maxRows) : 0;
+
   return (
     <PanelShell
       title="Needs attention"
-      subtitle="Billing, support, verification & auth issues"
+      subtitle="Priority action queue"
       icon={AlertTriangle}
       className={critical > 0 ? "ring-1 ring-rose-500/40" : undefined}
       right={
@@ -513,44 +525,65 @@ export function NeedsAttentionPanel({ rows, loading }: { rows: AttentionRow[]; l
       }
     >
       {loading && !rows.length ? (
-        <div className="space-y-2 p-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+        <div className="space-y-2 p-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-11 w-full" />)}</div>
       ) : rows.length === 0 ? (
-        <EmptyState icon={Circle} title="All clear" hint="No open disputes, failed payments, or pending support right now." />
+        <EmptyState icon={Circle} title="All clear" hint="No open disputes, failed payments or pending support." />
       ) : (
-        <ul className="max-h-[560px] divide-y divide-reps-border/60 overflow-auto">
-          {rows.map((r) => (
-            <li key={r.id} className={cn(
-              "relative flex items-start gap-3 px-4 py-3 transition hover:bg-white/[0.02]",
-              r.severity === "critical" ? "border-l-2 border-l-rose-500 bg-rose-500/[0.04]" : "border-l-2 border-l-amber-500",
-            )}>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Badge className={cn(
-                    "text-[9.5px] uppercase",
-                    r.severity === "critical" ? "bg-rose-500/20 text-rose-100" : "bg-amber-500/15 text-amber-200",
-                  )}>{r.source}</Badge>
-                  <span className="truncate text-[12.5px] font-medium text-white">{r.title}</span>
-                </div>
-                <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-white/55">
-                  {r.member_label ? <span>{r.member_label}</span> : null}
-                  {r.amount_pence != null ? <span className="font-medium text-white/75">{formatPence(r.amount_pence)}</span> : null}
-                  {r.subtitle ? <span className="truncate">· {r.subtitle}</span> : null}
-                  <span>· {timeAgo(r.ts)}</span>
-                </div>
-              </div>
-              <Link
-                to={r.action_url as "/admin/billing"}
-                className="inline-flex shrink-0 items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[10.5px] font-medium text-white/80 hover:bg-white/10 hover:text-white"
+        <>
+          <ul className="divide-y divide-reps-border/60">
+            {visible.map((r) => (
+              <li
+                key={r.id}
+                className={cn(
+                  "relative flex items-center gap-2.5 px-3 py-2 transition hover:bg-white/[0.02]",
+                  r.severity === "critical"
+                    ? "border-l-2 border-l-rose-500"
+                    : "border-l-2 border-l-amber-500/70",
+                )}
               >
-                {r.action_label} <ExternalLink className="h-3 w-3" />
-              </Link>
-            </li>
-          ))}
-        </ul>
+                <span className={cn(
+                  "mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                  r.severity === "critical" ? "bg-rose-400" : "bg-amber-400",
+                )} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate text-[12px] font-medium text-white">{r.title}</span>
+                    {r.amount_pence != null ? (
+                      <span className="shrink-0 text-[11px] font-medium tabular-nums text-white/70">{formatPence(r.amount_pence)}</span>
+                    ) : null}
+                  </div>
+                  <div className="mt-0.5 truncate text-[10.5px] text-white/45">
+                    <span className="uppercase tracking-wide text-white/40">{r.source}</span>
+                    {r.member_label ? <span> · {r.member_label}</span> : null}
+                    <span> · {timeAgo(r.ts)}</span>
+                  </div>
+                </div>
+                <Link
+                  to={r.action_url as "/admin/billing"}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-[7px] border border-reps-border bg-white/5 px-2 py-1 text-[10.5px] font-medium text-white/80 hover:bg-white/10 hover:text-white"
+                >
+                  {r.action_label}
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {hiddenCount > 0 ? (
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="flex w-full items-center justify-center gap-1 border-t border-reps-border/60 bg-white/[0.02] px-3 py-2 text-[11px] font-medium text-white/70 hover:bg-white/[0.05] hover:text-white"
+            >
+              {showAll ? "Show top 5" : `View all ${rows.length}`}
+              <ChevronRight className={cn("h-3 w-3 transition", showAll && "rotate-90")} />
+            </button>
+          ) : null}
+        </>
       )}
     </PanelShell>
   );
 }
+
 
 // ─────────────────────────────────────────────────────────── EMPTY ──
 

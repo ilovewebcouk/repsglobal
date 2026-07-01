@@ -36,7 +36,9 @@ export interface WorldMapPanelProps {
   publicCountries?: PublicCountryPoint[];
   publicOnline?: number;
   publicStale?: boolean;
+  updatedAt?: number | null;
 }
+
 
 interface Bubble {
   cc: string;
@@ -54,7 +56,9 @@ export function WorldMapPanel({
   countries, loading, selectedCountry, onSelectCountry,
   layer = "members", onLayerChange,
   publicCountries = [], publicOnline = 0, publicStale = false,
+  updatedAt = null,
 }: WorldMapPanelProps) {
+
   const [mapError, setMapError] = useState(false);
   const [hoverCc, setHoverCc] = useState<string | null>(null);
 
@@ -69,8 +73,9 @@ export function WorldMapPanel({
       .filter((x): x is { c: GeoRow; centroid: NonNullable<ReturnType<typeof centroidFor>> } => x !== null);
 
     const maxViews = Math.max(1, ...withGeo.map(({ c }) => c.page_views_24h));
+    const denom = Math.log1p(maxViews);
     return withGeo.map(({ c, centroid }) => {
-      const scale = Math.sqrt(c.page_views_24h / maxViews);
+      const scale = denom > 0 ? Math.log1p(c.page_views_24h) / denom : 0;
       return {
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
@@ -78,12 +83,13 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online_now,
         views: c.page_views_24h,
-        // v2.0: cap radius so a single-country day doesn't render as a "blob".
-        radius: Math.min(14, Math.max(3.5, 3.5 + scale * 9)),
+        // v2.1: restrained cap so single-country traffic never renders as a blob.
+        radius: Math.min(9, Math.max(3, 3 + scale * 6)),
         kind: "member" as const,
       };
     });
   }, [countries]);
+
 
   const publicBubbles = useMemo<Bubble[]>(() => {
     const withGeo = publicCountries
@@ -95,8 +101,9 @@ export function WorldMapPanel({
       })
       .filter((x): x is { c: PublicCountryPoint; centroid: NonNullable<ReturnType<typeof centroidFor>> } => x !== null);
     const maxViews = Math.max(1, ...withGeo.map(({ c }) => c.views_5m));
+    const denom = Math.log1p(maxViews);
     return withGeo.map(({ c, centroid }) => {
-      const scale = Math.sqrt(c.views_5m / maxViews);
+      const scale = denom > 0 ? Math.log1p(c.views_5m) / denom : 0;
       return {
         cc: c.country_code,
         name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
@@ -104,11 +111,12 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online,
         views: c.views_5m,
-        radius: Math.min(13, Math.max(3.5, 3.5 + scale * 8)),
+        radius: Math.min(9, Math.max(3, 3 + scale * 5.5)),
         kind: "public" as const,
       };
     });
   }, [publicCountries]);
+
 
   const bubbles = useMemo<Bubble[]>(() => {
     if (layer === "members") return memberBubbles;
@@ -207,12 +215,13 @@ export function WorldMapPanel({
           <MapFallback bubbles={bubbles} loading={loading} onSelect={onSelectCountry} selected={selectedCountry} />
         ) : (
           <div
-            className="relative h-[460px] w-full"
+            className="relative h-[380px] w-full"
             style={{
               background:
                 "radial-gradient(circle at 30% 20%, #1a2436 0%, #0e141d 55%, #080c13 100%)",
             }}
           >
+
             <ComposableMap
               projection="geoEqualEarth"
               projectionConfig={{ scale: 175 }}
@@ -271,35 +280,36 @@ export function WorldMapPanel({
                     >
                       {isLive ? (
                         <>
-                          <circle r={b.radius + 12} fill={`rgba(${pulseRGB},0.08)`} className="animate-ping" style={{ animationDuration: "2.4s" }} />
-                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.18)`} />
+                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.06)`} className="animate-ping" style={{ animationDuration: "3s" }} />
+                          <circle r={b.radius + 3} fill={`rgba(${pulseRGB},0.14)`} />
                         </>
                       ) : null}
                       <circle
                         r={b.radius}
                         fill={solid}
                         stroke={isSelected || isHover ? "#fff" : `rgba(${pulseRGB},0.9)`}
-                        strokeWidth={isSelected ? 2.5 : isHover ? 1.8 : 1.2}
+                        strokeWidth={isSelected ? 2.2 : isHover ? 1.5 : 1}
                       />
 
-                      {isHover || isSelected || b.radius > 10 ? (
+                      {isHover || isSelected ? (
                         <text
-                          y={-b.radius - 5}
+                          y={-b.radius - 4}
                           textAnchor="middle"
                           style={{
                             fontFamily: "system-ui, sans-serif",
-                            fontSize: "10.5px",
-                            fontWeight: 700,
+                            fontSize: "9px",
+                            fontWeight: 600,
                             fill: "#fff",
                             paintOrder: "stroke",
-                            stroke: "rgba(0,0,0,0.65)",
-                            strokeWidth: 3,
+                            stroke: "rgba(0,0,0,0.7)",
+                            strokeWidth: 2.5,
                             pointerEvents: "none",
                           }}
                         >
                           {b.cc}
                         </text>
                       ) : null}
+
                     </Marker>
                   );
                 })}
@@ -339,30 +349,35 @@ export function WorldMapPanel({
             </div>
 
 
-            {/* Legend */}
-            <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2.5 rounded-full border border-white/10 bg-black/60 px-3 py-1.5 text-[10.5px] text-white/80 backdrop-blur-md">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-reps-orange opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-reps-orange" />
-                </span>
-                Live · online now
-              </span>
-              <span className="text-white/25">·</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-300/70 ring-1 ring-sky-200/80" /> 24h activity</span>
-              {selectedCountry ? (
-                <>
-                  <span className="text-white/25">·</span>
-                  <button
-                    type="button"
-                    onClick={() => onSelectCountry(undefined)}
-                    className="pointer-events-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-white/20"
-                  >
-                    Clear filter <X className="h-2.5 w-2.5" />
-                  </button>
-                </>
-              ) : null}
+            {/* Compact live overlay (v2.1) */}
+            <div className="pointer-events-none absolute left-3 top-3 flex flex-col gap-0.5 rounded-[10px] border border-white/10 bg-black/65 px-2.5 py-1.5 text-[10.5px] leading-tight text-white/85 backdrop-blur-md">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                <span className="text-white/55">Public</span>
+                <span className="ml-auto tabular-nums font-semibold">{publicOnline}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                <span className="text-white/55">Members</span>
+                <span className="ml-auto tabular-nums font-semibold">{memberBubbles.reduce((s, b) => s + b.online, 0)}</span>
+              </div>
+              <div className="mt-0.5 text-[9.5px] text-white/40">
+                {updatedAt ? `Updated ${Math.max(0, Math.floor((Date.now() - updatedAt) / 1000))}s ago` : "Waiting for data"}
+              </div>
             </div>
+
+            {selectedCountry ? (
+              <div className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-[10.5px] text-white/80 backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => onSelectCountry(undefined)}
+                  className="inline-flex items-center gap-1 text-white hover:text-white/80"
+                >
+                  Filter: {selectedCountry} <X className="h-2.5 w-2.5" />
+                </button>
+              </div>
+            ) : null}
+
 
             {loading && bubbles.length === 0 ? (
               <div className="absolute inset-0 flex items-center justify-center text-[11px] text-white/40">
