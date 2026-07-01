@@ -49,7 +49,9 @@ export async function runPostHogDailyRollup(date?: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   try {
-    const where = `WHERE toDate(timestamp) = toDate('${target}') AND properties.is_internal != true`;
+    // is_internal is stored as JSON — compare via toString to avoid ClickHouse
+    // type mismatch (String vs UInt8). NULL means "not tagged" = public.
+    const where = `WHERE toDate(timestamp) = toDate('${target}') AND (properties.is_internal IS NULL OR toString(properties.is_internal) != 'true')`;
 
     // Totals per event
     const totals = await hogql(
