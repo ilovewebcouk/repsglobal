@@ -2277,6 +2277,81 @@ export type Database = {
         }
         Relationships: []
       }
+      metrics_daily_public_analytics: {
+        Row: {
+          checkout_starts: number
+          countries: Json
+          created_at: string
+          devices: Json
+          directory_searches: number
+          enquiries_created: number
+          enquiries_started: number
+          metric_date: string
+          public_page_views: number
+          public_profile_views: number
+          public_unique_sessions: number
+          result_clicks: number
+          searches_no_results: number
+          signup_completes: number
+          signup_starts: number
+          top_landing_pages: Json
+          top_no_result_searches: Json
+          top_pages: Json
+          top_profiles: Json
+          top_referrers: Json
+          top_searches: Json
+          updated_at: string
+        }
+        Insert: {
+          checkout_starts?: number
+          countries?: Json
+          created_at?: string
+          devices?: Json
+          directory_searches?: number
+          enquiries_created?: number
+          enquiries_started?: number
+          metric_date: string
+          public_page_views?: number
+          public_profile_views?: number
+          public_unique_sessions?: number
+          result_clicks?: number
+          searches_no_results?: number
+          signup_completes?: number
+          signup_starts?: number
+          top_landing_pages?: Json
+          top_no_result_searches?: Json
+          top_pages?: Json
+          top_profiles?: Json
+          top_referrers?: Json
+          top_searches?: Json
+          updated_at?: string
+        }
+        Update: {
+          checkout_starts?: number
+          countries?: Json
+          created_at?: string
+          devices?: Json
+          directory_searches?: number
+          enquiries_created?: number
+          enquiries_started?: number
+          metric_date?: string
+          public_page_views?: number
+          public_profile_views?: number
+          public_unique_sessions?: number
+          result_clicks?: number
+          searches_no_results?: number
+          signup_completes?: number
+          signup_starts?: number
+          top_landing_pages?: Json
+          top_no_result_searches?: Json
+          top_pages?: Json
+          top_profiles?: Json
+          top_referrers?: Json
+          top_searches?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       metrics_monthly_activity: {
         Row: {
           computed_at: string
@@ -3208,6 +3283,164 @@ export type Database = {
           },
           {
             foreignKeyName: "programmes_waitlist_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
+      public_analytics_consent_events: {
+        Row: {
+          choice: string
+          country_code: string | null
+          dnt: boolean
+          gpc: boolean
+          id: string
+          occurred_at: string
+          scopes: Json
+          session_id: string
+          ua_hash: string | null
+        }
+        Insert: {
+          choice: string
+          country_code?: string | null
+          dnt?: boolean
+          gpc?: boolean
+          id?: string
+          occurred_at?: string
+          scopes?: Json
+          session_id: string
+          ua_hash?: string | null
+        }
+        Update: {
+          choice?: string
+          country_code?: string | null
+          dnt?: boolean
+          gpc?: boolean
+          id?: string
+          occurred_at?: string
+          scopes?: Json
+          session_id?: string
+          ua_hash?: string | null
+        }
+        Relationships: []
+      }
+      public_analytics_ingest_state: {
+        Row: {
+          created_at: string
+          id: string
+          last_error: string | null
+          last_pulled_date: string | null
+          last_run_at: string | null
+          last_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          last_error?: string | null
+          last_pulled_date?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_pulled_date?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      public_visitor_conversions: {
+        Row: {
+          anonymous_id: string | null
+          browser: string | null
+          country_code: string | null
+          created_at: string
+          device: string | null
+          enquiry_id: string | null
+          event_kind: string
+          id: string
+          ip_hash: string | null
+          occurred_at: string
+          path: string | null
+          pending_signup_id: string | null
+          posthog_distinct_id: string | null
+          professional_id: string | null
+          properties: Json
+          referrer: string | null
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          anonymous_id?: string | null
+          browser?: string | null
+          country_code?: string | null
+          created_at?: string
+          device?: string | null
+          enquiry_id?: string | null
+          event_kind: string
+          id?: string
+          ip_hash?: string | null
+          occurred_at?: string
+          path?: string | null
+          pending_signup_id?: string | null
+          posthog_distinct_id?: string | null
+          professional_id?: string | null
+          properties?: Json
+          referrer?: string | null
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          anonymous_id?: string | null
+          browser?: string | null
+          country_code?: string | null
+          created_at?: string
+          device?: string | null
+          enquiry_id?: string | null
+          event_kind?: string
+          id?: string
+          ip_hash?: string | null
+          occurred_at?: string
+          path?: string | null
+          pending_signup_id?: string | null
+          posthog_distinct_id?: string | null
+          professional_id?: string | null
+          properties?: Json
+          referrer?: string | null
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_visitor_conversions_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_visitor_conversions_pending_signup_id_fkey"
+            columns: ["pending_signup_id"]
+            isOneToOne: false
+            referencedRelation: "pending_signups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_visitor_conversions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_visitor_conversions_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "v_identity_review_queue"
