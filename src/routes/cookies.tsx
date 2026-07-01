@@ -116,12 +116,14 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: "categories",
-    title: "Categories we use",
+    title: "Analytics cookies",
     body: (
       <>
         <p>
-          We group cookies into four categories. Only "Essential" cookies are
-          always on — the rest are optional.
+          We use a small, defined set of cookies. Essential cookies are always
+          active because REPs will not function without them. Analytics
+          cookies are set only after you accept, and never if your browser
+          sends Do Not Track or Global Privacy Control.
         </p>
         <CookieTable />
       </>
@@ -133,10 +135,11 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          You can manage non-essential cookies through our in-app preferences
-          (coming soon) or directly through your browser settings. Most
-          browsers let you block or delete cookies and warn you before they're
-          set.
+          You can change your choice at any time using the{" "}
+          <strong>"Cookie preferences"</strong> link in the site footer, or
+          directly through your browser settings. Withdrawing analytics
+          consent immediately stops capture and clears PostHog cookies from
+          your device.
         </p>
         <p>
           Blocking essential cookies will prevent core features — such as
