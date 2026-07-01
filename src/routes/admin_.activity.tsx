@@ -10,7 +10,7 @@
 // Never surfaces raw IPs, "verified" tier, "trialing" status, or "??" country.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ChevronRight, Filter, RefreshCcw, X } from "lucide-react";
@@ -423,11 +423,10 @@ function LiveFreshnessChip({
   updatedAt, isFetching, isError, degraded,
 }: { updatedAt: number; isFetching: boolean; isError: boolean; degraded: boolean }) {
   const [now, setNow] = useState(() => Date.now());
-  // Tick every second so "updated Xs ago" stays honest.
-  useMemo(() => 0, []); // no-op to keep import
-  // We use setInterval via effect below.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useTicker(setNow);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const ageSec = updatedAt ? Math.max(0, Math.round((now - updatedAt) / 1000)) : null;
   const stale = ageSec !== null && ageSec > 30;
@@ -467,15 +466,4 @@ function LiveFreshnessChip({
   );
 }
 
-function useTicker(setNow: (n: number) => void) {
-  // Isolated hook so LiveFreshnessChip stays declarative.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffectImpl(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-}
-
-// Named import shim — keeps the top of the file untouched.
-import { useEffect as useEffectImpl } from "react";
 
