@@ -154,11 +154,13 @@ export type Database = {
           event: string
           geo_source: string | null
           id: string
+          ip: string | null
           ip_hash: string | null
           latitude: number | null
           longitude: number | null
           os: string | null
           region: string | null
+          timezone: string | null
           user_agent: string | null
           user_id: string | null
         }
@@ -172,11 +174,13 @@ export type Database = {
           event: string
           geo_source?: string | null
           id?: string
+          ip?: string | null
           ip_hash?: string | null
           latitude?: number | null
           longitude?: number | null
           os?: string | null
           region?: string | null
+          timezone?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -190,11 +194,13 @@ export type Database = {
           event?: string
           geo_source?: string | null
           id?: string
+          ip?: string | null
           ip_hash?: string | null
           latitude?: number | null
           longitude?: number | null
           os?: string | null
           region?: string | null
+          timezone?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -2224,6 +2230,7 @@ export type Database = {
           duration_ms: number | null
           geo_source: string | null
           id: string
+          ip: string | null
           ip_hash: string | null
           latitude: number | null
           longitude: number | null
@@ -2232,6 +2239,7 @@ export type Database = {
           referrer: string | null
           region: string | null
           session_id: string | null
+          timezone: string | null
           user_agent: string | null
           user_id: string
         }
@@ -2244,6 +2252,7 @@ export type Database = {
           duration_ms?: number | null
           geo_source?: string | null
           id?: string
+          ip?: string | null
           ip_hash?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -2252,6 +2261,7 @@ export type Database = {
           referrer?: string | null
           region?: string | null
           session_id?: string | null
+          timezone?: string | null
           user_agent?: string | null
           user_id: string
         }
@@ -2264,6 +2274,7 @@ export type Database = {
           duration_ms?: number | null
           geo_source?: string | null
           id?: string
+          ip?: string | null
           ip_hash?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -2272,6 +2283,7 @@ export type Database = {
           referrer?: string | null
           region?: string | null
           session_id?: string | null
+          timezone?: string | null
           user_agent?: string | null
           user_id?: string
         }
@@ -4369,6 +4381,7 @@ export type Database = {
           ended_at: string | null
           geo_source: string | null
           id: string
+          ip: string | null
           ip_hash: string | null
           is_admin_view: boolean
           last_seen_at: string
@@ -4379,6 +4392,7 @@ export type Database = {
           referrer: string | null
           region: string | null
           started_at: string
+          timezone: string | null
           user_agent: string | null
           user_id: string | null
         }
@@ -4392,6 +4406,7 @@ export type Database = {
           ended_at?: string | null
           geo_source?: string | null
           id?: string
+          ip?: string | null
           ip_hash?: string | null
           is_admin_view?: boolean
           last_seen_at?: string
@@ -4402,6 +4417,7 @@ export type Database = {
           referrer?: string | null
           region?: string | null
           started_at?: string
+          timezone?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -4415,6 +4431,7 @@ export type Database = {
           ended_at?: string | null
           geo_source?: string | null
           id?: string
+          ip?: string | null
           ip_hash?: string | null
           is_admin_view?: boolean
           last_seen_at?: string
@@ -4425,6 +4442,7 @@ export type Database = {
           referrer?: string | null
           region?: string | null
           started_at?: string
+          timezone?: string | null
           user_agent?: string | null
           user_id?: string | null
         }

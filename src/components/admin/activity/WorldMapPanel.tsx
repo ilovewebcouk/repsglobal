@@ -78,7 +78,8 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online_now,
         views: c.page_views_24h,
-        radius: Math.max(4, 4 + scale * 22),
+        // v2.0: cap radius so a single-country day doesn't render as a "blob".
+        radius: Math.min(14, Math.max(3.5, 3.5 + scale * 9)),
         kind: "member" as const,
       };
     });
@@ -103,7 +104,7 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online,
         views: c.views_5m,
-        radius: Math.max(4, 4 + scale * 20),
+        radius: Math.min(13, Math.max(3.5, 3.5 + scale * 8)),
         kind: "public" as const,
       };
     });
@@ -112,22 +113,20 @@ export function WorldMapPanel({
   const bubbles = useMemo<Bubble[]>(() => {
     if (layer === "members") return memberBubbles;
     if (layer === "public") return publicBubbles;
-    // both — render public first (blue) then members (orange) so live members
-    // sit on top; each keeps its own colour.
     return [...publicBubbles, ...memberBubbles];
   }, [layer, memberBubbles, publicBubbles]);
 
 
   // Auto-fit: pick a viewport based on where activity actually is. Prefer
-  // live (online > 0); fall back to any 24h activity. This gives GB-only
-  // traffic a gentle zoom toward GB, and multi-country traffic a bounds-fit.
+  // live (online > 0); fall back to any 24h activity. Widen the frame for
+  // a single-country view so it doesn't feel zoomed-in on top of the bubble.
   const autoView = useMemo(() => {
     const live = bubbles.filter((b) => b.online > 0);
     const pool = live.length > 0 ? live : bubbles;
     if (pool.length === 0) return { center: [10, 20] as [number, number], zoom: 1 };
     if (pool.length === 1) {
       const b = pool[0]!;
-      return { center: [b.lng, b.lat] as [number, number], zoom: 3.2 };
+      return { center: [b.lng, b.lat] as [number, number], zoom: 2.2 };
     }
     const lngs = pool.map((b) => b.lng);
     const lats = pool.map((b) => b.lat);
@@ -136,16 +135,16 @@ export function WorldMapPanel({
     const spanLng = Math.max(...lngs) - Math.min(...lngs);
     const spanLat = Math.max(...lats) - Math.min(...lats);
     const span = Math.max(spanLng, spanLat);
-    // Rough heuristic: broader spread → smaller zoom, capped for context.
-    const zoom = span < 20 ? 3 : span < 60 ? 2 : span < 120 ? 1.5 : 1;
+    const zoom = span < 20 ? 2.4 : span < 60 ? 1.8 : span < 120 ? 1.4 : 1;
     return { center: [cx, cy] as [number, number], zoom };
   }, [bubbles]);
 
   // Local zoom/center override so admins can pan and reset.
+  // Only user-initiated moves set an override — programmatic re-centres
+  // (initial mount, viewKey remount, autoView updates) must NOT lock the map.
   const [override, setOverride] = useState<{ center: [number, number]; zoom: number } | null>(null);
+  const [userMoving, setUserMoving] = useState(false);
   const view = override ?? autoView;
-  // Re-key ZoomableGroup so react-simple-maps applies the new center/zoom
-  // when the fitted view changes (e.g. new live activity arrives).
   const viewKey = `${view.center[0].toFixed(1)}:${view.center[1].toFixed(1)}:${view.zoom.toFixed(2)}`;
 
   void bubbles;
@@ -227,9 +226,14 @@ export function WorldMapPanel({
                 zoom={view.zoom}
                 minZoom={0.9}
                 maxZoom={6}
-                onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) =>
-                  setOverride({ center: coordinates, zoom })
-                }
+                onMoveStart={(_, event) => { if (event) setUserMoving(true); }}
+                onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => {
+                  // Only lock as override if the move came from user input.
+                  if (userMoving) {
+                    setOverride({ center: coordinates, zoom });
+                    setUserMoving(false);
+                  }
+                }}
               >
                 <Geographies geography={GEO_URL} onError={() => setMapError(true)}>
                   {({ geographies }: { geographies: Array<{ rsmKey: string; properties: { name?: string } }> }) =>
@@ -325,10 +329,10 @@ export function WorldMapPanel({
               </button>
               <button
                 type="button"
-                aria-label="Reset to world view"
-                onClick={() => setOverride({ center: [10, 20], zoom: 1 })}
+                aria-label="Fit to activity"
+                onClick={() => setOverride(null)}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
-                title="Reset to world view"
+                title="Fit view to current activity"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </button>

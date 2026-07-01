@@ -14,8 +14,15 @@ import type { Database } from "@/integrations/supabase/types";
 
 export interface CaptureContext {
   userId: string | null;
+  ip: string | null;         // raw client IP (admin-only tables — RLS enforced)
   ipHash: string | null;
   countryCode: string | null;
+  region: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  timezone: string | null;
+  geoSource: string | null;  // 'cloudflare' | null
   device: string | null;
   browser: string | null;
   os: string | null;
@@ -88,7 +95,18 @@ export async function buildCaptureContext(req: Request): Promise<CaptureContext>
   const ipHash = hashIp(ip);
   const ua = req.headers.get("user-agent");
   const { device, browser, os } = parseUA(ua);
+
+  // Cloudflare geo enrichment (headers set by CF edge on incoming requests).
   const country = req.headers.get("cf-ipcountry") || null;
+  const region = req.headers.get("cf-region") || null;
+  const city = req.headers.get("cf-ipcity") || null;
+  const latStr = req.headers.get("cf-iplatitude");
+  const lngStr = req.headers.get("cf-iplongitude");
+  const timezone = req.headers.get("cf-timezone") || null;
+  const latitude = latStr ? Number.parseFloat(latStr) : null;
+  const longitude = lngStr ? Number.parseFloat(lngStr) : null;
+  const geoSource = country || city || latitude !== null ? "cloudflare" : null;
+
   const dnt = req.headers.get("dnt") === "1";
   const gpc = req.headers.get("sec-gpc") === "1";
 
@@ -111,8 +129,15 @@ export async function buildCaptureContext(req: Request): Promise<CaptureContext>
 
   return {
     userId,
+    ip,
     ipHash,
     countryCode: country,
+    region,
+    city,
+    latitude: Number.isFinite(latitude) ? latitude : null,
+    longitude: Number.isFinite(longitude) ? longitude : null,
+    timezone,
+    geoSource,
     device,
     browser,
     os,
