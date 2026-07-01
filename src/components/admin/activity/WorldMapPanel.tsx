@@ -154,27 +154,54 @@ export function WorldMapPanel({
 
   return (
     <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
-      <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <Globe className="h-4 w-4 shrink-0 text-white/60" />
           <div className="min-w-0">
             <h2 className="truncate font-display text-[14px] font-semibold text-white">
-              Realtime member activity map
+              Realtime activity map
             </h2>
             <p className="truncate text-[11px] text-white/45">
-              Country-level bubbles · logged-in member activity only
+              <span className="text-orange-300">Members</span> · <span className="text-blue-300">public visitors</span> · country bubbles
+              {publicStale ? <span className="ml-1 text-amber-300">· public live query stale</span> : null}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[10.5px] text-white/55">
+        <div className="flex items-center gap-3 text-[10.5px] text-white/55">
+          {onLayerChange ? (
+            <div className="inline-flex overflow-hidden rounded-full border border-white/15 bg-black/40 text-[10.5px]">
+              {(["members", "public", "both"] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => onLayerChange(l)}
+                  className={cn(
+                    "px-2.5 py-1 font-medium capitalize transition-colors",
+                    layer === l
+                      ? l === "public"
+                        ? "bg-blue-500/25 text-blue-100"
+                        : l === "members"
+                          ? "bg-orange-500/25 text-orange-100"
+                          : "bg-white/15 text-white"
+                      : "text-white/55 hover:text-white",
+                  )}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            {totalOnline} online
+            <span className="h-2 w-2 rounded-full bg-orange-400" />
+            {memberBubbles.reduce((s, b) => s + b.online, 0)} members
           </span>
-          <span className="text-white/25">·</span>
-          <span>{totalViews.toLocaleString()} views 24h</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-sky-400" />
+            {publicOnline} public
+          </span>
         </div>
       </header>
+
 
       <div className="relative">
         {mapError ? (
