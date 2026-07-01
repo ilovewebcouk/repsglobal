@@ -92,12 +92,12 @@ function AdminActivityPage() {
   const runFeed = useServerFn(getActivityFeed);
 
   // ── Queries. Each panel is independent; a slow panel degrades alone.
-  const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis({ data: {} }), refetchInterval: 30_000 });
+  const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 15_000 });
   const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 20_000 });
   const topQ = useQuery({ queryKey: ["a-top"], queryFn: () => runTop({ data: { limit: 10 } }), refetchInterval: 60_000 });
-  const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo({ data: {} }), refetchInterval: 45_000 });
-  const attentionQ = useQuery({ queryKey: ["a-attention"], queryFn: () => runAttention({ data: {} }), refetchInterval: 30_000 });
+  const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo(), refetchInterval: 45_000 });
+  const attentionQ = useQuery({ queryKey: ["a-attention"], queryFn: () => runAttention(), refetchInterval: 30_000 });
 
   const feedQ = useQuery({
     queryKey: ["a-feed", source ?? "all", severity ?? "all", range.hours],
