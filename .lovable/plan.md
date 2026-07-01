@@ -1,91 +1,124 @@
+## Activity Command Centre v2.1 — Final Composition Pass
 
-# Public Analytics v1.1 — Execution Plan
+Locked: no changes to `src/lib/ops/*`, `src/lib/admin/public-realtime.functions.ts`, `src/routes/api/public/_a/*`, `src/routes/api/public/activity/*`, `src/lib/activity/capture.server.ts`, consent, or any Supabase migration/rollup. This pass is composition, density, and hierarchy only.
 
-v1 architecture stays intact (PostHog EU raw store, Supabase rollup, consent-required, first-party proxy, no raw public event tables, member/admin activity untouched). This plan is scoped only to the v1 QA gaps.
-
-Because this is 6 phases with live-QA gates, I'll ship it in **3 build batches** with a QA gate between each. Each batch ends in a state you can smoke-test on production before the next.
-
----
-
-## Batch A — Foundations (Phases 2 + 3 + 4)
-Everything the realtime layer and rollup depend on.
-
-**Phase 2 — Event instrumentation**
-New helper `src/lib/analytics/track.ts` re-exporting `capturePublic` with typed event names. Fire from:
-- `profile_view` → `src/routes/pro.$slug.tsx` (once per slug per session)
-- `directory_search` + `directory_no_results` → `src/routes/search.tsx` / find-a-professional loader-driven page (debounced, after results resolve)
-- `directory_result_click` → result card click handler
-- `profile_cta_click` → Enquire / Book / Message buttons on `/pro/$slug`
-- `enquiry_start` → `/pro/$slug/enquire` mount
-- `enquiry_submit` → on successful mutation
-- `signup_start` → `/auth` sign-up tab mount
-- `checkout_started` → Stripe checkout redirect handler
-- `signup_complete` → post-signup landing / verify-email page
-
-Properties limited to the whitelist in your spec (path, referrer, session_id, professional_id/slug, q, result_count, clicked_result_slug, plan/tier). No IP, no PII.
-
-**Phase 3 — Geo enrichment (proxy-side)**
-Update `src/routes/api/public/[_]a/$.ts` to:
-- Read Cloudflare `cf-ipcountry` header
-- Rewrite the compressed body's `properties.$geoip_country_code` (canonical name — matches PostHog convention so no query rewrites needed later)
-- Never forward `x-forwarded-for` / raw IP
-
-Canonical property: **`$geoip_country_code`** (aligns with PostHog's native GeoIP field).
-
-**Phase 4 — Rollup update**
-`src/lib/ops/pull-posthog-daily.functions.ts`:
-- Swap `country_code` → `$geoip_country_code`
-- Keep the fixed internal filter
-- Ensure all Phase-2 events counted (already listed in totalMap, verify)
-- Add `top_ctas` (profile_cta_click by professional_slug), and browsers via `$browser`
+Files in scope:
+- `src/routes/admin_.activity.tsx`
+- `src/components/admin/activity/CommandStrip.tsx`
+- `src/components/admin/activity/WorldMapPanel.tsx`
+- `src/components/admin/activity/LiveActivityRail.tsx`
+- `src/components/admin/activity/PublicVisitorsPanel.tsx`
+- `src/components/admin/activity/panels.tsx` (NeedsAttention + Geo density)
+- `src/components/admin/activity/feed-and-sheet.tsx` (compact row variant only)
 
 ---
 
-## Batch B — Realtime layer (Phase 1)
+### 1. New above-the-fold layout (fits 1440×900)
 
-**New server fn** `src/lib/admin/public-analytics-realtime.functions.ts`:
-- `getPublicRealtimeSnapshot()` — HogQL queries with 30s in-memory TTL cache
-  - visitors online now (distinct session_id in last 5 min)
-  - current pages (top `$current_url`/`$pathname` in last 5 min)
-  - live country counts (bubbles, last 15 min)
-  - stale/error state surfaced
-- `requireSupabaseAuth` + admin role check
-- Personal API key stays server-side only
+Replace the current stacked grid with a single deliberate cockpit block:
 
-**New panel** `src/components/admin/activity/RealtimePublicPanel.tsx`:
-- "Online now" hero number, live pages list, country bubbles
-- Auto-refresh every 30s
-- Stale / error pill
+```text
+┌────────────────────────────────────────────────────────────┐
+│ Header (title + LiveChip · Range · Filters · Refresh)      │
+├────────────────────────────────────────────────────────────┤
+│ Command strip — 7 tiles, one row, fixed 84px height        │
+├──────────────────────────────────────┬─────────────────────┤
+│                                      │ Live rail           │
+│           Map  (col-span 8)          │ (col-span 4, top)   │
+│           height ≈ 380px             │                     │
+│                                      ├─────────────────────┤
+│                                      │ Needs Attention     │
+│                                      │ top-5 + View all    │
+└──────────────────────────────────────┴─────────────────────┘
+```
 
-**Map toggle** — extend `WorldMapPanel`:
-- New prop `layer: "members" | "public" | "both"`
-- Blue bubbles for public (uses realtime country data), orange for members
-- Segmented control above the map
+- Right column split vertically so total right height = map height. No above-the-fold Recent Activity.
+- Ops banner + filter chips are inline one-line strips directly under header (no fat card).
+- Grid becomes `xl:grid-cols-12` with an outer `space-y-4` (was `space-y-5+`).
 
----
+### 2. Command strip — 7 tiles, tightened (`CommandStrip.tsx`)
 
-## Batch C — UI polish + QA (Phases 5 + 6)
+Tiles: Live sessions · Public now · Members now · Views 5m · Key events · Action queue · Ingest.
 
-**Phase 5** — Relabel `PublicVisitorsPanel` tiles per spec, split realtime vs rollup visually (Live badge on realtime tiles).
+- Live sessions = `publicOnline + membersOnline` (client add).
+- Ingest tile: green Healthy / amber Degraded / red Down, derived from existing `isError`/`degraded` props passed from route (no new query).
+- Zero-value tiles render in "quiet" style (muted number, no ring, no accent bg) so alert/live tiles dominate the eye.
+- Public = blue, Members = orange, Alerts = amber/red, Health = emerald.
+- Compact microcopy per spec ("Public now", "Members now", "Views 5m", "Key events", "Action queue", "Ingest"). No "anonymous visitors now" phrasing.
+- **Public-online reconciliation (display-only fallback)**: read `publicOnline = Math.max(publicRealtimeQ.data?.online_now ?? 0, sum(countries[].online))`. This fixes cases where the top counter shows 0 while country rows show live sessions. Purely a presentation adapter in the route — server functions untouched.
 
-**Phase 6** — Live QA via Playwright headless against `repsuk.org`:
-1. Accept consent in incognito → hit /, /find-a-professional, /pro/{slug}, /pro/{slug}/enquire → confirm each event in HogQL query
-2. Reject consent → confirm zero events
-3. Set GPC header → confirm zero events
-4. Confirm `$geoip_country_code` populated
-5. Confirm admin `/admin/activity` shows realtime numbers, map toggle works
-6. Trigger rollup for today, confirm counts match PostHog
-7. Screenshot evidence saved under `/tmp/browser/v1-1-qa/`
+### 3. Map — smaller and more restrained (`WorldMapPanel.tsx`)
 
-Written up in `docs/admin-v2/public-analytics-v1-1-qa.md` with pass/fail per row and final verdict.
+- Container height reduced ~12% (from ~440px → ~380px via `min-h`/`h` tokens).
+- Bubble scale switched to `log1p` normalized; hard cap **10px** radius for both member and public bubbles (down from 13–14).
+- Pulse ring: reduce max radius +opacity so a single visitor is a subtle dot, not a cartoon blob.
+- Country hover label: `text-[10px]`, muted bg, no drop-shadow.
+- Members/Public/Both toggle: restyled as segmented pill matching `RangeSwitcher`.
+- Compact top-left overlay (single card): `Public N · Members N · Updated Xs ago` — replaces existing verbose legend.
+- Simplified legend row: two dots + counts on one line at bottom-right.
 
----
+### 4. Live rail (`LiveActivityRail.tsx`)
 
-## What I need from you before I start
+- Height = top ~55% of right column; internal scroll.
+- Tabs get an active underline + count badge.
+- Empty state = one elegant row: "No member sessions right now" / "Waiting for consented traffic" — never a tall empty block.
+- Row density: `py-2`, live green dot only for rows updated < 60s ago.
 
-Just a **go** on the plan (or a "skip Batch X, do Y instead"). Two defaults I'll pick unless you object:
+### 5. Needs Attention — compact priority queue (`panels.tsx`)
 
-1. Canonical country property = **`$geoip_country_code`** (PostHog-native, one word change in rollup, matches convention).
-2. Realtime cache TTL = **30 seconds** (protects PostHog rate limits, still feels live to an admin refreshing the page).
+- Header shows `1 critical · 10 warnings` derived from rows.
+- Top 5 rows only; footer button `View all 11` opens the existing full list in a Sheet reusing the same panel (no data change).
+- Row density: single line where possible, second line only for critical items.
+- Critical rows: solid amber-red left border + bold label. Warning: subtle border. Info: muted single line.
+- Action buttons pushed to a fixed right-aligned column so they stack cleanly.
+- Total panel height bounded so it never dominates the right column.
 
-If both are fine, reply "go" and I'll ship Batch A first, report back, then continue.
+### 6. Below the fold — cleaner grouping (`admin_.activity.tsx`)
+
+New order (each preceded by a slim divider + a single section header):
+
+- **Section A — Public analytics (compact by default)** → uses updated `PublicVisitorsPanel`.
+- **Section B — Member activity (secondary)** → `TopMemberPagesPanel` + `GeoPanel`, tighter density.
+- **Section C — Audit feed** → the moved Recent Activity card + `Full feed` drawer button. Renders as a compact feed (row height ≈ 44px). When events < 5, panel collapses to natural height instead of a fixed tall card.
+
+### 7. Public analytics rollup — collapsible detail (`PublicVisitorsPanel.tsx`)
+
+Default (always visible):
+- Page views, Sessions, Profile views, Enquiries — as a single 4-tile compact row.
+- Top pages, Top referrers.
+
+Behind a `Show discovery details` disclosure (`<details>` or shadcn Collapsible):
+- Countries, searches, no-result searches, other zero-heavy metrics.
+
+Zero-metric cards render in "quiet" row style — never full-size panels. Empty strings updated to spec ("No public profile views today", "No searches recorded in 24h", "Realtime updates when visitors accept analytics cookies").
+
+### 8. Vertical rhythm sweep (all components)
+
+- Outer route spacing: `space-y-4` cockpit block → `space-y-6` between below-fold sections (was 8+).
+- Card radius standardised: panels `rounded-[18px]`, inner blocks `rounded-[14px]`.
+- Section headers unified: colored dot + `font-display text-[14px]` + eyebrow. No repeated headers within a section.
+- Muted text = `text-white/55`; eyebrows = `text-[10.5px] uppercase tracking-wide text-white/50`.
+- Row hover: `hover:bg-white/[0.04]` everywhere.
+- No `space-y-*` on flex columns; use `gap-*`.
+
+### 9. Loading & refresh polish
+
+- Skeleton rows match final row heights → no jitter.
+- Command-strip tiles keep last number + faint pulse ring on refetch (no collapse to "—").
+- Map keeps prior bubbles during refetch — no full remount.
+
+### 10. Acceptance verification
+
+- `bunx tsgo --noEmit` must pass.
+- Playwright screenshot at 1440×900 confirming: full cockpit above the fold (strip + map + rail + attention), map visibly smaller, bubbles small and restrained, no Recent Activity above the fold, zero-value tiles muted, public rollup collapsed by default, page noticeably shorter overall.
+- Return: single screenshot, short layout-change summary, explicit confirmation that no backend / analytics / consent / proxy / Supabase / rollup files were modified, tsgo result.
+
+### Explicitly untouched
+
+- `src/lib/ops/activity-*.functions.ts`
+- `src/lib/admin/public-realtime.functions.ts`
+- `src/routes/api/public/_a/*`
+- `src/routes/api/public/activity/*`
+- `src/lib/activity/capture.server.ts`
+- `CookieBanner.tsx` / consent code
+- Any Supabase migration or SQL rollup
