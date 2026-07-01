@@ -329,10 +329,10 @@ export function WorldMapPanel({
               </button>
               <button
                 type="button"
-                aria-label="Reset to world view"
-                onClick={() => setOverride({ center: [10, 20], zoom: 1 })}
+                aria-label="Fit to activity"
+                onClick={() => setOverride(null)}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
-                title="Reset to world view"
+                title="Fit view to current activity"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </button>
