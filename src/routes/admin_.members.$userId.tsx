@@ -100,6 +100,7 @@ function MemberPage() {
   const { userId } = Route.useParams();
   const getSnap = useServerFn(getMember360);
   const getTimeline = useServerFn(getMemberTimeline);
+  const getSessions = useServerFn(getMemberSessions);
 
   const snap = useQuery({
     queryKey: ["admin-member-360", userId],
@@ -109,6 +110,12 @@ function MemberPage() {
   const timeline = useQuery({
     queryKey: ["admin-member-timeline", userId],
     queryFn: () => getTimeline({ data: { user_id: userId, limit: 200 } }),
+  });
+
+  const sessions = useQuery({
+    queryKey: ["admin-member-sessions", userId],
+    queryFn: () => getSessions({ data: { user_id: userId, limit: 20 } }),
+    staleTime: 30_000,
   });
 
   return (
