@@ -5,7 +5,7 @@ const CANONICAL = "https://repsuk.org/cookies";
 const META_TITLE = "Cookie Policy — REPs";
 const META_DESC =
   "How REPs uses cookies and similar technologies, what categories we use, and how to manage your preferences.";
-const LAST_UPDATED = "26 June 2026";
+const LAST_UPDATED = "1 July 2026";
 
 export const Route = createFileRoute("/cookies")({
   head: () => ({

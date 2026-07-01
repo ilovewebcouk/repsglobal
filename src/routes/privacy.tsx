@@ -5,7 +5,7 @@ const CANONICAL = "https://repsuk.org/privacy";
 const META_TITLE = "Privacy Policy — REPs";
 const META_DESC =
   "How REPs collects, uses, shares and protects personal data — your rights under UK GDPR, retention periods and how to contact us.";
-const LAST_UPDATED = "26 June 2026";
+const LAST_UPDATED = "1 July 2026";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
