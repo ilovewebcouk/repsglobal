@@ -16,7 +16,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createHash } from "node:crypto";
 
 const POSTHOG_HOST = "https://eu.posthog.com";
-const CACHE_TTL_MS = 20_000; // 20s
+const CACHE_TTL_MS = 5_000; // 5s — realtime feel; PostHog rate-limits protected
 
 type SupaCtx = { supabase: unknown; userId: string };
 async function assertAdmin(ctx: SupaCtx) {
