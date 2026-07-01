@@ -6,9 +6,10 @@
 
 import { useMemo } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
-import { Info, MonitorSmartphone, Radio, Smartphone, Tablet, Users } from "lucide-react";
+import { Info, MonitorSmartphone, Radio, Smartphone, Tablet } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import type { RealtimeSummary } from "@/lib/ops/activity-realtime.functions";
 
 const HONEST_LABEL =
