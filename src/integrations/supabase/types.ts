@@ -146,40 +146,55 @@ export type Database = {
       auth_events: {
         Row: {
           browser: string | null
+          city: string | null
           country_code: string | null
           created_at: string
           device: string | null
           email: string | null
           event: string
+          geo_source: string | null
           id: string
           ip_hash: string | null
+          latitude: number | null
+          longitude: number | null
           os: string | null
+          region: string | null
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
           browser?: string | null
+          city?: string | null
           country_code?: string | null
           created_at?: string
           device?: string | null
           email?: string | null
           event: string
+          geo_source?: string | null
           id?: string
           ip_hash?: string | null
+          latitude?: number | null
+          longitude?: number | null
           os?: string | null
+          region?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           browser?: string | null
+          city?: string | null
           country_code?: string | null
           created_at?: string
           device?: string | null
           email?: string | null
           event?: string
+          geo_source?: string | null
           id?: string
           ip_hash?: string | null
+          latitude?: number | null
+          longitude?: number | null
           os?: string | null
+          region?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -2202,45 +2217,60 @@ export type Database = {
       member_session_events: {
         Row: {
           browser: string | null
+          city: string | null
           country_code: string | null
           created_at: string
           device: string | null
           duration_ms: number | null
+          geo_source: string | null
           id: string
           ip_hash: string | null
+          latitude: number | null
+          longitude: number | null
           os: string | null
           path: string
           referrer: string | null
+          region: string | null
           session_id: string | null
           user_agent: string | null
           user_id: string
         }
         Insert: {
           browser?: string | null
+          city?: string | null
           country_code?: string | null
           created_at?: string
           device?: string | null
           duration_ms?: number | null
+          geo_source?: string | null
           id?: string
           ip_hash?: string | null
+          latitude?: number | null
+          longitude?: number | null
           os?: string | null
           path: string
           referrer?: string | null
+          region?: string | null
           session_id?: string | null
           user_agent?: string | null
           user_id: string
         }
         Update: {
           browser?: string | null
+          city?: string | null
           country_code?: string | null
           created_at?: string
           device?: string | null
           duration_ms?: number | null
+          geo_source?: string | null
           id?: string
           ip_hash?: string | null
+          latitude?: number | null
+          longitude?: number | null
           os?: string | null
           path?: string
           referrer?: string | null
+          region?: string | null
           session_id?: string | null
           user_agent?: string | null
           user_id?: string
@@ -4099,17 +4129,22 @@ export type Database = {
         Row: {
           anon_id: string | null
           browser: string | null
+          city: string | null
           country_code: string | null
           current_path: string | null
           device: string | null
           ended_at: string | null
+          geo_source: string | null
           id: string
           ip_hash: string | null
           is_admin_view: boolean
           last_seen_at: string
+          latitude: number | null
+          longitude: number | null
           os: string | null
           pages_viewed: number
           referrer: string | null
+          region: string | null
           started_at: string
           user_agent: string | null
           user_id: string | null
@@ -4117,17 +4152,22 @@ export type Database = {
         Insert: {
           anon_id?: string | null
           browser?: string | null
+          city?: string | null
           country_code?: string | null
           current_path?: string | null
           device?: string | null
           ended_at?: string | null
+          geo_source?: string | null
           id?: string
           ip_hash?: string | null
           is_admin_view?: boolean
           last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
           os?: string | null
           pages_viewed?: number
           referrer?: string | null
+          region?: string | null
           started_at?: string
           user_agent?: string | null
           user_id?: string | null
@@ -4135,17 +4175,22 @@ export type Database = {
         Update: {
           anon_id?: string | null
           browser?: string | null
+          city?: string | null
           country_code?: string | null
           current_path?: string | null
           device?: string | null
           ended_at?: string | null
+          geo_source?: string | null
           id?: string
           ip_hash?: string | null
           is_admin_view?: boolean
           last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
           os?: string | null
           pages_viewed?: number
           referrer?: string | null
+          region?: string | null
           started_at?: string
           user_agent?: string | null
           user_id?: string | null
