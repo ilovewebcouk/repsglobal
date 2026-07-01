@@ -380,3 +380,20 @@ Verdict will be set when observations arrive:
 - **D. Not safe to enable** — `$ip` present, admin traffic captured, rejected sessions still send events, or member data contaminated.
 
 Until then, **Public Analytics v1 is NOT marked complete**.
+
+---
+
+## §11 Final activation verdict — 2026-07-01
+
+**Verdict A — Complete and safe to run.**
+
+Verified against live production (`repsuk.org`) and Supabase:
+
+- Published bundle uses `/api/public/_a/*` proxy path (deployment `b1b69cb4…`).
+- Proxy live probe returns `200 {"status":"Ok"}` from PostHog EU.
+- Rollup populated `metrics_daily_public_analytics` for `2026-07-01` (5 pv / 2 sessions).
+- `public_analytics_ingest_state.last_status = ok`, `last_run_at = 2026-07-01 11:28 UTC`.
+- Consent, DNT/GPC, and bot-UA rejection enforced client-side AND at proxy.
+- Admin/member/public streams remain separated.
+
+Full audit: `docs/admin-v2/public-analytics-v1-end-to-end-qa.md`.
