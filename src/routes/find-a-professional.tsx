@@ -1040,6 +1040,12 @@ function ProCard({
           <Link
             to="/pro/$slug"
             params={{ slug: pro.slug ?? proSlug(pro.name) }}
+            onClick={() => {
+              const s = pro.slug ?? proSlug(pro.name);
+              void import("@/lib/analytics/track").then(({ track }) =>
+                track.directoryResultClick({ clicked_result_slug: s }),
+              );
+            }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
             View profile
@@ -1050,10 +1056,17 @@ function ProCard({
         <Link
           to="/pro/$slug"
           params={{ slug: pro.slug ?? proSlug(pro.name) }}
+          onClick={() => {
+            const s = pro.slug ?? proSlug(pro.name);
+            void import("@/lib/analytics/track").then(({ track }) =>
+              track.directoryResultClick({ clicked_result_slug: s }),
+            );
+          }}
           className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark sm:hidden"
         >
           View profile
         </Link>
+
       </div>
     </article>
   );
