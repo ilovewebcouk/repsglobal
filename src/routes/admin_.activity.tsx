@@ -108,10 +108,19 @@ function AdminActivityPage() {
   const runGeo = useServerFn(getGeoActivity);
   const runAttention = useServerFn(getNeedsAttention);
   const runFeed = useServerFn(getActivityFeed);
+  const runPublicRealtime = useServerFn(getPublicRealtime);
+
+  const [mapLayer, setMapLayer] = useState<"members" | "public" | "both">("both");
 
   // ── Queries. Each panel independent; a slow panel degrades alone.
   const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 10_000 });
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
+  const publicRealtimeQ = useQuery({
+    queryKey: ["a-public-realtime"],
+    queryFn: () => runPublicRealtime(),
+    refetchInterval: 30_000, // TTL is 20s on the server; poll a touch slower.
+  });
+
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 15_000 });
   const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 20_000 });
   const topQ = useQuery({ queryKey: ["a-top", topWindow], queryFn: () => runTop({ data: { limit: 10, hours: topWindow } }), refetchInterval: 60_000 });
