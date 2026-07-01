@@ -221,22 +221,12 @@ function AdminActivityPage() {
 
   const controls = (
     <>
-      <LiveFreshnessChip
-        updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt}
-        isFetching={realtimeQ.isFetching || publicRealtimeQ.isFetching}
-        isError={Boolean(realtimeQ.error || publicRealtimeQ.error)}
-        degraded={degraded.length > 0 || feedDegraded.length > 0}
-      />
       <RangeSwitcher value={range.hours} onChange={(h) => setSearch({ range: h })} />
       <FiltersPopover
         source={source} severity={severity} country={country}
         onChange={(patch) => setSearch(patch)}
         onClear={() => setSearch({ source: undefined, severity: undefined, country: undefined })}
       />
-      <Button variant="ghost" size="sm" onClick={refreshAll} className="gap-1.5 text-white/70 hover:text-white">
-        <RefreshCcw className={cn("h-3.5 w-3.5", (feedQ.isFetching || kpisQ.isFetching) && "animate-spin")} />
-        Refresh
-      </Button>
     </>
   );
 
@@ -247,9 +237,8 @@ function AdminActivityPage() {
       title="Activity"
       subtitle="Realtime command centre"
       actions={<div className="hidden items-center gap-2 lg:flex">{controls}</div>}
-      mainClassName="pt-0"
-      showTopbarSearch={false}
     >
+
       <div className="mx-auto max-w-[1500px] space-y-3 px-4 pb-6 md:px-6">
         {/* Desktop controls live in the shell header; mobile keeps them compact here. */}
         <header className="flex flex-wrap items-center justify-end gap-2 lg:hidden">
