@@ -168,15 +168,21 @@ function AdminActivityPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <LiveFreshnessChip
+              updatedAt={realtimeQ.dataUpdatedAt}
+              isFetching={realtimeQ.isFetching || kpisQ.isFetching}
+              isError={Boolean(realtimeQ.error || kpisQ.error)}
+              degraded={degraded.length > 0 || feedDegraded.length > 0}
+            />
             <RangeSwitcher value={range.hours} onChange={(h) => setSearch({ range: h })} />
             <FiltersPopover
               source={source} severity={severity} country={country}
               onChange={(patch) => setSearch(patch)}
               onClear={() => setSearch({ source: undefined, severity: undefined, country: undefined })}
             />
-            <Button variant="outline" size="sm" onClick={refreshAll} className="gap-1.5">
+            <Button variant="ghost" size="sm" onClick={refreshAll} className="gap-1.5 text-white/70 hover:text-white">
               <RefreshCcw className={cn("h-3.5 w-3.5", (feedQ.isFetching || kpisQ.isFetching) && "animate-spin")} />
-              Refresh
+              Refresh now
             </Button>
           </div>
         </header>
