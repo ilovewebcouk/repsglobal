@@ -50,11 +50,15 @@ interface Bubble {
 }
 
 
-export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCountry }: WorldMapPanelProps) {
+export function WorldMapPanel({
+  countries, loading, selectedCountry, onSelectCountry,
+  layer = "members", onLayerChange,
+  publicCountries = [], publicOnline = 0, publicStale = false,
+}: WorldMapPanelProps) {
   const [mapError, setMapError] = useState(false);
   const [hoverCc, setHoverCc] = useState<string | null>(null);
 
-  const bubbles = useMemo<Bubble[]>(() => {
+  const memberBubbles = useMemo<Bubble[]>(() => {
     const withGeo = countries
       .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
       .map((c) => {
@@ -75,9 +79,44 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
         online: c.online_now,
         views: c.page_views_24h,
         radius: Math.max(4, 4 + scale * 22),
+        kind: "member" as const,
       };
     });
   }, [countries]);
+
+  const publicBubbles = useMemo<Bubble[]>(() => {
+    const withGeo = publicCountries
+      .filter((c) => c.country_code !== "??" && c.country_code !== "XX")
+      .map((c) => {
+        const centroid = centroidFor(c.country_code);
+        if (!centroid) return null;
+        return { c, centroid };
+      })
+      .filter((x): x is { c: PublicCountryPoint; centroid: NonNullable<ReturnType<typeof centroidFor>> } => x !== null);
+    const maxViews = Math.max(1, ...withGeo.map(({ c }) => c.views_5m));
+    return withGeo.map(({ c, centroid }) => {
+      const scale = Math.sqrt(c.views_5m / maxViews);
+      return {
+        cc: c.country_code,
+        name: COUNTRY_NAMES[c.country_code] ?? centroid.name,
+        lng: centroid.lng,
+        lat: centroid.lat,
+        online: c.online,
+        views: c.views_5m,
+        radius: Math.max(4, 4 + scale * 20),
+        kind: "public" as const,
+      };
+    });
+  }, [publicCountries]);
+
+  const bubbles = useMemo<Bubble[]>(() => {
+    if (layer === "members") return memberBubbles;
+    if (layer === "public") return publicBubbles;
+    // both — render public first (blue) then members (orange) so live members
+    // sit on top; each keeps its own colour.
+    return [...publicBubbles, ...memberBubbles];
+  }, [layer, memberBubbles, publicBubbles]);
+
 
   // Auto-fit: pick a viewport based on where activity actually is. Prefer
   // live (online > 0); fall back to any 24h activity. This gives GB-only
