@@ -337,16 +337,20 @@ export const getCurrentPages = createServerFn({ method: "POST" })
 
 export const getTopMemberPages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ limit: z.number().int().min(1).max(50).default(15) }).parse(d ?? {}))
-  .handler(async ({ data, context }): Promise<{ pages: TopPageRow[]; timing: PanelTiming }> => {
+  .inputValidator((d: unknown) => z.object({
+    limit: z.number().int().min(1).max(50).default(15),
+    hours: z.union([z.literal(24), z.literal(168), z.literal(720)]).default(24),
+  }).parse(d ?? {}))
+  .handler(async ({ data, context }): Promise<{ pages: TopPageRow[]; timing: PanelTiming; window_hours: 24 | 168 | 720 }> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { result, timing } = await measure("getTopMemberPages", async () => {
-      const iso24 = new Date(Date.now() - 86_400_000).toISOString();
-      const iso48 = new Date(Date.now() - 2 * 86_400_000).toISOString();
+      const ms = data.hours * 3_600_000;
+      const isoCur = new Date(Date.now() - ms).toISOString();
+      const isoPrev = new Date(Date.now() - 2 * ms).toISOString();
       const [cur, prev] = await Promise.all([
-        supabaseAdmin.from("member_session_events").select("path, user_id, created_at").gte("created_at", iso24),
-        supabaseAdmin.from("member_session_events").select("path").gte("created_at", iso48).lt("created_at", iso24),
+        supabaseAdmin.from("member_session_events").select("path, user_id, created_at").gte("created_at", isoCur),
+        supabaseAdmin.from("member_session_events").select("path").gte("created_at", isoPrev).lt("created_at", isoCur),
       ]);
       const curRows = (cur.data ?? []) as Array<{ path: string; user_id: string | null; created_at: string }>;
       const prevRows = (prev.data ?? []) as Array<{ path: string }>;
@@ -373,7 +377,7 @@ export const getTopMemberPages = createServerFn({ method: "POST" })
       rows.sort((a, b) => b.views - a.views);
       return rows.slice(0, data.limit);
     });
-    return { pages: result ?? [], timing };
+    return { pages: result ?? [], timing, window_hours: data.hours };
   });
 
 // ────────────────────────────────────────────────────────── GEO ACTIVITY ──
