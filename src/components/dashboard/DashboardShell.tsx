@@ -53,6 +53,7 @@ function TopBar({
   actions,
   searchPlaceholder,
   search,
+  showSearch = true,
 }: {
   role: Role;
   title: string;
@@ -60,6 +61,7 @@ function TopBar({
   actions?: React.ReactNode;
   searchPlaceholder: string;
   search?: DashboardSearch;
+  showSearch?: boolean;
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
@@ -98,7 +100,7 @@ function TopBar({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {search ? (
+        {showSearch && search ? (
           <div className="relative hidden lg:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-white/45" />
             <input
@@ -113,7 +115,7 @@ function TopBar({
               ⌘K
             </kbd>
           </div>
-        ) : role === "admin" ? (
+        ) : showSearch && role === "admin" ? (
           <div className="hidden lg:block">
             <MemberFinder variant="topbar" placeholder={searchPlaceholder} />
           </div>
@@ -152,6 +154,7 @@ export type DashboardShellProps = {
   search?: DashboardSearch;
   member?: DashboardShellMember;
   mainClassName?: string;
+  showTopbarSearch?: boolean;
   children: React.ReactNode;
 };
 
@@ -168,6 +171,7 @@ export function DashboardShell({
   search,
   member,
   mainClassName,
+  showTopbarSearch = true,
   children,
 }: DashboardShellProps) {
   const searchPlaceholder =
@@ -194,6 +198,7 @@ export function DashboardShell({
               actions={actions}
               searchPlaceholder={searchPlaceholder}
               search={search}
+              showSearch={showTopbarSearch}
             />
             <main className={cn("flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8", mainClassName)}>{children}</main>
           </SidebarInset>

@@ -246,12 +246,13 @@ function AdminActivityPage() {
       active="Activity"
       title="Activity"
       subtitle="Realtime command centre"
-      actions={<div className="hidden items-center gap-2 xl:flex">{controls}</div>}
+      actions={<div className="hidden items-center gap-2 lg:flex">{controls}</div>}
       mainClassName="pt-0"
+      showTopbarSearch={false}
     >
       <div className="mx-auto max-w-[1500px] space-y-3 px-4 pb-6 md:px-6">
         {/* Desktop controls live in the shell header; mobile keeps them compact here. */}
-        <header className="flex flex-wrap items-center justify-end gap-2 xl:hidden">
+        <header className="flex flex-wrap items-center justify-end gap-2 lg:hidden">
           {controls}
         </header>
 
