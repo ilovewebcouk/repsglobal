@@ -222,6 +222,36 @@ export function WorldMapPanel({ countries, loading, selectedCountry, onSelectCou
             {/* Hover tooltip */}
             {hoverCc ? <MapTooltip bubble={bubbles.find((b) => b.cc === hoverCc) ?? null} /> : null}
 
+            {/* Zoom controls */}
+            <div className="absolute right-3 top-3 flex flex-col gap-1 rounded-[10px] border border-white/10 bg-black/60 p-1 backdrop-blur-md">
+              <button
+                type="button"
+                aria-label="Zoom in"
+                onClick={() => setOverride({ center: view.center, zoom: Math.min(6, view.zoom * 1.5) })}
+                className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label="Zoom out"
+                onClick={() => setOverride({ center: view.center, zoom: Math.max(0.9, view.zoom / 1.5) })}
+                className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label="Reset to world view"
+                onClick={() => setOverride({ center: [10, 20], zoom: 1 })}
+                className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
+                title="Reset to world view"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+
             {/* Legend */}
             <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2.5 rounded-full border border-white/10 bg-black/60 px-3 py-1.5 text-[10.5px] text-white/80 backdrop-blur-md">
               <span className="inline-flex items-center gap-1.5">
