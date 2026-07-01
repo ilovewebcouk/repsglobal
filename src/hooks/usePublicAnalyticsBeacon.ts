@@ -57,6 +57,7 @@ async function loadPostHog(): Promise<PostHogLike | null> {
         person_profiles: "identified_only",
         capture_pageview: false, // we do it manually to attach session_id
         capture_pageleave: true,
+        disable_compression: true,
         disable_session_recording: true,
         disable_surveys: true,
         disable_web_experiments: true,
