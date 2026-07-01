@@ -119,7 +119,7 @@ function TopBar({
           <div className="hidden lg:block">
             <MemberFinder variant="topbar" placeholder={searchPlaceholder} />
           </div>
-        ) : (
+        ) : showSearch ? (
           <div className="hidden h-10 w-[240px] items-center gap-2 rounded-[12px] border border-reps-border bg-reps-panel px-3 text-[13px] text-white/45 lg:flex">
             <Search className="h-4 w-4" />
             <span className="flex-1">{searchPlaceholder}</span>
@@ -127,7 +127,7 @@ function TopBar({
               ⌘K
             </kbd>
           </div>
-        )}
+        ) : null}
 
         {actions}
         <NotificationsBell />
