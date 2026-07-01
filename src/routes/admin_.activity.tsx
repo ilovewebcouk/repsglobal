@@ -221,8 +221,8 @@ function AdminActivityPage() {
           </div>
         </div>
 
-        {/* ── KPI strip (below hero — reference numbers) ── */}
-        <KpiStrip tiles={kpisQ.data?.tiles ?? []} loading={kpisQ.isLoading} />
+        {/* ── KPI strip (below hero — supporting metrics, no duplication of Online now) ── */}
+        <KpiStrip tiles={dedupedKpis} loading={kpisQ.isLoading} />
 
         {/* ── ROW 2: Online now (4) · Pages now (4) · Country list (4) ── */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
@@ -242,15 +242,23 @@ function AdminActivityPage() {
           </div>
         </div>
 
-        {/* ── ROW 3: Top pages (7) · Needs Attention (5) ── */}
+        {/* ── ROW 3: Top pages (7) · Needs Attention (5, sticky) ── */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="xl:col-span-7">
-            <TopMemberPagesPanel pages={topQ.data?.pages ?? []} loading={topQ.isLoading} />
+            <TopMemberPagesPanel
+              pages={topQ.data?.pages ?? []}
+              loading={topQ.isLoading}
+              window={topWindow}
+              onWindowChange={setTopWindow}
+            />
           </div>
           <div className="xl:col-span-5">
-            <NeedsAttentionPanel rows={attentionQ.data?.rows ?? []} loading={attentionQ.isLoading} />
+            <div className="xl:sticky xl:top-4">
+              <NeedsAttentionPanel rows={attentionQ.data?.rows ?? []} loading={attentionQ.isLoading} />
+            </div>
           </div>
         </div>
+
 
         {/* ── ROW 4: Compact feed preview (secondary) ── */}
         <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
