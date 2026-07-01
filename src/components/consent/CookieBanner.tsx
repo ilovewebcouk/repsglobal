@@ -1,0 +1,178 @@
+// Public-only cookie banner. Never shown on admin/dashboard/portal/auth.
+// Renders nothing until the client has hydrated (SSR-safe).
+
+import { useEffect, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import {
+  hasDecided,
+  isDntOrGpc,
+  isPublicSurface,
+  setConsent,
+} from "@/lib/consent/consent";
+
+export function CookieBanner() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [customiseOpen, setCustomiseOpen] = useState(false);
+  const [analyticsOn, setAnalyticsOn] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (!isPublicSurface(pathname)) return;
+    if (hasDecided()) return;
+    if (isDntOrGpc()) {
+      // Auto-record rejection, do not show banner.
+      setConsent(false, "rejected");
+      return;
+    }
+    setVisible(true);
+  }, [pathname]);
+
+  useEffect(() => {
+    const listener = () => setVisible(true);
+    window.addEventListener("reps:open-cookie-preferences", listener);
+    return () => window.removeEventListener("reps:open-cookie-preferences", listener);
+  }, []);
+
+  if (!mounted || !visible || !isPublicSurface(pathname)) return null;
+
+  const acceptAll = () => {
+    setConsent(true, "accepted");
+    setVisible(false);
+  };
+  const rejectAll = () => {
+    setConsent(false, "rejected");
+    setVisible(false);
+  };
+  const saveCustom = () => {
+    setConsent(analyticsOn, "customised");
+    setCustomiseOpen(false);
+    setVisible(false);
+  };
+
+  return (
+    <>
+      <div
+        role="dialog"
+        aria-live="polite"
+        aria-label="Cookie preferences"
+        className="fixed inset-x-0 bottom-0 z-[80] px-4 pb-4 pt-3 sm:px-6 sm:pb-6"
+      >
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 rounded-[18px] border border-white/10 bg-[#0B0B0F]/95 p-4 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+          <div className="flex-1 text-[13px] leading-relaxed text-white/80">
+            <p className="font-semibold text-white">Cookies on REPS</p>
+            <p className="mt-1">
+              We use essential cookies to make REPS work, and — if you agree — anonymous analytics
+              cookies to understand which pages help pros and clients most. No advertising cookies.{" "}
+              <Link to="/cookies" className="underline underline-offset-2 hover:text-white">
+                Learn more
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setCustomiseOpen(true)}
+              className="h-9 rounded-[10px] text-white/70 hover:text-white"
+            >
+              Customise
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={rejectAll}
+              className="h-9 rounded-[10px] border-white/15 bg-transparent text-white hover:bg-white/5"
+            >
+              Reject non-essential
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={acceptAll}
+              className="h-9 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
+            >
+              Accept all
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Sheet open={customiseOpen} onOpenChange={setCustomiseOpen}>
+        <SheetContent side="bottom" className="rounded-t-[22px]">
+          <SheetHeader>
+            <SheetTitle>Cookie preferences</SheetTitle>
+            <SheetDescription>
+              Choose what you're happy for REPS to store on your device. You can change this any time
+              from the footer.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="mt-4 space-y-4">
+            <div className="flex items-start justify-between gap-4 rounded-[14px] border border-white/10 bg-white/5 p-4">
+              <div>
+                <p className="text-sm font-semibold text-white">Essential</p>
+                <p className="mt-1 text-xs text-white/70">
+                  Sign-in, security, and preferences. Required for REPS to work.
+                </p>
+              </div>
+              <Switch checked disabled aria-label="Essential (always on)" />
+            </div>
+
+            <div className="flex items-start justify-between gap-4 rounded-[14px] border border-white/10 bg-white/5 p-4">
+              <div>
+                <p className="text-sm font-semibold text-white">Analytics</p>
+                <p className="mt-1 text-xs text-white/70">
+                  Anonymous, aggregate usage via our first-party proxy to PostHog (EU). Never
+                  shared with advertisers.
+                </p>
+              </div>
+              <Switch
+                checked={analyticsOn}
+                onCheckedChange={setAnalyticsOn}
+                aria-label="Analytics cookies"
+              />
+            </div>
+          </div>
+
+          <SheetFooter className="mt-6 flex-row justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setCustomiseOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={saveCustom}
+              className="bg-reps-orange hover:bg-reps-orange-hover"
+            >
+              Save preferences
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}
+
+/**
+ * Fire from the footer link to reopen the banner.
+ * Usage: <button onClick={openCookiePreferences}>Cookie preferences</button>
+ */
+export function openCookiePreferences() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("reps:open-cookie-preferences"));
+}
