@@ -195,26 +195,41 @@ export function PublicVisitorsPanel() {
         </div>
       ) : null}
 
-      {/* Discovery insight — collapsible so zero data doesn't dominate */}
+      {/* Discovery — top pages / referrers / countries are visible by default */}
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <TopList
+          title="Top public pages"
+          icon={<ExternalLink className="h-3 w-3" />}
+          items={rollup?.top_pages ?? []}
+          emptyText="No public page views yet today"
+        />
+        <TopList
+          title="Top referrers"
+          icon={<ExternalLink className="h-3 w-3" />}
+          items={rollup?.top_referrers ?? []}
+          emptyText="No external referrers yet"
+        />
+        <TopList
+          title="Top countries"
+          icon={<Globe2 className="h-3 w-3" />}
+          items={rollup?.countries ?? []}
+          emptyText="No country data yet"
+        />
+      </div>
+
+      {/* Secondary discovery — collapsed by default to keep the section tight */}
       <details className="group mt-3 rounded-[12px] border border-white/[0.08] bg-white/[0.02] open:bg-white/[0.03]">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-white/60 hover:text-white/80">
           <span className="inline-flex items-center gap-1.5">
             <TrendingUp className="h-3.5 w-3.5" />
-            Discovery details · 24h
+            Show discovery details
           </span>
           <span className="text-[10px] font-medium normal-case tracking-normal text-white/40 group-open:hidden">
-            Top pages · profiles · referrers · searches
+            Top profiles · searches · no-result searches
           </span>
-          <span className="text-[10px] font-medium normal-case tracking-normal text-white/40 group-open:inline hidden" />
         </summary>
         <div className="border-t border-white/[0.06] p-3">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-            <TopList
-              title="Top public pages"
-              icon={<ExternalLink className="h-3 w-3" />}
-              items={rollup?.top_pages ?? []}
-              emptyText="No public page views yet today"
-            />
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             <TopList
               title="Top public profiles"
               icon={<TrendingUp className="h-3 w-3" />}
@@ -228,23 +243,9 @@ export function PublicVisitorsPanel() {
               emptyText="No no-result searches — good sign"
             />
           </div>
-
-          <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
-            <TopList
-              title="Top referrers"
-              icon={<ExternalLink className="h-3 w-3" />}
-              items={rollup?.top_referrers ?? []}
-              emptyText="No external referrers yet"
-            />
-            <TopList
-              title="Top countries"
-              icon={<Globe2 className="h-3 w-3" />}
-              items={rollup?.countries ?? []}
-              emptyText="No country data yet"
-            />
-          </div>
         </div>
       </details>
+
 
 
       {/* 7d totals */}
