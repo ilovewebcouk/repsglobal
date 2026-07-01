@@ -61,10 +61,21 @@ export function useActivityBeacon() {
   const lastSentRef = useRef<string | null>(null);
   const enteredAtRef = useRef<number>(performance.now());
 
-  // Auth state → auth_event
+  // Auth state → auth_event (fallback for OAuth/magic-link and other flows).
+  // Email/password sign-in posts inline from /auth to avoid the redirect race;
+  // it sets `reps.activity.sign_in_posted` so we skip here to dedupe.
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") void postJSON("/api/public/activity/auth-event", { event: "sign_in" });
+      if (event === "SIGNED_IN") {
+        const flag = typeof sessionStorage !== "undefined"
+          ? sessionStorage.getItem("reps.activity.sign_in_posted") : null;
+        const recent = flag && Date.now() - Number(flag) < 30_000;
+        if (recent) {
+          try { sessionStorage.removeItem("reps.activity.sign_in_posted"); } catch { /* ignore */ }
+          return;
+        }
+        void postJSON("/api/public/activity/auth-event", { event: "sign_in" });
+      }
       else if (event === "SIGNED_OUT") void postJSON("/api/public/activity/auth-event", { event: "sign_out" });
       else if (event === "PASSWORD_RECOVERY") void postJSON("/api/public/activity/auth-event", { event: "password_reset" });
     });

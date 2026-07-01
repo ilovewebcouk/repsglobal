@@ -122,6 +122,31 @@ function LoginPage() {
       });
       if (signInError) throw signInError;
       if (data.user) {
+        // F1 — post sign_in inline BEFORE redirect so the beacon can't race the
+        // navigation. Best-effort; never blocks login. useActivityBeacon's
+        // fallback checks this flag and skips its own post to dedupe.
+        try {
+          if (typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem("reps.activity.sign_in_posted", String(Date.now()));
+          }
+          const token = data.session?.access_token;
+          if (token) {
+            await Promise.race([
+              fetch("/api/public/activity/auth-event", {
+                method: "POST",
+                headers: {
+                  "content-type": "application/json",
+                  authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ event: "sign_in" }),
+                keepalive: true,
+                credentials: "same-origin",
+              }).catch(() => {}),
+              new Promise((r) => setTimeout(r, 400)),
+            ]);
+          }
+        } catch { /* never block login on beacon failure */ }
+
         if (search.next === "checkout" && search.tier && search.period) {
           const { startCheckoutRedirect } = await import("@/lib/billing/startCheckout");
           // Internal billing enum still uses "verified" for the Core tier.
@@ -135,6 +160,17 @@ function LoginPage() {
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Sign in failed";
       setError(friendlyAuthError(raw));
+      // F3 — record failed sign-in (unauthenticated). Hashed email server-side,
+      // no password, no raw IP. Best-effort — never surfaces to the user.
+      try {
+        fetch("/api/public/activity/auth-event", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ event: "sign_in_failed", email: email.trim() }),
+          keepalive: true,
+          credentials: "same-origin",
+        }).catch(() => {});
+      } catch { /* swallow */ }
     } finally {
       setLoading(false);
     }
