@@ -75,7 +75,7 @@ export function WorldMapPanel({
 }: WorldMapPanelProps) {
 
   const [mapError, setMapError] = useState(false);
-  const [hoverCc, setHoverCc] = useState<string | null>(null);
+  const [hoverBubbleId, setHoverBubbleId] = useState<string | null>(null);
 
   const memberBubbles = useMemo<Bubble[]>(() => {
     const precise = memberCities
@@ -315,7 +315,7 @@ export function WorldMapPanel({
                 </Geographies>
                 {bubbles.map((b) => {
                   const isSelected = selectedCountry === b.cc;
-                  const isHover = hoverCc === b.cc;
+                  const isHover = hoverBubbleId === b.id;
                   const isLive = b.online > 0;
                   const dim = selectedCountry && !isSelected ? 0.35 : 1;
                   const isPublic = b.kind === "public";
@@ -327,8 +327,8 @@ export function WorldMapPanel({
                       : isPublic ? "rgba(56,189,248,0.5)" : "rgba(125,211,252,0.55)";
                   return (
                     <Marker key={`${b.kind}-${b.id}`} coordinates={[b.lng, b.lat]}
-                      onMouseEnter={() => setHoverCc(b.cc)}
-                      onMouseLeave={() => setHoverCc((v) => (v === b.cc ? null : v))}
+                      onMouseEnter={() => setHoverBubbleId(b.id)}
+                      onMouseLeave={() => setHoverBubbleId((v) => (v === b.id ? null : v))}
                       onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
                       style={{ default: { cursor: "pointer", opacity: dim }, hover: { cursor: "pointer", opacity: 1 }, pressed: { cursor: "pointer" } }}
                     >
@@ -371,7 +371,7 @@ export function WorldMapPanel({
             </ComposableMap>
 
             {/* Hover tooltip */}
-            {hoverCc ? <MapTooltip bubble={bubbles.find((b) => b.cc === hoverCc) ?? null} /> : null}
+            {hoverBubbleId ? <MapTooltip bubble={bubbles.find((b) => b.id === hoverBubbleId) ?? null} /> : null}
 
             {/* Zoom controls */}
             <div className="absolute right-3 top-3 flex flex-col gap-1 rounded-[10px] border border-white/10 bg-black/60 p-1 backdrop-blur-md">
@@ -440,7 +440,7 @@ export function WorldMapPanel({
             ) : bubbles.length === 0 && !loading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center">
                 <Globe className="h-6 w-6 text-white/25" />
-                <div className="text-[12px] font-medium text-white/60">No country activity yet</div>
+                <div className="text-[12px] font-medium text-white/60">No town activity yet</div>
                 <div className="max-w-[280px] text-[10.5px] text-white/40">
                   Town dots appear here as visitors and members become active.
                 </div>
@@ -472,11 +472,12 @@ function MapTooltip({ bubble }: { bubble: Bubble | null }) {
     <div className="pointer-events-none absolute right-3 top-3 rounded-[10px] border border-reps-border bg-reps-panel/95 px-3 py-2 text-[11px] text-white/85 shadow-xl backdrop-blur">
       <div className="flex items-center gap-2 font-semibold text-white">
         <span className="text-[14px]">{d.flag}</span>
-        {d.label}
+        {bubble.name}
       </div>
+      {bubble.detail ? <div className="mt-0.5 text-[10.5px] text-white/45">{bubble.detail}</div> : null}
       <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-white/60">
         <span>Online now</span><span className="text-right font-medium text-emerald-300">{bubble.online}</span>
-        <span>Views 24h</span><span className="text-right font-medium text-white/85">{bubble.views.toLocaleString()}</span>
+        <span>{bubble.kind === "public" ? "Views 5m" : "Activity"}</span><span className="text-right font-medium text-white/85">{bubble.views.toLocaleString()}</span>
       </div>
     </div>
   );
@@ -496,7 +497,7 @@ function MapFallback({
       ) : (
         <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
           {bubbles.map((b) => (
-            <li key={b.cc}>
+            <li key={b.id}>
               <button
                 type="button"
                 onClick={() => onSelect(selected === b.cc ? undefined : b.cc)}
