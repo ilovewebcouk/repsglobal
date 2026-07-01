@@ -177,6 +177,11 @@ function MemberPage() {
             <ActivityPane data={timeline.data} loading={timeline.isLoading} />
           </TabsContent>
 
+          <TabsContent value="sessions" className="flex flex-col gap-4">
+            <SessionsPane data={sessions.data} loading={sessions.isLoading} error={sessions.error as Error | null} />
+          </TabsContent>
+
+
           <TabsContent value="notes">
             <SoonEmpty
               title="Internal admin notes"
