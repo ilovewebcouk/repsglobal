@@ -54,9 +54,13 @@ function CheckoutReturn() {
             void import("@/lib/analytics/track").then(({ track }) =>
               track.signupComplete({}),
             );
+            void import("@/lib/analytics/public-conversion").then(({ trackConversion }) => {
+              void trackConversion({ event_kind: "signup_complete" });
+            });
             if (!cancelled) window.location.assign(result.url);
             return;
           }
+
           lastErr = result.error;
           await new Promise((r) => setTimeout(r, 1500));
         }
