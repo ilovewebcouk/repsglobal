@@ -38,6 +38,7 @@ import {
 } from "@/lib/ops/activity-panels.functions";
 import { getRealtimeSummary } from "@/lib/ops/activity-realtime.functions";
 import { getPublicRealtime } from "@/lib/admin/public-realtime.functions";
+import { runGeoBackfill } from "@/lib/ops/backfill-geo.functions";
 
 import {
   GeoPanel, TopMemberPagesPanel, NeedsAttentionPanel,
