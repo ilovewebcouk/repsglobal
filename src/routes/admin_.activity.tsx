@@ -125,9 +125,11 @@ function AdminActivityPage() {
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
   const publicRealtimeQ = useQuery({
     queryKey: ["a-public-realtime"],
-    queryFn: () => runPublicRealtime(),
+    queryFn: () => runPublicRealtime().catch(() => null),
     refetchInterval: 6_000, // server TTL 5s → poll every ~6s for a live feel
+    retry: false,
   });
+
   const publicVisitorsQ = useQuery({
     queryKey: ["a-public-visitors-live"],
     queryFn: () => runPublicVisitorsLive({ data: { limit: 50 } }),
