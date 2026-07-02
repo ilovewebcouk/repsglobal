@@ -236,3 +236,115 @@ Reproduce with an accepted-consent incognito session and confirm via HogQL:
 5. Realtime tiles + rollup totals on `/admin/activity` match PostHog raw counts for today.
 
 Verdict cannot flip to **A** until the above HogQL checks pass in production. Patch shipped; awaiting live traffic verification.
+
+---
+
+## Production QA run — 2026-07-02 (bundle `index-BxGaiRFJ.js`)
+
+**Verdict: F (still).** Bundle and proxy verified live; PostHog-side event delivery not independently confirmed from this run.
+
+### 1. Bundle verification ✅
+
+Fetched `https://repsuk.org/assets/index-BxGaiRFJ.js` directly (previous patched bundle was `index-ZXmylM9B.js` — hash rotated).
+
+| Check | Result |
+|---|---|
+| `capture_pageleave:false` present | ✅ (`capture_pageleave:!1`) |
+| `advanced_disable_flags:true` present | ✅ (`advanced_disable_flags:!0`) |
+| `advanced_disable_decide` absent from source | ✅ |
+| `api_host` = `https://repsuk.org/api/public/_a` | ✅ (built via `${origin}/api/public/_a`) |
+| `__repsPhQueue` / `__repsPhReady` singleton tokens present | ✅ |
+
+### 2. Singleton verification (SPA nav) — inconclusive
+
+Test navigated between three public routes via `page.goto()` (full loads, not SPA transitions). Debug output on each fresh load:
+
+```
+[analytics] queued $pageview queue size 1
+[analytics] posthog init start
+[analytics] posthog loaded
+[analytics] flushing queued events 1
+```
+
+Each hard navigation reruns the module bootstrap by definition, so `posthog init start` firing once per hard load is expected. Client-side `<Link>` navigation could not be exercised end-to-end from the QA harness without deeper page scripting. Post-nav `window.__repsPhReady === true` and `window.__repsPh.config.api_host === 'https://repsuk.org/api/public/_a'` — singleton state persists across route mounts within a single page. **Not fully proven for cross-route SPA transitions; recommend a manual click-through.**
+
+### 3. Manual capture verification ⚠
+
+`window.__repsPh.capture('reps_qa_probe', { source: 'manual_production_qa' })` from the harness returned `undefined`, and **no** POST to `/api/public/_a/e/` was observed for the entire session (0 requests over 3 pages + probe + 3 s settle).
+
+Root cause traced inside posthog-js `capture()`:
+
+```
+if (this.__loaded && this.persistence && this.sessionPersistence && this.$i) {
+  if (this.is_capturing()) {
+    var l = !this.config.opt_out_useragent_filter && this._is_bot();
+    if (!l || this.config.__preview_capture_bot_pageviews) { … send … }
+```
+
+Live probe on production:
+
+| field | value |
+|---|---|
+| `__loaded` | `true` |
+| `persistence` | present |
+| `sessionPersistence` | present |
+| `$i` | present |
+| `is_capturing()` | `true` |
+| `_is_bot()` | **`true`** |
+| `opt_out_useragent_filter` | `false` |
+
+posthog-js is silently dropping every capture because `_is_bot()` flags Playwright's Chromium (regardless of masked UA / masked `navigator.webdriver`). **This is a testing artifact, not a production defect** — real users are not bot-flagged (the pre-patch audit itself observed 24 real `$pageview` events in 24 h).
+
+Consequence: **manual browser-driven capture cannot be verified from this sandbox.** Steps 3–5 and 7 require either (a) a real user session or (b) `opt_out_useragent_filter: true` in the SDK init to allow headless verification. See follow-up.
+
+### 4. Automatic pageview verification — same artifact as §3
+
+Would fire and log `[analytics] capture sent $pageview` client-side, but posthog-js drops before the network call because of `_is_bot()`. Cannot confirm PostHog receipt from this run.
+
+### 5. Custom event verification — same artifact as §3
+
+`profile_view` fires (debug log confirms our hook called `capture`) but is dropped by posthog-js bot filter. Cannot confirm PostHog receipt from this run.
+
+### 6. Proxy mutation verification ✅ (endpoint) / ⚠ (mutation not observed downstream)
+
+Direct POSTs to the production proxy from the harness (real Chrome UA, no browser SDK):
+
+| Content-Type | Body shape | Status |
+|---|---|---|
+| `application/x-www-form-urlencoded` | `data=<base64(JSON)>` | **200 `{"status":"Ok"}`** |
+| `application/json` | raw JSON `{event, distinct_id, properties: { $ip, ip, … }}` | **200 `{"status":"Ok"}`** |
+
+Proxy is live, both encodings accepted. Whether `$ip` / `ip` stripping and `$geoip_country_code` injection reach PostHog cannot be confirmed from this run without HogQL access. Server-side proxy code path is correct (unit-review verified in the earlier patch section).
+
+### 7. Realtime dashboard verification — not exercised
+
+`/admin/activity` was loaded as admin (screenshot: `/tmp/browser/qa/shots/activity_dash.png`). "Ingest ok" chip visible. No incognito visitor could be simulated end-to-end (same §3 artifact) so live-counter movement not proven from this run.
+
+### 8. Rollup parity — not exercised
+
+Requires PostHog HogQL to compare against `metrics_daily_public_analytics`; no personal API key in the sandbox. Trigger script exists at `scripts/ops/trigger-posthog-rollup.sh`.
+
+### 9. Consent suppression ✅
+
+| Path | Debug logs | Network to `/api/public/_a` |
+|---|---|---|
+| Fresh incognito, no consent | none | **0** |
+| Fresh incognito, consent = reject | `[analytics] skip (no consent)` × N | **0** |
+| Fresh incognito, DNT + GPC | `[analytics] skip (no consent)` × N | **0** |
+
+`window.__repsPh` remains `undefined` on all three (SDK never loaded). ✅
+
+### Follow-up (recommend before flipping verdict to A)
+
+1. **`opt_out_useragent_filter: true`** — add to `posthog.init` in `src/hooks/usePublicAnalyticsBeacon.ts`. Our proxy already runs `BOT_UA` rejection, so removing posthog-js's client-side bot filter (which false-positives Playwright + some enterprise browsers) is safe and unblocks end-to-end headless QA. This is the single one-line change needed to make future production QA runnable from the sandbox.
+2. **Real-browser click-through** on the rotated bundle to confirm §3–§5, §7 with a session PostHog will accept.
+3. **HogQL sweep** (requires personal API key) for §6 mutation and §8 rollup parity.
+
+### Non-analytics bugs still open (unchanged from prior audit)
+
+- B1: `https://repsuk.org/professions` → HTTP 404
+- B2: `https://repsuk.org/find-a-professional` returns 200 (verified during this QA) — B2 downgraded.
+
+### v1.1 status
+
+**NOT complete.** Bundle rotated and passes every static check; proxy live; consent suppression proven end-to-end; SDK singleton, queue flush, and `capture_pageleave:false` all live in the shipped code. Custom-event / geo / admin-exclusion delivery to PostHog remains **unverified** because of the headless bot-filter artifact. Verdict stays **F** until either the SDK opts out of the client-side UA filter or a real-browser + HogQL pass confirms events arriving with correct mutation.
