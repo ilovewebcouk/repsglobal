@@ -307,7 +307,26 @@ function resetPostHog() {
 }
 
 /**
- * capturePublic — safe to call from anywhere. No-ops if consent missing.
+ * Module-level mirror of the auth flag so `capturePublic` (used outside of
+ * React) can fail-closed for signed-in members/admins without importing
+ * the Supabase client. Kept in sync by the beacon hook.
+ */
+let __memberSignedIn = false;
+export function setMemberFlagForAnalytics(signedIn: boolean): void {
+  __memberSignedIn = signedIn;
+}
+export function isMemberSignedInForAnalytics(): boolean {
+  return __memberSignedIn;
+}
+
+/**
+ * capturePublic — safe to call from anywhere. Fails closed if any of the
+ * public-surface guards would suppress a `$pageview`. Guards checked (in
+ * this order):
+ *   1. analytics consent (which internally checks DNT/GPC)
+ *   2. public surface (never on /admin, /dashboard, /portal, /auth, /api)
+ *   3. member/admin signed-in flag (never emit as anonymous when a session
+ *      exists — those users are covered by member telemetry instead)
  * Queues events until PostHog's `loaded` callback fires; flushes on load.
  */
 export async function capturePublic(
@@ -315,16 +334,29 @@ export async function capturePublic(
   props: Record<string, unknown> = {},
 ): Promise<void> {
   if (typeof window === "undefined") return;
+  const pathname = window.location.pathname;
+  const consent = hasAnalyticsConsent();
+  const surface = isPublicSurface(pathname);
+  const member = __memberSignedIn;
   window.__repsAnalyticsLastCaptureAttempt = {
     event,
-    path: window.location.pathname,
+    path: pathname,
     at: new Date().toISOString(),
-    consent: hasAnalyticsConsent(),
-    publicSurface: isPublicSurface(window.location.pathname),
+    consent,
+    publicSurface: surface,
     dntOrGpc: isDntOrGpc(),
+    memberSignedIn: member,
   };
-  if (!hasAnalyticsConsent()) {
+  if (!consent) {
     dbg("skip (no consent)", event);
+    return;
+  }
+  if (!surface) {
+    dbg("skip (non-public surface)", event, pathname);
+    return;
+  }
+  if (member) {
+    dbg("skip (member signed in)", event);
     return;
   }
   const finalProps = { ...props, session_id: getOrCreateSessionId() };
@@ -355,6 +387,7 @@ export async function capturePublic(
   // (flushQueue is idempotent — a second call finds an empty queue.)
   if (window.__repsPhReady) flushQueue(ph);
 }
+
 
 /**
  * aliasOnSignup — link the anonymous distinct_id to the new user_id.
