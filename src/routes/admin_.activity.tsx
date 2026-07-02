@@ -49,7 +49,10 @@ import {
 } from "@/components/admin/activity/feed-and-sheet";
 import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsPanel";
 import { CommandStrip } from "@/components/admin/activity/CommandStrip";
-import { LiveActivityRail } from "@/components/admin/activity/LiveActivityRail";
+import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
+import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
+import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
+import { getPublicVisitorsLive, getPublicIngestHealth } from "@/lib/activity/live-visitors.functions";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
