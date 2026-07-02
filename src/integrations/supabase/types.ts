@@ -17,7 +17,7 @@ export type Database = {
       admin_audit_log: {
         Row: {
           action: string
-          actor_id: string
+          actor_id: string | null
           after_state: Json | null
           before_state: Json | null
           created_at: string
@@ -30,7 +30,7 @@ export type Database = {
         }
         Insert: {
           action: string
-          actor_id: string
+          actor_id?: string | null
           after_state?: Json | null
           before_state?: Json | null
           created_at?: string
@@ -43,7 +43,7 @@ export type Database = {
         }
         Update: {
           action?: string
-          actor_id?: string
+          actor_id?: string | null
           after_state?: Json | null
           before_state?: Json | null
           created_at?: string
@@ -4776,7 +4776,7 @@ export type Database = {
           notes: string | null
           override_reason: string | null
           professional_id: string
-          reviewer_id: string
+          reviewer_id: string | null
           stripe_event_id: string | null
           submission_id: string | null
           unlocked_specialisms: string[] | null
@@ -4792,7 +4792,7 @@ export type Database = {
           notes?: string | null
           override_reason?: string | null
           professional_id: string
-          reviewer_id: string
+          reviewer_id?: string | null
           stripe_event_id?: string | null
           submission_id?: string | null
           unlocked_specialisms?: string[] | null
@@ -4808,7 +4808,7 @@ export type Database = {
           notes?: string | null
           override_reason?: string | null
           professional_id?: string
-          reviewer_id?: string
+          reviewer_id?: string | null
           stripe_event_id?: string | null
           submission_id?: string | null
           unlocked_specialisms?: string[] | null
