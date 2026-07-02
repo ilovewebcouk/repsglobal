@@ -49,7 +49,10 @@ import {
 } from "@/components/admin/activity/feed-and-sheet";
 import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsPanel";
 import { CommandStrip } from "@/components/admin/activity/CommandStrip";
-import { LiveActivityRail } from "@/components/admin/activity/LiveActivityRail";
+import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
+import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
+import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
+import { getPublicVisitorsLive, getPublicIngestHealth } from "@/lib/activity/live-visitors.functions";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
@@ -101,6 +104,7 @@ function AdminActivityPage() {
   const [feedOpen, setFeedOpen] = useState(false);
   const [topWindow, setTopWindow] = useState<24 | 168 | 720>(24);
   const [mapLayer, setMapLayer] = useState<"members" | "public" | "both">("both");
+  const [visitorDrawerId, setVisitorDrawerId] = useState<string | null>(null);
 
   // ── Server function bindings
   const runKpis = useServerFn(getActivityKpis);
@@ -113,6 +117,9 @@ function AdminActivityPage() {
   const runFeed = useServerFn(getActivityFeed);
   const runPublicRealtime = useServerFn(getPublicRealtime);
 
+  const runPublicVisitorsLive = useServerFn(getPublicVisitorsLive);
+  const runPublicIngestHealth = useServerFn(getPublicIngestHealth);
+
   // ── Queries — realtime queries poll fast (5–8s); heavier aggregates poll slower.
   const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 6_000 });
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
@@ -120,6 +127,16 @@ function AdminActivityPage() {
     queryKey: ["a-public-realtime"],
     queryFn: () => runPublicRealtime(),
     refetchInterval: 6_000, // server TTL 5s → poll every ~6s for a live feel
+  });
+  const publicVisitorsQ = useQuery({
+    queryKey: ["a-public-visitors-live"],
+    queryFn: () => runPublicVisitorsLive({ data: { limit: 50 } }),
+    refetchInterval: 8_000,
+  });
+  const publicHealthQ = useQuery({
+    queryKey: ["a-public-health"],
+    queryFn: () => runPublicIngestHealth(),
+    refetchInterval: 20_000,
   });
 
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 8_000 });
@@ -281,9 +298,36 @@ function AdminActivityPage() {
           loading={publicRealtimeQ.isLoading && realtimeQ.isLoading}
         />
 
-        {/* ── 2. COCKPIT: Left = Map + Needs Attention · Right = full-height Live rail ── */}
+        {/* ── 2. REALTIME SUMMARY (Supabase live) + Live rail ── */}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
-          <div className="flex flex-col gap-4 xl:col-span-8">
+          <div className="xl:col-span-4">
+            <RealtimeSummaryCard
+              data={realtimeQ.data}
+              loading={realtimeQ.isLoading}
+              publicSummary={{
+                online_now: ((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).filter((v) => v.status === "live").length,
+                events_30m: ((publicVisitorsQ.data ?? []) as unknown as Array<SupabaseVisitorRow & { event_count?: number }>).reduce((s, v) => s + (v.event_count ?? 0), 0),
+                last_event_at: publicHealthQ.data?.supabase_live.last_journey_at ?? null,
+                stale: publicHealthQ.data?.supabase_live.stale ?? false,
+              }}
+            />
+          </div>
+          <div className="flex xl:col-span-4">
+            <LiveActivityRail
+              className="h-full w-full"
+              members={onlineQ.data?.users ?? []}
+              memberPages={currentQ.data?.pages ?? []}
+              membersLoading={onlineQ.isLoading}
+              publicRealtime={publicRealtimeQ.data ?? null}
+              publicLoading={publicRealtimeQ.isLoading}
+              realtime={realtimeQ.data}
+              updatedAt={publicVisitorsQ.dataUpdatedAt || publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
+              supabaseVisitors={(publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]}
+              supabaseVisitorsLoading={publicVisitorsQ.isLoading}
+              onOpenVisitor={(id) => setVisitorDrawerId(id)}
+            />
+          </div>
+          <div className="flex flex-col gap-4 xl:col-span-4">
             <ClientOnlyMap
               countries={geoQ.data?.countries ?? []}
               loading={geoQ.isLoading}
@@ -300,19 +344,8 @@ function AdminActivityPage() {
             />
             <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
           </div>
-          <div className="flex xl:col-span-4">
-            <LiveActivityRail
-              className="h-full w-full"
-              members={onlineQ.data?.users ?? []}
-              memberPages={currentQ.data?.pages ?? []}
-              membersLoading={onlineQ.isLoading}
-              publicRealtime={publicRealtimeQ.data ?? null}
-              publicLoading={publicRealtimeQ.isLoading}
-              realtime={realtimeQ.data}
-              updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
-            />
-          </div>
         </div>
+
 
         {/* ── 3. PUBLIC ANALYTICS · 24h rollup ── */}
         <PublicVisitorsPanel />
@@ -378,6 +411,7 @@ function AdminActivityPage() {
       </div>
 
       <EventDetailSheet event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      <PublicVisitorDrawer journeyId={visitorDrawerId} onClose={() => setVisitorDrawerId(null)} />
 
       {/* Full feed drawer */}
       <Sheet open={feedOpen} onOpenChange={setFeedOpen}>

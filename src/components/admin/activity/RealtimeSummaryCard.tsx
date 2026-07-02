@@ -13,11 +13,22 @@ import { cn } from "@/lib/utils";
 import type { RealtimeSummary } from "@/lib/ops/activity-realtime.functions";
 
 const HONEST_LABEL =
-  "Logged-in member activity only. Anonymous public analytics is disabled in v1.2.";
+  "Combined live view: public visitors from Supabase (visitor_journeys) + logged-in members from user_sessions.";
+
+export interface RealtimePublicSummary {
+  online_now: number;
+  events_30m: number;
+  last_event_at: string | null;
+  stale: boolean;
+}
 
 export function RealtimeSummaryCard({
-  data, loading,
-}: { data: RealtimeSummary | undefined; loading: boolean }) {
+  data, loading, publicSummary,
+}: {
+  data: RealtimeSummary | undefined;
+  loading: boolean;
+  publicSummary?: RealtimePublicSummary;
+}) {
   const perMinute = data?.per_minute ?? [];
   const peak = Math.max(1, ...perMinute.map((p) => p.count));
   const deviceData = useMemo(() => {
@@ -32,10 +43,15 @@ export function RealtimeSummaryCard({
   }, [data]);
   const deviceTotal = deviceData.reduce((s, x) => s + x.value, 0);
 
-  const online = data?.online_now ?? 0;
+  const membersOnline = data?.online_now ?? 0;
+  const publicOnline = publicSummary?.online_now ?? 0;
+  const online = membersOnline + publicOnline;
+  const heroLabel = publicSummary ? "Visitors + members online now" : "Members online now";
   const trendLast = perMinute.slice(-5).reduce((s, p) => s + p.count, 0);
   const trendPrev = perMinute.slice(-10, -5).reduce((s, p) => s + p.count, 0);
   const trendPct = trendPrev === 0 ? (trendLast > 0 ? 100 : 0) : Math.round(((trendLast - trendPrev) / trendPrev) * 100);
+  const stale = publicSummary?.stale ?? false;
+  const lastRefreshed = data?.generated_at ? new Date(data.generated_at).toLocaleTimeString() : null;
 
   return (
     <section className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-[#1a1410]">
@@ -49,7 +65,10 @@ export function RealtimeSummaryCard({
             <div className="font-display text-[13px] font-semibold uppercase tracking-[0.1em] text-white/85">
               Realtime
             </div>
-            <div className="text-[10.5px] text-white/45">Live · logged-in activity</div>
+            <div className="text-[10.5px] text-white/45">
+              {publicSummary ? (stale ? "Stale · public ingest quiet" : "Supabase live · public + members") : "Live · logged-in activity"}
+              {lastRefreshed ? <span className="text-white/35"> · updated {lastRefreshed}</span> : null}
+            </div>
           </div>
         </div>
         <TooltipProvider delayDuration={100}>
@@ -69,7 +88,7 @@ export function RealtimeSummaryCard({
       {/* HERO NUMBER — dominates */}
       <div className="border-b border-reps-border/60 px-5 pb-5 pt-6">
         <div className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/55">
-          Members online now
+          {heroLabel}
         </div>
         {loading && !data ? (
           <Skeleton className="mt-3 h-20 w-40" />
@@ -82,7 +101,11 @@ export function RealtimeSummaryCard({
               {online}
             </div>
             <div className="mb-2 flex flex-col gap-1">
-              {online > 0 ? (
+              {stale ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-amber-200">
+                  Stale
+                </span>
+              ) : online > 0 ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-300">
                   <Radio className="h-3 w-3" /> Live
                 </span>
@@ -102,19 +125,12 @@ export function RealtimeSummaryCard({
             </div>
           </div>
         )}
-        <div className="mt-4 grid grid-cols-2 gap-3 text-[11px]">
-          <div className="rounded-[10px] border border-reps-border/60 bg-white/[0.03] px-3 py-2">
-            <div className="text-[10px] uppercase tracking-wide text-white/45">Members · 30m</div>
-            <div className="mt-0.5 font-display text-[18px] font-bold tabular-nums text-white">
-              {data?.members_last_30min ?? 0}
-            </div>
-          </div>
-          <div className="rounded-[10px] border border-reps-border/60 bg-white/[0.03] px-3 py-2">
-            <div className="text-[10px] uppercase tracking-wide text-white/45">Events · 30m</div>
-            <div className="mt-0.5 font-display text-[18px] font-bold tabular-nums text-white">
-              {(data?.activity_last_30min ?? 0).toLocaleString()}
-            </div>
-          </div>
+        <div className={cn("mt-4 grid gap-3 text-[11px]", publicSummary ? "grid-cols-3" : "grid-cols-2")}>
+          {publicSummary ? (
+            <StatBox label="Public · 30m" value={publicSummary.online_now} tint="blue" />
+          ) : null}
+          <StatBox label="Members · 30m" value={data?.members_last_30min ?? 0} tint="orange" />
+          <StatBox label="Events · 30m" value={(data?.activity_last_30min ?? 0) + (publicSummary?.events_30m ?? 0)} tint="neutral" />
         </div>
       </div>
 
@@ -214,6 +230,18 @@ function DeviceRow({ icon, label, value, color, total }: {
         {icon}{label}
       </span>
       <span className="text-white/85 tabular-nums">{value} <span className="text-white/40">({pct}%)</span></span>
+    </div>
+  );
+}
+
+function StatBox({ label, value, tint }: { label: string; value: number; tint: "blue" | "orange" | "neutral" }) {
+  const tintCls = tint === "blue" ? "text-blue-200" : tint === "orange" ? "text-orange-200" : "text-white";
+  return (
+    <div className="rounded-[10px] border border-reps-border/60 bg-white/[0.03] px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wide text-white/45">{label}</div>
+      <div className={cn("mt-0.5 font-display text-[18px] font-bold tabular-nums", tintCls)}>
+        {value.toLocaleString()}
+      </div>
     </div>
   );
 }
