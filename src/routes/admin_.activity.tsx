@@ -178,18 +178,13 @@ function AdminActivityPage() {
 
   const compactEvents = useMemo(() => events.slice(0, 8), [events]);
 
-  // ── Command strip metrics
-  // Reconcile: sometimes `online_now` lags behind the sum of per-country
-  // online counts (or vice versa). Show the max so the strip never reads 0
-  // when the map clearly shows live users.
-  const rawPublicOnline = publicRealtimeQ.data?.online_now ?? 0;
-  const publicCountrySum = (publicRealtimeQ.data?.countries ?? []).reduce(
-    (sum, c) => sum + (c.online ?? 0),
-    0,
-  );
-  const publicOnline = Math.max(rawPublicOnline, publicCountrySum);
+  // ── Command strip metrics — Supabase is the single source of truth.
+  // publicOnline is derived from the same visitor rows the Rail and Realtime
+  // card use, so counts across the page cannot disagree. PostHog is used only
+  // for map coordinates (publicRealtimeQ), never for live counts.
+  const supabaseVisitorRows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
+  const publicOnline = supabaseVisitorRows.filter((v) => v.status === "live").length;
   const membersOnline = realtimeQ.data?.online_now ?? 0;
-  const pageViews5m = publicRealtimeQ.data?.page_views_5m ?? 0;
   const attentionRows = attentionQ.data?.rows ?? [];
   const attentionCount = attentionRows.length;
   const criticalCount = attentionRows.filter((r) => r.severity === "critical").length;
