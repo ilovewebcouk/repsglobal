@@ -313,7 +313,7 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
             accent="orange"
             loading={membersLoading}
             empty="No members viewing pages right now"
-            items={memberPages.slice(0, 5)}
+            items={memberPages.filter((p) => (p.online_count ?? 0) > 0).slice(0, 5)}
             render={(p) => (
               <div className="flex items-center justify-between gap-2 py-1.5">
                 <span className="truncate font-mono text-[11.5px] text-white/85">{p.path || "/"}</span>
