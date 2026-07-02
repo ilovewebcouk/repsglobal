@@ -39,8 +39,8 @@ export const PLANS: PlanCard[] = [
       "Enquiries inbox",
     ],
     pricing: {
-      monthly: { price: "£8.25", period: "per month", meta: "£99 billed yearly" },
-      annual: { price: "£8.25", period: "per month", meta: "£99 billed yearly" },
+      monthly: { price: "£34", was: "£99", period: "per year", meta: "£34 billed yearly" },
+      annual: { price: "£34", was: "£99", period: "per year", meta: "£34 billed yearly" },
     },
   },
   {
