@@ -144,6 +144,13 @@ function AdminActivityPage() {
     refetchInterval: 20_000,
     retry: false,
   });
+  const KEY_ACTIONS = new Set(["enquiry_started", "enquiry_created", "signup_started", "checkout_started", "signup_complete"]);
+  const conversionsQ = useQuery({
+    queryKey: ["a-public-conversions"],
+    queryFn: () => runPublicConversions({ data: { limit: 100 } }).catch(() => [] as Array<{ event_kind: string; occurred_at: string }>),
+    refetchInterval: 30_000,
+    retry: false,
+  });
 
 
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 8_000 });
