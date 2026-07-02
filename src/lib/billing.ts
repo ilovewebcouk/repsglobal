@@ -27,12 +27,8 @@ export interface TierConfig {
 
 // stripePriceId values are HUMAN-READABLE lookup keys, stable across sandbox
 // and live. The server resolves them to Stripe price IDs at checkout via
-// `stripe.prices.list({ lookup_keys })`.
-//
-// Legacy honour price (not in TIERS — admin-only, never sold via UI):
-//   "verified_legacy_annual" — £34/yr, billed for the first 12 months
-//   of any migrated BD member, then auto-transitions to "verified_annual"
-//   via a Stripe Subscription Schedule.
+// `stripe.prices.list({ lookup_keys })`. The `verified_annual` lookup key
+// now resolves to the £34/year Core price.
 export const VERIFIED_LEGACY_PRICE_LOOKUP = "verified_legacy_annual";
 
 
@@ -40,7 +36,7 @@ export const TIERS: Record<TierKey, TierConfig> = {
   verified: {
     key: "verified",
     label: "Core",
-    priceLabel: "£99",
+    priceLabel: "£34",
     intervalLabel: "per year",
     stripePriceId: "verified_annual",
     stripeProductId: "verified",
