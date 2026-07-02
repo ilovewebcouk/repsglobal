@@ -31,6 +31,43 @@ type PostHogLike = {
 };
 
 type QueuedEvent = { event: string; props: Record<string, unknown> };
+type AnalyticsDebugState = {
+  consent: {
+    hasCookie: boolean;
+    analytics: boolean;
+    raw: string | null;
+  };
+  privacy: {
+    dnt: boolean;
+    navigatorDoNotTrack: string | null;
+    windowDoNotTrack: string | null;
+    gpc: boolean;
+  };
+  surface: {
+    pathname: string;
+    isPublicSurface: boolean;
+  };
+  guards: {
+    isLoggedIn: boolean | null;
+    isAdminPath: boolean;
+    isMemberPath: boolean;
+    isInternalPath: boolean;
+    isPreviewHost: boolean;
+    isDevelopment: boolean;
+  };
+  posthog: {
+    configured: boolean;
+    exists: boolean;
+    loaded: boolean;
+    initPromiseExists: boolean;
+    initPromiseState: "unknown" | "pending" | "resolved" | "rejected" | "absent";
+    apiHost: string | null;
+    queueLength: number;
+  };
+  lastCaptureAttempt: unknown;
+  lastCaptureError: unknown;
+  lastNetworkAttempt: unknown;
+};
 
 declare global {
   interface Window {
@@ -38,6 +75,10 @@ declare global {
     __repsPhReady?: boolean;
     __repsPhQueue?: QueuedEvent[];
     __repsPhInitPromise?: Promise<PostHogLike | null>;
+    __repsPhInitPromiseState?: "pending" | "resolved" | "rejected";
+    __repsAnalyticsLastCaptureAttempt?: Record<string, unknown> | null;
+    __repsAnalyticsLastCaptureError?: Record<string, unknown> | null;
+    __repsAnalyticsDebug?: () => AnalyticsDebugState;
   }
 }
 
@@ -52,6 +93,87 @@ const DEBUG =
 
 function dbg(...args: unknown[]) {
   if (DEBUG) console.debug("[analytics]", ...args);
+}
+
+function readConsentCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("reps.consent.v1="));
+  return match ? decodeURIComponent(match.split("=")[1] ?? "") : null;
+}
+
+function lastProxyResource(): Record<string, unknown> | null {
+  if (typeof performance === "undefined" || typeof performance.getEntriesByType !== "function") return null;
+  const entries = performance
+    .getEntriesByType("resource")
+    .filter((entry) => entry.name.includes("/api/public/_a/"));
+  const last = entries[entries.length - 1] as PerformanceResourceTiming | undefined;
+  if (!last) return null;
+  return {
+    name: last.name,
+    initiatorType: last.initiatorType,
+    startTime: Math.round(last.startTime),
+    duration: Math.round(last.duration),
+    transferSize: last.transferSize,
+  };
+}
+
+function installAnalyticsDebug(memberRef?: { current: boolean }) {
+  if (typeof window === "undefined") return;
+  window.__repsAnalyticsDebug = () => {
+    const raw = readConsentCookie();
+    let analytics = false;
+    try {
+      analytics = raw ? JSON.parse(raw).analytics === true : false;
+    } catch {
+      analytics = false;
+    }
+    const pathname = window.location.pathname;
+    const nav = navigator as unknown as { doNotTrack?: string; globalPrivacyControl?: boolean };
+    const win = window as unknown as { doNotTrack?: string };
+    const promiseState = window.__repsPhInitPromise
+      ? window.__repsPhInitPromiseState ?? "unknown"
+      : "absent";
+
+    return {
+      consent: {
+        hasCookie: raw !== null,
+        analytics,
+        raw,
+      },
+      privacy: {
+        dnt: isDntOrGpc(),
+        navigatorDoNotTrack: nav.doNotTrack ?? null,
+        windowDoNotTrack: win.doNotTrack ?? null,
+        gpc: nav.globalPrivacyControl === true,
+      },
+      surface: {
+        pathname,
+        isPublicSurface: isPublicSurface(pathname),
+      },
+      guards: {
+        isLoggedIn: memberRef ? memberRef.current : null,
+        isAdminPath: pathname.startsWith("/admin"),
+        isMemberPath: pathname.startsWith("/dashboard") || pathname.startsWith("/portal"),
+        isInternalPath: pathname.startsWith("/api/") || pathname.startsWith("/lovable/"),
+        isPreviewHost: window.location.hostname.includes("lovable.app"),
+        isDevelopment: import.meta.env.DEV === true,
+      },
+      posthog: {
+        configured: Boolean(POSTHOG_KEY),
+        exists: Boolean(window.__repsPh),
+        loaded: window.__repsPhReady === true,
+        initPromiseExists: Boolean(window.__repsPhInitPromise),
+        initPromiseState: promiseState,
+        apiHost: `${window.location.origin}/api/public/_a`,
+        queueLength: window.__repsPhQueue?.length ?? 0,
+      },
+      lastCaptureAttempt: window.__repsAnalyticsLastCaptureAttempt ?? null,
+      lastCaptureError: window.__repsAnalyticsLastCaptureError ?? null,
+      lastNetworkAttempt: lastProxyResource(),
+    };
+  };
 }
 
 function flushQueue(ph: PostHogLike) {
@@ -86,6 +208,7 @@ async function loadPostHog(): Promise<PostHogLike | null> {
   dbg("posthog init start");
 
   window.__repsPhInitPromise = (async () => {
+    window.__repsPhInitPromiseState = "pending";
     try {
       const mod = await import("posthog-js");
       const posthog = (mod.default ?? mod) as unknown as PostHogLike;
@@ -125,11 +248,13 @@ async function loadPostHog(): Promise<PostHogLike | null> {
       window.__repsPh = posthog;
       // Do NOT set __repsPhReady here — wait for the loaded callback so
       // captures made before flush get queued instead of silently dropped.
+      window.__repsPhInitPromiseState = "resolved";
       return posthog;
     } catch (err) {
       if (DEBUG) console.warn("[analytics] posthog load failed", err);
       // Clear the promise so a later retry can attempt init again.
       window.__repsPhInitPromise = undefined;
+      window.__repsPhInitPromiseState = "rejected";
       return null;
     }
   })();
@@ -163,6 +288,14 @@ export async function capturePublic(
   props: Record<string, unknown> = {},
 ): Promise<void> {
   if (typeof window === "undefined") return;
+  window.__repsAnalyticsLastCaptureAttempt = {
+    event,
+    path: window.location.pathname,
+    at: new Date().toISOString(),
+    consent: hasAnalyticsConsent(),
+    publicSurface: isPublicSurface(window.location.pathname),
+    dntOrGpc: isDntOrGpc(),
+  };
   if (!hasAnalyticsConsent()) {
     dbg("skip (no consent)", event);
     return;
@@ -175,6 +308,11 @@ export async function capturePublic(
       window.__repsPh.capture(event, finalProps);
       dbg("capture sent", event);
     } catch (err) {
+      window.__repsAnalyticsLastCaptureError = {
+        event,
+        message: err instanceof Error ? err.message : String(err),
+        at: new Date().toISOString(),
+      };
       if (DEBUG) console.warn("[analytics] capture failed", event, err);
     }
     return;
@@ -213,6 +351,7 @@ export function usePublicAnalyticsBeacon() {
 
   // Track auth state — never capture as public when signed in.
   useEffect(() => {
+    installAnalyticsDebug(memberRef);
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
       if (mounted) memberRef.current = Boolean(data.session);
