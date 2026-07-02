@@ -12,6 +12,9 @@ import { createHmac } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
+export type LocationSource = "cloudflare-headers" | "ipapi" | "ipapi-cache" | "country-only" | "none";
+export type LocationConfidence = "city" | "region" | "country" | "unknown";
+
 export interface CaptureContext {
   userId: string | null;
   ip: string | null;         // raw client IP (admin-only tables — RLS enforced)
@@ -22,7 +25,9 @@ export interface CaptureContext {
   latitude: number | null;
   longitude: number | null;
   timezone: string | null;
-  geoSource: string | null;  // 'cloudflare' | null
+  geoSource: string | null;  // legacy: 'cloudflare' | 'ipapi' | 'ipapi-cache' | null
+  locationSource: LocationSource;
+  locationConfidence: LocationConfidence;
   device: string | null;
   browser: string | null;
   os: string | null;
