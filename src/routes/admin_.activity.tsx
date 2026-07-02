@@ -382,11 +382,20 @@ function AdminActivityPage() {
 
 
 
-        {/* ── 3. PUBLIC ANALYTICS · 24h rollup ── */}
+        {/* ── 3. ANALYTICS STRIP · 7d sparkline tiles ── */}
+        <AnalyticsStrip tiles={analyticsTiles} loading={conversionsQ.isLoading} />
+
+        {/* ── 4. PUBLIC ANALYTICS · 24h rollup (secondary) ── */}
         <PublicVisitorsPanel />
 
-        {/* ── 4. MEMBER ACTIVITY (secondary) ── */}
+        {/* ── 5. MEMBER ACTIVITY (secondary) ── */}
         <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-orange-400" />
+            <h2 className="font-display text-[14px] font-semibold text-white">Member activity</h2>
+            <span className="text-[11px] text-white/45">Logged-in members only</span>
+          </div>
+
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-orange-400" />
             <h2 className="font-display text-[14px] font-semibold text-white">Member activity</h2>
