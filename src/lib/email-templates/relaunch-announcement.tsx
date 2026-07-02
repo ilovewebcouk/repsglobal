@@ -89,7 +89,7 @@ const RelaunchAnnouncement = ({
           <div style={pricingBox}>
             <Heading as="h2" style={eyebrowInk}>A word on pricing</Heading>
             <Text style={{ ...p, margin: "0 0 8px 0" }}>
-              You were paying <strong style={ink}>£34/yr</strong>. On your next renewal you'll move to <strong style={ink}>£99/yr for Core</strong> — same Verified status, every feature we ship, no add-ons, no surprises.
+              Core membership is <strong style={ink}>£34/yr</strong> (reduced from £99) — every feature we ship, no add-ons, no surprises.
             </Text>
             <Text style={{ ...muted, margin: 0 }}>
               Nothing to do today — we'll bill the card on file when your renewal date arrives.
