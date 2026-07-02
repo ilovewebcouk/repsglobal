@@ -397,6 +397,12 @@ async function proxy(request: Request, splat: string): Promise<Response> {
     });
   } catch { /* never block proxy on diagnostics */ }
 
+  if (ua) outboundHeaders.set("user-agent", ua);
+  // Deliberately do NOT forward: authorization, cookie, x-forwarded-for,
+  // cf-connecting-ip, true-client-ip, x-real-ip, or content-encoding.
+
+
+
 
 
   const upstream = await fetch(outboundUrl.toString(), {
