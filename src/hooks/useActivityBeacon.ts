@@ -66,16 +66,30 @@ export function useActivityBeacon() {
   // Email/password sign-in posts inline from /auth to avoid the redirect race;
   // it sets `reps.activity.sign_in_posted` so we skip here to dedupe.
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    // Dedupe linker calls per (user_id|distinct_id) for the tab's lifetime.
+    const attemptedLinks = new Set<string>();
+    const tryLink = (userId: string | null | undefined, reason: string) => {
+      try {
+        if (!userId) return;
+        const ph = typeof window !== "undefined" ? window.__repsPh : undefined;
+        const distinctId = ph?.get_distinct_id?.() ?? null;
+        if (!distinctId) return;
+        const key = `${userId}|${distinctId}`;
+        if (attemptedLinks.has(key)) return;
+        attemptedLinks.add(key);
+        void linkVisitorToUser({ data: { distinct_id: distinctId } })
+          .then((res) => {
+            if (typeof window !== "undefined") {
+              (window as unknown as { __repsLastLink?: unknown }).__repsLastLink = { reason, res, at: Date.now() };
+            }
+          })
+          .catch(() => { /* best-effort */ });
+      } catch { /* ignore */ }
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
-        // Link prior anonymous journeys/observations to this user (best-effort).
-        try {
-          const ph = typeof window !== "undefined" ? window.__repsPh : undefined;
-          const distinctId = ph?.get_distinct_id?.() ?? null;
-          if (distinctId) {
-            void linkVisitorToUser({ data: { distinct_id: distinctId } }).catch(() => { /* best-effort */ });
-          }
-        } catch { /* ignore */ }
+        tryLink(session?.user?.id, "SIGNED_IN");
 
         const flag = typeof sessionStorage !== "undefined"
           ? sessionStorage.getItem("reps.activity.sign_in_posted") : null;
@@ -86,11 +100,21 @@ export function useActivityBeacon() {
         }
         void postJSON("/api/public/activity/auth-event", { event: "sign_in" });
       }
+      else if (event === "INITIAL_SESSION") {
+        // Returning users hydrate as INITIAL_SESSION without SIGNED_IN.
+        // Link idempotently; RPC dedupes by distinct_id/user_id within 30-day window.
+        tryLink(session?.user?.id, "INITIAL_SESSION");
+      }
+      else if (event === "TOKEN_REFRESHED") {
+        // Cheap safety net in case both prior events were missed this tab.
+        tryLink(session?.user?.id, "TOKEN_REFRESHED");
+      }
       else if (event === "SIGNED_OUT") void postJSON("/api/public/activity/auth-event", { event: "sign_out" });
       else if (event === "PASSWORD_RECOVERY") void postJSON("/api/public/activity/auth-event", { event: "password_reset" });
     });
     return () => { sub.subscription.unsubscribe(); };
   }, []);
+
 
   // Pathname → session-event beacon
   useEffect(() => {
