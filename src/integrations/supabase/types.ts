@@ -3410,6 +3410,81 @@ export type Database = {
           },
         ]
       }
+      proxy_ingest_diagnostics: {
+        Row: {
+          attempted: boolean | null
+          created_at: string
+          error_code: string | null
+          error_details: string | null
+          error_hint: string | null
+          error_message: string | null
+          event_count: number | null
+          first_event: string | null
+          geo_confidence: string | null
+          geo_has_city: boolean | null
+          geo_source: string | null
+          has_distinct: boolean | null
+          has_path: boolean | null
+          has_raw_ip: boolean | null
+          has_referrer: boolean | null
+          has_session: boolean | null
+          id: string
+          is_admin: boolean | null
+          method: string | null
+          parser: string | null
+          proxy_path: string | null
+          result: string | null
+        }
+        Insert: {
+          attempted?: boolean | null
+          created_at?: string
+          error_code?: string | null
+          error_details?: string | null
+          error_hint?: string | null
+          error_message?: string | null
+          event_count?: number | null
+          first_event?: string | null
+          geo_confidence?: string | null
+          geo_has_city?: boolean | null
+          geo_source?: string | null
+          has_distinct?: boolean | null
+          has_path?: boolean | null
+          has_raw_ip?: boolean | null
+          has_referrer?: boolean | null
+          has_session?: boolean | null
+          id?: string
+          is_admin?: boolean | null
+          method?: string | null
+          parser?: string | null
+          proxy_path?: string | null
+          result?: string | null
+        }
+        Update: {
+          attempted?: boolean | null
+          created_at?: string
+          error_code?: string | null
+          error_details?: string | null
+          error_hint?: string | null
+          error_message?: string | null
+          event_count?: number | null
+          first_event?: string | null
+          geo_confidence?: string | null
+          geo_has_city?: boolean | null
+          geo_source?: string | null
+          has_distinct?: boolean | null
+          has_path?: boolean | null
+          has_raw_ip?: boolean | null
+          has_referrer?: boolean | null
+          has_session?: boolean | null
+          id?: string
+          is_admin?: boolean | null
+          method?: string | null
+          parser?: string | null
+          proxy_path?: string | null
+          result?: string | null
+        }
+        Relationships: []
+      }
       public_analytics_consent_events: {
         Row: {
           choice: string
