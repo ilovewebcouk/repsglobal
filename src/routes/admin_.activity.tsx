@@ -275,7 +275,7 @@ function AdminActivityPage() {
     const enquiriesSeries = bucketsFor(new Set(["enquiry_started", "enquiry_created"]));
     const checkoutSeries = bucketsFor(new Set(["checkout_started", "checkout_completed"]));
     return [
-      { label: "Visitors 24h", value: publicOnline + membersOnline, series: visitorsSeries, color: "#38BDF8" },
+      { label: "Visitors 7d", value: visitorsSeries.reduce((s, n) => s + n, 0), series: visitorsSeries, color: "#38BDF8" },
       { label: "Signups 7d", value: signupsSeries.reduce((s, n) => s + n, 0), series: signupsSeries, color: "#F97316" },
       { label: "Conversions 7d", value: conversionsSeries.reduce((s, n) => s + n, 0), series: conversionsSeries, color: "#22D3EE" },
       { label: "Enquiries 7d", value: enquiriesSeries.reduce((s, n) => s + n, 0), series: enquiriesSeries, color: "#A78BFA" },
