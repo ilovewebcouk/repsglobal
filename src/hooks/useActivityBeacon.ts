@@ -68,6 +68,15 @@ export function useActivityBeacon() {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
+        // Link prior anonymous journeys/observations to this user (best-effort).
+        try {
+          const ph = typeof window !== "undefined" ? window.__repsPh : undefined;
+          const distinctId = ph?.get_distinct_id?.() ?? null;
+          if (distinctId) {
+            void linkVisitorToUser({ data: { distinct_id: distinctId } }).catch(() => { /* best-effort */ });
+          }
+        } catch { /* ignore */ }
+
         const flag = typeof sessionStorage !== "undefined"
           ? sessionStorage.getItem("reps.activity.sign_in_posted") : null;
         const recent = flag && Date.now() - Number(flag) < 30_000;
