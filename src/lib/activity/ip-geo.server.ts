@@ -144,7 +144,7 @@ async function writeCache(
       asn: geo?.asn ?? null,
       org: geo?.org ?? null,
       lookup_status: status,
-      raw_response_jsonb: raw ?? null,
+      raw_response_jsonb: (raw ?? null) as never,
       last_seen_at: now.toISOString(),
       expires_at: expires.toISOString(),
     },
