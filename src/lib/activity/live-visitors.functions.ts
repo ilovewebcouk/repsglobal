@@ -120,11 +120,11 @@ export const getPublicVisitorDetail = createServerFn({ method: "POST" })
     const [obsRes, convRes, profRes] = await Promise.all([
       supabaseAdmin.from("security_visitor_ip_observations")
         .select("id, session_id, event_context, path, referrer, raw_ip, ip_hash, user_agent, country_code, region, city, postal_code, latitude, longitude, timezone, asn, org, location_source, location_confidence, first_seen_at, last_seen_at")
-        .eq("session_id", j.session_id)
+        .eq("session_id", j.session_id ?? "")
         .order("last_seen_at", { ascending: false }),
       supabaseAdmin.from("public_visitor_conversions")
         .select("id, event_kind, path, professional_id, enquiry_id, pending_signup_id, occurred_at")
-        .eq("session_id", j.session_id)
+        .eq("session_id", j.session_id ?? "")
         .order("occurred_at", { ascending: false }),
       j.user_id
         ? supabaseAdmin.from("profiles").select("id, display_name, email").eq("id", j.user_id).maybeSingle()
@@ -204,7 +204,7 @@ export const revealVisitorIp = createServerFn({ method: "POST" })
     const { data: j } = await supabaseAdmin
       .from("visitor_journeys")
       .select("id")
-      .eq("session_id", obs.session_id)
+      .eq("session_id", obs.session_id ?? "")
       .maybeSingle();
 
     // Write audit row FIRST — raw IP is not stored in audit metadata.
