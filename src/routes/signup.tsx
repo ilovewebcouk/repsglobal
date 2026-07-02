@@ -206,7 +206,14 @@ function SignupPage() {
     void import("@/lib/analytics/track").then(({ track }) =>
       track.signupStart({ plan: search.tier ?? null, path: "/signup" }),
     );
+    void import("@/lib/analytics/public-conversion").then(({ trackConversion }) => {
+      void trackConversion({
+        event_kind: "signup_started",
+        properties: { plan: search.tier ?? undefined },
+      });
+    });
   }, [search.tier]);
+
 
 
   const planSummary: PlanSummary | null =
