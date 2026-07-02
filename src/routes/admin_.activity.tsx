@@ -51,7 +51,7 @@ import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsP
 import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
 import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
-import { HeroLine } from "@/components/admin/activity/HeroLine";
+
 import { AnalyticsStrip, type AnalyticsSeries } from "@/components/admin/activity/AnalyticsStrip";
 import { DiagnosticsDrawer } from "@/components/admin/activity/DiagnosticsDrawer";
 import { CompactStatusStrip } from "@/components/admin/activity/CompactStatusStrip";
