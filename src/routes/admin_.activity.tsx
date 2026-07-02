@@ -311,6 +311,21 @@ function AdminActivityPage() {
           </div>
         ) : null}
 
+        {/* ── Hero line · plain-English state sentence ── */}
+        <p className="px-1 text-[12.5px] text-white/60">
+          {(() => {
+            const liveNow = publicOnline + membersOnline;
+            const parts: string[] = [];
+            parts.push(liveNow > 0
+              ? `${liveNow} live now — ${publicOnline} public · ${membersOnline} members.`
+              : "It's quiet — no one is on the site right now.");
+            if (criticalCount > 0) parts.push(`${criticalCount} critical action${criticalCount === 1 ? "" : "s"} need attention.`);
+            else if (attentionCount > 0) parts.push(`${attentionCount} item${attentionCount === 1 ? "" : "s"} in the action queue.`);
+            if (publicStale) parts.push("Public ingest is quiet — no recent hits.");
+            return parts.join(" ");
+          })()}
+        </p>
+
         {/* ── Zone 3 · COMPACT STATUS STRIP (six tiles) ── */}
         <CompactStatusStrip
           publicLive={publicOnline}
@@ -319,6 +334,7 @@ function AdminActivityPage() {
           criticalCount={criticalCount}
           warningCount={Math.max(0, attentionCount - criticalCount)}
           health={ingestStatus === "down" ? "broken" : ingestStatus}
+          ingestStale={publicStale}
         />
 
         {/* ── Zone 4 · Live map (2/3) + Realtime Summary (1/3) ── */}
