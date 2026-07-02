@@ -302,6 +302,8 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   let obsFirstEvent: string | null = null;
   let extractedPath: string | null = null;
   let observationId: string | null = null;
+  let journeyId: string | null = null;
+  let journeyResult: "ok" | "skipped" | "failed" | null = null;
   const consentWriteEligible = isCaptureEndpoint && !admin;
 
   if (consentWriteEligible) {
@@ -376,6 +378,27 @@ async function proxy(request: Request, splat: string): Promise<Response> {
         });
         observationId = written?.id ?? null;
         obsResult = "ok";
+
+        // Journey dual-write (behavioural flow store).
+        try {
+          const { recordVisitorJourney } = await import("@/lib/activity/visitor-journeys.server");
+          const jr = await recordVisitorJourney({
+            sessionId,
+            posthogDistinctId: distinctId,
+            observationId,
+            eventName: obsFirstEvent,
+            path,
+            referrer,
+          });
+          journeyId = jr.id;
+          journeyResult = jr.result;
+          if (jr.result === "failed") {
+            console.error("[posthog-proxy] journey write failed", { err: jr.error, session: !!sessionId, distinct: !!distinctId });
+          }
+        } catch (jerr) {
+          journeyResult = "failed";
+          console.error("[posthog-proxy] journey write threw", jerr);
+        }
       }
     } catch (err) {
       obsResult = "failed";
@@ -421,6 +444,8 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       extracted_path: extractedPath,
       consent_write_eligible: consentWriteEligible,
       observation_id: observationId,
+      journey_id: journeyId,
+      journey_result: journeyResult,
     });
     if (diagRes.error) {
       console.error("[posthog-proxy] diagnostics insert failed", {
