@@ -77,21 +77,28 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
   const publicOnline = supabaseVisitors?.length ?? publicRealtime?.online_now ?? 0;
   const membersOnline = realtime?.online_now ?? members.length;
 
-  const locationsLive = useMemo(() => {
+  // Amendment 3 — honest heading: only call it Cities/Towns when city rows exist.
+  const { locationsLive, locationsHeading, locationsIcon } = useMemo(() => {
     const cities = (publicRealtime?.cities ?? [])
       .filter((c) => c.online > 0)
       .map((c) => ({
         id: `${c.city}-${c.country_code}`,
-        label: c.city,
-        cc: c.country_code,
+        precision: "city" as const,
+        raw: { city: c.city, region: c.region, country_code: c.country_code },
         online: c.online,
-        detail: c.region,
       }));
-    if (cities.length > 0) return cities.slice(0, 8);
-    return (publicRealtime?.countries ?? [])
+    if (cities.length > 0) {
+      return { locationsLive: cities.slice(0, 8), locationsHeading: "Cities / Towns live", locationsIcon: Globe };
+    }
+    const countries = (publicRealtime?.countries ?? [])
       .filter((c) => c.online > 0)
-      .map((c) => ({ id: c.country_code, label: countryDisplay(c.country_code).label, cc: c.country_code, online: c.online, detail: "country fallback" }))
-      .slice(0, 8);
+      .map((c) => ({
+        id: c.country_code,
+        precision: "country" as const,
+        raw: { city: null, region: null, country_code: c.country_code },
+        online: c.online,
+      }));
+    return { locationsLive: countries.slice(0, 8), locationsHeading: "Countries live", locationsIcon: Globe };
   }, [publicRealtime]);
 
   const devices = realtime?.devices;
