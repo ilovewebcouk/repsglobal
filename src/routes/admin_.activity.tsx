@@ -48,12 +48,13 @@ import {
   ActivityFeedV2, EventDetailSheet,
 } from "@/components/admin/activity/feed-and-sheet";
 import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsPanel";
-import { CommandStrip } from "@/components/admin/activity/CommandStrip";
 import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
 import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
+import { HeroLine } from "@/components/admin/activity/HeroLine";
+import { AnalyticsStrip, type AnalyticsSeries } from "@/components/admin/activity/AnalyticsStrip";
+import { DiagnosticsDrawer } from "@/components/admin/activity/DiagnosticsDrawer";
 import { getPublicVisitorsLive, getPublicIngestHealth, getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
-import { AlertBand } from "@/components/admin/activity/AlertBand";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
