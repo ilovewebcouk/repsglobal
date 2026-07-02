@@ -71,3 +71,26 @@ export function subscriptionStatusLabel(status: string | null | undefined): stri
     default: return status ?? "unknown";
   }
 }
+
+/**
+ * Canonical location resolver (build-contract §14).
+ * Every panel/row/tooltip MUST format location via this helper.
+ */
+export function formatLocationLabel(row: {
+  city?: string | null;
+  region?: string | null;
+  country_code?: string | null;
+}): string {
+  const city = (row.city ?? "").trim();
+  const region = (row.region ?? "").trim();
+  const cc = (row.country_code ?? "").trim().toUpperCase();
+  const bad = (v: string) => !v || v.toLowerCase() === "unknown" || v === "??" || v === "XX";
+  if (!bad(city)) {
+    const tail = !bad(region) ? `${region}, ${cc}` : cc || "";
+    return tail ? `${city}, ${tail}` : city;
+  }
+  if (!bad(region)) return cc ? `${region}, ${cc}` : region;
+  if (cc) return COUNTRY_NAMES[cc] ?? cc;
+  return "Unknown location";
+}
+
