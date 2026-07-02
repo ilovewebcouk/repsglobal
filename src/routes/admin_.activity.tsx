@@ -125,19 +125,24 @@ function AdminActivityPage() {
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
   const publicRealtimeQ = useQuery({
     queryKey: ["a-public-realtime"],
-    queryFn: () => runPublicRealtime(),
+    queryFn: () => runPublicRealtime().catch(() => null),
     refetchInterval: 6_000, // server TTL 5s → poll every ~6s for a live feel
+    retry: false,
   });
+
   const publicVisitorsQ = useQuery({
     queryKey: ["a-public-visitors-live"],
-    queryFn: () => runPublicVisitorsLive({ data: { limit: 50 } }),
+    queryFn: () => runPublicVisitorsLive({ data: { limit: 50 } }).catch(() => null),
     refetchInterval: 8_000,
+    retry: false,
   });
   const publicHealthQ = useQuery({
     queryKey: ["a-public-health"],
-    queryFn: () => runPublicIngestHealth(),
+    queryFn: () => runPublicIngestHealth().catch(() => null),
     refetchInterval: 20_000,
+    retry: false,
   });
+
 
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 8_000 });
   const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 8_000 });
