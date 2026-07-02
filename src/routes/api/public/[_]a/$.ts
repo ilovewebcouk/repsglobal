@@ -105,13 +105,21 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   const contentEncoding = (request.headers.get("content-encoding") ?? "").toLowerCase();
 
   const admin = await isAdmin(request);
+  // Mutator enriches every event's properties.
+  // NOTE: PostHog Cloud overrides `$geoip_*` server-side using its own GeoIP
+  // lookup against the incoming request IP (our Worker egress → wrong country).
+  // We therefore write non-reserved canonical props (`reps_*`) that our own
+  // realtime + rollup queries read. Legacy names retained for back-compat.
   const mutate: Mutator = (props) => {
     delete props.$ip;
     delete props.ip;
-    props.is_internal = admin;
+    props.reps_is_internal = admin;
+    props.is_internal = admin; // legacy
+    props.reps_proxy_v = 3; // diagnostic — proves mutation ran
     if (country) {
-      props.$geoip_country_code = country;
+      props.reps_country_code = country;
       props.country_code = country; // legacy mirror
+      props.$geoip_country_code = country; // may be overwritten by PostHog GeoIP
     }
   };
 
@@ -120,9 +128,10 @@ async function proxy(request: Request, splat: string): Promise<Response> {
 
   let outboundBody: BodyInit | null = null;
   const outboundHeaders = new Headers();
+  let pathTaken = "none";
 
   if (request.method === "GET" || request.method === "HEAD") {
-    // GET beacon: ?data=<base64>
+    pathTaken = "get-beacon";
     const dataParam = outboundUrl.searchParams.get("data");
     if (dataParam) {
       try {
@@ -132,7 +141,7 @@ async function proxy(request: Request, splat: string): Promise<Response> {
         outboundUrl.searchParams.set("data", b64encode(JSON.stringify(parsed)));
       } catch (err) {
         console.error("[posthog-proxy] GET data decode failed", err);
-        return new Response(null, { status: 204 }); // fail closed
+        return new Response(null, { status: 204 });
       }
     }
   } else {
@@ -142,10 +151,6 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       contentEncoding.includes("br");
 
     if (isCompressed) {
-      // Cannot safely mutate compressed payloads without decompressing.
-      // Fail closed rather than forward un-mutated (would bypass admin
-      // exclusion and geo enrichment). Client is configured with
-      // disable_compression:true so this path should not fire in prod.
       console.error(
         "[posthog-proxy] compressed body received; failing closed to preserve mutation guarantees",
       );
@@ -153,16 +158,22 @@ async function proxy(request: Request, splat: string): Promise<Response> {
     }
 
     const raw = await request.text();
+    // posthog-js sends form-encoded bodies but often labels them `text/plain`
+    // (to avoid a CORS preflight). Detect on the body shape, not just the header.
+    const looksLikeForm =
+      contentType.includes("application/x-www-form-urlencoded") ||
+      /^data=/.test(raw);
     if (raw.length === 0) {
+      pathTaken = "empty";
       outboundBody = raw;
       outboundHeaders.set("content-type", contentType || "application/json");
-    } else if (contentType.includes("application/x-www-form-urlencoded")) {
-      // posthog-js default when disable_compression:true.
+    } else if (looksLikeForm) {
+      pathTaken = "form";
       try {
         const form = new URLSearchParams(raw);
         const dataParam = form.get("data");
         if (!dataParam) {
-          console.error("[posthog-proxy] form body missing data=");
+          console.error("[posthog-proxy] form body missing data=", { contentType, len: raw.length });
           return new Response(null, { status: 204 });
         }
         const decoded = b64decode(dataParam);
@@ -170,24 +181,28 @@ async function proxy(request: Request, splat: string): Promise<Response> {
         mutateParsed(parsed, mutate);
         form.set("data", b64encode(JSON.stringify(parsed)));
         outboundBody = form.toString();
+        // Forward as form-urlencoded regardless of incoming label — that's the
+        // shape PostHog's ingestion actually parses.
         outboundHeaders.set("content-type", "application/x-www-form-urlencoded");
       } catch (err) {
-        console.error("[posthog-proxy] form-encoded decode failed", err);
-        return new Response(null, { status: 204 }); // fail closed
+        console.error("[posthog-proxy] form decode failed", err, { contentType });
+        return new Response(null, { status: 204 });
       }
     } else {
-      // Assume JSON.
+      pathTaken = "json";
       try {
         const parsed = JSON.parse(raw);
         mutateParsed(parsed, mutate);
         outboundBody = JSON.stringify(parsed);
         outboundHeaders.set("content-type", "application/json");
       } catch (err) {
-        console.error("[posthog-proxy] JSON body parse failed", err);
-        return new Response(null, { status: 204 }); // fail closed
+        console.error("[posthog-proxy] JSON body parse failed", err, { contentType, len: raw.length, head: raw.slice(0, 60) });
+        return new Response(null, { status: 204 });
       }
     }
   }
+
+  console.log("[posthog-proxy]", { path: `/${splat}`, method: request.method, ct: contentType, taken: pathTaken, cc: country, admin });
 
   if (ua) outboundHeaders.set("user-agent", ua);
   // Deliberately do NOT forward: authorization, cookie, x-forwarded-for,
