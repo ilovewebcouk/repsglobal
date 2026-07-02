@@ -104,6 +104,7 @@ function AdminActivityPage() {
   const [feedOpen, setFeedOpen] = useState(false);
   const [topWindow, setTopWindow] = useState<24 | 168 | 720>(24);
   const [mapLayer, setMapLayer] = useState<"members" | "public" | "both">("both");
+  const [visitorDrawerId, setVisitorDrawerId] = useState<string | null>(null);
 
   // ── Server function bindings
   const runKpis = useServerFn(getActivityKpis);
