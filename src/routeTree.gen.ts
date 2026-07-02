@@ -101,6 +101,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as InLocationProfessionRouteImport } from './routes/in.$location.$profession'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
+import { Route as ApiPublicGeoProbeRouteImport } from './routes/api/public/geo-probe'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
@@ -611,6 +612,11 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   path: '/checkout/credits/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicGeoProbeRoute = ApiPublicGeoProbeRouteImport.update({
+  id: '/api/public/geo-probe',
+  path: '/api/public/geo-probe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   id: '/admin_/seo/legacy-redirects',
   path: '/admin/seo/legacy-redirects',
@@ -986,6 +992,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/api/public/geo-probe': typeof ApiPublicGeoProbeRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
@@ -1123,6 +1130,7 @@ export interface FileRoutesByTo {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/api/public/geo-probe': typeof ApiPublicGeoProbeRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
@@ -1266,6 +1274,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/api/public/geo-probe': typeof ApiPublicGeoProbeRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
@@ -1408,6 +1417,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
+    | '/api/public/geo-probe'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/in/$location/$profession'
@@ -1545,6 +1555,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
+    | '/api/public/geo-probe'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/in/$location/$profession'
@@ -1687,6 +1698,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members/$userId'
     | '/admin_/seo/legacy-redirects'
+    | '/api/public/geo-probe'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/in/$location/$profession'
@@ -1825,6 +1837,7 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
   AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
+  ApiPublicGeoProbeRoute: typeof ApiPublicGeoProbeRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
@@ -2491,6 +2504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCreditsReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/geo-probe': {
+      id: '/api/public/geo-probe'
+      path: '/api/public/geo-probe'
+      fullPath: '/api/public/geo-probe'
+      preLoaderRoute: typeof ApiPublicGeoProbeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
       path: '/admin/seo/legacy-redirects'
@@ -3151,6 +3171,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
   AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
+  ApiPublicGeoProbeRoute: ApiPublicGeoProbeRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
