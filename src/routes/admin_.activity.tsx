@@ -178,18 +178,13 @@ function AdminActivityPage() {
 
   const compactEvents = useMemo(() => events.slice(0, 8), [events]);
 
-  // ── Command strip metrics
-  // Reconcile: sometimes `online_now` lags behind the sum of per-country
-  // online counts (or vice versa). Show the max so the strip never reads 0
-  // when the map clearly shows live users.
-  const rawPublicOnline = publicRealtimeQ.data?.online_now ?? 0;
-  const publicCountrySum = (publicRealtimeQ.data?.countries ?? []).reduce(
-    (sum, c) => sum + (c.online ?? 0),
-    0,
-  );
-  const publicOnline = Math.max(rawPublicOnline, publicCountrySum);
+  // ── Command strip metrics — Supabase is the single source of truth.
+  // publicOnline is derived from the same visitor rows the Rail and Realtime
+  // card use, so counts across the page cannot disagree. PostHog is used only
+  // for map coordinates (publicRealtimeQ), never for live counts.
+  const supabaseVisitorRows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
+  const publicOnline = supabaseVisitorRows.filter((v) => v.status === "live").length;
   const membersOnline = realtimeQ.data?.online_now ?? 0;
-  const pageViews5m = publicRealtimeQ.data?.page_views_5m ?? 0;
   const attentionRows = attentionQ.data?.rows ?? [];
   const attentionCount = attentionRows.length;
   const criticalCount = attentionRows.filter((r) => r.severity === "critical").length;
@@ -280,13 +275,13 @@ function AdminActivityPage() {
     const enquiriesSeries = bucketsFor(new Set(["enquiry_started", "enquiry_created"]));
     const checkoutSeries = bucketsFor(new Set(["checkout_started", "checkout_completed"]));
     return [
-      { label: "Visitors 24h", value: publicOnline + membersOnline, series: visitorsSeries, color: "#38BDF8" },
+      { label: "Visitors 7d", value: visitorsSeries.reduce((s, n) => s + n, 0), series: visitorsSeries, color: "#38BDF8" },
       { label: "Signups 7d", value: signupsSeries.reduce((s, n) => s + n, 0), series: signupsSeries, color: "#F97316" },
       { label: "Conversions 7d", value: conversionsSeries.reduce((s, n) => s + n, 0), series: conversionsSeries, color: "#22D3EE" },
       { label: "Enquiries 7d", value: enquiriesSeries.reduce((s, n) => s + n, 0), series: enquiriesSeries, color: "#A78BFA" },
       { label: "Checkouts 7d", value: checkoutSeries.reduce((s, n) => s + n, 0), series: checkoutSeries, color: "#34D399" },
     ];
-  }, [conversionsQ.data, publicOnline, membersOnline]);
+  }, [conversionsQ.data]);
 
   return (
     <DashboardShell
