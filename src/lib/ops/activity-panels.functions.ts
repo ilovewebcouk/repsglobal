@@ -324,19 +324,21 @@ export const getCurrentPages = createServerFn({ method: "POST" })
         pMap.set(p.id, { name: p.full_name || p.display_name || p.id.slice(0, 8), avatar_url: p.avatar_url });
       }
 
-      const rows: CurrentPageRow[] = Array.from(perPage.entries()).map(([path, b]) => {
-        const avatars = Array.from(b.online).slice(0, 4).map((uid) => {
-          const p = pMap.get(uid);
-          return { user_id: uid, name: p?.name ?? uid.slice(0, 8), avatar_url: p?.avatar_url ?? null };
+      const rows: CurrentPageRow[] = Array.from(perPage.entries())
+        .filter(([, b]) => b.online.size > 0)
+        .map(([path, b]) => {
+          const avatars = Array.from(b.online).slice(0, 4).map((uid) => {
+            const p = pMap.get(uid);
+            return { user_id: uid, name: p?.name ?? uid.slice(0, 8), avatar_url: p?.avatar_url ?? null };
+          });
+          return {
+            path,
+            online_count: b.online.size,
+            avatars,
+            views_24h: b.views24,
+            trend_pct: pctDelta(b.views24, b.views48),
+          };
         });
-        return {
-          path,
-          online_count: b.online.size,
-          avatars,
-          views_24h: b.views24,
-          trend_pct: pctDelta(b.views24, b.views48),
-        };
-      });
       rows.sort((a, b) => b.online_count - a.online_count || b.views_24h - a.views_24h);
       return rows.slice(0, data.limit);
     });
