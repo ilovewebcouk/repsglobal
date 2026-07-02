@@ -334,7 +334,14 @@ function AdminActivityPage() {
               publicOnline={publicOnline}
               publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
               updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
+              onOpenVisitorAtCity={(city, cc) => {
+                const rows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
+                const match = rows.find((r) => r.status === "live" && (r.city ?? null) === city && (r.country_code ?? null) === cc)
+                  ?? rows.find((r) => (r.city ?? null) === city && (r.country_code ?? null) === cc);
+                if (match) setVisitorDrawerId(match.id);
+              }}
             />
+
           </div>
           <div className="xl:col-span-4">
             <RealtimeSummaryCard
