@@ -372,27 +372,44 @@ export function WorldMapPanel({
                     : isLive
                       ? isPublic ? "rgba(56,189,248,0.95)" : "rgba(249,115,22,0.95)"
                       : isPublic ? "rgba(56,189,248,0.5)" : "rgba(125,211,252,0.55)";
+                  const isNewest = latestArrival?.id === b.id;
                   return (
                     <Marker key={`${b.kind}-${b.id}`} coordinates={[b.lng, b.lat]}
                       onMouseEnter={() => setHoverBubbleId(b.id)}
                       onMouseLeave={() => setHoverBubbleId((v) => (v === b.id ? null : v))}
-                      onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
+                      onClick={() => {
+                        // City marker + drawer callback → open visitor drawer.
+                        if (b.precision === "city" && onOpenVisitorAtCity) {
+                          const src = (b.kind === "public" ? publicCities : memberCities)
+                            .find((c) => Math.abs(c.latitude - b.lat) < 0.001 && Math.abs(c.longitude - b.lng) < 0.001);
+                          if (src) onOpenVisitorAtCity(src);
+                        }
+                        // Also zoom to city and stop following-latest so user stays put.
+                        setFollowLatest(false);
+                        setOverride({ center: [b.lng, b.lat], zoom: Math.max(5.5, view.zoom) });
+                        // Country precision → filter on country as before.
+                        if (b.precision === "country") onSelectCountry(isSelected ? undefined : b.cc);
+                      }}
+                      onDoubleClick={() => {
+                        setFollowLatest(false);
+                        setOverride({ center: [b.lng, b.lat], zoom: 8 });
+                      }}
                       style={{ default: { cursor: "pointer", opacity: dim }, hover: { cursor: "pointer", opacity: 1 }, pressed: { cursor: "pointer" } }}
                     >
                       {isLive ? (
                         <>
-                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.06)`} className="animate-ping" style={{ animationDuration: "3s" }} />
+                          <circle r={b.radius + (isNewest ? 10 : 6)} fill={`rgba(${pulseRGB},${isNewest ? 0.12 : 0.06})`} className="animate-ping" style={{ animationDuration: isNewest ? "1.4s" : "3s" }} />
                           <circle r={b.radius + 3} fill={`rgba(${pulseRGB},0.14)`} />
                         </>
                       ) : null}
                       <circle
                         r={b.radius}
                         fill={solid}
-                        stroke={isSelected || isHover ? "#fff" : `rgba(${pulseRGB},0.9)`}
-                        strokeWidth={isSelected ? 2.2 : isHover ? 1.5 : 1}
+                        stroke={isSelected || isHover || isNewest ? "#fff" : `rgba(${pulseRGB},0.9)`}
+                        strokeWidth={isSelected ? 2.2 : isNewest ? 2 : isHover ? 1.5 : 1}
                       />
 
-                      {isHover || isSelected ? (
+                      {isHover || isSelected || isNewest ? (
                         <text
                           y={-b.radius - 4}
                           textAnchor="middle"
