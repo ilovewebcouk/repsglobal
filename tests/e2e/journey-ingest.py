@@ -156,7 +156,7 @@ async def run() -> int:
         page.on("requestfailed", lambda req: request_failures.append({
             "url": req.url,
             "method": req.method,
-            "failure": req.failure.error_text if req.failure else None,
+            "failure": req.failure if req.failure else None,
         }))
         page.on("console", lambda msg: (
             console_errors.append(msg.text) if msg.type == "error" else
