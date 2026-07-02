@@ -219,14 +219,8 @@ export function usePublicAnalyticsBeacon() {
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       memberRef.current = Boolean(session);
-      if (event === "SIGNED_OUT" && typeof window !== "undefined" && window.__repsPh) {
-        try {
-          window.__repsPh.reset();
-        } catch {
-          /* no-op */
-        }
-        // Clear any queued events on sign-out.
-        window.__repsPhQueue = [];
+      if (event === "SIGNED_OUT") {
+        resetPostHog();
       }
     });
     return () => {
@@ -235,9 +229,17 @@ export function usePublicAnalyticsBeacon() {
     };
   }, []);
 
-  // Route-change pageview.
+  // Route-change pageview + consent-withdrawal guard.
   useEffect(() => {
     if (!pathname) return;
+    // Consent withdrawn while PostHog is loaded — reset and clear queue.
+    if (
+      typeof window !== "undefined" &&
+      window.__repsPh &&
+      !hasAnalyticsConsent()
+    ) {
+      resetPostHog();
+    }
     if (memberRef.current) return;
     if (!isPublicSurface(pathname)) return;
     if (isDntOrGpc()) return;
