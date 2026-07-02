@@ -226,20 +226,19 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
 
         {(tab === "all" || tab === "public") ? (
           <RailSection
-            title="Towns live"
+            title={locationsHeading}
             icon={Globe}
             accent="blue"
             loading={publicLoading}
-            empty="No town-level public activity right now"
+            empty="No location-level public activity right now"
             items={locationsLive}
             render={(c) => {
-              const d = countryDisplay(c.cc);
+              const loc = resolveLocation(c.raw);
               return (
                 <div className="flex items-center justify-between gap-2 py-1.5">
                   <span className="min-w-0 inline-flex items-center gap-1.5 truncate text-[12px] text-white/85">
-                    <span>{d.flag}</span>
-                    <span className="truncate">{c.label}</span>
-                    {c.detail ? <span className="truncate text-[10px] text-white/40">· {c.detail}</span> : null}
+                    <span>{loc.flag}</span>
+                    <span className="truncate">{formatLocationLabel(loc)}</span>
                   </span>
                   <span className="shrink-0 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-200 tabular-nums">
                     {c.online}
