@@ -79,7 +79,7 @@ export const CHECKOUT_OFFERS: Record<PurchasableTier, Partial<Record<BillingPeri
     annual: {
       period: "annual",
       priceId: "verified_annual",
-      display: "£99/yr",
+      display: "£34/yr",
       trialDays: 0,
       founding: false,
     },
