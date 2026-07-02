@@ -93,14 +93,16 @@ async function fetchLive(): Promise<PublicRealtime> {
       session_tokens: [],
     };
   }
+  // Prefer canonical `reps_is_internal` (non-reserved). Fallback to legacy `is_internal`.
   const where = `WHERE timestamp > now() - INTERVAL 5 MINUTE
+    AND (properties.reps_is_internal IS NULL OR toString(properties.reps_is_internal) != 'true')
     AND (properties.is_internal IS NULL OR toString(properties.is_internal) != 'true')`;
 
   try {
     const [sessionsRes, pagesRes, countriesRes, pvRes] = await Promise.all([
       hogql(`SELECT DISTINCT $session_id FROM events ${where} AND $session_id IS NOT NULL LIMIT 500`),
       hogql(`SELECT properties.$pathname AS p, count(DISTINCT $session_id) AS v FROM events ${where} AND event = '$pageview' AND properties.$pathname IS NOT NULL GROUP BY p ORDER BY v DESC LIMIT 8`),
-      hogql(`SELECT coalesce(nullIf(toString(properties.$geoip_country_code), ''), toString(properties.country_code)) AS cc, count(DISTINCT $session_id) AS online, count() AS views FROM events ${where} GROUP BY cc ORDER BY online DESC LIMIT 30`),
+      hogql(`SELECT coalesce(nullIf(toString(properties.reps_country_code), ''), nullIf(toString(properties.country_code), ''), toString(properties.$geoip_country_code)) AS cc, count(DISTINCT $session_id) AS online, count() AS views FROM events ${where} GROUP BY cc ORDER BY online DESC LIMIT 30`),
       hogql(`SELECT count() FROM events ${where} AND event = '$pageview'`),
     ]);
 
@@ -123,7 +125,7 @@ async function fetchLive(): Promise<PublicRealtime> {
     try {
       const citiesRes = await hogql(`SELECT
         coalesce(nullIf(toString(properties.$geoip_city_name), ''), nullIf(toString(properties.city), '')) AS city,
-        coalesce(nullIf(toString(properties.$geoip_country_code), ''), nullIf(toString(properties.country_code), '')) AS cc,
+        coalesce(nullIf(toString(properties.reps_country_code), ''), nullIf(toString(properties.country_code), ''), nullIf(toString(properties.$geoip_country_code), '')) AS cc,
         coalesce(nullIf(toString(properties.$geoip_subdivision_1_name), ''), nullIf(toString(properties.region), '')) AS region,
         avg(toFloat64OrNull(toString(properties.$geoip_latitude))) AS lat,
         avg(toFloat64OrNull(toString(properties.$geoip_longitude))) AS lng,
