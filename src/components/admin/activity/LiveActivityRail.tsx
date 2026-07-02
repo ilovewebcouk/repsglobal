@@ -138,6 +138,51 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
 
       {/* Body */}
       <div className="min-h-0 flex-1 divide-y divide-reps-border/60 overflow-y-auto">
+        {(tab === "all" || tab === "public") && supabaseVisitors ? (
+          <RailSection
+            title="Public visitors · Supabase live"
+            icon={Eye}
+            accent="blue"
+            loading={supabaseVisitorsLoading ?? false}
+            empty="No public visitors active right now"
+            items={supabaseVisitors.slice(0, 8)}
+            render={(v) => (
+              <button
+                type="button"
+                onClick={() => onOpenVisitor?.(v.journey_id)}
+                className="w-full rounded-[8px] px-1 py-1.5 text-left transition hover:bg-white/[0.04]"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex min-w-0 items-center gap-1.5">
+                    {v.member_name ? (
+                      <span className="rounded bg-orange-500/20 px-1.5 py-0.5 text-[9.5px] font-semibold text-orange-100">
+                        {v.member_name}
+                      </span>
+                    ) : (
+                      <span className="rounded bg-white/5 px-1.5 py-0.5 text-[9.5px] text-white/60">anon</span>
+                    )}
+                    <span className="truncate font-mono text-[11px] text-white/85">{v.latest_path ?? "/"}</span>
+                  </span>
+                  <span className={cn(
+                    "shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-medium tabular-nums",
+                    v.status === "live" ? "bg-emerald-500/15 text-emerald-200" : "bg-white/5 text-white/45",
+                  )}>
+                    {v.status}
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px] text-white/45">
+                  <span className="truncate">
+                    {[v.city, v.country_code].filter(Boolean).join(", ") || "—"}
+                    {v.masked_ip ? <span className="ml-1 font-mono text-white/55">· {v.masked_ip}</span> : null}
+                  </span>
+                  <span className="shrink-0">{timeAgo(v.last_seen_at)}</span>
+                </div>
+              </button>
+            )}
+            keyFn={(v) => v.journey_id}
+          />
+        ) : null}
+
         {(tab === "all" || tab === "public") ? (
           <RailSection
             title="Public pages now"
