@@ -58,7 +58,7 @@ export type Database = {
       }
       admin_impersonation_sessions: {
         Row: {
-          admin_id: string
+          admin_id: string | null
           created_at: string
           ended_at: string | null
           ended_reason: string | null
@@ -71,7 +71,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
-          admin_id: string
+          admin_id?: string | null
           created_at?: string
           ended_at?: string | null
           ended_reason?: string | null
@@ -84,7 +84,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
-          admin_id?: string
+          admin_id?: string | null
           created_at?: string
           ended_at?: string | null
           ended_reason?: string | null
@@ -109,7 +109,7 @@ export type Database = {
           full_name: string | null
           id: string
           invite_url: string | null
-          invited_by: string
+          invited_by: string | null
           plan: string
           updated_at: string
         }
@@ -123,7 +123,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           invite_url?: string | null
-          invited_by: string
+          invited_by?: string | null
           plan?: string
           updated_at?: string
         }
@@ -137,7 +137,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           invite_url?: string | null
-          invited_by?: string
+          invited_by?: string | null
           plan?: string
           updated_at?: string
         }
@@ -5702,6 +5702,7 @@ export type Database = {
         }[]
       }
       sweep_orphan_subscriptions: { Args: never; Returns: number }
+      test_user_deletion_dry_run: { Args: { _user_id: string }; Returns: Json }
       upsert_pro_review_response: {
         Args: { _response: string; _review_id: string }
         Returns: undefined
