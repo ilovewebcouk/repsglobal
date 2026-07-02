@@ -4,7 +4,7 @@
  * Single source of truth for Stripe price IDs and tier metadata.
  * Used by checkout edge function + onboarding UI.
  *
- * Core      £99/yr  — public listing + credential check (internal key still "verified")
+ * Core      £34/yr  (reduced from £99) — public listing + credential check (internal key still "verified")
  * Pro       £59/mo  (Founding pricing — locked for life for early sign-ups)
  * Studio    Coming soon (multi-seat / facility tier)
  */
