@@ -240,6 +240,31 @@ async function loadPostHog(): Promise<PostHogLike | null> {
         advanced_disable_feature_flags: true,
         advanced_disable_feature_flags_on_first_load: true,
         autocapture: false,
+        // P0 send-path fix (2026-07-02): posthog-js `_is_bot()` was silently
+        // dropping captures for QA/automation browsers even with
+        // `navigator.webdriver` masked. Our first-party proxy is the correct
+        // bot/internal chokepoint (it already drops known bot UAs with 204
+        // and strips raw IP), so disable client-side UA filtering here.
+        opt_out_useragent_filter: true,
+        // Send captures immediately during QA — batching produced a silent
+        // 5s window where `capture()` looked like it did nothing. Volume is
+        // small (public pageviews only). Revisit after acceptance.
+        request_batching: false,
+        // Transport-level debug hook — records event name + timestamp only,
+        // never payloads, IPs, cookies, or tokens.
+        before_send: (event: { event?: string } | null) => {
+          if (typeof window !== "undefined" && event) {
+            window.__repsAnalyticsLastCaptureAttempt = {
+              event: event.event ?? "(unknown)",
+              path: window.location.pathname,
+              at: new Date().toISOString(),
+              willSend: true,
+              apiHost: `${window.location.origin}/api/public/_a`,
+              enteredSdk: true,
+            };
+          }
+          return event;
+        },
         loaded: (ph: PostHogLike) => {
           window.__repsPh = ph;
           window.__repsPhReady = true;
