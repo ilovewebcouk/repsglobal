@@ -48,18 +48,27 @@ export function CookieBanner() {
 
   if (!mounted || !visible || !isPublicSurface(pathname)) return null;
 
+  const emitConsentChanged = (analytics: boolean) => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+      new CustomEvent("reps:consent-changed", { detail: { analytics } }),
+    );
+  };
   const acceptAll = () => {
     setConsent(true, "accepted");
     setVisible(false);
+    emitConsentChanged(true);
   };
   const rejectAll = () => {
     setConsent(false, "rejected");
     setVisible(false);
+    emitConsentChanged(false);
   };
   const saveCustom = () => {
     setConsent(analyticsOn, "customised");
     setCustomiseOpen(false);
     setVisible(false);
+    emitConsentChanged(analyticsOn);
   };
 
   return (

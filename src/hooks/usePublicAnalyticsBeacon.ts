@@ -393,4 +393,35 @@ export function usePublicAnalyticsBeacon() {
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
     });
   }, [pathname]);
+
+  // Consent-change listener — fire immediate pageview on grant without
+  // requiring a route change; reset on withdrawal.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ analytics?: boolean }>).detail ?? {};
+      const analytics = detail.analytics === true;
+      if (!analytics) {
+        resetPostHog();
+        lastPathRef.current = null;
+        return;
+      }
+      const currentPath = window.location.pathname;
+      if (memberRef.current) return;
+      if (!isPublicSurface(currentPath)) return;
+      if (isDntOrGpc()) return;
+      if (!hasAnalyticsConsent()) return;
+      // Kick off init + immediate capture. Allow the first post-consent
+      // capture even if we already have this path recorded (route effect
+      // may have short-circuited before consent was granted).
+      lastPathRef.current = currentPath;
+      void capturePublic("$pageview", {
+        path: currentPath,
+        referrer: typeof document !== "undefined" ? document.referrer || null : null,
+        consent_grant: true,
+      });
+    };
+    window.addEventListener("reps:consent-changed", handler);
+    return () => window.removeEventListener("reps:consent-changed", handler);
+  }, []);
 }
