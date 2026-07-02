@@ -233,3 +233,15 @@ function DeviceRow({ icon, label, value, color, total }: {
     </div>
   );
 }
+
+function StatBox({ label, value, tint }: { label: string; value: number; tint: "blue" | "orange" | "neutral" }) {
+  const tintCls = tint === "blue" ? "text-blue-200" : tint === "orange" ? "text-orange-200" : "text-white";
+  return (
+    <div className="rounded-[10px] border border-reps-border/60 bg-white/[0.03] px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wide text-white/45">{label}</div>
+      <div className={cn("mt-0.5 font-display text-[18px] font-bold tabular-nums", tintCls)}>
+        {value.toLocaleString()}
+      </div>
+    </div>
+  );
+}
