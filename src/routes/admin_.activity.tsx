@@ -281,7 +281,7 @@ function AdminActivityPage() {
       { label: "Enquiries 7d", value: enquiriesSeries.reduce((s, n) => s + n, 0), series: enquiriesSeries, color: "#A78BFA" },
       { label: "Checkouts 7d", value: checkoutSeries.reduce((s, n) => s + n, 0), series: checkoutSeries, color: "#34D399" },
     ];
-  }, [conversionsQ.data, publicOnline, membersOnline]);
+  }, [conversionsQ.data]);
 
   return (
     <DashboardShell
