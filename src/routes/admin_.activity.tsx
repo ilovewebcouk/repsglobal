@@ -14,7 +14,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ChevronRight, Filter, X } from "lucide-react";
+import { ChevronRight, Filter, X } from "lucide-react";
 import { z } from "zod";
 
 import { requireRole } from "@/lib/route-gates";
@@ -51,7 +51,7 @@ import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsP
 import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
 import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
-import { HeroLine } from "@/components/admin/activity/HeroLine";
+
 import { AnalyticsStrip, type AnalyticsSeries } from "@/components/admin/activity/AnalyticsStrip";
 import { DiagnosticsDrawer } from "@/components/admin/activity/DiagnosticsDrawer";
 import { CompactStatusStrip } from "@/components/admin/activity/CompactStatusStrip";
@@ -310,16 +310,7 @@ function AdminActivityPage() {
           </div>
         ) : null}
 
-        {/* ── 1. HERO LINE — one plain-English sentence ── */}
-        <HeroLine
-          publicOnline={publicOnline}
-          membersOnline={membersOnline}
-          keyActionsToday={keyActionsToday}
-          ingestStatus={ingestStatus}
-          updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
-        />
-
-        {/* ── 1b. COMPACT STATUS STRIP (Zone 3 · six tiles max) ── */}
+        {/* ── Zone 3 · COMPACT STATUS STRIP (six tiles) ── */}
         <CompactStatusStrip
           publicLive={publicOnline}
           membersLive={membersOnline}
@@ -329,9 +320,7 @@ function AdminActivityPage() {
           health={ingestStatus === "down" ? "broken" : ingestStatus}
         />
 
-
-
-        {/* ── 2. MAP-FIRST TOP ROW: large map + Realtime Summary Card ── */}
+        {/* ── Zone 4 · Live map (2/3) + Realtime Summary (1/3) ── */}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
           <div className="xl:col-span-8">
             <ClientOnlyMap
@@ -353,9 +342,7 @@ function AdminActivityPage() {
                   ?? rows.find((r) => (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code);
                 if (match) setVisitorDrawerId(match.journey_id);
               }}
-
             />
-
           </div>
           <div className="xl:col-span-4">
             <RealtimeSummaryCard
@@ -371,89 +358,53 @@ function AdminActivityPage() {
           </div>
         </div>
 
-        {/* ── 2b. LIVE VISITOR RAIL + NEEDS ATTENTION ── */}
-        <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
-          <div className="flex xl:col-span-8">
-            <LiveActivityRail
-              className="h-full w-full"
-              members={onlineQ.data?.users ?? []}
-              memberPages={currentQ.data?.pages ?? []}
-              membersLoading={onlineQ.isLoading}
-              publicRealtime={publicRealtimeQ.data ?? null}
-              publicLoading={publicRealtimeQ.isLoading}
-              realtime={realtimeQ.data}
-              updatedAt={publicVisitorsQ.dataUpdatedAt || publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
-              supabaseVisitors={(publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]}
-              supabaseVisitorsLoading={publicVisitorsQ.isLoading}
-              onOpenVisitor={(id) => setVisitorDrawerId(id)}
-            />
-          </div>
-          <div className="xl:col-span-4">
-            <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
-          </div>
+        {/* ── Zone 5 · Online now (1/2) + Pages being viewed now (1/2) ── */}
+        <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
+          <LiveActivityRail
+            className="h-full w-full"
+            members={onlineQ.data?.users ?? []}
+            memberPages={currentQ.data?.pages ?? []}
+            membersLoading={onlineQ.isLoading}
+            publicRealtime={publicRealtimeQ.data ?? null}
+            publicLoading={publicRealtimeQ.isLoading}
+            realtime={realtimeQ.data}
+            updatedAt={publicVisitorsQ.dataUpdatedAt || publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
+            supabaseVisitors={(publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]}
+            supabaseVisitorsLoading={publicVisitorsQ.isLoading}
+            onOpenVisitor={(id) => setVisitorDrawerId(id)}
+          />
+          <PagesBeingViewedNow
+            memberPages={currentQ.data?.pages ?? []}
+            publicVisitors={((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).map((v) => ({
+              latest_path: v.latest_path ?? null,
+              status: v.status,
+              last_seen_at: v.last_seen_at,
+            }))}
+            loading={currentQ.isLoading || publicVisitorsQ.isLoading}
+          />
         </div>
 
-
-        {/* ── 2c. PAGES BEING VIEWED NOW (Zone 5) ── */}
-        <PagesBeingViewedNow
-          memberPages={currentQ.data?.pages ?? []}
-          publicVisitors={((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).map((v) => ({
-            latest_path: v.latest_path ?? null,
-            status: v.status,
-            last_seen_at: v.last_seen_at,
-          }))}
-          loading={currentQ.isLoading || publicVisitorsQ.isLoading}
-        />
-
-        {/* ── 3. HISTORICAL ANALYTICS · 7d rollup (below the fold) ── */}
-        <div className="pt-2">
-          <div className="mb-2 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-white/40" />
-            <h2 className="font-display text-[13.5px] font-semibold text-white/85">Historical analytics</h2>
-            <span className="text-[10.5px] text-white/45">7-day rollup · not live command</span>
-          </div>
-          <AnalyticsStrip tiles={analyticsTiles} />
+        {/* ── Zone 6 + 7 · Needs attention (1/2) + 24h analytics summary (1/2) ── */}
+        <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
+          <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
+          <section className="rounded-[18px] border border-reps-border bg-reps-panel p-4">
+            <header className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-[14px] font-semibold text-white">24h analytics summary</h2>
+                <span className="text-[10.5px] text-white/45">Historical data · 7-day rollup</span>
+              </div>
+            </header>
+            <AnalyticsStrip tiles={analyticsTiles} />
+          </section>
         </div>
 
-
-        {/* ── 4. PUBLIC ANALYTICS · 24h rollup (secondary) ── */}
-        <PublicVisitorsPanel />
-
-        {/* ── 5. MEMBER ACTIVITY (secondary) ── */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-orange-400" />
-            <h2 className="font-display text-[14px] font-semibold text-white">Member activity</h2>
-            <span className="text-[11px] text-white/45">Logged-in members only</span>
-          </div>
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-            <div className="xl:col-span-7">
-              <TopMemberPagesPanel
-                pages={topQ.data?.pages ?? []}
-                loading={topQ.isLoading}
-                window={topWindow}
-                onWindowChange={setTopWindow}
-              />
-            </div>
-            <div className="xl:col-span-5">
-              <GeoPanel
-                countries={geoQ.data?.countries ?? []}
-                loading={geoQ.isLoading}
-                selectedCountry={country}
-                onSelectCountry={(cc) => setSearch({ country: cc })}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ── 5. RECENT ACTIVITY (audit feed — below the fold) ── */}
+        {/* ── Recent activity strip (compact horizontal feed) ── */}
         <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
           <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-2.5">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-white/40" />
               <h2 className="font-display text-[13.5px] font-semibold text-white">Recent activity</h2>
               <span className="truncate text-[10.5px] text-white/45">
-                Latest {compactEvents.length} of {events.length} · {range.label}
+                Latest events in your system
               </span>
             </div>
             <button
@@ -461,13 +412,44 @@ function AdminActivityPage() {
               onClick={() => setFeedOpen(true)}
               className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:bg-white/10"
             >
-              Full feed <ChevronRight className="h-3 w-3" />
+              View full feed <ChevronRight className="h-3 w-3" />
             </button>
           </header>
           <div>
             <ActivityFeedV2 compact events={compactEvents} loading={feedQ.isLoading} onOpenEvent={(e) => setSelectedEvent(e)} />
           </div>
         </section>
+
+        {/* ── Secondary (below the fold): member activity + public analytics rollup ── */}
+        <details className="group rounded-[18px] border border-reps-border bg-reps-panel/60">
+          <summary className="cursor-pointer list-none px-4 py-3 text-[12px] font-medium text-white/70 hover:text-white">
+            <span className="inline-flex items-center gap-2">
+              <ChevronRight className="h-3.5 w-3.5 transition group-open:rotate-90" />
+              Historical analytics · member activity, top pages, public rollup
+            </span>
+          </summary>
+          <div className="space-y-4 border-t border-reps-border/70 p-4">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+              <div className="xl:col-span-7">
+                <TopMemberPagesPanel
+                  pages={topQ.data?.pages ?? []}
+                  loading={topQ.isLoading}
+                  window={topWindow}
+                  onWindowChange={setTopWindow}
+                />
+              </div>
+              <div className="xl:col-span-5">
+                <GeoPanel
+                  countries={geoQ.data?.countries ?? []}
+                  loading={geoQ.isLoading}
+                  selectedCountry={country}
+                  onSelectCountry={(cc) => setSearch({ country: cc })}
+                />
+              </div>
+            </div>
+            <PublicVisitorsPanel />
+          </div>
+        </details>
 
 
         {/* ── 6. DIAGNOSTICS (collapsed by default) ── */}
