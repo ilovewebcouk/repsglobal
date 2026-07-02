@@ -258,34 +258,50 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
             loading={membersLoading}
             empty="No members online right now"
             items={members.slice(0, 6)}
-            render={(u) => (
-              <div className="flex items-center gap-2.5 py-1.5">
-                <Avatar className="h-7 w-7 shrink-0">
-                  {u.avatar_url ? <AvatarImage src={u.avatar_url} alt={u.name} /> : null}
-                  <AvatarFallback className="bg-reps-panel-soft text-[10px] text-white/70">{initials(u.name)}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="truncate text-[12px] font-medium text-white">{u.name}</span>
+            render={(u) => {
+              const loc = resolveLocation(u);
+              const dev = (u.device ?? "").toLowerCase();
+              const DevIcon = dev === "mobile" ? Smartphone : dev === "tablet" ? Tablet : dev === "desktop" ? MonitorSmartphone : Chrome;
+              return (
+                <div className="flex items-center gap-2.5 py-1.5">
+                  <Avatar className="h-7 w-7 shrink-0">
+                    {u.avatar_url ? <AvatarImage src={u.avatar_url} alt={u.name} /> : null}
+                    <AvatarFallback className="bg-reps-panel-soft text-[10px] text-white/70">{initials(u.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate text-[12px] font-medium text-white">{u.name}</span>
+                      {u.tier ? (
+                        <Badge variant="outline" className="h-4 shrink-0 border-orange-400/40 bg-orange-500/10 px-1.5 text-[9px] font-semibold uppercase tracking-wide text-orange-100">
+                          {tierLabel(u.tier)}
+                        </Badge>
+                      ) : null}
+                      <span className="ml-auto shrink-0 text-[10px] text-white/45">{timeAgo(u.last_seen_at)}</span>
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-1.5 truncate text-[10.5px] text-white/50">
+                      <DevIcon className="h-3 w-3 shrink-0 text-white/40" />
+                      <span className="shrink-0">{loc.flag}</span>
+                      <span className="truncate">{formatLocationLabel(loc)}</span>
+                      {u.current_path ? (
+                        <>
+                          <span className="text-white/25">·</span>
+                          <span className="truncate font-mono text-white/60">{u.current_path}</span>
+                        </>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="truncate text-[10.5px] text-white/50">
-                    {u.current_path ? <span className="font-mono">{u.current_path}</span> : "—"}
-                    {u.city ? <span className="font-sans text-white/40"> · {u.city}</span> : null}
-                  </div>
+                  {u.user_id ? (
+                    <Link
+                      to="/admin/members/$userId"
+                      params={{ userId: u.user_id }}
+                      className="shrink-0 inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] font-medium text-white/70 transition hover:border-orange-400/40 hover:bg-orange-500/10 hover:text-orange-100"
+                    >
+                      Open <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  ) : null}
                 </div>
-                {u.user_id ? (
-                  <Link
-                    to="/admin/members/$userId"
-                    params={{ userId: u.user_id }}
-                    className="shrink-0 text-[10px] text-white/45 hover:text-orange-300"
-                  >
-                    {timeAgo(u.last_seen_at)}
-                  </Link>
-                ) : (
-                  <span className="shrink-0 text-[10px] text-white/45">{timeAgo(u.last_seen_at)}</span>
-                )}
-              </div>
-            )}
+              );
+            }}
             keyFn={(u) => u.session_id}
           />
         ) : null}
