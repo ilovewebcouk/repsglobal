@@ -407,8 +407,8 @@ function AdminActivityPage() {
           <section className="rounded-[18px] border border-reps-border bg-reps-panel p-4">
             <header className="mb-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <h2 className="font-display text-[14px] font-semibold text-white">24h analytics summary</h2>
-                <span className="text-[10.5px] text-white/45">Historical data · 7-day rollup</span>
+                <h2 className="font-display text-[14px] font-semibold text-white">Last 7 days</h2>
+                <span className="text-[10.5px] text-white/45">Rolling 7-day snapshot</span>
               </div>
             </header>
             <AnalyticsStrip tiles={analyticsTiles} />
