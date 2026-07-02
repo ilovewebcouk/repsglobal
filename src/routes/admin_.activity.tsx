@@ -217,14 +217,14 @@ function AdminActivityPage() {
     return Array.from(map.values()).sort((a, b) => b.online - a.online);
   }, [onlineQ.data]);
 
-  // High-value events today = enquiries + signup completes from kpi tiles if available;
-  // otherwise fall back to a simple sum from feed events (auth signup, enquiry sources).
-  const highValueToday = useMemo(() => {
-    const tiles = kpisQ.data?.tiles ?? [];
-    const enq = tiles.find((t) => t.key.includes("enquir"))?.value ?? 0;
-    const sig = tiles.find((t) => t.key.includes("signup") || t.key.includes("new_member"))?.value ?? 0;
-    return Number(enq) + Number(sig);
-  }, [kpisQ.data]);
+  // Amendment 1 — "Key actions today" counts commercial events only.
+  const keyActionsToday = useMemo(() => {
+    const rows = (conversionsQ.data ?? []) as Array<{ event_kind: string; occurred_at: string }>;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const cutoff = startOfDay.getTime();
+    return rows.filter((r) => KEY_ACTIONS.has(r.event_kind) && new Date(r.occurred_at).getTime() >= cutoff).length;
+  }, [conversionsQ.data]);
 
   // ── Timing / degraded panels
   const timings = useMemo(() => {
