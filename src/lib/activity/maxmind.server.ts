@@ -45,8 +45,11 @@ function b64(s: string): string {
 export async function fetchMaxmind(ip: string): Promise<MaxmindResult> {
   const accountId = process.env.MAXMIND_ACCOUNT_ID;
   const licenseKey = process.env.MAXMIND_LICENSE_KEY;
-  if (!accountId || !licenseKey) return { status: "not_configured", raw: null };
   const host = process.env.MAXMIND_HOST || DEFAULT_HOST;
+  if (!accountId || !licenseKey) {
+    console.log("[maxmind] not_configured", { host, has_account_id: !!accountId, has_license_key: !!licenseKey });
+    return { status: "not_configured", raw: null };
+  }
   const auth = "Basic " + b64(`${accountId}:${licenseKey}`);
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
