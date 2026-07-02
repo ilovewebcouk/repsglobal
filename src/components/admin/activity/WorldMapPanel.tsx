@@ -442,7 +442,7 @@ export function WorldMapPanel({
               <button
                 type="button"
                 aria-label="Zoom in"
-                onClick={() => setOverride({ center: view.center, zoom: Math.min(6, view.zoom * 1.5) })}
+                onClick={() => { setFollowLatest(false); setOverride({ center: view.center, zoom: Math.min(12, view.zoom * 1.5) }); }}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -450,7 +450,7 @@ export function WorldMapPanel({
               <button
                 type="button"
                 aria-label="Zoom out"
-                onClick={() => setOverride({ center: view.center, zoom: Math.max(0.9, view.zoom / 1.5) })}
+                onClick={() => { setFollowLatest(false); setOverride({ center: view.center, zoom: Math.max(0.9, view.zoom / 1.5) }); }}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
               >
                 <Minus className="h-3.5 w-3.5" />
@@ -458,11 +458,23 @@ export function WorldMapPanel({
               <button
                 type="button"
                 aria-label="Fit to activity"
-                onClick={() => setOverride(null)}
+                onClick={() => { setOverride(null); setLatestArrival(null); }}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
                 title="Fit view to current activity"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label={followLatest ? "Following latest visitor" : "Follow latest visitor"}
+                onClick={() => { setFollowLatest((v) => !v); setOverride(null); }}
+                className={cn(
+                  "grid h-7 w-7 place-items-center rounded-[6px] hover:bg-white/10",
+                  followLatest ? "text-orange-300" : "text-white/60 hover:text-white",
+                )}
+                title={followLatest ? "Following latest visitor — click to pin view" : "Follow latest visitor"}
+              >
+                <Crosshair className="h-3.5 w-3.5" />
               </button>
             </div>
 
@@ -471,7 +483,7 @@ export function WorldMapPanel({
             <div className="pointer-events-none absolute left-3 top-3 flex flex-col gap-0.5 rounded-[10px] border border-white/10 bg-black/65 px-2.5 py-1.5 text-[10.5px] leading-tight text-white/85 backdrop-blur-md">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                <span className="text-white/55">Public</span>
+                <span className="text-white/55">Visitors</span>
                 <span className="ml-auto tabular-nums font-semibold">{publicOnline}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -481,6 +493,7 @@ export function WorldMapPanel({
               </div>
               <div className="mt-0.5 text-[9.5px] text-white/40">
                 {updatedAt ? `Updated ${Math.max(0, Math.floor((Date.now() - updatedAt) / 1000))}s ago` : "Waiting for data"}
+                {followLatest ? " · following latest" : ""}
               </div>
             </div>
 
