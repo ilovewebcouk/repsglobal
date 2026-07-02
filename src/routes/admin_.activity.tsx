@@ -304,7 +304,7 @@ function AdminActivityPage() {
         <AlertBand
           criticalCount={criticalCount}
           warningCount={attentionRows.filter((r) => r.severity === "warning").length}
-          topLabel={attentionRows.find((r) => r.severity === "critical")?.label ?? null}
+          topLabel={attentionRows.find((r) => r.severity === "critical")?.title ?? null}
         />
 
         {/* ── 2. COMMAND STRIP ── */}
