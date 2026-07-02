@@ -1,17 +1,23 @@
-// Admin Activity v2.0 — Live Activity Rail.
-// Merges member online-now + public live pages + countries + recent events into
-// a single tabbed rail (All / Public / Members). Sits to the right of the map.
+// Admin Activity v2.2 — Live Activity Rail.
+// - Restores rich member row (avatar, tier, device, flag, page, duration, Open).
+// - Honest "Towns" vs "Countries" heading.
+// - Collapses to a single empty state when every section is empty.
 
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Eye, Globe, MonitorSmartphone, Smartphone, Tablet, Users, Wifi } from "lucide-react";
+import {
+  Eye, Globe, MonitorSmartphone, Smartphone, Tablet, Users, Wifi,
+  ExternalLink, Chrome,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OnlineNowUser, CurrentPageRow } from "@/lib/ops/activity-panels.functions";
 import type { PublicRealtime } from "@/lib/admin/public-realtime.functions";
 import type { RealtimeSummary } from "@/lib/ops/activity-realtime.functions";
-import { countryDisplay } from "@/lib/activity/labels";
+import { resolveLocation, formatLocationLabel } from "@/lib/geo/resolve-location";
+import { tierLabel } from "@/lib/activity/labels";
 
 type Tab = "all" | "public" | "members";
 
