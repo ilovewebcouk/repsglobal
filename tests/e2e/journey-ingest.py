@@ -122,14 +122,23 @@ async def run() -> int:
         return value
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(
+            headless=True,
+            args=["--disable-blink-features=AutomationControlled"],
+        )
         context = await browser.new_context(
             viewport={"width": 1280, "height": 1800},
             user_agent=(
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/126.0 Safari/537.36 QA-journey-ingest"
+                "Chrome/126.0.0.0 Safari/537.36"
             ),
+        )
+        # QA-only: mask navigator.webdriver so PostHog's built-in bot filter
+        # does not silently drop captures during automated verification.
+        # Scoped to this test context; production code is unchanged.
+        await context.add_init_script(
+            "Object.defineProperty(navigator, 'webdriver', { get: () => false });"
         )
         page = await context.new_page()
 
