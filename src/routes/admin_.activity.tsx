@@ -120,6 +120,7 @@ function AdminActivityPage() {
 
   const runPublicVisitorsLive = useServerFn(getPublicVisitorsLive);
   const runPublicIngestHealth = useServerFn(getPublicIngestHealth);
+  const runPublicConversions = useServerFn(getPublicConversionsLive);
 
   // ── Queries — realtime queries poll fast (5–8s); heavier aggregates poll slower.
   const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 6_000 });
