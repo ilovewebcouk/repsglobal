@@ -515,11 +515,11 @@ export function WorldMapPanel({
                 Loading map…
               </div>
             ) : bubbles.length === 0 && !loading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/30 text-center backdrop-blur-[1px]">
                 <Globe className="h-6 w-6 text-white/25" />
-                <div className="text-[12px] font-medium text-white/60">No town activity yet</div>
-                <div className="max-w-[280px] text-[10.5px] text-white/40">
-                  Town dots appear here as visitors and members become active.
+                <div className="text-[13px] font-medium text-white/75">Quiet</div>
+                <div className="max-w-[280px] text-[10.5px] text-white/45">
+                  No visitors in the last 5 minutes.
                 </div>
               </div>
             ) : null}
