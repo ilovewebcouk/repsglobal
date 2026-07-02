@@ -102,6 +102,18 @@ export const Route = createFileRoute("/api/public/activity/session-event")({
           console.error("[activity/session-event] insert failed", error.message);
           return new Response(null, { status: 500 });
         }
+        try {
+          const { recordVisitorObservation } = await import("@/lib/activity/ip-observations.server");
+          await recordVisitorObservation({
+            ctx,
+            eventContext: "member_event",
+            sessionId: parsed.data.session_id,
+            path,
+            referrer: parsed.data.referrer ?? null,
+          });
+        } catch (e) {
+          console.error("[activity/session-event] observation failed", e);
+        }
         return new Response(null, { status: 204 });
       },
     },

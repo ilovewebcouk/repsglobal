@@ -1,70 +1,158 @@
-// Server-only IP → geo enrichment via ipapi.co (free tier, no key, ~30k req/mo).
-// Bounded by a /24 subnet cache in public.ip_geo_cache (30-day TTL) so we
-// barely touch the quota — same subnet from the same visitor = 1 lookup / month.
+// Server-only IP → geo enrichment (Public Analytics v1.2).
+//
+// Priority: Cloudflare visitor headers (handled upstream in capture.server) →
+// ip_geolocation_cache (hashed key) → ipapi.co live → country-only → none.
+//
+// Rules:
+//   - Never call ipapi.co for private/reserved IPs.
+//   - Cache successes for 24h, failures for 1h, private/reserved as "unavailable"
+//     (no provider call ever) for 30d.
+//   - Cache row is keyed by ip_hash (HMAC-SHA256 with ACTIVITY_IP_SALT).
+//     We do NOT store raw IPs in the cache table.
+//   - Emits location_source + location_confidence for downstream UI.
 
-const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+import { createHmac } from "node:crypto";
+
+const TTL_OK_MS = 24 * 60 * 60 * 1000;
+const TTL_FAIL_MS = 60 * 60 * 1000;
+const TTL_PRIVATE_MS = 30 * 24 * 60 * 60 * 1000;
 const LOOKUP_TIMEOUT_MS = 1500;
 
+export type LocationConfidence = "city" | "region" | "country" | "unknown";
+export type LocationSource = "cloudflare-headers" | "ipapi" | "ipapi-cache" | "country-only" | "none";
+
 export interface IpGeo {
+  countryCode: string | null;
+  countryName: string | null;
+  region: string | null;
+  city: string | null;
+  postalCode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  timezone: string | null;
+  asn: string | null;
+  org: string | null;
+  source: LocationSource;
+  confidence: LocationConfidence;
+}
+
+export function hashIp(ip: string | null | undefined): string | null {
+  if (!ip) return null;
+  const salt = process.env.ACTIVITY_IP_SALT;
+  if (!salt) return null;
+  return createHmac("sha256", salt).update(ip).digest("hex");
+}
+
+export function prefixHash(ip: string | null | undefined): string | null {
+  if (!ip) return null;
+  const salt = process.env.ACTIVITY_IP_SALT;
+  if (!salt) return null;
+  let prefix = ip;
+  if (ip.includes(".")) {
+    const p = ip.split(".");
+    if (p.length === 4) prefix = `${p[0]}.${p[1]}.${p[2]}.0/24`;
+  } else if (ip.includes(":")) {
+    const p = ip.split(":");
+    prefix = `${p.slice(0, 3).join(":")}::/48`;
+  }
+  return createHmac("sha256", salt).update(prefix).digest("hex");
+}
+
+export function isPrivateIp(ip: string): boolean {
+  if (!ip) return true;
+  if (ip === "127.0.0.1" || ip === "::1" || ip === "localhost") return true;
+  if (/^10\./.test(ip)) return true;
+  if (/^192\.168\./.test(ip)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true;
+  if (/^169\.254\./.test(ip)) return true;
+  if (/^fc[0-9a-f]{2}:/i.test(ip)) return true;
+  if (/^fd[0-9a-f]{2}:/i.test(ip)) return true;
+  if (/^fe80:/i.test(ip)) return true;
+  return false;
+}
+
+export function computeConfidence(geo: {
   countryCode: string | null;
   region: string | null;
   city: string | null;
   latitude: number | null;
   longitude: number | null;
-  timezone: string | null;
-  source: string; // 'ipapi' | 'ipapi-cache'
+}): LocationConfidence {
+  if (geo.city && geo.region && geo.countryCode && geo.latitude !== null && geo.longitude !== null)
+    return "city";
+  if (geo.region && geo.countryCode) return "region";
+  if (geo.countryCode) return "country";
+  return "unknown";
 }
 
-function subnetOf(ip: string): string {
-  // IPv4: /24. IPv6: /48. Anything else: raw.
-  if (ip.includes(".")) {
-    const p = ip.split(".");
-    if (p.length === 4) return `${p[0]}.${p[1]}.${p[2]}.0/24`;
-  }
-  if (ip.includes(":")) {
-    const p = ip.split(":");
-    return `${p.slice(0, 3).join(":")}::/48`;
-  }
-  return ip;
-}
-
-async function readCache(subnet: string): Promise<IpGeo | null> {
+async function readCache(ipHash: string): Promise<IpGeo | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
-    .from("ip_geo_cache")
-    .select("country_code,region,city,latitude,longitude,timezone,source,looked_up_at")
-    .eq("subnet", subnet)
+    .from("ip_geolocation_cache")
+    .select("country_code,country_name,region,city,postal_code,latitude,longitude,timezone,asn,org,lookup_status,expires_at")
+    .eq("ip_hash", ipHash)
     .maybeSingle();
   if (!data) return null;
-  const age = Date.now() - new Date(data.looked_up_at as string).getTime();
-  if (age > CACHE_TTL_MS) return null;
-  return {
-    countryCode: data.country_code,
-    region: data.region,
-    city: data.city,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    timezone: data.timezone,
-    source: "ipapi-cache",
+  if (new Date(data.expires_at as string).getTime() < Date.now()) return null;
+  if (data.lookup_status === "failed" || data.lookup_status === "rate_limited") return null;
+  if (data.lookup_status === "private") {
+    return {
+      countryCode: null, countryName: null, region: null, city: null, postalCode: null,
+      latitude: null, longitude: null, timezone: null, asn: null, org: null,
+      source: "none", confidence: "unknown",
+    };
+  }
+  const geo = {
+    countryCode: (data.country_code as string | null) ?? null,
+    countryName: (data.country_name as string | null) ?? null,
+    region: (data.region as string | null) ?? null,
+    city: (data.city as string | null) ?? null,
+    postalCode: (data.postal_code as string | null) ?? null,
+    latitude: (data.latitude as number | null) ?? null,
+    longitude: (data.longitude as number | null) ?? null,
+    timezone: (data.timezone as string | null) ?? null,
+    asn: (data.asn as string | null) ?? null,
+    org: (data.org as string | null) ?? null,
   };
+  return { ...geo, source: "ipapi-cache", confidence: computeConfidence(geo) };
 }
 
-async function writeCache(subnet: string, geo: IpGeo): Promise<void> {
+async function writeCache(
+  ipHash: string,
+  ipPrefixHash: string | null,
+  status: "ok" | "failed" | "private" | "rate_limited",
+  geo: Partial<IpGeo> | null,
+  raw: unknown,
+): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("ip_geo_cache").upsert({
-    subnet,
-    country_code: geo.countryCode,
-    region: geo.region,
-    city: geo.city,
-    latitude: geo.latitude,
-    longitude: geo.longitude,
-    timezone: geo.timezone,
-    source: "ipapi",
-    looked_up_at: new Date().toISOString(),
-  });
+  const now = new Date();
+  const ttl = status === "ok" ? TTL_OK_MS : status === "private" ? TTL_PRIVATE_MS : TTL_FAIL_MS;
+  const expires = new Date(now.getTime() + ttl);
+  await supabaseAdmin.from("ip_geolocation_cache").upsert(
+    {
+      ip_hash: ipHash,
+      ip_prefix_hash: ipPrefixHash,
+      provider: "ipapi",
+      country_code: geo?.countryCode ?? null,
+      country_name: geo?.countryName ?? null,
+      region: geo?.region ?? null,
+      city: geo?.city ?? null,
+      postal_code: geo?.postalCode ?? null,
+      latitude: geo?.latitude ?? null,
+      longitude: geo?.longitude ?? null,
+      timezone: geo?.timezone ?? null,
+      asn: geo?.asn ?? null,
+      org: geo?.org ?? null,
+      lookup_status: status,
+      raw_response_jsonb: (raw ?? null) as never,
+      last_seen_at: now.toISOString(),
+      expires_at: expires.toISOString(),
+    },
+    { onConflict: "ip_hash" },
+  );
 }
 
-async function fetchIpapi(ip: string): Promise<IpGeo | null> {
+async function fetchIpapi(ip: string): Promise<{ geo: IpGeo | null; raw: unknown; status: "ok" | "failed" | "rate_limited" }> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
   try {
@@ -72,37 +160,61 @@ async function fetchIpapi(ip: string): Promise<IpGeo | null> {
       signal: ctrl.signal,
       headers: { "user-agent": "repsuk.org/1.0 (+admin)" },
     });
-    if (!res.ok) return null;
-    const j = (await res.json()) as Record<string, unknown>;
-    if (j.error) return null;
-    const num = (v: unknown) => (typeof v === "number" ? v : v ? Number(v) : null);
-    return {
+    const raw = await res.json().catch(() => null);
+    if (!res.ok) {
+      const status = res.status === 429 ? "rate_limited" : "failed";
+      return { geo: null, raw, status };
+    }
+    const j = (raw ?? {}) as Record<string, unknown>;
+    if (j.error) return { geo: null, raw, status: "failed" };
+    const num = (v: unknown) => (typeof v === "number" ? v : v != null ? Number(v) : null);
+    const geoPartial = {
       countryCode: (j.country_code as string) || null,
+      countryName: (j.country_name as string) || null,
       region: (j.region as string) || null,
       city: (j.city as string) || null,
+      postalCode: (j.postal as string) || null,
       latitude: num(j.latitude),
       longitude: num(j.longitude),
       timezone: (j.timezone as string) || null,
-      source: "ipapi",
+      asn: (j.asn as string) || null,
+      org: (j.org as string) || null,
+    };
+    return {
+      geo: { ...geoPartial, source: "ipapi", confidence: computeConfidence(geoPartial) },
+      raw,
+      status: "ok",
     };
   } catch {
-    return null;
+    return { geo: null, raw: null, status: "failed" };
   } finally {
     clearTimeout(t);
   }
 }
 
+/**
+ * Server-side IP lookup. Cache-first; never called from the browser.
+ * Returns null when no ACTIVITY_IP_SALT is configured or IP missing.
+ */
 export async function lookupIpGeo(ip: string | null | undefined): Promise<IpGeo | null> {
   if (!ip) return null;
-  const subnet = subnetOf(ip);
-  try {
-    const cached = await readCache(subnet);
-    if (cached) return cached;
-  } catch {
-    // fall through to live lookup
+  const ipHash = hashIp(ip);
+  const ipPfx = prefixHash(ip);
+  if (!ipHash) return null;
+
+  if (isPrivateIp(ip)) {
+    try { await writeCache(ipHash, ipPfx, "private", null, null); } catch { /* ignore */ }
+    return { countryCode: null, countryName: null, region: null, city: null, postalCode: null,
+      latitude: null, longitude: null, timezone: null, asn: null, org: null,
+      source: "none", confidence: "unknown" };
   }
-  const live = await fetchIpapi(ip);
-  if (!live) return null;
-  try { await writeCache(subnet, live); } catch { /* ignore */ }
-  return live;
+
+  try {
+    const cached = await readCache(ipHash);
+    if (cached) return cached;
+  } catch { /* fall through */ }
+
+  const { geo, raw, status } = await fetchIpapi(ip);
+  try { await writeCache(ipHash, ipPfx, status, geo, raw); } catch { /* ignore */ }
+  return geo;
 }

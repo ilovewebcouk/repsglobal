@@ -38,6 +38,7 @@ import {
 } from "@/lib/ops/activity-panels.functions";
 import { getRealtimeSummary } from "@/lib/ops/activity-realtime.functions";
 import { getPublicRealtime } from "@/lib/admin/public-realtime.functions";
+import { runGeoBackfill } from "@/lib/ops/backfill-geo.functions";
 
 import {
   GeoPanel, TopMemberPagesPanel, NeedsAttentionPanel,
@@ -222,6 +223,7 @@ function AdminActivityPage() {
         onChange={(patch) => setSearch(patch)}
         onClear={() => setSearch({ source: undefined, severity: undefined, country: undefined })}
       />
+      <BackfillGeoButton />
     </>
   );
 
@@ -500,6 +502,35 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
     </button>
   );
 }
+
+function BackfillGeoButton() {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const run = useServerFn(runGeoBackfill);
+  const onClick = useCallback(async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await run({ data: { days: 30 } });
+      setMsg(`ok ${r.rows_updated}u · ${r.unique_ips}ips · ${r.cache_hits}hit · ${r.provider_calls}call`);
+    } catch (e) {
+      setMsg("failed");
+      console.error(e);
+    } finally {
+      setBusy(false);
+      setTimeout(() => setMsg(null), 8000);
+    }
+  }, [run]);
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm" onClick={onClick} disabled={busy}>
+        {busy ? "Backfilling…" : "Backfill geo"}
+      </Button>
+      {msg ? <span className="text-[10.5px] text-white/60">{msg}</span> : null}
+    </div>
+  );
+}
+
 
 
 

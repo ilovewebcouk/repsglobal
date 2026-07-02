@@ -57,6 +57,12 @@ export const Route = createFileRoute("/api/public/activity/auth-event")({
             os: ctx.os,
           });
           if (error) console.error("[activity/auth-event] sign_in_failed insert failed", error.message);
+          try {
+            const { recordVisitorObservation } = await import("@/lib/activity/ip-observations.server");
+            await recordVisitorObservation({ ctx, eventContext: "auth_failed" });
+          } catch (e) {
+            console.error("[activity/auth-event] observation failed", e);
+          }
           return new Response(null, { status: 204 });
         }
 
@@ -84,6 +90,12 @@ export const Route = createFileRoute("/api/public/activity/auth-event")({
         if (error) {
           console.error("[activity/auth-event] insert failed", error.message);
           return new Response(null, { status: 500 });
+        }
+        try {
+          const { recordVisitorObservation } = await import("@/lib/activity/ip-observations.server");
+          await recordVisitorObservation({ ctx, eventContext: "auth" });
+        } catch (e) {
+          console.error("[activity/auth-event] observation failed", e);
         }
         return new Response(null, { status: 204 });
       },

@@ -12,6 +12,9 @@ import { createHmac } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
+export type LocationSource = "cloudflare-headers" | "ipapi" | "ipapi-cache" | "country-only" | "none";
+export type LocationConfidence = "city" | "region" | "country" | "unknown";
+
 export interface CaptureContext {
   userId: string | null;
   ip: string | null;         // raw client IP (admin-only tables — RLS enforced)
@@ -22,7 +25,9 @@ export interface CaptureContext {
   latitude: number | null;
   longitude: number | null;
   timezone: string | null;
-  geoSource: string | null;  // 'cloudflare' | null
+  geoSource: string | null;  // legacy: 'cloudflare' | 'ipapi' | 'ipapi-cache' | null
+  locationSource: LocationSource;
+  locationConfidence: LocationConfidence;
   device: string | null;
   browser: string | null;
   os: string | null;
@@ -108,6 +113,8 @@ export async function buildCaptureContext(req: Request): Promise<CaptureContext>
   let latitude: number | null = latStr ? Number.parseFloat(latStr) : null;
   let longitude: number | null = lngStr ? Number.parseFloat(lngStr) : null;
   let geoSource: string | null = city || latitude !== null ? "cloudflare" : country ? "cloudflare" : null;
+  let locationSource: LocationSource =
+    city || latitude !== null ? "cloudflare-headers" : country ? "cloudflare-headers" : "none";
 
   if (!city && ip) {
     try {
@@ -121,6 +128,7 @@ export async function buildCaptureContext(req: Request): Promise<CaptureContext>
         longitude = longitude ?? g.longitude;
         timezone = timezone || g.timezone;
         geoSource = g.source;
+        locationSource = g.source;
       }
     } catch {
       // enrichment is best-effort
@@ -147,6 +155,17 @@ export async function buildCaptureContext(req: Request): Promise<CaptureContext>
     }
   }
 
+  const finalLat = latitude !== null && Number.isFinite(latitude) ? latitude : null;
+  const finalLng = longitude !== null && Number.isFinite(longitude) ? longitude : null;
+
+  let locationConfidence: LocationConfidence;
+  if (city && region && country && finalLat !== null && finalLng !== null) locationConfidence = "city";
+  else if (region && country) locationConfidence = "region";
+  else if (country) locationConfidence = "country";
+  else locationConfidence = "unknown";
+  if (locationConfidence === "unknown") locationSource = locationSource === "none" ? "none" : locationSource;
+  if (locationConfidence === "country" && locationSource === "none") locationSource = "country-only";
+
   return {
     userId,
     ip,
@@ -154,10 +173,12 @@ export async function buildCaptureContext(req: Request): Promise<CaptureContext>
     countryCode: country,
     region,
     city,
-    latitude: Number.isFinite(latitude) ? latitude : null,
-    longitude: Number.isFinite(longitude) ? longitude : null,
+    latitude: finalLat,
+    longitude: finalLng,
     timezone,
     geoSource,
+    locationSource,
+    locationConfidence,
     device,
     browser,
     os,

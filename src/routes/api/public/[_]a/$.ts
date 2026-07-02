@@ -105,21 +105,79 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   const contentEncoding = (request.headers.get("content-encoding") ?? "").toLowerCase();
 
   const admin = await isAdmin(request);
-  // Mutator enriches every event's properties.
-  // NOTE: PostHog Cloud overrides `$geoip_*` server-side using its own GeoIP
-  // lookup against the incoming request IP (our Worker egress → wrong country).
-  // We therefore write non-reserved canonical props (`reps_*`) that our own
-  // realtime + rollup queries read. Legacy names retained for back-compat.
+
+  // Server-side geo enrichment for capture endpoints only (skip static/assets/decide).
+  // Uses CF headers first, then ip_geolocation_cache/ipapi (server-only, never exposed).
+  let derivedGeo: {
+    country: string | null; region: string | null; city: string | null;
+    lat: number | null; lng: number | null; postal: string | null;
+    tz: string | null; asn: string | null; org: string | null;
+    source: string; confidence: string;
+  } | null = null;
+
+  const isCaptureEndpoint = splat.startsWith("e") || splat.startsWith("batch") || splat.startsWith("capture");
+  if (isCaptureEndpoint) {
+    try {
+      const cfIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") ||
+        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+      const { lookupIpGeo } = await import("@/lib/activity/ip-geo.server");
+      const g = cfIp ? await lookupIpGeo(cfIp) : null;
+      const cc = country || g?.countryCode || null;
+      const region = request.headers.get("cf-region") || g?.region || null;
+      const city = request.headers.get("cf-ipcity") || g?.city || null;
+      const latStr = request.headers.get("cf-iplatitude");
+      const lngStr = request.headers.get("cf-iplongitude");
+      const lat = latStr ? Number.parseFloat(latStr) : g?.latitude ?? null;
+      const lng = lngStr ? Number.parseFloat(lngStr) : g?.longitude ?? null;
+      const postal = request.headers.get("cf-postal-code") || g?.postalCode || null;
+      const tz = request.headers.get("cf-timezone") || g?.timezone || null;
+      let confidence: string;
+      if (city && region && cc && lat !== null && lng !== null) confidence = "city";
+      else if (region && cc) confidence = "region";
+      else if (cc) confidence = "country";
+      else confidence = "unknown";
+      const source = city ? (request.headers.get("cf-ipcity") ? "cloudflare-headers" : (g?.source ?? "none")) :
+        cc ? "country-only" : "none";
+      derivedGeo = { country: cc, region, city, lat, lng, postal, tz, asn: g?.asn ?? null, org: g?.org ?? null, source, confidence };
+    } catch {
+      derivedGeo = null;
+    }
+  }
+
+  // Strip all raw-IP-adjacent props; inject only derived reps_* props.
   const mutate: Mutator = (props) => {
     delete props.$ip;
     delete props.ip;
+    delete (props as Record<string, unknown>).raw_ip;
+    delete (props as Record<string, unknown>)["cf-connecting-ip"];
+    delete (props as Record<string, unknown>)["x-forwarded-for"];
+    delete (props as Record<string, unknown>)["true-client-ip"];
+    delete (props as Record<string, unknown>)["x-real-ip"];
     props.reps_is_internal = admin;
-    props.is_internal = admin; // legacy
-    props.reps_proxy_v = 3; // diagnostic — proves mutation ran
-    if (country) {
+    props.is_internal = admin; // legacy mirror
+    props.reps_proxy_v = 4;
+    if (derivedGeo) {
+      if (derivedGeo.country) {
+        props.reps_country_code = derivedGeo.country;
+        props.country_code = derivedGeo.country;
+        props.$geoip_country_code = derivedGeo.country; // may be overridden by PostHog GeoIP
+      }
+      if (derivedGeo.region) props.reps_region = derivedGeo.region;
+      if (derivedGeo.city) props.reps_city = derivedGeo.city;
+      if (derivedGeo.lat !== null) props.reps_lat = derivedGeo.lat;
+      if (derivedGeo.lng !== null) props.reps_lng = derivedGeo.lng;
+      if (derivedGeo.postal) props.reps_postal_code = derivedGeo.postal;
+      if (derivedGeo.tz) props.reps_timezone = derivedGeo.tz;
+      if (derivedGeo.asn) props.reps_asn = derivedGeo.asn;
+      if (derivedGeo.org) props.reps_org = derivedGeo.org;
+      props.reps_location_source = derivedGeo.source;
+      props.reps_location_confidence = derivedGeo.confidence;
+    } else if (country) {
       props.reps_country_code = country;
-      props.country_code = country; // legacy mirror
-      props.$geoip_country_code = country; // may be overwritten by PostHog GeoIP
+      props.country_code = country;
+      props.$geoip_country_code = country;
+      props.reps_location_source = "country-only";
+      props.reps_location_confidence = "country";
     }
   };
 

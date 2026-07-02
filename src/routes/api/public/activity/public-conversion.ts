@@ -35,13 +35,6 @@ function hashIp(ip: string): string {
   return createHmac("sha256", salt).update(ip).digest("hex").slice(0, 24);
 }
 
-function clientIp(req: Request): string {
-  return (
-    req.headers.get("cf-connecting-ip") ??
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "0.0.0.0"
-  );
-}
 
 export const Route = createFileRoute("/api/public/activity/public-conversion")({
   server: {
@@ -51,9 +44,11 @@ export const Route = createFileRoute("/api/public/activity/public-conversion")({
           const raw = await request.json();
           const body = BodySchema.parse(raw);
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { buildCaptureContext } = await import("@/lib/activity/capture.server");
+          const ctx = await buildCaptureContext(request);
 
-          const country = request.headers.get("cf-ipcountry") ?? null;
-          const ip = clientIp(request);
+          const country = ctx.countryCode;
+          const ip = ctx.ip ?? "0.0.0.0";
 
           await supabaseAdmin.from("public_visitor_conversions").insert({
             session_id: body.session_id,
@@ -72,6 +67,22 @@ export const Route = createFileRoute("/api/public/activity/public-conversion")({
             ip_hash: hashIp(ip),
             properties: (body.properties ?? {}) as unknown as never,
           });
+
+          try {
+            const { recordVisitorObservation } = await import("@/lib/activity/ip-observations.server");
+            await recordVisitorObservation({
+              ctx,
+              eventContext: "conversion",
+              sessionId: body.session_id,
+              anonymousId: body.anonymous_id ?? null,
+              posthogDistinctId: body.posthog_distinct_id ?? null,
+              professionalId: body.professional_id ?? null,
+              path: body.path ?? null,
+              referrer: body.referrer ?? null,
+            });
+          } catch (e) {
+            console.error("[activity/public-conversion] observation failed", e);
+          }
 
           return new Response(null, { status: 204 });
         } catch {

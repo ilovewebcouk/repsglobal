@@ -1904,6 +1904,78 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_geolocation_cache: {
+        Row: {
+          asn: string | null
+          city: string | null
+          country_code: string | null
+          country_name: string | null
+          created_at: string
+          expires_at: string
+          first_seen_at: string
+          id: string
+          ip_hash: string
+          ip_prefix_hash: string | null
+          last_seen_at: string
+          latitude: number | null
+          longitude: number | null
+          lookup_status: string
+          org: string | null
+          postal_code: string | null
+          provider: string
+          raw_response_jsonb: Json | null
+          region: string | null
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          asn?: string | null
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          expires_at?: string
+          first_seen_at?: string
+          id?: string
+          ip_hash: string
+          ip_prefix_hash?: string | null
+          last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          lookup_status?: string
+          org?: string | null
+          postal_code?: string | null
+          provider?: string
+          raw_response_jsonb?: Json | null
+          region?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asn?: string | null
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          expires_at?: string
+          first_seen_at?: string
+          id?: string
+          ip_hash?: string
+          ip_prefix_hash?: string | null
+          last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          lookup_status?: string
+          org?: string | null
+          postal_code?: string | null
+          provider?: string
+          raw_response_jsonb?: Json | null
+          region?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       launch_waitlist: {
         Row: {
           created_at: string
@@ -3813,6 +3885,108 @@ export type Database = {
           },
         ]
       }
+      security_visitor_ip_observations: {
+        Row: {
+          anonymous_id: string | null
+          asn: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string
+          event_context: string | null
+          expires_at: string
+          first_seen_at: string
+          flagged: boolean
+          id: string
+          ip_hash: string | null
+          ip_prefix_hash: string | null
+          last_seen_at: string
+          latitude: number | null
+          location_confidence: string | null
+          location_source: string | null
+          longitude: number | null
+          org: string | null
+          path: string | null
+          postal_code: string | null
+          posthog_distinct_id: string | null
+          professional_id: string | null
+          raw_ip: string | null
+          referrer: string | null
+          region: string | null
+          session_id: string | null
+          timezone: string | null
+          updated_at: string
+          user_agent: string | null
+          user_agent_hash: string | null
+          user_id: string | null
+        }
+        Insert: {
+          anonymous_id?: string | null
+          asn?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          event_context?: string | null
+          expires_at?: string
+          first_seen_at?: string
+          flagged?: boolean
+          id?: string
+          ip_hash?: string | null
+          ip_prefix_hash?: string | null
+          last_seen_at?: string
+          latitude?: number | null
+          location_confidence?: string | null
+          location_source?: string | null
+          longitude?: number | null
+          org?: string | null
+          path?: string | null
+          postal_code?: string | null
+          posthog_distinct_id?: string | null
+          professional_id?: string | null
+          raw_ip?: string | null
+          referrer?: string | null
+          region?: string | null
+          session_id?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_agent_hash?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          anonymous_id?: string | null
+          asn?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          event_context?: string | null
+          expires_at?: string
+          first_seen_at?: string
+          flagged?: boolean
+          id?: string
+          ip_hash?: string | null
+          ip_prefix_hash?: string | null
+          last_seen_at?: string
+          latitude?: number | null
+          location_confidence?: string | null
+          location_source?: string | null
+          longitude?: number | null
+          org?: string | null
+          path?: string | null
+          postal_code?: string | null
+          posthog_distinct_id?: string | null
+          professional_id?: string | null
+          raw_ip?: string | null
+          referrer?: string | null
+          region?: string | null
+          session_id?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_agent_hash?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           bullets: string[]
@@ -5259,6 +5433,7 @@ export type Database = {
         }
       }
       platform_health_snapshot: { Args: never; Returns: Json }
+      prune_visitor_ip_observations: { Args: never; Returns: undefined }
       purge_activity_detail: {
         Args: never
         Returns: {
