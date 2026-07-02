@@ -222,6 +222,7 @@ function AdminActivityPage() {
         onChange={(patch) => setSearch(patch)}
         onClear={() => setSearch({ source: undefined, severity: undefined, country: undefined })}
       />
+      <BackfillGeoButton />
     </>
   );
 
