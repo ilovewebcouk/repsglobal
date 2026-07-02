@@ -15,7 +15,7 @@
 // response in this stack). startImpersonation enforces one active session
 // per admin, so admin_id + ended_at IS NULL uniquely identifies the row.
 import { createMiddleware } from '@tanstack/react-start';
-import { getWebRequest } from '@tanstack/react-start/server';
+import { getRequestHeader } from '@tanstack/react-start/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
@@ -27,9 +27,7 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
       throw new Error('Missing Supabase environment variables');
     }
 
-    const request = getWebRequest();
-    if (!request?.headers) throw new Error('Unauthorized: No request headers available');
-    const authHeader = request.headers.get('authorization');
+    const authHeader = getRequestHeader('authorization');
     if (!authHeader?.startsWith('Bearer ')) throw new Error('Unauthorized: Missing bearer token');
     const token = authHeader.slice('Bearer '.length);
     if (!token) throw new Error('Unauthorized: No token provided');
