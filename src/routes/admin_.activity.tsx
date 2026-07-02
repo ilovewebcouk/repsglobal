@@ -300,12 +300,18 @@ function AdminActivityPage() {
           </div>
         ) : null}
 
-        {/* ── 1. COMMAND STRIP ── */}
+        {/* ── 1. ALERT BAND (conditional) ── */}
+        <AlertBand
+          criticalCount={criticalCount}
+          warningCount={attentionRows.filter((r) => r.severity === "warning").length}
+          topLabel={attentionRows.find((r) => r.severity === "critical")?.label ?? null}
+        />
+
+        {/* ── 2. COMMAND STRIP ── */}
         <CommandStrip
           publicOnline={publicOnline}
           membersOnline={membersOnline}
-          pageViews5m={pageViews5m}
-          highValueToday={highValueToday}
+          keyActionsToday={keyActionsToday}
           attentionCount={attentionCount}
           criticalCount={criticalCount}
           ingestStatus={ingestStatus}
