@@ -75,12 +75,21 @@ type Mutator = (props: Record<string, unknown>) => void;
 function mutateEvent(evt: unknown, mutate: Mutator) {
   if (!evt || typeof evt !== "object") return;
   const e = evt as Record<string, unknown>;
-  const props = (e.properties ??= {}) as Record<string, unknown>;
-  mutate(props);
+  if (!e.properties || typeof e.properties !== "object") e.properties = {};
+  mutate(e.properties as Record<string, unknown>);
 }
 
 function mutateParsed(parsed: unknown, mutate: Mutator) {
-  if (!parsed || typeof parsed !== "object") return;
+  if (!parsed) return;
+  // Bare array body: posthog-js sends `[{event, properties}, ...]` to /e/ in
+  // some versions. Previously we assigned `.properties` on the Array itself
+  // (lost by JSON.stringify) so enrichment silently no-op'd for every real
+  // browser event.
+  if (Array.isArray(parsed)) {
+    for (const e of parsed) mutateEvent(e, mutate);
+    return;
+  }
+  if (typeof parsed !== "object") return;
   const p = parsed as Record<string, unknown>;
   if (Array.isArray(p.batch)) {
     for (const e of p.batch as unknown[]) mutateEvent(e, mutate);
@@ -155,7 +164,8 @@ async function proxy(request: Request, splat: string): Promise<Response> {
     delete (props as Record<string, unknown>)["x-real-ip"];
     props.reps_is_internal = admin;
     props.is_internal = admin; // legacy mirror
-    props.reps_proxy_v = 4;
+    props.reps_proxy_v = 5;
+    props.reps_pt = pathTaken;
     if (derivedGeo) {
       if (derivedGeo.country) {
         props.reps_country_code = derivedGeo.country;
