@@ -277,6 +277,9 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   let obsAttempted = false;
   let obsResult: "ok" | "skipped" | "failed" = "skipped";
   let obsFailure: string | null = null;
+  let obsErrCode: string | null = null;
+  let obsErrDetails: string | null = null;
+  let obsErrHint: string | null = null;
   let obsHasSession = false;
   let obsHasDistinct = false;
   let obsHasPath = false;
@@ -358,38 +361,43 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       }
     } catch (err) {
       obsResult = "failed";
-      obsFailure = (err as Error)?.name ?? "unknown";
-      console.error("[posthog-proxy] observation write failed", { name: (err as Error)?.name, msg: (err as Error)?.message });
+      const e = err as { name?: string; message?: string; code?: string; details?: string; hint?: string };
+      obsFailure = e?.message ?? e?.name ?? "unknown";
+      obsErrCode = e?.code ?? null;
+      obsErrDetails = e?.details ?? null;
+      obsErrHint = e?.hint ?? null;
+      console.error("[posthog-proxy] observation write failed", { name: e?.name, msg: e?.message, code: e?.code, details: e?.details, hint: e?.hint });
     }
   }
 
-  console.log("[posthog-proxy:obs]", {
-    proxy_path: `/${splat}`,
-    method: request.method,
-    parser: pathTaken,
-    event_count: obsEventCount,
-    first_event: obsFirstEvent,
-    has_session_id: obsHasSession,
-    has_distinct_id: obsHasDistinct,
-    has_path: obsHasPath,
-    has_referrer: obsHasReferrer,
-    has_raw_ip_from_request: obsHasIp,
-    is_admin: admin,
-    consent_eligible: !admin,
-    observation_write_attempted: obsAttempted,
-    observation_write_result: obsResult,
-    failure_reason: obsFailure,
-    derived_geo_source: derivedGeo?.source ?? null,
-    derived_geo_confidence: derivedGeo?.confidence ?? null,
-    derived_geo_has_city: !!derivedGeo?.city,
-  });
+  // Durable diagnostics row (admin-only visible). Fire-and-forget.
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("proxy_ingest_diagnostics").insert({
+      proxy_path: `/${splat}`,
+      method: request.method,
+      parser: pathTaken,
+      event_count: obsEventCount,
+      first_event: obsFirstEvent,
+      has_session: obsHasSession,
+      has_distinct: obsHasDistinct,
+      has_path: obsHasPath,
+      has_referrer: obsHasReferrer,
+      has_raw_ip: obsHasIp,
+      is_admin: admin,
+      attempted: obsAttempted,
+      result: obsResult,
+      error_code: obsErrCode,
+      error_message: obsFailure,
+      error_details: obsErrDetails,
+      error_hint: obsErrHint,
+      geo_source: derivedGeo?.source ?? null,
+      geo_confidence: derivedGeo?.confidence ?? null,
+      geo_has_city: !!derivedGeo?.city,
+    });
+  } catch { /* never block proxy on diagnostics */ }
 
 
-
-
-  if (ua) outboundHeaders.set("user-agent", ua);
-  // Deliberately do NOT forward: authorization, cookie, x-forwarded-for,
-  // cf-connecting-ip, true-client-ip, x-real-ip, or content-encoding.
 
   const upstream = await fetch(outboundUrl.toString(), {
     method: request.method,
