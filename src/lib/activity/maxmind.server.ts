@@ -45,8 +45,11 @@ function b64(s: string): string {
 export async function fetchMaxmind(ip: string): Promise<MaxmindResult> {
   const accountId = process.env.MAXMIND_ACCOUNT_ID;
   const licenseKey = process.env.MAXMIND_LICENSE_KEY;
-  if (!accountId || !licenseKey) return { status: "not_configured", raw: null };
   const host = process.env.MAXMIND_HOST || DEFAULT_HOST;
+  if (!accountId || !licenseKey) {
+    console.log("[maxmind] not_configured", { host, has_account_id: !!accountId, has_license_key: !!licenseKey });
+    return { status: "not_configured", raw: null };
+  }
   const auth = "Basic " + b64(`${accountId}:${licenseKey}`);
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
@@ -60,9 +63,18 @@ export async function fetchMaxmind(ip: string): Promise<MaxmindResult> {
       },
     });
     const raw = await res.json().catch(() => null);
-    if (res.status === 401 || res.status === 403) return { status: "unauthorized", raw };
-    if (res.status === 429) return { status: "rate_limited", raw };
-    if (!res.ok) return { status: "failed", raw };
+    if (res.status === 401 || res.status === 403) {
+      console.log("[maxmind] unauthorized", { host, status: res.status });
+      return { status: "unauthorized", raw };
+    }
+    if (res.status === 429) {
+      console.log("[maxmind] rate_limited", { host });
+      return { status: "rate_limited", raw };
+    }
+    if (!res.ok) {
+      console.log("[maxmind] failed", { host, status: res.status });
+      return { status: "failed", raw };
+    }
     const j = (raw ?? {}) as Record<string, unknown>;
     const country = (j.country ?? {}) as Record<string, unknown>;
     const registered = (j.registered_country ?? {}) as Record<string, unknown>;
@@ -90,8 +102,10 @@ export async function fetchMaxmind(ip: string): Promise<MaxmindResult> {
         ?? (traits.isp as string | undefined) ?? null,
       accuracyRadiusKm: num(loc.accuracy_radius),
     };
+    console.log("[maxmind] ok", { host, city: geo.city, region: geo.region, cc: geo.countryCode });
     return { status: "ok", geo, raw };
-  } catch {
+  } catch (err) {
+    console.log("[maxmind] threw", { host, err: (err as Error)?.name });
     return { status: "failed", raw: null };
   } finally {
     clearTimeout(t);
