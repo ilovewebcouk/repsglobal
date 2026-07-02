@@ -3437,6 +3437,8 @@ export type Database = {
           has_session: boolean | null
           id: string
           is_admin: boolean | null
+          journey_id: string | null
+          journey_result: string | null
           method: string | null
           observation_id: string | null
           parser: string | null
@@ -3470,6 +3472,8 @@ export type Database = {
           has_session?: boolean | null
           id?: string
           is_admin?: boolean | null
+          journey_id?: string | null
+          journey_result?: string | null
           method?: string | null
           observation_id?: string | null
           parser?: string | null
@@ -3503,6 +3507,8 @@ export type Database = {
           has_session?: boolean | null
           id?: string
           is_admin?: boolean | null
+          journey_id?: string | null
+          journey_result?: string | null
           method?: string | null
           observation_id?: string | null
           parser?: string | null
@@ -5057,6 +5063,80 @@ export type Database = {
           },
         ]
       }
+      visitor_journeys: {
+        Row: {
+          created_at: string
+          entry_path: string | null
+          entry_referrer: string | null
+          event_count: number
+          event_history: Json
+          expires_at: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          latest_event: string | null
+          latest_observation_id: string | null
+          latest_path: string | null
+          page_count: number
+          path_history: Json
+          posthog_distinct_id: string | null
+          session_id: string | null
+          source: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entry_path?: string | null
+          entry_referrer?: string | null
+          event_count?: number
+          event_history?: Json
+          expires_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          latest_event?: string | null
+          latest_observation_id?: string | null
+          latest_path?: string | null
+          page_count?: number
+          path_history?: Json
+          posthog_distinct_id?: string | null
+          session_id?: string | null
+          source?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entry_path?: string | null
+          entry_referrer?: string | null
+          event_count?: number
+          event_history?: Json
+          expires_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          latest_event?: string | null
+          latest_observation_id?: string | null
+          latest_path?: string | null
+          page_count?: number
+          path_history?: Json
+          posthog_distinct_id?: string | null
+          session_id?: string | null
+          source?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_journeys_latest_observation_id_fkey"
+            columns: ["latest_observation_id"]
+            isOneToOne: false
+            referencedRelation: "security_visitor_ip_observations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       professional_review_stats: {
@@ -5419,6 +5499,10 @@ export type Database = {
       is_pro_fully_verified: { Args: { _pro_id: string }; Returns: boolean }
       is_pro_hidden_by_churn: { Args: { _user_id: string }; Returns: boolean }
       is_pro_publicly_visible: { Args: { _pro_id: string }; Returns: boolean }
+      link_visitor_to_user: {
+        Args: { _distinct_id: string; _user_id: string }
+        Returns: Json
+      }
       list_fully_verified_pro_ids: { Args: never; Returns: string[] }
       list_my_unread_support_tickets: {
         Args: never
@@ -5449,6 +5533,10 @@ export type Database = {
           _user_agent?: string
         }
         Returns: string
+      }
+      log_visitor_ip_reveal: {
+        Args: { _journey_id: string; _observation_id: string; _reason?: string }
+        Returns: undefined
       }
       mark_all_my_support_read: { Args: never; Returns: undefined }
       mark_my_support_ticket_read: {
@@ -5544,6 +5632,7 @@ export type Database = {
           deleted_user_sessions: number
         }[]
       }
+      purge_expired_ip_observations: { Args: never; Returns: Json }
       purge_orphan_professional_signups: {
         Args: { _min_age_hours?: number }
         Returns: {
