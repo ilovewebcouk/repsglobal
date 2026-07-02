@@ -97,15 +97,35 @@ export async function buildCaptureContext(req: Request): Promise<CaptureContext>
   const { device, browser, os } = parseUA(ua);
 
   // Cloudflare geo enrichment (headers set by CF edge on incoming requests).
-  const country = req.headers.get("cf-ipcountry") || null;
-  const region = req.headers.get("cf-region") || null;
-  const city = req.headers.get("cf-ipcity") || null;
+  // Lovable's SaaS Custom Hostname setup only exposes cf-ipcountry to origin,
+  // so we fall back to an ipapi.co lookup (subnet-cached) for city/region/lat/lng.
+  let country = req.headers.get("cf-ipcountry") || null;
+  let region = req.headers.get("cf-region") || null;
+  let city = req.headers.get("cf-ipcity") || null;
   const latStr = req.headers.get("cf-iplatitude");
   const lngStr = req.headers.get("cf-iplongitude");
-  const timezone = req.headers.get("cf-timezone") || null;
-  const latitude = latStr ? Number.parseFloat(latStr) : null;
-  const longitude = lngStr ? Number.parseFloat(lngStr) : null;
-  const geoSource = country || city || latitude !== null ? "cloudflare" : null;
+  let timezone = req.headers.get("cf-timezone") || null;
+  let latitude: number | null = latStr ? Number.parseFloat(latStr) : null;
+  let longitude: number | null = lngStr ? Number.parseFloat(lngStr) : null;
+  let geoSource: string | null = city || latitude !== null ? "cloudflare" : country ? "cloudflare" : null;
+
+  if (!city && ip) {
+    try {
+      const { lookupIpGeo } = await import("./ip-geo.server");
+      const g = await lookupIpGeo(ip);
+      if (g) {
+        country = country || g.countryCode;
+        region = region || g.region;
+        city = g.city;
+        latitude = latitude ?? g.latitude;
+        longitude = longitude ?? g.longitude;
+        timezone = timezone || g.timezone;
+        geoSource = g.source;
+      }
+    } catch {
+      // enrichment is best-effort
+    }
+  }
 
   const dnt = req.headers.get("dnt") === "1";
   const gpc = req.headers.get("sec-gpc") === "1";
