@@ -204,12 +204,58 @@ export function WorldMapPanel({
   }, [bubbles]);
 
   // Local zoom/center override so admins can pan and reset.
-  // Only user-initiated moves set an override — programmatic re-centres
-  // (initial mount, viewKey remount, autoView updates) must NOT lock the map.
   const [override, setOverride] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const [userMoving, setUserMoving] = useState(false);
-  const view = override ?? autoView;
-  const viewKey = `${view.center[0].toFixed(1)}:${view.center[1].toFixed(1)}:${view.zoom.toFixed(2)}`;
+  const [followLatest, setFollowLatest] = useState(true);
+
+  // Target view = user override > follow-latest bubble > autoView.
+  const knownIdsRef = useRef<Set<string>>(new Set());
+  const [latestArrival, setLatestArrival] = useState<Bubble | null>(null);
+  useEffect(() => {
+    const seen = knownIdsRef.current;
+    let newest: Bubble | null = null;
+    for (const b of bubbles) {
+      if (!seen.has(b.id) && b.online > 0 && b.precision === "city") newest = b;
+    }
+    // Refresh the seen set (retain only current ids to avoid unbounded growth).
+    knownIdsRef.current = new Set(bubbles.map((b) => b.id));
+    if (newest) setLatestArrival(newest);
+  }, [bubbles]);
+
+  const target = override
+    ?? (followLatest && latestArrival
+      ? { center: [latestArrival.lng, latestArrival.lat] as [number, number], zoom: 4.5 }
+      : autoView);
+
+  // Smooth animated view — interpolate from current animated state → target.
+  const [animView, setAnimView] = useState<{ center: [number, number]; zoom: number }>(target);
+  const animRef = useRef<number | null>(null);
+  useEffect(() => {
+    const from = animView;
+    const to = target;
+    const dLng = to.center[0] - from.center[0];
+    const dLat = to.center[1] - from.center[1];
+    const dZoom = to.zoom - from.zoom;
+    if (Math.abs(dLng) < 0.01 && Math.abs(dLat) < 0.01 && Math.abs(dZoom) < 0.02) return;
+    const start = performance.now();
+    const duration = 700;
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const e = ease(t);
+      setAnimView({
+        center: [from.center[0] + dLng * e, from.center[1] + dLat * e],
+        zoom: from.zoom + dZoom * e,
+      });
+      if (t < 1) animRef.current = requestAnimationFrame(step);
+    };
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+    animRef.current = requestAnimationFrame(step);
+    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target.center[0], target.center[1], target.zoom]);
+
+  const view = animView;
 
   void bubbles;
 
