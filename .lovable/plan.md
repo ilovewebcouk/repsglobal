@@ -1,71 +1,69 @@
-## Activity Command Centre v2.2 — Hero Layout Fix
+# Public Analytics v1.2 — World-Class Visitor Intelligence
 
-Scope: composition only. No backend, PostHog, consent, rollup, server-function, Supabase, capture, or proxy changes.
+Answer to "should we have built it like this / would it be 10/10?": **yes**. The current implementation is a v1 shortcut (subnet-only cache, no dedicated raw-IP table, no confidence/source model, no PostHog derived-property enforcement). Adopting the schema you've drafted moves us to 10/10 — proper separation of derived analytics (PostHog) from raw security telemetry (admin-only Supabase), explicit confidence, and a real retention story.
 
-### Problem
+---
 
-Current hero grid: map (col-span 8, ~380px) beside a right column stack of Live Rail + Needs Attention (~640px). The left column collapses under the map, leaving a large dead void. Public Analytics has also been over-collapsed and now feels sparse.
+## Deliverables
 
-### Fix — new hero grid (Option A, preferred)
+### 1. Schema migration
+- `public.ip_geolocation_cache` — provider cache keyed by `ip_hash`, with `ip_prefix_hash` for /24//48 dedupe, `lookup_status`, `raw_response_jsonb`, TTL via `expires_at`.
+  - Success TTL 24h, failure 1h, private/reserved cached as `unavailable` without provider call.
+- `public.security_visitor_ip_observations` — full spec fields (session_id, anonymous_id, posthog_distinct_id, user_id, professional_id, event_context, path, referrer, raw_ip, ip_hash, ip_prefix_hash, UA + UA hash, geo, asn, org, location_source, location_confidence, first/last_seen, expires_at). Unique on `(session_id, ip_hash, user_agent_hash)`; repeat sightings bump `last_seen_at`/path.
+- Retention defaults: public anon 30d, member/auth 90d, dispute/flag excluded.
+- Grants: `service_role` ALL, `authenticated` SELECT via RLS gated on `has_role(auth.uid(),'admin')`. No anon.
 
-```text
-Header + LiveChip + range/filters
-Command strip (7 tiles, one row)
+### 2. Server library (`src/lib/activity/`)
+- `ip-geo.server.ts` — rewrite around new cache table. Lookup priority: **CF headers → cache → ipapi.co → country-only → none**. Emits `{ location_source, location_confidence }`. Skips private IPs. Timeout + failure caching.
+- `ip-observations.server.ts` — new. `recordObservation(ctx)` writes to `security_visitor_ip_observations` (upsert on dedupe key). Called from capture pipeline.
+- `capture.server.ts` — already wires CF→ipapi fallback; extend to compute confidence/source and to call `recordObservation`. Enforce: **never** put `raw_ip` / `$ip` / `cf-connecting-ip` on the outbound context that reaches PostHog.
 
-┌─────────────────────────────────────┬───────────────────┐
-│ Realtime map            (col 8)     │                   │
-│ height ≈ 380px                      │  Live Activity    │
-├─────────────────────────────────────┤  rail (col 4)     │
-│ Needs Attention         (col 8)     │  full hero height │
-│ compact top-5 + "View all"          │  internal scroll  │
-└─────────────────────────────────────┴───────────────────┘
-```
+### 3. PostHog proxy (`src/routes/api/public/[_]a/$.ts`)
+- Confirm mutator strips all raw-IP-adjacent props and injects only `reps_*` derived props: `reps_proxy_v`, `reps_is_internal`, `reps_country_code`, `reps_region`, `reps_city`, `reps_lat`, `reps_lng`, `reps_postal_code`, `reps_timezone`, `reps_asn`, `reps_org`, `reps_location_source`, `reps_location_confidence`. Bump `reps_proxy_v` to 4.
 
-Implementation in `src/routes/admin_.activity.tsx`:
-- Outer hero: `grid xl:grid-cols-12 gap-4 items-stretch`.
-- Left wrapper: `xl:col-span-8 flex flex-col gap-4` containing `<WorldMapPanel />` then `<NeedsAttentionPanel compact maxRows={5} />`.
-- Right wrapper: `xl:col-span-4 flex` containing `<LiveActivityRail className="h-full" />`.
-- Live rail becomes full height of the left stack via `items-stretch` + `h-full` on the panel wrapper — no fixed pixel height.
-- Remove the current right-column vertical split; delete the wrapper that stacked Live Rail + Needs Attention on the right.
+### 4. Backfill (`src/lib/ops/backfill-geo.functions.ts`, admin-only)
+- Pulls unique public IPs from `user_sessions`, `member_session_events`, `auth_events` for last 30d.
+- Cache-first, ipapi fallback, rate-limited (batch 40/min).
+- Writes derived location to source rows and to `security_visitor_ip_observations` where a session_id exists.
+- Returns summary: {unique_ips, cache_hits, provider_calls, ok, failed, updated, skipped, rate_limited}.
+- Admin trigger button in `/admin/activity` header (behind `has_role admin`).
 
-### Panel-level tweaks
+### 5. Admin UI (`/admin/activity` + Member 360 → Sessions tab)
+- `LiveActivityRail` + `WorldMapPanel` show: raw IP, city/region/country · `approximate`, current page, journey (last 3 events), device/browser/OS, referrer, session duration.
+- Format helpers: `London, GB · approximate` / `United Kingdom · city unavailable` / `Unknown · location unavailable`.
+- Member 360 Sessions tab: same IP block gated to admin.
 
-`src/components/admin/activity/LiveActivityRail.tsx`
-- Add `className` prop pass-through; ensure the root uses `flex flex-col h-full` and the tab body uses `flex-1 min-h-0 overflow-y-auto` so it fills the hero height without overflowing the page.
+### 6. Cleanup
+- Delete `src/routes/api/public/geo-probe.ts`; drop `GEO_PROBE_TOKEN` from secrets.
+- Nightly cron (`pg_cron`) → prunes expired rows per retention rules, skips flagged.
 
-`src/components/admin/activity/panels.tsx` (`NeedsAttentionPanel`)
-- Keep top-5 + "View all N" toggle from v2.1.
-- Ensure the compact card sits naturally below the map with matching radius (`rounded-[18px]`) and internal density (`py-2` rows).
-- Header shows `1 critical · N warnings` inline.
+### 7. Proofs (attached in reply)
+- Migration SQL, RLS policies, ipapi flow diagram, cache design summary.
+- Backfill run report.
+- Screenshot of `/admin/activity` with raw IP + confidence line.
+- HogQL query showing `reps_*` present and `$ip` / `ip` / `raw_ip` absent.
+- Supabase query showing raw IP in `security_visitor_ip_observations`, admin-only.
+- Typecheck output.
+- Rollback plan: revert migration (drop 2 tables), revert 4 files; PostHog proxy falls back to v3 mutator.
 
-`src/components/admin/activity/WorldMapPanel.tsx`
-- Keep the ~380px map, log1p bubble scaling, 10px cap, and compact top-left overlay from v2.1. No further changes.
+---
 
-### Public Analytics — un-collapse the useful bits
+## Guardrails (non-negotiable)
+- ipapi.co called **server-side only**, cache-first, private IPs never sent.
+- Raw IP **never** leaves the server: not to PostHog, not to browser, not to public loaders.
+- All raw-IP reads gated by RLS `has_role(auth.uid(),'admin')`.
+- Confidence label always shown next to city; never present approximate data as precise.
+- v1.1 acceptance checks re-run at the end (custom events arrive, DNT/GPC still suppress, rollup parity).
 
-`src/components/admin/activity/PublicVisitorsPanel.tsx`
-- Keep primary KPI row visible: page views, sessions, profile views, enquiries.
-- Move Top public pages, Top referrers, Top countries OUT of the `<details>` disclosure so they render by default in a compact 3-column grid directly under the KPIs.
-- Keep behind the disclosure (`Show discovery details`): searches, no-result searches, signup/checkout zero metrics, top public profiles when empty, and any other zero-heavy secondary lists.
-- Zero-value KPI cards stay in "quiet" style; non-zero secondary metrics still promote to tiles.
+---
 
-### Below-the-fold order (unchanged from v2.1)
+## Execution order (single pass)
+1. Migration (2 new tables + RLS + cleanup cron).
+2. Rewrite `ip-geo.server.ts` + add `ip-observations.server.ts`.
+3. Extend `capture.server.ts` and PostHog proxy mutator.
+4. Build backfill server fn + admin trigger.
+5. Admin UI upgrades.
+6. Delete probe + retire secret.
+7. Run backfill on last 30d, capture proofs.
 
-1. Public analytics (now with visible top pages / referrers / countries)
-2. Member activity (Top member pages + Geo)
-3. Audit feed (compact Recent Activity + Full feed drawer)
-
-### Explicitly untouched
-
-- `src/lib/ops/*`
-- `src/lib/admin/public-realtime.functions.ts` and other analytics functions
-- `src/routes/api/public/_a/*`, `src/routes/api/public/activity/*`
-- `src/lib/activity/capture.server.ts`
-- Consent code / `CookieBanner.tsx`
-- Any Supabase migration or rollup SQL
-
-### Acceptance
-
-- `bunx tsgo --noEmit` passes.
-- Playwright screenshot at 1440×900 shows: command strip, map + Needs Attention stacked on the left, Live Activity as a single full-height rail on the right, no empty void anywhere in the hero, Public Analytics starting immediately below with top pages/referrers/countries visible by default.
-- Return: single screenshot, short layout diff, explicit confirmation no backend/analytics/consent/proxy files changed, tsgo result.
+Approve and I'll ship it in one pass.
