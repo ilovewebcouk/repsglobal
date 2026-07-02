@@ -52,7 +52,8 @@ import { CommandStrip } from "@/components/admin/activity/CommandStrip";
 import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
 import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
-import { getPublicVisitorsLive, getPublicIngestHealth } from "@/lib/activity/live-visitors.functions";
+import { getPublicVisitorsLive, getPublicIngestHealth, getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
+import { AlertBand } from "@/components/admin/activity/AlertBand";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
