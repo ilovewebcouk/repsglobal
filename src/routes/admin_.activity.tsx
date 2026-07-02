@@ -305,8 +305,8 @@ function AdminActivityPage() {
               data={realtimeQ.data}
               loading={realtimeQ.isLoading}
               publicSummary={{
-                online_now: (publicVisitorsQ.data ?? []).filter((v: SupabaseVisitorRow) => v.status === "live").length,
-                events_30m: (publicVisitorsQ.data ?? []).reduce((s: number, v: SupabaseVisitorRow & { event_count?: number }) => s + (v.event_count ?? 0), 0),
+                online_now: ((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).filter((v) => v.status === "live").length,
+                events_30m: ((publicVisitorsQ.data ?? []) as unknown as Array<SupabaseVisitorRow & { event_count?: number }>).reduce((s, v) => s + (v.event_count ?? 0), 0),
                 last_event_at: publicHealthQ.data?.supabase_live.last_journey_at ?? null,
                 stale: publicHealthQ.data?.supabase_live.stale ?? false,
               }}
@@ -322,7 +322,7 @@ function AdminActivityPage() {
               publicLoading={publicRealtimeQ.isLoading}
               realtime={realtimeQ.data}
               updatedAt={publicVisitorsQ.dataUpdatedAt || publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
-              supabaseVisitors={(publicVisitorsQ.data ?? []) as SupabaseVisitorRow[]}
+              supabaseVisitors={(publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]}
               supabaseVisitorsLoading={publicVisitorsQ.isLoading}
               onOpenVisitor={(id) => setVisitorDrawerId(id)}
             />
