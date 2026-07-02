@@ -14,7 +14,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ChevronRight, Filter, X } from "lucide-react";
+import { ChevronRight, Filter, X } from "lucide-react";
 import { z } from "zod";
 
 import { requireRole } from "@/lib/route-gates";
