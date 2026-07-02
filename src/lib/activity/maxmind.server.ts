@@ -102,8 +102,10 @@ export async function fetchMaxmind(ip: string): Promise<MaxmindResult> {
         ?? (traits.isp as string | undefined) ?? null,
       accuracyRadiusKm: num(loc.accuracy_radius),
     };
+    console.log("[maxmind] ok", { host, city: geo.city, region: geo.region, cc: geo.countryCode });
     return { status: "ok", geo, raw };
-  } catch {
+  } catch (err) {
+    console.log("[maxmind] threw", { host, err: (err as Error)?.name });
     return { status: "failed", raw: null };
   } finally {
     clearTimeout(t);
