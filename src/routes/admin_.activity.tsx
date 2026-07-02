@@ -255,16 +255,42 @@ function AdminActivityPage() {
         onChange={(patch) => setSearch(patch)}
         onClear={() => setSearch({ source: undefined, severity: undefined, country: undefined })}
       />
-      <BackfillGeoButton />
     </>
   );
+
+  // 7-day sparkline series derived from conversions feed (last 7 buckets @ 24h).
+  const analyticsTiles = useMemo<AnalyticsSeries[]>(() => {
+    const rows = (conversionsQ.data ?? []) as Array<{ event_kind: string; occurred_at: string }>;
+    const now = Date.now();
+    const bucketsFor = (kinds: Set<string>) => {
+      const arr = new Array(7).fill(0) as number[];
+      for (const r of rows) {
+        if (!kinds.has(r.event_kind)) continue;
+        const days = Math.floor((now - new Date(r.occurred_at).getTime()) / (24 * 3600 * 1000));
+        if (days >= 0 && days < 7) arr[6 - days] += 1;
+      }
+      return arr;
+    };
+    const visitorsSeries = bucketsFor(new Set(["$pageview"]));
+    const signupsSeries = bucketsFor(new Set(["signup_complete", "signup_started"]));
+    const conversionsSeries = bucketsFor(new Set(["signup_complete", "checkout_completed"]));
+    const enquiriesSeries = bucketsFor(new Set(["enquiry_started", "enquiry_created"]));
+    const checkoutSeries = bucketsFor(new Set(["checkout_started", "checkout_completed"]));
+    return [
+      { label: "Visitors 24h", value: publicOnline + membersOnline, series: visitorsSeries, color: "#38BDF8" },
+      { label: "Signups 7d", value: signupsSeries.reduce((s, n) => s + n, 0), series: signupsSeries, color: "#F97316" },
+      { label: "Conversions 7d", value: conversionsSeries.reduce((s, n) => s + n, 0), series: conversionsSeries, color: "#22D3EE" },
+      { label: "Enquiries 7d", value: enquiriesSeries.reduce((s, n) => s + n, 0), series: enquiriesSeries, color: "#A78BFA" },
+      { label: "Checkouts 7d", value: checkoutSeries.reduce((s, n) => s + n, 0), series: checkoutSeries, color: "#34D399" },
+    ];
+  }, [conversionsQ.data, publicOnline, membersOnline]);
 
   return (
     <DashboardShell
       role="admin"
       active="Activity"
       title="Activity"
-      subtitle="Realtime command centre"
+      subtitle="Live analytics command centre"
       actions={<div className="hidden items-center gap-2 lg:flex">{controls}</div>}
     >
 
@@ -274,25 +300,6 @@ function AdminActivityPage() {
           {controls}
         </header>
 
-
-
-        {/* ── Ops banner ── */}
-        {(degraded.length > 0 || feedDegraded.length > 0) ? (
-          <div className="flex items-start gap-2 rounded-[14px] border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-100">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <div>
-              <div className="font-medium">Partial data</div>
-              <div className="mt-0.5 text-[11.5px] text-amber-100/80">
-                Degraded: {[...degraded.map((d) => d.panel), ...feedDegraded].join(", ")}. Other panels are live.
-              </div>
-            </div>
-          </div>
-        ) : slow.length > 0 ? (
-          <div className="rounded-[14px] border border-reps-border bg-white/5 px-3 py-2 text-[11px] text-white/60">
-            Slow: {slow.map((s) => `${s.panel} (${s.ms}ms)`).join(" · ")}
-          </div>
-        ) : null}
-
         {filterChipsActive ? (
           <div className="flex flex-wrap items-center gap-1.5">
             {source ? <FilterChip label={`source: ${source}`} onClear={() => setSearch({ source: undefined })} /> : null}
@@ -301,23 +308,15 @@ function AdminActivityPage() {
           </div>
         ) : null}
 
-        {/* ── 1. ALERT BAND (conditional) ── */}
-        <AlertBand
-          criticalCount={criticalCount}
-          warningCount={attentionRows.filter((r) => r.severity === "warning").length}
-          topLabel={attentionRows.find((r) => r.severity === "critical")?.title ?? null}
-        />
-
-        {/* ── 2. COMMAND STRIP ── */}
-        <CommandStrip
+        {/* ── 1. HERO LINE — one plain-English sentence ── */}
+        <HeroLine
           publicOnline={publicOnline}
           membersOnline={membersOnline}
           keyActionsToday={keyActionsToday}
-          attentionCount={attentionCount}
-          criticalCount={criticalCount}
           ingestStatus={ingestStatus}
-          loading={publicRealtimeQ.isLoading && realtimeQ.isLoading}
+          updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
         />
+
 
         {/* ── 2. MAP-FIRST TOP ROW: large map + Realtime Summary Card ── */}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
