@@ -73,7 +73,7 @@ export function WorldMapPanel({
   countries, loading, selectedCountry, onSelectCountry,
   layer = "members", onLayerChange,
   memberCities = [], publicCountries = [], publicCities = [], publicOnline = 0, publicStale = false,
-  updatedAt = null,
+  updatedAt = null, onOpenVisitorAtCity,
 }: WorldMapPanelProps) {
 
   const [mapError, setMapError] = useState(false);
