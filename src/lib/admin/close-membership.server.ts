@@ -244,6 +244,23 @@ export async function _closeMembershipImpl(
     console.warn("[closeMembership] archive failed", e);
   }
 
+  // Detach any legacy BD-migration link so the closed account stops
+  // rendering as a "BD" member with a stale BD renewal date in admin views.
+  try {
+    await supabaseAdmin
+      .from("bd_migration")
+      .update({
+        rep_user_id: null,
+        rep_subscription_id: null,
+        bd_renewal_date: null,
+      } as never)
+      .eq("rep_user_id", input.user_id);
+  } catch (e) {
+    console.warn("[closeMembership] bd_migration detach failed", e);
+  }
+
+
+
   // Email BEFORE delete (audit trail still has the email address).
   const emailRes = await sendCancellationEmail({
     to: email,
