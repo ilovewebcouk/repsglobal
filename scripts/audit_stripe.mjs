@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-const key = process.env.STRIPE_SECRET_KEY;
+const key = process.env.STRIPE_SECRET_KEY_LIVE;
 if (!key) { console.error('NO STRIPE KEY'); process.exit(1); }
 const stripe = new Stripe(key);
 
