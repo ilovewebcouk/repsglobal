@@ -378,6 +378,27 @@ async function proxy(request: Request, splat: string): Promise<Response> {
         });
         observationId = written?.id ?? null;
         obsResult = "ok";
+
+        // Journey dual-write (behavioural flow store).
+        try {
+          const { recordVisitorJourney } = await import("@/lib/activity/visitor-journeys.server");
+          const jr = await recordVisitorJourney({
+            sessionId,
+            posthogDistinctId: distinctId,
+            observationId,
+            eventName: obsFirstEvent,
+            path,
+            referrer,
+          });
+          journeyId = jr.id;
+          journeyResult = jr.result;
+          if (jr.result === "failed") {
+            console.error("[posthog-proxy] journey write failed", { err: jr.error, session: !!sessionId, distinct: !!distinctId });
+          }
+        } catch (jerr) {
+          journeyResult = "failed";
+          console.error("[posthog-proxy] journey write threw", jerr);
+        }
       }
     } catch (err) {
       obsResult = "failed";
