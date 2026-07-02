@@ -65,7 +65,10 @@ export function RealtimeSummaryCard({
             <div className="font-display text-[13px] font-semibold uppercase tracking-[0.1em] text-white/85">
               Realtime
             </div>
-            <div className="text-[10.5px] text-white/45">Live · logged-in activity</div>
+            <div className="text-[10.5px] text-white/45">
+              {publicSummary ? (stale ? "Stale · public ingest quiet" : "Supabase live · public + members") : "Live · logged-in activity"}
+              {lastRefreshed ? <span className="text-white/35"> · updated {lastRefreshed}</span> : null}
+            </div>
           </div>
         </div>
         <TooltipProvider delayDuration={100}>
@@ -85,7 +88,7 @@ export function RealtimeSummaryCard({
       {/* HERO NUMBER — dominates */}
       <div className="border-b border-reps-border/60 px-5 pb-5 pt-6">
         <div className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/55">
-          Members online now
+          {heroLabel}
         </div>
         {loading && !data ? (
           <Skeleton className="mt-3 h-20 w-40" />
@@ -98,7 +101,11 @@ export function RealtimeSummaryCard({
               {online}
             </div>
             <div className="mb-2 flex flex-col gap-1">
-              {online > 0 ? (
+              {stale ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-amber-200">
+                  Stale
+                </span>
+              ) : online > 0 ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-300">
                   <Radio className="h-3 w-3" /> Live
                 </span>
@@ -118,19 +125,12 @@ export function RealtimeSummaryCard({
             </div>
           </div>
         )}
-        <div className="mt-4 grid grid-cols-2 gap-3 text-[11px]">
-          <div className="rounded-[10px] border border-reps-border/60 bg-white/[0.03] px-3 py-2">
-            <div className="text-[10px] uppercase tracking-wide text-white/45">Members · 30m</div>
-            <div className="mt-0.5 font-display text-[18px] font-bold tabular-nums text-white">
-              {data?.members_last_30min ?? 0}
-            </div>
-          </div>
-          <div className="rounded-[10px] border border-reps-border/60 bg-white/[0.03] px-3 py-2">
-            <div className="text-[10px] uppercase tracking-wide text-white/45">Events · 30m</div>
-            <div className="mt-0.5 font-display text-[18px] font-bold tabular-nums text-white">
-              {(data?.activity_last_30min ?? 0).toLocaleString()}
-            </div>
-          </div>
+        <div className={cn("mt-4 grid gap-3 text-[11px]", publicSummary ? "grid-cols-3" : "grid-cols-2")}>
+          {publicSummary ? (
+            <StatBox label="Public · 30m" value={publicSummary.online_now} tint="blue" />
+          ) : null}
+          <StatBox label="Members · 30m" value={data?.members_last_30min ?? 0} tint="orange" />
+          <StatBox label="Events · 30m" value={(data?.activity_last_30min ?? 0) + (publicSummary?.events_30m ?? 0)} tint="neutral" />
         </div>
       </div>
 
