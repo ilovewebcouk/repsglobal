@@ -6,11 +6,11 @@
 // Amendment 5: "Unknown country" bubbles are excluded from the map — they
 // are only surfaced in the Top Countries list.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ComposableMap, Geographies, Geography, Marker, ZoomableGroup,
 } from "react-simple-maps";
-import { AlertTriangle, Globe, Minus, Plus, X, RotateCcw } from "lucide-react";
+import { AlertTriangle, Globe, Minus, Plus, X, RotateCcw, Crosshair } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { countryDisplay, COUNTRY_NAMES } from "@/lib/activity/labels";
 import { COUNTRY_CENTROIDS, centroidFor } from "@/lib/geo/country-centroids";
@@ -49,6 +49,8 @@ export interface WorldMapPanelProps {
   publicOnline?: number;
   publicStale?: boolean;
   updatedAt?: number | null;
+  /** Optional — when a city marker is clicked and a visitor id is available, open the drawer. */
+  onOpenVisitorAtCity?: (city: MapCityPoint) => void;
 }
 
 
@@ -71,7 +73,7 @@ export function WorldMapPanel({
   countries, loading, selectedCountry, onSelectCountry,
   layer = "members", onLayerChange,
   memberCities = [], publicCountries = [], publicCities = [], publicOnline = 0, publicStale = false,
-  updatedAt = null,
+  updatedAt = null, onOpenVisitorAtCity,
 }: WorldMapPanelProps) {
 
   const [mapError, setMapError] = useState(false);
@@ -202,12 +204,58 @@ export function WorldMapPanel({
   }, [bubbles]);
 
   // Local zoom/center override so admins can pan and reset.
-  // Only user-initiated moves set an override — programmatic re-centres
-  // (initial mount, viewKey remount, autoView updates) must NOT lock the map.
   const [override, setOverride] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const [userMoving, setUserMoving] = useState(false);
-  const view = override ?? autoView;
-  const viewKey = `${view.center[0].toFixed(1)}:${view.center[1].toFixed(1)}:${view.zoom.toFixed(2)}`;
+  const [followLatest, setFollowLatest] = useState(true);
+
+  // Target view = user override > follow-latest bubble > autoView.
+  const knownIdsRef = useRef<Set<string>>(new Set());
+  const [latestArrival, setLatestArrival] = useState<Bubble | null>(null);
+  useEffect(() => {
+    const seen = knownIdsRef.current;
+    let newest: Bubble | null = null;
+    for (const b of bubbles) {
+      if (!seen.has(b.id) && b.online > 0 && b.precision === "city") newest = b;
+    }
+    // Refresh the seen set (retain only current ids to avoid unbounded growth).
+    knownIdsRef.current = new Set(bubbles.map((b) => b.id));
+    if (newest) setLatestArrival(newest);
+  }, [bubbles]);
+
+  const target = override
+    ?? (followLatest && latestArrival
+      ? { center: [latestArrival.lng, latestArrival.lat] as [number, number], zoom: 4.5 }
+      : autoView);
+
+  // Smooth animated view — interpolate from current animated state → target.
+  const [animView, setAnimView] = useState<{ center: [number, number]; zoom: number }>(target);
+  const animRef = useRef<number | null>(null);
+  useEffect(() => {
+    const from = animView;
+    const to = target;
+    const dLng = to.center[0] - from.center[0];
+    const dLat = to.center[1] - from.center[1];
+    const dZoom = to.zoom - from.zoom;
+    if (Math.abs(dLng) < 0.01 && Math.abs(dLat) < 0.01 && Math.abs(dZoom) < 0.02) return;
+    const start = performance.now();
+    const duration = 700;
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const e = ease(t);
+      setAnimView({
+        center: [from.center[0] + dLng * e, from.center[1] + dLat * e],
+        zoom: from.zoom + dZoom * e,
+      });
+      if (t < 1) animRef.current = requestAnimationFrame(step);
+    };
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+    animRef.current = requestAnimationFrame(step);
+    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target.center[0], target.center[1], target.zoom]);
+
+  const view = animView;
 
   void bubbles;
 
@@ -284,16 +332,15 @@ export function WorldMapPanel({
               style={{ width: "100%", height: "100%" }}
             >
               <ZoomableGroup
-                key={viewKey}
                 center={view.center}
                 zoom={view.zoom}
                 minZoom={0.9}
-                maxZoom={6}
-                onMoveStart={(_, event) => { if (event) setUserMoving(true); }}
+                maxZoom={12}
+                onMoveStart={(_, event) => { if (event) { setUserMoving(true); setFollowLatest(false); } }}
                 onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => {
-                  // Only lock as override if the move came from user input.
                   if (userMoving) {
                     setOverride({ center: coordinates, zoom });
+                    setAnimView({ center: coordinates, zoom });
                     setUserMoving(false);
                   }
                 }}
@@ -325,27 +372,44 @@ export function WorldMapPanel({
                     : isLive
                       ? isPublic ? "rgba(56,189,248,0.95)" : "rgba(249,115,22,0.95)"
                       : isPublic ? "rgba(56,189,248,0.5)" : "rgba(125,211,252,0.55)";
+                  const isNewest = latestArrival?.id === b.id;
                   return (
                     <Marker key={`${b.kind}-${b.id}`} coordinates={[b.lng, b.lat]}
                       onMouseEnter={() => setHoverBubbleId(b.id)}
                       onMouseLeave={() => setHoverBubbleId((v) => (v === b.id ? null : v))}
-                      onClick={() => onSelectCountry(isSelected ? undefined : b.cc)}
+                      onClick={() => {
+                        // City marker + drawer callback → open visitor drawer.
+                        if (b.precision === "city" && onOpenVisitorAtCity) {
+                          const src = (b.kind === "public" ? publicCities : memberCities)
+                            .find((c) => Math.abs(c.latitude - b.lat) < 0.001 && Math.abs(c.longitude - b.lng) < 0.001);
+                          if (src) onOpenVisitorAtCity(src);
+                        }
+                        // Also zoom to city and stop following-latest so user stays put.
+                        setFollowLatest(false);
+                        setOverride({ center: [b.lng, b.lat], zoom: Math.max(5.5, view.zoom) });
+                        // Country precision → filter on country as before.
+                        if (b.precision === "country") onSelectCountry(isSelected ? undefined : b.cc);
+                      }}
+                      onDoubleClick={() => {
+                        setFollowLatest(false);
+                        setOverride({ center: [b.lng, b.lat], zoom: 8 });
+                      }}
                       style={{ default: { cursor: "pointer", opacity: dim }, hover: { cursor: "pointer", opacity: 1 }, pressed: { cursor: "pointer" } }}
                     >
                       {isLive ? (
                         <>
-                          <circle r={b.radius + 6} fill={`rgba(${pulseRGB},0.06)`} className="animate-ping" style={{ animationDuration: "3s" }} />
+                          <circle r={b.radius + (isNewest ? 10 : 6)} fill={`rgba(${pulseRGB},${isNewest ? 0.12 : 0.06})`} className="animate-ping" style={{ animationDuration: isNewest ? "1.4s" : "3s" }} />
                           <circle r={b.radius + 3} fill={`rgba(${pulseRGB},0.14)`} />
                         </>
                       ) : null}
                       <circle
                         r={b.radius}
                         fill={solid}
-                        stroke={isSelected || isHover ? "#fff" : `rgba(${pulseRGB},0.9)`}
-                        strokeWidth={isSelected ? 2.2 : isHover ? 1.5 : 1}
+                        stroke={isSelected || isHover || isNewest ? "#fff" : `rgba(${pulseRGB},0.9)`}
+                        strokeWidth={isSelected ? 2.2 : isNewest ? 2 : isHover ? 1.5 : 1}
                       />
 
-                      {isHover || isSelected ? (
+                      {isHover || isSelected || isNewest ? (
                         <text
                           y={-b.radius - 4}
                           textAnchor="middle"
@@ -378,7 +442,7 @@ export function WorldMapPanel({
               <button
                 type="button"
                 aria-label="Zoom in"
-                onClick={() => setOverride({ center: view.center, zoom: Math.min(6, view.zoom * 1.5) })}
+                onClick={() => { setFollowLatest(false); setOverride({ center: view.center, zoom: Math.min(12, view.zoom * 1.5) }); }}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -386,7 +450,7 @@ export function WorldMapPanel({
               <button
                 type="button"
                 aria-label="Zoom out"
-                onClick={() => setOverride({ center: view.center, zoom: Math.max(0.9, view.zoom / 1.5) })}
+                onClick={() => { setFollowLatest(false); setOverride({ center: view.center, zoom: Math.max(0.9, view.zoom / 1.5) }); }}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
               >
                 <Minus className="h-3.5 w-3.5" />
@@ -394,11 +458,23 @@ export function WorldMapPanel({
               <button
                 type="button"
                 aria-label="Fit to activity"
-                onClick={() => setOverride(null)}
+                onClick={() => { setOverride(null); setLatestArrival(null); }}
                 className="grid h-7 w-7 place-items-center rounded-[6px] text-white/80 hover:bg-white/10 hover:text-white"
                 title="Fit view to current activity"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label={followLatest ? "Following latest visitor" : "Follow latest visitor"}
+                onClick={() => { setFollowLatest((v) => !v); setOverride(null); }}
+                className={cn(
+                  "grid h-7 w-7 place-items-center rounded-[6px] hover:bg-white/10",
+                  followLatest ? "text-orange-300" : "text-white/60 hover:text-white",
+                )}
+                title={followLatest ? "Following latest visitor — click to pin view" : "Follow latest visitor"}
+              >
+                <Crosshair className="h-3.5 w-3.5" />
               </button>
             </div>
 
@@ -407,7 +483,7 @@ export function WorldMapPanel({
             <div className="pointer-events-none absolute left-3 top-3 flex flex-col gap-0.5 rounded-[10px] border border-white/10 bg-black/65 px-2.5 py-1.5 text-[10.5px] leading-tight text-white/85 backdrop-blur-md">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                <span className="text-white/55">Public</span>
+                <span className="text-white/55">Visitors</span>
                 <span className="ml-auto tabular-nums font-semibold">{publicOnline}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -417,6 +493,7 @@ export function WorldMapPanel({
               </div>
               <div className="mt-0.5 text-[9.5px] text-white/40">
                 {updatedAt ? `Updated ${Math.max(0, Math.floor((Date.now() - updatedAt) / 1000))}s ago` : "Waiting for data"}
+                {followLatest ? " · following latest" : ""}
               </div>
             </div>
 
@@ -438,11 +515,11 @@ export function WorldMapPanel({
                 Loading map…
               </div>
             ) : bubbles.length === 0 && !loading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/30 text-center backdrop-blur-[1px]">
                 <Globe className="h-6 w-6 text-white/25" />
-                <div className="text-[12px] font-medium text-white/60">No town activity yet</div>
-                <div className="max-w-[280px] text-[10.5px] text-white/40">
-                  Town dots appear here as visitors and members become active.
+                <div className="text-[13px] font-medium text-white/75">Quiet</div>
+                <div className="max-w-[280px] text-[10.5px] text-white/45">
+                  No visitors in the last 5 minutes.
                 </div>
               </div>
             ) : null}
