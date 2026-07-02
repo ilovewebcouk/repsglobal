@@ -240,6 +240,7 @@ function AdminActivityPage() {
   const slow = timings.filter((t) => !t.degraded && t.ms > 1500);
   const feedDegraded = feedQ.data?.degraded_sources ?? [];
 
+  const publicStale = Boolean(publicHealthQ.data?.supabase_live.stale) || Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok);
   const ingestStatus: "healthy" | "degraded" | "down" =
     realtimeQ.error || publicRealtimeQ.error ? "down"
     : degraded.length > 0 || feedDegraded.length > 0 ? "degraded"
