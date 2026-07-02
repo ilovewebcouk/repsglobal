@@ -36,8 +36,21 @@ function toneClasses(tone: Tile["tone"]) {
 
 export function CompactStatusStrip(props: CompactStatusStripProps) {
   const liveNow = props.publicLive + props.membersLive;
-  const healthLabel = props.health === "healthy" ? "Healthy" : props.health === "degraded" ? "Degraded" : "Action needed";
-  const healthTone: Tile["tone"] = props.health === "healthy" ? "ok" : props.health === "degraded" ? "warn" : "critical";
+  const stale = props.ingestStale ?? false;
+  // Health tile reconciles with realtime staleness so it never contradicts the Realtime card.
+  const effectiveHealth: HealthState = props.health === "healthy" && stale ? "degraded" : props.health;
+  const healthLabel =
+    effectiveHealth === "healthy" ? "Healthy" :
+    effectiveHealth === "degraded" ? (stale ? "Quiet" : "Degraded") :
+    "Action needed";
+  const healthTone: Tile["tone"] =
+    effectiveHealth === "healthy" ? "ok" :
+    effectiveHealth === "degraded" ? "warn" :
+    "critical";
+  const healthSub =
+    effectiveHealth === "healthy" ? "all systems live" :
+    stale ? "no public hits recently" :
+    "see diagnostics";
 
   const tiles: Tile[] = [
     { label: "Live now", value: liveNow, sub: `${props.publicLive} public · ${props.membersLive} members`, tone: liveNow > 0 ? "accent" : "default" },
@@ -50,7 +63,7 @@ export function CompactStatusStrip(props: CompactStatusStripProps) {
       sub: `${props.criticalCount} critical · ${props.warningCount} warnings`,
       tone: props.criticalCount > 0 ? "critical" : props.warningCount > 0 ? "warn" : "default",
     },
-    { label: "Health", value: healthLabel, sub: props.health === "healthy" ? "all systems live" : "see diagnostics", tone: healthTone },
+    { label: "Health", value: healthLabel, sub: healthSub, tone: healthTone },
   ];
 
   return (
