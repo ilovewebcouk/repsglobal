@@ -171,9 +171,9 @@ export async function capturePublic(
 
   // If SDK is already fully loaded, capture immediately.
   if (window.__repsPhReady && window.__repsPh) {
-    dbg("capture (ready)", event);
     try {
       window.__repsPh.capture(event, finalProps);
+      dbg("capture sent", event);
     } catch (err) {
       if (DEBUG) console.warn("[analytics] capture failed", event, err);
     }
@@ -187,6 +187,7 @@ export async function capturePublic(
   const ph = await loadPostHog();
   if (!ph) return;
   // If loaded callback already fired between push and here, flush now.
+  // (flushQueue is idempotent — a second call finds an empty queue.)
   if (window.__repsPhReady) flushQueue(ph);
 }
 
