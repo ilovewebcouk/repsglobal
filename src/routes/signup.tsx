@@ -48,7 +48,8 @@ const PLAN_SUMMARIES: Record<
     monthly: {
       name: "REPS Core",
       tagline: "Monetise your professional trust.",
-      price: "£99",
+      price: "£34",
+      was: "£99",
       unit: "/year",
       meta: "Annual membership · charged today",
       highlights: [
@@ -61,9 +62,10 @@ const PLAN_SUMMARIES: Record<
     annual: {
       name: "REPS Core",
       tagline: "Monetise your professional trust.",
-      price: "£8.25",
-      unit: "/month",
-      meta: "£99 billed yearly",
+      price: "£34",
+      was: "£99",
+      unit: "/year",
+      meta: "£34 billed yearly",
       highlights: [
         "Earn the REPS Core badge",
         "Personalised website",
