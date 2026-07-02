@@ -116,21 +116,33 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   const admin = await isAdmin(request);
 
   // Server-side geo enrichment for capture endpoints only (skip static/assets/decide).
-  // Uses CF headers first, then ip_geolocation_cache/ipapi (server-only, never exposed).
+  // Uses CF headers first, then MaxMind / ipapi.co via ip-geo.server. Never exposed to client.
   let derivedGeo: {
     country: string | null; region: string | null; city: string | null;
     lat: number | null; lng: number | null; postal: string | null;
     tz: string | null; asn: string | null; org: string | null;
     source: string; confidence: string;
   } | null = null;
+  let geoProviderAttempted: string = "none";
+  let geoProviderResult: string = "none";
+  let geoCacheHit: boolean = false;
+  let rawIpSource: string = "none"; // label only — never the IP itself
 
   const isCaptureEndpoint = splat.startsWith("e") || splat.startsWith("batch") || splat.startsWith("capture");
   if (isCaptureEndpoint) {
     try {
-      const cfIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") ||
-        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+      let cfIp: string | null = null;
+      if (request.headers.get("cf-connecting-ip")) { cfIp = request.headers.get("cf-connecting-ip"); rawIpSource = "cf-connecting-ip"; }
+      else if (request.headers.get("x-real-ip")) { cfIp = request.headers.get("x-real-ip"); rawIpSource = "x-real-ip"; }
+      else {
+        const xff = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+        if (xff) { cfIp = xff; rawIpSource = "x-forwarded-for"; }
+      }
+      geoProviderAttempted = cfIp ? "maxmind-then-ipapi" : "none";
       const { lookupIpGeo } = await import("@/lib/activity/ip-geo.server");
       const g = cfIp ? await lookupIpGeo(cfIp) : null;
+      geoProviderResult = g?.source ?? "none";
+      geoCacheHit = typeof g?.source === "string" && g.source.endsWith("-cache");
       const cc = country || g?.countryCode || null;
       const region = request.headers.get("cf-region") || g?.region || null;
       const city = request.headers.get("cf-ipcity") || g?.city || null;
@@ -148,7 +160,9 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       const source = city ? (request.headers.get("cf-ipcity") ? "cloudflare-headers" : (g?.source ?? "none")) :
         cc ? "country-only" : "none";
       derivedGeo = { country: cc, region, city, lat, lng, postal, tz, asn: g?.asn ?? null, org: g?.org ?? null, source, confidence };
-    } catch {
+    } catch (err) {
+      geoProviderResult = "threw";
+      console.error("[posthog-proxy] geo lookup threw", err);
       derivedGeo = null;
     }
   }
