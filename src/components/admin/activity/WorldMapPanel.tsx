@@ -332,16 +332,15 @@ export function WorldMapPanel({
               style={{ width: "100%", height: "100%" }}
             >
               <ZoomableGroup
-                key={viewKey}
                 center={view.center}
                 zoom={view.zoom}
                 minZoom={0.9}
-                maxZoom={6}
-                onMoveStart={(_, event) => { if (event) setUserMoving(true); }}
+                maxZoom={12}
+                onMoveStart={(_, event) => { if (event) { setUserMoving(true); setFollowLatest(false); } }}
                 onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => {
-                  // Only lock as override if the move came from user input.
                   if (userMoving) {
                     setOverride({ center: coordinates, zoom });
+                    setAnimView({ center: coordinates, zoom });
                     setUserMoving(false);
                   }
                 }}
