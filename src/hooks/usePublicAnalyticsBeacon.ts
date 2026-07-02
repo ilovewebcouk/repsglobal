@@ -414,14 +414,19 @@ export function usePublicAnalyticsBeacon() {
     installAnalyticsDebug(memberRef);
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (mounted) memberRef.current = Boolean(data.session);
+      if (mounted) {
+        memberRef.current = Boolean(data.session);
+        setMemberFlagForAnalytics(memberRef.current);
+      }
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       memberRef.current = Boolean(session);
+      setMemberFlagForAnalytics(memberRef.current);
       if (event === "SIGNED_OUT") {
         resetPostHog();
       }
     });
+
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
