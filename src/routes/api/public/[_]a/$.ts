@@ -302,6 +302,8 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   let obsFirstEvent: string | null = null;
   let extractedPath: string | null = null;
   let observationId: string | null = null;
+  let journeyId: string | null = null;
+  let journeyResult: "ok" | "skipped" | "failed" | null = null;
   const consentWriteEligible = isCaptureEndpoint && !admin;
 
   if (consentWriteEligible) {
