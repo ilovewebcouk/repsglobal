@@ -395,12 +395,6 @@ function AdminActivityPage() {
             <h2 className="font-display text-[14px] font-semibold text-white">Member activity</h2>
             <span className="text-[11px] text-white/45">Logged-in members only</span>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-orange-400" />
-            <h2 className="font-display text-[14px] font-semibold text-white">Member activity</h2>
-            <span className="text-[11px] text-white/45">Logged-in members only</span>
-          </div>
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
             <div className="xl:col-span-7">
               <TopMemberPagesPanel
