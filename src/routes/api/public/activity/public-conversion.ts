@@ -35,13 +35,6 @@ function hashIp(ip: string): string {
   return createHmac("sha256", salt).update(ip).digest("hex").slice(0, 24);
 }
 
-function clientIp(req: Request): string {
-  return (
-    req.headers.get("cf-connecting-ip") ??
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "0.0.0.0"
-  );
-}
 
 export const Route = createFileRoute("/api/public/activity/public-conversion")({
   server: {
