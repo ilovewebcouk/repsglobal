@@ -125,7 +125,7 @@ async function fetchLive(): Promise<PublicRealtime> {
     try {
       const citiesRes = await hogql(`SELECT
         coalesce(nullIf(toString(properties.$geoip_city_name), ''), nullIf(toString(properties.city), '')) AS city,
-        coalesce(nullIf(toString(properties.$geoip_country_code), ''), nullIf(toString(properties.country_code), '')) AS cc,
+        coalesce(nullIf(toString(properties.reps_country_code), ''), nullIf(toString(properties.country_code), ''), nullIf(toString(properties.$geoip_country_code), '')) AS cc,
         coalesce(nullIf(toString(properties.$geoip_subdivision_1_name), ''), nullIf(toString(properties.region), '')) AS region,
         avg(toFloat64OrNull(toString(properties.$geoip_latitude))) AS lat,
         avg(toFloat64OrNull(toString(properties.$geoip_longitude))) AS lng,
