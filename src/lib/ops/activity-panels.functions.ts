@@ -301,15 +301,18 @@ export const getCurrentPages = createServerFn({ method: "POST" })
         if (r.user_id) b.online.add(r.user_id);
         perPage.set(path, b);
       }
+      // Only annotate paths that actually have live members on them right now.
+      // Do NOT seed new map entries from 24h/48h view history — that would leak
+      // ghost rows into "Member pages now" with online_count = 0.
       for (const r of views24) {
-        const b = perPage.get(r.path) ?? { online: new Set(), views24: 0, views48: 0 };
+        const b = perPage.get(r.path);
+        if (!b) continue;
         b.views24++;
-        perPage.set(r.path, b);
       }
       for (const r of views48) {
-        const b = perPage.get(r.path) ?? { online: new Set(), views24: 0, views48: 0 };
+        const b = perPage.get(r.path);
+        if (!b) continue;
         b.views48++;
-        perPage.set(r.path, b);
       }
 
       const allUserIds = Array.from(new Set(live.map((r) => r.user_id).filter((x): x is string => Boolean(x))));
@@ -321,19 +324,21 @@ export const getCurrentPages = createServerFn({ method: "POST" })
         pMap.set(p.id, { name: p.full_name || p.display_name || p.id.slice(0, 8), avatar_url: p.avatar_url });
       }
 
-      const rows: CurrentPageRow[] = Array.from(perPage.entries()).map(([path, b]) => {
-        const avatars = Array.from(b.online).slice(0, 4).map((uid) => {
-          const p = pMap.get(uid);
-          return { user_id: uid, name: p?.name ?? uid.slice(0, 8), avatar_url: p?.avatar_url ?? null };
+      const rows: CurrentPageRow[] = Array.from(perPage.entries())
+        .filter(([, b]) => b.online.size > 0)
+        .map(([path, b]) => {
+          const avatars = Array.from(b.online).slice(0, 4).map((uid) => {
+            const p = pMap.get(uid);
+            return { user_id: uid, name: p?.name ?? uid.slice(0, 8), avatar_url: p?.avatar_url ?? null };
+          });
+          return {
+            path,
+            online_count: b.online.size,
+            avatars,
+            views_24h: b.views24,
+            trend_pct: pctDelta(b.views24, b.views48),
+          };
         });
-        return {
-          path,
-          online_count: b.online.size,
-          avatars,
-          views_24h: b.views24,
-          trend_pct: pctDelta(b.views24, b.views48),
-        };
-      });
       rows.sort((a, b) => b.online_count - a.online_count || b.views_24h - a.views_24h);
       return rows.slice(0, data.limit);
     });

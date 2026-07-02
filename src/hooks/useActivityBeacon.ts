@@ -135,4 +135,37 @@ export function useActivityBeacon() {
       duration_ms: duration,
     });
   }, [pathname]);
+
+  // Heartbeat → keeps user_sessions.last_seen_at fresh so "Members online now"
+  // and "Member pages now" stay truthful for members sitting on one page.
+  // 60s cadence + 5min freshness window = 5 heartbeats before drop-off.
+  useEffect(() => {
+    if (!pathname) return;
+    if (pathname.startsWith("/admin")) return;
+
+    const sendHeartbeat = () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      const sid = tabSessionId();
+      const now = performance.now();
+      const duration = Math.round(now - enteredAtRef.current);
+      void postJSON("/api/public/activity/session-event", {
+        session_id: sid,
+        path: pathname,
+        referrer: typeof document !== "undefined" ? document.referrer || null : null,
+        duration_ms: duration,
+      });
+    };
+
+    const interval = window.setInterval(sendHeartbeat, 60_000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") sendHeartbeat();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [pathname]);
 }
+
