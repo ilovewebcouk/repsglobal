@@ -164,7 +164,8 @@ async function proxy(request: Request, splat: string): Promise<Response> {
     delete (props as Record<string, unknown>)["x-real-ip"];
     props.reps_is_internal = admin;
     props.is_internal = admin; // legacy mirror
-    props.reps_proxy_v = 4;
+    props.reps_proxy_v = 5;
+    props.reps_pt = pathTaken;
     if (derivedGeo) {
       if (derivedGeo.country) {
         props.reps_country_code = derivedGeo.country;
