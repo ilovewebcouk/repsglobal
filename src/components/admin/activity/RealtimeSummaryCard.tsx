@@ -13,11 +13,22 @@ import { cn } from "@/lib/utils";
 import type { RealtimeSummary } from "@/lib/ops/activity-realtime.functions";
 
 const HONEST_LABEL =
-  "Logged-in member activity only. Anonymous public analytics is disabled in v1.2.";
+  "Combined live view: public visitors from Supabase (visitor_journeys) + logged-in members from user_sessions.";
+
+export interface RealtimePublicSummary {
+  online_now: number;
+  events_30m: number;
+  last_event_at: string | null;
+  stale: boolean;
+}
 
 export function RealtimeSummaryCard({
-  data, loading,
-}: { data: RealtimeSummary | undefined; loading: boolean }) {
+  data, loading, publicSummary,
+}: {
+  data: RealtimeSummary | undefined;
+  loading: boolean;
+  publicSummary?: RealtimePublicSummary;
+}) {
   const perMinute = data?.per_minute ?? [];
   const peak = Math.max(1, ...perMinute.map((p) => p.count));
   const deviceData = useMemo(() => {
@@ -32,10 +43,15 @@ export function RealtimeSummaryCard({
   }, [data]);
   const deviceTotal = deviceData.reduce((s, x) => s + x.value, 0);
 
-  const online = data?.online_now ?? 0;
+  const membersOnline = data?.online_now ?? 0;
+  const publicOnline = publicSummary?.online_now ?? 0;
+  const online = membersOnline + publicOnline;
+  const heroLabel = publicSummary ? "Visitors + members online now" : "Members online now";
   const trendLast = perMinute.slice(-5).reduce((s, p) => s + p.count, 0);
   const trendPrev = perMinute.slice(-10, -5).reduce((s, p) => s + p.count, 0);
   const trendPct = trendPrev === 0 ? (trendLast > 0 ? 100 : 0) : Math.round(((trendLast - trendPrev) / trendPrev) * 100);
+  const stale = publicSummary?.stale ?? false;
+  const lastRefreshed = data?.generated_at ? new Date(data.generated_at).toLocaleTimeString() : null;
 
   return (
     <section className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-[#1a1410]">
