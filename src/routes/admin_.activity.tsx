@@ -383,7 +383,7 @@ function AdminActivityPage() {
 
 
         {/* ── 3. ANALYTICS STRIP · 7d sparkline tiles ── */}
-        <AnalyticsStrip tiles={analyticsTiles} loading={conversionsQ.isLoading} />
+        <AnalyticsStrip tiles={analyticsTiles} />
 
         {/* ── 4. PUBLIC ANALYTICS · 24h rollup (secondary) ── */}
         <PublicVisitorsPanel />
