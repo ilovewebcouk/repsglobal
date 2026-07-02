@@ -394,9 +394,27 @@ function AdminActivityPage() {
         </div>
 
 
+        {/* ── 2c. PAGES BEING VIEWED NOW (Zone 5) ── */}
+        <PagesBeingViewedNow
+          memberPages={currentQ.data?.pages ?? []}
+          publicVisitors={((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).map((v) => ({
+            latest_path: v.latest_path ?? null,
+            status: v.status,
+            last_seen_at: v.last_seen_at,
+          }))}
+          loading={currentQ.isLoading || publicVisitorsQ.isLoading}
+        />
 
-        {/* ── 3. ANALYTICS STRIP · 7d sparkline tiles ── */}
-        <AnalyticsStrip tiles={analyticsTiles} />
+        {/* ── 3. HISTORICAL ANALYTICS · 7d rollup (below the fold) ── */}
+        <div className="pt-2">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-white/40" />
+            <h2 className="font-display text-[13.5px] font-semibold text-white/85">Historical analytics</h2>
+            <span className="text-[10.5px] text-white/45">7-day rollup · not live command</span>
+          </div>
+          <AnalyticsStrip tiles={analyticsTiles} />
+        </div>
+
 
         {/* ── 4. PUBLIC ANALYTICS · 24h rollup (secondary) ── */}
         <PublicVisitorsPanel />
