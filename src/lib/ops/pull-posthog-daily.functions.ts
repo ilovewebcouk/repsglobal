@@ -50,8 +50,8 @@ export async function runPostHogDailyRollup(date?: string) {
 
   try {
     // is_internal is stored as JSON — compare via toString to avoid ClickHouse
-    // type mismatch (String vs UInt8). NULL means "not tagged" = public.
-    const where = `WHERE toDate(timestamp) = toDate('${target}') AND (properties.is_internal IS NULL OR toString(properties.is_internal) != 'true')`;
+    // type-coercion errors. Prefer canonical `reps_is_internal`, fall back to legacy.
+    const where = `WHERE toDate(timestamp) = toDate('${target}') AND (properties.reps_is_internal IS NULL OR toString(properties.reps_is_internal) != 'true') AND (properties.is_internal IS NULL OR toString(properties.is_internal) != 'true')`;
 
     // Totals per event
     const totals = await hogql(
