@@ -62,7 +62,7 @@ function RepsCard() {
       </div>
 
       <p className="mt-3 text-[11px] leading-relaxed text-white/45">
-        Core (£99/yr) is a separate public register listing, not coaching
+        Core (£34/yr) is a separate public register listing, not coaching
         software, and is not included in this comparison. See{" "}
         <a href="/pricing" className="underline underline-offset-2 hover:text-white/70">/pricing</a>{" "}
         for the full ladder.

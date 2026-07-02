@@ -79,7 +79,7 @@ export const getMyLegacyPaymentHistory = createServerFn({ method: "GET" })
         next_due_at = link.next_due_at;
         is_lifetime = !!link.is_lifetime;
         // Per the Phase 2.0 launch rules: every legacy member rolls to
-        // Core £99/yr on their next renewal. Lifetime members never
+        // Core £34/yr on their next renewal. Lifetime members never
         // renew. The historical £34 / £29 / £97 amount is only used for
         // the launch-day honour window, not for the next-renewal display.
         next_due_amount_pence = is_lifetime ? null : 3400;

@@ -194,7 +194,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
 ];
 
 export const TIER_META: Record<TierKey, { label: string; price: string }> = {
-  verified: { label: "Core", price: "£99/yr" },
+  verified: { label: "Core", price: "£34/yr" },
   pro: { label: "Pro", price: "£59/mo" },
   studio: { label: "Studio", price: "£149/mo" },
 };
@@ -222,7 +222,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are planned?",
-    a: "Core is billed annually at £99. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
+    a: "Core is billed annually at £34. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",

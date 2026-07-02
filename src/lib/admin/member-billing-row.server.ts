@@ -18,7 +18,7 @@ export type MemberBillingState = "ok" | "payment_failed" | "renewal_due";
 // MRR pence by tier — must match `planMrrPence` in professionals.functions.ts.
 const PLAN_MRR_PENCE: Record<MemberBillingPlan, number> = {
   free: 0,
-  verified: 825, // £99/yr ÷ 12
+  verified: Math.round(3400 / 12), // £34/yr ÷ 12
   pro: 5900,
   studio: 14900,
 };

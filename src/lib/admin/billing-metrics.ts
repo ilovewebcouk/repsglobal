@@ -2,7 +2,7 @@
 // Pure utility — no server-fn imports, safe to use anywhere.
 //
 // Tier ladder (locked):
-//   Verified — £99 / year (annual ONLY, no monthly option)
+//   Verified — £34 / year (annual ONLY, no monthly option)
 //   Pro      — £59 / month
 //   Studio   — £149 / month
 //
