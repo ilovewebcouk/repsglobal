@@ -274,15 +274,25 @@ async function proxy(request: Request, splat: string): Promise<Response> {
 
   // Server-side observation write (admin-only visibility of raw IP + geo).
   // Fire-and-forget so we never delay the outbound proxy call.
+  let obsAttempted = false;
+  let obsResult: "ok" | "skipped" | "failed" = "skipped";
+  let obsFailure: string | null = null;
+  let obsHasSession = false;
+  let obsHasDistinct = false;
+  let obsHasPath = false;
+  let obsHasReferrer = false;
+  let obsHasIp = false;
+  let obsEventCount = 0;
+  let obsFirstEvent: string | null = null;
+
   if (isCaptureEndpoint && !admin) {
     try {
       const cfIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") ||
         request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+      obsHasIp = !!cfIp;
       if (cfIp) {
-        const [{ hashIp: _h }, { recordVisitorObservation }] = await Promise.all([
-          import("@/lib/activity/ip-geo.server"),
-          import("@/lib/activity/ip-observations.server"),
-        ]);
+        obsAttempted = true;
+        const { recordVisitorObservation } = await import("@/lib/activity/ip-observations.server");
         // Best-effort session/path extraction from the first event.
         let sessionId: string | null = null;
         let distinctId: string | null = null;
@@ -301,13 +311,20 @@ async function proxy(request: Request, splat: string): Promise<Response> {
             ? parsedForMeta[0]
             : (parsedForMeta as Record<string, unknown> | null);
           const evtArr = first && (first as Record<string, unknown>).batch;
-          const evt = (Array.isArray(evtArr) ? evtArr[0] : first) as Record<string, unknown> | null;
+          const evtList = Array.isArray(evtArr) ? evtArr : Array.isArray(parsedForMeta) ? parsedForMeta : first ? [first] : [];
+          obsEventCount = evtList.length;
+          const evt = (evtList[0] as Record<string, unknown> | null) ?? null;
+          obsFirstEvent = (evt?.event as string | undefined) ?? null;
           const props = (evt?.properties ?? {}) as Record<string, unknown>;
           sessionId = (props.$session_id as string | undefined) ?? null;
           distinctId = (evt?.distinct_id as string | undefined) ?? (props.distinct_id as string | undefined) ?? null;
           path = (props.$pathname as string | undefined) ?? (props.$current_url as string | undefined) ?? null;
           referrer = (props.$referrer as string | undefined) ?? null;
         } catch { /* ignore */ }
+        obsHasSession = !!sessionId;
+        obsHasDistinct = !!distinctId;
+        obsHasPath = !!path;
+        obsHasReferrer = !!referrer;
 
         await recordVisitorObservation({
           ctx: {
@@ -337,11 +354,37 @@ async function proxy(request: Request, splat: string): Promise<Response> {
           path,
           referrer,
         });
+        obsResult = "ok";
       }
     } catch (err) {
-      console.error("[posthog-proxy] observation write failed", err);
+      obsResult = "failed";
+      obsFailure = (err as Error)?.name ?? "unknown";
+      console.error("[posthog-proxy] observation write failed", { name: (err as Error)?.name, msg: (err as Error)?.message });
     }
   }
+
+  console.log("[posthog-proxy:obs]", {
+    proxy_path: `/${splat}`,
+    method: request.method,
+    parser: pathTaken,
+    event_count: obsEventCount,
+    first_event: obsFirstEvent,
+    has_session_id: obsHasSession,
+    has_distinct_id: obsHasDistinct,
+    has_path: obsHasPath,
+    has_referrer: obsHasReferrer,
+    has_raw_ip_from_request: obsHasIp,
+    is_admin: admin,
+    consent_eligible: !admin,
+    observation_write_attempted: obsAttempted,
+    observation_write_result: obsResult,
+    failure_reason: obsFailure,
+    derived_geo_source: derivedGeo?.source ?? null,
+    derived_geo_confidence: derivedGeo?.confidence ?? null,
+    derived_geo_has_city: !!derivedGeo?.city,
+  });
+
+
 
 
   if (ua) outboundHeaders.set("user-agent", ua);
