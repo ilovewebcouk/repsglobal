@@ -70,16 +70,31 @@ function flushQueue(ph: PostHogLike) {
 
 async function loadPostHog(): Promise<PostHogLike | null> {
   if (typeof window === "undefined") return null;
-  if (window.__repsPh && window.__repsPhReady) return window.__repsPh;
-  if (window.__repsPhInitPromise) return window.__repsPhInitPromise;
+  // Singleton: ready instance.
+  if (window.__repsPh && window.__repsPhReady) {
+    dbg("posthog init skipped existing instance");
+    return window.__repsPh;
+  }
+  // Singleton: in-flight init.
+  if (window.__repsPhInitPromise) {
+    dbg("posthog init reused pending promise");
+    return window.__repsPhInitPromise;
+  }
   if (!POSTHOG_KEY) return null;
 
   window.__repsPhQueue = window.__repsPhQueue ?? [];
+  dbg("posthog init start");
 
   window.__repsPhInitPromise = (async () => {
     try {
       const mod = await import("posthog-js");
       const posthog = (mod.default ?? mod) as unknown as PostHogLike;
+      // Guard against a concurrent init from another code path having
+      // already bound __repsPh in the interim.
+      if (window.__repsPh && window.__repsPhReady) {
+        dbg("posthog init skipped existing instance");
+        return window.__repsPh;
+      }
       const origin = window.location.origin;
       posthog.init(POSTHOG_KEY, {
         api_host: `${origin}/api/public/_a`,
@@ -95,14 +110,15 @@ async function loadPostHog(): Promise<PostHogLike | null> {
         disable_surveys: true,
         disable_web_experiments: true,
         disable_external_dependency_loading: true,
-        advanced_disable_decide: true,
+        // posthog-js >=1.190 renamed `advanced_disable_decide` → `advanced_disable_flags`.
+        advanced_disable_flags: true,
         advanced_disable_feature_flags: true,
         advanced_disable_feature_flags_on_first_load: true,
         autocapture: false,
         loaded: (ph: PostHogLike) => {
           window.__repsPh = ph;
           window.__repsPhReady = true;
-          dbg("posthog loaded, flushing queue");
+          dbg("posthog loaded");
           flushQueue(ph);
         },
       });
@@ -112,10 +128,30 @@ async function loadPostHog(): Promise<PostHogLike | null> {
       return posthog;
     } catch (err) {
       if (DEBUG) console.warn("[analytics] posthog load failed", err);
+      // Clear the promise so a later retry can attempt init again.
+      window.__repsPhInitPromise = undefined;
       return null;
     }
   })();
   return window.__repsPhInitPromise;
+}
+
+/**
+ * resetPostHog — called when consent is withdrawn. Clears queue,
+ * resets distinct id, and drops the singleton so a future consent
+ * grant can re-init cleanly.
+ */
+function resetPostHog() {
+  if (typeof window === "undefined") return;
+  try {
+    window.__repsPh?.reset();
+  } catch {
+    /* no-op */
+  }
+  window.__repsPhQueue = [];
+  // Intentionally leave __repsPh/__repsPhReady in place — posthog-js
+  // does not support un-initialising a loaded instance. The consent
+  // gate in capturePublic prevents further sends.
 }
 
 /**
