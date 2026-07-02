@@ -116,6 +116,9 @@ function AdminActivityPage() {
   const runFeed = useServerFn(getActivityFeed);
   const runPublicRealtime = useServerFn(getPublicRealtime);
 
+  const runPublicVisitorsLive = useServerFn(getPublicVisitorsLive);
+  const runPublicIngestHealth = useServerFn(getPublicIngestHealth);
+
   // ── Queries — realtime queries poll fast (5–8s); heavier aggregates poll slower.
   const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 6_000 });
   const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
@@ -123,6 +126,16 @@ function AdminActivityPage() {
     queryKey: ["a-public-realtime"],
     queryFn: () => runPublicRealtime(),
     refetchInterval: 6_000, // server TTL 5s → poll every ~6s for a live feel
+  });
+  const publicVisitorsQ = useQuery({
+    queryKey: ["a-public-visitors-live"],
+    queryFn: () => runPublicVisitorsLive({ data: { limit: 50 } }),
+    refetchInterval: 8_000,
+  });
+  const publicHealthQ = useQuery({
+    queryKey: ["a-public-health"],
+    queryFn: () => runPublicIngestHealth(),
+    refetchInterval: 20_000,
   });
 
   const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 8_000 });
