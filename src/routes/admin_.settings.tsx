@@ -84,7 +84,7 @@ function AdminSettings() {
                 ["AI Business Command Centre", true],
                 ["Nutrition plan builder", true],
                 ["Live booking calendar", true],
-                ["BD migration imports", false],
+                ["Member CSV imports", false],
                 ["Public review responses", true],
               ].map(([l, on]) => (
                 <li key={l as string} className="flex items-center justify-between rounded-[10px] border border-reps-border bg-reps-ink px-3 py-2">
