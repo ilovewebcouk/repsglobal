@@ -54,6 +54,8 @@ import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDr
 import { HeroLine } from "@/components/admin/activity/HeroLine";
 import { AnalyticsStrip, type AnalyticsSeries } from "@/components/admin/activity/AnalyticsStrip";
 import { DiagnosticsDrawer } from "@/components/admin/activity/DiagnosticsDrawer";
+import { CompactStatusStrip } from "@/components/admin/activity/CompactStatusStrip";
+import { PagesBeingViewedNow } from "@/components/admin/activity/PagesBeingViewedNow";
 import { getPublicVisitorsLive, getPublicIngestHealth, getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
 
 const SOURCES: ActivitySource[] = [
@@ -317,6 +319,17 @@ function AdminActivityPage() {
           updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
         />
 
+        {/* ── 1b. COMPACT STATUS STRIP (Zone 3 · six tiles max) ── */}
+        <CompactStatusStrip
+          publicLive={publicOnline}
+          membersLive={membersOnline}
+          keyActionsToday={keyActionsToday}
+          criticalCount={criticalCount}
+          warningCount={Math.max(0, attentionCount - criticalCount)}
+          health={ingestStatus === "down" ? "broken" : ingestStatus}
+        />
+
+
 
         {/* ── 2. MAP-FIRST TOP ROW: large map + Realtime Summary Card ── */}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
@@ -381,9 +394,27 @@ function AdminActivityPage() {
         </div>
 
 
+        {/* ── 2c. PAGES BEING VIEWED NOW (Zone 5) ── */}
+        <PagesBeingViewedNow
+          memberPages={currentQ.data?.pages ?? []}
+          publicVisitors={((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).map((v) => ({
+            latest_path: v.latest_path ?? null,
+            status: v.status,
+            last_seen_at: v.last_seen_at,
+          }))}
+          loading={currentQ.isLoading || publicVisitorsQ.isLoading}
+        />
 
-        {/* ── 3. ANALYTICS STRIP · 7d sparkline tiles ── */}
-        <AnalyticsStrip tiles={analyticsTiles} />
+        {/* ── 3. HISTORICAL ANALYTICS · 7d rollup (below the fold) ── */}
+        <div className="pt-2">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-white/40" />
+            <h2 className="font-display text-[13.5px] font-semibold text-white/85">Historical analytics</h2>
+            <span className="text-[10.5px] text-white/45">7-day rollup · not live command</span>
+          </div>
+          <AnalyticsStrip tiles={analyticsTiles} />
+        </div>
+
 
         {/* ── 4. PUBLIC ANALYTICS · 24h rollup (secondary) ── */}
         <PublicVisitorsPanel />
