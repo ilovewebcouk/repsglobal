@@ -19,7 +19,14 @@ const TTL_PRIVATE_MS = 30 * 24 * 60 * 60 * 1000;
 const LOOKUP_TIMEOUT_MS = 1500;
 
 export type LocationConfidence = "city" | "region" | "country" | "unknown";
-export type LocationSource = "cloudflare-headers" | "ipapi" | "ipapi-cache" | "country-only" | "none";
+export type LocationSource =
+  | "cloudflare-headers"
+  | "maxmind"
+  | "maxmind-cache"
+  | "ipapi"
+  | "ipapi-cache"
+  | "country-only"
+  | "none";
 
 export interface IpGeo {
   countryCode: string | null;
@@ -89,7 +96,7 @@ async function readCache(ipHash: string): Promise<IpGeo | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("ip_geolocation_cache")
-    .select("country_code,country_name,region,city,postal_code,latitude,longitude,timezone,asn,org,lookup_status,expires_at")
+    .select("provider,country_code,country_name,region,city,postal_code,latitude,longitude,timezone,asn,org,lookup_status,expires_at")
     .eq("ip_hash", ipHash)
     .maybeSingle();
   if (!data) return null;
@@ -114,12 +121,14 @@ async function readCache(ipHash: string): Promise<IpGeo | null> {
     asn: (data.asn as string | null) ?? null,
     org: (data.org as string | null) ?? null,
   };
-  return { ...geo, source: "ipapi-cache", confidence: computeConfidence(geo) };
+  const src: LocationSource = data.provider === "maxmind" ? "maxmind-cache" : "ipapi-cache";
+  return { ...geo, source: src, confidence: computeConfidence(geo) };
 }
 
 async function writeCache(
   ipHash: string,
   ipPrefixHash: string | null,
+  provider: "maxmind" | "ipapi",
   status: "ok" | "failed" | "private" | "rate_limited",
   geo: Partial<IpGeo> | null,
   raw: unknown,
@@ -132,7 +141,7 @@ async function writeCache(
     {
       ip_hash: ipHash,
       ip_prefix_hash: ipPrefixHash,
-      provider: "ipapi",
+      provider,
       country_code: geo?.countryCode ?? null,
       country_name: geo?.countryName ?? null,
       region: geo?.region ?? null,
@@ -193,8 +202,9 @@ async function fetchIpapi(ip: string): Promise<{ geo: IpGeo | null; raw: unknown
 }
 
 /**
- * Server-side IP lookup. Cache-first; never called from the browser.
- * Returns null when no ACTIVITY_IP_SALT is configured or IP missing.
+ * Server-side IP lookup. Cache-first; MaxMind primary, ipapi.co fallback.
+ * Never called from the browser. Returns null when no ACTIVITY_IP_SALT
+ * is configured or IP missing.
  */
 export async function lookupIpGeo(ip: string | null | undefined): Promise<IpGeo | null> {
   if (!ip) return null;
@@ -203,7 +213,7 @@ export async function lookupIpGeo(ip: string | null | undefined): Promise<IpGeo 
   if (!ipHash) return null;
 
   if (isPrivateIp(ip)) {
-    try { await writeCache(ipHash, ipPfx, "private", null, null); } catch { /* ignore */ }
+    try { await writeCache(ipHash, ipPfx, "maxmind", "private", null, null); } catch { /* ignore */ }
     return { countryCode: null, countryName: null, region: null, city: null, postalCode: null,
       latitude: null, longitude: null, timezone: null, asn: null, org: null,
       source: "none", confidence: "unknown" };
@@ -214,7 +224,30 @@ export async function lookupIpGeo(ip: string | null | undefined): Promise<IpGeo 
     if (cached) return cached;
   } catch { /* fall through */ }
 
+  // Primary: MaxMind Precision City (or GeoLite2 web service).
+  try {
+    const { fetchMaxmind } = await import("./maxmind.server");
+    const mm = await fetchMaxmind(ip);
+    if (mm.status === "ok") {
+      const geo: IpGeo = { ...mm.geo, source: "maxmind", confidence: computeConfidence(mm.geo) };
+      try { await writeCache(ipHash, ipPfx, "maxmind", "ok", geo, mm.raw); } catch { /* ignore */ }
+      return geo;
+    }
+    if (mm.status === "not_configured") {
+      // fall through to ipapi
+    } else if (mm.status === "unauthorized") {
+      console.error("[ip-geo] MaxMind unauthorized — check MAXMIND_ACCOUNT_ID / MAXMIND_LICENSE_KEY");
+      // fall through to ipapi
+    } else {
+      // failed / rate_limited — try ipapi as backup
+    }
+  } catch (err) {
+    console.error("[ip-geo] MaxMind lookup threw", err);
+  }
+
+  // Fallback: ipapi.co
   const { geo, raw, status } = await fetchIpapi(ip);
-  try { await writeCache(ipHash, ipPfx, status, geo, raw); } catch { /* ignore */ }
+  try { await writeCache(ipHash, ipPfx, "ipapi", status, geo, raw); } catch { /* ignore */ }
   return geo;
 }
+

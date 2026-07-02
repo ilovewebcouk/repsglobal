@@ -12,7 +12,14 @@ import { createHmac } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-export type LocationSource = "cloudflare-headers" | "ipapi" | "ipapi-cache" | "country-only" | "none";
+export type LocationSource =
+  | "cloudflare-headers"
+  | "maxmind"
+  | "maxmind-cache"
+  | "ipapi"
+  | "ipapi-cache"
+  | "country-only"
+  | "none";
 export type LocationConfidence = "city" | "region" | "country" | "unknown";
 
 export interface CaptureContext {

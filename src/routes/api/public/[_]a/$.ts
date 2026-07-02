@@ -272,6 +272,78 @@ async function proxy(request: Request, splat: string): Promise<Response> {
 
   console.log("[posthog-proxy]", { path: `/${splat}`, method: request.method, ct: contentType, taken: pathTaken, cc: country, admin });
 
+  // Server-side observation write (admin-only visibility of raw IP + geo).
+  // Fire-and-forget so we never delay the outbound proxy call.
+  if (isCaptureEndpoint && !admin) {
+    try {
+      const cfIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") ||
+        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+      if (cfIp) {
+        const [{ hashIp: _h }, { recordVisitorObservation }] = await Promise.all([
+          import("@/lib/activity/ip-geo.server"),
+          import("@/lib/activity/ip-observations.server"),
+        ]);
+        // Best-effort session/path extraction from the first event.
+        let sessionId: string | null = null;
+        let distinctId: string | null = null;
+        let path: string | null = null;
+        let referrer: string | null = null;
+        try {
+          const bodyText = outboundBody ? String(outboundBody) : "";
+          let parsedForMeta: unknown = null;
+          if (bodyText.startsWith("data=")) {
+            const dp = new URLSearchParams(bodyText).get("data");
+            if (dp) parsedForMeta = JSON.parse(b64decode(dp));
+          } else if (bodyText.startsWith("{") || bodyText.startsWith("[")) {
+            parsedForMeta = JSON.parse(bodyText);
+          }
+          const first = Array.isArray(parsedForMeta)
+            ? parsedForMeta[0]
+            : (parsedForMeta as Record<string, unknown> | null);
+          const evtArr = first && (first as Record<string, unknown>).batch;
+          const evt = (Array.isArray(evtArr) ? evtArr[0] : first) as Record<string, unknown> | null;
+          const props = (evt?.properties ?? {}) as Record<string, unknown>;
+          sessionId = (props.$session_id as string | undefined) ?? null;
+          distinctId = (evt?.distinct_id as string | undefined) ?? (props.distinct_id as string | undefined) ?? null;
+          path = (props.$pathname as string | undefined) ?? (props.$current_url as string | undefined) ?? null;
+          referrer = (props.$referrer as string | undefined) ?? null;
+        } catch { /* ignore */ }
+
+        await recordVisitorObservation({
+          ctx: {
+            userId: null,
+            ip: cfIp,
+            ipHash: null,
+            countryCode: derivedGeo?.country ?? null,
+            region: derivedGeo?.region ?? null,
+            city: derivedGeo?.city ?? null,
+            latitude: derivedGeo?.lat ?? null,
+            longitude: derivedGeo?.lng ?? null,
+            timezone: derivedGeo?.tz ?? null,
+            geoSource: derivedGeo?.source ?? null,
+            locationSource: (derivedGeo?.source as never) ?? "none",
+            locationConfidence: (derivedGeo?.confidence as never) ?? "unknown",
+            device: null,
+            browser: null,
+            os: null,
+            userAgent: ua,
+            dnt: false,
+            gpc: false,
+            isImpersonating: false,
+          },
+          eventContext: "page_view",
+          sessionId,
+          posthogDistinctId: distinctId,
+          path,
+          referrer,
+        });
+      }
+    } catch (err) {
+      console.error("[posthog-proxy] observation write failed", err);
+    }
+  }
+
+
   if (ua) outboundHeaders.set("user-agent", ua);
   // Deliberately do NOT forward: authorization, cookie, x-forwarded-for,
   // cf-connecting-ip, true-client-ip, x-real-ip, or content-encoding.
