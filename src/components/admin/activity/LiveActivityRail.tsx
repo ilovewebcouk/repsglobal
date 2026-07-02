@@ -27,6 +27,25 @@ function timeAgo(iso: string): string {
   return `${Math.floor(s / 3600)}h ago`;
 }
 
+export interface SupabaseVisitorRow {
+  journey_id: string;
+  session_id: string | null;
+  user_id: string | null;
+  member_name: string | null;
+  masked_ip: string | null;
+  city: string | null;
+  region: string | null;
+  country_code: string | null;
+  latest_path: string | null;
+  latest_event: string | null;
+  path_history: Array<{ path?: string; at?: string; event?: string }>;
+  referrer: string | null;
+  source: string | null;
+  first_seen_at: string;
+  last_seen_at: string;
+  status: "live" | "stale";
+}
+
 export interface LiveActivityRailProps {
   members: OnlineNowUser[];
   memberPages: CurrentPageRow[];
@@ -36,13 +55,20 @@ export interface LiveActivityRailProps {
   realtime: RealtimeSummary | undefined;
   updatedAt: number | null;
   className?: string;
+  /** Phase UI-2 — Supabase-backed public visitors (replaces PostHog Public tab data). */
+  supabaseVisitors?: SupabaseVisitorRow[];
+  supabaseVisitorsLoading?: boolean;
+  onOpenVisitor?: (journeyId: string) => void;
 }
 
 export function LiveActivityRail(props: LiveActivityRailProps) {
-  const { members, memberPages, membersLoading, publicRealtime, publicLoading, realtime, updatedAt, className } = props;
+  const {
+    members, memberPages, membersLoading, publicRealtime, publicLoading, realtime, updatedAt, className,
+    supabaseVisitors, supabaseVisitorsLoading, onOpenVisitor,
+  } = props;
   const [tab, setTab] = useState<Tab>("all");
 
-  const publicOnline = publicRealtime?.online_now ?? 0;
+  const publicOnline = supabaseVisitors?.length ?? publicRealtime?.online_now ?? 0;
   const membersOnline = realtime?.online_now ?? members.length;
 
   const locationsLive = useMemo(() => {
