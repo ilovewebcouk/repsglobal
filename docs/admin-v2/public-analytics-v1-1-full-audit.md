@@ -348,3 +348,213 @@ Requires PostHog HogQL to compare against `metrics_daily_public_analytics`; no p
 ### v1.1 status
 
 **NOT complete.** Bundle rotated and passes every static check; proxy live; consent suppression proven end-to-end; SDK singleton, queue flush, and `capture_pageleave:false` all live in the shipped code. Custom-event / geo / admin-exclusion delivery to PostHog remains **unverified** because of the headless bot-filter artifact. Verdict stays **F** until either the SDK opts out of the client-side UA filter or a real-browser + HogQL pass confirms events arriving with correct mutation.
+
+---
+
+## Real-Browser QA Runbook (v1.1 acceptance)
+
+Playwright/headless is disqualified as an acceptance signal: `posthog-js` runs a client-side UA bot filter that returns early for `HeadlessChrome`/`playwright`/`puppeteer` etc. before any network call. Acceptance = a real browser session on `https://repsuk.org` + HogQL verification in PostHog EU. **Do not** ship `opt_out_useragent_filter:true` globally in production to make headless pass.
+
+### Preconditions
+
+- Production bundle rotated and serves the patched hook (verify current hash in DevTools → Sources; grep for `capture_pageleave:!1` and `advanced_disable_flags:!0`).
+- You have PostHog EU access: `https://eu.posthog.com` → REPs project.
+- Personal API key (for HogQL via REST, optional): PostHog → Personal API keys, scopes `query:read`, `session_recording:read` off.
+- Your admin account is signed OUT of `https://repsuk.org` for the public leg (use incognito).
+
+### Step 1 — Public visitor click-through (real browser)
+
+Fresh incognito window (no extensions blocking analytics). Optional: before step 1.4, open DevTools → Application → Local Storage → `https://repsuk.org` and set `reps.analytics.debug=1` so `[analytics]` debug logs appear in the console.
+
+1.1 Navigate to `https://repsuk.org/` — wait for hydration.
+1.2 Accept analytics cookies in the CookieBanner. Confirm `reps.consent.v1` = granted in Application → Cookies.
+1.3 DevTools → Network → filter `/_a/`. You should see:
+- `POST /api/public/_a/e/?...` for `$pageview` (status 200/204).
+- No requests to `eu.i.posthog.com` directly (must be same-origin proxy).
+1.4 Console: run `window.__repsPh && window.__repsPh.get_distinct_id()` — expect a UUID-like string.
+1.5 Navigate `/find-a-professional`. Confirm one more `POST /_a/e/` fires. (Not two — no double-init.)
+1.6 Perform one search (any query that returns results). Expect a `POST /_a/e/` for `directory_search`.
+1.7 Click one result card. Expect `directory_result_click`.
+1.8 On the `/pro/<slug>` page, expect `profile_view` on mount.
+1.9 Click a profile CTA (Enquire / Book / Website). Expect `profile_cta_click`.
+1.10 Navigate to `/pro/<slug>/enquire`. Expect `enquiry_start`.
+1.11 Optional (only if safe / test data): begin signup or checkout. Expect `signup_start` and/or `checkout_started`.
+1.12 Wait 30–60s so ingest + rollup polling can catch up.
+
+Record for each step: event name observed in Network payload (decode `data=` base64), HTTP status, timestamp.
+
+### Step 2 — Admin/member exclusion (real browser, second profile)
+
+2.1 In a **separate** browser profile, sign in as admin.
+2.2 Visit `/admin`, `/admin/activity`, `/admin/billing`. In Network, filter `/_a/` — you may see `POST /_a/e/` (admin surfaces still ping), but every payload must carry `is_internal=true` after proxy mutation. Decode one `data=` param → JSON → confirm `properties.is_internal === true` and `$ip` / `ip` absent.
+2.3 Sign in as a normal member in a third profile. Browse `/dashboard`. Confirm zero `POST /_a/e/` from `/dashboard/*` and `/portal/*` (public beacon is gated by `isPublicSurface` + signed-in check).
+2.4 Confirm no `$pageleave` events anywhere (we disabled it).
+
+### Step 3 — HogQL verification (PostHog EU)
+
+Run each query in PostHog → SQL (HogQL). Replace `{START}` / `{END}` with the ISO timestamps bracketing your Step 1 session (UTC).
+
+**3.1 — Events actually arrived, by name, in window**
+```sql
+SELECT event, count() AS n, min(timestamp) AS first, max(timestamp) AS last
+FROM events
+WHERE timestamp >= toDateTime('{START}') AND timestamp <= toDateTime('{END}')
+  AND event IN (
+    '$pageview','profile_view','directory_search','directory_result_click',
+    'profile_cta_click','enquiry_start','signup_start','checkout_started'
+  )
+GROUP BY event
+ORDER BY event;
+```
+Pass = every event you triggered in Step 1 shows n ≥ 1.
+
+**3.2 — PII stripped, geo injected, session id present, not internal**
+```sql
+SELECT
+  event,
+  timestamp,
+  properties.$ip AS ip_dollar,
+  properties.ip AS ip_plain,
+  properties.$session_id AS sess,
+  properties.$current_url AS url,
+  properties.$pathname AS path,
+  properties.is_internal AS internal,
+  properties.$geoip_country_code AS geo,
+  properties.country_code AS geo_legacy
+FROM events
+WHERE timestamp >= toDateTime('{START}') AND timestamp <= toDateTime('{END}')
+  AND event IN ('$pageview','profile_view','directory_search','profile_cta_click','enquiry_start')
+ORDER BY timestamp DESC
+LIMIT 50;
+```
+Pass = for every row:
+- `ip_dollar` **NULL**, `ip_plain` **NULL** (proxy stripped)
+- `sess` populated (uuid)
+- `url` or `path` populated
+- `internal` = `false`
+- `geo` populated (e.g. `GB`) — `geo_legacy` mirrored for now
+
+**3.3 — Admin traffic tagged internal, never leaks as public**
+```sql
+SELECT event, count() AS n,
+  countIf(properties.is_internal = true) AS internal_n,
+  countIf(properties.is_internal = false OR properties.is_internal IS NULL) AS public_n
+FROM events
+WHERE timestamp >= toDateTime('{START}') AND timestamp <= toDateTime('{END}')
+  AND (properties.$pathname LIKE '/admin%' OR properties.$current_url LIKE '%/admin%')
+GROUP BY event;
+```
+Pass = `public_n = 0` for every row.
+
+**3.4 — No `$pageleave` at all in window**
+```sql
+SELECT count() AS n FROM events
+WHERE timestamp >= toDateTime('{START}') AND timestamp <= toDateTime('{END}')
+  AND event = '$pageleave';
+```
+Pass = `n = 0`.
+
+**3.5 — Bot filter didn't drop us**
+```sql
+SELECT properties.$browser AS browser, properties.$os AS os, count() AS n
+FROM events
+WHERE timestamp >= toDateTime('{START}') AND timestamp <= toDateTime('{END}')
+  AND event = '$pageview'
+GROUP BY browser, os;
+```
+Pass = your real browser (Chrome / Safari / Firefox) appears with expected OS.
+
+### Step 4 — Dashboard live-updates (admin session)
+
+While Step 1 is still fresh (within ~2 min):
+- `/admin/activity` → CommandStrip → **Public now** > 0 and **Views 5m** ≥ your click count.
+- **Public pages now** lists at least the last public path you visited.
+- **Countries live** shows `GB` (or your CF country) with count ≥ 1.
+- **Public map** — a bubble renders at your approximate city coord.
+
+### Step 5 — Rollup parity
+
+5.1 Trigger today's rollup manually:
+```bash
+PUBLIC_URL=https://repsuk.org \
+SUPABASE_PUBLISHABLE_KEY=<publishable-anon-key> \
+./scripts/ops/trigger-posthog-rollup.sh
+```
+Expect a JSON response with per-event counts for today.
+
+5.2 Compare with PostHog raw counts (HogQL, same UTC day):
+```sql
+SELECT event, count() AS n
+FROM events
+WHERE toDate(timestamp) = today()
+  AND event IN (
+    '$pageview','profile_view','directory_search','directory_result_click',
+    'profile_cta_click','enquiry_start','signup_start','checkout_started'
+  )
+  AND (properties.is_internal = false OR properties.is_internal IS NULL)
+GROUP BY event
+ORDER BY event;
+```
+5.3 Query Supabase rollup for the same day (via SQL editor or existing admin view):
+```sql
+SELECT event_name, sum(count) AS n
+FROM public_analytics_daily_rollups
+WHERE day = current_date
+GROUP BY event_name
+ORDER BY event_name;
+```
+Pass = counts match within ±2 per event (allowing for late-arriving events between 5.2 and 5.3).
+
+### Step 6 — Results template (fill in and commit)
+
+Paste under this heading when the run is complete:
+
+```
+## Real-Browser QA Result — YYYY-MM-DD
+
+Bundle hash: index-XXXXXXXX.js
+Session window (UTC): START → END
+Tester browser / OS:
+
+Step 1 (public click-through)
+- $pageview /: OK / FAIL — status, notes
+- $pageview /find-a-professional: OK / FAIL
+- directory_search: OK / FAIL
+- directory_result_click: OK / FAIL
+- profile_view: OK / FAIL — slug
+- profile_cta_click: OK / FAIL — cta
+- enquiry_start: OK / FAIL
+- signup_start / checkout_started: TESTED? OK / FAIL / SKIPPED
+
+Step 2 (exclusion)
+- Admin browsing /admin/activity → is_internal=true only: OK / FAIL
+- Member /dashboard → 0 public events: OK / FAIL
+- $pageleave anywhere in window: 0? OK / FAIL
+
+Step 3 (HogQL)
+- 3.1 event counts: paste table
+- 3.2 property proof: $ip absent OK / FAIL, session_id OK / FAIL, url/path OK / FAIL, is_internal=false OK / FAIL, $geoip_country_code OK / FAIL
+- 3.3 admin exclusion public_n=0: OK / FAIL
+- 3.4 $pageleave n=0: OK / FAIL
+- 3.5 real browser (not headless): OK / FAIL
+
+Step 4 (dashboard)
+- Public now > 0: OK / FAIL
+- Views 5m ≥ clicks: OK / FAIL
+- Public pages now populated: OK / FAIL
+- Countries live shows expected country: OK / FAIL
+- Public map bubble: OK / FAIL
+
+Step 5 (rollup)
+- Rollup trigger response: paste
+- PostHog raw counts: paste
+- Supabase rollup counts: paste
+- Parity within ±2: OK / FAIL
+
+Verdict: A / B / C / D / F
+Sign-off: <name>
+```
+
+### Acceptance rule
+
+v1.1 is **A** only when Steps 1–5 all pass. Any FAIL keeps verdict at **F** and blocks completion. Do not backfill `opt_out_useragent_filter:true` into the production hook to force headless coverage; if we want automated regression later, gate it behind a QA-only build flag or a debug URL param — never on for real visitors.
