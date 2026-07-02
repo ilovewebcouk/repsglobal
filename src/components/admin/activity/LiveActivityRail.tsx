@@ -78,27 +78,35 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
   const membersOnline = realtime?.online_now ?? members.length;
 
   // Amendment 3 — honest heading: only call it Cities/Towns when city rows exist.
-  const { locationsLive, locationsHeading, locationsIcon } = useMemo(() => {
-    const cities = (publicRealtime?.cities ?? [])
+  type LocRow = {
+    id: string;
+    precision: "city" | "country";
+    raw: { city: string | null; region: string | null; country_code: string | null };
+    online: number;
+  };
+
+  // Amendment 3 — honest heading: only call it Cities/Towns when city rows exist.
+  const { locationsLive, locationsHeading } = useMemo<{ locationsLive: LocRow[]; locationsHeading: string }>(() => {
+    const cities: LocRow[] = (publicRealtime?.cities ?? [])
       .filter((c) => c.online > 0)
       .map((c) => ({
         id: `${c.city}-${c.country_code}`,
-        precision: "city" as const,
+        precision: "city",
         raw: { city: c.city, region: c.region, country_code: c.country_code },
         online: c.online,
       }));
     if (cities.length > 0) {
-      return { locationsLive: cities.slice(0, 8), locationsHeading: "Cities / Towns live", locationsIcon: Globe };
+      return { locationsLive: cities.slice(0, 8), locationsHeading: "Cities / Towns live" };
     }
-    const countries = (publicRealtime?.countries ?? [])
+    const countries: LocRow[] = (publicRealtime?.countries ?? [])
       .filter((c) => c.online > 0)
       .map((c) => ({
         id: c.country_code,
-        precision: "country" as const,
+        precision: "country",
         raw: { city: null, region: null, country_code: c.country_code },
         online: c.online,
       }));
-    return { locationsLive: countries.slice(0, 8), locationsHeading: "Countries live", locationsIcon: Globe };
+    return { locationsLive: countries.slice(0, 8), locationsHeading: "Countries live" };
   }, [publicRealtime]);
 
   const devices = realtime?.devices;
