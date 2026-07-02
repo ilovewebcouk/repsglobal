@@ -444,6 +444,8 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       extracted_path: extractedPath,
       consent_write_eligible: consentWriteEligible,
       observation_id: observationId,
+      journey_id: journeyId,
+      journey_result: journeyResult,
     });
     if (diagRes.error) {
       console.error("[posthog-proxy] diagnostics insert failed", {
