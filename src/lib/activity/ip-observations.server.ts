@@ -35,9 +35,9 @@ export function hashUserAgent(ua: string | null | undefined): string | null {
   return createHmac("sha256", salt).update(ua).digest("hex");
 }
 
-export async function recordVisitorObservation(input: ObservationInput): Promise<void> {
+export async function recordVisitorObservation(input: ObservationInput): Promise<{ id: string | null }> {
   const { ctx, eventContext } = input;
-  if (!ctx.ip) return; // nothing to observe
+  if (!ctx.ip) return { id: null }; // nothing to observe
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { hashIp, prefixHash } = await import("./ip-geo.server");
   const ipHash = ctx.ipHash ?? hashIp(ctx.ip);
@@ -84,7 +84,13 @@ export async function recordVisitorObservation(input: ObservationInput): Promise
       ? await supabaseAdmin
           .from("security_visitor_ip_observations")
           .upsert(row, { onConflict: "session_id,ip_hash,user_agent_hash" })
-      : await supabaseAdmin.from("security_visitor_ip_observations").insert(row);
+          .select("id")
+          .maybeSingle()
+      : await supabaseAdmin
+          .from("security_visitor_ip_observations")
+          .insert(row)
+          .select("id")
+          .maybeSingle();
   if (res.error) {
     console.error("[obs-write] insert failed", {
       code: res.error.code,
@@ -98,4 +104,5 @@ export async function recordVisitorObservation(input: ObservationInput): Promise
     });
     throw new Error(`obs_write_failed: ${res.error.message}`);
   }
+  return { id: (res.data?.id as string | undefined) ?? null };
 }
