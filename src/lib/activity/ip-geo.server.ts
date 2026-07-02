@@ -19,7 +19,14 @@ const TTL_PRIVATE_MS = 30 * 24 * 60 * 60 * 1000;
 const LOOKUP_TIMEOUT_MS = 1500;
 
 export type LocationConfidence = "city" | "region" | "country" | "unknown";
-export type LocationSource = "cloudflare-headers" | "ipapi" | "ipapi-cache" | "country-only" | "none";
+export type LocationSource =
+  | "cloudflare-headers"
+  | "maxmind"
+  | "maxmind-cache"
+  | "ipapi"
+  | "ipapi-cache"
+  | "country-only"
+  | "none";
 
 export interface IpGeo {
   countryCode: string | null;
