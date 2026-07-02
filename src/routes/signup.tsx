@@ -206,7 +206,14 @@ function SignupPage() {
     void import("@/lib/analytics/track").then(({ track }) =>
       track.signupStart({ plan: search.tier ?? null, path: "/signup" }),
     );
+    void import("@/lib/analytics/public-conversion").then(({ trackConversion }) => {
+      void trackConversion({
+        event_kind: "signup_started",
+        properties: { plan: search.tier ?? undefined },
+      });
+    });
   }, [search.tier]);
+
 
 
   const planSummary: PlanSummary | null =
@@ -268,13 +275,25 @@ function SignupPage() {
         return;
       }
       // Go straight to Stripe Hosted Checkout — the account doesn't exist yet.
+      const interval: "monthly" | "yearly" | null =
+        search.period === "yearly" ? "yearly" : search.period === "monthly" ? "monthly" : null;
       void import("@/lib/analytics/track").then(({ track }) =>
-        track.checkoutStarted({
-          plan: search.tier ?? "core",
-          interval: search.period === "yearly" ? "yearly" : search.period === "monthly" ? "monthly" : null,
-        }),
+        track.checkoutStarted({ plan: search.tier ?? "core", interval }),
       );
+      // Conversion row — write BEFORE navigating away so keepalive can flush.
+      const pendingSignupId =
+        "pending_signup_id" in result
+          ? (result as { pending_signup_id?: string }).pending_signup_id
+          : undefined;
+      void import("@/lib/analytics/public-conversion").then(({ trackConversion }) => {
+        void trackConversion({
+          event_kind: "checkout_started",
+          pending_signup_id: pendingSignupId && pendingSignupId.length === 36 ? pendingSignupId : undefined,
+          properties: { plan: search.tier ?? "core", interval: interval ?? undefined },
+        });
+      });
       window.location.assign(result.url);
+
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";
       setError(message);
