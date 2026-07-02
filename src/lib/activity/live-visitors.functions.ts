@@ -17,7 +17,7 @@ function maskIp(raw: string | null | undefined): string | null {
     const parts = raw.split(":");
     return parts.slice(0, 3).join(":") + ":****";
   }
-  const p = raw.split(".");
+  const p = (raw as string).split(".");
   if (p.length !== 4) return "****";
   return `${p[0]}.${p[1]}.${p[2]}.***`;
 }
@@ -31,7 +31,7 @@ export const getPublicVisitorsLive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ limit: z.number().int().min(1).max(200).default(50) }).parse(input ?? {}))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as Ctx);
+    await assertAdmin(context as { supabase: any; userId: string });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sinceIso = new Date(Date.now() - 30 * 60_000).toISOString();
 
@@ -106,7 +106,7 @@ export const getPublicVisitorDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ journey_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as Ctx);
+    await assertAdmin(context as { supabase: any; userId: string });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: j, error } = await supabaseAdmin
@@ -189,7 +189,7 @@ export const revealVisitorIp = createServerFn({ method: "POST" })
     reason: z.string().trim().min(8, "Reason must be at least 8 characters").max(500),
   }).parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as Ctx);
+    await assertAdmin(context as { supabase: any; userId: string });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: obs, error } = await supabaseAdmin
@@ -209,7 +209,7 @@ export const revealVisitorIp = createServerFn({ method: "POST" })
 
     // Write audit row FIRST — raw IP is not stored in audit metadata.
     const { data: auditId, error: auditErr } = await (supabaseAdmin as any).rpc("log_admin_action", {
-      _actor_id: (context as Ctx).userId,
+      _actor_id: (context as { supabase: any; userId: string }).userId,
       _action: "reveal_raw_ip",
       _target_table: "security_visitor_ip_observations",
       _target_id: obs.id,
@@ -236,7 +236,7 @@ export const getPublicGeoLive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ window_minutes: z.number().int().min(1).max(1440).default(30) }).parse(input ?? {}))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as Ctx);
+    await assertAdmin(context as { supabase: any; userId: string });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sinceIso = new Date(Date.now() - data.window_minutes * 60_000).toISOString();
 
@@ -290,7 +290,7 @@ export const getPublicConversionsLive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ limit: z.number().int().min(1).max(200).default(50) }).parse(input ?? {}))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as Ctx);
+    await assertAdmin(context as { supabase: any; userId: string });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: rows, error } = await supabaseAdmin
@@ -308,7 +308,7 @@ export const getPublicConversionsLive = createServerFn({ method: "POST" })
 export const getPublicIngestHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context as Ctx);
+    await assertAdmin(context as { supabase: any; userId: string });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sinceIso = new Date(Date.now() - 60 * 60_000).toISOString();
 
@@ -366,7 +366,7 @@ export const getMemberLinkedJourneys = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ user_id: z.string().uuid(), limit: z.number().int().min(1).max(100).default(25) }).parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as Ctx);
+    await assertAdmin(context as { supabase: any; userId: string });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: journeys, error } = await supabaseAdmin
