@@ -49,6 +49,8 @@ export interface WorldMapPanelProps {
   publicOnline?: number;
   publicStale?: boolean;
   updatedAt?: number | null;
+  /** Optional — when a city marker is clicked and a visitor id is available, open the drawer. */
+  onOpenVisitorAtCity?: (city: MapCityPoint) => void;
 }
 
 
