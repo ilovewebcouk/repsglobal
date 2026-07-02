@@ -676,7 +676,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                         const graceEnd = new Date(Date.now() + 14 * 86400000);
                         const subItem = sub.items.data[0];
                         const subAmt = (subItem?.price.unit_amount ?? 0) / 100;
-                        const subAmount = subAmt > 0 ? `£${subAmt.toFixed(subAmt % 1 === 0 ? 0 : 2)}` : "£99";
+                        const subAmount = subAmt > 0 ? `£${subAmt.toFixed(subAmt % 1 === 0 ? 0 : 2)}` : "£34";
                         await mintAndEmailRenewalToken({
                           userId, email, purpose: "payment_failed",
                           templateName: "renewal-payment-failed",
@@ -732,7 +732,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                       .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                     const graceEnd = new Date(Date.now() + 14 * 86400000);
                     const invAmt = ((invoice as unknown as { amount_due?: number }).amount_due ?? 0) / 100;
-                    const invAmount = invAmt > 0 ? `£${invAmt.toFixed(invAmt % 1 === 0 ? 0 : 2)}` : "£99";
+                    const invAmount = invAmt > 0 ? `£${invAmt.toFixed(invAmt % 1 === 0 ? 0 : 2)}` : "£34";
                     const invTier = subId
                       ? (((await stripe.subscriptions.retrieve(subId)).metadata?.tier as string) ?? "verified")
                       : "verified";

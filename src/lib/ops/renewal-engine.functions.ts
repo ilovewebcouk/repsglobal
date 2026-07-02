@@ -49,7 +49,7 @@ export type RenewalEngineStatus = {
   upcoming_14d: UpcomingDue[];
 };
 
-const VERIFIED_PRICE_PENCE = 9900;
+const VERIFIED_PRICE_PENCE = 3400;
 
 export const getRenewalEngineStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

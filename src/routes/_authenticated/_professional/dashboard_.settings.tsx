@@ -141,7 +141,7 @@ function SettingsPage() {
                 </span>
                 <div>
                   <div className="text-[13px] font-semibold text-white">
-                    {data.subscription.tier === "verified" && "REPs Core · £99/year"}
+                    {data.subscription.tier === "verified" && "REPs Core · £34/year"}
                     {data.subscription.tier === "pro" && "REPs Pro"}
                     {data.subscription.tier === "studio" && "REPs Studio"}
                     {data.subscription.tier === "free" && "No active plan"}
@@ -480,7 +480,7 @@ function BillingTab({ data }: { data: SettingsBundle }) {
     : "No active plan";
 
   const priceLabel =
-    sub.tier === "verified" ? "£99 / year"
+    sub.tier === "verified" ? "£34 / year"
     : sub.tier === "pro" ? (sub.billing_period === "annual" ? "£590 / year (Founding)" : "£59 / month (Founding)")
     : sub.tier === "studio" ? "£149 / month"
     : "—";

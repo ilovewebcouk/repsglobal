@@ -192,7 +192,7 @@ export const recoverPaymentFailedSub = createServerFn({ method: "POST" })
       templateData: {
         proName:
           ((profile as { full_name?: string | null } | null)?.full_name ?? "").split(" ")[0] || "there",
-        amount: data.intended_tier === "pro" ? "£59" : "£99",
+        amount: data.intended_tier === "pro" ? "£59" : "£34",
         graceEndDate: graceEnd.toLocaleDateString("en-GB", {
           day: "numeric",
           month: "long",

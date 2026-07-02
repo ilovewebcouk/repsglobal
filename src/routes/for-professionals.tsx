@@ -414,7 +414,7 @@ function ForProsPage() {
             {[
               {
                 name:"Core",
-                price:"£99",
+                price:"£34",
                 cadence:"/ year",
                 tagline:"Your profile on the register the public already searches.",
                 href:"/pricing",

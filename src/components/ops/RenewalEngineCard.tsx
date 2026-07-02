@@ -141,7 +141,7 @@ export function RenewalEngineCard() {
             </div>
             <div className="text-xs text-reps-text/60">
               Nightly cron that picks up BD members as their due dates arrive
-              and creates their Core £99/yr subscription.
+              and creates their Core £34/yr subscription.
             </div>
           </div>
           <button

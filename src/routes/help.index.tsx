@@ -58,7 +58,7 @@ export const Route = createFileRoute("/help/")({
               name: "Is the Core tier free?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "Core is £99/year and includes a public profile, verified badge, enquiry inbox and review collection.",
+                text: "Core is £34/year and includes a public profile, verified badge, enquiry inbox and review collection.",
               },
             },
           ],

@@ -39,8 +39,8 @@ export const PLANS: PlanCard[] = [
       "Enquiries inbox",
     ],
     pricing: {
-      monthly: { price: "£8.25", period: "per month", meta: "£99 billed yearly" },
-      annual: { price: "£8.25", period: "per month", meta: "£99 billed yearly" },
+      monthly: { price: "£34", was: "£99", period: "per year", meta: "£34 billed yearly" },
+      annual: { price: "£34", was: "£99", period: "per year", meta: "£34 billed yearly" },
     },
   },
   {
@@ -104,8 +104,8 @@ export const COMPARE_GROUPS: CompareGroup[] = [
   {
     title: "Billing",
     rows: [
-      { label: "Live offer", verified: "£99/year", pro: "£59/month or £590/year · waitlist", studio: "£149/month or £1,490/year · waitlist" },
-      { label: "Charge today", verified: "£99", pro: "—", studio: "—" },
+      { label: "Live offer", verified: "£34/year (was £99)", pro: "£59/month or £590/year · waitlist", studio: "£149/month or £1,490/year · waitlist" },
+      { label: "Charge today", verified: "£34", pro: "—", studio: "—" },
     ],
   },
   {
@@ -194,7 +194,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
 ];
 
 export const TIER_META: Record<TierKey, { label: string; price: string }> = {
-  verified: { label: "Core", price: "£99/yr" },
+  verified: { label: "Core", price: "£34/yr" },
   pro: { label: "Pro", price: "£59/mo" },
   studio: { label: "Studio", price: "£149/mo" },
 };
@@ -222,7 +222,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which billing periods are planned?",
-    a: "Core is billed annually at £99. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
+    a: "Core is billed annually at £34. Pro will be available monthly at £59 (founding) or annually at £590 once it opens to waitlist members. Studio is planned at £149 monthly or £1,490 annually and also remains waitlist-only.",
   },
   {
     q: "Can I cancel anytime?",

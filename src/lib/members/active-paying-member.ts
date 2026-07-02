@@ -24,7 +24,7 @@ export const TIER_RANK: Record<MemberTier, number> = {
   verified: 1,
 };
 
-// Legacy and BD-only members are billed at the £99/yr Verified price.
+// Default tier used when a member has no active Stripe subscription yet.
 export const TIER_FOR_LEGACY: MemberTier = "verified";
 export const TIER_FOR_BD_SEED: MemberTier = "verified";
 

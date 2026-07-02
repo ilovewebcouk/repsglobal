@@ -46,7 +46,7 @@ export interface AdminSubscriptionState {
 // Catalogue prices used so the Billing tab shows the published REPs price
 // even when we have no row to read from. Mirror of src/lib/billing.ts.
 const TIER_CATALOGUE_PRICE: Record<TierKey, { unit_amount_pence: number; currency: string; interval: string } | null> = {
-  verified: { unit_amount_pence: 9900, currency: "gbp", interval: "year" },
+  verified: { unit_amount_pence: 3400, currency: "gbp", interval: "year" },
   pro: { unit_amount_pence: 5900, currency: "gbp", interval: "month" },
   studio: { unit_amount_pence: 14900, currency: "gbp", interval: "month" },
 };

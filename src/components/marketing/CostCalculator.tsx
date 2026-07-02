@@ -109,7 +109,7 @@ export function CostCalculator({ c }: { c: Competitor }) {
               paid add-on stack, no per-client charges.
             </p>
             <p className="mt-2 text-[11px] text-white/45">
-              Core (£99/yr) is a separate public register listing, not
+              Core (£34/yr) is a separate public register listing, not
               coaching software. See{" "}
               <a href="/pricing" className="underline underline-offset-2 hover:text-white/70">
                 /pricing

@@ -1,78 +1,86 @@
-## Audit findings
+## Scope
 
-I traced the "member pages now with zero online" bug end to end and pulled live counts from the database.
+Core becomes **£34/year, billed yearly**, shown as **£34 reduced from £99**. No monthly Core. Pro and Studio unchanged.
 
-### 1. Root cause (P0) — server returns ghost rows
-`getCurrentPages` in `src/lib/ops/activity-panels.functions.ts` (lines 277–341) merges three sources into one `perPage` map:
-- **Live sessions** (`user_sessions`, last 5 min, `ended_at IS NULL`)
-- **24h page views** (`member_session_events`)
-- **Prior 24–48h page views** (for trend)
+Everyone is simply a **member / Core subscriber**. There is no such thing as a BD-migrated member on this platform anymore — that language is banned from every plan, copy string, support script, comment, email and admin surface going forward.
 
-The 24h/48h loops call `perPage.get(r.path) ?? { online: new Set(), ... }`, so **any path viewed in the last 24 h leaks into the "now" list with `online_count = 0`**. That is why you see `/dashboard 0`, `/forgot-password 0`, `/reset-password 0`, `/dashboard/profile 0`, `/dashboard/settings 0`.
+## Memory hygiene (first step, before any code)
 
-Verified against the live DB right now:
-- `live_sessions_5m = 0`, `live_sessions_30m = 0`
-- `journeys_live_5m = 0`, `journeys_30m = 0`
-- `distinct_paths_24h = 10` ← these are the ghost rows the panel is displaying
-- Last member session heartbeat: **~1.5 h ago**; last visitor journey: ~13 min ago
+Once you switch to build mode I will:
 
-So the header line "0 public · 0 members" is correct; the "Member pages now" list is lying.
+1. Update `mem://index.md` Core rules — change the Phase 2.0 line to reference **Core £34/yr (reduced from £99)** and add a hard rule: *"Never mention BD migration, BD migrated members, legacy members, or £34→£99 honour price. Everyone is a member / Core subscriber."*
+2. Update the Reviews module memory to drop the "BD backfill" phrasing.
+3. Add `mem://constraint/no-bd-migration` describing the ban.
 
-### 2. Secondary bug (P1) — no online heartbeat
-`useActivityBeacon.ts` only posts to `/api/public/activity/session-event` on **route change**. There is no interval heartbeat. A signed-in member sitting on `/dashboard` for >5 min silently drops out of "online now", and `last_seen_at` on `user_sessions` never advances (confirmed: newest session row is 1.5 h old even though members were on the site more recently). This under-reports every "members online" figure in the whole page.
+This is so I never repeat the mistake in a future plan.
 
-### 3. Cosmetic layer (already partially fixed)
-`LiveActivityRail.tsx` was updated earlier this session to filter `online_count > 0`, but the panel still renders because the server sends the rows in the first place, and the fix must land server-side to be authoritative (client filter is only a belt-and-braces guard).
+## Pricing change
 
-### 4. Zone contradictions to reconcile
-- "Live activity" panel header shows `0 public · 0 members` while its own child sections list 5 rows.
-- "Countries live" / "Public visitors" empty states are correct given `journeys_live_5m = 0`.
-- CompactStatusStrip Health tile now downgrades to "Quiet" on stale ingest (already shipped this session).
+### 1. Core price source of truth
 
----
+`src/lib/billing.ts`:
+- Core price label `£34`
+- Interval `per year`
+- Checkout display `£34/yr`
+- Keep the Core annual checkout lookup key so nothing else has to change in the checkout wiring.
 
-## Fix plan
+### 2. Pricing cards
 
-### A. Server: stop emitting ghost rows (P0)
-File: `src/lib/ops/activity-panels.functions.ts`
-- In `getCurrentPages`, after building `perPage`, filter to `b.online.size > 0` before mapping to `CurrentPageRow`.
-- Keep the 24h/48h views in the aggregation so `views_24h` and `trend_pct` are still populated **for paths that are online now**, but do not create map entries from those loops. Change:
-  ```
-  for (const r of views24) {
-    const b = perPage.get(r.path);
-    if (!b) continue;         // only annotate paths that are actually live
-    b.views24++;
-  }
-  ```
-  Same for the 48h loop.
-- Sort/limit unchanged.
+`src/components/pricing/pricing-data.ts` — Core reads:
+- Price `£34`, was `£99` (struck through)
+- Period `per year`
+- Meta `£34 billed yearly`
 
-Net effect: "Member pages now" only ever lists paths with at least one member online, with truthful counts.
+Same values under both Monthly and Annual toggle states (Core is annual-only). Pro and Studio card data untouched.
 
-### B. Client: heartbeat so "online now" is truthful (P1)
-File: `src/hooks/useActivityBeacon.ts`
-- Add a low-cost heartbeat interval (default 60 s) that reposts `/api/public/activity/session-event` with the current `pathname`, tab `session_id`, and `duration_ms`. Skip when tab is hidden (`document.visibilityState !== "visible"`) and when path starts with `/admin`.
-- On `visibilitychange` back to visible, fire one immediate beacon.
-- On `beforeunload`, keep the existing keepalive path.
+Compare table Core column shows `£34/year (was £99)` and `Charge today: £34`.
 
-Server side no change needed — the existing `/api/public/activity/session-event` handler already bumps `user_sessions.last_seen_at`.
+### 3. Payment provider price
 
-### C. Defensive client filter stays
-Leave the `p.online_count > 0` filter in `LiveActivityRail.tsx` as a belt-and-braces guard; it costs nothing.
+The Core annual checkout lookup must resolve to a recurring **£34/year** price in the payment backend. If the environment exposes payment product tooling I will update it directly; otherwise I will call out the one manual step needed in the payment backend before publishing.
 
-### D. QA after deploy
-1. Sign in as `demo-verified@repsuk.org`, sit on `/dashboard`, wait 3 min. Expect:
-   - `admin/activity` "Members now" ≥ 1, "Member pages now" shows `/dashboard 1`, no zero rows.
-2. Navigate to `/dashboard/profile`. Expect list to switch within one poll.
-3. Close tab. Wait 6 min. Expect member drops off "online now" and "Member pages now" empties (no ghosts).
-4. Re-run the SQL from the audit — `live_sessions_5m` should track reality; `distinct_paths_24h` staying higher is expected and no longer bleeds into the panel.
+Existing Core subscribers renew at £34/year going forward. No refunds, no proration, no mid-cycle adjustments.
 
-### Out of scope for this pass
-- PostHog / journey ingest debugging (public visitors panel already correctly shows empty).
-- Any UI restyling — only data-correctness fixes.
-- Diagnostics drawer changes.
+### 4. Account, admin and email surfaces
 
-## Technical details
-- `getCurrentPages` runs under `requireSupabaseAuth` + `assertAdmin`, so filtering on the server is safe.
-- Heartbeat interval must be `clearInterval`-ed in the effect cleanup, and only start once auth is present (`authHeaders()` already no-ops when unauthenticated).
-- 60 s interval + 5 min freshness window gives us five heartbeats before drop-off, which is well within the existing table's write budget and matches the polling cadence of the admin page (60 s in the queries).
+Anywhere Core is currently rendered as £99/year or 9900 pence, change to £34/year / 3400 pence:
+
+- Member `dashboard/settings` billing labels
+- Admin professionals list + subscription/renewal summaries
+- Renewal, payment-failed, card-needed and purchase-confirmation email defaults
+- Billing metrics / MRR / ARR constants for the Core tier
+
+### 5. Copy sweep
+
+Replace Core / Verified price mentions across:
+
+- `/pricing`, `/signup`, `/for-professionals`, `/contact`, `/help`, `/terms`
+- All `/features/*` Core-vs-Pro comparison blocks
+- Comparison editorial snippets
+- Support AI draft brief
+- Renewal-related email templates
+
+Preferred phrasings:
+- `Core — £34/year`
+- `£34 billed yearly`
+- `£34/year, reduced from £99`
+
+### 6. Remove obsolete migration copy
+
+Any user-facing, support-facing or agent-facing string that describes members as migrated, legacy, BD, or as moving from £34 to £99 is rewritten or deleted. This is a copy sweep only — no database schema changes, no deletion of historical tables in this task.
+
+### 7. QA before publish
+
+1. `/pricing` shows Core `£34` with `£99` struck through; Pro and Studio unchanged.
+2. `/signup` shows Core annual-only at £34.
+3. Fresh Core checkout charges £34/year.
+4. Member dashboard shows `Core · £34/year`.
+5. Admin billing metrics compute Core against 3400 pence/year.
+6. Grep confirms no remaining `£99` for Core, and no `BD`, `migrated`, `legacy member`, or `£34 → £99` copy anywhere user- or support-facing.
+
+## Out of scope
+
+- Command Center work.
+- Pro / Studio pricing.
+- Any database schema migration.
+- Any monthly Core plan.

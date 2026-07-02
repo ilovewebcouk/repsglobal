@@ -5,7 +5,7 @@ export const article: HelpArticle = {
   slug: "free-vs-verified",
   category: "getting-started",
   title: "What you get on Core",
-  summary: "Core (£99/year) is the foundation tier and the minimum bar to appear in REPS search.",
+  summary: "Core (£34/year) is the foundation tier and the minimum bar to appear in REPS search.",
   tier: ["verified"],
   lastReviewed: "2026-06-26",
   author: "REPS Team",
@@ -35,7 +35,7 @@ export const article: HelpArticle = {
         Studio multi-coach features. Those are on the Pro and Studio tiers — both currently
         waitlisted while we polish them.
       </p>
-      <Callout tone="note" title="Why £99/year?">
+      <Callout tone="note" title="Why £34/year?">
         Core covers the cost of verifying your identity, qualifications and insurance every
         year, and keeping you on a register the public actively searches. It's deliberately
         priced so every legitimate professional can be on REPS without the Pro suite getting

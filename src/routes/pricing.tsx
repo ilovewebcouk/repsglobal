@@ -16,7 +16,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name:"description",
         content:
-"Core £99/yr is live. Pro Founding £59/mo and Studio are waitlist-only.",
+"Core £34/yr is live. Pro Founding £59/mo and Studio are waitlist-only.",
       },
       { property:"og:title", content:"REPS pricing" },
       {
