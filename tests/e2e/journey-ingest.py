@@ -100,8 +100,11 @@ async def run() -> int:
                 doNotTrack: nav.doNotTrack ?? null,
                 windowDoNotTrack: window.doNotTrack ?? null,
                 globalPrivacyControl: nav.globalPrivacyControl === true,
+                navigatorWebdriver: nav.webdriver === true,
                 posthogObjectExists: !!window.posthog || !!window.__repsPh,
                 posthogLoaded: window.__repsPhReady === true,
+                posthogIsBot: typeof window.__repsPh?._is_bot === 'function' ? window.__repsPh._is_bot() : null,
+                posthogIsCapturing: typeof window.__repsPh?.is_capturing === 'function' ? window.__repsPh.is_capturing() : null,
                 repsPhExists: !!window.__repsPh,
                 repsPhInitPromiseExists: !!window.__repsPhInitPromise,
                 repsPhInitPromiseState: window.__repsPhInitPromiseState ?? null,
@@ -200,6 +203,7 @@ async def run() -> int:
     print(f"banner_found={banner_found} accept_clicked={accept_clicked}")
     print(f"DNT={debug_snapshots.get('before_accept', {}).get('doNotTrack') if isinstance(debug_snapshots.get('before_accept'), dict) else None}")
     print(f"GPC={debug_snapshots.get('before_accept', {}).get('globalPrivacyControl') if isinstance(debug_snapshots.get('before_accept'), dict) else None}")
+    print(f"navigator.webdriver={debug_snapshots.get('before_accept', {}).get('navigatorWebdriver') if isinstance(debug_snapshots.get('before_accept'), dict) else None}")
     print(f"[proxy] {len([h for h in proxy_hits if h.get('phase') != 'response'])} _a requests captured")
     dump("network._a", proxy_hits)
     dump("network.posthog", posthog_hits)
@@ -251,6 +255,8 @@ async def run() -> int:
         failures.append("CONSENT_NOT_SET")
     if after_accept.get("doNotTrack") == "1" or after_accept.get("windowDoNotTrack") == "1" or after_accept.get("globalPrivacyControl") is True:
         failures.append("GPC_DNT_BLOCKED")
+    if final.get("posthogIsBot") is True:
+        failures.append("TEST_BROWSER_BOT_BLOCKED")
     if isinstance(final_surface, dict) and final_surface.get("isPublicSurface") is False:
         failures.append("PUBLIC_SURFACE_BLOCKED")
     if isinstance(final_posthog, dict) and final_posthog.get("configured") is False:
