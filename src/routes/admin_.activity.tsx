@@ -411,6 +411,7 @@ function AdminActivityPage() {
       </div>
 
       <EventDetailSheet event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      <PublicVisitorDrawer journeyId={visitorDrawerId} onClose={() => setVisitorDrawerId(null)} />
 
       {/* Full feed drawer */}
       <Sheet open={feedOpen} onOpenChange={setFeedOpen}>
