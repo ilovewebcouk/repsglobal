@@ -93,9 +93,9 @@ export async function runPostHogDailyRollup(date?: string) {
       `SELECT properties.$pathname, count() c FROM events ${where} AND event = '$pageview' AND properties.$session_entry = true GROUP BY properties.$pathname ORDER BY c DESC LIMIT 10`,
       personalKey,
     );
-    // Prefer canonical `$geoip_country_code`; coalesce legacy `country_code`.
+    // Prefer canonical `reps_country_code` (non-reserved), fall back to legacy names.
     const countries = await hogql(
-      `SELECT coalesce(nullIf(toString(properties.$geoip_country_code), ''), toString(properties.country_code)) AS cc, count() c FROM events ${where} AND (properties.$geoip_country_code IS NOT NULL OR properties.country_code IS NOT NULL) GROUP BY cc ORDER BY c DESC LIMIT 20`,
+      `SELECT coalesce(nullIf(toString(properties.reps_country_code), ''), nullIf(toString(properties.country_code), ''), toString(properties.$geoip_country_code)) AS cc, count() c FROM events ${where} AND (properties.reps_country_code IS NOT NULL OR properties.country_code IS NOT NULL OR properties.$geoip_country_code IS NOT NULL) GROUP BY cc ORDER BY c DESC LIMIT 20`,
       personalKey,
     );
     const devices = await hogql(
