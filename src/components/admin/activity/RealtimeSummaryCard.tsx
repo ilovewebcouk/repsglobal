@@ -127,9 +127,9 @@ export function RealtimeSummaryCard({
         )}
         <div className={cn("mt-4 grid gap-3 text-[11px]", publicSummary ? "grid-cols-3" : "grid-cols-2")}>
           {publicSummary ? (
-            <StatBox label="Public · 30m" value={publicSummary.online_now} tint="blue" />
+            <StatBox label="Public now" value={publicOnline} tint="blue" />
           ) : null}
-          <StatBox label="Members · 30m" value={data?.members_last_30min ?? 0} tint="orange" />
+          <StatBox label="Members now" value={membersOnline} tint="orange" />
           <StatBox label="Events · 30m" value={(data?.activity_last_30min ?? 0) + (publicSummary?.events_30m ?? 0)} tint="neutral" />
         </div>
       </div>
