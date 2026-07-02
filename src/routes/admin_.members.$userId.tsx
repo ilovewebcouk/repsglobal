@@ -424,11 +424,20 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
 
   if (sub.source === "none") {
     return (
-      <section className={cn(PANEL, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
+      <section className={cn(PANEL, "flex flex-col items-center gap-4 px-6 py-10 text-center")}>
         <h3 className={PANEL_TITLE}>No active subscription</h3>
         <p className="max-w-md text-sm text-white/55">
           This member isn't on a paid plan right now.
         </p>
+        <div className="w-full max-w-xl text-left">
+          <BillingActions
+            userId={userId}
+            memberName={snapshot.full_name ?? snapshot.email ?? ""}
+            status="canceled"
+            isTrialing={false}
+            cancelAtPeriodEnd={false}
+          />
+        </div>
       </section>
     );
   }
