@@ -54,6 +54,7 @@ type AnalyticsDebugState = {
     isInternalPath: boolean;
     isPreviewHost: boolean;
     isDevelopment: boolean;
+    navigatorWebdriver: boolean;
   };
   posthog: {
     configured: boolean;
@@ -159,6 +160,7 @@ function installAnalyticsDebug(memberRef?: { current: boolean }) {
         isInternalPath: pathname.startsWith("/api/") || pathname.startsWith("/lovable/"),
         isPreviewHost: window.location.hostname.includes("lovable.app"),
         isDevelopment: import.meta.env.DEV === true,
+        navigatorWebdriver: navigator.webdriver === true,
       },
       posthog: {
         configured: Boolean(POSTHOG_KEY),
