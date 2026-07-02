@@ -63,9 +63,18 @@ export async function fetchMaxmind(ip: string): Promise<MaxmindResult> {
       },
     });
     const raw = await res.json().catch(() => null);
-    if (res.status === 401 || res.status === 403) return { status: "unauthorized", raw };
-    if (res.status === 429) return { status: "rate_limited", raw };
-    if (!res.ok) return { status: "failed", raw };
+    if (res.status === 401 || res.status === 403) {
+      console.log("[maxmind] unauthorized", { host, status: res.status });
+      return { status: "unauthorized", raw };
+    }
+    if (res.status === 429) {
+      console.log("[maxmind] rate_limited", { host });
+      return { status: "rate_limited", raw };
+    }
+    if (!res.ok) {
+      console.log("[maxmind] failed", { host, status: res.status });
+      return { status: "failed", raw };
+    }
     const j = (raw ?? {}) as Record<string, unknown>;
     const country = (j.country ?? {}) as Record<string, unknown>;
     const registered = (j.registered_country ?? {}) as Record<string, unknown>;
