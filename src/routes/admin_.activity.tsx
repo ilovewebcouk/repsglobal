@@ -52,7 +52,8 @@ import { CommandStrip } from "@/components/admin/activity/CommandStrip";
 import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
 import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
-import { getPublicVisitorsLive, getPublicIngestHealth } from "@/lib/activity/live-visitors.functions";
+import { getPublicVisitorsLive, getPublicIngestHealth, getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
+import { AlertBand } from "@/components/admin/activity/AlertBand";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
@@ -119,6 +120,7 @@ function AdminActivityPage() {
 
   const runPublicVisitorsLive = useServerFn(getPublicVisitorsLive);
   const runPublicIngestHealth = useServerFn(getPublicIngestHealth);
+  const runPublicConversions = useServerFn(getPublicConversionsLive);
 
   // ── Queries — realtime queries poll fast (5–8s); heavier aggregates poll slower.
   const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 6_000 });
@@ -140,6 +142,13 @@ function AdminActivityPage() {
     queryKey: ["a-public-health"],
     queryFn: () => runPublicIngestHealth().catch(() => null),
     refetchInterval: 20_000,
+    retry: false,
+  });
+  const KEY_ACTIONS = new Set(["enquiry_started", "enquiry_created", "signup_started", "checkout_started", "signup_complete"]);
+  const conversionsQ = useQuery({
+    queryKey: ["a-public-conversions"],
+    queryFn: () => runPublicConversions({ data: { limit: 100 } }).catch(() => [] as Array<{ event_kind: string; occurred_at: string }>),
+    refetchInterval: 30_000,
     retry: false,
   });
 
@@ -208,14 +217,14 @@ function AdminActivityPage() {
     return Array.from(map.values()).sort((a, b) => b.online - a.online);
   }, [onlineQ.data]);
 
-  // High-value events today = enquiries + signup completes from kpi tiles if available;
-  // otherwise fall back to a simple sum from feed events (auth signup, enquiry sources).
-  const highValueToday = useMemo(() => {
-    const tiles = kpisQ.data?.tiles ?? [];
-    const enq = tiles.find((t) => t.key.includes("enquir"))?.value ?? 0;
-    const sig = tiles.find((t) => t.key.includes("signup") || t.key.includes("new_member"))?.value ?? 0;
-    return Number(enq) + Number(sig);
-  }, [kpisQ.data]);
+  // Amendment 1 — "Key actions today" counts commercial events only.
+  const keyActionsToday = useMemo(() => {
+    const rows = (conversionsQ.data ?? []) as Array<{ event_kind: string; occurred_at: string }>;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const cutoff = startOfDay.getTime();
+    return rows.filter((r) => KEY_ACTIONS.has(r.event_kind) && new Date(r.occurred_at).getTime() >= cutoff).length;
+  }, [conversionsQ.data]);
 
   // ── Timing / degraded panels
   const timings = useMemo(() => {
@@ -291,12 +300,18 @@ function AdminActivityPage() {
           </div>
         ) : null}
 
-        {/* ── 1. COMMAND STRIP ── */}
+        {/* ── 1. ALERT BAND (conditional) ── */}
+        <AlertBand
+          criticalCount={criticalCount}
+          warningCount={attentionRows.filter((r) => r.severity === "warning").length}
+          topLabel={attentionRows.find((r) => r.severity === "critical")?.title ?? null}
+        />
+
+        {/* ── 2. COMMAND STRIP ── */}
         <CommandStrip
           publicOnline={publicOnline}
           membersOnline={membersOnline}
-          pageViews5m={pageViews5m}
-          highValueToday={highValueToday}
+          keyActionsToday={keyActionsToday}
           attentionCount={attentionCount}
           criticalCount={criticalCount}
           ingestStatus={ingestStatus}

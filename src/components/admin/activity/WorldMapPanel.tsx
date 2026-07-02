@@ -89,7 +89,7 @@ export function WorldMapPanel({
         lat: c.latitude,
         online: c.online,
         views: c.views_5m ?? c.online,
-        radius: Math.min(5.5, Math.max(3, 3 + Math.log1p(c.online) * 1.4)),
+        radius: Math.min(12, Math.max(4, 4 + Math.sqrt(c.online) * 2)),
         kind: "member" as const,
         precision: "city" as const,
       }));
@@ -117,7 +117,7 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online_now,
         views: c.page_views_24h,
-        radius: Math.min(5.5, Math.max(2.75, 2.75 + scale * 2.75)),
+        radius: Math.min(10, Math.max(3, 3 + scale * 7)),
         kind: "member" as const,
         precision: "country" as const,
       };
@@ -137,7 +137,7 @@ export function WorldMapPanel({
         lat: c.latitude,
         online: c.online,
         views: c.views_5m ?? c.online,
-        radius: Math.min(5.5, Math.max(3, 3 + Math.log1p(Math.max(c.online, c.views_5m ?? 0)) * 1.25)),
+        radius: Math.min(12, Math.max(4, 4 + Math.sqrt(Math.max(c.online, c.views_5m ?? 0)) * 2)),
         kind: "public" as const,
         precision: "city" as const,
       }));
@@ -164,7 +164,7 @@ export function WorldMapPanel({
         lat: centroid.lat,
         online: c.online,
         views: c.views_5m,
-        radius: Math.min(5.5, Math.max(2.75, 2.75 + scale * 2.75)),
+        radius: Math.min(10, Math.max(3, 3 + scale * 7)),
         kind: "public" as const,
         precision: "country" as const,
       };

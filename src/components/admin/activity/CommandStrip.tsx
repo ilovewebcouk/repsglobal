@@ -1,6 +1,8 @@
-// Admin Activity v2.1 — Command Strip.
-// 7 tiles, one row: Live · Public · Members · Views 5m · Key events · Action queue · Ingest.
-// Zero-value tiles render in "quiet" style so alert/live tiles dominate.
+// Admin Activity — Command Strip (v2.2).
+// 6 tiles max, banded: Live (3) + Ops (3).
+// Removed: standalone "Views 5m" and standalone "Ingest".
+// Added: "Key actions" (commercial conversions today).
+// Health tile subsumes ingest/linker/rollup health.
 
 import {
   AlertTriangle, Eye, Radio, Users, Zap, ShieldCheck, ShieldAlert,
@@ -9,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export type CommandTone = "public" | "members" | "alert" | "warn" | "neutral" | "healthy";
+export type CommandTone = "public" | "members" | "alert" | "warn" | "neutral" | "healthy" | "success";
 export type IngestStatus = "healthy" | "degraded" | "down";
 
 export interface CommandTile {
@@ -21,17 +23,19 @@ export interface CommandTile {
   icon: LucideIcon;
   loading?: boolean;
   forceQuiet?: boolean;
+  onClick?: () => void;
 }
 
 export interface CommandStripProps {
   publicOnline: number;
   membersOnline: number;
-  pageViews5m: number;
-  highValueToday: number;
+  keyActionsToday: number;
   attentionCount: number;
   criticalCount: number;
   ingestStatus: IngestStatus;
   loading?: boolean;
+  onOpenActionQueue?: () => void;
+  onOpenKeyActions?: () => void;
 }
 
 const TONE: Record<CommandTone, { ring: string; dot: string; iconBg: string; iconFg: string; valueColor: string }> = {
@@ -40,6 +44,7 @@ const TONE: Record<CommandTone, { ring: string; dot: string; iconBg: string; ico
   alert:    { ring: "border-rose-500/40 hover:border-rose-500/60",       dot: "bg-rose-400",    iconBg: "bg-rose-500/15",    iconFg: "text-rose-300",    valueColor: "text-white" },
   warn:     { ring: "border-amber-500/35 hover:border-amber-500/55",     dot: "bg-amber-400",   iconBg: "bg-amber-500/15",   iconFg: "text-amber-300",   valueColor: "text-white" },
   healthy:  { ring: "border-emerald-400/25 hover:border-emerald-400/45", dot: "bg-emerald-400", iconBg: "bg-emerald-500/15", iconFg: "text-emerald-300", valueColor: "text-emerald-50" },
+  success:  { ring: "border-emerald-400/30 hover:border-emerald-400/60", dot: "bg-emerald-400", iconBg: "bg-emerald-500/15", iconFg: "text-emerald-300", valueColor: "text-emerald-50" },
   neutral:  { ring: "border-white/[0.08] hover:border-white/20",         dot: "bg-white/40",    iconBg: "bg-white/[0.06]",   iconFg: "text-white/60",    valueColor: "text-white" },
 };
 
@@ -48,12 +53,17 @@ function Tile({ tile }: { tile: CommandTile }) {
   const Icon = tile.icon;
   const isQuiet = tile.forceQuiet ?? tile.value === 0;
   const showLiveDot =
-    !isQuiet && (tile.tone === "public" || tile.tone === "members" || tile.tone === "healthy");
+    !isQuiet && (tile.tone === "public" || tile.tone === "members" || tile.tone === "healthy" || tile.tone === "success");
+  const clickable = typeof tile.onClick === "function";
+  const Wrapper: React.ElementType = clickable ? "button" : "div";
   return (
-    <div
+    <Wrapper
+      {...(clickable ? { type: "button", onClick: tile.onClick } : {})}
+      data-command-tile={tile.key}
       className={cn(
-        "group relative overflow-hidden rounded-[14px] border bg-reps-panel px-3.5 py-3 transition",
+        "group relative flex flex-col overflow-hidden rounded-[14px] border bg-reps-panel px-3.5 py-3 text-left transition",
         isQuiet ? "border-white/[0.06]" : t.ring,
+        clickable && "cursor-pointer hover:bg-white/[0.03]",
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -90,12 +100,20 @@ function Tile({ tile }: { tile: CommandTile }) {
           <div className="mt-1 truncate text-[10px] text-white/40">{tile.hint}</div>
         ) : null}
       </div>
+    </Wrapper>
+  );
+}
+
+function BandLabel({ label, dot }: { label: string; dot: string }) {
+  return (
+    <div className="mb-1 flex items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-white/40">
+      <span className={cn("h-1.5 w-1.5 rounded-full", dot)} />
+      {label}
     </div>
   );
 }
 
 export function CommandStrip(props: CommandStripProps) {
-  const totalLive = props.publicOnline + props.membersOnline;
   const ingestLabel =
     props.ingestStatus === "down" ? "Down" :
     props.ingestStatus === "degraded" ? "Degraded" : "Healthy";
@@ -104,18 +122,20 @@ export function CommandStrip(props: CommandStripProps) {
     props.ingestStatus === "degraded" ? "warn" : "healthy";
   const ingestIcon = props.ingestStatus === "healthy" ? ShieldCheck : ShieldAlert;
 
-  const tiles: CommandTile[] = [
+  const live: CommandTile[] = [
     {
-      key: "live",
-      label: "Live sessions",
-      value: totalLive,
-      hint: totalLive === 0 ? "No sessions right now" : `${props.publicOnline} public · ${props.membersOnline} members`,
-      tone: totalLive > 0 ? "healthy" : "neutral",
+      key: "live_now",
+      label: "Live now",
+      value: props.publicOnline + props.membersOnline,
+      hint: (props.publicOnline + props.membersOnline) === 0
+        ? "No sessions right now"
+        : `${props.publicOnline} public · ${props.membersOnline} members`,
+      tone: (props.publicOnline + props.membersOnline) > 0 ? "healthy" : "neutral",
       icon: Radio,
       loading: props.loading,
     },
     {
-      key: "public",
+      key: "public_now",
       label: "Public now",
       value: props.publicOnline,
       hint: props.publicOnline === 0 ? "Waiting for consented traffic" : "anonymous · live",
@@ -124,7 +144,7 @@ export function CommandStrip(props: CommandStripProps) {
       loading: props.loading,
     },
     {
-      key: "members",
+      key: "members_now",
       label: "Members now",
       value: props.membersOnline,
       hint: props.membersOnline === 0 ? "No members active" : "logged in · live",
@@ -132,23 +152,20 @@ export function CommandStrip(props: CommandStripProps) {
       icon: Users,
       loading: props.loading,
     },
+  ];
+
+  const ops: CommandTile[] = [
     {
-      key: "views_5m",
-      label: "Views 5m",
-      value: props.pageViews5m,
-      hint: props.pageViews5m === 0 ? "No views in 5 min" : "public · rolling",
-      tone: "public",
-      icon: Eye,
-      loading: props.loading,
-    },
-    {
-      key: "key_events",
-      label: "Key events",
-      value: props.highValueToday,
-      hint: props.highValueToday === 0 ? "No enquiries or signups today" : "enquiries + signups · today",
-      tone: "members",
+      key: "key_actions",
+      label: "Key actions today",
+      value: props.keyActionsToday,
+      hint: props.keyActionsToday === 0
+        ? "No enquiries, signups or checkouts today"
+        : "enquiries · signups · checkouts",
+      tone: props.keyActionsToday > 0 ? "success" : "neutral",
       icon: Zap,
       loading: props.loading,
+      onClick: props.onOpenKeyActions,
     },
     {
       key: "action_queue",
@@ -163,22 +180,33 @@ export function CommandStrip(props: CommandStripProps) {
       tone: props.criticalCount > 0 ? "alert" : props.attentionCount > 0 ? "warn" : "neutral",
       icon: AlertTriangle,
       loading: props.loading,
+      onClick: props.onOpenActionQueue,
     },
     {
-      key: "ingest",
-      label: "Ingest",
+      key: "health",
+      label: "Health",
       value: ingestLabel,
-      hint: props.ingestStatus === "healthy" ? "All feeds nominal" : "Some feeds degraded",
+      hint: props.ingestStatus === "healthy" ? "Ingest · linker · rollup nominal" : "Some feeds degraded",
       tone: ingestTone,
       icon: ingestIcon,
       loading: props.loading,
-      forceQuiet: false,
     },
   ];
 
   return (
-    <section aria-label="Live command strip" className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
-      {tiles.map((t) => <Tile key={t.key} tile={t} />)}
+    <section aria-label="Live command strip" className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div>
+        <BandLabel label="Live" dot="bg-emerald-400" />
+        <div className="grid grid-cols-3 gap-2">
+          {live.map((t) => <Tile key={t.key} tile={t} />)}
+        </div>
+      </div>
+      <div>
+        <BandLabel label="Ops" dot="bg-white/40" />
+        <div className="grid grid-cols-3 gap-2">
+          {ops.map((t) => <Tile key={t.key} tile={t} />)}
+        </div>
+      </div>
     </section>
   );
 }

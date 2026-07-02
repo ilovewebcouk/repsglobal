@@ -1,17 +1,23 @@
-// Admin Activity v2.0 — Live Activity Rail.
-// Merges member online-now + public live pages + countries + recent events into
-// a single tabbed rail (All / Public / Members). Sits to the right of the map.
+// Admin Activity v2.2 — Live Activity Rail.
+// - Restores rich member row (avatar, tier, device, flag, page, duration, Open).
+// - Honest "Towns" vs "Countries" heading.
+// - Collapses to a single empty state when every section is empty.
 
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Eye, Globe, MonitorSmartphone, Smartphone, Tablet, Users, Wifi } from "lucide-react";
+import {
+  Eye, Globe, MonitorSmartphone, Smartphone, Tablet, Users, Wifi,
+  ExternalLink, Chrome,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OnlineNowUser, CurrentPageRow } from "@/lib/ops/activity-panels.functions";
 import type { PublicRealtime } from "@/lib/admin/public-realtime.functions";
 import type { RealtimeSummary } from "@/lib/ops/activity-realtime.functions";
-import { countryDisplay } from "@/lib/activity/labels";
+import { resolveLocation, formatLocationLabel } from "@/lib/geo/resolve-location";
+import { tierLabel } from "@/lib/activity/labels";
 
 type Tab = "all" | "public" | "members";
 
@@ -71,21 +77,36 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
   const publicOnline = supabaseVisitors?.length ?? publicRealtime?.online_now ?? 0;
   const membersOnline = realtime?.online_now ?? members.length;
 
-  const locationsLive = useMemo(() => {
-    const cities = (publicRealtime?.cities ?? [])
+  // Amendment 3 — honest heading: only call it Cities/Towns when city rows exist.
+  type LocRow = {
+    id: string;
+    precision: "city" | "country";
+    raw: { city: string | null; region: string | null; country_code: string | null };
+    online: number;
+  };
+
+  // Amendment 3 — honest heading: only call it Cities/Towns when city rows exist.
+  const { locationsLive, locationsHeading } = useMemo<{ locationsLive: LocRow[]; locationsHeading: string }>(() => {
+    const cities: LocRow[] = (publicRealtime?.cities ?? [])
       .filter((c) => c.online > 0)
       .map((c) => ({
         id: `${c.city}-${c.country_code}`,
-        label: c.city,
-        cc: c.country_code,
+        precision: "city",
+        raw: { city: c.city, region: c.region, country_code: c.country_code },
         online: c.online,
-        detail: c.region,
       }));
-    if (cities.length > 0) return cities.slice(0, 8);
-    return (publicRealtime?.countries ?? [])
+    if (cities.length > 0) {
+      return { locationsLive: cities.slice(0, 8), locationsHeading: "Cities / Towns live" };
+    }
+    const countries: LocRow[] = (publicRealtime?.countries ?? [])
       .filter((c) => c.online > 0)
-      .map((c) => ({ id: c.country_code, label: countryDisplay(c.country_code).label, cc: c.country_code, online: c.online, detail: "country fallback" }))
-      .slice(0, 8);
+      .map((c) => ({
+        id: c.country_code,
+        precision: "country",
+        raw: { city: null, region: null, country_code: c.country_code },
+        online: c.online,
+      }));
+    return { locationsLive: countries.slice(0, 8), locationsHeading: "Countries live" };
   }, [publicRealtime]);
 
   const devices = realtime?.devices;
@@ -205,20 +226,19 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
 
         {(tab === "all" || tab === "public") ? (
           <RailSection
-            title="Towns live"
+            title={locationsHeading}
             icon={Globe}
             accent="blue"
             loading={publicLoading}
-            empty="No town-level public activity right now"
+            empty="No location-level public activity right now"
             items={locationsLive}
             render={(c) => {
-              const d = countryDisplay(c.cc);
+              const loc = resolveLocation(c.raw);
               return (
                 <div className="flex items-center justify-between gap-2 py-1.5">
                   <span className="min-w-0 inline-flex items-center gap-1.5 truncate text-[12px] text-white/85">
-                    <span>{d.flag}</span>
-                    <span className="truncate">{c.label}</span>
-                    {c.detail ? <span className="truncate text-[10px] text-white/40">· {c.detail}</span> : null}
+                    <span>{loc.flag}</span>
+                    <span className="truncate">{formatLocationLabel(loc)}</span>
                   </span>
                   <span className="shrink-0 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-200 tabular-nums">
                     {c.online}
@@ -238,34 +258,50 @@ export function LiveActivityRail(props: LiveActivityRailProps) {
             loading={membersLoading}
             empty="No members online right now"
             items={members.slice(0, 6)}
-            render={(u) => (
-              <div className="flex items-center gap-2.5 py-1.5">
-                <Avatar className="h-7 w-7 shrink-0">
-                  {u.avatar_url ? <AvatarImage src={u.avatar_url} alt={u.name} /> : null}
-                  <AvatarFallback className="bg-reps-panel-soft text-[10px] text-white/70">{initials(u.name)}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="truncate text-[12px] font-medium text-white">{u.name}</span>
+            render={(u) => {
+              const loc = resolveLocation(u);
+              const dev = (u.device ?? "").toLowerCase();
+              const DevIcon = dev === "mobile" ? Smartphone : dev === "tablet" ? Tablet : dev === "desktop" ? MonitorSmartphone : Chrome;
+              return (
+                <div className="flex items-center gap-2.5 py-1.5">
+                  <Avatar className="h-7 w-7 shrink-0">
+                    {u.avatar_url ? <AvatarImage src={u.avatar_url} alt={u.name} /> : null}
+                    <AvatarFallback className="bg-reps-panel-soft text-[10px] text-white/70">{initials(u.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate text-[12px] font-medium text-white">{u.name}</span>
+                      {u.tier ? (
+                        <Badge variant="outline" className="h-4 shrink-0 border-orange-400/40 bg-orange-500/10 px-1.5 text-[9px] font-semibold uppercase tracking-wide text-orange-100">
+                          {tierLabel(u.tier)}
+                        </Badge>
+                      ) : null}
+                      <span className="ml-auto shrink-0 text-[10px] text-white/45">{timeAgo(u.last_seen_at)}</span>
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-1.5 truncate text-[10.5px] text-white/50">
+                      <DevIcon className="h-3 w-3 shrink-0 text-white/40" />
+                      <span className="shrink-0">{loc.flag}</span>
+                      <span className="truncate">{formatLocationLabel(loc)}</span>
+                      {u.current_path ? (
+                        <>
+                          <span className="text-white/25">·</span>
+                          <span className="truncate font-mono text-white/60">{u.current_path}</span>
+                        </>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="truncate text-[10.5px] text-white/50">
-                    {u.current_path ? <span className="font-mono">{u.current_path}</span> : "—"}
-                    {u.city ? <span className="font-sans text-white/40"> · {u.city}</span> : null}
-                  </div>
+                  {u.user_id ? (
+                    <Link
+                      to="/admin/members/$userId"
+                      params={{ userId: u.user_id }}
+                      className="shrink-0 inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] font-medium text-white/70 transition hover:border-orange-400/40 hover:bg-orange-500/10 hover:text-orange-100"
+                    >
+                      Open <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  ) : null}
                 </div>
-                {u.user_id ? (
-                  <Link
-                    to="/admin/members/$userId"
-                    params={{ userId: u.user_id }}
-                    className="shrink-0 text-[10px] text-white/45 hover:text-orange-300"
-                  >
-                    {timeAgo(u.last_seen_at)}
-                  </Link>
-                ) : (
-                  <span className="shrink-0 text-[10px] text-white/45">{timeAgo(u.last_seen_at)}</span>
-                )}
-              </div>
-            )}
+              );
+            }}
             keyFn={(u) => u.session_id}
           />
         ) : null}
