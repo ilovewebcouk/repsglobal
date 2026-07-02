@@ -18,53 +18,38 @@ export const getAnalyticsDebug = createServerFn({ method: "GET" })
     await assertAdmin(context as SupaCtx);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [obsLatest, obsCounts, cacheLatest, cacheCounts] = await Promise.all([
+    const [obsLatest, cacheLatest, obsAll, cacheAll] = await Promise.all([
       supabaseAdmin
         .from("security_visitor_ip_observations")
         .select("event_context,session_id,posthog_distinct_id,path,referrer,country_code,region,city,latitude,longitude,location_source,location_confidence,last_seen_at")
         .order("last_seen_at", { ascending: false })
         .limit(10),
-      supabaseAdmin.rpc("count_observations_by_context").then(
-        (r) => r,
-        () => ({ data: null, error: null }),
-      ),
       supabaseAdmin
         .from("ip_geolocation_cache")
         .select("provider,lookup_status,country_code,region,city,latitude,longitude,timezone,asn,org,expires_at,last_seen_at")
         .order("last_seen_at", { ascending: false })
         .limit(10),
-      supabaseAdmin.rpc("count_cache_by_provider").then(
-        (r) => r,
-        () => ({ data: null, error: null }),
-      ),
+      supabaseAdmin.from("security_visitor_ip_observations").select("event_context").limit(2000),
+      supabaseAdmin.from("ip_geolocation_cache").select("provider").limit(2000),
     ]);
 
-    // Fallback grouping if RPCs don't exist.
-    let obsByContext: Array<{ event_context: string; count: number }> = [];
-    if (obsCounts.data && Array.isArray(obsCounts.data)) {
-      obsByContext = obsCounts.data as never;
-    } else {
-      const { data: all } = await supabaseAdmin
-        .from("security_visitor_ip_observations")
-        .select("event_context")
-        .limit(2000);
+    const obsByContext = (() => {
       const m = new Map<string, number>();
-      for (const r of all ?? []) m.set(r.event_context, (m.get(r.event_context) ?? 0) + 1);
-      obsByContext = [...m.entries()].map(([event_context, count]) => ({ event_context, count }));
-    }
+      for (const r of obsAll.data ?? []) {
+        const k = (r as { event_context: string | null }).event_context ?? "unknown";
+        m.set(k, (m.get(k) ?? 0) + 1);
+      }
+      return [...m.entries()].map(([event_context, count]) => ({ event_context, count }));
+    })();
 
-    let cacheByProvider: Array<{ provider: string; count: number }> = [];
-    if (cacheCounts.data && Array.isArray(cacheCounts.data)) {
-      cacheByProvider = cacheCounts.data as never;
-    } else {
-      const { data: all } = await supabaseAdmin
-        .from("ip_geolocation_cache")
-        .select("provider")
-        .limit(2000);
+    const cacheByProvider = (() => {
       const m = new Map<string, number>();
-      for (const r of all ?? []) m.set(r.provider ?? "unknown", (m.get(r.provider ?? "unknown") ?? 0) + 1);
-      cacheByProvider = [...m.entries()].map(([provider, count]) => ({ provider, count }));
-    }
+      for (const r of cacheAll.data ?? []) {
+        const k = (r as { provider: string | null }).provider ?? "unknown";
+        m.set(k, (m.get(k) ?? 0) + 1);
+      }
+      return [...m.entries()].map(([provider, count]) => ({ provider, count }));
+    })();
 
     return {
       generated_at: new Date().toISOString(),
@@ -74,13 +59,7 @@ export const getAnalyticsDebug = createServerFn({ method: "GET" })
         maxmind_host: process.env.MAXMIND_HOST || "geoip.maxmind.com",
         has_activity_ip_salt: !!process.env.ACTIVITY_IP_SALT,
       },
-      observations: {
-        latest: obsLatest.data ?? [],
-        by_context: obsByContext,
-      },
-      geo_cache: {
-        latest: cacheLatest.data ?? [],
-        by_provider: cacheByProvider,
-      },
+      observations: { latest: obsLatest.data ?? [], by_context: obsByContext },
+      geo_cache: { latest: cacheLatest.data ?? [], by_provider: cacheByProvider },
     };
   });
