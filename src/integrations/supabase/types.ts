@@ -1868,6 +1868,42 @@ export type Database = {
           },
         ]
       }
+      ip_geo_cache: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          latitude: number | null
+          longitude: number | null
+          looked_up_at: string
+          region: string | null
+          source: string
+          subnet: string
+          timezone: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          looked_up_at?: string
+          region?: string | null
+          source?: string
+          subnet: string
+          timezone?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          looked_up_at?: string
+          region?: string | null
+          source?: string
+          subnet?: string
+          timezone?: string | null
+        }
+        Relationships: []
+      }
       launch_waitlist: {
         Row: {
           created_at: string
