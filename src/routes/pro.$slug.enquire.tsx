@@ -140,7 +140,11 @@ function EnquirePage() {
     void import("@/lib/analytics/track").then(({ track }) =>
       track.enquiryStart({ slug }),
     );
+    void import("@/lib/analytics/public-conversion").then(({ trackConversion }) => {
+      void trackConversion({ event_kind: "enquiry_started", properties: { slug } });
+    });
   }, [slug]);
+
 
 
   // Live overlay (name, avatar, services). Falls back to static if not found.
