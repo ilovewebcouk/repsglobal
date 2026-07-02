@@ -54,6 +54,8 @@ import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDr
 import { HeroLine } from "@/components/admin/activity/HeroLine";
 import { AnalyticsStrip, type AnalyticsSeries } from "@/components/admin/activity/AnalyticsStrip";
 import { DiagnosticsDrawer } from "@/components/admin/activity/DiagnosticsDrawer";
+import { CompactStatusStrip } from "@/components/admin/activity/CompactStatusStrip";
+import { PagesBeingViewedNow } from "@/components/admin/activity/PagesBeingViewedNow";
 import { getPublicVisitorsLive, getPublicIngestHealth, getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
 
 const SOURCES: ActivitySource[] = [
@@ -316,6 +318,17 @@ function AdminActivityPage() {
           ingestStatus={ingestStatus}
           updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
         />
+
+        {/* ── 1b. COMPACT STATUS STRIP (Zone 3 · six tiles max) ── */}
+        <CompactStatusStrip
+          publicLive={publicOnline}
+          membersLive={membersOnline}
+          keyActionsToday={keyActionsToday}
+          criticalCount={criticalCount}
+          warningCount={Math.max(0, attentionCount - criticalCount)}
+          health={ingestStatus === "down" ? "broken" : ingestStatus}
+        />
+
 
 
         {/* ── 2. MAP-FIRST TOP ROW: large map + Realtime Summary Card ── */}
