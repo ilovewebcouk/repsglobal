@@ -51,7 +51,7 @@ export const template = {
   component: PurchaseConfirmationEmail,
   subject: (d: Record<string, any>) => `Welcome to ${d?.tierLabel ?? "REPS Core"}`,
   displayName: "Purchase confirmation",
-  previewData: { proName: "Sam", tierLabel: "REPS Core", amountText: "£99", periodText: "/year" },
+  previewData: { proName: "Sam", tierLabel: "REPS Core", amountText: "£34", periodText: "/year" },
 } satisfies TemplateEntry;
 
 const main = { backgroundColor: "#ffffff", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" };

@@ -143,7 +143,7 @@ export type BillingKpis = {
 };
 
 function monthlyPence(tier: string, period: string | null): number {
-  if (tier === "verified") return Math.round(9900 / 12);
+  if (tier === "verified") return Math.round(3400 / 12);
   if (tier === "pro") return 5900;
   if (tier === "studio") return 14900;
   return 0;

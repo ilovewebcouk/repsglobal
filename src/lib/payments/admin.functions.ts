@@ -14,7 +14,7 @@ async function requireAdmin(supabase: any, userId: string) {
 
 // Monthly price in pence per (tier, period).
 function monthlyPence(tier: string, period: string | null): number {
-  if (tier === "verified") return Math.round(9900 / 12); // £99/yr -> £8.25/mo
+  if (tier === "verified") return Math.round(3400 / 12); // £34/yr -> £2.83/mo
   if (tier === "pro") return 5900;
   if (tier === "studio") return 14900;
   return 0;

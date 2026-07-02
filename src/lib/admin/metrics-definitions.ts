@@ -26,7 +26,7 @@ export {
 // --- Renewal pricing (forecast only) ----------------------------------------
 // Pence per tier per renewal cycle. Mirrors src/lib/billing.ts.
 export const TIER_RENEWAL_PENCE: Record<string, number> = {
-  verified: 9900,
+  verified: 3400,
   pro: 5900,
   studio: 14900,
 };

@@ -12,7 +12,7 @@ interface Props {
 
 const Email = ({
   proName = "there",
-  amount = "£99",
+  amount = "£34",
   graceEndDate = "soon",
   renewUrl = "https://repsuk.org/dashboard",
 }: Props) => (
@@ -55,7 +55,7 @@ export const template = {
   displayName: "Renewal — payment failed",
   previewData: {
     proName: "Jordon",
-    amount: "£99",
+    amount: "£34",
     graceEndDate: "26 July 2026",
     renewUrl: "https://repsuk.org/renew/example",
   },

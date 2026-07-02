@@ -680,7 +680,7 @@ function TierComparisonSection() {
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           <TierCard
             badge="Core"
-            price="£99 / year"
+            price="£34 / year"
             blurb="For professionals who want a trusted public register profile and enquiry inbox."
             cta={{ to:"/pricing", label:"Start with Verified" }}
           />

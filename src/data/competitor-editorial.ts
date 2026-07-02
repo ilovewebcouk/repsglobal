@@ -3,7 +3,7 @@
  *
  * Framing rule: comparison pages compare REPS Pro (£59/mo, founding,
  * was £79/mo) head-to-head against the competitor's full software plan.
- * Core (£99/yr) is a public register listing, not coaching software,
+ * Core (£34/yr) is a public register listing, not coaching software,
  * and is mentioned at most as a one-line aside. Studio only appears on
  * pages that explicitly discuss teams or studios.
  *
@@ -68,7 +68,7 @@ const REPS_PRO_LINE =
   "REPS Pro is £59/mo (founding, was £79/mo) and includes the full software platform — directory profile, verification, CRM, bookings, payments, programmes, check-ins, nutrition, client portal and REPS AI. No paid add-on stack or per-client charges.";
 
 const VERIFIED_ASIDE =
-  "Core (£99/yr) is a separate public register listing, not coaching software, and is not included in this comparison.";
+  "Core (£34/yr) is a separate public register listing, not coaching software, and is not included in this comparison.";
 
 export const EDITORIAL: Record<Competitor["slug"], Editorial> = {
   trainerize: {

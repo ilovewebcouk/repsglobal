@@ -13,7 +13,7 @@ interface Props {
 const Email = ({
   proName = "there",
   renewalDate = "soon",
-  amount = "£99",
+  amount = "£34",
   renewUrl = "https://repsuk.org/dashboard",
 }: Props) => (
   <Html lang="en" dir="ltr">
@@ -61,7 +61,7 @@ export const template = {
   previewData: {
     proName: "Jordon",
     renewalDate: "12 July 2026",
-    amount: "£99",
+    amount: "£34",
     renewUrl: "https://repsuk.org/renew/example",
   },
 } satisfies TemplateEntry;

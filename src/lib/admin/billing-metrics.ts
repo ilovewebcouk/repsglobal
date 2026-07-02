@@ -13,14 +13,14 @@ export type BillingPeriod = "monthly" | "annual";
 export type BillingEnv = "sandbox" | "live";
 
 export const TIER_PRICE_PENCE: Record<Tier, number> = {
-  verified: 9900,
+  verified: 3400,
   pro: 5900,
   studio: 14900,
 };
 
 /** Annual price in pence for tiers sold annually (Pro Founding annual = £590). */
 export const TIER_ANNUAL_PRICE_PENCE: Partial<Record<Tier, number>> = {
-  verified: 9900,
+  verified: 3400,
   pro: 59000,
 };
 

@@ -685,7 +685,7 @@ function InviteButton() {
                 className={plan === "verified"
                   ? "flex-1 rounded-[10px] border border-reps-orange bg-reps-orange-soft px-3 py-2 text-left text-[12px] font-semibold text-reps-orange"
                   : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
-                Core <span className="font-normal text-white/55">£99/yr</span>
+                Core <span className="font-normal text-white/55">£34/yr</span>
               </button>
               <button onClick={() => setPlan("pro")}
                 className={plan === "pro"

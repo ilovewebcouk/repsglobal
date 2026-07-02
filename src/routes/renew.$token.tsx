@@ -97,7 +97,7 @@ function RenewPage() {
                   : "Reactivate your REPS profile in one tap."}
             </p>
             <p className="text-sm text-white/60 mb-6">
-              {state.data.tier === "pro" ? "REPS Pro — £59/month" : "REPS Core — £99/year"}
+              {state.data.tier === "pro" ? "REPS Pro — £59/month" : "REPS Core — £34/year"}
             </p>
             <Button
               size="lg"
