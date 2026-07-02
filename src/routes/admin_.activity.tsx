@@ -240,6 +240,7 @@ function AdminActivityPage() {
   const slow = timings.filter((t) => !t.degraded && t.ms > 1500);
   const feedDegraded = feedQ.data?.degraded_sources ?? [];
 
+  const publicStale = Boolean(publicHealthQ.data?.supabase_live.stale) || Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok);
   const ingestStatus: "healthy" | "degraded" | "down" =
     realtimeQ.error || publicRealtimeQ.error ? "down"
     : degraded.length > 0 || feedDegraded.length > 0 ? "degraded"
@@ -310,6 +311,21 @@ function AdminActivityPage() {
           </div>
         ) : null}
 
+        {/* ── Hero line · plain-English state sentence ── */}
+        <p className="px-1 text-[12.5px] text-white/60">
+          {(() => {
+            const liveNow = publicOnline + membersOnline;
+            const parts: string[] = [];
+            parts.push(liveNow > 0
+              ? `${liveNow} live now — ${publicOnline} public · ${membersOnline} members.`
+              : "It's quiet — no one is on the site right now.");
+            if (criticalCount > 0) parts.push(`${criticalCount} critical action${criticalCount === 1 ? "" : "s"} need attention.`);
+            else if (attentionCount > 0) parts.push(`${attentionCount} item${attentionCount === 1 ? "" : "s"} in the action queue.`);
+            if (publicStale) parts.push("Public ingest is quiet — no recent hits.");
+            return parts.join(" ");
+          })()}
+        </p>
+
         {/* ── Zone 3 · COMPACT STATUS STRIP (six tiles) ── */}
         <CompactStatusStrip
           publicLive={publicOnline}
@@ -318,6 +334,7 @@ function AdminActivityPage() {
           criticalCount={criticalCount}
           warningCount={Math.max(0, attentionCount - criticalCount)}
           health={ingestStatus === "down" ? "broken" : ingestStatus}
+          ingestStale={publicStale}
         />
 
         {/* ── Zone 4 · Live map (2/3) + Realtime Summary (1/3) ── */}
@@ -390,8 +407,8 @@ function AdminActivityPage() {
           <section className="rounded-[18px] border border-reps-border bg-reps-panel p-4">
             <header className="mb-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <h2 className="font-display text-[14px] font-semibold text-white">24h analytics summary</h2>
-                <span className="text-[10.5px] text-white/45">Historical data · 7-day rollup</span>
+                <h2 className="font-display text-[14px] font-semibold text-white">Last 7 days</h2>
+                <span className="text-[10.5px] text-white/45">Rolling 7-day snapshot</span>
               </div>
             </header>
             <AnalyticsStrip tiles={analyticsTiles} />
