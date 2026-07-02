@@ -445,13 +445,16 @@ function AdminActivityPage() {
         </section>
 
 
-        {/* Footer meta */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-reps-border/60 pt-3 text-[10.5px] text-white/40">
-          <span>
-            {events.length} events in view · {publicOnline} public · {membersOnline} members online
-          </span>
-          <span>Public analytics consent-gated · country-level enrichment · no raw IPs</span>
-        </div>
+        {/* ── 6. DIAGNOSTICS (collapsed by default) ── */}
+        <DiagnosticsDrawer
+          ingestStatus={ingestStatus}
+          degradedPanels={[...degraded.map((d) => d.panel), ...feedDegraded]}
+          slowPanels={slow}
+          lastJourneyAt={publicHealthQ.data?.supabase_live.last_journey_at ?? null}
+          publicOnline={publicOnline}
+          membersOnline={membersOnline}
+        />
+
       </div>
 
       <EventDetailSheet event={selectedEvent} onClose={() => setSelectedEvent(null)} />
