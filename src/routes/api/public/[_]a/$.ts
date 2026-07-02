@@ -116,21 +116,33 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   const admin = await isAdmin(request);
 
   // Server-side geo enrichment for capture endpoints only (skip static/assets/decide).
-  // Uses CF headers first, then ip_geolocation_cache/ipapi (server-only, never exposed).
+  // Uses CF headers first, then MaxMind / ipapi.co via ip-geo.server. Never exposed to client.
   let derivedGeo: {
     country: string | null; region: string | null; city: string | null;
     lat: number | null; lng: number | null; postal: string | null;
     tz: string | null; asn: string | null; org: string | null;
     source: string; confidence: string;
   } | null = null;
+  let geoProviderAttempted: string = "none";
+  let geoProviderResult: string = "none";
+  let geoCacheHit: boolean = false;
+  let rawIpSource: string = "none"; // label only — never the IP itself
 
   const isCaptureEndpoint = splat.startsWith("e") || splat.startsWith("batch") || splat.startsWith("capture");
   if (isCaptureEndpoint) {
     try {
-      const cfIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") ||
-        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+      let cfIp: string | null = null;
+      if (request.headers.get("cf-connecting-ip")) { cfIp = request.headers.get("cf-connecting-ip"); rawIpSource = "cf-connecting-ip"; }
+      else if (request.headers.get("x-real-ip")) { cfIp = request.headers.get("x-real-ip"); rawIpSource = "x-real-ip"; }
+      else {
+        const xff = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+        if (xff) { cfIp = xff; rawIpSource = "x-forwarded-for"; }
+      }
+      geoProviderAttempted = cfIp ? "maxmind-then-ipapi" : "none";
       const { lookupIpGeo } = await import("@/lib/activity/ip-geo.server");
       const g = cfIp ? await lookupIpGeo(cfIp) : null;
+      geoProviderResult = g?.source ?? "none";
+      geoCacheHit = typeof g?.source === "string" && g.source.endsWith("-cache");
       const cc = country || g?.countryCode || null;
       const region = request.headers.get("cf-region") || g?.region || null;
       const city = request.headers.get("cf-ipcity") || g?.city || null;
@@ -148,7 +160,9 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       const source = city ? (request.headers.get("cf-ipcity") ? "cloudflare-headers" : (g?.source ?? "none")) :
         cc ? "country-only" : "none";
       derivedGeo = { country: cc, region, city, lat, lng, postal, tz, asn: g?.asn ?? null, org: g?.org ?? null, source, confidence };
-    } catch {
+    } catch (err) {
+      geoProviderResult = "threw";
+      console.error("[posthog-proxy] geo lookup threw", err);
       derivedGeo = null;
     }
   }
@@ -273,7 +287,6 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   console.log("[posthog-proxy]", { path: `/${splat}`, method: request.method, ct: contentType, taken: pathTaken, cc: country, admin });
 
   // Server-side observation write (admin-only visibility of raw IP + geo).
-  // Fire-and-forget so we never delay the outbound proxy call.
   let obsAttempted = false;
   let obsResult: "ok" | "skipped" | "failed" = "skipped";
   let obsFailure: string | null = null;
@@ -287,8 +300,11 @@ async function proxy(request: Request, splat: string): Promise<Response> {
   let obsHasIp = false;
   let obsEventCount = 0;
   let obsFirstEvent: string | null = null;
+  let extractedPath: string | null = null;
+  let observationId: string | null = null;
+  const consentWriteEligible = isCaptureEndpoint && !admin;
 
-  if (isCaptureEndpoint && !admin) {
+  if (consentWriteEligible) {
     try {
       const cfIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") ||
         request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
@@ -328,8 +344,9 @@ async function proxy(request: Request, splat: string): Promise<Response> {
         obsHasDistinct = !!distinctId;
         obsHasPath = !!path;
         obsHasReferrer = !!referrer;
+        extractedPath = path;
 
-        await recordVisitorObservation({
+        const written = await recordVisitorObservation({
           ctx: {
             userId: null,
             ip: cfIp,
@@ -357,6 +374,7 @@ async function proxy(request: Request, splat: string): Promise<Response> {
           path,
           referrer,
         });
+        observationId = written?.id ?? null;
         obsResult = "ok";
       }
     } catch (err) {
@@ -370,10 +388,10 @@ async function proxy(request: Request, splat: string): Promise<Response> {
     }
   }
 
-  // Durable diagnostics row (admin-only visible). Fire-and-forget.
+  // Durable diagnostics row (admin-only visible). Log the actual outcome — never swallow.
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("proxy_ingest_diagnostics").insert({
+    const diagRes = await supabaseAdmin.from("proxy_ingest_diagnostics").insert({
       proxy_path: `/${splat}`,
       method: request.method,
       parser: pathTaken,
@@ -394,8 +412,29 @@ async function proxy(request: Request, splat: string): Promise<Response> {
       geo_source: derivedGeo?.source ?? null,
       geo_confidence: derivedGeo?.confidence ?? null,
       geo_has_city: !!derivedGeo?.city,
+      geo_has_region: !!derivedGeo?.region,
+      geo_has_lat_lng: derivedGeo?.lat !== null && derivedGeo?.lat !== undefined && derivedGeo?.lng !== null && derivedGeo?.lng !== undefined,
+      geo_provider_attempted: geoProviderAttempted,
+      geo_provider_result: geoProviderResult,
+      geo_cache_hit: geoCacheHit,
+      raw_ip_source: rawIpSource,
+      extracted_path: extractedPath,
+      consent_write_eligible: consentWriteEligible,
+      observation_id: observationId,
     });
-  } catch { /* never block proxy on diagnostics */ }
+    if (diagRes.error) {
+      console.error("[posthog-proxy] diagnostics insert failed", {
+        code: diagRes.error.code,
+        message: diagRes.error.message,
+        details: diagRes.error.details,
+        hint: diagRes.error.hint,
+      });
+    }
+  } catch (err) {
+    const e = err as { name?: string; message?: string };
+    console.error("[posthog-proxy] diagnostics insert threw", { name: e?.name, msg: e?.message });
+  }
+
 
   if (ua) outboundHeaders.set("user-agent", ua);
   // Deliberately do NOT forward: authorization, cookie, x-forwarded-for,

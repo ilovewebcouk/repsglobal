@@ -3413,15 +3413,22 @@ export type Database = {
       proxy_ingest_diagnostics: {
         Row: {
           attempted: boolean | null
+          consent_write_eligible: boolean | null
           created_at: string
           error_code: string | null
           error_details: string | null
           error_hint: string | null
           error_message: string | null
           event_count: number | null
+          extracted_path: string | null
           first_event: string | null
+          geo_cache_hit: boolean | null
           geo_confidence: string | null
           geo_has_city: boolean | null
+          geo_has_lat_lng: boolean | null
+          geo_has_region: boolean | null
+          geo_provider_attempted: string | null
+          geo_provider_result: string | null
           geo_source: string | null
           has_distinct: boolean | null
           has_path: boolean | null
@@ -3431,21 +3438,30 @@ export type Database = {
           id: string
           is_admin: boolean | null
           method: string | null
+          observation_id: string | null
           parser: string | null
           proxy_path: string | null
+          raw_ip_source: string | null
           result: string | null
         }
         Insert: {
           attempted?: boolean | null
+          consent_write_eligible?: boolean | null
           created_at?: string
           error_code?: string | null
           error_details?: string | null
           error_hint?: string | null
           error_message?: string | null
           event_count?: number | null
+          extracted_path?: string | null
           first_event?: string | null
+          geo_cache_hit?: boolean | null
           geo_confidence?: string | null
           geo_has_city?: boolean | null
+          geo_has_lat_lng?: boolean | null
+          geo_has_region?: boolean | null
+          geo_provider_attempted?: string | null
+          geo_provider_result?: string | null
           geo_source?: string | null
           has_distinct?: boolean | null
           has_path?: boolean | null
@@ -3455,21 +3471,30 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           method?: string | null
+          observation_id?: string | null
           parser?: string | null
           proxy_path?: string | null
+          raw_ip_source?: string | null
           result?: string | null
         }
         Update: {
           attempted?: boolean | null
+          consent_write_eligible?: boolean | null
           created_at?: string
           error_code?: string | null
           error_details?: string | null
           error_hint?: string | null
           error_message?: string | null
           event_count?: number | null
+          extracted_path?: string | null
           first_event?: string | null
+          geo_cache_hit?: boolean | null
           geo_confidence?: string | null
           geo_has_city?: boolean | null
+          geo_has_lat_lng?: boolean | null
+          geo_has_region?: boolean | null
+          geo_provider_attempted?: string | null
+          geo_provider_result?: string | null
           geo_source?: string | null
           has_distinct?: boolean | null
           has_path?: boolean | null
@@ -3479,8 +3504,10 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           method?: string | null
+          observation_id?: string | null
           parser?: string | null
           proxy_path?: string | null
+          raw_ip_source?: string | null
           result?: string | null
         }
         Relationships: []
