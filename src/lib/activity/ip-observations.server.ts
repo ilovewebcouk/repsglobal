@@ -79,11 +79,23 @@ export async function recordVisitorObservation(input: ObservationInput): Promise
 
   // Prefer upsert on the unique index (session_id, ip_hash, user_agent_hash)
   // but only when all three are present. Otherwise, plain insert.
-  if (row.session_id && row.ip_hash && row.user_agent_hash) {
-    await supabaseAdmin
-      .from("security_visitor_ip_observations")
-      .upsert(row, { onConflict: "session_id,ip_hash,user_agent_hash" });
-  } else {
-    await supabaseAdmin.from("security_visitor_ip_observations").insert(row);
+  const res =
+    row.session_id && row.ip_hash && row.user_agent_hash
+      ? await supabaseAdmin
+          .from("security_visitor_ip_observations")
+          .upsert(row, { onConflict: "session_id,ip_hash,user_agent_hash" })
+      : await supabaseAdmin.from("security_visitor_ip_observations").insert(row);
+  if (res.error) {
+    console.error("[obs-write] insert failed", {
+      code: res.error.code,
+      message: res.error.message,
+      details: res.error.details,
+      hint: res.error.hint,
+      has_session: !!row.session_id,
+      has_ip_hash: !!row.ip_hash,
+      has_ua_hash: !!row.user_agent_hash,
+      event_context: row.event_context,
+    });
+    throw new Error(`obs_write_failed: ${res.error.message}`);
   }
 }
