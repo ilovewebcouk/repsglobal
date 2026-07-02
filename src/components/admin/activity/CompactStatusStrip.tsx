@@ -13,6 +13,8 @@ export interface CompactStatusStripProps {
   criticalCount: number;
   warningCount: number;
   health: HealthState;
+  /** If the public ingest is stale, health tile shows "Quiet" instead of "Healthy". */
+  ingestStale?: boolean;
 }
 
 interface Tile {
