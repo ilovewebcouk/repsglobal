@@ -143,7 +143,7 @@ function ShopFrontEditorPage() {
   const [hero, setHero] = React.useState("");
   
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
-  const [theme, setTheme] = React.useState<"dark" | "light">("dark");
+  const [theme] = React.useState<"dark" | "light">("dark");
 
   React.useEffect(() => {
     if (!sf) return;
@@ -151,7 +151,6 @@ function ShopFrontEditorPage() {
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
     setLayout(sf.layout_variant);
-    setTheme(sf.theme ?? "dark");
   }, [sf]);
 
   const saveMutation = useMutation({
@@ -383,24 +382,6 @@ function ShopFrontEditorPage() {
               hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
             >
               <HeroImageEditor value={hero} onChange={setHero} />
-            </Field>
-            <Field label="Theme" hint="Choose how your public page looks to visitors.">
-              <div className="flex gap-2">
-                {(["dark", "light"] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTheme(t)}
-                    className={`h-10 rounded-[12px] border px-4 text-[13px] capitalize transition ${
-                      theme === t
-                        ? "border-reps-orange bg-reps-orange/10 text-white"
-                        : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
             </Field>
           </PPanel>
 
