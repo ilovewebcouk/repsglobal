@@ -29,6 +29,7 @@ import {
   WelcomeBanner,
   useHubData,
 } from "@/components/dashboard/hub";
+import { DashboardVerificationBanner } from "@/components/dashboard/DashboardVerificationBanner";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard")({
   validateSearch: (raw: Record<string, unknown>) => ({
@@ -149,6 +150,9 @@ function DashboardPage() {
         </Alert>
       ) : (
         <div className="flex flex-col gap-4">
+          {/* ROW 0 — Verification banner */}
+          <DashboardVerificationBanner />
+
           {/* ROW 1 — Welcome */}
           <WelcomeBanner
             name={memberName}
