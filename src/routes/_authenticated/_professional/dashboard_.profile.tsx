@@ -1051,7 +1051,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Identity"
                 subtitle="Your legal name — must match your government ID and your regulated qualification certificates."
-                step="02"
+                step="01"
               />
               <div className="flex flex-col gap-4">
                 <div data-field="full_name">
@@ -1087,7 +1087,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Your pitch"
                 subtitle="What clients read on your directory card and profile."
-                step="03"
+                step="02"
               />
               <div className="flex flex-col gap-5">
                 <div data-field="headline">
@@ -1145,7 +1145,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Specialisms"
                 subtitle={`Unlocked by your profession — pick up to ${MAX_SPECIALISMS}.`}
-                step="04"
+                step="03"
               />
               <SpecialismsPicker
                 values={form.specialisms}
@@ -1161,7 +1161,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Languages & socials"
                 subtitle="Extras that help the right clients find you."
-                step="05"
+                step="04"
               />
               <div className="flex flex-col gap-5">
                 <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language.">
