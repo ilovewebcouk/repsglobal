@@ -28,7 +28,7 @@ const ReviewReplyEmail = ({
   replyText = "Thanks so much for the kind words.",
   clientName,
 }: ReviewReplyProps) => {
-  const profileUrl = proSlug ? `https://repsuk.org/pro/${proSlug}#reviews` : "https://repsuk.org";
+  const profileUrl = proSlug ? `https://repsuk.org/c/${proSlug}#reviews` : "https://repsuk.org";
   const stars = "★".repeat(Math.max(1, Math.min(5, reviewRating)));
   return (
     <Html lang="en" dir="ltr">

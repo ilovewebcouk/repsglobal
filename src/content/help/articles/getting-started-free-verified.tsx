@@ -23,7 +23,7 @@ export const article: HelpArticle = {
       </p>
       <h2 id="what-core-includes">What Core includes</h2>
       <ul>
-        <li>A public profile at <code>reps.org/pro/your-slug</code></li>
+        <li>A public profile at <code>reps.org/c/your-slug</code></li>
         <li>Verified badge once identity, qualifications and insurance are approved</li>
         <li>Listing in directory search, profession pages and city pages</li>
         <li>Client enquiry inbox and review collection</li>

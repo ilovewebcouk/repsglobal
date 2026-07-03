@@ -116,7 +116,7 @@ const TRUST_SIGNALS = [
 ];
 
 const SEGMENTS = [
-  { key:"pt", label:"Personal trainer", src:"/pro/james-carter", device:"laptop" as const, title:"PT profile" },
+  { key:"pt", label:"Personal trainer", src:"/c/james-carter", device:"laptop" as const, title:"PT profile" },
   { key:"online", label:"Online coach", src:"/professions/online-coach", device:"laptop" as const, title:"Online coach landing" },
   { key:"strength", label:"Strength coach", src:"/professions/strength-coach", device:"laptop" as const, title:"Strength coach landing" },
   { key:"pilates", label:"Pilates", src:"/professions/pilates-instructor", device:"laptop" as const, title:"Pilates instructor landing" },
@@ -424,7 +424,7 @@ function ProfileSection() {
           <AnnotatedMock
             mockup={{
               device:"laptop",
-              src:"/pro/james-carter",
+              src:"/c/james-carter",
               title:"Verified professional profile",
             }}
             callouts={PROFILE_CALLOUTS}
@@ -557,7 +557,7 @@ function ReviewsSection() {
           <MockupStage variant="laptop">
             <DeviceMockup
               device="laptop"
-              src="/pro/james-carter#reviews"
+              src="/c/james-carter#reviews"
               title="Reviews on the verified profile"
             />
           </MockupStage>

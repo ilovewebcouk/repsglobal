@@ -111,7 +111,7 @@ export const COMPARE_GROUPS: CompareGroup[] = [
   {
     title: "Visibility & trust",
     rows: [
-      { label: "Public directory listing (/pro/your-name)", verified: true, pro: true, studio: true },
+      { label: "Public directory listing (/c/your-name)", verified: true, pro: true, studio: true },
       { label: "Verified badge", verified: true, pro: true, studio: true },
       { label: "Reviews on the record", verified: true, pro: true, studio: true },
       { label: "Enquiries inbox", verified: true, pro: true, studio: true },
