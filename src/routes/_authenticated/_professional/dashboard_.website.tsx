@@ -1407,7 +1407,7 @@ function WebsiteContentEditor() {
                         setPillars(next);
                       }}
                       placeholder={placeholders.body}
-                      maxLength={110}
+                      maxLength={200}
                     />
                   </div>
                 </div>
