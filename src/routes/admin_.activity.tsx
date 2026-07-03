@@ -33,12 +33,14 @@ import {
   getActivityFeed, type ActivityEvent, type ActivitySource, type ActivitySeverity,
 } from "@/lib/ops/activity-feed.functions";
 import {
-  getActivityKpis, getOnlineNow, getCurrentPages, getTopMemberPages,
-  getGeoActivity, getNeedsAttention,
+  getActivityKpis, getTopMemberPages, getGeoActivity, getNeedsAttention,
 } from "@/lib/ops/activity-panels.functions";
-import { getRealtimeSummary } from "@/lib/ops/activity-realtime.functions";
-import { getPublicRealtime } from "@/lib/admin/public-realtime.functions";
 
+// v5 — one canonical live source of truth. No PostHog anywhere on this page.
+import {
+  getActivityCommandCenter,
+  type CommandCenterPayload,
+} from "@/lib/activity/command-center.functions";
 
 import {
   GeoPanel, TopMemberPagesPanel, NeedsAttentionPanel,
@@ -47,16 +49,13 @@ import { ClientOnlyMap } from "@/components/admin/activity/WorldMapPanel";
 import {
   ActivityFeedV2, EventDetailSheet,
 } from "@/components/admin/activity/feed-and-sheet";
-import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsPanel";
 import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
 import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
-
 import { AnalyticsStrip, type AnalyticsSeries } from "@/components/admin/activity/AnalyticsStrip";
-import { DiagnosticsDrawer } from "@/components/admin/activity/DiagnosticsDrawer";
 import { CompactStatusStrip } from "@/components/admin/activity/CompactStatusStrip";
 import { PagesBeingViewedNow } from "@/components/admin/activity/PagesBeingViewedNow";
-import { getPublicVisitorsLive, getPublicIngestHealth, getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
+import { getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
