@@ -9,7 +9,6 @@ import {
   Calendar,
   Check,
   ChevronDown,
-  Clock,
   Compass,
   Dumbbell,
   GraduationCap,
@@ -19,7 +18,6 @@ import {
   Laptop,
   MapPin,
   MessageCircle,
-  Phone,
   ShieldCheck,
   Star,
   Umbrella,
@@ -689,23 +687,23 @@ function ProProfilePage() {
                   Get in touch
                 </div>
                 <div className="mt-1 text-[12.5px] text-reps-muted-light">
-                  Free, no-obligation enquiry. Most replies within a day.
+                  Free, no-obligation enquiry.
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-3 border-y border-reps-stone py-3 text-[12px]">
-                  <div>
-                    <div className="inline-flex items-center gap-1 text-reps-muted-light">
-                      <Clock className="h-3.5 w-3.5" /> Response
-                    </div>
-                    <div className="mt-0.5 font-semibold text-reps-charcoal">Within 1 day</div>
-                  </div>
-                  <div>
-                    <div className="inline-flex items-center gap-1 text-reps-muted-light">
-                      <Check className="h-3.5 w-3.5" /> Reply rate
-                    </div>
-                    <div className="mt-0.5 font-semibold text-reps-charcoal">98%</div>
-                  </div>
-                </div>
+                <ul className="mt-4 space-y-2 border-y border-reps-stone py-4 text-[12.5px] text-reps-charcoal">
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-green" strokeWidth={3} />
+                    Send a private enquiry
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-green" strokeWidth={3} />
+                    No obligation to book
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-green" strokeWidth={3} />
+                    Details shared only with {pro.firstName}
+                  </li>
+                </ul>
 
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
@@ -723,13 +721,6 @@ function ProProfilePage() {
                   </Link>
                   <button
                     type="button"
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-4 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
-                  >
-                    <Phone className="h-4 w-4" />
-                    Call
-                  </button>
-                  <button
-                    type="button"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] text-[13px] font-semibold text-reps-muted-light transition-colors hover:text-reps-charcoal"
                   >
                     <Bookmark className="h-4 w-4" />
@@ -738,6 +729,7 @@ function ProProfilePage() {
                 </div>
               </div>
             </aside>
+
           </div>
 
 
@@ -858,27 +850,46 @@ function ProProfilePage() {
                   <p key={p}>{p}</p>
                 ))}
               </div>
-              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-reps-muted-light">
-                <span>
-                  <strong className="font-semibold text-reps-charcoal">{pro.years}+</strong> years experience
-                </span>
-                <span className="text-reps-stone" aria-hidden>·</span>
-                <span>
-                  <strong className="font-semibold text-reps-charcoal">{pro.clients}</strong> clients helped
-                </span>
-                {pro.qualifications[0]?.issued ? (
-                  <>
-                    <span className="text-reps-stone" aria-hidden>·</span>
-                    <span>
-                      Verified since{" "}
+              {(() => {
+                const parts: React.ReactNode[] = [];
+                if (pro.years > 0) {
+                  parts.push(
+                    <span key="years">
+                      <strong className="font-semibold text-reps-charcoal">{pro.years}+</strong> years qualified
+                    </span>,
+                  );
+                }
+                if (pro.clients && pro.clients !== "—" && pro.clients !== "0") {
+                  parts.push(
+                    <span key="clients">
+                      <strong className="font-semibold text-reps-charcoal">{pro.clients}</strong> clients helped
+                    </span>,
+                  );
+                }
+                if (pro.qualifications[0]?.issued && pro.qualifications[0].issued !== "—") {
+                  parts.push(
+                    <span key="verified">
+                      Qualified since{" "}
                       <strong className="font-semibold text-reps-charcoal">
                         {pro.qualifications[0].issued.split(" ").pop()}
                       </strong>
-                    </span>
-                  </>
-                ) : null}
-              </div>
+                    </span>,
+                  );
+                }
+                if (parts.length === 0) return null;
+                return (
+                  <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-reps-muted-light">
+                    {parts.map((p, i) => (
+                      <React.Fragment key={i}>
+                        {i > 0 ? <span className="text-reps-stone" aria-hidden>·</span> : null}
+                        {p}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
+
 
             {/* Services — dark navy tiles, matches /c/$slug */}
             <div id="services">
@@ -1021,21 +1032,24 @@ function ProProfilePage() {
                   <div className="mt-2 text-[12px] text-reps-muted-light">
                     Based on {reviewSummary.count} {reviewSummary.count === 1 ? "review" : "reviews"}
                   </div>
-                  <div className="mt-4 space-y-2">
-                    {reviewSummary.dist.map((d) => (
-                      <div key={d.stars} className="grid grid-cols-[18px_12px_1fr_28px] items-center gap-2 text-[11px] text-reps-muted-light">
-                        <span>{d.stars}</span>
-                        <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                        <div className="h-1.5 overflow-hidden rounded-full bg-reps-stone">
-                          <div
-                            className="h-full rounded-full bg-reps-orange"
-                            style={{ width: `${Math.min(100, (d.count / reviewSummary.maxCount) * 100)}%` }}
-                          />
+                  {reviewSummary.count >= 3 ? (
+                    <div className="mt-4 space-y-2">
+                      {reviewSummary.dist.map((d) => (
+                        <div key={d.stars} className="grid grid-cols-[18px_12px_1fr_28px] items-center gap-2 text-[11px] text-reps-muted-light">
+                          <span>{d.stars}</span>
+                          <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
+                          <div className="h-1.5 overflow-hidden rounded-full bg-reps-stone">
+                            <div
+                              className="h-full rounded-full bg-reps-orange"
+                              style={{ width: `${Math.min(100, (d.count / reviewSummary.maxCount) * 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-right text-reps-charcoal">{d.count}</span>
                         </div>
-                        <span className="text-right text-reps-charcoal">{d.count}</span>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : null}
+
                 </div>
 
                 <div className="space-y-5">
