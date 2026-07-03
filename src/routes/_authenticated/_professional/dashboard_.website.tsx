@@ -1151,7 +1151,7 @@ function WebsiteContentEditor() {
     queryFn: () => fetch_(),
   });
 
-  const [subtitle, setSubtitle] = React.useState("");
+  // subtitle now lives in HeroSubtitleField (rendered in the basics panel)
   const [methodName, setMethodName] = React.useState("");
   const [methodIntro, setMethodIntro] = React.useState("");
   const [pillars, setPillars] = React.useState<MethodPillar[]>([]);
