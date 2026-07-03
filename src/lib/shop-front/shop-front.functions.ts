@@ -463,10 +463,9 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("shop_fronts")
         .select(
-          "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, is_published, published_at",
+          "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant",
         )
         .eq("professional_id", pro.id)
-        .eq("is_published", true)
         .maybeSingle(),
       supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", pro.id).maybeSingle(),
       supabaseAdmin
@@ -503,7 +502,23 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
     ]);
 
-    if (!sf) return null;
+    // Tolerant: if no shop_fronts row exists yet, synthesise defaults from the
+    // pro record so /c/$slug never 404s on a paying member.
+    const sfRow = sf ?? {
+      professional_id: pro.id,
+      tagline: null,
+      subtitle: null,
+      about: null,
+      hero_image_url: null,
+      accent_hex: null,
+      method_name: null,
+      method_intro: null,
+      method_pillars: null,
+      venues: null,
+      coaching_reach: null,
+      client_results_intro: null,
+      layout_variant: "full" as const,
+    };
 
     const tier =
       subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
@@ -514,20 +529,18 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     return {
       shopFront: {
         professional_id: pro.id,
-        tagline: sf.tagline,
-        subtitle: sf.subtitle ?? null,
-        about: sf.about,
-        hero_image_url: sf.hero_image_url,
-        accent_hex: sf.accent_hex,
-        method_name: sf.method_name ?? null,
-        method_intro: sf.method_intro ?? null,
-        method_pillars: asPillars(sf.method_pillars),
-        venues: asVenues(sf.venues),
-        coaching_reach: asReach(sf.coaching_reach),
-        client_results_intro: sf.client_results_intro ?? null,
-        layout_variant: (sf.layout_variant as "lite" | "full") ?? "lite",
-        is_published: sf.is_published,
-        published_at: sf.published_at,
+        tagline: sfRow.tagline,
+        subtitle: sfRow.subtitle ?? null,
+        about: sfRow.about,
+        hero_image_url: sfRow.hero_image_url,
+        accent_hex: sfRow.accent_hex,
+        method_name: sfRow.method_name ?? null,
+        method_intro: sfRow.method_intro ?? null,
+        method_pillars: asPillars(sfRow.method_pillars),
+        venues: asVenues(sfRow.venues),
+        coaching_reach: asReach(sfRow.coaching_reach),
+        client_results_intro: sfRow.client_results_intro ?? null,
+        layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
         slug: pro.slug,
         full_name: prof?.full_name ?? null,
         avatar_url: prof?.avatar_url ?? null,
@@ -551,6 +564,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       faqs: (faqs ?? []) as ShopFrontFaqDTO[],
     };
   });
+
 
 /* ---------------- Pro-side reads / writes ---------------- */
 
