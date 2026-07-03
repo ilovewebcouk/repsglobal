@@ -1366,79 +1366,16 @@ function WebsiteContentEditor() {
 
   return (
     <>
-      {/* Venues + reach */}
-      <PPanel>
-        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-[14px] font-semibold text-white">Where I train</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">Edit in-person venues, cities and online/worldwide availability.</p>
-          </div>
-          <button
-            type="button"
-            onClick={onSaveVenues}
-            disabled={saveMut.isPending}
-            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            Save
-          </button>
-        </div>
-        {venues.map((v, i) => (
-          <Field key={i} label={`Venue ${i + 1}`} hint="Name + optional area/address.">
-            <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
-              <TextInput
-                value={v.name}
-                onChange={(e) => {
-                  const next = [...venues];
-                  next[i] = { ...next[i], name: e.target.value };
-                  setVenues(next);
-                }}
-                placeholder="e.g. PureGym Leeds"
-                maxLength={120}
-              />
-              <TextInput
-                value={v.address ?? ""}
-                onChange={(e) => {
-                  const next = [...venues];
-                  next[i] = { ...next[i], address: e.target.value };
-                  setVenues(next);
-                }}
-                placeholder="e.g. Leeds city centre"
-                maxLength={200}
-              />
-              <button
-                type="button"
-                onClick={() => setVenues(venues.filter((_, idx) => idx !== i))}
-                className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
-              >
-                Remove
-              </button>
-            </div>
-          </Field>
-        ))}
-        <Field label="Add venue">
-          <button
-            type="button"
-            onClick={() => setVenues([...venues, { name: "", address: "" }].slice(0, 8))}
-            className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/85 hover:bg-reps-panel"
-          >
-            + Add venue
-          </button>
-        </Field>
-        <Field label="Cities" hint="Comma-separated list shown as chips.">
-          <TextInput value={cities} onChange={(e) => setCities(e.target.value)} placeholder="Leeds, Bradford, Online" />
-        </Field>
-        <Field label="Online worldwide" hint="Adds the online/worldwide chip.">
-          <label className="flex items-center gap-2 text-[13px] text-white/85">
-            <input
-              type="checkbox"
-              checked={onlineWorldwide}
-              onChange={(e) => setOnlineWorldwide(e.target.checked)}
-              className="h-4 w-4 accent-reps-orange"
-            />
-            I coach online and worldwide
-          </label>
-        </Field>
-      </PPanel>
+      {/* Where I train — postcode + Google-Places gyms + reach */}
+      <WhereITrainPanel
+        cities={cities}
+        setCities={setCities}
+        onlineWorldwide={onlineWorldwide}
+        setOnlineWorldwide={setOnlineWorldwide}
+        onSaveReach={onSaveVenues}
+        saving={saveMut.isPending}
+      />
+
 
       {/* Results intro */}
       <PPanel>
