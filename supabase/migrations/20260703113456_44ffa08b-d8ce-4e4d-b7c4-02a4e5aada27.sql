@@ -1,0 +1,1 @@
+ALTER TABLE public.shop_fronts ADD COLUMN IF NOT EXISTS theme text NOT NULL DEFAULT 'dark' CHECK (theme IN ('dark','light'));

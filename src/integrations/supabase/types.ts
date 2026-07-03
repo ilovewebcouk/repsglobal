@@ -4305,6 +4305,7 @@ export type Database = {
           professional_id: string
           subtitle: string | null
           tagline: string | null
+          theme: string
           updated_at: string
           venues: Json
         }
@@ -4323,6 +4324,7 @@ export type Database = {
           professional_id: string
           subtitle?: string | null
           tagline?: string | null
+          theme?: string
           updated_at?: string
           venues?: Json
         }
@@ -4341,6 +4343,7 @@ export type Database = {
           professional_id?: string
           subtitle?: string | null
           tagline?: string | null
+          theme?: string
           updated_at?: string
           venues?: Json
         }
