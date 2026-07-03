@@ -143,7 +143,7 @@ function ShopFrontEditorPage() {
   const [hero, setHero] = React.useState("");
   
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
-  const [theme, setTheme] = React.useState<"dark" | "light">("dark");
+  const [theme] = React.useState<"dark" | "light">("dark");
 
   React.useEffect(() => {
     if (!sf) return;
@@ -151,7 +151,6 @@ function ShopFrontEditorPage() {
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
     setLayout(sf.layout_variant);
-    setTheme(sf.theme ?? "dark");
   }, [sf]);
 
   const saveMutation = useMutation({
