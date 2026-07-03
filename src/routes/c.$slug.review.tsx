@@ -69,7 +69,7 @@ function ReviewPage() {
       }),
     onSuccess: () => {
       toast.success("Thanks — your review has been posted.");
-      router.navigate({ to: "/pro/$slug", params: { slug } });
+      router.navigate({ to: "/c/$slug", params: { slug } });
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Couldn't submit review");

@@ -283,7 +283,7 @@ function EnquirePage() {
         void capturePublic("enquiry_submit", { slug });
       });
       toast.success(`Enquiry sent to ${pro.name.split(" ")[0]} — they'll reply by email.`);
-      router.navigate({ to: "/pro/$slug", params: { slug } });
+      router.navigate({ to: "/c/$slug", params: { slug } });
     },
     onError: (err: unknown) => {
       const m = err instanceof Error ? err.message : "Couldn't send your enquiry.";
