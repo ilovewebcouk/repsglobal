@@ -494,6 +494,30 @@ export const aiDraftTagline = createServerFn({ method: "POST" })
     return { tagline };
   });
 
+const SubtitleContextSchema = z.object({
+  tagline: z.string().trim().max(200).optional().default(""),
+  audience: z.string().trim().max(400).optional().default(""),
+});
+
+export const aiDraftSubtitle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => SubtitleContextSchema.parse(d ?? {}))
+  .handler(async ({ data, context }): Promise<{ subtitle: string }> => {
+    const facts = await loadFacts(context.userId);
+    const extras = [
+      data.tagline ? `- Current tagline (do NOT repeat it): ${data.tagline}` : "",
+      data.audience ? `- Who they help / how: ${data.audience}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const sys = `${VOICE}\nReturn STRICT JSON: { "subtitle": string }.\nRules for the subtitle:\n- 6 to 16 words. Sentence case. One line.\n- Sits directly under the H1 tagline — it supports the tagline, does not repeat it.\n- Concrete: who it's for, how it's delivered, or the concrete promise.\n- No emojis, no exclamation marks, no all caps, no job-title words ("coach", "trainer").\n- No invented numbers, credentials or timeframes.`;
+    const user = `Facts about the coach:\n${facts}${extras ? `\nExtra context:\n${extras}` : ""}\n\nWrite one supporting subtitle line for their public REPS page.`;
+    const parsed = (await callJSON(sys, user)) as { subtitle?: string };
+    const subtitle = String(parsed.subtitle ?? "").trim().replace(/^["']|["']$/g, "").slice(0, 200);
+    if (!subtitle) throw new Error("AI could not draft a subtitle. Try again.");
+    return { subtitle };
+  });
+
 const AboutContextSchema = z.object({
   audience: z.string().trim().max(400).optional().default(""),
   differentiator: z.string().trim().max(400).optional().default(""),
