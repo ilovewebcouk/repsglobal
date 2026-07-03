@@ -833,8 +833,8 @@ function ProProfilePage() {
               </div>
             </div>
 
-            {/* Services — light card, light rows */}
-            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:p-7">
+            {/* Services — dark navy tiles, matches /c/$slug */}
+            <div id="services">
               <div className="flex items-baseline justify-between gap-3">
                 <h2 className="font-display text-[20px] font-bold text-reps-charcoal">
                   Services &amp; Pricing
@@ -846,42 +846,49 @@ function ProProfilePage() {
                   View all →
                 </a>
               </div>
-              <div className="mt-5 flex flex-col gap-3">
-                {pro.services.map((s) => (
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {pro.services.slice(0, 3).map((s, i) => (
                   <article
                     key={s.title}
-                    className="flex items-stretch gap-4 rounded-[18px] border border-reps-stone bg-reps-ivory p-3"
+                    className="relative flex flex-col overflow-hidden rounded-[18px] border border-reps-charcoal/10 bg-reps-charcoal text-reps-warm-white shadow-[0_1px_0_rgba(0,0,0,0.04)]"
                   >
+                    {i === 1 ? (
+                      <span className="absolute right-3 top-3 z-10 rounded-full bg-reps-orange px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-reps-warm-white">
+                        Most popular
+                      </span>
+                    ) : null}
                     {s.image ? (
-                      <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[12px] bg-reps-stone">
-                        <img
-                          src={s.image}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
+                      <div className="h-32 w-full overflow-hidden bg-reps-charcoal/60">
+                        <img src={s.image} alt="" className="h-full w-full object-cover opacity-90" loading="lazy" />
                       </div>
                     ) : null}
-                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-                      <div className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
+                    <div className="flex flex-1 flex-col p-5">
+                      <div className="font-display text-[17px] font-bold leading-tight">
                         {s.title}
                       </div>
-                      <div className="line-clamp-2 text-[13px] leading-snug text-reps-muted-light">
+                      <div className="mt-2 line-clamp-3 text-[13px] leading-snug text-reps-warm-white/70">
                         {s.desc}
                       </div>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end justify-center pl-2 text-right">
-                      <div className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
-                        {s.price}
-                      </div>
-                      <div className="mt-0.5 text-[12px] text-reps-muted-light">
-                        {s.unit}
+                      <div className="mt-4 flex items-end justify-between border-t border-reps-warm-white/10 pt-4">
+                        <div>
+                          <div className="font-display text-[20px] font-bold leading-none">
+                            {s.price}
+                          </div>
+                          <div className="mt-1 text-[11px] text-reps-warm-white/60">{s.unit}</div>
+                        </div>
+                        <a
+                          href={`/pro/${pro.slug}/services`}
+                          className="rounded-full bg-reps-orange px-3.5 py-1.5 text-[12px] font-semibold text-reps-warm-white hover:brightness-110"
+                        >
+                          Enquire
+                        </a>
                       </div>
                     </div>
                   </article>
                 ))}
               </div>
             </div>
+
 
             {/* Specialisms — no card */}
             <div id="specialisms">
