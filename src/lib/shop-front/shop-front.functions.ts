@@ -32,10 +32,9 @@ export type ShopFrontDTO = {
   coaching_reach: { cities: string[]; online_worldwide: boolean };
   client_results_intro: string | null;
   layout_variant: "lite" | "full";
-  is_published: boolean;
-  published_at: string | null;
   // Embedded pro info for the public page
   slug: string | null;
+
   full_name: string | null;
   avatar_url: string | null;
   headline: string | null;
