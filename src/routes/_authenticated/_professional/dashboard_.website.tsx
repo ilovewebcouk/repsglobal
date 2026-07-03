@@ -1807,3 +1807,145 @@ function FaqsEditor({
     </PPanel>
   );
 }
+
+/* ===================================================================== */
+/* Where I train — postcode + Google-Places gyms + reach                 */
+/* ===================================================================== */
+
+function WhereITrainPanel({
+  cities,
+  setCities,
+  onlineWorldwide,
+  setOnlineWorldwide,
+  onSaveReach,
+  saving,
+}: {
+  cities: string;
+  setCities: (v: string) => void;
+  onlineWorldwide: boolean;
+  setOnlineWorldwide: (v: boolean) => void;
+  onSaveReach: () => void;
+  saving: boolean;
+}) {
+  const qc = useQueryClient();
+  const fetchLocation = useServerFn(getMyPrimaryLocation);
+  const savePostcode = useServerFn(saveMyPrimaryPostcode);
+  const fetchProfile = useServerFn(getMyDashboardProfile);
+
+  const locationQuery = useQuery({
+    queryKey: ["my-primary-location"],
+    queryFn: () => fetchLocation(),
+  });
+  const primaryLocation = locationQuery.data;
+  const profileQuery = useQuery({
+    queryKey: ["my-dashboard-profile"],
+    queryFn: () => fetchProfile(),
+  });
+  const inPerson = !!profileQuery.data?.in_person_available;
+
+  const [postcode, setPostcode] = React.useState("");
+  const [initialised, setInitialised] = React.useState(false);
+  React.useEffect(() => {
+    if (initialised) return;
+    if (primaryLocation !== undefined) {
+      setPostcode(primaryLocation?.postcode ?? "");
+      setInitialised(true);
+    }
+  }, [primaryLocation, initialised]);
+
+  const postcodeMut = useMutation({
+    mutationFn: (pc: string) => savePostcode({ data: { postcode: pc } }),
+    onSuccess: () => {
+      toast.success("Postcode saved");
+      qc.invalidateQueries({ queryKey: ["my-primary-location"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not save postcode"),
+  });
+
+  return (
+    <PPanel>
+      <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
+        <div>
+          <h3 className="text-[14px] font-semibold text-white">Where I train</h3>
+          <p className="mt-0.5 text-[12px] text-white/55">
+            Your training base, the gyms you work out of, and where you'll travel or coach online.
+            Powers distance search and the venue chips on your website.
+          </p>
+        </div>
+      </div>
+
+      <Field
+        label="Primary training postcode"
+        hint="We use this to calculate distance and show your town. Your full postcode is never shown publicly."
+        action={
+          <button
+            type="button"
+            onClick={() => postcodeMut.mutate(postcode)}
+            disabled={postcodeMut.isPending || !postcode.trim()}
+            className="h-8 rounded-[10px] bg-reps-orange px-2.5 text-[11px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            {postcodeMut.isPending ? "Saving…" : "Save"}
+          </button>
+        }
+      >
+        <div className="relative">
+          <MapPin className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+          <input
+            value={postcode}
+            onChange={(e) => setPostcode(e.target.value.toUpperCase())}
+            placeholder="e.g. SW1A 1AA"
+            className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft pl-9 pr-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+          />
+        </div>
+        {primaryLocation?.town ? (
+          <p className="mt-1.5 text-[11px] text-white/60">
+            Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span>
+            {primaryLocation.postcode_outward ? <> · <span className="text-white/80">{primaryLocation.postcode_outward}</span></> : null}
+          </p>
+        ) : null}
+      </Field>
+
+      <Field
+        label="Trains at (optional · max 3)"
+        hint={
+          inPerson
+            ? "Add up to 3 gyms or studios you work from. Search picks live venues so your website chips stay accurate."
+            : "You're set to online-only. Enable in-person delivery on the Profile tab to list gyms."
+        }
+      >
+        {inPerson ? (
+          <GymPicker />
+        ) : (
+          <p className="text-[12px] text-white/55">No gyms shown while you're online-only.</p>
+        )}
+      </Field>
+
+      <Field label="Cities you cover" hint="Comma-separated list shown as chips on your website.">
+        <TextInput value={cities} onChange={(e) => setCities(e.target.value)} placeholder="Leeds, Bradford, Online" />
+      </Field>
+
+      <Field label="Online worldwide" hint="Adds the online/worldwide chip.">
+        <label className="flex items-center gap-2 text-[13px] text-white/85">
+          <input
+            type="checkbox"
+            checked={onlineWorldwide}
+            onChange={(e) => setOnlineWorldwide(e.target.checked)}
+            className="h-4 w-4 accent-reps-orange"
+          />
+          I coach online and worldwide
+        </label>
+      </Field>
+
+      <div className="border-t border-reps-border px-5 py-3 flex justify-end">
+        <button
+          type="button"
+          onClick={onSaveReach}
+          disabled={saving}
+          className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+        >
+          {saving ? "Saving…" : "Save reach"}
+        </button>
+      </div>
+    </PPanel>
+  );
+}
