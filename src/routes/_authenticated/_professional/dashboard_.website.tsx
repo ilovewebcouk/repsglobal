@@ -685,7 +685,7 @@ function ServicesEditor({
   return (
     <PPanel>
       <div className="px-5 py-4">
-        <h3 className="text-[14px] font-semibold text-white">Service cards</h3>
+        <h3 className="text-[14px] font-semibold text-white">Coaching plans</h3>
         <p className="mt-0.5 text-[12px] text-white/55">
           Three cards on your public website. Drag to reorder. Only one card can be marked
           "Most popular" — it shows with the orange ring. A free Discovery Consultation is added
