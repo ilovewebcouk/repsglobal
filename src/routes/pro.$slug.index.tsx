@@ -1034,21 +1034,24 @@ function ProProfilePage() {
                   <div className="mt-2 text-[12px] text-reps-muted-light">
                     Based on {reviewSummary.count} {reviewSummary.count === 1 ? "review" : "reviews"}
                   </div>
-                  <div className="mt-4 space-y-2">
-                    {reviewSummary.dist.map((d) => (
-                      <div key={d.stars} className="grid grid-cols-[18px_12px_1fr_28px] items-center gap-2 text-[11px] text-reps-muted-light">
-                        <span>{d.stars}</span>
-                        <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-                        <div className="h-1.5 overflow-hidden rounded-full bg-reps-stone">
-                          <div
-                            className="h-full rounded-full bg-reps-orange"
-                            style={{ width: `${Math.min(100, (d.count / reviewSummary.maxCount) * 100)}%` }}
-                          />
+                  {reviewSummary.count >= 3 ? (
+                    <div className="mt-4 space-y-2">
+                      {reviewSummary.dist.map((d) => (
+                        <div key={d.stars} className="grid grid-cols-[18px_12px_1fr_28px] items-center gap-2 text-[11px] text-reps-muted-light">
+                          <span>{d.stars}</span>
+                          <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
+                          <div className="h-1.5 overflow-hidden rounded-full bg-reps-stone">
+                            <div
+                              className="h-full rounded-full bg-reps-orange"
+                              style={{ width: `${Math.min(100, (d.count / reviewSummary.maxCount) * 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-right text-reps-charcoal">{d.count}</span>
                         </div>
-                        <span className="text-right text-reps-charcoal">{d.count}</span>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : null}
+
                 </div>
 
                 <div className="space-y-5">
