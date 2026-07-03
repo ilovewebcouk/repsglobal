@@ -1282,6 +1282,63 @@ function AboutSection({ coach }: { coach: Coach }) {
 /* Venues                                                             */
 /* ------------------------------------------------------------------ */
 
+type CoachVenue = Coach["venues"][number];
+
+function venueIcon(kind: CoachVenue["kind"]) {
+  if (kind === "home_studio") return Home;
+  if (kind === "mobile") return RouteIcon;
+  return MapPin;
+}
+
+function venueSubtitle(v: CoachVenue) {
+  if (v.kind === "home_studio") return "Private space · address on enquiry";
+  if (v.kind === "mobile") return "I travel to your home or preferred spot";
+  return v.address || v.city;
+}
+
+function VenueCard({ v }: { v: CoachVenue }) {
+  const Icon = venueIcon(v.kind);
+  const href =
+    v.kind === "gym" && v.googlePlaceId
+      ? `https://www.google.com/maps/place/?q=place_id:${v.googlePlaceId}`
+      : null;
+
+  const body = (
+    <>
+      <div className="min-w-0">
+        <div className="truncate text-[15px] font-semibold text-reps-text">
+          {v.name}
+          {href ? (
+            <ArrowUpRight className="ml-1 inline h-3.5 w-3.5 -translate-y-0.5 text-reps-muted transition-colors group-hover:text-reps-orange" />
+          ) : null}
+        </div>
+        <div className="mt-0.5 truncate text-[12px] text-reps-muted">
+          {venueSubtitle(v)}
+        </div>
+      </div>
+      <Icon className="h-4 w-4 shrink-0 text-reps-orange" />
+    </>
+  );
+
+  const shared =
+    "group flex items-center justify-between gap-3 rounded-[16px] border border-reps-border bg-reps-ink px-4 py-3";
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open ${v.name} on Google Maps`}
+        className={`${shared} transition-colors hover:border-reps-orange-border`}
+      >
+        {body}
+      </a>
+    );
+  }
+  return <div className={shared}>{body}</div>;
+}
+
 function VenuesSection({ coach }: { coach: Coach }) {
   const isOnline = coach.modes.includes("Online");
   const isInPerson = coach.modes.includes("In-person");
@@ -1325,7 +1382,7 @@ function VenuesSection({ coach }: { coach: Coach }) {
               <div className="mt-5 flex flex-wrap gap-2">
                 {isOnline && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft">
-                    <Globe className="h-3.5 w-3.5" />
+                    <Globe className="h-3.5 w-3.5 text-reps-orange" />
                     Online (worldwide)
                   </span>
                 )}
@@ -1334,7 +1391,7 @@ function VenuesSection({ coach }: { coach: Coach }) {
                     key={c}
                     className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft"
                   >
-                    <MapPin className="h-3.5 w-3.5" />
+                    <MapPin className="h-3.5 w-3.5 text-reps-orange" />
                     {c}
                   </span>
                 ))}
@@ -1363,15 +1420,8 @@ function VenuesSection({ coach }: { coach: Coach }) {
             </h2>
             <ul className="mt-5 grid gap-3 sm:grid-cols-2">
               {coach.venues.map((v) => (
-                <li
-                  key={v.name}
-                  className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-ink px-4 py-3"
-                >
-                  <div>
-                    <div className="text-[15px] font-semibold text-reps-text">{v.name}</div>
-                    <div className="text-[12px] text-reps-muted">{v.city}</div>
-                  </div>
-                  <MapPin className="h-4 w-4 text-reps-muted" />
+                <li key={v.name}>
+                  <VenueCard v={v} />
                 </li>
               ))}
             </ul>
@@ -1403,15 +1453,8 @@ function VenuesSection({ coach }: { coach: Coach }) {
             </h2>
             <ul className="mt-5 space-y-3">
               {coach.venues.map((v) => (
-                <li
-                  key={v.name}
-                  className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-ink px-4 py-3"
-                >
-                  <div>
-                    <div className="text-[15px] font-semibold text-reps-text">{v.name}</div>
-                    <div className="text-[12px] text-reps-muted">{v.city}</div>
-                  </div>
-                  <MapPin className="h-4 w-4 text-reps-muted" />
+                <li key={v.name}>
+                  <VenueCard v={v} />
                 </li>
               ))}
             </ul>
@@ -1429,13 +1472,13 @@ function VenuesSection({ coach }: { coach: Coach }) {
                   key={c}
                   className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft"
                 >
-                  <MapPin className="h-3.5 w-3.5" />
+                  <MapPin className="h-3.5 w-3.5 text-reps-orange" />
                   {c}
                 </span>
               ))}
               {isOnline && (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft">
-                  <Globe className="h-3.5 w-3.5" />
+                  <Globe className="h-3.5 w-3.5 text-reps-orange" />
                   Online (worldwide)
                 </span>
               )}
