@@ -7,12 +7,12 @@ import {
   BadgeCheck,
   Bookmark,
   Calendar,
-  
   Check,
   ChevronDown,
-  
+  Compass,
+  Dumbbell,
   GraduationCap,
-  Globe,
+  Home as HomeIcon,
   Info,
   Laptop,
   MapPin,
@@ -20,8 +20,10 @@ import {
   ShieldCheck,
   Star,
   Umbrella,
+  UserPlus,
   Users,
 } from "lucide-react";
+
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
