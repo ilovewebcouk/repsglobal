@@ -10,6 +10,7 @@ import { getMyDashboardProfile } from "@/lib/profile/dashboard-profile.functions
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
+import { ProfilePhotoPanel } from "@/components/dashboard/ProfilePhotoPanel";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   Dialog,
@@ -393,7 +394,10 @@ function ShopFrontEditorPage() {
             </Field>
           </PPanel>
 
+          <ProfilePhotoPanel />
+
           <SpecialismsDeliveryPanel />
+
 
           <WebsiteContentEditor />
 

@@ -1042,76 +1042,16 @@ function ProfileEditorPage() {
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
-            {/* Profile photo */}
-            <Card>
-              <SectionHeader
-                title="Profile photo"
-                subtitle="A clear headshot helps clients trust and recognise you."
-                step="01"
-              />
-              <div className="flex flex-col gap-5">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <Avatar className="size-20 rounded-[8px] ring-2 ring-reps-border">
-                      {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[8px]" /> : null}
-                      <AvatarFallback className="rounded-[8px] bg-reps-orange text-white">
-                        {initialsFromName(form.full_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-reps-panel bg-reps-orange text-white">
-                      <Camera className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handlePickAvatar}
-                        disabled={avatarPending}
-                        className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
-                      >
-                        {avatarBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
-                        {avatarBusy === "uploading" && "Uploading…"}
-                        {avatarBusy === "validating" && "Checking photo…"}
-                        {avatarBusy === "cropping" && "Cropping…"}
-                        {avatarBusy === "generating" && "Generating…"}
-                        {!avatarBusy && "Change photo"}
-                      </button>
-                      <DashboardButton
-                        type="button"
-                        variant="ghost"
-                        onClick={handleRemoveAvatar}
-                        disabled={!profile.avatar_url || avatarPending}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        Remove
-                      </DashboardButton>
-                      {lastUploadedPath ? (
-                        <button
-                          type="button"
-                          onClick={handleStartRegenerate}
-                          disabled={avatarPending}
-                          className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 shadow-none transition-colors hover:text-white disabled:opacity-50"
-                        >
-                          <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
-                          Generate AI portrait
-                        </button>
-                      ) : null}
-                    </div>
-                    <p className="text-[11px] text-white/45">
-                      Real headshot only · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+            {/* Profile photo moved to the Website tab (ProfilePhotoPanel). */}
+
+
 
             {/* 02 Identity — single column, no half-empty rail */}
             <Card>
               <SectionHeader
                 title="Identity"
                 subtitle="Your legal name — must match your government ID and your regulated qualification certificates."
-                step="02"
+                step="01"
               />
               <div className="flex flex-col gap-4">
                 <div data-field="full_name">
@@ -1147,7 +1087,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Your pitch"
                 subtitle="What clients read on your directory card and profile."
-                step="03"
+                step="02"
               />
               <div className="flex flex-col gap-5">
                 <div data-field="headline">
@@ -1205,7 +1145,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Specialisms"
                 subtitle={`Unlocked by your profession — pick up to ${MAX_SPECIALISMS}.`}
-                step="04"
+                step="03"
               />
               <SpecialismsPicker
                 values={form.specialisms}
@@ -1221,7 +1161,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Languages & socials"
                 subtitle="Extras that help the right clients find you."
-                step="05"
+                step="04"
               />
               <div className="flex flex-col gap-5">
                 <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language.">
@@ -1387,139 +1327,8 @@ function ProfileEditorPage() {
         </div>
       </div>
 
-      {/* Rejection dialog */}
-      <DashboardDialog open={rejection !== null} onOpenChange={(o: boolean) => !o && setRejection(null)}>
-        <DashboardDialogContent className="sm:max-w-[420px]">
-          <DashboardDialogHeader>
-            <DashboardDialogTitle>
-              <AlertTriangle className="h-4 w-4 text-reps-orange" />
-              That photo can't be used
-            </DashboardDialogTitle>
-            <DashboardDialogDescription>
-              {rejection?.reason}
-            </DashboardDialogDescription>
-          </DashboardDialogHeader>
-          <DashboardDialogNote>
-            <p className="mb-1 text-[12px] font-semibold text-white">What we need</p>
-            <ul className="list-disc space-y-0.5 pl-4 text-white/70">
-              <li>A clear photograph of you (not a logo, illustration or graphic)</li>
-              <li>Just you — no group photos</li>
-              <li>Head-and-shoulders, face clearly visible</li>
-              <li>Good lighting, in focus</li>
-            </ul>
-          </DashboardDialogNote>
-          <DashboardDialogFooter>
-            <DashboardButton variant="ghost" onClick={() => setRejection(null)}>
-              Close
-            </DashboardButton>
-            <DashboardButton
-              variant="primary"
-              onClick={() => {
-                setRejection(null);
-                void handlePickAvatar();
-              }}
-            >
-              Try a different photo
-            </DashboardButton>
-          </DashboardDialogFooter>
-        </DashboardDialogContent>
-      </DashboardDialog>
+      {/* Avatar rejection + AI regenerate dialogs moved to ProfilePhotoPanel on the Website tab. */}
 
-      {/* Regenerate confirm + preview */}
-      <DashboardDialog
-        open={regenState !== null}
-        onOpenChange={(o: boolean) => {
-          if (!o && avatarBusy !== "generating") setRegenState(null);
-        }}
-      >
-        <DashboardDialogContent className="sm:max-w-[520px]">
-          {regenState?.step === "confirm" ? (
-            <>
-              <DashboardDialogHeader>
-                <DashboardDialogTitle>
-                  <Sparkles className="h-4 w-4 text-reps-orange" />
-                  Generate a professional AI portrait?
-                </DashboardDialogTitle>
-                <DashboardDialogDescription>
-                  We'll create a studio-style portrait based on your photo. It will look like you, but it is an AI-generated image — not a real photograph. Your original photo stays available.
-                </DashboardDialogDescription>
-              </DashboardDialogHeader>
-              <DashboardDialogNote>
-                Most pros prefer their real photo. Use AI only if you don't have a good headshot yet.
-              </DashboardDialogNote>
-              <DashboardDialogFooter>
-                <DashboardButton variant="ghost" onClick={() => setRegenState(null)} disabled={avatarBusy === "generating"}>
-                  Cancel
-                </DashboardButton>
-                <DashboardButton variant="primary" onClick={handleConfirmRegenerate} disabled={avatarBusy === "generating"}>
-                  {avatarBusy === "generating" ? (
-                    <>
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Generating…
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-3.5 w-3.5" />
-                      Generate
-                    </>
-                  )}
-                </DashboardButton>
-              </DashboardDialogFooter>
-            </>
-          ) : regenState?.step === "preview" ? (
-            <>
-              <DashboardDialogHeader>
-                <DashboardDialogTitle>Choose your photo</DashboardDialogTitle>
-                <DashboardDialogDescription>
-                  Editorial studio re-render of your photo. Same person, shot properly.
-                </DashboardDialogDescription>
-              </DashboardDialogHeader>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <div className="text-[11px] uppercase tracking-wide text-white/55">Original</div>
-                  <div className="aspect-square overflow-hidden rounded-[14px] border border-reps-border bg-reps-panel-soft">
-                    {regenState.originalUrl ? (
-                      <img src={regenState.originalUrl} alt="Original" className="h-full w-full object-cover" />
-                    ) : null}
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-reps-orange">
-                    <Sparkles className="h-3 w-3" /> AI portrait
-                  </div>
-                  <div className="aspect-square overflow-hidden rounded-[14px] border border-reps-orange/40 bg-reps-panel-soft">
-                    <img src={regenState.aiUrl} alt="AI portrait" className="h-full w-full object-cover" />
-                  </div>
-                </div>
-              </div>
-              {regenState.identityScore >= 4 ? (
-                <div className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
-                  <span className="inline-block size-1.5 rounded-full bg-emerald-400" />
-                  Likeness verified
-                </div>
-              ) : (
-                <div className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full border border-amber-400/30 bg-amber-500/15 px-2.5 py-1 text-[11px] font-medium text-amber-300">
-                  Likeness may have drifted — try again or keep your original
-                </div>
-              )}
-              <DashboardDialogFooter className="flex-wrap gap-2">
-                <DashboardButton variant="ghost" onClick={() => setRegenState(null)}>
-                  Keep original
-                </DashboardButton>
-                <DashboardButton
-                  variant="ghost"
-                  onClick={() => setRegenState({ step: "confirm", sourcePath: regenState.sourcePath, attempt: regenState.attempt + 1 })}
-                >
-                  Try again
-                </DashboardButton>
-                <DashboardButton variant="primary" onClick={handleUseAiVersion}>
-                  Use AI version
-                </DashboardButton>
-              </DashboardDialogFooter>
-            </>
-          ) : null}
-        </DashboardDialogContent>
-      </DashboardDialog>
     </DashboardShell>
   );
 }
