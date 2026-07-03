@@ -15,6 +15,7 @@ const ShopFrontUpsertSchema = z.object({
     .nullable()
     .optional(),
   layout_variant: z.enum(["lite", "full"]).optional(),
+  theme: z.enum(["dark", "light"]).optional(),
 });
 
 
