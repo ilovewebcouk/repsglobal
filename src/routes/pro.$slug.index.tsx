@@ -1284,26 +1284,6 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ STATS ============ */}
-      <section className="bg-reps-ivory pb-10">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid grid-cols-2 gap-4 border-t border-reps-stone pt-6 sm:grid-cols-3 lg:grid-cols-5">
-            {STATS.map((s) => (
-              <div key={s.label} className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal">
-                  <s.icon className="h-4 w-4" />
-                </span>
-                <div>
-                  <div className="font-display text-[18px] font-bold leading-none text-reps-charcoal">
-                    {s.value}
-                  </div>
-                  <div className="mt-1 text-[11px] text-reps-muted-light">{s.label}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <PublicFooter />
     </div>
