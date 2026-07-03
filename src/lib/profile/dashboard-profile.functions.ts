@@ -34,6 +34,10 @@ export type DashboardProfile = {
   specialisms: SpecialismSlug[];
   in_person_available: boolean;
   online_available: boolean;
+  /** Trains clients at their own home / private studio (no address shown publicly). */
+  trains_at_home_studio: boolean;
+  /** Travels to the client's home (mobile PT). */
+  trains_at_clients_home: boolean;
   city: string | null;
   /** Internal-only — never rendered on any public page. E.164 format. */
   contact_phone: string | null;
@@ -66,7 +70,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "slug, headline, primary_profession, in_person_available, online_available, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
+          "slug, headline, primary_profession, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -104,6 +108,8 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
         : [],
       in_person_available: (proRow.in_person_available as boolean | null) ?? true,
       online_available: (proRow.online_available as boolean | null) ?? true,
+      trains_at_home_studio: (proRow.trains_at_home_studio as boolean | null) ?? false,
+      trains_at_clients_home: (proRow.trains_at_clients_home as boolean | null) ?? false,
       city: (proRow.city as string | null) ?? null,
       contact_phone: (proRow.contact_phone as string | null) ?? null,
       bio: (proRow.bio as string | null) ?? null,
@@ -285,6 +291,35 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
 
     return { ok: true, slug };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Training-base toggles (home / private studio, client's home)                */
+/* -------------------------------------------------------------------------- */
+
+export const updateMyTrainingBase = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        trains_at_home_studio: z.boolean(),
+        trains_at_clients_home: z.boolean(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("professionals")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update({
+        trains_at_home_studio: data.trains_at_home_studio,
+        trains_at_clients_home: data.trains_at_clients_home,
+      } as any)
+      .eq("id", userId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
 
 /* -------------------------------------------------------------------------- */
 /* Avatar + Cover                                                              */

@@ -215,7 +215,7 @@ export function GymPicker() {
       toast.error(e instanceof Error ? e.message : "Couldn't remove gym."),
   });
 
-  const full = mine.length >= 3;
+  const full = mine.length >= 4;
   const empty = local.length === 0 && external.length === 0;
 
   return (
@@ -381,7 +381,7 @@ export function GymPicker() {
         </Popover>
       ) : (
         <p className="text-[11px] text-white/45">
-          You've added the maximum of 3 gyms. Remove one to add another.
+          You've added the maximum of 4 gyms. Remove one to add another.
         </p>
       )}
 

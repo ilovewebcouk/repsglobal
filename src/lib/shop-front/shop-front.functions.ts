@@ -30,7 +30,12 @@ export type ShopFrontDTO = {
   method_name: string | null;
   method_intro: string | null;
   method_pillars: Array<{ title: string; body: string }>;
-  venues: Array<{ name: string; address?: string | null }>;
+  venues: Array<{
+    name: string;
+    address?: string | null;
+    googlePlaceId?: string | null;
+    kind: "gym" | "home_studio" | "mobile";
+  }>;
   coaching_reach: { cities: string[]; online_worldwide: boolean };
   client_results_intro: string | null;
   layout_variant: "lite" | "full";
@@ -117,13 +122,17 @@ function asPillars(v: unknown): Array<{ title: string; body: string }> {
     .slice(0, 6);
 }
 
-function asVenues(v: unknown): Array<{ name: string; address?: string | null }> {
+type VenueDTO = ShopFrontDTO["venues"][number];
+
+function asVenues(v: unknown): VenueDTO[] {
   if (!Array.isArray(v)) return [];
   return v
     .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
-    .map((p) => ({
+    .map((p): VenueDTO => ({
       name: String(p.name ?? "").trim(),
       address: p.address == null ? null : String(p.address).trim(),
+      googlePlaceId: null,
+      kind: "gym",
     }))
     .filter((p) => p.name)
     .slice(0, 8);
@@ -136,23 +145,52 @@ function asVenues(v: unknown): Array<{ name: string; address?: string | null }> 
 async function loadProfessionalGymVenues(
   supabaseAdmin: { from: (t: string) => any },
   proId: string,
-): Promise<Array<{ name: string; address?: string | null }>> {
+): Promise<VenueDTO[]> {
   const { data: rows } = await supabaseAdmin
     .from("professional_gyms")
-    .select("position, gyms ( name, chain_name, area, city )")
+    .select("position, gyms ( name, chain_name, area, city, postcode, google_place_id )")
     .eq("professional_id", proId)
     .order("position", { ascending: true });
   return (rows ?? [])
-    .map((row: any) => {
-      const g = row?.gyms as { name?: string | null; chain_name?: string | null; area?: string | null; city?: string | null } | null;
+    .map((row: any): VenueDTO | null => {
+      const g = row?.gyms as {
+        name?: string | null;
+        chain_name?: string | null;
+        area?: string | null;
+        city?: string | null;
+        postcode?: string | null;
+        google_place_id?: string | null;
+      } | null;
       if (!g) return null;
       const name = (g.chain_name?.trim() || g.name?.trim() || "").slice(0, 120);
       if (!name) return null;
-      const address = (g.area?.trim() || g.city?.trim() || "") || null;
-      return { name, address };
+      const parts = [g.area?.trim(), g.city?.trim(), g.postcode?.trim()].filter(
+        (s): s is string => !!s,
+      );
+      const address = parts.length ? parts.join(", ") : null;
+      return {
+        name,
+        address,
+        googlePlaceId: g.google_place_id ?? null,
+        kind: "gym",
+      };
     })
-    .filter((v: unknown): v is { name: string; address: string | null } => v !== null)
+    .filter((v: VenueDTO | null): v is VenueDTO => v !== null)
     .slice(0, 8);
+}
+
+function buildTrainingBaseVenues(
+  homeStudio: boolean,
+  clientsHome: boolean,
+): VenueDTO[] {
+  const out: VenueDTO[] = [];
+  if (homeStudio) {
+    out.push({ name: "Home / private studio", address: null, googlePlaceId: null, kind: "home_studio" });
+  }
+  if (clientsHome) {
+    out.push({ name: "Client's home / mobile", address: null, googlePlaceId: null, kind: "mobile" });
+  }
+  return out;
 }
 
 function asReach(v: unknown): { cities: string[]; online_worldwide: boolean } {
@@ -474,7 +512,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
 
       )
       .eq("slug", data.slug)
@@ -568,7 +606,13 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         method_name: sfRow.method_name ?? null,
         method_intro: sfRow.method_intro ?? null,
         method_pillars: asPillars(sfRow.method_pillars),
-        venues: gymVenues.length ? gymVenues : asVenues(sfRow.venues),
+        venues: [
+          ...(gymVenues.length ? gymVenues : asVenues(sfRow.venues)),
+          ...buildTrainingBaseVenues(
+            !!(pro as { trains_at_home_studio?: boolean | null }).trains_at_home_studio,
+            !!(pro as { trains_at_clients_home?: boolean | null }).trains_at_clients_home,
+          ),
+        ],
         coaching_reach: asReach(sfRow.coaching_reach),
         client_results_intro: sfRow.client_results_intro ?? null,
         layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
@@ -611,7 +655,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
       )
           .eq("id", userId)
           .maybeSingle(),
@@ -679,7 +723,13 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           method_name: resolvedSf.method_name ?? null,
           method_intro: resolvedSf.method_intro ?? null,
           method_pillars: asPillars(resolvedSf.method_pillars),
-          venues: gymVenues.length ? gymVenues : asVenues(resolvedSf.venues),
+          venues: [
+            ...(gymVenues.length ? gymVenues : asVenues(resolvedSf.venues)),
+            ...buildTrainingBaseVenues(
+              !!(pro as { trains_at_home_studio?: boolean | null }).trains_at_home_studio,
+              !!(pro as { trains_at_clients_home?: boolean | null }).trains_at_clients_home,
+            ),
+          ],
           coaching_reach: asReach(resolvedSf.coaching_reach),
           client_results_intro: resolvedSf.client_results_intro ?? null,
           layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
