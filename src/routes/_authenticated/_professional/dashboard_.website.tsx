@@ -1516,12 +1516,7 @@ function TransformationsEditor({
   });
 
   return (
-    <PPanel>
-      <div className="border-b border-reps-border px-5 py-4">
-        <h3 className="text-[14px] font-semibold text-white">Client transformations</h3>
-        <p className="mt-0.5 text-[12px] text-white/55">Short proof cards shown in the Results section.</p>
-      </div>
-      <div className="divide-y divide-reps-border/60">
+    <div className="divide-y divide-reps-border/60">
         {items.map((t) => (
           <div key={t.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
             <div>
