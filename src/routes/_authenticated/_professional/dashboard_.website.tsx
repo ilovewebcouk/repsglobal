@@ -666,23 +666,6 @@ function ServicesEditor({
   }
 
 
-
-
-
-  function handleDrop(targetIndex: number) {
-    if (dragIndex === null || dragIndex === targetIndex) {
-      setDragIndex(null);
-      setDragOverIndex(null);
-      return;
-    }
-    const ids = services.map((s) => s.id);
-    const [moved] = ids.splice(dragIndex, 1);
-    ids.splice(targetIndex, 0, moved);
-    setDragIndex(null);
-    setDragOverIndex(null);
-    onReorder(ids);
-  }
-
   const slots: Array<ServiceDTO | null> = [0, 1, 2].map((i) => services[i] ?? null);
 
   return (
@@ -690,52 +673,22 @@ function ServicesEditor({
       <div className="px-5 py-4">
         <h3 className="text-[14px] font-semibold text-white">Coaching plans</h3>
         <p className="mt-0.5 text-[12px] text-white/55">
-          Three cards on your public website. Drag to reorder. Only one card can be marked
-          "Most popular" — it shows with the orange ring. A free Discovery Consultation is added
-          automatically — you don't manage it here.
+          Three cards on your public website. The middle card is always marked
+          "Most popular". A free Discovery Consultation is added automatically —
+          you don't manage it here.
         </p>
       </div>
 
       <div className="flex flex-col gap-3 px-5 pb-5">
         {slots.map((s, i) => {
-          const featured = !!s?.is_featured;
-          const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
+          const featured = i === 1;
           const placeholder = DEFAULT_SERVICE_CARDS[i % 3];
           const isEmpty = !s;
           return (
             <div
               key={s?.id ?? `slot-${i}`}
-              onDragOver={(e) => {
-                if (isEmpty) return;
-                e.preventDefault();
-                setDragOverIndex(i);
-              }}
-              onDragLeave={() => setDragOverIndex((v) => (v === i ? null : v))}
-              onDrop={(e) => {
-                if (isEmpty) return;
-                e.preventDefault();
-                handleDrop(i);
-              }}
-              className={[
-                "flex items-stretch gap-2 transition",
-                dragIndex === i ? "opacity-50" : "",
-              ].join(" ")}
+              className="flex items-stretch gap-2"
             >
-              <div
-                draggable={!isEmpty}
-                onDragStart={() => !isEmpty && setDragIndex(i)}
-                onDragEnd={() => {
-                  setDragIndex(null);
-                  setDragOverIndex(null);
-                }}
-                aria-label="Drag to reorder"
-                className={[
-                  "flex w-8 shrink-0 items-center justify-center rounded-[10px] border border-reps-border bg-reps-panel-soft/60 text-white/40",
-                  isEmpty ? "opacity-30" : "cursor-grab hover:text-white/80 active:cursor-grabbing",
-                ].join(" ")}
-              >
-                <GripVertical className="h-4 w-4" />
-              </div>
               <div
                 className={[
                   "relative flex flex-1 items-start justify-between gap-3 rounded-[14px] px-4 py-3 transition",
@@ -744,7 +697,6 @@ function ServicesEditor({
                     : isEmpty
                       ? "border border-dashed border-reps-border/70 bg-reps-panel-soft/30"
                       : "border border-reps-border bg-reps-panel-soft",
-                  isDragOver ? "ring-2 ring-reps-orange/60" : "",
                 ].join(" ")}
               >
                 {featured && (
@@ -786,6 +738,8 @@ function ServicesEditor({
           );
         })}
       </div>
+
+
 
 
       <ServiceEditDialog
