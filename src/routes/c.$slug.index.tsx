@@ -148,6 +148,7 @@ type Coach = {
       dateLabel: string | null;
     }>;
   };
+  theme?: "dark" | "light";
 };
 
 const TITLE_SHORT_LABEL: Record<string, string> = {
