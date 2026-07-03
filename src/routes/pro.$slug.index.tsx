@@ -1142,61 +1142,43 @@ function ProProfilePage() {
 
           {/* ===== STICKY SIDEBAR ===== */}
           <aside className="flex flex-col gap-5 lg:sticky lg:top-[130px] lg:self-start">
-            {/* CTA */}
-            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                Work with {pro.firstName}
-              </div>
-              {pro.services[0]?.price ? (
-                <>
-                  <div className="mt-1.5 font-display text-[22px] font-bold leading-none text-reps-charcoal">
-                    {pro.services[0].price}
-                  </div>
-                  {pro.services[0].unit ? (
-                    <div className="mt-1 text-[12px] text-reps-muted-light">{pro.services[0].unit}</div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="mt-1.5 font-display text-[20px] font-bold leading-none text-reps-charcoal">
-                  Enquire for pricing
+            {/* Quick Details — spec sheet */}
+            {(() => {
+              const rows: { label: string; value: React.ReactNode }[] = [];
+              if (pro.specialisms.length > 0) {
+                rows.push({ label: "Specialisms", value: pro.specialisms.slice(0, 4).join(", ") });
+              }
+              if (pro.modes.length > 0) {
+                rows.push({ label: "Training modes", value: pro.modes.join(" · ") });
+              }
+              if (pro.services[0]?.price) {
+                rows.push({
+                  label: "From",
+                  value: `${pro.services[0].price}${pro.services[0].unit ? " " + pro.services[0].unit : ""}`,
+                });
+              }
+              if (pro.years > 0) {
+                rows.push({ label: "Experience", value: `${pro.years}+ years qualified` });
+              }
+              if (rows.length === 0) return null;
+              return (
+                <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+                  <h3 className="font-display text-[16px] font-bold text-reps-charcoal">
+                    Quick details
+                  </h3>
+                  <dl className="mt-4 divide-y divide-reps-stone/70 text-[13px]">
+                    {rows.map((r) => (
+                      <div key={r.label} className="grid grid-cols-[110px_1fr] gap-3 py-2.5">
+                        <dt className="text-[12px] uppercase tracking-wide text-reps-muted-light">
+                          {r.label}
+                        </dt>
+                        <dd className="text-reps-charcoal">{r.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
-              )}
-              {pro.modes.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {pro.modes.map((m) => (
-                    <span
-                      key={m}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-ivory px-3 py-1 text-[12px] font-medium text-reps-charcoal"
-                    >
-                      {m === "In-person" ? <Users className="h-3.5 w-3.5" /> : <Laptop className="h-3.5 w-3.5" />}
-                      {m}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              <div className="mt-5 flex flex-col gap-2">
-                <Link
-                  to="/pro/$slug/enquire"
-                  params={{ slug }}
-                  onClick={() => {
-                    void import("@/lib/analytics/track").then(({ track }) =>
-                      track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
-                    );
-                  }}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Enquire now
-                </Link>
-                <button
-                  type="button"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-5 text-[14px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
-                >
-                  <Bookmark className="h-4 w-4" />
-                  Save profile
-                </button>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Location & Coverage */}
             <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
