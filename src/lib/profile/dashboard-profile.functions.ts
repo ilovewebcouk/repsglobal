@@ -293,6 +293,35 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
   });
 
 /* -------------------------------------------------------------------------- */
+/* Training-base toggles (home / private studio, client's home)                */
+/* -------------------------------------------------------------------------- */
+
+export const updateMyTrainingBase = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        trains_at_home_studio: z.boolean(),
+        trains_at_clients_home: z.boolean(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("professionals")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update({
+        trains_at_home_studio: data.trains_at_home_studio,
+        trains_at_clients_home: data.trains_at_clients_home,
+      } as any)
+      .eq("id", userId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+
+/* -------------------------------------------------------------------------- */
 /* Avatar + Cover                                                              */
 /*                                                                             */
 /* Client uploads the file directly to the `avatars` bucket using the          */
