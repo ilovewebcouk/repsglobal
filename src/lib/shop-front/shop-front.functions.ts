@@ -15,8 +15,8 @@ const ShopFrontUpsertSchema = z.object({
     .nullable()
     .optional(),
   layout_variant: z.enum(["lite", "full"]).optional(),
-  is_published: z.boolean().optional(),
 });
+
 
 export type ShopFrontDTO = {
   professional_id: string;
