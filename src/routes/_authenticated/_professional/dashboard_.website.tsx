@@ -1279,41 +1279,6 @@ function WebsiteContentEditor() {
 
   return (
     <>
-      {/* Where I train — postcode + Google-Places gyms + reach */}
-      <WhereITrainPanel
-        cities={cities}
-        setCities={setCities}
-        onSaveReach={onSaveVenues}
-        saving={saveMut.isPending}
-      />
-
-
-      {/* Results intro */}
-      <PPanel>
-        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
-          </div>
-          <button
-            type="button"
-            onClick={onSaveResultsIntro}
-            disabled={saveMut.isPending}
-            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            Save
-          </button>
-        </div>
-        <div className="px-5 py-4">
-          <TextArea
-            value={clientResultsIntro}
-            onChange={(e) => setClientResultsIntro(e.target.value)}
-            maxLength={600}
-            placeholder="Use this to explain what clients can expect from the results below."
-          />
-        </div>
-      </PPanel>
-
       {/* Method */}
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
@@ -1374,6 +1339,40 @@ function WebsiteContentEditor() {
           </Field>
         ))}
       </PPanel>
+
+      {/* Results intro */}
+      <PPanel>
+        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
+            <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onSaveResultsIntro}
+            disabled={saveMut.isPending}
+            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            Save
+          </button>
+        </div>
+        <div className="px-5 py-4">
+          <TextArea
+            value={clientResultsIntro}
+            onChange={(e) => setClientResultsIntro(e.target.value)}
+            maxLength={600}
+            placeholder="Use this to explain what clients can expect from the results below."
+          />
+        </div>
+      </PPanel>
+
+      {/* Where I train — postcode + Google-Places gyms + reach */}
+      <WhereITrainPanel
+        cities={cities}
+        setCities={setCities}
+        onSaveReach={onSaveVenues}
+        saving={saveMut.isPending}
+      />
 
       {/* Transformations */}
       <TransformationsEditor
