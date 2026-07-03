@@ -401,12 +401,9 @@ function ShopFrontEditorPage() {
             saving={upsertServiceMut.isPending}
           />
 
-          
+          <WebsiteContentEditor />
 
           <SpecialismsDeliveryPanel />
-
-
-          <WebsiteContentEditor />
         </div>
       )}
 
