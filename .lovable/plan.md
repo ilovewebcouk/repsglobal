@@ -1,87 +1,77 @@
-# SEO Audit & Remediation Plan
 
-Three parallel specialist sub-agents audited: (1) route head metadata, (2) robots/sitemap/noindex, (3) on-page + JSON-LD. Consolidated below.
+# /pro/$slug below-the-fold — brutal audit + rebuild plan
 
-## Overall verdict
+## What's actually wrong (honest)
 
-**Foundation: strong.** robots.txt is well-configured, sitemap is a live server route with 700+ URLs (resources, help, city×profession, coach profiles), most public routes have `head()` with title + description + canonical. Root emits Organization + WebSite JSON-LD.
+The hero is fine. Everything under the sub-nav is a **bento wall** — every block is the same 22px card on the same ivory background, sitting in two different grid rhythms back-to-back. It reads as "stuff in boxes" instead of a profile you scan.
 
-**But there are ~12 real bugs and ~30 gaps holding the site back from "world-class 10/10". Grouped and prioritised below.**
+Concretely, the mess comes from six things:
 
----
+1. **Two clashing grids stacked.** Row A is `1fr / 1.4fr / 1fr` (About | Services | right stack). Row B is `1.6fr / 1fr` (Quals | Trust). The column edges don't line up between rows, so the eye keeps re-anchoring.
+2. **A ragged right column.** Specialisms + Location + Trains-at are stacked inside the third column. Their natural heights don't match the About / Services cards next to them, so the row bottom is jagged.
+3. **Cards inside cards.** About has three orange stat tiles inside it. Services has three dark panels inside a light card. Every "card" contains more cards — that's what makes it feel bento.
+4. **Two chip lists back-to-back.** Specialisms and Trains-at are visually identical (pill chips in a card). They read as the same section twice.
+5. **Theme jump on Services.** Dark reps-panel service tiles sit inside a warm-white card on an ivory page. Three colour temperatures in one glance.
+6. **Sub-nav lies.** It links to "Availability" but no Availability section exists, and every anchor is the same colour except the active one — looks decorative, not navigational.
 
-## P0 — Broken / immediately harmful (fix first)
+Trust & Assurance duplicates the trust strip already shown up in the hero block. Quals + Trust as a 2-col also creates a second lonely sidebar that echoes the first.
 
-1. **Relative `canonical` and `og:url` on 6 crawlable pages** — `find-a-professional`, `how-it-works`, `contact`, `reviews`, `professions/$profession`, `signup`. Crawlers reject relative canonicals; Google picks its own URL. Change to absolute `https://repsuk.org/...`.
-2. **Brand miscap "REPs" (should be "REPS")** in `auth`, `forgot-password`, `reset-password` titles/og.
-3. **`coming-soon.tsx` has "Launching 26 June 2026" hard-coded in `<title>` and `og:title`.** Site is live — this metadata is stale. Neutralise the copy.
-4. **`$.tsx` (catch-all 404) has no `head()`** — no title, no `noindex,nofollow`. Add both.
-5. **`gyms/$slug` serves "Gym pages are coming soon."** with a full `<head>`, no `noindex`, no canonical, no `og:url`. Add `noindex,nofollow` until real content lands.
-6. **`__root.tsx` WebSite `SearchAction` target points at `/find-a-trainer`** — route doesn't exist. Fix to `/find-a-professional`.
-7. **`/professions/$profession` canonical is relative** (also caught in P0-1) — this is duplicated on purpose because it also breaks the JSON-LD self-reference.
+## The fix — one reading spine, not a mosaic
 
-## P1 — Missing / material SEO drag
+Collapse the whole below-fold into a **single 2-column layout** used consistently for the entire page:
 
-8. **Sitemap missing 90 real pages:**
-   - `/professions/$profession` (7 canonical landing pages)
-   - `/in/$location` (83 city-only pages)
-9. **`og:image` absent on primary acquisition pages:** `/`, `/for-professionals`, `/pricing`, `/find-a-professional`, `/in/$location`, `/resources`, `/features/operations`, `/compare`, `/about`, `/comparison-methodology`. Link previews render blank.
-10. **`og:type` missing on ~30 routes.** Default is "website" for most; "article" for `/resources/$slug` (already correct).
-11. **`twitter:` tags absent/incomplete on ~40 routes.** Add `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image` where OG exists.
-12. **17 admin routes have no `head()`** → no `noindex,nofollow`. Auth guard is defence #1, but robots meta is defence #2.
-13. **`dashboard-demo.tsx` publicly indexable, self-canonical, not in sitemap** — will surface as thin/misleading content. Add `noindex`.
-14. **`signup.tsx` not noindexed** (transactional page).
-15. **`verify-email`, `forgot-password`, `reset-password` missing canonical entirely.**
-16. **`c.$slug` (coach shop-front) missing `og:url`.**
-17. **`pro.$slug` `og:image` is conditional** — profiles without avatars inherit nothing (root has no fallback). Add a brand default fallback.
+```text
+┌──────────────────────────────┬────────────────────┐
+│  MAIN COLUMN (≈ 1.7fr)       │  STICKY SIDEBAR    │
+│                              │  (≈ 1fr)           │
+│  About Jordon                │  ┌──────────────┐  │
+│    bio + inline stat row     │  │ Enquire /    │  │
+│    (stats as a thin strip,   │  │ Book CTA     │  │
+│     not tiled cards)         │  │ + price from │  │
+│                              │  │ + modes      │  │
+│  Services & Pricing          │  └──────────────┘  │
+│    3 light service rows,     │                    │
+│    same theme as page        │  Location          │
+│                              │    small map +     │
+│  Specialisms                 │    town / region   │
+│    chips only, no card       │                    │
+│                              │  Trains at         │
+│  Qualifications              │    chips           │
+│    clean list, verified tick │                    │
+│                              │  Trust & Assurance │
+│  What clients say            │    4 compact lines │
+│    review cards              │  (this replaces    │
+│                              │   the duplicate    │
+│  FAQ                         │   hero trust grid  │
+│                              │   or vice-versa)   │
+└──────────────────────────────┴────────────────────┘
+                Ready to work with Jordon (full-width CTA band)
+```
 
-## P1 — Structured data gaps (rich-result eligibility)
+Rules the new layout must obey:
 
-18. **FAQPage JSON-LD missing where FAQ blocks already render:** `/for-professionals`, `/c/$slug`, `/specialisms`, `/professions/$profession`. Data exists — just not wired into `head().scripts`.
-19. **BreadcrumbList missing on deep routes:** `/pro/$slug`, `/c/$slug`, `/professions/$profession`, `/in/$location/$profession`, `/resources/$slug`.
-20. **SoftwareApplication schema missing on comparison pages** (`/compare/reps-vs-*`) — highest-CTR schema for "[competitor] alternative" queries.
-21. **`/compare/reps-vs-*` `og:image` uses a bundled JS import** — likely resolves to a relative path in prod. Switch to absolute CDN URL.
-22. **`/pricing` missing Product/Offer schema** for the three tiers.
-23. **`/resources/` index missing CollectionPage / ItemList schema.**
+- **One grid, one rhythm.** Same 2-col template from About down to FAQ. No second grid appearing halfway down.
+- **Cards only where a card earns it.** Wrap Services, Qualifications, Reviews, Trust, Location in cards. About, Specialisms, and FAQ sit directly on the page (heading + content, no border).
+- **No cards inside cards.** About stats become a thin inline row (`8+ years · 100+ clients · Verified since 2023`) under the bio, not three orange tiles.
+- **Services match the page theme** (light card, dark text). Kill the reps-panel dark tiles here — dark stays for the coach shop-front `/c/$slug`, not the public profile.
+- **Merge duplicates.** Trust & Assurance moves into the sidebar as a compact checklist and the hero's 4-tile trust strip stays as the top summary — or vice versa. Not both.
+- **Sub-nav tells the truth.** Drop "Availability", add an underline on hover for all items (not just active), and make it sticky on scroll so it earns its space.
 
-## P2 — Polish
+## Scope guardrail
 
-24. **Description length issues:** `/pricing` desc 28ch (too short), `/features/ai` 193ch, `/features/coaching` 215ch (both truncated in SERP). Aim 130–160ch.
-25. **`for-professionals.tsx` og:title weaker than `<title>`.**
-26. **Legal pages (`terms`, `privacy`, `cookies`) indexed — burn crawl budget on boilerplate.** Add `noindex,follow`.
-27. **`__root.tsx` no fallback `og:description` / `og:url`** — safety net if a leaf omits them.
-28. **robots.txt defence-in-depth:** explicit `Disallow: /admin`, `/portal`, `/dashboard`, `/_authenticated`.
-29. **Homepage `<img alt="">` on hero LCP.** Empty alt is defensible (decorative), but a real alt helps accessibility + image SEO. Same for `/for-professionals` gym hero.
-30. **`/c/$slug` and `/resources` index have no cross-links to directory/city pages** — missed internal-linking equity.
+- No hero changes.
+- No copy rewrites beyond what's needed to remove "Availability" from the sub-nav.
+- No data model changes — every field consumed today keeps being consumed.
+- Locked pages (`/c/$slug`, `/pro/$slug/enquire`, homepage, professions, cities) are **not** touched.
+- Radii stay on the 6/8/10/12/16/18/22/24/full scale. Card = 22, service row = 18, chips = full, map = 12.
 
----
+## Technical notes
 
-## Execution plan (build order)
+- File: `src/routes/pro.$slug.index.tsx` (single route, ~1372 lines). Sections to restructure are lines ~788–1230 (About/Services/right-stack, then Quals/Trust). Reviews, FAQ, and CTA stay as-is structurally but slot into the new spine's main column.
+- `SUB_NAV` array: drop `"Availability"`, keep the six real anchors.
+- Sidebar becomes `sticky top-[88px]` on `lg:` and up; stacks under main on mobile.
+- Delete the standalone "Trust & Assurance" card OR the hero's 4-tile trust grid — decide one in build. Recommend keeping hero strip (first-impression trust) and moving detailed CPD/insurance rows into the sidebar list.
 
-I'd execute in these batches, each a discrete build turn so you can QA between:
+## Deliverable
 
-**Batch 1 — P0 fixes + Search Console cleanup (small, safe):** absolute canonicals, brand caps, `$.tsx` head, `gyms/$slug` noindex, SearchAction URL, coming-soon neutralised.
-
-**Batch 2 — Sitemap completeness:** add `/professions/$profession` and `/in/$location` entries; submit fresh sitemap to Search Console.
-
-**Batch 3 — OG/Twitter completeness:** default `og:image` fallback (brand card), sweep every public route to add `og:type` + full twitter tags. Introduce a shared helper `buildSocialMeta({title, description, url, image, type})` in `src/lib/seo/social-meta.ts` so every route uses the same 8-tag block.
-
-**Batch 4 — Robots hygiene:** noindex admin/portal/signup/legal/demo routes; expand robots.txt disallow.
-
-**Batch 5 — Structured data:** FAQPage on the 4 pages with existing FAQ data; BreadcrumbList on deep routes; SoftwareApplication on compare pages; Product/Offer on pricing; CollectionPage on resources index.
-
-**Batch 6 — Copy polish:** description length fixes, weak og:titles, `og:image` CDN URLs for compare pages, alt text on hero LCP images.
-
-**Batch 7 — Search Console verification pass:** URL-inspect ~15 representative URLs via the Search Console connector, capture any residual issues, submit sitemap, trigger a fresh SEO scan and mark fixed findings.
-
----
-
-## Deliverables
-
-- All fixes shipped and typechecked.
-- Fresh `seo_chat--trigger_scan` after Batch 6.
-- Summary report of before/after counts (routes with full OG, routes with JSON-LD, sitemap size, canonicals-fixed).
-
-## Approval
-
-Confirm **"go batch 1"** to start with the P0 bug fixes only, or **"go all batches"** to plough through 1→7 sequentially.
+One PR editing `src/routes/pro.$slug.index.tsx` only. Screenshot before/after at 1280 and 375. No new components unless a `<ProfileSidebar>` extraction naturally falls out.
