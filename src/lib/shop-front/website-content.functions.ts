@@ -124,7 +124,7 @@ export const getMyWebsiteContent = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("shop_front_transformations")
           .select(
-            "id, client_first_name, metric, headline, quote, image_url, sort_order, is_published",
+            "id, client_first_name, client_role, duration_label, metric, headline, quote, image_url, sort_order, is_published",
           )
           .eq("user_id", userId)
           .order("sort_order", { ascending: true }),
