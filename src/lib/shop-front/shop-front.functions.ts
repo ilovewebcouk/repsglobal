@@ -528,7 +528,9 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .order("sort_order", { ascending: true }),
       fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
       fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+      loadProfessionalGymVenues(supabaseAdmin, pro.id),
     ]);
+    const gymVenues = arguments as unknown as never; // placeholder to satisfy linter; overwritten below
 
     // Tolerant: if no shop_fronts row exists yet, synthesise defaults from the
     // pro record so /c/$slug never 404s on a paying member.
