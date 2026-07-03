@@ -693,16 +693,11 @@ function ProfileEditorPage() {
     setForm(toForm(profile));
   }, [profile]);
 
-  const initialPostcode = primaryLocation?.postcode ?? "";
-  const [postcode, setPostcode] = React.useState<string>(initialPostcode);
-  React.useEffect(() => {
-    setPostcode(primaryLocation?.postcode ?? "");
-  }, [primaryLocation?.postcode]);
+  // Postcode is now edited on the Website tab (see WhereITrainPanel).
 
   const original = React.useMemo(() => toForm(profile), [profile]);
   const profileDirty = !equal(form, original);
-  const postcodeDirty = postcode.trim().toUpperCase() !== (initialPostcode ?? "").toUpperCase();
-  const dirty = profileDirty || postcodeDirty;
+  const dirty = profileDirty;
 
   // Facts passed to the AI copy assistant — never sent to a public surface.
   const aiFacts = React.useMemo<AiCopyFacts>(
@@ -760,11 +755,9 @@ function ProfileEditorPage() {
           },
         });
       }
-      // Then resolve + save postcode (external API call).
-      if (postcodeDirty && postcode.trim().length > 0) {
-        await savePostcode({ data: { postcode } });
-      }
+      // Postcode saved separately from the Website tab.
     },
+
     onSuccess: () => {
       if (manualSaveRef.current) toast.success("Profile saved.");
       setLastSavedAt(Date.now());
@@ -979,8 +972,7 @@ function ProfileEditorPage() {
     | "full_name"
     | "headline"
     | "bio"
-    | "contact_phone"
-    | "postcode";
+    | "contact_phone";
   const errors = React.useMemo<Partial<Record<FieldKey, string>>>(() => {
     const e: Partial<Record<FieldKey, string>> = {};
     if (!form.full_name.trim()) e.full_name = "Full name is required.";
@@ -989,10 +981,8 @@ function ProfileEditorPage() {
     if (form.bio.length > 1200) e.bio = "About must be 1200 characters or fewer.";
     if (form.contact_phone.length > 0 && !isValidPhoneNumber(form.contact_phone))
       e.contact_phone = "Enter a valid phone number with country code.";
-    const pc = postcode.trim();
-    if (pc.length > 0 && pc.length > 10) e.postcode = "Postcode looks too long.";
     return e;
-  }, [form.full_name, form.headline, form.bio, form.contact_phone, postcode]);
+  }, [form.full_name, form.headline, form.bio, form.contact_phone]);
 
   const warns = React.useMemo<Partial<Record<FieldKey, string>>>(() => {
     const w: Partial<Record<FieldKey, string>> = {};
@@ -1024,7 +1014,7 @@ function ProfileEditorPage() {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form, postcode, dirty, hasErrors, avatarBusy, saveMutation.isPending]);
+  }, [form, dirty, hasErrors, avatarBusy, saveMutation.isPending]);
 
   /* ----------------------------------------------------------------
      Tab-close guard — warn if dirty edits are unsaved.
@@ -1275,36 +1265,8 @@ function ProfileEditorPage() {
                     }
                   />
                 </Field>
-                <div data-field="postcode">
-                  <Field label="Primary training postcode" error={errors.postcode}>
-                    <TextInput
-                      value={postcode}
-                      onChange={(v) => setPostcode(v.toUpperCase())}
-                      prefix={<MapPin className="h-3.5 w-3.5" />}
-                      placeholder="e.g. SW1A 1AA"
-                    />
-                    <p className="mt-1.5 text-[11px] text-white/50">
-                      We use this to calculate distance and show your town. Your full postcode is never shown publicly.
-                    </p>
-                    {primaryLocation?.town ? (
-                      <p className="mt-1 text-[11px] text-white/60">
-                        Public location: <span className="text-white/80">{primaryLocation.town}{primaryLocation.region ? ` · ${primaryLocation.region}` : ""}</span> · <span className="text-white/80">{primaryLocation.postcode_outward}</span>
-                      </p>
-                    ) : null}
-                  </Field>
-                </div>
-                {form.in_person_available ? (
-                  <Field
-                    label="Trains at (optional · max 3)"
-                    hint="Add up to 3 gyms or studios you train clients from. Shown on your profile and directory card."
-                  >
-                    <GymPicker />
-                  </Field>
-                ) : (
-                  <Field label="Gyms & studios" hint="You're set to online-only. Enable in-person above to list gyms.">
-                    <p className="text-[12px] text-white/55">No gyms shown while you're online-only.</p>
-                  </Field>
-                )}
+                {/* Primary training postcode and gyms have moved to the Website tab. */}
+
               </div>
             </Card>
 
