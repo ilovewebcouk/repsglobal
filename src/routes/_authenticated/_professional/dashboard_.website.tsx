@@ -1337,7 +1337,7 @@ function WebsiteContentEditor() {
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
           <div>
-            <h3 className="text-[14px] font-semibold text-white">Foundation Method · How I coach</h3>
+            <h3 className="text-[14px] font-semibold text-white">How I coach</h3>
             <p className="mt-0.5 text-[12px] text-white/55">A short name + intro + 3 pillars. Use AI to draft a starting point.</p>
           </div>
           <button
