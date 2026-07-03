@@ -141,7 +141,7 @@ function ShopFrontEditorPage() {
   const [tagline, setTagline] = React.useState("");
   const [about, setAbout] = React.useState("");
   const [hero, setHero] = React.useState("");
-  const [accent, setAccent] = React.useState("");
+  
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
 
   React.useEffect(() => {
@@ -149,7 +149,6 @@ function ShopFrontEditorPage() {
     setTagline(sf.tagline ?? "");
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
-    setAccent(sf.accent_hex ?? "");
     setLayout(sf.layout_variant);
   }, [sf]);
 
@@ -160,7 +159,7 @@ function ShopFrontEditorPage() {
           tagline: tagline || null,
           about: about || null,
           hero_image_url: hero || null,
-          accent_hex: accent || null,
+          accent_hex: null,
           layout_variant: layout,
         },
       }),
@@ -381,13 +380,6 @@ function ShopFrontEditorPage() {
               hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
             >
               <HeroImageEditor value={hero} onChange={setHero} />
-            </Field>
-            <Field label="Accent colour" hint="Hex like #f97316. Optional.">
-              <TextInput
-                value={accent}
-                onChange={(e) => setAccent(e.target.value)}
-                placeholder="#f97316"
-              />
             </Field>
             <Field label="Layout" hint={isPro ? "Full website available on Pro." : "Lite layout for Core."}>
               <select
