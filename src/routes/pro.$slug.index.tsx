@@ -692,6 +692,13 @@ function ProProfilePage() {
                   Save Profile
                 </button>
               </div>
+              {pro.services[0]?.price ? (
+                <div className="mt-3 text-[13px] text-reps-muted-light">
+                  <span className="font-semibold text-reps-charcoal">From {pro.services[0].price}</span>
+                  {pro.services[0].unit ? ` ${pro.services[0].unit}` : null}
+                </div>
+              ) : null}
+
             </div>
           </div>
 
