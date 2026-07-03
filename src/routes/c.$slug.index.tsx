@@ -441,6 +441,9 @@ function mergeLiveIntoCoach(
   const liveVenues = sf.venues.map((venue) => ({
     name: venue.name,
     city: venue.address || sf.city || base.city,
+    address: venue.address ?? null,
+    googlePlaceId: venue.googlePlaceId ?? null,
+    kind: venue.kind,
   }));
   const liveCities = [
     ...sf.coaching_reach.cities,
