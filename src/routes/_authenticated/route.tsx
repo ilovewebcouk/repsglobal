@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
  * dashboard / portal shells inside this subtree.
  */
 export const Route = createFileRoute("/_authenticated")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: async ({ location }) => {
     const { data, error } = await supabase.auth.getUser();

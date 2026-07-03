@@ -90,7 +90,7 @@ export const Route = createFileRoute("/admin_/support")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Support queue — REPS Admin" },
       {
         name: "description",

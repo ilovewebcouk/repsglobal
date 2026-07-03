@@ -14,7 +14,7 @@ export const Route = createFileRoute("/admin_/directory")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Directory health — REPS Admin" },
       { name: "description", content: "Monitor public directory completeness, broken links and featured rotation." },
       { property: "og:title", content: "Directory health — REPS Admin" },

@@ -110,7 +110,7 @@ export const Route = createFileRoute("/admin")({
       ),
     ),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Admin Dashboard — REPS" },
       {
         name: "description",

@@ -48,7 +48,7 @@ export const Route = createFileRoute("/admin_/billing")({
   beforeLoad: requireRole(["admin"]),
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Billing console — REPS Admin" },
       { name: "description", content: "Payments, subscriptions, disputes and refunds in one place." },
     ],

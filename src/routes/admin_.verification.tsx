@@ -72,6 +72,7 @@ import { TimeAgo } from "@/components/verification/TimeAgo";
 import { absoluteDateTime, relativeTime } from "@/lib/verification/format-time";
 
 export const Route = createFileRoute("/admin_/verification")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   component: AdminVerificationPage,
