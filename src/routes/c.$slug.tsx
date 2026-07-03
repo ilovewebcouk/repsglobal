@@ -814,7 +814,7 @@ function HeroSection({
                 variant="secondary"
                 className="rounded-full bg-reps-green/15 text-reps-green ring-1 ring-reps-green/30"
               >
-                <BadgeCheck className="h-3 w-3" />
+                <BadgeCheck className="h-3 w-3 mr-1" />
                 REPS Verified · Insured
               </Badge>
               <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted">
