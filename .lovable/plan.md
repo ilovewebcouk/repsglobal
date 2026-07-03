@@ -1,60 +1,60 @@
+# Polish pass — `/pro-v2/jordon-gumbley`
 
-# Pro Profile v2 — Full Redesign (Mock, Un-wired)
+Yes, I'd polish it. The bones are good; it currently reads as "clean mock" rather than "premium product". Below are the changes I'd make, grouped by impact. No new sections — same 13-block structure.
 
-Rebuild `/pro/$slug` from scratch as a **parallel** page. The current `pro.$slug.index.tsx` stays exactly as-is and keeps serving live traffic. v2 is a static design surface with hard-coded sample data so we can iterate on layout, hierarchy, and polish without dragging Supabase, analytics, saved-profiles, or trust-strip logic along.
+## 1. Hero — earn the fold
+- **Portrait**: add a subtle inner ring (`ring-1 ring-black/5`) + soft ground shadow (`shadow-[0_30px_60px_-30px_rgba(0,0,0,0.35)]`) so it lifts off the ivory bg instead of sitting flat.
+- **Name + role**: tighten leading, drop role to `text-reps-muted-light` at 15px so the H1 owns the space. Add a 1px orange underline swatch (24px wide) above the eyebrow, matching the marketing primitives.
+- **Meta row**: replace the 3 chips (At Home / Online / Location) with **shadcn `Badge` variant="secondary"** + `data-icon` inline icons — current pills feel heavy vs the rest of the page.
+- **"Get in touch" card**: promote it. Add `ring-1 ring-reps-orange/15`, a small "Usually replies in ~2 hours" line under Response rate, and make "Send an enquiry" full-width primary with a `ChevronRight` `data-icon="inline-end"`. Save profile → ghost `Button variant="ghost"` with `Bookmark` icon.
 
-## Where it lives
+## 2. Trust strip
+- Currently a flat row. Convert to a single `Card` with 4 columns separated by `Separator orientation="vertical"`. Numbers in `font-display` at 28px, labels in 12px uppercase tracked. Removes the "loose row of stats" feel.
 
-- New route: `src/routes/pro-v2.$slug.tsx` — accessible at `/pro-v2/jordon-gumbley`
-- New folder: `src/components/pro-v2/` — all v2-only building blocks live here, fully isolated from `src/components/pro/*`
-- Sample data file: `src/components/pro-v2/sample-pro.ts` — one hard-coded pro object (Jordon) so the page renders identically every load
-- `noindex` in the route head — this is a design sandbox, not a public URL
+## 3. Services / Pricing
+- 3 cards are fine, but **only the "Most Popular" card should have the orange ring** — currently all three have similar visual weight. Bump the popular card's shadow, add a small `Badge` pinned top-right instead of inline in the title.
+- Standardise price line: `£X` in display 32px, `/session` in muted 14px on the same baseline.
+- CTA per card → `Button variant="outline"` except the popular one (`variant="default"`).
 
-Nothing outside these three paths gets touched.
+## 4. About + "At a glance"
+- Split into a real 2-col: prose left (max-w prose), `Card` right with a `dl` of 6 rows (Experience / Speciality / Languages / Studios / Travel radius / Insurance). Use `Separator` between rows, not borders. Feels like a spec sheet — which is what buyers want.
 
-## Page structure (top → bottom)
+## 5. Reviews
+- Distribution bars: replace hand-rolled divs with **shadcn `Progress`** — instantly more polished and accessible.
+- Each review → `Card` with `Avatar` + `AvatarFallback` initials, 5-star row using filled/empty `Star` at 14px, date in muted 12px. Add a "Verified booking" `Badge variant="secondary"` with `BadgeCheck` icon where applicable.
 
-1. **Sticky sub-nav** — thin bar under the site header, in-page anchors: About · Services · Reviews · Qualifications · Location. Active section highlights on scroll.
-2. **Hero (3-column, matches the reference screenshot)**
-   - Left: portrait, 4:5 tall
-   - Middle: verified pill → H1 name → role → tagline paragraph → review row (rating + "Based on N verified reviews") → location row → three service chips (At Home / Online Coaching / [City] & Surrounding Areas)
-   - Right: **Get in touch** card — last active, response rate, verified pro; primary "Send an enquiry" CTA; secondary "Save profile"; small reassurance line about contact details
-3. **Trust strip** — 4-tile band (REPS Verified · Qualifications Checked · Insurance Active · Member Since)
-4. **About** — long-form bio, 2-column on desktop, with a small "At a glance" side card (years experience, sessions delivered, specialisms)
-5. **Services & pricing** — three service cards (1:1, Small Group, Online), each with price, duration, what's included, "Enquire" CTA; one card marked "Most popular"
-6. **Specialisms & who I help** — chip cloud + short paragraphs for 3 client types
-7. **Qualifications & credentials** — grid of qualification cards with awarding body, level, year, expiry indicator
-8. **Transformations / proof** — 3 proof cards (before/after style, but numbers-led not photos): outcome headline + short story + client initials
-9. **Reviews** — rating summary, distribution bar, 4–6 review cards, "Read all reviews" link
-10. **Location & availability** — static map placeholder (image, no Google Maps SDK), coverage radius chip, weekly availability grid (7×3 morning/afternoon/evening)
-11. **FAQ** — 5 accordion items (session length, cancellation, first-session, kit needed, online setup)
-12. **Final CTA band** — full-width dark band, "Ready to train with [Name]?" + Send an enquiry button
-13. **Mobile sticky footer** — Enquire button pinned at bottom on `< lg`
+## 6. Qualifications
+- Currently a list. Switch to a 2-col grid of small `Card`s: awarding body left, cert name + year right, `ShieldCheck` icon. Feels credentialed vs bulleted.
 
-## Visual direction
+## 7. Specialisms / Who I Help
+- Convert to `Badge variant="outline"` cluster with `size` consistency — right now some chips are wider than others depending on text length; add `px-3 py-1` uniformly.
 
-- Reuse the locked REPs tokens (`bg-reps-ivory`, `text-reps-charcoal`, `bg-reps-orange`, `border-reps-stone`, etc.) — no new colors
-- Radii from the 9-step scale only: buttons `10px`, inputs `12px`, service/profile cards `18px`, hero panel `24px`, pills full
-- Typography: `font-display` for H1/H2, existing body stack for prose
-- Flat buttons (no shadows), emerald reserved for verified/status semantics only
-- No REPS wordmark artwork on the portrait (we're using the existing Jordon photo, not regenerating)
+## 8. Location + Availability
+- Availability grid: current `Fragment` grid works, but swap cell backgrounds to `bg-emerald-500/15 text-emerald-300` for available and `bg-reps-panel/30 text-reps-muted-light` for unavailable — matches the locked status-colors rule (emerald = status only, which this is).
+- Add a small legend row below the grid using `Badge`.
 
-## What is intentionally excluded
+## 9. FAQ
+- Already `Accordion` — good. Add `AccordionTrigger` chevron rotation is default; just tighten to `text-[15px] font-medium` and add `text-muted-foreground` on content.
 
-- No Supabase queries, no `createServerFn`, no loader
-- No analytics tracking calls
-- No saved-profiles logic, no auth-gated buttons
-- No Google Maps — static image placeholder for the location tile
-- No breadcrumb (this is a sandbox route)
-- No routing to `/pro/$slug/enquire` — CTAs are `<button type="button">` with no handler
-- No responsive polish pass on tablet — desktop and mobile only for v1 of v2
+## 10. Final CTA (dark section)
+- Currently dark panel with two buttons. Add the `HeroOverlay`-style 5-layer wash primitive we already have, or at minimum a subtle radial glow behind the headline. Right now it looks like a plain footer band.
 
-## Deliverable
+## 11. Mobile sticky enquire bar
+- Add `shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.4)]` and `backdrop-blur` — currently a hard edge.
+- Price on left (`£X from`), primary "Enquire" button right, full-width tap target.
 
-One new route rendering the 13 sections above with sample data. You visit `/pro-v2/jordon-gumbley`, review it, tell me what to change. Once the layout is signed off, a separate follow-up plan will handle wiring real data, analytics, and CTAs, and swapping the live `/pro/$slug` over.
+## 12. Global polish
+- **Sub-nav**: add scroll-spy active state (orange underline on the section currently in view). Currently all links look inert.
+- **Section rhythm**: standardise every section to `py-16 lg:py-20` — currently varies section-to-section.
+- **Radii audit**: portrait uses `rounded-[24px]` ✓ (hero exception). All other cards should be 18px per the locked radius system. Check service cards + review cards.
+- **Motion**: add `motion-safe:animate-in fade-in slide-in-from-bottom-2 duration-500` on hero children with staggered delays (0/80/160/240ms) matching the marketing-hero-template rule.
+- **Accessibility**: portrait `<img>` needs meaningful alt (already has it ✓); add `aria-current` to active sub-nav link; ensure all icon-only buttons have `sr-only` labels.
 
-## Out of scope for this plan
+## Out of scope for this pass
+- No new sections, no wiring to real data, no content rewrites — this is purely visual polish + shadcn-primitive swaps against locked design rules.
 
-- Any change to the current `pro.$slug.index.tsx`
-- Wiring, data fetching, tracking, auth
-- Redesigning `/pro/$slug/enquire`, `/c/$slug`, or any other locked page
+## Files touched
+- `src/routes/pro-v2.$slug.tsx` (all edits)
+- `src/components/pro-v2/sample-pro.ts` (only if I need to add response-time / verified-review flags — otherwise untouched)
+
+Used the shadcn skill.
