@@ -1291,7 +1291,7 @@ function WebsiteContentEditor() {
   const [pillars, setPillars] = React.useState<MethodPillar[]>([]);
   // venues are now managed by the GymPicker in WhereITrainPanel (professional_gyms table)
   const [cities, setCities] = React.useState("");
-  const [onlineWorldwide, setOnlineWorldwide] = React.useState(false);
+  // online-worldwide chip is now driven by the "Online" delivery toggle (see DeliveryModePanel)
   const [clientResultsIntro, setClientResultsIntro] = React.useState("");
   const [drafting, setDrafting] = React.useState(false);
   const [draftingFaqs, setDraftingFaqs] = React.useState(false);
@@ -1312,7 +1312,7 @@ function WebsiteContentEditor() {
     );
     // venues: managed by GymPicker
     setCities(data.content.coaching_reach.cities.join(", "));
-    setOnlineWorldwide(data.content.coaching_reach.online_worldwide);
+    // online_worldwide handled by DeliveryModePanel
     setClientResultsIntro(data.content.client_results_intro ?? "");
   }, [data]);
 
@@ -1354,7 +1354,9 @@ function WebsiteContentEditor() {
           .split(",")
           .map((c) => c.trim())
           .filter(Boolean),
-        online_worldwide: onlineWorldwide,
+        // Preserve stored online_worldwide value; the public chip now derives
+        // from the profile's online_available flag (DeliveryModePanel).
+        online_worldwide: data?.content.coaching_reach.online_worldwide ?? false,
       },
     });
   const onSaveResultsIntro = () => saveMut.mutate({ client_results_intro: clientResultsIntro || null });
