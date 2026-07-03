@@ -384,24 +384,6 @@ function ShopFrontEditorPage() {
             >
               <HeroImageEditor value={hero} onChange={setHero} />
             </Field>
-            <Field label="Theme" hint="Choose how your public page looks to visitors.">
-              <div className="flex gap-2">
-                {(["dark", "light"] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTheme(t)}
-                    className={`h-10 rounded-[12px] border px-4 text-[13px] capitalize transition ${
-                      theme === t
-                        ? "border-reps-orange bg-reps-orange/10 text-white"
-                        : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </Field>
           </PPanel>
 
           <WebsiteContentEditor />
