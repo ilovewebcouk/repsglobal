@@ -1289,7 +1289,7 @@ function WebsiteContentEditor() {
   const [methodName, setMethodName] = React.useState("");
   const [methodIntro, setMethodIntro] = React.useState("");
   const [pillars, setPillars] = React.useState<MethodPillar[]>([]);
-  const [venues, setVenues] = React.useState<Venue[]>([]);
+  // venues are now managed by the GymPicker in WhereITrainPanel (professional_gyms table)
   const [cities, setCities] = React.useState("");
   const [onlineWorldwide, setOnlineWorldwide] = React.useState(false);
   const [clientResultsIntro, setClientResultsIntro] = React.useState("");
@@ -1310,7 +1310,7 @@ function WebsiteContentEditor() {
             { title: "", body: "" },
           ],
     );
-    setVenues(data.content.venues.length ? data.content.venues : [{ name: "", address: "" }]);
+    // venues: managed by GymPicker
     setCities(data.content.coaching_reach.cities.join(", "));
     setOnlineWorldwide(data.content.coaching_reach.online_worldwide);
     setClientResultsIntro(data.content.client_results_intro ?? "");
@@ -1349,9 +1349,6 @@ function WebsiteContentEditor() {
     });
   const onSaveVenues = () =>
     saveMut.mutate({
-      venues: venues
-        .map((v) => ({ name: v.name.trim(), address: v.address?.trim() || null }))
-        .filter((v) => v.name),
       coaching_reach: {
         cities: cities
           .split(",")
