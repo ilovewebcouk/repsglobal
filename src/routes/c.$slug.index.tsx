@@ -716,7 +716,7 @@ function CoachShopFrontPage() {
   const enquireHref = "/c/$slug/enquire" as const;
 
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
+    <div data-coach-theme={coach.theme ?? "dark"} className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
       <ChromeBar coach={coach} />
       <SectionNav />
 
