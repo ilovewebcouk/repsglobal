@@ -769,7 +769,7 @@ function ProProfilePage() {
                                 return `Checked ${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
                               }
                             }
-                            return "Checked Jun 2026";
+                            return "On file";
                           })()
                   }
                 />
