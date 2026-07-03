@@ -394,7 +394,10 @@ function ShopFrontEditorPage() {
             </Field>
           </PPanel>
 
+          <ProfilePhotoPanel />
+
           <SpecialismsDeliveryPanel />
+
 
           <WebsiteContentEditor />
 
