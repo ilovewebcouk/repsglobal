@@ -430,7 +430,7 @@ function ShopFrontEditorPage() {
         </PCard>
       ) : (
         <>
-          <WebsiteSectionNav />
+          
           <div className="space-y-6 pb-24">
             <ProfilePhotoPanel />
             <section id="basics" className="scroll-mt-24">
