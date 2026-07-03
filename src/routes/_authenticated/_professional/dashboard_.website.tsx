@@ -306,6 +306,37 @@ function ShopFrontEditorPage() {
 
   if (blocked) return null;
 
+  const saveAll = React.useCallback(() => {
+    saveMutation.mutate();
+    // Fan-out to child sections that own their own local state.
+    window.dispatchEvent(new CustomEvent("reps:website:save-all"));
+  }, [saveMutation]);
+
+  const SaveButton = ({ compact = false }: { compact?: boolean }) => (
+    <button
+      type="button"
+      disabled={saveMutation.isPending}
+      onClick={saveAll}
+      className={`flex ${compact ? "h-9 px-3 text-[12.5px]" : "h-10 px-4 text-[13px]"} items-center gap-2 rounded-[10px] bg-reps-orange font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60`}
+    >
+      <Save className="h-4 w-4" />
+      {saveMutation.isPending ? "Saving…" : "Save & publish"}
+    </button>
+  );
+
+  const ViewPublicButton = ({ compact = false }: { compact?: boolean }) =>
+    slug ? (
+      <Link
+        to="/c/$slug"
+        params={{ slug }}
+        target="_blank"
+        className={`flex ${compact ? "h-9 px-3 text-[12.5px]" : "h-10 px-4 text-[13px]"} items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft font-semibold text-white hover:bg-reps-panel`}
+      >
+        <ExternalLink className="h-4 w-4" />
+        View public page
+      </Link>
+    ) : null;
+
   return (
     <DashboardShell
       role="trainer"
@@ -319,27 +350,9 @@ function ShopFrontEditorPage() {
           : "Your public REPS website. Pro unlocks deeper customisation — join the waitlist."
       }
       actions={
-        <div className="flex items-center gap-2">
-          {slug && (
-            <Link
-              to="/c/$slug"
-              params={{ slug }}
-              target="_blank"
-              className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white hover:bg-reps-panel"
-            >
-              <ExternalLink className="h-4 w-4" />
-              View public page
-            </Link>
-          )}
-          <button
-            type="button"
-            disabled={saveMutation.isPending}
-            onClick={() => saveMutation.mutate()}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            <Save className="h-4 w-4" />
-            {saveMutation.isPending ? "Saving…" : "Save changes"}
-          </button>
+        <div className="hidden items-center gap-2 md:flex">
+          <ViewPublicButton />
+          <SaveButton />
         </div>
       }
     >
@@ -352,58 +365,73 @@ function ShopFrontEditorPage() {
           </p>
         </PCard>
       ) : (
-        <div className="space-y-6">
-          <ProfilePhotoPanel />
-          <PPanel>
-            <div className="border-b border-reps-border px-5 py-4">
-              <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
-              <p className="mt-0.5 text-[12px] text-white/55">
-                Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
-              </p>
+        <>
+          <WebsiteSectionNav />
+          <div className="space-y-6 pb-24">
+            <ProfilePhotoPanel />
+            <section id="basics" className="scroll-mt-24">
+              <PPanel>
+                <div className="border-b border-reps-border px-5 py-4">
+                  <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
+                  <p className="mt-0.5 text-[12px] text-white/55">
+                    Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
+                  </p>
+                </div>
+                <Field
+                  label="Tagline"
+                  hint="The H1 on your public page. One short line that sums you up."
+                  action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
+                >
+                  <TextInput
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
+                    maxLength={200}
+                    placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
+                  />
+                </Field>
+                <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
+                <Field
+                  label="About"
+                  hint="A short bio. Plain paragraphs, separated by blank lines."
+                  action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
+                >
+                  <TextArea
+                    value={about}
+                    onChange={(e) => setAbout(e.target.value)}
+                    maxLength={4000}
+                    placeholder="Tell clients who you help and how."
+                  />
+                </Field>
+                <Field
+                  label="Hero image"
+                  hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
+                >
+                  <HeroImageEditor value={hero} onChange={setHero} />
+                </Field>
+              </PPanel>
+            </section>
+
+            <section id="services" className="scroll-mt-24">
+              <ServicesEditor
+                services={services}
+                onSave={(s) => upsertServiceMut.mutate(s)}
+                onDelete={(id) => deleteServiceMut.mutate(id)}
+                onReorder={(ids) => reorderServicesMut.mutate(ids)}
+                saving={upsertServiceMut.isPending}
+              />
+            </section>
+
+            <WebsiteContentEditor />
+          </div>
+
+          {/* Sticky footer save bar */}
+          <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+            <div className="flex items-center justify-end gap-2">
+              <ViewPublicButton compact />
+              <SaveButton compact />
             </div>
-            <Field
-              label="Tagline"
-              hint="The H1 on your public page. One short line that sums you up."
-              action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
-            >
-              <TextInput
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
-                maxLength={200}
-                placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
-              />
-            </Field>
-            <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
-            <Field
-              label="About"
-              hint="A short bio. Plain paragraphs, separated by blank lines."
-              action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
-            >
-              <TextArea
-                value={about}
-                onChange={(e) => setAbout(e.target.value)}
-                maxLength={4000}
-                placeholder="Tell clients who you help and how."
-              />
-            </Field>
-            <Field
-              label="Hero image"
-              hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
-            >
-              <HeroImageEditor value={hero} onChange={setHero} />
-            </Field>
-          </PPanel>
-
-          <ServicesEditor
-            services={services}
-            onSave={(s) => upsertServiceMut.mutate(s)}
-            onDelete={(id) => deleteServiceMut.mutate(id)}
-            onReorder={(ids) => reorderServicesMut.mutate(ids)}
-            saving={upsertServiceMut.isPending}
-          />
-
-          <WebsiteContentEditor />
-        </div>
+          </div>
+        </>
       )}
 
       <Dialog open={taglineDialogOpen} onOpenChange={setTaglineDialogOpen}>
