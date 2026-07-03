@@ -16,6 +16,7 @@ import {
 } from "@/lib/gyms.functions";
 
 export const Route = createFileRoute("/admin_/gyms")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   head: () => ({

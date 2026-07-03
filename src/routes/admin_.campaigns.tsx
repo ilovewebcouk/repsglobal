@@ -22,6 +22,7 @@ const ComposeSearch = z.object({
 });
 
 export const Route = createFileRoute("/admin_/campaigns")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   validateSearch: (s) => ComposeSearch.parse(s),

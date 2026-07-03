@@ -40,6 +40,7 @@ import {
 import { RemoveReviewDialog } from "@/components/admin/RemoveReviewDialog";
 
 export const Route = createFileRoute("/admin_/reviews")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   component: AdminReviewsPage,

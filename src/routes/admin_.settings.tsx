@@ -13,6 +13,7 @@ import { TimeAgo } from "@/components/verification/TimeAgo";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin_/settings")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(['admin']),
   head: () => ({

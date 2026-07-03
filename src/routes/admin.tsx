@@ -87,6 +87,7 @@ function overviewQuery(
 }
 
 export const Route = createFileRoute("/admin")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   validateSearch: zodValidator(searchSchema),

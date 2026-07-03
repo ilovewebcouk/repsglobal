@@ -123,6 +123,7 @@ import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
 type ProfessionalsSearch = { plan?: "free" | "paid" };
 
 export const Route = createFileRoute("/admin_/professionals")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   validateSearch: (search: Record<string, unknown>): ProfessionalsSearch => {

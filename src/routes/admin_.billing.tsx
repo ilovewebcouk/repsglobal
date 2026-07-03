@@ -44,6 +44,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/admin_/billing")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   validateSearch: (s) => searchSchema.parse(s),

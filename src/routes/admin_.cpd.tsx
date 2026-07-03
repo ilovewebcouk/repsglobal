@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/cpd")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(['admin']),
   head: () => ({

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { getDirectoryHealth } from "@/lib/directory/featured.functions";
 
 export const Route = createFileRoute("/admin_/directory")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   head: () => ({

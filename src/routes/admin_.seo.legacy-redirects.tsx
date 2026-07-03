@@ -16,6 +16,7 @@ import {
 } from "@/lib/seo/legacy-redirects.functions";
 
 export const Route = createFileRoute("/admin_/seo/legacy-redirects")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   component: LegacyRedirectsPage,
