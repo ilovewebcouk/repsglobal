@@ -402,8 +402,6 @@ function ShopFrontEditorPage() {
           />
 
           <WebsiteContentEditor />
-
-          <SpecialismsDeliveryPanel />
         </div>
       )}
 
@@ -1374,6 +1372,8 @@ function WebsiteContentEditor() {
           </button>
         </div>
       </PPanel>
+
+      <SpecialismsDeliveryPanel />
 
       {/* Results intro */}
       <PPanel>
