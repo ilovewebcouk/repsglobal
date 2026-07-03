@@ -438,7 +438,7 @@ function mergeLiveIntoCoach(
   }));
   const liveCities = [
     ...sf.coaching_reach.cities,
-    ...(sf.coaching_reach.online_worldwide ? ["Online (worldwide)"] : []),
+    ...(sf.online_available ? ["Online (worldwide)"] : []),
   ];
   const liveTransformations: Transformation[] = transformations
     .filter((t) => t.is_published)
