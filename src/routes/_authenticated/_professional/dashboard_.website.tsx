@@ -368,7 +368,7 @@ function ShopFrontEditorPage() {
       ) : (
         <>
           
-          <div className="space-y-6 pb-24">
+          <div className="space-y-6 pb-32">
             <ProfilePhotoPanel />
             <section id="basics" className="scroll-mt-24">
               <PPanel>
