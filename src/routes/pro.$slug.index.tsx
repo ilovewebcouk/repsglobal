@@ -588,8 +588,8 @@ function ProProfilePage() {
           })()}
         </div>
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-4 lg:px-10">
-          <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
-            {/* Portrait */}
+          <div className="grid gap-8 lg:grid-cols-[420px_1fr_320px] lg:gap-8">
+            {/* Portrait with gallery pill */}
             <div className="relative block aspect-[4/3] overflow-hidden rounded-[24px] bg-reps-stone">
               {pro.image ? (
                 <img
@@ -604,10 +604,19 @@ function ProProfilePage() {
                   <Monogram name={pro.name} size={220} className="!rounded-[24px]" />
                 </div>
               )}
+              {(pro.gallery?.length ?? 0) > 0 ? (
+                <button
+                  type="button"
+                  className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-reps-charcoal/85 px-3 py-1.5 text-[12px] font-semibold text-reps-warm-white backdrop-blur-sm transition hover:bg-reps-charcoal"
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  +{pro.gallery!.length} photos
+                </button>
+              ) : null}
             </div>
 
-            {/* Right info */}
-            <div className="flex flex-col">
+            {/* Middle info column */}
+            <div className="flex min-w-0 flex-col">
               {pro.trust?.verified ? (
                 <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
                   <BadgeCheck className="h-3 w-3" />
@@ -619,12 +628,12 @@ function ProProfilePage() {
                 </span>
               )}
 
-              <h1 className="mt-3 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.01em] text-reps-charcoal lg:text-[52px]">
+              <h1 className="mt-3 font-display text-[40px] font-bold leading-[1.02] tracking-[-0.01em] text-reps-charcoal lg:text-[46px]">
                 {pro.name}
               </h1>
               <div className="mt-1 text-[16px] text-reps-muted-light">{pro.role}</div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px]">
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]">
                 <span className="inline-flex items-center gap-1.5 text-reps-charcoal">
                   <MapPin className="h-4 w-4 text-reps-muted-light" />
                   {pro.location}
@@ -661,41 +670,76 @@ function ProProfilePage() {
                 ))}
               </div>
 
-              <p className="mt-4 max-w-[520px] text-[14px] leading-relaxed text-reps-muted-light">
-                {pro.blurb}
+              <p className="mt-5 border-l-2 border-reps-orange pl-4 font-display text-[16px] italic leading-snug text-reps-charcoal">
+                &ldquo;{pro.blurb}&rdquo;
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  to="/pro/$slug/enquire"
-                  params={{ slug }}
-                  onClick={() => {
-                    void import("@/lib/analytics/track").then(({ track }) =>
-                      track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
-                    );
-                  }}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Enquire Now
-                </Link>
-                <button
-                  type="button"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
-                >
-                  <Bookmark className="h-4 w-4" />
-                  Save Profile
-                </button>
-              </div>
               {pro.services[0]?.price ? (
-                <div className="mt-3 text-[13px] text-reps-muted-light">
+                <div className="mt-5 text-[13px] text-reps-muted-light">
                   <span className="font-semibold text-reps-charcoal">From {pro.services[0].price}</span>
                   {pro.services[0].unit ? ` ${pro.services[0].unit}` : null}
                 </div>
               ) : null}
-
             </div>
+
+            {/* Right sidebar — Get in touch card */}
+            <aside className="lg:sticky lg:top-[92px] lg:self-start">
+              <div className="rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+                <div className="font-display text-[16px] font-bold text-reps-charcoal">
+                  Get in touch
+                </div>
+                <div className="mt-1 text-[12.5px] text-reps-muted-light">
+                  Free, no-obligation enquiry. Most replies within a day.
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3 border-y border-reps-stone py-3 text-[12px]">
+                  <div>
+                    <div className="inline-flex items-center gap-1 text-reps-muted-light">
+                      <Clock className="h-3.5 w-3.5" /> Response
+                    </div>
+                    <div className="mt-0.5 font-semibold text-reps-charcoal">Within 1 day</div>
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1 text-reps-muted-light">
+                      <Check className="h-3.5 w-3.5" /> Reply rate
+                    </div>
+                    <div className="mt-0.5 font-semibold text-reps-charcoal">98%</div>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-2">
+                  <Link
+                    to="/pro/$slug/enquire"
+                    params={{ slug }}
+                    onClick={() => {
+                      void import("@/lib/analytics/track").then(({ track }) =>
+                        track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
+                      );
+                    }}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Send Enquiry
+                  </Link>
+                  <button
+                    type="button"
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-4 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Call
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] text-[13px] font-semibold text-reps-muted-light transition-colors hover:text-reps-charcoal"
+                  >
+                    <Bookmark className="h-4 w-4" />
+                    Save profile
+                  </button>
+                </div>
+              </div>
+            </aside>
           </div>
+
 
           {/* Trust strip */}
           {(() => {
