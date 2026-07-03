@@ -10,18 +10,24 @@ export const Route = createFileRoute("/gyms/$slug")({
     if (!gym) throw notFound();
     return gym;
   },
-  head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [] };
-    const title = `${loaderData.name}${loaderData.city ? ` — ${loaderData.city}` : ""} | REPs`;
+  head: ({ loaderData, params }) => {
+    if (!loaderData) return { meta: [{ name: "robots", content: "noindex,nofollow" }] };
+    const title = `${loaderData.name}${loaderData.city ? ` — ${loaderData.city}` : ""} | REPS`;
     const description = loaderData.tagline
-      ?? `${loaderData.name} — REPs-verified trainers, classes and facilities${loaderData.area ? ` in ${loaderData.area}` : ""}.`;
+      ?? `${loaderData.name} — REPS-verified trainers, classes and facilities${loaderData.area ? ` in ${loaderData.area}` : ""}.`;
+    const url = `https://repsuk.org/gyms/${params.slug}`;
     return {
       meta: [
         { title },
         { name: "description", content: description },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+        // Placeholder content — keep out of the index until real gym pages ship.
+        { name: "robots", content: "noindex,nofollow" },
       ],
+      links: [{ rel: "canonical", href: url }],
     };
   },
   component: GymPlaceholderPage,

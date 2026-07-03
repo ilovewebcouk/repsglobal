@@ -184,9 +184,10 @@ export const Route = createFileRoute("/signup")({
         content:
           "Sign up to REPS — the global standard for fitness professionals.",
       },
-      { property: "og:url", content: "/signup" },
+      { property: "og:url", content: "https://repsuk.org/signup" },
+      { name: "robots", content: "noindex,follow" },
     ],
-    links: [{ rel: "canonical", href: "/signup" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/signup" }],
   }),
   component: SignupPage,
 });

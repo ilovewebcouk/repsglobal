@@ -36,9 +36,9 @@ export const Route = createFileRoute("/contact")({
         content:
           "A B2B contact route for professionals and training providers. Verification help, partnership, recognition and press — routed to the right person.",
       },
-      { property: "og:url", content: "/contact" },
+      { property: "og:url", content: "https://repsuk.org/contact" },
     ],
-    links: [{ rel: "canonical", href: "/contact" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/contact" }],
   }),
   component: ContactPage,
 });

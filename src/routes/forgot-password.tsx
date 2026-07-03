@@ -12,18 +12,21 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
-      { title: "Reset your password — REPs" },
+      { title: "Reset your password — REPS" },
       {
         name: "description",
         content:
-          "Enter your email and we'll send you a link to reset your REPs password.",
+          "Enter your email and we'll send you a link to reset your REPS password.",
       },
-      { property: "og:title", content: "Reset your password — REPs" },
+      { property: "og:title", content: "Reset your password — REPS" },
       {
         property: "og:description",
-        content: "Recover access to your REPs professional account.",
+        content: "Recover access to your REPS professional account.",
       },
+      { property: "og:url", content: "https://repsuk.org/forgot-password" },
+      { name: "robots", content: "noindex,follow" },
     ],
+    links: [{ rel: "canonical", href: "https://repsuk.org/forgot-password" }],
   }),
   component: ForgotPasswordPage,
 });

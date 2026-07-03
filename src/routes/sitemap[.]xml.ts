@@ -110,8 +110,24 @@ export const Route = createFileRoute("/sitemap.xml")({
           }
         }
 
+        // City-only landing pages (/in/:city) — 1 per city.
+        const cityEntries: SitemapEntry[] = PROGRAMMATIC_CITY_SLUGS.map((citySlug) => ({
+          path: `/in/${citySlug}`,
+          changefreq: "weekly",
+          priority: "0.75",
+        }));
+
+        // Canonical profession landing pages (/professions/:profession).
+        const professionEntries: SitemapEntry[] = PROGRAMMATIC_PROFESSION_SLUGS.map((profSlug) => ({
+          path: `/professions/${profSlug}`,
+          changefreq: "weekly",
+          priority: "0.8",
+        }));
+
         const entries = [
           ...STATIC_ROUTES,
+          ...professionEntries,
+          ...cityEntries,
           ...articleEntries,
           ...helpCategoryEntries,
           ...helpArticleEntries,

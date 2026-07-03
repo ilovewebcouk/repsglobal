@@ -30,20 +30,21 @@ export const Route = createFileRoute("/auth")({
   },
   head: () => ({
     meta: [
-      { title: "Sign in to REPs" },
+      { title: "Sign in to REPS" },
       {
         name: "description",
         content:
-          "Sign in to REPs to manage your professional profile, clients, bookings and CPD — all in one place.",
+          "Sign in to REPS to manage your professional profile, clients, bookings and CPD — all in one place.",
       },
-      { property: "og:title", content: "Sign in to REPs" },
+      { property: "og:title", content: "Sign in to REPS" },
       {
         property: "og:description",
-        content: "Welcome back — sign in to your REPs professional account.",
+        content: "Welcome back — sign in to your REPS professional account.",
       },
-      { property: "og:url", content: "/auth" },
+      { property: "og:url", content: "https://repsuk.org/auth" },
+      { name: "robots", content: "noindex,follow" },
     ],
-    links: [{ rel: "canonical", href: "/auth" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/auth" }],
   }),
   component: LoginPage,
 });

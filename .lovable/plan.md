@@ -1,151 +1,87 @@
-# /admin/activity — Rebuild (revised) + Brutal Backend Cleanup
+# SEO Audit & Remediation Plan
 
-You want the Realtime card kept. Fine — it stays, wired to the new command function so its numbers actually agree with the rest of the page. Now the honest part: **what to rip out of the backend.**
+Three parallel specialist sub-agents audited: (1) route head metadata, (2) robots/sitemap/noindex, (3) on-page + JSON-LD. Consolidated below.
 
----
+## Overall verdict
 
-## Part A — What each vendor/table actually costs you (brutal honesty)
+**Foundation: strong.** robots.txt is well-configured, sitemap is a live server route with 700+ URLs (resources, help, city×profession, coach profiles), most public routes have `head()` with title + description + canonical. Root emits Organization + WebSite JSON-LD.
 
-### 1. PostHog — **RIP IT OUT. Completely.**
-
-**What it does for you today:** Historical rollups (7-day pageviews), a "realtime" feed that duplicates Supabase, sparkline data.
-
-**What it costs you:**
-- Money (per-event pricing, forever).
-- A second source of truth that disagrees with Supabase — this is the single biggest reason your page contradicts itself.
-- A browser SDK that ad-blockers eat, that Playwright can't run, that needs consent-banner plumbing, that made the beacon fail QA twice.
-- A whole proxy route (`/e/*`), diagnostics table, ingest state table, HogQL query code, PostHog cron.
-- Complexity every debugging session pays for.
-
-**What you actually lose by deleting it:** The 7-day pageview number on this page. That's it. Supabase already stores everything else (journeys, sessions, conversions, events).
-
-**Verdict: DELETE.** Uninstall the SDK, delete the proxy route, delete the rollup cron, delete `metrics_daily_public_analytics` (or freeze it read-only if you want to keep the history you already collected). Every "Last N days" number can be computed from `visitor_journeys` / `member_session_events` in SQL, on-demand, for free.
-
-### 2. MaxMind — **KEEP for now. Reconsider later.**
-
-**What it does:** Turns raw IPs into city + lat/lng for map dots.
-
-**What it costs you:** A licence key, a lookup on every ingest, a cache table, edge-case failures.
-
-**Honest take:** Country you get free from Cloudflare headers. **City** is the only thing MaxMind buys you, and city is what makes the map interesting instead of "a picture of the UK." You said keep enrichment for now — I agree, but only because you have a map. If you later decide the map isn't earning its keep, MaxMind goes with it.
-
-**Verdict: KEEP** (in line with your amendment). Flag for review in 90 days: "is anyone actually making a decision from city-level dots? If not, drop MaxMind and use CDN country only."
-
-### 3. `ip_geo_cache` + `ip_geolocation_cache` — **CONSOLIDATE.**
-
-You have two IP geo cache tables. That's a straight-up bug. Pick one, drop the other. (I'd need one read to tell you which is live — I'll do that at build time.)
-
-### 4. `page_view_events` — **DELETE.**
-
-Docs already flag this as deprecated (`page-view-events-deprecation-decision.md`). It's superseded by `visitor_journeys` + `security_visitor_ip_observations`. Kill the table, kill any remaining writers.
-
-### 5. `proxy_ingest_diagnostics` — **KEEP but hide.**
-
-Useful for you when something breaks. Not useful on `/admin/activity`. Move the reader to `/admin/system` (the diagnostics drawer already covers this). Add a nightly purge (>7 days) so it doesn't grow forever.
-
-### 6. `public_analytics_ingest_state`, `public_analytics_consent_events` — **DELETE with PostHog.**
-
-They exist only to serve the PostHog proxy. When PostHog goes, these go.
-
-### 7. `member_session_events`, `user_sessions`, `auth_events`, `visitor_journeys`, `security_visitor_ip_observations`, `public_visitor_conversions`, `admin_audit_log` — **KEEP, untouched.**
-
-These are the evidence layer you told me to protect. They're the right shape, they're populated by triggers/RPCs you already own, and they're the only source the new command function reads from.
-
-### 8. `metrics_monthly_activity`, `metrics_daily_public_analytics` — **FREEZE, don't feed.**
-
-Stop writing to them. Leave the historical rows in place in case you want a `/admin/analytics` page later. If in 90 days you haven't built that page, drop the tables.
+**But there are ~12 real bugs and ~30 gaps holding the site back from "world-class 10/10". Grouped and prioritised below.**
 
 ---
 
-## Part B — The rebuild (amended: Realtime card stays)
+## P0 — Broken / immediately harmful (fix first)
 
-Same shape as before, one canonical function powers the page.
+1. **Relative `canonical` and `og:url` on 6 crawlable pages** — `find-a-professional`, `how-it-works`, `contact`, `reviews`, `professions/$profession`, `signup`. Crawlers reject relative canonicals; Google picks its own URL. Change to absolute `https://repsuk.org/...`.
+2. **Brand miscap "REPs" (should be "REPS")** in `auth`, `forgot-password`, `reset-password` titles/og.
+3. **`coming-soon.tsx` has "Launching 26 June 2026" hard-coded in `<title>` and `og:title`.** Site is live — this metadata is stale. Neutralise the copy.
+4. **`$.tsx` (catch-all 404) has no `head()`** — no title, no `noindex,nofollow`. Add both.
+5. **`gyms/$slug` serves "Gym pages are coming soon."** with a full `<head>`, no `noindex`, no canonical, no `og:url`. Add `noindex,nofollow` until real content lands.
+6. **`__root.tsx` WebSite `SearchAction` target points at `/find-a-trainer`** — route doesn't exist. Fix to `/find-a-professional`.
+7. **`/professions/$profession` canonical is relative** (also caught in P0-1) — this is duplicated on purpose because it also breaks the JSON-LD self-reference.
 
-### `getActivityCommandCenter()` returns:
+## P1 — Missing / material SEO drag
 
-```
-{
-  last_updated, stale,
-  live_now              { public, members, total },
-  public_live[],        // for Online Now + drawer
-  members_live[],       // for Online Now + drawer
-  online_now[],         // deduped union
-  pages_being_viewed_now[],
-  map_markers[],        // MaxMind city dots, deduped per session
-  realtime_summary: {   // ← feeds the KEPT Realtime card
-    visitors_members_online_now: number,
-    public_now: number,
-    members_now: number,
-    events_30m: number,
-    activity_per_minute_30m: number[],   // 30-length array for the sparkline
-    peak_per_minute_30m: number,
-    devices_online_now: { mobile: number, desktop: number, tablet: number },
-    stale: boolean,
-    updated_at: string,
-  },
-  recent_session_events[],  // for the drawer only
-}
-```
+8. **Sitemap missing 90 real pages:**
+   - `/professions/$profession` (7 canonical landing pages)
+   - `/in/$location` (83 city-only pages)
+9. **`og:image` absent on primary acquisition pages:** `/`, `/for-professionals`, `/pricing`, `/find-a-professional`, `/in/$location`, `/resources`, `/features/operations`, `/compare`, `/about`, `/comparison-methodology`. Link previews render blank.
+10. **`og:type` missing on ~30 routes.** Default is "website" for most; "article" for `/resources/$slug` (already correct).
+11. **`twitter:` tags absent/incomplete on ~40 routes.** Add `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image` where OG exists.
+12. **17 admin routes have no `head()`** → no `noindex,nofollow`. Auth guard is defence #1, but robots meta is defence #2.
+13. **`dashboard-demo.tsx` publicly indexable, self-canonical, not in sitemap** — will surface as thin/misleading content. Add `noindex`.
+14. **`signup.tsx` not noindexed** (transactional page).
+15. **`verify-email`, `forgot-password`, `reset-password` missing canonical entirely.**
+16. **`c.$slug` (coach shop-front) missing `og:url`.**
+17. **`pro.$slug` `og:image` is conditional** — profiles without avatars inherit nothing (root has no fallback). Add a brand default fallback.
 
-Everything the current Realtime card renders (visitors+members big number, three tiles, sparkline, device split, stale pill, "updated HH:MM:SS") is fed from `realtime_summary` — but computed from Supabase only, not PostHog. So the card *keeps its look*, and its numbers finally agree with Online Now and the map.
+## P1 — Structured data gaps (rich-result eligibility)
 
-### UI layout (unchanged from prior approval, Realtime card kept)
+18. **FAQPage JSON-LD missing where FAQ blocks already render:** `/for-professionals`, `/c/$slug`, `/specialisms`, `/professions/$profession`. Data exists — just not wired into `head().scripts`.
+19. **BreadcrumbList missing on deep routes:** `/pro/$slug`, `/c/$slug`, `/professions/$profession`, `/in/$location/$profession`, `/resources/$slug`.
+20. **SoftwareApplication schema missing on comparison pages** (`/compare/reps-vs-*`) — highest-CTR schema for "[competitor] alternative" queries.
+21. **`/compare/reps-vs-*` `og:image` uses a bundled JS import** — likely resolves to a relative path in prod. Switch to absolute CDN URL.
+22. **`/pricing` missing Product/Offer schema** for the three tiers.
+23. **`/resources/` index missing CollectionPage / ItemList schema.**
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ [ Map — city dots, ≤600px ]         │ [ Realtime card ]     │
-├─────────────────────────────────────┴───────────────────────┤
-│ [ Online Now ]                     │ [ Pages Being Viewed ] │
-└─────────────────────────────────────────────────────────────┘
-```
+## P2 — Polish
 
-Drawer opens from any row/marker: journey · device/location · masked IP · Reveal IP (audited) · Member 360 link.
-
-Nothing else on the page.
+24. **Description length issues:** `/pricing` desc 28ch (too short), `/features/ai` 193ch, `/features/coaching` 215ch (both truncated in SERP). Aim 130–160ch.
+25. **`for-professionals.tsx` og:title weaker than `<title>`.**
+26. **Legal pages (`terms`, `privacy`, `cookies`) indexed — burn crawl budget on boilerplate.** Add `noindex,follow`.
+27. **`__root.tsx` no fallback `og:description` / `og:url`** — safety net if a leaf omits them.
+28. **robots.txt defence-in-depth:** explicit `Disallow: /admin`, `/portal`, `/dashboard`, `/_authenticated`.
+29. **Homepage `<img alt="">` on hero LCP.** Empty alt is defensible (decorative), but a real alt helps accessibility + image SEO. Same for `/for-professionals` gym hero.
+30. **`/c/$slug` and `/resources` index have no cross-links to directory/city pages** — missed internal-linking equity.
 
 ---
 
-## Part C — Ordered demolition + rebuild
+## Execution plan (build order)
 
-1. **Command function.** `command-center.server.ts` + `command-center.functions.ts`. Single Supabase read pass. Includes the `realtime_summary` slice needed by the kept card.
-2. **Rewire /admin/activity.** One `useQuery`; pass slices to Map, RealtimeSummaryCard, OnlineNow, PagesBeingViewedNow. Delete every other data source on the route.
-3. **Rewire RealtimeSummaryCard.** Take a single `realtime_summary` prop; delete its own fetch calls. Look stays identical.
-4. **Move DiagnosticsDrawer + BackfillGeoButton** to `/admin/system`.
-5. **Rip PostHog:**
-   - Delete the SDK import from `usePublicAnalyticsBeacon`.
-   - Delete `src/routes/e.*` proxy route(s).
-   - Delete the PostHog rollup cron + `scripts/ops/trigger-posthog-rollup.sh`.
-   - Delete PostHog env vars from `.env*`.
-   - Delete `getPublicRealtime`, PostHog paths in `getRealtimeSummary`, sparkline HogQL queries.
-   - Migration: drop `page_view_events`, `public_analytics_ingest_state`, `public_analytics_consent_events`. Freeze `metrics_daily_public_analytics` (revoke inserts).
-6. **Consolidate IP geo cache:** pick the one that's actually written to, drop the other.
-7. **Nightly purge** on `proxy_ingest_diagnostics` (>7d) and `security_visitor_ip_observations` (>90d) via `pg_cron`.
-8. **Playwright smoke:** load `/admin/activity`, assert no request goes to `posthog.com` or `/e/`, assert the four panels render, assert the Realtime card numbers equal the derived numbers from Online Now.
+I'd execute in these batches, each a discrete build turn so you can QA between:
 
----
+**Batch 1 — P0 fixes + Search Console cleanup (small, safe):** absolute canonicals, brand caps, `$.tsx` head, `gyms/$slug` noindex, SearchAction URL, coming-soon neutralised.
 
-## Part D — Definition of done
+**Batch 2 — Sitemap completeness:** add `/professions/$profession` and `/in/$location` entries; submit fresh sitemap to Search Console.
 
-- One server function feeds the whole page.
-- Numbers agree with each other because they share a payload.
-- Realtime card stays visually; its numbers finally match reality.
-- No PostHog. Zero. Not in the browser, not on the server, not in cron, not in `.env`.
-- MaxMind kept, on 90-day review.
-- Evidence tables in §Part A/7 untouched.
-- Diagnostics + backfill live at `/admin/system`.
-- One IP geo cache table, not two.
-- `page_view_events` gone.
+**Batch 3 — OG/Twitter completeness:** default `og:image` fallback (brand card), sweep every public route to add `og:type` + full twitter tags. Introduce a shared helper `buildSocialMeta({title, description, url, image, type})` in `src/lib/seo/social-meta.ts` so every route uses the same 8-tag block.
+
+**Batch 4 — Robots hygiene:** noindex admin/portal/signup/legal/demo routes; expand robots.txt disallow.
+
+**Batch 5 — Structured data:** FAQPage on the 4 pages with existing FAQ data; BreadcrumbList on deep routes; SoftwareApplication on compare pages; Product/Offer on pricing; CollectionPage on resources index.
+
+**Batch 6 — Copy polish:** description length fixes, weak og:titles, `og:image` CDN URLs for compare pages, alt text on hero LCP images.
+
+**Batch 7 — Search Console verification pass:** URL-inspect ~15 representative URLs via the Search Console connector, capture any residual issues, submit sitemap, trigger a fresh SEO scan and mark fixed findings.
 
 ---
 
-## Two things I need from you before I start
+## Deliverables
 
-1. **PostHog historical data — bin or keep?**
-   - "**bin**" → I drop `metrics_daily_public_analytics` too. Cleanest.
-   - "**keep**" → I freeze it read-only. You can build `/admin/analytics` off it later.
+- All fixes shipped and typechecked.
+- Fresh `seo_chat--trigger_scan` after Batch 6.
+- Summary report of before/after counts (routes with full OG, routes with JSON-LD, sitemap size, canonicals-fixed).
 
-2. **Purge windows OK?**
-   - Diagnostics >7d deleted.
-   - Raw IP observations >90d deleted (masked/hashed fields could survive longer if you want — say the word).
+## Approval
 
-Reply with those two answers (or "bin, defaults") and I'll start with the command function.
+Confirm **"go batch 1"** to start with the P0 bug fixes only, or **"go all batches"** to plough through 1→7 sequentially.
