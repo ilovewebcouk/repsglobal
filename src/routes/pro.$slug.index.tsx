@@ -1345,23 +1345,50 @@ function ProProfilePage() {
                 <MessageCircle className="h-4 w-4" />
                 Send Enquiry
               </Link>
-              <button
-                type="button"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
-              >
-                <Bookmark className="h-4 w-4" />
-                Save Profile
-              </button>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Mobile sticky CTA — visible below lg only. Adds safe-area padding. */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-reps-stone bg-reps-warm-white/95 px-4 py-3 backdrop-blur lg:hidden"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
+        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate text-[11px] uppercase tracking-wider text-reps-muted-light">
+              {pro.firstName}
+            </div>
+            {pro.services[0]?.price ? (
+              <div className="truncate font-display text-[15px] font-bold text-reps-charcoal">
+                From {pro.services[0].price}
+              </div>
+            ) : (
+              <div className="truncate font-display text-[15px] font-bold text-reps-charcoal">
+                Enquire for pricing
+              </div>
+            )}
+          </div>
+          <Link
+            to="/pro/$slug/enquire"
+            params={{ slug }}
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white hover:bg-reps-orange-dark"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Send enquiry
+          </Link>
+        </div>
+      </div>
+
+      {/* Bottom spacer so footer content isn't hidden behind mobile CTA */}
+      <div className="h-20 lg:hidden" aria-hidden />
 
       <PublicFooter />
     </div>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Small helpers                                                       */
