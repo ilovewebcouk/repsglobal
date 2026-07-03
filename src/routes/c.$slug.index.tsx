@@ -1566,7 +1566,7 @@ function TransformationsSection({ coach }: { coach: Coach }) {
                 </p>
                 <div className="mt-4 border-t border-reps-border pt-3">
                   <div className="text-[13.5px] font-semibold text-reps-text">{t.client}</div>
-                  <div className="text-[12px] text-reps-muted">{t.meta}</div>
+                  {t.meta ? <div className="text-[12px] text-reps-muted">{t.meta}</div> : null}
                 </div>
               </div>
             </article>
