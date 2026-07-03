@@ -1,23 +1,31 @@
-Move the full verification status banner (green pill + "Your REPS credential is live" heading + subcopy + "Manage →" link) to the top of the main Dashboard page, and remove it from the sidebar.
+## Problem
 
-## Changes
+The `WebsiteContentEditor` component currently renders panels in this order:
+1. Where I train (`WhereITrainPanel`)
+2. Client results intro
+3. Foundation Method · How I coach
+4. Client transformations
+5. Client result quotes
+6. FAQs
 
-**`src/routes/_authenticated/_professional/dashboard.tsx`** (main dashboard page)
-- Add a new `<DashboardVerificationBanner />` as the FIRST block on the page, above whatever currently renders at the top.
-- Banner layout (matches the uploaded screenshot):
-  - Left: `VerifiedBadge` pill (Verified · Insured · <Profession>) — uses existing `tierFromCounts` + `getTrustState` data.
-  - Middle: `Your REPS credential is live` (h3) + subcopy `Identity, insurance and qualifications all verified.` — subcopy adapts to tier (e.g. "Add insurance to unlock the full credential." when partial).
-  - Right: `Manage →` link styled in brand orange, routes to `/dashboard/verification`.
-  - Wrapped in a `rounded-[18px] border border-emerald-400/30 bg-emerald-500/10` panel (emerald because status semantics — allowed per `mem://design/status-colors`).
-  - Fully clickable as a `<Link to="/dashboard/verification">` wrapper so clicking anywhere on the row navigates.
+Because `WebsiteContentEditor` sits directly below `ServicesEditor` (Coaching plans), the user sees "Where I train" immediately after Coaching plans. The "Foundation Method · How I coach" section is buried two panels down, making it feel like it's not below Coaching plans at all.
 
-**`src/components/dashboard/DashboardVerificationBanner.tsx`** (new)
-- Self-contained component: reads session user via `useSessionUser`, calls `getTrustState` server fn with `useServerFn` + `useQuery`, computes tier via `tierFromCounts`, renders `VerifiedBadge` + copy + Manage link.
-- Renders nothing (or a subtle skeleton) while loading; hides entirely for admin role.
+## Plan
 
-**`src/components/dashboard/DashboardSidebar.tsx`**
-- Delete the `VerificationSidebarPill` function (lines ~225–260-ish).
-- Revert the render slot: `{role === "admin" ? <AdminBadgeRow /> : <VerificationSidebarPill />}` → `{role === "admin" ? <AdminBadgeRow /> : null}`.
-- Remove now-unused imports (`VerifiedBadge`, `tierFromCounts`, `getTrustState`, `useServerFn`, `useSessionUser` if not used elsewhere in the file). Keep `VerifiedCountChip` only if still referenced.
+Reorder the panels inside the `WebsiteContentEditor` component so that **"Foundation Method · How I coach" renders first**, followed by the remaining panels in a sensible order.
 
-No other tabs, business logic, or verification-page code changes.
+### Proposed new order inside `WebsiteContentEditor`:
+1. **Foundation Method · How I coach** (moved to top)
+2. Client results intro
+3. Where I train (`WhereITrainPanel`)
+4. Client transformations
+5. Client result quotes
+6. FAQs
+
+This keeps all panels within `WebsiteContentEditor` (no state extraction needed) while ensuring the section the user cares about is the very next thing visible after Coaching plans.
+
+## Scope
+- Single file: `src/routes/_authenticated/_professional/dashboard_.website.tsx`
+- Reorder JSX blocks inside `WebsiteContentEditor`'s return statement
+- No logic changes, no prop drilling, no new components
+- Preserve all existing handlers and state wiring
