@@ -7,12 +7,12 @@ import {
   BadgeCheck,
   Bookmark,
   Calendar,
-  
   Check,
   ChevronDown,
   ChevronRight,
   GraduationCap,
   Globe,
+  Home,
   Info,
   Laptop,
   MapPin,
