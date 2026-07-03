@@ -1362,6 +1362,17 @@ function WebsiteContentEditor() {
           })}
         </div>
 
+        <div className="sticky bottom-0 z-10 flex items-center justify-end gap-2 border-t border-reps-border bg-reps-panel/95 px-5 py-3 backdrop-blur rounded-b-[22px]">
+          <button
+            type="button"
+            onClick={onSaveMethod}
+            disabled={saveMut.isPending}
+            className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            <Save className="h-3.5 w-3.5" />
+            {saveMut.isPending ? "Saving…" : "Save"}
+          </button>
+        </div>
       </PPanel>
 
       {/* Results intro */}
