@@ -45,9 +45,9 @@ export const Route = createFileRoute("/reviews")({
         content:
           "Every review on REPS came from a real booking. Read reviews for coaches, gyms, studios, nutritionists and training providers.",
       },
-      { property: "og:url", content: "/reviews" },
+      { property: "og:url", content: "https://repsuk.org/reviews" },
     ],
-    links: [{ rel: "canonical", href: "/reviews" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/reviews" }],
   }),
   component: ReviewsPage,
 });
