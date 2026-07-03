@@ -122,13 +122,17 @@ function asPillars(v: unknown): Array<{ title: string; body: string }> {
     .slice(0, 6);
 }
 
-function asVenues(v: unknown): Array<{ name: string; address?: string | null }> {
+type VenueDTO = ShopFrontDTO["venues"][number];
+
+function asVenues(v: unknown): VenueDTO[] {
   if (!Array.isArray(v)) return [];
   return v
     .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
-    .map((p) => ({
+    .map((p): VenueDTO => ({
       name: String(p.name ?? "").trim(),
       address: p.address == null ? null : String(p.address).trim(),
+      googlePlaceId: null,
+      kind: "gym",
     }))
     .filter((p) => p.name)
     .slice(0, 8);
@@ -141,23 +145,52 @@ function asVenues(v: unknown): Array<{ name: string; address?: string | null }> 
 async function loadProfessionalGymVenues(
   supabaseAdmin: { from: (t: string) => any },
   proId: string,
-): Promise<Array<{ name: string; address?: string | null }>> {
+): Promise<VenueDTO[]> {
   const { data: rows } = await supabaseAdmin
     .from("professional_gyms")
-    .select("position, gyms ( name, chain_name, area, city )")
+    .select("position, gyms ( name, chain_name, area, city, postcode, google_place_id )")
     .eq("professional_id", proId)
     .order("position", { ascending: true });
   return (rows ?? [])
-    .map((row: any) => {
-      const g = row?.gyms as { name?: string | null; chain_name?: string | null; area?: string | null; city?: string | null } | null;
+    .map((row: any): VenueDTO | null => {
+      const g = row?.gyms as {
+        name?: string | null;
+        chain_name?: string | null;
+        area?: string | null;
+        city?: string | null;
+        postcode?: string | null;
+        google_place_id?: string | null;
+      } | null;
       if (!g) return null;
       const name = (g.chain_name?.trim() || g.name?.trim() || "").slice(0, 120);
       if (!name) return null;
-      const address = (g.area?.trim() || g.city?.trim() || "") || null;
-      return { name, address };
+      const parts = [g.area?.trim(), g.city?.trim(), g.postcode?.trim()].filter(
+        (s): s is string => !!s,
+      );
+      const address = parts.length ? parts.join(", ") : null;
+      return {
+        name,
+        address,
+        googlePlaceId: g.google_place_id ?? null,
+        kind: "gym",
+      };
     })
-    .filter((v: unknown): v is { name: string; address: string | null } => v !== null)
+    .filter((v: VenueDTO | null): v is VenueDTO => v !== null)
     .slice(0, 8);
+}
+
+function buildTrainingBaseVenues(
+  homeStudio: boolean,
+  clientsHome: boolean,
+): VenueDTO[] {
+  const out: VenueDTO[] = [];
+  if (homeStudio) {
+    out.push({ name: "Home / private studio", address: null, googlePlaceId: null, kind: "home_studio" });
+  }
+  if (clientsHome) {
+    out.push({ name: "Client's home / mobile", address: null, googlePlaceId: null, kind: "mobile" });
+  }
+  return out;
 }
 
 function asReach(v: unknown): { cities: string[]; online_worldwide: boolean } {
