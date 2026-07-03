@@ -1272,6 +1272,113 @@ function AboutSection({ coach }: { coach: Coach }) {
 /* ------------------------------------------------------------------ */
 
 function VenuesSection({ coach }: { coach: Coach }) {
+  const isOnline = coach.modes.includes("Online");
+  const isInPerson = coach.modes.includes("In-person");
+  const hasVenues = isInPerson && coach.venues.length > 0;
+
+  // Cities excluding the "Online (worldwide)" chip — that's implied by mode.
+  const placeCities = coach.cities.filter((c) => c !== "Online (worldwide)");
+
+  // Nothing meaningful to show
+  if (!hasVenues && placeCities.length === 0 && !isOnline) return null;
+
+  // Online-only (or in-person with no venues added): single full-width column
+  if (!hasVenues) {
+    const eyebrow = isOnline && !isInPerson ? "How we work" : "Where I train";
+    const heading =
+      isOnline && !isInPerson
+        ? "Fully online coaching"
+        : placeCities.length
+          ? "Coaching reach"
+          : "Where I train";
+    const lede =
+      isOnline && !isInPerson
+        ? placeCities.length
+          ? `Remote programmes and check-ins from anywhere in the world — with clients in ${formatList(placeCities)}.`
+          : "Remote programmes and check-ins — work with me from anywhere in the world."
+        : placeCities.length
+          ? `Covering ${formatList(placeCities)}.`
+          : "";
+
+    return (
+      <section className="bg-reps-midnight">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-3xl">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-muted">
+              {eyebrow}
+            </span>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-reps-text lg:text-[34px]">
+              {heading}
+            </h2>
+            {(placeCities.length > 0 || isOnline) && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {isOnline && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft">
+                    <Globe className="h-3.5 w-3.5" />
+                    Online (worldwide)
+                  </span>
+                )}
+                {placeCities.map((c) => (
+                  <span
+                    key={c}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft"
+                  >
+                    <MapPin className="h-3.5 w-3.5" />
+                    {c}
+                  </span>
+                ))}
+              </div>
+            )}
+            {lede && (
+              <p className="mt-6 text-[14px] leading-relaxed text-reps-muted">{lede}</p>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // In-person only (no cities, no online): single full-width venues column
+  if (!isOnline && placeCities.length === 0) {
+    return (
+      <section className="bg-reps-midnight">
+        <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
+          <div className="max-w-3xl">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-muted">
+              Where I train
+            </span>
+            <h2 className="mt-2 font-display text-[28px] font-bold leading-tight text-reps-text lg:text-[34px]">
+              In-person venues
+            </h2>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+              {coach.venues.map((v) => (
+                <li
+                  key={v.name}
+                  className="flex items-center justify-between rounded-[16px] border border-reps-border bg-reps-ink px-4 py-3"
+                >
+                  <div>
+                    <div className="text-[15px] font-semibold text-reps-text">{v.name}</div>
+                    <div className="text-[12px] text-reps-muted">{v.city}</div>
+                  </div>
+                  <MapPin className="h-4 w-4 text-reps-muted" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Both: original 50/50 layout with derived lede
+  const lede = isOnline
+    ? placeCities.length
+      ? `Train with me in person at the venues above, or work together fully remote from anywhere in the world — with clients in ${formatList(placeCities)}.`
+      : "Train with me in person at the venues above, or work together fully remote from anywhere in the world."
+    : placeCities.length
+      ? `Train with me in person at the venues above — covering ${formatList(placeCities)}.`
+      : "";
+
   return (
     <section className="bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
@@ -1306,28 +1413,37 @@ function VenuesSection({ coach }: { coach: Coach }) {
               Coaching reach
             </h2>
             <div className="mt-5 flex flex-wrap gap-2">
-              {coach.cities.map((c) => (
+              {placeCities.map((c) => (
                 <span
                   key={c}
                   className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft"
                 >
-                  {c === "Online (worldwide)" ? (
-                    <Globe className="h-3.5 w-3.5" />
-                  ) : (
-                    <MapPin className="h-3.5 w-3.5" />
-                  )}
+                  <MapPin className="h-3.5 w-3.5" />
                   {c}
                 </span>
               ))}
+              {isOnline && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-ink px-3 py-1.5 text-[13px] font-medium text-reps-text-soft">
+                  <Globe className="h-3.5 w-3.5" />
+                  Online (worldwide)
+                </span>
+              )}
             </div>
-            <p className="mt-6 text-[14px] leading-relaxed text-reps-muted">
-              Train with me in person across central London, or work together fully remote from anywhere in the world.
-            </p>
+            {lede && (
+              <p className="mt-6 text-[14px] leading-relaxed text-reps-muted">{lede}</p>
+            )}
           </div>
         </div>
       </div>
     </section>
   );
+}
+
+function formatList(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
 /* ------------------------------------------------------------------ */
