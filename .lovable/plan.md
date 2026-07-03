@@ -1,69 +1,87 @@
+# SEO Audit & Remediation Plan
 
-# /pro/$slug — Complete Mock-up Rebuild (one pass, no rolling patches)
+Three parallel specialist sub-agents audited: (1) route head metadata, (2) robots/sitemap/noindex, (3) on-page + JSON-LD. Consolidated below.
 
-Rebuild `src/routes/pro.$slug.index.tsx` end-to-end in a single implementation pass to match `user-uploads://...pro-mockup...` (3-column hero + premium sidebar + dark navy service cards + coverage radius map + honest data). No partial ships. Screenshots at the end, not between sections.
+## Overall verdict
 
-## Non-negotiables
+**Foundation: strong.** robots.txt is well-configured, sitemap is a live server route with 700+ URLs (resources, help, city×profession, coach profiles), most public routes have `head()` with title + description + canonical. Root emits Organization + WebSite JSON-LD.
 
-- One pass, all 16 build-order items completed before returning to user.
-- Every existing hex/radius must comply with `skill/reps-build-compliance` (orange tokens only, radii 6/8/10/12/16/18/22/24/full).
-- Data honesty: no fabricated response rates, reply %s, client counts, years, phone/call buttons, availability, or footer marketplace stats. Missing fields hide cleanly.
-- Cookie banner: dismiss/hide during Playwright QA via `localStorage` seed so screenshots are not blocked. No banner code changes.
-- Locked memory rules respected (no "BD migration", no "UK" qualifier, radius scale, brand orange, emerald-status-only, shadcn primitives, marketing primitives where applicable — the profile is not a marketing page so `SectionHeading`/etc. do NOT apply here).
+**But there are ~12 real bugs and ~30 gaps holding the site back from "world-class 10/10". Grouped and prioritised below.**
 
-## Build order (executed in one pass)
+---
 
-1. **Hero refactor** — `lg:grid-cols-[280px_minmax(0,1fr)_320px]`, gap-8. Left = portrait (rounded-[18px]) + gallery pill (`ImageIcon` count) shown only if `pro.gallery?.length`. Middle = REPs Verified badge → H1 name → role/location line → rating line (only if `reviewCount >= 3`) → mode chips (In-person / Online — only truthy) → 2-line clamped bio with "Read more" reveal → "From £{minPrice} / session" anchor derived from services. Right = sticky Get-in-Touch card (see §2).
-2. **Get in Touch card** — sticky `top-[92px]`, `rounded-[18px]` cream card. Copy: "Get in touch" / "Free, no-obligation enquiry." 3 honest bullets (private enquiry / no obligation / details shared only with {firstName}). Primary orange "Send enquiry" → `/pro/$slug/enquire`. Secondary ghost "Save profile". NO Call button, NO response-time stat, NO reply-rate.
-3. **Trust strip** — 4 compact cards under hero (Verified on REPs / Qualifications on file / Insurance verified / CPD current) — each hides if underlying flag is false. Radius 16, `bg-reps-warm-white`, `Check` icon in emerald token.
-4. **Who I Help** — full-width `bg-reps-warm-ivory` panel, radius 22, 4 icon columns (Dumbbell, UserPlus, Home, Compass) sourced from `pro.who_i_help` array with sensible defaults derived from specialisms when empty.
-5. **About** — main-column card, radius 18. Show `pro.bio_long`. Stats row ("clients helped" / "years experience") rendered only when both values are truthy and > 0.
-6. **Services & Pricing** — dark navy cards matching `/c/$slug`: `bg-reps-panel`, radius 18, orange service icon top-left, price large + `/session` or `/month` from data, bullet features from `service.features[]`, orange "Enquire about this" button. "Most popular" ribbon on `is_featured` service (orange glow). Empty state: single "Contact for pricing" card if no services.
-7. **Location & Coverage** — sidebar card, radius 18. Header "Based in {town}, covering:" + green-tick list from `pro.coverage_towns` (max 6, "+N more" collapse). Map via `LocationMap` with `radiusKm={pro.service_radius_km ?? 15}` (already renders orange dashed circle, no pin). Postcode input + Check button — disabled with `Tooltip` "Coming soon" if no coverage RPC exists.
-8. **Quick Details** — sidebar card, radius 18. Label/value rows for: Specialisms, Age groups, Training style, Availability, Equipment. Each row hides if empty. No chip-soup.
-9. **Qualifications** — main-column card, radius 18. List with awarding-body pill + year. Hides section entirely if none.
-10. **Trust & Assurance** — sidebar compact checklist card, radius 18. 4 lines with "View full verification →" linking to verification detail page. Replaces standalone main-column trust card.
-11. **Reviews** — main-column, radius 18. Star distribution histogram shown only if `reviewCount >= 3`. Otherwise show compact "New to REPs — reviews coming soon" empty state. Individual review cards with initials avatar (no fake photos).
-12. **FAQ** — accordion (shadcn `Accordion`), first item `defaultValue` open. Hides section if `pro.faq` empty.
-13. **Final CTA band** — reuse styling from `/c/$slug` end-of-page CTA, orange primary "Send enquiry", ghost "Back to search". No platform stats.
-14. **Footer stats honesty** — audit `PublicFooter.tsx`; remove any marketplace count / country count / verified-pro count if still present. (Prior audit said clean — re-verify in same pass.)
-15. **Mobile polish** — hero collapses to single column, portrait full-width capped 320px, Get-in-Touch becomes sticky bottom bar (`fixed bottom-0` with safe-area padding) showing "From £X" + "Send enquiry" button. Sidebar cards flow inline after main sections. Trust strip becomes 2×2 grid.
-16. **Screenshot QA** — Playwright script (`tests/e2e/profile-shot.py`) with webdriver masked, cookie banner pre-dismissed via `localStorage.setItem('reps.consent.v1', JSON.stringify({analytics:true,ts:Date.now()}))`. Capture desktop 1280×1800 + mobile 390×1600 full-page → `/tmp/browser/profile/desktop.png` + `mobile.png`. View both, verify against mock-up before returning.
+## P0 — Broken / immediately harmful (fix first)
 
-## Files touched
+1. **Relative `canonical` and `og:url` on 6 crawlable pages** — `find-a-professional`, `how-it-works`, `contact`, `reviews`, `professions/$profession`, `signup`. Crawlers reject relative canonicals; Google picks its own URL. Change to absolute `https://repsuk.org/...`.
+2. **Brand miscap "REPs" (should be "REPS")** in `auth`, `forgot-password`, `reset-password` titles/og.
+3. **`coming-soon.tsx` has "Launching 26 June 2026" hard-coded in `<title>` and `og:title`.** Site is live — this metadata is stale. Neutralise the copy.
+4. **`$.tsx` (catch-all 404) has no `head()`** — no title, no `noindex,nofollow`. Add both.
+5. **`gyms/$slug` serves "Gym pages are coming soon."** with a full `<head>`, no `noindex`, no canonical, no `og:url`. Add `noindex,nofollow` until real content lands.
+6. **`__root.tsx` WebSite `SearchAction` target points at `/find-a-trainer`** — route doesn't exist. Fix to `/find-a-professional`.
+7. **`/professions/$profession` canonical is relative** (also caught in P0-1) — this is duplicated on purpose because it also breaks the JSON-LD self-reference.
 
-- `src/routes/pro.$slug.index.tsx` — full rebuild of body (hero, sections, sidebar, mobile CTA). Single file, complete rewrite of the visible JSX; keep loader/head/data wiring intact.
-- `src/components/pro/LocationMap.tsx` — no change needed (radius already wired).
-- `src/components/public/PublicFooter.tsx` — verify honesty; edit only if fabricated stats present.
-- `tests/e2e/profile-shot.py` — new Playwright QA script.
+## P1 — Missing / material SEO drag
 
-No new components extracted unless a natural `<ProfileSidebar>` split emerges during the rewrite. No schema changes. No server function changes.
+8. **Sitemap missing 90 real pages:**
+   - `/professions/$profession` (7 canonical landing pages)
+   - `/in/$location` (83 city-only pages)
+9. **`og:image` absent on primary acquisition pages:** `/`, `/for-professionals`, `/pricing`, `/find-a-professional`, `/in/$location`, `/resources`, `/features/operations`, `/compare`, `/about`, `/comparison-methodology`. Link previews render blank.
+10. **`og:type` missing on ~30 routes.** Default is "website" for most; "article" for `/resources/$slug` (already correct).
+11. **`twitter:` tags absent/incomplete on ~40 routes.** Add `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image` where OG exists.
+12. **17 admin routes have no `head()`** → no `noindex,nofollow`. Auth guard is defence #1, but robots meta is defence #2.
+13. **`dashboard-demo.tsx` publicly indexable, self-canonical, not in sitemap** — will surface as thin/misleading content. Add `noindex`.
+14. **`signup.tsx` not noindexed** (transactional page).
+15. **`verify-email`, `forgot-password`, `reset-password` missing canonical entirely.**
+16. **`c.$slug` (coach shop-front) missing `og:url`.**
+17. **`pro.$slug` `og:image` is conditional** — profiles without avatars inherit nothing (root has no fallback). Add a brand default fallback.
 
-## Data-honesty guardrails (applied throughout)
+## P1 — Structured data gaps (rich-result eligibility)
 
-| Field | Rule |
-|---|---|
-| `pro.years`, `pro.clients` | render only if truthy && `> 0` |
-| `pro.contact_phone` | NEVER rendered publicly (locked contact-channels policy) |
-| `pro.response_time`, reply rate | NEVER rendered |
-| `pro.availability` free text | render only if non-empty |
-| `pro.reviews` | histogram only if count ≥ 3; else empty state |
-| `pro.gallery` | gallery pill only if length > 0 |
-| `pro.coverage_towns` | list only if length > 0 |
-| `pro.faq` | section only if length > 0 |
-| Footer marketplace stats | removed |
+18. **FAQPage JSON-LD missing where FAQ blocks already render:** `/for-professionals`, `/c/$slug`, `/specialisms`, `/professions/$profession`. Data exists — just not wired into `head().scripts`.
+19. **BreadcrumbList missing on deep routes:** `/pro/$slug`, `/c/$slug`, `/professions/$profession`, `/in/$location/$profession`, `/resources/$slug`.
+20. **SoftwareApplication schema missing on comparison pages** (`/compare/reps-vs-*`) — highest-CTR schema for "[competitor] alternative" queries.
+21. **`/compare/reps-vs-*` `og:image` uses a bundled JS import** — likely resolves to a relative path in prod. Switch to absolute CDN URL.
+22. **`/pricing` missing Product/Offer schema** for the three tiers.
+23. **`/resources/` index missing CollectionPage / ItemList schema.**
 
-## Acceptance
+## P2 — Polish
 
-- Desktop screenshot `/tmp/browser/profile/desktop.png` shows: 3-col hero, orange price anchor, dark navy service cards with "Most popular" ribbon, orange dashed radius map, sticky sidebar with 4 stacked cards.
-- Mobile screenshot `/tmp/browser/profile/mobile.png` shows: stacked sections, sticky bottom Send-enquiry bar, 2×2 trust strip.
-- Typecheck clean.
-- `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` exits 0.
-- Response includes both screenshots and audit result; no partial-progress claims.
+24. **Description length issues:** `/pricing` desc 28ch (too short), `/features/ai` 193ch, `/features/coaching` 215ch (both truncated in SERP). Aim 130–160ch.
+25. **`for-professionals.tsx` og:title weaker than `<title>`.**
+26. **Legal pages (`terms`, `privacy`, `cookies`) indexed — burn crawl budget on boilerplate.** Add `noindex,follow`.
+27. **`__root.tsx` no fallback `og:description` / `og:url`** — safety net if a leaf omits them.
+28. **robots.txt defence-in-depth:** explicit `Disallow: /admin`, `/portal`, `/dashboard`, `/_authenticated`.
+29. **Homepage `<img alt="">` on hero LCP.** Empty alt is defensible (decorative), but a real alt helps accessibility + image SEO. Same for `/for-professionals` gym hero.
+30. **`/c/$slug` and `/resources` index have no cross-links to directory/city pages** — missed internal-linking equity.
 
-## Out of scope
+---
 
-- No changes to `/c/$slug`, `/pro/$slug/enquire`, homepage, professions, cities, dashboard.
-- No new data model or server functions.
-- No cookie-banner logic changes (only test-side dismiss).
-- No new component library primitives beyond what already ships.
+## Execution plan (build order)
+
+I'd execute in these batches, each a discrete build turn so you can QA between:
+
+**Batch 1 — P0 fixes + Search Console cleanup (small, safe):** absolute canonicals, brand caps, `$.tsx` head, `gyms/$slug` noindex, SearchAction URL, coming-soon neutralised.
+
+**Batch 2 — Sitemap completeness:** add `/professions/$profession` and `/in/$location` entries; submit fresh sitemap to Search Console.
+
+**Batch 3 — OG/Twitter completeness:** default `og:image` fallback (brand card), sweep every public route to add `og:type` + full twitter tags. Introduce a shared helper `buildSocialMeta({title, description, url, image, type})` in `src/lib/seo/social-meta.ts` so every route uses the same 8-tag block.
+
+**Batch 4 — Robots hygiene:** noindex admin/portal/signup/legal/demo routes; expand robots.txt disallow.
+
+**Batch 5 — Structured data:** FAQPage on the 4 pages with existing FAQ data; BreadcrumbList on deep routes; SoftwareApplication on compare pages; Product/Offer on pricing; CollectionPage on resources index.
+
+**Batch 6 — Copy polish:** description length fixes, weak og:titles, `og:image` CDN URLs for compare pages, alt text on hero LCP images.
+
+**Batch 7 — Search Console verification pass:** URL-inspect ~15 representative URLs via the Search Console connector, capture any residual issues, submit sitemap, trigger a fresh SEO scan and mark fixed findings.
+
+---
+
+## Deliverables
+
+- All fixes shipped and typechecked.
+- Fresh `seo_chat--trigger_scan` after Batch 6.
+- Summary report of before/after counts (routes with full OG, routes with JSON-LD, sitemap size, canonicals-fixed).
+
+## Approval
+
+Confirm **"go batch 1"** to start with the P0 bug fixes only, or **"go all batches"** to plough through 1→7 sequentially.
