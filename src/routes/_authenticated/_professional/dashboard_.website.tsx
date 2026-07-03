@@ -143,6 +143,7 @@ function ShopFrontEditorPage() {
   const [hero, setHero] = React.useState("");
   
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
+  const [theme, setTheme] = React.useState<"dark" | "light">("dark");
 
   React.useEffect(() => {
     if (!sf) return;
