@@ -151,6 +151,7 @@ function ShopFrontEditorPage() {
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
     setLayout(sf.layout_variant);
+    setTheme(sf.theme ?? "dark");
   }, [sf]);
 
   const saveMutation = useMutation({
