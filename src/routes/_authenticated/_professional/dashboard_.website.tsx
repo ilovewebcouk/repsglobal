@@ -1286,25 +1286,15 @@ function WebsiteContentEditor() {
             <h3 className="text-[14px] font-semibold text-white">Foundation Method · How I coach</h3>
             <p className="mt-0.5 text-[12px] text-white/55">A short name + intro + 3 pillars. Use AI to draft a starting point.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onDraftMethod}
-              disabled={drafting}
-              className="flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/85 hover:bg-reps-panel disabled:opacity-60"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              {drafting ? "Drafting…" : "AI draft"}
-            </button>
-            <button
-              type="button"
-              onClick={onSaveMethod}
-              disabled={saveMut.isPending}
-              className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-            >
-              Save
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onDraftMethod}
+            disabled={drafting}
+            className="flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/85 hover:bg-reps-panel disabled:opacity-60"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {drafting ? "Drafting…" : "AI draft"}
+          </button>
         </div>
         <Field label="Method name" hint="The bold headline shown at the top of this section.">
           <TextInput
@@ -1372,6 +1362,17 @@ function WebsiteContentEditor() {
           })}
         </div>
 
+        <div className="sticky bottom-0 z-10 flex items-center justify-end gap-2 border-t border-reps-border bg-reps-panel/95 px-5 py-3 backdrop-blur rounded-b-[22px]">
+          <button
+            type="button"
+            onClick={onSaveMethod}
+            disabled={saveMut.isPending}
+            className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            <Save className="h-3.5 w-3.5" />
+            {saveMut.isPending ? "Saving…" : "Save"}
+          </button>
+        </div>
       </PPanel>
 
       {/* Results intro */}
