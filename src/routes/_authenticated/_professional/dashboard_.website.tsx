@@ -143,6 +143,7 @@ function ShopFrontEditorPage() {
   const [hero, setHero] = React.useState("");
   
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
+  const [theme, setTheme] = React.useState<"dark" | "light">("dark");
 
   React.useEffect(() => {
     if (!sf) return;
@@ -150,6 +151,7 @@ function ShopFrontEditorPage() {
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
     setLayout(sf.layout_variant);
+    setTheme(sf.theme ?? "dark");
   }, [sf]);
 
   const saveMutation = useMutation({
@@ -161,6 +163,7 @@ function ShopFrontEditorPage() {
           hero_image_url: hero || null,
           accent_hex: null,
           layout_variant: layout,
+          theme,
         },
       }),
 
@@ -381,16 +384,23 @@ function ShopFrontEditorPage() {
             >
               <HeroImageEditor value={hero} onChange={setHero} />
             </Field>
-            <Field label="Layout" hint={isPro ? "Full website available on Pro." : "Lite layout for Core."}>
-              <select
-                value={layout}
-                onChange={(e) => setLayout(e.target.value as "lite" | "full")}
-                disabled={!isPro}
-                className="h-10 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white disabled:opacity-60"
-              >
-                <option value="lite">Lite (Verified)</option>
-                <option value="full">Full (Pro)</option>
-              </select>
+            <Field label="Theme" hint="Choose how your public page looks to visitors.">
+              <div className="flex gap-2">
+                {(["dark", "light"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTheme(t)}
+                    className={`h-10 rounded-[12px] border px-4 text-[13px] capitalize transition ${
+                      theme === t
+                        ? "border-reps-orange bg-reps-orange/10 text-white"
+                        : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
             </Field>
           </PPanel>
 

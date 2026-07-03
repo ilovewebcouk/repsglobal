@@ -148,6 +148,7 @@ type Coach = {
       dateLabel: string | null;
     }>;
   };
+  theme?: "dark" | "light";
 };
 
 const TITLE_SHORT_LABEL: Record<string, string> = {
@@ -508,6 +509,7 @@ function mergeLiveIntoCoach(
       return memberYear ? String(memberYear) : base.verifiedSince;
     })(),
     trust: sf.trust,
+    theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
     socials: sf.socials.length ? sf.socials : base.socials,
   };
 
@@ -716,7 +718,7 @@ function CoachShopFrontPage() {
   const enquireHref = "/c/$slug/enquire" as const;
 
   return (
-    <div className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
+    <div data-coach-theme={coach.theme ?? "dark"} className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
       <ChromeBar coach={coach} />
       <SectionNav />
 
