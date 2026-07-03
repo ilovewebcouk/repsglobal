@@ -120,7 +120,13 @@ type Coach = {
   modes: ("In-person" | "Online")[];
   specialisms: string[];
   tiers: Tier[];
-  venues: { name: string; city: string }[];
+  venues: {
+    name: string;
+    city: string;
+    address?: string | null;
+    googlePlaceId?: string | null;
+    kind: "gym" | "home_studio" | "mobile";
+  }[];
   cities: string[];
   transformations: Transformation[];
   testimonials: Testimonial[];
