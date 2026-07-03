@@ -497,7 +497,7 @@ function AdminVerificationPage() {
                         <>
                           {" · "}
                           <a
-                            href={`/pro/${pro.slug}`}
+                            href={`/c/${pro.slug}`}
                             target="_blank"
                             rel="noopener"
                             className="underline hover:no-underline"

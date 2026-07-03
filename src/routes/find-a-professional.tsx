@@ -1051,7 +1051,7 @@ function ProCard({
             <TooltipContent side="left" sideOffset={6} className="bg-reps-black text-white">Save</TooltipContent>
           </Tooltip>
           <Link
-            to="/pro/$slug"
+            to="/c/$slug"
             params={{ slug: pro.slug ?? proSlug(pro.name) }}
             onClick={() => {
               const s = pro.slug ?? proSlug(pro.name);
@@ -1067,7 +1067,7 @@ function ProCard({
 
         {/* Mobile full-width CTA */}
         <Link
-          to="/pro/$slug"
+          to="/c/$slug"
           params={{ slug: pro.slug ?? proSlug(pro.name) }}
           onClick={() => {
             const s = pro.slug ?? proSlug(pro.name);

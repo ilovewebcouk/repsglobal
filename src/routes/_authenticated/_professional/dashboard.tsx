@@ -116,7 +116,7 @@ function DashboardPage() {
         <div className="flex items-center gap-2">
           {slug ? (
             <DashboardButton asChild size="sm" variant="ghost">
-              <Link to="/pro/$slug" params={{ slug }} target="_blank">
+              <Link to="/c/$slug" params={{ slug }} target="_blank">
                 View public profile
                 <ExternalLink className="ml-1.5 size-4" />
               </Link>

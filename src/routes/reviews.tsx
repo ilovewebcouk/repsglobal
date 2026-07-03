@@ -733,7 +733,7 @@ function ReviewCard({
       {/* Pro context */}
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-reps-border pt-4">
         <Link
-          to="/pro/$slug"
+          to="/c/$slug"
           params={{ slug: r.proSlug }}
           className="group flex items-center gap-2.5"
         >
@@ -755,7 +755,7 @@ function ReviewCard({
         <div className="flex items-center gap-3 text-[11.5px] text-white/55">
           <span>{r.helpful} found helpful</span>
           <Link
-            to="/pro/$slug"
+            to="/c/$slug"
             params={{ slug: r.proSlug }}
             className="inline-flex items-center gap-1 font-semibold text-reps-orange hover:underline"
           >

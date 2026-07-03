@@ -167,7 +167,7 @@ export function ResultsMap({ pros, origin, hoveredSlug, onHover, className, expa
         title: p.name,
       });
       marker.addListener("click", () => {
-        navigate({ to: "/pro/$slug", params: { slug: p.slug } });
+        navigate({ to: "/c/$slug", params: { slug: p.slug } });
       });
       marker.addListener("mouseover", () => onHover?.(p.slug));
       marker.addListener("mouseout", () => onHover?.(null));

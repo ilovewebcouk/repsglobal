@@ -116,7 +116,7 @@ function AdminDirectory() {
                   <tr key={r.id} className="border-t border-reps-border/60 text-white/80">
                     <td className="py-3 font-semibold text-white">
                       {r.slug ? (
-                        <Link to="/pro/$slug" params={{ slug: r.slug }} className="hover:text-reps-orange">
+                        <Link to="/c/$slug" params={{ slug: r.slug }} className="hover:text-reps-orange">
                           {r.name}
                         </Link>
                       ) : (
@@ -170,7 +170,7 @@ function AdminDirectory() {
                     key={p.id}
                     className="flex items-center justify-between gap-2 rounded-[10px] border border-reps-border bg-reps-ink px-3 py-2 text-white/80"
                   >
-                    <Link to="/pro/$slug" params={{ slug: p.slug }} className="truncate hover:text-reps-orange">
+                    <Link to="/c/$slug" params={{ slug: p.slug }} className="truncate hover:text-reps-orange">
                       <span className="font-semibold text-white">{p.name}</span>
                       <span className="ml-1 text-white/55">
                         — {PROFESSION_LABELS[p.role] ?? p.role}

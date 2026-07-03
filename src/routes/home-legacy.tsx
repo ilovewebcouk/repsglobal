@@ -368,7 +368,7 @@ function HomePage() {
             {featuredPros.map((p) => (
               <Link
                 key={p.name}
-                to="/pro/$slug"
+                to="/c/$slug"
                 params={{ slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") }}
                 className="group block overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel text-white shadow-[var(--reps-shadow-card)] transition-transform hover:-translate-y-0.5"
               >

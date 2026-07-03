@@ -96,6 +96,8 @@ import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
+import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
+import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as InLocationProfessionRouteImport } from './routes/in.$location.$profession'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
@@ -587,6 +589,16 @@ const UCpdSessionIdRoute = UCpdSessionIdRouteImport.update({
   path: '/u/cpd/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProSlugReviewRoute = ProSlugReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => ProSlugRoute,
+} as any)
+const ProSlugEnquireRoute = ProSlugEnquireRouteImport.update({
+  id: '/enquire',
+  path: '/enquire',
+  getParentRoute: () => ProSlugRoute,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -999,6 +1011,8 @@ export interface FileRoutesByFullPath {
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
@@ -1137,6 +1151,8 @@ export interface FileRoutesByTo {
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/help/$category': typeof HelpCategoryIndexRoute
@@ -1281,6 +1297,8 @@ export interface FileRoutesById {
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/pro/$slug/enquire': typeof ProSlugEnquireRoute
+  '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
@@ -1424,6 +1442,8 @@ export interface FileRouteTypes {
     | '/help/$category/$slug'
     | '/in/$location/$profession'
     | '/lovable/email/suppression'
+    | '/pro/$slug/enquire'
+    | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/help/$category/'
@@ -1562,6 +1582,8 @@ export interface FileRouteTypes {
     | '/help/$category/$slug'
     | '/in/$location/$profession'
     | '/lovable/email/suppression'
+    | '/pro/$slug/enquire'
+    | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/help/$category'
@@ -1705,6 +1727,8 @@ export interface FileRouteTypes {
     | '/help/$category/$slug'
     | '/in/$location/$profession'
     | '/lovable/email/suppression'
+    | '/pro/$slug/enquire'
+    | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/help/$category/'
@@ -2469,6 +2493,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UCpdSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/$slug/review': {
+      id: '/pro/$slug/review'
+      path: '/review'
+      fullPath: '/pro/$slug/review'
+      preLoaderRoute: typeof ProSlugReviewRouteImport
+      parentRoute: typeof ProSlugRoute
+    }
+    '/pro/$slug/enquire': {
+      id: '/pro/$slug/enquire'
+      path: '/enquire'
+      fullPath: '/pro/$slug/enquire'
+      preLoaderRoute: typeof ProSlugEnquireRouteImport
+      parentRoute: typeof ProSlugRoute
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -3087,10 +3125,14 @@ const InLocationRouteWithChildren = InLocationRoute._addFileChildren(
 )
 
 interface ProSlugRouteChildren {
+  ProSlugEnquireRoute: typeof ProSlugEnquireRoute
+  ProSlugReviewRoute: typeof ProSlugReviewRoute
   ProSlugIndexRoute: typeof ProSlugIndexRoute
 }
 
 const ProSlugRouteChildren: ProSlugRouteChildren = {
+  ProSlugEnquireRoute: ProSlugEnquireRoute,
+  ProSlugReviewRoute: ProSlugReviewRoute,
   ProSlugIndexRoute: ProSlugIndexRoute,
 }
 

@@ -82,7 +82,7 @@ export function WelcomeBanner({
     .join("")
     .toUpperCase();
 
-  const publicUrl = slug ? `/pro/${slug}` : null;
+  const publicUrl = slug ? `/c/${slug}` : null;
 
   const [copied, setCopied] = React.useState(false);
   const copyUrl = React.useCallback(async () => {

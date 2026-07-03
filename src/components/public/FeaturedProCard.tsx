@@ -78,7 +78,7 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
           ))}
         </div>
         <Link
-          to="/pro/$slug"
+          to="/c/$slug"
           params={{ slug }}
           className="mt-auto inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
         >
