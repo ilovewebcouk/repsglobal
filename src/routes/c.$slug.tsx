@@ -457,14 +457,28 @@ function mergeLiveIntoCoach(
       role: "Verified client result",
       quote: r.body ?? r.headline ?? "",
     }));
+  const firstName = sf.full_name?.trim().split(/\s+/)[0] ?? base.firstName;
+  const cityLabel = sf.city ?? base.city;
+  const professionLabel = sf.titles.length
+    ? sf.titles.join(" & ")
+    : (sf.primary_profession ?? base.role);
+  const modeLabel = sf.in_person_available && sf.online_available
+    ? "in person and online"
+    : sf.online_available
+      ? "online"
+      : "in person";
+  const fallbackTagline = `${firstName} — ${professionLabel} in ${cityLabel}`;
+  const fallbackAbout = `I'm ${firstName}, a ${professionLabel} based in ${cityLabel}, working with clients ${modeLabel}. Get in touch to talk about what you're working towards and how I can help.`;
   return {
     ...base,
     name: sf.full_name ?? base.name,
-    firstName: sf.full_name?.trim().split(/\s+/)[0] ?? base.firstName,
-    role: sf.titles.length ? sf.titles.join(" & ") : base.role,
-    promise: sf.tagline ?? base.promise,
+    firstName,
+    role: professionLabel,
+    promise: sf.tagline?.trim() || fallbackTagline,
     subhead: sf.subtitle ?? base.subhead,
-    bio: sf.about ? sf.about.split(/\n\n+/).filter(Boolean) : base.bio,
+    bio: sf.about?.trim()
+      ? sf.about.split(/\n\n+/).filter(Boolean)
+      : [fallbackAbout],
     heroImage: sf.hero_image_url ?? base.heroImage,
     aboutImage: sf.avatar_url ?? sf.hero_image_url ?? base.aboutImage,
     city: sf.city ?? base.city,

@@ -469,3 +469,29 @@ export const aiDraftFaqs = createServerFn({ method: "POST" })
         .slice(0, data.count),
     };
   });
+
+export const aiDraftTagline = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => z.object({}).parse(d ?? {}))
+  .handler(async ({ context }): Promise<{ tagline: string }> => {
+    const facts = await loadFacts(context.userId);
+    const sys = `${VOICE}\nReturn STRICT JSON: { "tagline": string }.\nRules for the tagline:\n- 4 to 10 words, sentence case.\n- Outcome- or client-led. Concrete, not slogan-y.\n- No emojis, no exclamation marks, no all caps.\n- No city name, no "certified", no "qualified", no "coach"/"trainer" job-title words.\n- Never invent numbers or timeframes not implied by the facts.`;
+    const user = `Facts about the coach:\n${facts}\n\nWrite one tagline that could sit as the H1 on their public REPS page.`;
+    const parsed = (await callJSON(sys, user)) as { tagline?: string };
+    const tagline = String(parsed.tagline ?? "").trim().replace(/^["']|["']$/g, "").slice(0, 200);
+    if (!tagline) throw new Error("AI could not draft a tagline. Try again.");
+    return { tagline };
+  });
+
+export const aiDraftAbout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => z.object({}).parse(d ?? {}))
+  .handler(async ({ context }): Promise<{ about: string }> => {
+    const facts = await loadFacts(context.userId);
+    const sys = `${VOICE}\nReturn STRICT JSON: { "about": string }.\nRules for the About:\n- 60 to 110 words total, written as 2 short paragraphs separated by a single blank line.\n- First person. Grounded and specific. Plain English.\n- No bullet lists, no hashtags, no pricing, no unverifiable stats or client counts.\n- Do not repeat the tagline verbatim.`;
+    const user = `Facts about the coach:\n${facts}\n\nWrite the About paragraphs for their public REPS page.`;
+    const parsed = (await callJSON(sys, user)) as { about?: string };
+    const about = String(parsed.about ?? "").trim().slice(0, 4000);
+    if (!about) throw new Error("AI could not draft an About. Try again.");
+    return { about };
+  });
