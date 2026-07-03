@@ -128,6 +128,32 @@ function asVenues(v: unknown): Array<{ name: string; address?: string | null }> 
     .slice(0, 8);
 }
 
+/**
+ * Load the coach's gym list (source of truth = professional_gyms + gyms).
+ * Returns [] if none — callers should fall back to legacy shop_fronts.venues.
+ */
+async function loadProfessionalGymVenues(
+  supabaseAdmin: { from: (t: string) => any },
+  proId: string,
+): Promise<Array<{ name: string; address?: string | null }>> {
+  const { data: rows } = await supabaseAdmin
+    .from("professional_gyms")
+    .select("position, gyms ( name, chain_name, area, city )")
+    .eq("professional_id", proId)
+    .order("position", { ascending: true });
+  return (rows ?? [])
+    .map((row: any) => {
+      const g = row?.gyms as { name?: string | null; chain_name?: string | null; area?: string | null; city?: string | null } | null;
+      if (!g) return null;
+      const name = (g.chain_name?.trim() || g.name?.trim() || "").slice(0, 120);
+      if (!name) return null;
+      const address = (g.area?.trim() || g.city?.trim() || "") || null;
+      return { name, address };
+    })
+    .filter((v: unknown): v is { name: string; address: string | null } => v !== null)
+    .slice(0, 8);
+}
+
 function asReach(v: unknown): { cities: string[]; online_worldwide: boolean } {
   if (!v || typeof v !== "object") return { cities: [], online_worldwide: false };
   const obj = v as { cities?: unknown; online_worldwide?: unknown };
