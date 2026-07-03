@@ -277,10 +277,10 @@ const COACHES: Record<string, Coach> = {
       },
     ],
     venues: [
-      { name: "Third Space Soho", city: "London" },
-      { name: "BXR White City", city: "London" },
-      { name: "Equinox St James's", city: "London" },
-      { name: "Home / private studio", city: "London" },
+      { name: "Third Space Soho", city: "London", address: "67 Brewer St, Soho, London W1F 9US", kind: "gym", googlePlaceId: null },
+      { name: "BXR White City", city: "London", address: "White City Place, Wood Ln, London W12 7RU", kind: "gym", googlePlaceId: null },
+      { name: "Equinox St James's", city: "London", address: "12 St James's, London SW1Y 4AH", kind: "gym", googlePlaceId: null },
+      { name: "Home / private studio", city: "London", kind: "home_studio" },
     ],
     cities: ["Central London", "Soho", "Marylebone", "Shoreditch", "Online (worldwide)"],
     transformations: [
