@@ -121,6 +121,70 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   );
 }
 
+const WEBSITE_SECTIONS: Array<{ id: string; label: string }> = [
+  { id: "basics", label: "Basics" },
+  { id: "services", label: "Services" },
+  { id: "method", label: "Method" },
+  { id: "specialisms", label: "Specialisms" },
+  { id: "location", label: "Location" },
+  { id: "transformations", label: "Transformations" },
+  { id: "results-intro", label: "Results" },
+  { id: "faqs", label: "FAQs" },
+];
+
+function WebsiteSectionNav() {
+  const [active, setActive] = React.useState<string>(WEBSITE_SECTIONS[0].id);
+
+  React.useEffect(() => {
+    const els = WEBSITE_SECTIONS
+      .map((s) => document.getElementById(s.id))
+      .filter((el): el is HTMLElement => !!el);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]?.target?.id) setActive(visible[0].target.id);
+      },
+      { rootMargin: "-40% 0px -50% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  function jump(id: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  return (
+    <div className="sticky top-0 z-10 -mx-4 mb-6 border-b border-reps-border bg-reps-ink/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="flex gap-1.5 overflow-x-auto">
+        {WEBSITE_SECTIONS.map((s) => {
+          const isActive = active === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => jump(s.id)}
+              className={
+                "shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors " +
+                (isActive
+                  ? "bg-reps-orange text-white"
+                  : "border border-reps-border bg-reps-panel-soft text-white/70 hover:text-white")
+              }
+            >
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ShopFrontEditorPage() {
   const tier = useTrainerTier();
   const blocked = false;
