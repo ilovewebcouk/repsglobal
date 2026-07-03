@@ -544,6 +544,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         coaching_reach: asReach(sfRow.coaching_reach),
         client_results_intro: sfRow.client_results_intro ?? null,
         layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
+        theme: (sfRow.theme as "dark" | "light") ?? "dark",
         slug: pro.slug,
         full_name: prof?.full_name ?? null,
         avatar_url: prof?.avatar_url ?? null,
