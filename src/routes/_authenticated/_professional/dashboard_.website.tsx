@@ -159,7 +159,7 @@ function ShopFrontEditorPage() {
           tagline: tagline || null,
           about: about || null,
           hero_image_url: hero || null,
-          accent_hex: accent || null,
+          accent_hex: null,
           layout_variant: layout,
         },
       }),
