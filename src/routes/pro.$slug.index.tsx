@@ -1052,28 +1052,32 @@ function ProProfilePage() {
                   Frequently asked questions
                 </h2>
                 <div className="mt-4 space-y-2">
-                  {pro.faqs.map((f) => (
-                    <div
-                      key={f.q}
-                      className={`rounded-[12px] border border-reps-stone ${f.open ? "bg-reps-warm-white" : "bg-transparent"}`}
-                    >
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[13px] font-semibold text-reps-charcoal"
+                  {pro.faqs.map((f, i) => {
+                    const open = f.open || i === 0;
+                    return (
+                      <div
+                        key={f.q}
+                        className={`rounded-[12px] border border-reps-stone ${open ? "bg-reps-warm-white" : "bg-transparent"}`}
                       >
-                        {f.q}
-                        <ChevronDown
-                          className={`h-4 w-4 text-reps-muted-light transition-transform ${f.open ? "rotate-180" : ""}`}
-                        />
-                      </button>
-                      {f.open && f.a ? (
-                        <div className="px-4 pb-4 text-[12.5px] leading-relaxed text-reps-muted-light">
-                          {f.a}
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
+                        <button
+                          type="button"
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[13px] font-semibold text-reps-charcoal"
+                        >
+                          {f.q}
+                          <ChevronDown
+                            className={`h-4 w-4 text-reps-muted-light transition-transform ${open ? "rotate-180" : ""}`}
+                          />
+                        </button>
+                        {open && f.a ? (
+                          <div className="px-4 pb-4 text-[12.5px] leading-relaxed text-reps-muted-light">
+                            {f.a}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
+
               </div>
             ) : null}
           </div>
