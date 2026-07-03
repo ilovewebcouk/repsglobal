@@ -1257,29 +1257,30 @@ function ProProfilePage() {
               </h3>
               {(() => {
                 const isFixturePro = !!PROS[slug];
-                const trust = pro.trust ?? {
-                  verified: true,
-                  insuranceExpiry: "2025-12-12",
-                  cpd: { done: 18, total: 20 },
-                };
+                const trust = pro.trust ?? { verified: false, insuranceExpiry: null };
                 const insuranceLabel = trust.insuranceExpiry
                   ? `Active until ${new Date(trust.insuranceExpiry).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
                   : "Not on file";
-                const cpd = trust.cpd ?? (isFixturePro ? { done: 18, total: 20 } : null);
+                // Only render CPD row when there is real data (or an admin-only fixture).
+                const cpd = trust.cpd ?? null;
                 const items = [
                   {
                     on: !!trust.identityVerifiedAt || (isFixturePro && trust.verified),
                     t: "Identity Verified",
                     s: trust.identityVerifiedAt
                       ? `Confirmed ${new Date(trust.identityVerifiedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-                      : "Not yet verified",
+                      : trust.verified
+                        ? "Confirmed on file"
+                        : "Not yet verified",
                   },
                   {
-                    on: !!trust.qualificationsCheckedAt || (isFixturePro && trust.verified),
+                    on: !!trust.qualificationsCheckedAt || (isFixturePro && trust.verified) || (pro.qualifications?.length ?? 0) > 0,
                     t: "Qualifications Approved",
                     s: trust.qualificationsCheckedAt
                       ? `Checked ${new Date(trust.qualificationsCheckedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-                      : "Awaiting review",
+                      : (pro.qualifications?.length ?? 0) > 0
+                        ? "On file"
+                        : "Awaiting review",
                   },
                   {
                     on: !!trust.insuranceExpiry,
