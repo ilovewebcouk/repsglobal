@@ -1,86 +1,151 @@
-## Scope
+# /admin/activity — Rebuild (revised) + Brutal Backend Cleanup
 
-Core becomes **£34/year, billed yearly**, shown as **£34 reduced from £99**. No monthly Core. Pro and Studio unchanged.
+You want the Realtime card kept. Fine — it stays, wired to the new command function so its numbers actually agree with the rest of the page. Now the honest part: **what to rip out of the backend.**
 
-Everyone is simply a **member / Core subscriber**. There is no such thing as a BD-migrated member on this platform anymore — that language is banned from every plan, copy string, support script, comment, email and admin surface going forward.
+---
 
-## Memory hygiene (first step, before any code)
+## Part A — What each vendor/table actually costs you (brutal honesty)
 
-Once you switch to build mode I will:
+### 1. PostHog — **RIP IT OUT. Completely.**
 
-1. Update `mem://index.md` Core rules — change the Phase 2.0 line to reference **Core £34/yr (reduced from £99)** and add a hard rule: *"Never mention BD migration, BD migrated members, legacy members, or £34→£99 honour price. Everyone is a member / Core subscriber."*
-2. Update the Reviews module memory to drop the "BD backfill" phrasing.
-3. Add `mem://constraint/no-bd-migration` describing the ban.
+**What it does for you today:** Historical rollups (7-day pageviews), a "realtime" feed that duplicates Supabase, sparkline data.
 
-This is so I never repeat the mistake in a future plan.
+**What it costs you:**
+- Money (per-event pricing, forever).
+- A second source of truth that disagrees with Supabase — this is the single biggest reason your page contradicts itself.
+- A browser SDK that ad-blockers eat, that Playwright can't run, that needs consent-banner plumbing, that made the beacon fail QA twice.
+- A whole proxy route (`/e/*`), diagnostics table, ingest state table, HogQL query code, PostHog cron.
+- Complexity every debugging session pays for.
 
-## Pricing change
+**What you actually lose by deleting it:** The 7-day pageview number on this page. That's it. Supabase already stores everything else (journeys, sessions, conversions, events).
 
-### 1. Core price source of truth
+**Verdict: DELETE.** Uninstall the SDK, delete the proxy route, delete the rollup cron, delete `metrics_daily_public_analytics` (or freeze it read-only if you want to keep the history you already collected). Every "Last N days" number can be computed from `visitor_journeys` / `member_session_events` in SQL, on-demand, for free.
 
-`src/lib/billing.ts`:
-- Core price label `£34`
-- Interval `per year`
-- Checkout display `£34/yr`
-- Keep the Core annual checkout lookup key so nothing else has to change in the checkout wiring.
+### 2. MaxMind — **KEEP for now. Reconsider later.**
 
-### 2. Pricing cards
+**What it does:** Turns raw IPs into city + lat/lng for map dots.
 
-`src/components/pricing/pricing-data.ts` — Core reads:
-- Price `£34`, was `£99` (struck through)
-- Period `per year`
-- Meta `£34 billed yearly`
+**What it costs you:** A licence key, a lookup on every ingest, a cache table, edge-case failures.
 
-Same values under both Monthly and Annual toggle states (Core is annual-only). Pro and Studio card data untouched.
+**Honest take:** Country you get free from Cloudflare headers. **City** is the only thing MaxMind buys you, and city is what makes the map interesting instead of "a picture of the UK." You said keep enrichment for now — I agree, but only because you have a map. If you later decide the map isn't earning its keep, MaxMind goes with it.
 
-Compare table Core column shows `£34/year (was £99)` and `Charge today: £34`.
+**Verdict: KEEP** (in line with your amendment). Flag for review in 90 days: "is anyone actually making a decision from city-level dots? If not, drop MaxMind and use CDN country only."
 
-### 3. Payment provider price
+### 3. `ip_geo_cache` + `ip_geolocation_cache` — **CONSOLIDATE.**
 
-The Core annual checkout lookup must resolve to a recurring **£34/year** price in the payment backend. If the environment exposes payment product tooling I will update it directly; otherwise I will call out the one manual step needed in the payment backend before publishing.
+You have two IP geo cache tables. That's a straight-up bug. Pick one, drop the other. (I'd need one read to tell you which is live — I'll do that at build time.)
 
-Existing Core subscribers renew at £34/year going forward. No refunds, no proration, no mid-cycle adjustments.
+### 4. `page_view_events` — **DELETE.**
 
-### 4. Account, admin and email surfaces
+Docs already flag this as deprecated (`page-view-events-deprecation-decision.md`). It's superseded by `visitor_journeys` + `security_visitor_ip_observations`. Kill the table, kill any remaining writers.
 
-Anywhere Core is currently rendered as £99/year or 9900 pence, change to £34/year / 3400 pence:
+### 5. `proxy_ingest_diagnostics` — **KEEP but hide.**
 
-- Member `dashboard/settings` billing labels
-- Admin professionals list + subscription/renewal summaries
-- Renewal, payment-failed, card-needed and purchase-confirmation email defaults
-- Billing metrics / MRR / ARR constants for the Core tier
+Useful for you when something breaks. Not useful on `/admin/activity`. Move the reader to `/admin/system` (the diagnostics drawer already covers this). Add a nightly purge (>7 days) so it doesn't grow forever.
 
-### 5. Copy sweep
+### 6. `public_analytics_ingest_state`, `public_analytics_consent_events` — **DELETE with PostHog.**
 
-Replace Core / Verified price mentions across:
+They exist only to serve the PostHog proxy. When PostHog goes, these go.
 
-- `/pricing`, `/signup`, `/for-professionals`, `/contact`, `/help`, `/terms`
-- All `/features/*` Core-vs-Pro comparison blocks
-- Comparison editorial snippets
-- Support AI draft brief
-- Renewal-related email templates
+### 7. `member_session_events`, `user_sessions`, `auth_events`, `visitor_journeys`, `security_visitor_ip_observations`, `public_visitor_conversions`, `admin_audit_log` — **KEEP, untouched.**
 
-Preferred phrasings:
-- `Core — £34/year`
-- `£34 billed yearly`
-- `£34/year, reduced from £99`
+These are the evidence layer you told me to protect. They're the right shape, they're populated by triggers/RPCs you already own, and they're the only source the new command function reads from.
 
-### 6. Remove obsolete migration copy
+### 8. `metrics_monthly_activity`, `metrics_daily_public_analytics` — **FREEZE, don't feed.**
 
-Any user-facing, support-facing or agent-facing string that describes members as migrated, legacy, BD, or as moving from £34 to £99 is rewritten or deleted. This is a copy sweep only — no database schema changes, no deletion of historical tables in this task.
+Stop writing to them. Leave the historical rows in place in case you want a `/admin/analytics` page later. If in 90 days you haven't built that page, drop the tables.
 
-### 7. QA before publish
+---
 
-1. `/pricing` shows Core `£34` with `£99` struck through; Pro and Studio unchanged.
-2. `/signup` shows Core annual-only at £34.
-3. Fresh Core checkout charges £34/year.
-4. Member dashboard shows `Core · £34/year`.
-5. Admin billing metrics compute Core against 3400 pence/year.
-6. Grep confirms no remaining `£99` for Core, and no `BD`, `migrated`, `legacy member`, or `£34 → £99` copy anywhere user- or support-facing.
+## Part B — The rebuild (amended: Realtime card stays)
 
-## Out of scope
+Same shape as before, one canonical function powers the page.
 
-- Command Center work.
-- Pro / Studio pricing.
-- Any database schema migration.
-- Any monthly Core plan.
+### `getActivityCommandCenter()` returns:
+
+```
+{
+  last_updated, stale,
+  live_now              { public, members, total },
+  public_live[],        // for Online Now + drawer
+  members_live[],       // for Online Now + drawer
+  online_now[],         // deduped union
+  pages_being_viewed_now[],
+  map_markers[],        // MaxMind city dots, deduped per session
+  realtime_summary: {   // ← feeds the KEPT Realtime card
+    visitors_members_online_now: number,
+    public_now: number,
+    members_now: number,
+    events_30m: number,
+    activity_per_minute_30m: number[],   // 30-length array for the sparkline
+    peak_per_minute_30m: number,
+    devices_online_now: { mobile: number, desktop: number, tablet: number },
+    stale: boolean,
+    updated_at: string,
+  },
+  recent_session_events[],  // for the drawer only
+}
+```
+
+Everything the current Realtime card renders (visitors+members big number, three tiles, sparkline, device split, stale pill, "updated HH:MM:SS") is fed from `realtime_summary` — but computed from Supabase only, not PostHog. So the card *keeps its look*, and its numbers finally agree with Online Now and the map.
+
+### UI layout (unchanged from prior approval, Realtime card kept)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [ Map — city dots, ≤600px ]         │ [ Realtime card ]     │
+├─────────────────────────────────────┴───────────────────────┤
+│ [ Online Now ]                     │ [ Pages Being Viewed ] │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Drawer opens from any row/marker: journey · device/location · masked IP · Reveal IP (audited) · Member 360 link.
+
+Nothing else on the page.
+
+---
+
+## Part C — Ordered demolition + rebuild
+
+1. **Command function.** `command-center.server.ts` + `command-center.functions.ts`. Single Supabase read pass. Includes the `realtime_summary` slice needed by the kept card.
+2. **Rewire /admin/activity.** One `useQuery`; pass slices to Map, RealtimeSummaryCard, OnlineNow, PagesBeingViewedNow. Delete every other data source on the route.
+3. **Rewire RealtimeSummaryCard.** Take a single `realtime_summary` prop; delete its own fetch calls. Look stays identical.
+4. **Move DiagnosticsDrawer + BackfillGeoButton** to `/admin/system`.
+5. **Rip PostHog:**
+   - Delete the SDK import from `usePublicAnalyticsBeacon`.
+   - Delete `src/routes/e.*` proxy route(s).
+   - Delete the PostHog rollup cron + `scripts/ops/trigger-posthog-rollup.sh`.
+   - Delete PostHog env vars from `.env*`.
+   - Delete `getPublicRealtime`, PostHog paths in `getRealtimeSummary`, sparkline HogQL queries.
+   - Migration: drop `page_view_events`, `public_analytics_ingest_state`, `public_analytics_consent_events`. Freeze `metrics_daily_public_analytics` (revoke inserts).
+6. **Consolidate IP geo cache:** pick the one that's actually written to, drop the other.
+7. **Nightly purge** on `proxy_ingest_diagnostics` (>7d) and `security_visitor_ip_observations` (>90d) via `pg_cron`.
+8. **Playwright smoke:** load `/admin/activity`, assert no request goes to `posthog.com` or `/e/`, assert the four panels render, assert the Realtime card numbers equal the derived numbers from Online Now.
+
+---
+
+## Part D — Definition of done
+
+- One server function feeds the whole page.
+- Numbers agree with each other because they share a payload.
+- Realtime card stays visually; its numbers finally match reality.
+- No PostHog. Zero. Not in the browser, not on the server, not in cron, not in `.env`.
+- MaxMind kept, on 90-day review.
+- Evidence tables in §Part A/7 untouched.
+- Diagnostics + backfill live at `/admin/system`.
+- One IP geo cache table, not two.
+- `page_view_events` gone.
+
+---
+
+## Two things I need from you before I start
+
+1. **PostHog historical data — bin or keep?**
+   - "**bin**" → I drop `metrics_daily_public_analytics` too. Cleanest.
+   - "**keep**" → I freeze it read-only. You can build `/admin/analytics` off it later.
+
+2. **Purge windows OK?**
+   - Diagnostics >7d deleted.
+   - Raw IP observations >90d deleted (masked/hashed fields could survive longer if you want — say the word).
+
+Reply with those two answers (or "bin, defaults") and I'll start with the command function.
