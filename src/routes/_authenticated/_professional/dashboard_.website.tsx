@@ -343,17 +343,6 @@ function ShopFrontEditorPage() {
                 <option value="full">Full (Pro)</option>
               </select>
             </Field>
-            <Field label="Published" hint="When on, your page is publicly visible.">
-              <label className="flex items-center gap-2 text-[13px] text-white/85">
-                <input
-                  type="checkbox"
-                  checked={isPublished}
-                  onChange={(e) => setIsPublished(e.target.checked)}
-                  className="h-4 w-4 accent-reps-orange"
-                />
-                Page is live
-              </label>
-            </Field>
           </PPanel>
 
           <WebsiteContentEditor />
