@@ -149,7 +149,6 @@ function ShopFrontEditorPage() {
     setTagline(sf.tagline ?? "");
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
-    setAccent(sf.accent_hex ?? "");
     setLayout(sf.layout_variant);
   }, [sf]);
 
