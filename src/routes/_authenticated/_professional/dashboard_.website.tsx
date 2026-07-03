@@ -1164,7 +1164,7 @@ function WebsiteContentEditor() {
 
   React.useEffect(() => {
     if (!data) return;
-    setSubtitle(data.content.subtitle ?? "");
+    // subtitle handled by HeroSubtitleField
     setMethodName(data.content.method_name ?? "");
     setMethodIntro(data.content.method_intro ?? "");
     setPillars(
