@@ -355,7 +355,7 @@ function ShopFrontEditorPage() {
             <Field
               label="Tagline"
               hint="The H1 on your public page. One short line that sums you up."
-              action={<AIDraftButton onClick={() => draftTaglineMut.mutate()} pending={draftTaglineMut.isPending} />}
+              action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
             >
               <TextInput
                 value={tagline}
@@ -367,7 +367,7 @@ function ShopFrontEditorPage() {
             <Field
               label="About"
               hint="A short bio. Plain paragraphs, separated by blank lines."
-              action={<AIDraftButton onClick={() => draftAboutMut.mutate()} pending={draftAboutMut.isPending} />}
+              action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
             >
               <TextArea
                 value={about}
