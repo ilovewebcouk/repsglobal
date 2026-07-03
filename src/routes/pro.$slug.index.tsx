@@ -842,10 +842,7 @@ function ProProfilePage() {
               <h2 className="font-display text-[24px] font-bold text-reps-charcoal">
                 About {pro.firstName}
               </h2>
-              <p className="mt-4 border-l-2 border-reps-orange pl-4 font-display text-[17px] italic leading-snug text-reps-charcoal">
-                &ldquo;{pro.blurb}&rdquo;
-              </p>
-              <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-reps-muted-light">
+              <div className="mt-4 space-y-4 text-[15px] leading-relaxed text-reps-muted-light">
                 {pro.bio.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
