@@ -400,7 +400,7 @@ function ShopFrontEditorPage() {
             saving={upsertServiceMut.isPending}
           />
 
-          <ProfilePhotoPanel />
+          
 
           <SpecialismsDeliveryPanel />
 
