@@ -1232,34 +1232,6 @@ function WebsiteContentEditor() {
 
   return (
     <>
-      {/* Hero subtitle */}
-      <PPanel>
-        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-[14px] font-semibold text-white">Hero subtitle</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">
-              Shown directly under your H1 on /c/{"{slug}"} — one short line.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onSaveHero}
-            disabled={saveMut.isPending}
-            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            Save
-          </button>
-        </div>
-        <div className="px-5 py-4">
-          <TextInput
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            maxLength={200}
-            placeholder="e.g. Strength + hybrid coaching for busy professionals"
-          />
-        </div>
-      </PPanel>
-
       {/* Venues + reach */}
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
