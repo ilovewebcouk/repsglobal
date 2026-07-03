@@ -693,16 +693,11 @@ function ProfileEditorPage() {
     setForm(toForm(profile));
   }, [profile]);
 
-  const initialPostcode = primaryLocation?.postcode ?? "";
-  const [postcode, setPostcode] = React.useState<string>(initialPostcode);
-  React.useEffect(() => {
-    setPostcode(primaryLocation?.postcode ?? "");
-  }, [primaryLocation?.postcode]);
+  // Postcode is now edited on the Website tab (see WhereITrainPanel).
 
   const original = React.useMemo(() => toForm(profile), [profile]);
   const profileDirty = !equal(form, original);
-  const postcodeDirty = postcode.trim().toUpperCase() !== (initialPostcode ?? "").toUpperCase();
-  const dirty = profileDirty || postcodeDirty;
+  const dirty = profileDirty;
 
   // Facts passed to the AI copy assistant — never sent to a public surface.
   const aiFacts = React.useMemo<AiCopyFacts>(
@@ -760,11 +755,8 @@ function ProfileEditorPage() {
           },
         });
       }
-      // Then resolve + save postcode (external API call).
-      if (postcodeDirty && postcode.trim().length > 0) {
-        await savePostcode({ data: { postcode } });
-      }
-    },
+      // Postcode saved separately from the Website tab.
+
     onSuccess: () => {
       if (manualSaveRef.current) toast.success("Profile saved.");
       setLastSavedAt(Date.now());
