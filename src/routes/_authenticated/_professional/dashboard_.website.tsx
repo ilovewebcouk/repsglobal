@@ -1868,13 +1868,9 @@ function FaqsEditor({
 function WhereITrainPanel({
   cities,
   setCities,
-  onSaveReach,
-  saving,
 }: {
   cities: string;
   setCities: (v: string) => void;
-  onSaveReach: () => void;
-  saving: boolean;
 }) {
   const qc = useQueryClient();
   const fetchLocation = useServerFn(getMyPrimaryLocation);
@@ -1905,11 +1901,25 @@ function WhereITrainPanel({
   const postcodeMut = useMutation({
     mutationFn: (pc: string) => savePostcode({ data: { postcode: pc } }),
     onSuccess: () => {
-      toast.success("Postcode saved");
       qc.invalidateQueries({ queryKey: ["my-primary-location"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save postcode"),
   });
+
+  // Listen for the page-level "Save & publish".
+  const saveAllRef = React.useRef<() => void>(() => {});
+  saveAllRef.current = () => {
+    const trimmed = postcode.trim();
+    if (trimmed && trimmed !== (primaryLocation?.postcode ?? "")) {
+      postcodeMut.mutate(trimmed);
+    }
+  };
+  React.useEffect(() => {
+    const h = () => saveAllRef.current();
+    window.addEventListener("reps:website:save-all", h);
+    return () => window.removeEventListener("reps:website:save-all", h);
+  }, []);
+
 
   return (
     <PPanel>
