@@ -368,12 +368,7 @@ function ShopFrontEditorPage() {
                 placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
               />
             </Field>
-            <Field
-              label="Subtitle"
-              hint={`Sits directly under your tagline on /c/${slug ?? "your-slug"} — one short supporting line.`}
-            >
-              <HeroSubtitleField />
-            </Field>
+            <HeroSubtitleField slug={slug} />
             <Field
               label="About"
               hint="A short bio. Plain paragraphs, separated by blank lines."
