@@ -212,14 +212,10 @@ export const getPublicProfileBySlug = createServerFn({ method: "GET" })
         description: string | null;
         price_pence: number | null;
         price_label: string | null;
-        price_unit: string | null;
         duration_minutes: number | null;
         mode: string;
         sort_order: number;
         is_featured: boolean;
-        bullets: string[] | null;
-        cta_label: string | null;
-        image_url: string | null;
       }>,
       trust: {
         verified:

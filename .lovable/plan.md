@@ -1,62 +1,87 @@
-# Implement Premium Public Profile Page (code, not reinterpretation)
+# SEO Audit & Remediation Plan
 
-Do not reinterpret the design. Implement the component supplied in the brief and wire it to existing route/data exactly.
+Three parallel specialist sub-agents audited: (1) route head metadata, (2) robots/sitemap/noindex, (3) on-page + JSON-LD. Consolidated below.
 
-## Scope
+## Overall verdict
 
-- `/pro/:slug` (DB-backed profiles) rendered through a new `PremiumPublicProfilePage` component.
-- Untouched: `/c/:slug`, enquiry route, review submission, public visibility gating, billing/subscription visibility, `james-carter` fixture behavior.
+**Foundation: strong.** robots.txt is well-configured, sitemap is a live server route with 700+ URLs (resources, help, city×profession, coach profiles), most public routes have `head()` with title + description + canonical. Root emits Organization + WebSite JSON-LD.
 
-## Files
+**But there are ~12 real bugs and ~30 gaps holding the site back from "world-class 10/10". Grouped and prioritised below.**
 
-### 1. `src/lib/profile/public-profile.functions.ts`
-Widen the returned `services` shape to expose fields already SELECTed (`price_unit`, `bullets`, `cta_label`, `image_url`, `is_featured`). No new SELECT fields, no fake fields.
+---
 
-### 2. `src/routes/pro.$slug.index.tsx`
-- Update `Pro["services"]` type to add `mode`, `priceUnit`, `bullets`, `ctaLabel`, `isFeatured`.
-- Add helpers: `servicePriceLabel`, `serviceUnitLabel`, `yearsFromApprovedQualifications`.
-- In `proFromDb`:
-  - Replace the `memberSince → years` derivation with `yearsFromApprovedQualifications(row.qualifications)`.
-  - Replace DB service mapping with the richer mapping from the brief.
-  - Remove `template.services` fallback for DB-backed pros (fixture leak).
-- Replace the big JSX return in `ProProfilePage` with `<PremiumPublicProfilePage ... />`, passing `pro`, `slug`, `professionalId`, `reviewSummary`, `reviews`, `formatReviewWhen`, `onTrackCta`. Do not pass `onSaveProfile` (no real implementation).
-- Delete the `STATS` constant and any render of the static marketplace stat strip. Delete unused imports (`Globe`, `Calendar`, `Star` if unused after).
-- Leave the fixture branch (`james-carter`) rendering the existing legacy JSX untouched, OR route the fixture through `PremiumPublicProfilePage` too — pick a single behavior for consistency. **Recommendation:** route fixture through the new component as well (matches brief acceptance #1 pattern) but keep `noindex` head on fixtures.
+## P0 — Broken / immediately harmful (fix first)
 
-### 3. `src/components/profile/public/PremiumPublicProfilePage.tsx` (new)
-Create exactly per the brief. Sections: hero (portrait + identity + right enquiry card), trust strip, best-for module (derived from real data via `buildBestFor`), about, services (real rows only, empty state if none, `Featured` badge only from `is_featured`), quick details, location & coverage (`LocationMap` marker only — no radius circle), qualifications, trust assurance (dates from `trust`), reviews (empty state when 0), FAQ (hidden if none), bottom CTA, mobile sticky CTA.
+1. **Relative `canonical` and `og:url` on 6 crawlable pages** — `find-a-professional`, `how-it-works`, `contact`, `reviews`, `professions/$profession`, `signup`. Crawlers reject relative canonicals; Google picks its own URL. Change to absolute `https://repsuk.org/...`.
+2. **Brand miscap "REPs" (should be "REPS")** in `auth`, `forgot-password`, `reset-password` titles/og.
+3. **`coming-soon.tsx` has "Launching 26 June 2026" hard-coded in `<title>` and `og:title`.** Site is live — this metadata is stale. Neutralise the copy.
+4. **`$.tsx` (catch-all 404) has no `head()`** — no title, no `noindex,nofollow`. Add both.
+5. **`gyms/$slug` serves "Gym pages are coming soon."** with a full `<head>`, no `noindex`, no canonical, no `og:url`. Add `noindex,nofollow` until real content lands.
+6. **`__root.tsx` WebSite `SearchAction` target points at `/find-a-trainer`** — route doesn't exist. Fix to `/find-a-professional`.
+7. **`/professions/$profession` canonical is relative** (also caught in P0-1) — this is duplicated on purpose because it also breaks the JSON-LD self-reference.
 
-Uses `PublicHeader`, `PublicFooter`, `Breadcrumb`, `LocationMap`, `Monogram`, `professions` helpers — all already present.
+## P1 — Missing / material SEO drag
 
-## Data honesty (enforced)
+8. **Sitemap missing 90 real pages:**
+   - `/professions/$profession` (7 canonical landing pages)
+   - `/in/$location` (83 city-only pages)
+9. **`og:image` absent on primary acquisition pages:** `/`, `/for-professionals`, `/pricing`, `/find-a-professional`, `/in/$location`, `/resources`, `/features/operations`, `/compare`, `/about`, `/comparison-methodology`. Link previews render blank.
+10. **`og:type` missing on ~30 routes.** Default is "website" for most; "article" for `/resources/$slug` (already correct).
+11. **`twitter:` tags absent/incomplete on ~40 routes.** Add `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image` where OG exists.
+12. **17 admin routes have no `head()`** → no `noindex,nofollow`. Auth guard is defence #1, but robots meta is defence #2.
+13. **`dashboard-demo.tsx` publicly indexable, self-canonical, not in sitemap** — will surface as thin/misleading content. Add `noindex`.
+14. **`signup.tsx` not noindexed** (transactional page).
+15. **`verify-email`, `forgot-password`, `reset-password` missing canonical entirely.**
+16. **`c.$slug` (coach shop-front) missing `og:url`.**
+17. **`pro.$slug` `og:image` is conditional** — profiles without avatars inherit nothing (root has no fallback). Add a brand default fallback.
 
-- No James Carter fixture data on DB profiles.
-- No static marketplace stats.
-- `member_since` never displayed as years qualified — years derive from earliest approved qualification issue year.
-- No hard-coded 15km coverage or coverage circle on the map.
-- No fake "Most popular"; `Featured` only from `is_featured`.
-- No fake response rate, phone number, client count.
-- Missing services / reviews / FAQ → clean empty state or hidden section.
+## P1 — Structured data gaps (rich-result eligibility)
 
-## Analytics
+18. **FAQPage JSON-LD missing where FAQ blocks already render:** `/for-professionals`, `/c/$slug`, `/specialisms`, `/professions/$profession`. Data exists — just not wired into `head().scripts`.
+19. **BreadcrumbList missing on deep routes:** `/pro/$slug`, `/c/$slug`, `/professions/$profession`, `/in/$location/$profession`, `/resources/$slug`.
+20. **SoftwareApplication schema missing on comparison pages** (`/compare/reps-vs-*`) — highest-CTR schema for "[competitor] alternative" queries.
+21. **`/compare/reps-vs-*` `og:image` uses a bundled JS import** — likely resolves to a relative path in prod. Switch to absolute CDN URL.
+22. **`/pricing` missing Product/Offer schema** for the three tiers.
+23. **`/resources/` index missing CollectionPage / ItemList schema.**
 
-Preserve existing `track.profileView` call in the route; wire `track.profileCtaClick` via `onTrackCta` prop for hero/sidebar/service/bottom/mobile CTAs.
+## P2 — Polish
 
-## Acceptance
+24. **Description length issues:** `/pricing` desc 28ch (too short), `/features/ai` 193ch, `/features/coaching` 215ch (both truncated in SERP). Aim 130–160ch.
+25. **`for-professionals.tsx` og:title weaker than `<title>`.**
+26. **Legal pages (`terms`, `privacy`, `cookies`) indexed — burn crawl budget on boilerplate.** Add `noindex,follow`.
+27. **`__root.tsx` no fallback `og:description` / `og:url`** — safety net if a leaf omits them.
+28. **robots.txt defence-in-depth:** explicit `Disallow: /admin`, `/portal`, `/dashboard`, `/_authenticated`.
+29. **Homepage `<img alt="">` on hero LCP.** Empty alt is defensible (decorative), but a real alt helps accessibility + image SEO. Same for `/for-professionals` gym hero.
+30. **`/c/$slug` and `/resources` index have no cross-links to directory/city pages** — missed internal-linking equity.
 
-1. `/pro/jordon-gumbley` renders through `PremiumPublicProfilePage`.
-2. `/c/jordon-gumbley` untouched.
-3. No James Carter fixture services/reviews/stats on DB profiles.
-4. No static marketplace stats.
-5. `member_since` not shown as years qualified.
-6. Services use real `services` rows.
-7. `Featured` badge only from `is_featured`.
-8. Location card invents no 15km radius; map shows marker only.
-9. Empty states for missing services / reviews; FAQ hidden if none.
-10. Enquiry links → `/pro/$slug/enquire`; profile view + CTA tracking still fire.
-11. Typecheck passes.
-12. Desktop + mobile screenshots captured for verification.
+---
 
-## Verification
+## Execution plan (build order)
 
-After edits: `bunx tsgo --noEmit` (targeted), then Playwright screenshot `/pro/jordon-gumbley` at 1280 and 390 widths saved to `/tmp/browser/premium-profile/`.
+I'd execute in these batches, each a discrete build turn so you can QA between:
+
+**Batch 1 — P0 fixes + Search Console cleanup (small, safe):** absolute canonicals, brand caps, `$.tsx` head, `gyms/$slug` noindex, SearchAction URL, coming-soon neutralised.
+
+**Batch 2 — Sitemap completeness:** add `/professions/$profession` and `/in/$location` entries; submit fresh sitemap to Search Console.
+
+**Batch 3 — OG/Twitter completeness:** default `og:image` fallback (brand card), sweep every public route to add `og:type` + full twitter tags. Introduce a shared helper `buildSocialMeta({title, description, url, image, type})` in `src/lib/seo/social-meta.ts` so every route uses the same 8-tag block.
+
+**Batch 4 — Robots hygiene:** noindex admin/portal/signup/legal/demo routes; expand robots.txt disallow.
+
+**Batch 5 — Structured data:** FAQPage on the 4 pages with existing FAQ data; BreadcrumbList on deep routes; SoftwareApplication on compare pages; Product/Offer on pricing; CollectionPage on resources index.
+
+**Batch 6 — Copy polish:** description length fixes, weak og:titles, `og:image` CDN URLs for compare pages, alt text on hero LCP images.
+
+**Batch 7 — Search Console verification pass:** URL-inspect ~15 representative URLs via the Search Console connector, capture any residual issues, submit sitemap, trigger a fresh SEO scan and mark fixed findings.
+
+---
+
+## Deliverables
+
+- All fixes shipped and typechecked.
+- Fresh `seo_chat--trigger_scan` after Batch 6.
+- Summary report of before/after counts (routes with full OG, routes with JSON-LD, sitemap size, canonicals-fixed).
+
+## Approval
+
+Confirm **"go batch 1"** to start with the P0 bug fixes only, or **"go all batches"** to plough through 1→7 sequentially.
