@@ -381,7 +381,7 @@ export function GymPicker() {
         </Popover>
       ) : (
         <p className="text-[11px] text-white/45">
-          You've added the maximum of 3 gyms. Remove one to add another.
+          You've added the maximum of 4 gyms. Remove one to add another.
         </p>
       )}
 
