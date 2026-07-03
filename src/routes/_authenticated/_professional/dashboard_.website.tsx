@@ -969,17 +969,8 @@ function ServiceEditDialog({
                     <div className="mt-1 text-[11px] text-white/40">Button label</div>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="flex items-center gap-2 text-[13px] text-white/85">
-                      <input
-                        type="checkbox"
-                        checked={!!draft.is_featured}
-                        onChange={(e) => setDraft({ ...draft, is_featured: e.target.checked })}
-                        className="h-4 w-4 accent-reps-orange"
-                      />
-                      Mark as "Most popular" (only one card can be featured)
-                    </label>
-                  </div>
+
+
 
                   <div className="md:col-span-2">
                     <TextArea
