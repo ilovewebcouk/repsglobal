@@ -1547,8 +1547,7 @@ function TransformationsEditor({
         {items.length === 0 && (
           <div className="px-5 py-4 text-[13px] text-white/55">No transformations yet — add one below.</div>
         )}
-      </div>
-      <div className="border-t border-reps-border px-5 py-5">
+        <div className="px-5 py-5">
         <div className="text-[13px] font-semibold text-white">Add a transformation</div>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           <TextInput
