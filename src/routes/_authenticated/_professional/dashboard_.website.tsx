@@ -1369,8 +1369,6 @@ function WebsiteContentEditor() {
       <WhereITrainPanel
         cities={cities}
         setCities={setCities}
-        onlineWorldwide={onlineWorldwide}
-        setOnlineWorldwide={setOnlineWorldwide}
         onSaveReach={onSaveVenues}
         saving={saveMut.isPending}
       />
