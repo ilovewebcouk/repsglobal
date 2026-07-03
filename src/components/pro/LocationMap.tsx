@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 
-type Props = { lat: number; lng: number; label?: string };
+type Props = { lat: number; lng: number; label?: string; radiusKm?: number };
 
 declare global {
   interface Window {
