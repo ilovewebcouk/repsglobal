@@ -504,12 +504,13 @@ export const Route = createFileRoute("/c/$slug")({
   loader: async ({ params }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const, live: null };
-    // DB-backed: any paying tier (Verified, Pro, Studio) can publish a website.
+    // Every published member gets the website — the public-visibility gate
+    // inside getShopFrontBySlug already checks published + paid subscription.
+    // No additional tier gate here: page renders the same for Core, Pro and
+    // Studio; only what plugs in behind the page (enquiries inbox, bookings,
+    // payments, analytics) differs by tier.
     const live = await getShopFrontBySlug({ data: { slug: params.slug } });
     if (!live) throw notFound();
-    if (!live.shopFront.tier || !["verified", "pro", "studio"].includes(live.shopFront.tier)) {
-      throw notFound();
-    }
     return { gated: false as const, live };
   },
   notFoundComponent: () => (
@@ -698,7 +699,7 @@ function CoachShopFrontPage() {
     ["--accent-color" as string]: accent,
   } as React.CSSProperties;
 
-  const enquireHref = "/pro/$slug/enquire" as const;
+  const enquireHref = "/c/$slug/enquire" as const;
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
@@ -791,7 +792,7 @@ function HeroSection({
   slug,
 }: {
   coach: Coach;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
   slug: string;
 }) {
   return (
@@ -1018,7 +1019,7 @@ function ServicesSection({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   return (
     <section id="services" className="scroll-mt-28 bg-reps-ink">
@@ -1057,7 +1058,7 @@ function TierCard({
 }: {
   tier: Tier;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   const isHighlight = !!tier.highlight;
   return (
@@ -1586,7 +1587,7 @@ function ContactSection({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   return (
     <section id="contact" className="scroll-mt-28 bg-reps-ink">
@@ -1737,7 +1738,7 @@ function StickyMobileBar({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur lg:hidden">

@@ -99,7 +99,7 @@ export const submitEnquiry = createServerFn({ method: "POST" })
       });
       const inboxUrl = isPro
         ? "https://repsglobal.lovable.app/dashboard/leads"
-        : `https://repsglobal.lovable.app/pro/${data.slug}`;
+        : `https://repsglobal.lovable.app/c/${data.slug}`;
 
       if (recipient) {
         const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");

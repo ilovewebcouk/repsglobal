@@ -87,7 +87,7 @@ function useActive() {
       pathname.startsWith("/find-a-professional") ||
       pathname.startsWith("/professions") ||
       pathname.startsWith("/in/") ||
-      pathname.startsWith("/pro/") ||
+      pathname.startsWith("/c/") || pathname.startsWith("/pro/") ||
       pathname.startsWith("/how-it-works"),
     resources:
       pathname === "/resources" || pathname.startsWith("/resources/"),

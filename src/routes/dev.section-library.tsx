@@ -147,7 +147,7 @@ function SectionLibrary() {
             body="The page clients land on after they search. Qualifications, insurance and reviews — all checked."
             bullets={["Qualifications verified", "Insurance on file", "Reviews on the record"]}
             imageLabel="Pro profile"
-            mockup={{ device: "laptop", src: "/pro/james-carter", title: "Verified profile" }}
+            mockup={{ device: "laptop", src: "/c/james-carter", title: "Verified profile" }}
           />
           <ProductBlock
             reverse
@@ -171,7 +171,7 @@ function SectionLibrary() {
           <AnnotatedMock
             mockup={{
               device: "laptop",
-              src: "/pro/james-carter",
+              src: "/c/james-carter",
               title: "Verified profile anatomy",
             }}
             callouts={[

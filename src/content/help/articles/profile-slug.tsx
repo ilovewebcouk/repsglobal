@@ -6,7 +6,7 @@ export const article: HelpArticle = {
   slug: "choose-your-slug",
   category: "public-profile",
   title: "Choose your profile URL (slug)",
-  summary: "Your /pro/your-name URL is permanent-ish. Pick once, pick well.",
+  summary: "Your /c/your-name URL is permanent-ish. Pick once, pick well.",
   tier: ["verified"],
   lastReviewed: "2026-06-26",
   author: "REPS Team",
@@ -14,14 +14,14 @@ export const article: HelpArticle = {
   Body: () => (
     <>
       <p>
-        Your slug is the bit after <code>/pro/</code> in your public URL. It shows up in search
+        Your slug is the bit after <code>/c/</code> in your public URL. It shows up in search
         results, on shared links, and in client text messages — so make it readable.
       </p>
       <h2 id="good-slugs">Good slug patterns</h2>
       <ul>
-        <li><code>/pro/katiegibbs</code> — clean first + surname</li>
-        <li><code>/pro/katie-gibbs-pt</code> — adds a role for common names</li>
-        <li><code>/pro/katie-gibbs-leeds</code> — adds a city for very common names</li>
+        <li><code>/c/katiegibbs</code> — clean first + surname</li>
+        <li><code>/c/katie-gibbs-pt</code> — adds a role for common names</li>
+        <li><code>/c/katie-gibbs-leeds</code> — adds a city for very common names</li>
       </ul>
       <h2 id="avoid">Avoid</h2>
       <ul>

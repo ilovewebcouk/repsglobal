@@ -100,7 +100,7 @@ function ReviewByTokenPage() {
         </p>
         {data.professional_slug && (
           <Link
-            to="/pro/$slug"
+            to="/c/$slug"
             params={{ slug: data.professional_slug }}
             className="mt-6 inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
           >
@@ -144,7 +144,7 @@ function ReviewByTokenPage() {
         </p>
         {data.professional_slug && (
           <Link
-            to="/pro/$slug"
+            to="/c/$slug"
             params={{ slug: data.professional_slug }}
             className="mt-6 inline-flex h-10 items-center rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-dark"
           >

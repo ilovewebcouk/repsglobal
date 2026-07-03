@@ -1,60 +1,84 @@
+# Migration Plan — one URL, one page, every member
 
-# Pro Profile v2 — Full Redesign (Mock, Un-wired)
+**North star:** every REPs member has a single public URL — `repsuk.org/c/<slug>` — and every member gets the *entire* one-page website. No tier gating on the page itself. What differs by tier is what plugs *into* the page (enquiries inbox, bookings, payments, analytics), not what the visitor sees.
 
-Rebuild `/pro/$slug` from scratch as a **parallel** page. The current `pro.$slug.index.tsx` stays exactly as-is and keeps serving live traffic. v2 is a static design surface with hard-coded sample data so we can iterate on layout, hierarchy, and polish without dragging Supabase, analytics, saved-profiles, or trust-strip logic along.
+---
 
-## Where it lives
+## The decisions we're locking in
 
-- New route: `src/routes/pro-v2.$slug.tsx` — accessible at `/pro-v2/jordon-gumbley`
-- New folder: `src/components/pro-v2/` — all v2-only building blocks live here, fully isolated from `src/components/pro/*`
-- Sample data file: `src/components/pro-v2/sample-pro.ts` — one hard-coded pro object (Jordon) so the page renders identically every load
-- `noindex` in the route head — this is a design sandbox, not a public URL
+1. **Canonical URL:** `/c/$slug` (the existing 1768-line locked coach-shopfront becomes the universal member page).
+2. **Sub-routes move too:** `/pro/$slug/enquire` → `/c/$slug/enquire`, `/pro/$slug/review` → `/c/$slug/review`.
+3. **Old URLs 301-redirect** to the new URLs — no dead links, no lost SEO.
+4. **Dashboard label:** "Shop-front" → "Website" everywhere the trainer sees it.
+5. **No tier gate on the page.** The page renders the same for every published member. Missing data (no services, no proof cards, no reviews yet) is handled by the page's existing empty states — sections hide gracefully when there's nothing to show.
+6. **`/pro-v2/$slug` sandbox stays private** for now (not linked, not indexed). Delete once we're happy nothing was worth pulling in.
 
-Nothing outside these three paths gets touched.
+---
 
-## Page structure (top → bottom)
+## Step-by-step (in build order)
 
-1. **Sticky sub-nav** — thin bar under the site header, in-page anchors: About · Services · Reviews · Qualifications · Location. Active section highlights on scroll.
-2. **Hero (3-column, matches the reference screenshot)**
-   - Left: portrait, 4:5 tall
-   - Middle: verified pill → H1 name → role → tagline paragraph → review row (rating + "Based on N verified reviews") → location row → three service chips (At Home / Online Coaching / [City] & Surrounding Areas)
-   - Right: **Get in touch** card — last active, response rate, verified pro; primary "Send an enquiry" CTA; secondary "Save profile"; small reassurance line about contact details
-3. **Trust strip** — 4-tile band (REPS Verified · Qualifications Checked · Insurance Active · Member Since)
-4. **About** — long-form bio, 2-column on desktop, with a small "At a glance" side card (years experience, sessions delivered, specialisms)
-5. **Services & pricing** — three service cards (1:1, Small Group, Online), each with price, duration, what's included, "Enquire" CTA; one card marked "Most popular"
-6. **Specialisms & who I help** — chip cloud + short paragraphs for 3 client types
-7. **Qualifications & credentials** — grid of qualification cards with awarding body, level, year, expiry indicator
-8. **Transformations / proof** — 3 proof cards (before/after style, but numbers-led not photos): outcome headline + short story + client initials
-9. **Reviews** — rating summary, distribution bar, 4–6 review cards, "Read all reviews" link
-10. **Location & availability** — static map placeholder (image, no Google Maps SDK), coverage radius chip, weekly availability grid (7×3 morning/afternoon/evening)
-11. **FAQ** — 5 accordion items (session length, cancellation, first-session, kit needed, online setup)
-12. **Final CTA band** — full-width dark band, "Ready to train with [Name]?" + Send an enquiry button
-13. **Mobile sticky footer** — Enquire button pinned at bottom on `< lg`
+### 1. Kill the tier gate on `/c/$slug`
+- Remove the Pro/Studio check in `src/routes/c.$slug.tsx` + `src/lib/shop-front/shop-front.functions.ts`.
+- Publish criteria collapses to the standard public-visibility gate (`is_published = true`, `is_demo = false`, active paid subscription — Core included). No new logic; just widen who qualifies.
+- Empty-state audit on every section (services, proof cards, testimonials, foundation method, gallery) — confirm each one hides or shows a soft placeholder when the underlying data is missing. Verified members with a sparse profile must still look clean.
 
-## Visual direction
+### 2. Move sub-routes onto `/c`
+- Create `src/routes/c.$slug.enquire.tsx` and `src/routes/c.$slug.review.tsx` — thin wrappers that re-export the existing components from the `pro.$slug.*` files (no visual change; enquire page stays locked per `mem://design/locked-enquire`).
+- Update every internal `<Link to="/pro/$slug/enquire">` / `.../review` → `/c/$slug/...`. Same for `useNavigate`, email templates, help articles, JSON-LD.
 
-- Reuse the locked REPs tokens (`bg-reps-ivory`, `text-reps-charcoal`, `bg-reps-orange`, `border-reps-stone`, etc.) — no new colors
-- Radii from the 9-step scale only: buttons `10px`, inputs `12px`, service/profile cards `18px`, hero panel `24px`, pills full
-- Typography: `font-display` for H1/H2, existing body stack for prose
-- Flat buttons (no shadows), emerald reserved for verified/status semantics only
-- No REPS wordmark artwork on the portrait (we're using the existing Jordon photo, not regenerating)
+### 3. 301 redirects (SEO-safe handover)
+- Replace `src/routes/pro.$slug.tsx`, `pro.$slug.index.tsx`, `pro.$slug.enquire.tsx`, `pro.$slug.review.tsx` with `beforeLoad: () => redirect({ to: "/c/$slug[/...]", params, throw: true })` files. Legacy bookmarks + Google links keep working; Google will re-crawl and swap canonicals over a few weeks.
+- Add absolute `<link rel="canonical">` pointing to `/c/$slug` on the new page (already there — verify).
 
-## What is intentionally excluded
+### 4. Sitemap + robots
+- `src/routes/sitemap[.]xml.ts` already emits `/c/$slug` entries. Remove any lingering `/pro/` entries. `robots.txt` untouched.
 
-- No Supabase queries, no `createServerFn`, no loader
-- No analytics tracking calls
-- No saved-profiles logic, no auth-gated buttons
-- No Google Maps — static image placeholder for the location tile
-- No breadcrumb (this is a sandbox route)
-- No routing to `/pro/$slug/enquire` — CTAs are `<button type="button">` with no handler
-- No responsive polish pass on tablet — desktop and mobile only for v1 of v2
+### 5. Rename "Shop-front" → "Website" (trainer-facing only)
+- Dashboard nav label, page titles, empty states, tooltips.
+- Marketing: `/features/shop-front` → keep the URL (SEO) but change on-page copy + H1 to "Your website". Add a redirect from any old internal links pointing at `/features/shop-front` if we later rename the route — for now leave the URL.
+- Help articles that reference "shop-front".
+- Pricing tier comparison rows.
+- **Not renamed** (internal only, zero user impact): `src/lib/shop-front/`, DB tables, memory keys. Refactoring code paths is out of scope for this migration — do it in a later cleanup pass.
 
-## Deliverable
+### 6. Memory refactor (small, targeted)
+After the migration lands, update these memories in one batch:
+- `mem://design/coach-shopfront` — drop "Pro+Studio only", note it's the universal member page now, rename label to "Website".
+- `mem://design/locked-profile` — mark `/pro/$slug` as retired, point to `/c/$slug` as the canonical profile.
+- `mem://design/locked-shop-front` — drop "Pro-only" claim.
+- Core rules in `mem://index.md` — update the coach-shopfront core line to remove tier scope.
+- **Not touched:** homepage, city pages, enquire page, radius system, trainer imagery, banned orgs, no-BD-migration, hero overlay system — all still current.
 
-One new route rendering the 13 sections above with sample data. You visit `/pro-v2/jordon-gumbley`, review it, tell me what to change. Once the layout is signed off, a separate follow-up plan will handle wiring real data, analytics, and CTAs, and swapping the live `/pro/$slug` over.
+### 7. QA before shipping
+- Manual: load `/c/<verified-member-slug>` — every section renders or hides cleanly. Then a Core member, then a Pro member, then a Studio member.
+- Manual: hit each legacy URL (`/pro/james-wilson`, `/pro/james-wilson/enquire`, `/pro/james-wilson/review`) — confirm 301 to the `/c` equivalent.
+- Sitemap: `curl /sitemap.xml | grep -c "/pro/"` → 0. `grep -c "/c/"` → matches published member count.
+- Dashboard: sign in as a trainer, confirm the nav says "Website" and links to `/dashboard/website` (already the route).
+- Search Console: submit the new sitemap after publish so Google re-crawls fast.
 
-## Out of scope for this plan
+---
 
-- Any change to the current `pro.$slug.index.tsx`
-- Wiring, data fetching, tracking, auth
-- Redesigning `/pro/$slug/enquire`, `/c/$slug`, or any other locked page
+## What this plan deliberately does NOT do
+
+- **No visual redesign** of `/c/$slug`. It's locked and it's the design we want.
+- **No refactor of `src/lib/shop-front/`, DB tables, or memory keys** — internal-only rename creates churn without user value. Later cleanup pass.
+- **No decision on `/pro-v2/$slug`** — leaves it dormant. Delete it in the next turn if you want; keeping it doesn't affect SEO (not linked, not in sitemap).
+- **No pricing/tier changes.** Every member already at Core+ qualifies as a "paid, publicly visible" member under the existing gate — that's all we need.
+
+---
+
+## Risk / rollback
+
+- Redirects are one-line route files — trivially reverted.
+- Tier-gate removal is a one-line change in the visibility helper — trivially reverted.
+- The page component itself doesn't change, so there's no visual regression risk on `/c/$slug`.
+- **Real risk:** a Verified member with almost no data looks bare. Mitigation = the empty-state audit in step 1. If a section looks sad with no data, we hide it, not show a placeholder.
+
+---
+
+## Technical notes (skip if not needed)
+
+- File moves: `src/routes/pro.$slug.tsx` and children become redirect stubs (kept, not deleted, so TanStack file-based routing still matches the URLs and issues 301s). Deleting would 404, which Google punishes.
+- Visibility helper: `src/lib/visibility/public-gate.server.ts` already returns any published + paid member. No SQL change needed — just confirm the RPC `list_publicly_visible_pro_ids` includes Core-tier subs (it does per `mem://phase/2.0-verified-scope`).
+- Shop-front data loader in `src/lib/shop-front/shop-front.functions.ts` may currently throw or 404 for non-Pro members. That's the one function to widen — remove the tier check, keep the publish/paid check.
+
+Say go and I'll execute in the order above.

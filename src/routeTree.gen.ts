@@ -102,6 +102,8 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as InLocationProfessionRouteImport } from './routes/in.$location.$profession'
 import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$slug'
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
+import { Route as CSlugReviewRouteImport } from './routes/c.$slug.review'
+import { Route as CSlugEnquireRouteImport } from './routes/c.$slug.enquire'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
@@ -617,6 +619,16 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   path: '/checkout/credits/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CSlugReviewRoute = CSlugReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => CSlugRoute,
+} as any)
+const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
+  id: '/enquire',
+  path: '/enquire',
+  getParentRoute: () => CSlugRoute,
+} as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   id: '/admin_/seo/legacy-redirects',
   path: '/admin/seo/legacy-redirects',
@@ -957,7 +969,7 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
-  '/c/$slug': typeof CSlugRoute
+  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -993,6 +1005,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/c/$slug/enquire': typeof CSlugEnquireRoute
+  '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
@@ -1097,7 +1111,7 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
-  '/c/$slug': typeof CSlugRoute
+  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -1131,6 +1145,8 @@ export interface FileRoutesByTo {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/c/$slug/enquire': typeof CSlugEnquireRoute
+  '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
@@ -1238,7 +1254,7 @@ export interface FileRoutesById {
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
   '/admin_/verification': typeof AdminVerificationRoute
-  '/c/$slug': typeof CSlugRoute
+  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare_/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -1275,6 +1291,8 @@ export interface FileRoutesById {
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/c/$slug/enquire': typeof CSlugEnquireRoute
+  '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
   '/help/$category/$slug': typeof HelpCategorySlugRoute
   '/in/$location/$profession': typeof InLocationProfessionRoute
@@ -1418,6 +1436,8 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
+    | '/c/$slug/enquire'
+    | '/c/$slug/review'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/in/$location/$profession'
@@ -1556,6 +1576,8 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
+    | '/c/$slug/enquire'
+    | '/c/$slug/review'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/in/$location/$profession'
@@ -1699,6 +1721,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members/$userId'
     | '/admin_/seo/legacy-redirects'
+    | '/c/$slug/enquire'
+    | '/c/$slug/review'
     | '/checkout/credits/return'
     | '/help/$category/$slug'
     | '/in/$location/$profession'
@@ -1806,7 +1830,7 @@ export interface RootRouteChildren {
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
-  CSlugRoute: typeof CSlugRoute
+  CSlugRoute: typeof CSlugRouteWithChildren
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
   CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
@@ -2511,6 +2535,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCreditsReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/c/$slug/review': {
+      id: '/c/$slug/review'
+      path: '/review'
+      fullPath: '/c/$slug/review'
+      preLoaderRoute: typeof CSlugReviewRouteImport
+      parentRoute: typeof CSlugRoute
+    }
+    '/c/$slug/enquire': {
+      id: '/c/$slug/enquire'
+      path: '/enquire'
+      fullPath: '/c/$slug/enquire'
+      preLoaderRoute: typeof CSlugEnquireRouteImport
+      parentRoute: typeof CSlugRoute
+    }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
       path: '/admin/seo/legacy-redirects'
@@ -3062,6 +3100,18 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
+interface CSlugRouteChildren {
+  CSlugEnquireRoute: typeof CSlugEnquireRoute
+  CSlugReviewRoute: typeof CSlugReviewRoute
+}
+
+const CSlugRouteChildren: CSlugRouteChildren = {
+  CSlugEnquireRoute: CSlugEnquireRoute,
+  CSlugReviewRoute: CSlugReviewRoute,
+}
+
+const CSlugRouteWithChildren = CSlugRoute._addFileChildren(CSlugRouteChildren)
+
 interface InLocationRouteChildren {
   InLocationProfessionRoute: typeof InLocationProfessionRoute
 }
@@ -3140,7 +3190,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
   AdminVerificationRoute: AdminVerificationRoute,
-  CSlugRoute: CSlugRoute,
+  CSlugRoute: CSlugRouteWithChildren,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
   CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
@@ -3196,3 +3246,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

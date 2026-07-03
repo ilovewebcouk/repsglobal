@@ -246,7 +246,7 @@ function AdminReviewsPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         {r.professional_slug ? (
                           <Link
-                            to="/pro/$slug"
+                            to="/c/$slug"
                             params={{ slug: r.professional_slug }}
                             className="font-semibold text-white hover:text-reps-orange"
                           >

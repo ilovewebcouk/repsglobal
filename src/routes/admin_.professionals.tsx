@@ -883,7 +883,7 @@ function ProRow({ row }: { row: AdminProRow }) {
                   Public surfaces
                 </DropdownMenuLabel>
                 <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white">
-                  <Link to="/pro/$slug" params={{ slug }} target="_blank">
+                  <Link to="/c/$slug" params={{ slug }} target="_blank">
                     <ExternalLink className="h-4 w-4" /> View public profile
                   </Link>
                 </DropdownMenuItem>

@@ -638,7 +638,7 @@ function HomeHeroAvatars() {
       {visible.map((p) => (
         <Link
           key={p.id}
-          to="/pro/$slug"
+          to="/c/$slug"
           params={{ slug: p.slug }}
           className="inline-block size-10 overflow-hidden rounded-full ring-2 ring-reps-black"
           title={p.full_name}

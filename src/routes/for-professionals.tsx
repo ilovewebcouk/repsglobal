@@ -240,7 +240,7 @@ function ForProsPage() {
 "Indexed by location, specialism and price band",
             ]}
             imageLabel="Verified professional profile on the public register"
-            mockup={{ device:"laptop", src:"/pro/james-carter", title:"Verified professional profile preview" }}
+            mockup={{ device:"laptop", src:"/c/james-carter", title:"Verified professional profile preview" }}
             ctaLabel="Explore Visibility"
             ctaHref="/features/visibility"
           />
