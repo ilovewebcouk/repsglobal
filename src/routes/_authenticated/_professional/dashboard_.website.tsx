@@ -3,7 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, GripVertical, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { ExternalLink, GripVertical, MapPin, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { GymPicker } from "@/components/profile/GymPicker";
+import { getMyPrimaryLocation, saveMyPrimaryPostcode } from "@/lib/profile/location.functions";
+import { getMyDashboardProfile } from "@/lib/profile/dashboard-profile.functions";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
