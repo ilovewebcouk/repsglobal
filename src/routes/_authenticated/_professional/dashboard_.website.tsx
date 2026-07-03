@@ -415,7 +415,7 @@ function ShopFrontEditorPage() {
       )}
 
       <Dialog open={taglineDialogOpen} onOpenChange={setTaglineDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg border-reps-border bg-reps-panel text-white">
           <DialogHeader>
             <DialogTitle>Draft my tagline</DialogTitle>
             <DialogDescription>
@@ -484,7 +484,7 @@ function ShopFrontEditorPage() {
       </Dialog>
 
       <Dialog open={aboutDialogOpen} onOpenChange={setAboutDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg border-reps-border bg-reps-panel text-white">
           <DialogHeader>
             <DialogTitle>Draft my About</DialogTitle>
             <DialogDescription>
