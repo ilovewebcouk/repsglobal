@@ -141,10 +141,9 @@ function ShopFrontEditorPage() {
           hero_image_url: hero || null,
           accent_hex: accent || null,
           layout_variant: layout,
-          // Every member's website is always live — no owner-facing toggle.
-          is_published: true,
         },
       }),
+
     onSuccess: () => {
       toast.success("Website saved");
       qc.invalidateQueries({ queryKey: ["my-shop-front"] });

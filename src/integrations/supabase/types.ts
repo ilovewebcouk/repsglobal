@@ -4298,13 +4298,11 @@ export type Database = {
           created_at: string
           faq_auto_generated: boolean
           hero_image_url: string | null
-          is_published: boolean
           layout_variant: string
           method_intro: string | null
           method_name: string | null
           method_pillars: Json
           professional_id: string
-          published_at: string | null
           subtitle: string | null
           tagline: string | null
           updated_at: string
@@ -4318,13 +4316,11 @@ export type Database = {
           created_at?: string
           faq_auto_generated?: boolean
           hero_image_url?: string | null
-          is_published?: boolean
           layout_variant?: string
           method_intro?: string | null
           method_name?: string | null
           method_pillars?: Json
           professional_id: string
-          published_at?: string | null
           subtitle?: string | null
           tagline?: string | null
           updated_at?: string
@@ -4338,13 +4334,11 @@ export type Database = {
           created_at?: string
           faq_auto_generated?: boolean
           hero_image_url?: string | null
-          is_published?: boolean
           layout_variant?: string
           method_intro?: string | null
           method_name?: string | null
           method_pillars?: Json
           professional_id?: string
-          published_at?: string | null
           subtitle?: string | null
           tagline?: string | null
           updated_at?: string
