@@ -1241,34 +1241,9 @@ function ProfileEditorPage() {
               </div>
             </Card>
 
-            {/* 03 Where you work — delivery mode + location + gyms. */}
-            <Card>
-              <SectionHeader
-                title="Where you work"
-                subtitle="How you train clients, your base, and the gyms or studios you use."
-                step="03"
-              />
-              <div className="flex flex-col gap-4">
-                <Field
-                  label="How you work with clients"
-                  hint="Pick one or both. Shown on your directory card so clients can filter."
-                >
-                  <DeliveryModePicker
-                    inPerson={form.in_person_available}
-                    online={form.online_available}
-                    onChange={(next) =>
-                      setForm((f) => ({
-                        ...f,
-                        in_person_available: next.inPerson,
-                        online_available: next.online,
-                      }))
-                    }
-                  />
-                </Field>
-                {/* Primary training postcode and gyms have moved to the Website tab. */}
+            {/* "Where you work" (delivery mode, postcode, gyms) has moved to the Website tab. */}
 
-              </div>
-            </Card>
+
 
 
             {/* 04 Your pitch — tagline + bio together (both marketing copy) */}
