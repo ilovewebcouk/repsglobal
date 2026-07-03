@@ -144,6 +144,7 @@ function ShopFrontEditorPage() {
   const services = data?.services ?? [];
 
   const [tagline, setTagline] = React.useState("");
+  const [subtitle, setSubtitle] = React.useState("");
   const [about, setAbout] = React.useState("");
   const [hero, setHero] = React.useState("");
   
