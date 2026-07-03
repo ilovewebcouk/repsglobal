@@ -48,6 +48,7 @@ import {
   aiDraftFaqs,
   aiDraftTagline,
   aiDraftAbout,
+  aiDraftSubtitle,
   type MethodPillar,
   type Venue,
   type TransformationDTO,
