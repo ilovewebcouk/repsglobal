@@ -332,29 +332,34 @@ function AdminActivityPage() {
           ingestStale={publicStale}
         />
 
-        {/* ── Zone 4 · Live map (2/3) + Realtime Summary (1/3) ── */}
+        {/* ── Zone 4 · Needs attention (promoted — action first) ── */}
+        <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
+
+        {/* ── Zone 5 · Live map (2/3, height-capped) + Realtime Summary (1/3) ── */}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
           <div className="xl:col-span-8">
-            <ClientOnlyMap
-              countries={geoQ.data?.countries ?? []}
-              loading={geoQ.isLoading}
-              selectedCountry={country}
-              onSelectCountry={(cc) => setSearch({ country: cc })}
-              layer={mapLayer}
-              onLayerChange={setMapLayer}
-              memberCities={memberMapCities}
-              publicCountries={publicRealtimeQ.data?.countries ?? []}
-              publicCities={publicRealtimeQ.data?.cities ?? []}
-              publicOnline={publicOnline}
-              publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
-              updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
-              onOpenVisitorAtCity={(city) => {
-                const rows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
-                const match = rows.find((r) => r.status === "live" && (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code)
-                  ?? rows.find((r) => (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code);
-                if (match) setVisitorDrawerId(match.journey_id);
-              }}
-            />
+            <div className="max-h-[600px] overflow-hidden rounded-[18px]">
+              <ClientOnlyMap
+                countries={geoQ.data?.countries ?? []}
+                loading={geoQ.isLoading}
+                selectedCountry={country}
+                onSelectCountry={(cc) => setSearch({ country: cc })}
+                layer={mapLayer}
+                onLayerChange={setMapLayer}
+                memberCities={memberMapCities}
+                publicCountries={publicRealtimeQ.data?.countries ?? []}
+                publicCities={publicRealtimeQ.data?.cities ?? []}
+                publicOnline={publicOnline}
+                publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
+                updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
+                onOpenVisitorAtCity={(city) => {
+                  const rows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
+                  const match = rows.find((r) => r.status === "live" && (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code)
+                    ?? rows.find((r) => (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code);
+                  if (match) setVisitorDrawerId(match.journey_id);
+                }}
+              />
+            </div>
           </div>
           <div className="xl:col-span-4">
             <RealtimeSummaryCard
@@ -370,7 +375,7 @@ function AdminActivityPage() {
           </div>
         </div>
 
-        {/* ── Zone 5 · Online now (1/2) + Pages being viewed now (1/2) ── */}
+        {/* ── Zone 6 · Online now (1/2) + Pages being viewed now (1/2) ── */}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
           <LiveActivityRail
             className="h-full w-full"
@@ -396,9 +401,26 @@ function AdminActivityPage() {
           />
         </div>
 
-        {/* ── Zone 6 + 7 · Needs attention (1/2) + 24h analytics summary (1/2) ── */}
+        {/* ── Zone 7 · Recent activity (1/2) + Last 7 days (1/2) ── */}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
-          <NeedsAttentionPanel rows={attentionRows} loading={attentionQ.isLoading} maxRows={5} />
+          <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
+            <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <h2 className="font-display text-[13.5px] font-semibold text-white">Recent activity</h2>
+                <span className="truncate text-[10.5px] text-white/45">Latest events in your system</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFeedOpen(true)}
+                className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:bg-white/10"
+              >
+                View full feed <ChevronRight className="h-3 w-3" />
+              </button>
+            </header>
+            <div>
+              <ActivityFeedV2 compact events={compactEvents} loading={feedQ.isLoading} onOpenEvent={(e) => setSelectedEvent(e)} />
+            </div>
+          </section>
           <section className="rounded-[18px] border border-reps-border bg-reps-panel p-4">
             <header className="mb-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -409,28 +431,6 @@ function AdminActivityPage() {
             <AnalyticsStrip tiles={analyticsTiles} />
           </section>
         </div>
-
-        {/* ── Recent activity strip (compact horizontal feed) ── */}
-        <section className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel">
-          <header className="flex items-center justify-between gap-3 border-b border-reps-border/70 px-4 py-2.5">
-            <div className="flex min-w-0 items-center gap-2">
-              <h2 className="font-display text-[13.5px] font-semibold text-white">Recent activity</h2>
-              <span className="truncate text-[10.5px] text-white/45">
-                Latest events in your system
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setFeedOpen(true)}
-              className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:bg-white/10"
-            >
-              View full feed <ChevronRight className="h-3 w-3" />
-            </button>
-          </header>
-          <div>
-            <ActivityFeedV2 compact events={compactEvents} loading={feedQ.isLoading} onOpenEvent={(e) => setSelectedEvent(e)} />
-          </div>
-        </section>
 
         {/* ── Secondary (below the fold): member activity + public analytics rollup ── */}
         <details className="group rounded-[18px] border border-reps-border bg-reps-panel/60">
