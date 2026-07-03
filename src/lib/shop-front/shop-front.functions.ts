@@ -606,7 +606,13 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         method_name: sfRow.method_name ?? null,
         method_intro: sfRow.method_intro ?? null,
         method_pillars: asPillars(sfRow.method_pillars),
-        venues: gymVenues.length ? gymVenues : asVenues(sfRow.venues),
+        venues: [
+          ...(gymVenues.length ? gymVenues : asVenues(sfRow.venues)),
+          ...buildTrainingBaseVenues(
+            !!(pro as { trains_at_home_studio?: boolean | null }).trains_at_home_studio,
+            !!(pro as { trains_at_clients_home?: boolean | null }).trains_at_clients_home,
+          ),
+        ],
         coaching_reach: asReach(sfRow.coaching_reach),
         client_results_intro: sfRow.client_results_intro ?? null,
         layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
