@@ -615,8 +615,8 @@ function ServicesEditor({
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [draft, setDraft] = React.useState<ServiceDraft>(() => emptyDraft(services.length));
   const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
-  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
+
+
 
   function startEdit(s: ServiceDTO) {
     const b = Array.isArray(s.bullets) ? s.bullets.slice(0, 5) : [];
