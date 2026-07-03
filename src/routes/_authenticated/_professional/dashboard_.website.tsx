@@ -141,7 +141,7 @@ function ShopFrontEditorPage() {
   const [tagline, setTagline] = React.useState("");
   const [about, setAbout] = React.useState("");
   const [hero, setHero] = React.useState("");
-  const [accent, setAccent] = React.useState("");
+  
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
 
   React.useEffect(() => {
