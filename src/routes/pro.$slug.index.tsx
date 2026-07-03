@@ -7,12 +7,12 @@ import {
   BadgeCheck,
   Bookmark,
   Calendar,
-  
   Check,
   ChevronDown,
   ChevronRight,
   GraduationCap,
   Globe,
+  Home,
   Info,
   Laptop,
   MapPin,
@@ -628,17 +628,19 @@ function ProProfilePage() {
               </h1>
               <div className="mt-1 text-[16px] text-reps-muted-light">{pro.role}</div>
 
+              {pro.blurb ? (
+                <p className="mt-4 max-w-[560px] text-[15px] leading-relaxed text-reps-muted-light">
+                  {pro.blurb}
+                </p>
+              ) : null}
+
               <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px]">
-                <span className="inline-flex items-center gap-1.5 text-reps-charcoal">
-                  <MapPin className="h-4 w-4 text-reps-muted-light" />
-                  {pro.location}
-                </span>
                 {reviewSummary.count > 0 ? (
                   <span className="inline-flex items-center gap-1.5">
                     <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
                     <span className="font-semibold text-reps-charcoal">{reviewSummary.rating.toFixed(1)}</span>
                     <span className="text-reps-muted-light">
-                      ({reviewSummary.count} {reviewSummary.count === 1 ? "review" : "reviews"})
+                      Based on {reviewSummary.count} verified {reviewSummary.count === 1 ? "review" : "reviews"}
                     </span>
                   </span>
                 ) : (
@@ -647,27 +649,33 @@ function ProProfilePage() {
                     No reviews yet
                   </span>
                 )}
+                <span className="inline-flex items-center gap-1.5 text-reps-charcoal">
+                  <MapPin className="h-4 w-4 text-reps-muted-light" />
+                  {pro.location}
+                </span>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {pro.modes.map((m) => (
-                  <span
-                    key={m}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
-                  >
-                    {m === "In-person" ? (
-                      <Users className="h-3.5 w-3.5" />
-                    ) : (
-                      <Laptop className="h-3.5 w-3.5" />
-                    )}
-                    {m}
+                {pro.modes.includes("In-person") ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal">
+                    <Home className="h-3.5 w-3.5" />
+                    At Home
                   </span>
-                ))}
+                ) : null}
+                {pro.modes.includes("Online") ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal">
+                    <Laptop className="h-3.5 w-3.5" />
+                    Online Coaching
+                  </span>
+                ) : null}
+                {pro.location ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {pro.location} & Surrounding Areas
+                  </span>
+                ) : null}
               </div>
 
-              <p className="mt-4 max-w-[520px] text-[14px] leading-relaxed text-reps-muted-light">
-                {pro.blurb}
-              </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
