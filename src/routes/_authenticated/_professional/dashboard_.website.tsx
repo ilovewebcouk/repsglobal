@@ -315,7 +315,7 @@ function ShopFrontEditorPage() {
       subtitle={
         isPro
           ? "Your public REPS website — services, pricing, method and branding."
-          : "Your public REPS website. Pro unlocks deeper customisation — join the waitlist for the full editor."
+          : "Your public REPS website. Pro unlocks deeper customisation — join the waitlist."
       }
       actions={
         <div className="flex items-center gap-2">
