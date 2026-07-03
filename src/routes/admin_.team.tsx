@@ -17,11 +17,10 @@ import { toast } from "sonner";
 import { listAdmins, grantAdmin, revokeAdmin, type AdminTeamRow } from "@/lib/admin/team.functions";
 
 export const Route = createFileRoute("/admin_/team")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(['admin']),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Admin team — REPS Admin" },
       { name: "description", content: "Grant and revoke admin access to the REPS platform." },
     ],

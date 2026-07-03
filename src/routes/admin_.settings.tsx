@@ -13,11 +13,10 @@ import { TimeAgo } from "@/components/verification/TimeAgo";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin_/settings")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(['admin']),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Platform settings — REPS Admin" },
       { name: "description", content: "Configure REPS platform-wide settings: branding, email, integrations and feature flags." },
       { property: "og:title", content: "Platform settings — REPS Admin" },

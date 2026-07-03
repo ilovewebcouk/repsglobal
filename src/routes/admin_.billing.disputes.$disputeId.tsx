@@ -39,10 +39,9 @@ import {
 } from "@/lib/admin/billing-console/dispute-workbench.functions";
 
 export const Route = createFileRoute("/admin_/billing/disputes/$disputeId")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
-  head: () => ({ meta: [{ title: "Dispute workbench — REPS Admin" }] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }, { title: "Dispute workbench — REPS Admin" }] }),
   component: DisputeWorkbenchPage,
 });
 

@@ -57,10 +57,9 @@ import { Input } from "@/components/ui/input";
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
 
 export const Route = createFileRoute("/admin_/members/$userId")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
-  head: () => ({ meta: [{ title: "Member 360 — REPS Admin" }] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }, { title: "Member 360 — REPS Admin" }] }),
   component: MemberPage,
 });
 

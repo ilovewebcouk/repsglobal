@@ -87,11 +87,10 @@ import {
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/admin_/support")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Support queue — REPS Admin" },
       {
         name: "description",

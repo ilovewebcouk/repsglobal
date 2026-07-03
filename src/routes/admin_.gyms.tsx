@@ -16,11 +16,10 @@ import {
 } from "@/lib/gyms.functions";
 
 export const Route = createFileRoute("/admin_/gyms")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "Gyms — REPS Admin" },
       { name: "description", content: "Moderate gym submissions and curate the venue directory." },
     ],

@@ -4,11 +4,10 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 
 export const Route = createFileRoute("/admin_/cpd")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(['admin']),
   head: () => ({
-    meta: [
+    meta: [{ name: "robots", content: "noindex,nofollow" }, 
       { title: "CPD oversight — REPS Admin" },
       { name: "description", content: "Track CPD compliance, evidence audits and the course catalogue." },
       { property: "og:title", content: "CPD oversight — REPS Admin" },
