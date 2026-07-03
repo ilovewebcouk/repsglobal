@@ -631,7 +631,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
               { onConflict: "professional_id" },
             )
             .select(
-              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant",
+              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme",
             )
             .single();
           if (error) throw error;
