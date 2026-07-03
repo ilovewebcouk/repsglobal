@@ -763,18 +763,18 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ SUB NAV ============ */}
-      <section className="bg-reps-ivory">
+      {/* ============ SUB NAV (sticky, honest) ============ */}
+      <section className="sticky top-[64px] z-30 border-b border-reps-stone/70 bg-reps-ivory/95 backdrop-blur">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <nav className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-reps-stone py-4 text-[14px]">
+          <nav className="flex flex-wrap items-center gap-x-1 gap-y-1 py-3 text-[13px]">
             {SUB_NAV.map((s, i) => (
               <a
                 key={s}
                 href={`#${s.toLowerCase()}`}
-                className={`relative px-3 py-1.5 font-medium ${
+                className={`rounded-full px-3 py-1.5 font-medium transition-colors ${
                   i === 0
-                    ? "text-reps-orange after:absolute after:inset-x-3 after:-bottom-[17px] after:h-[2px] after:rounded-full after:bg-reps-orange"
-                    : "text-reps-muted-light hover:text-reps-charcoal"
+                    ? "bg-reps-orange/10 text-reps-orange"
+                    : "text-reps-muted-light hover:bg-reps-warm-white hover:text-reps-charcoal"
                 }`}
               >
                 {s}
@@ -784,72 +784,69 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ ABOUT + SERVICES + SPECIALISMS / LOCATION ============ */}
+      {/* ============ SPINE: main + sticky sidebar ============ */}
       <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-10">
-          <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
-            {/* About */}
-            <div id="about" className="flex flex-col rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+        <div className="mx-auto grid max-w-[1320px] gap-8 px-6 py-10 lg:grid-cols-[1.7fr_1fr] lg:gap-10 lg:px-10 lg:py-12">
+
+          {/* ===== MAIN COLUMN ===== */}
+          <div className="flex min-w-0 flex-col gap-12">
+
+            {/* About — no card */}
+            <div id="about">
+              <h2 className="font-display text-[24px] font-bold text-reps-charcoal">
                 About {pro.firstName}
               </h2>
-              <p className="mt-3 border-l-2 border-reps-orange pl-3 font-display text-[15px] italic leading-snug text-reps-charcoal">
+              <p className="mt-4 border-l-2 border-reps-orange pl-4 font-display text-[17px] italic leading-snug text-reps-charcoal">
                 &ldquo;{pro.blurb}&rdquo;
               </p>
-              <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-reps-muted-light">
+              <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-reps-muted-light">
                 {pro.bio.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
               </div>
-              <div className="mt-auto grid grid-cols-3 gap-2 pt-5">
-                <div className="rounded-[12px] bg-reps-ivory p-3 text-center">
-                  <div className="font-display text-[20px] font-bold leading-none text-reps-orange">
-                    {pro.years}+
-                  </div>
-                  <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                    Years experience
-                  </div>
-                </div>
-                <div className="rounded-[12px] bg-reps-ivory p-3 text-center">
-                  <div className="font-display text-[20px] font-bold leading-none text-reps-orange">
-                    {pro.clients}
-                  </div>
-                  <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                    Clients helped
-                  </div>
-                </div>
-                <div className="rounded-[12px] bg-reps-ivory p-3 text-center">
-                  <div className="font-display text-[20px] font-bold leading-none text-reps-orange">
-                    {pro.qualifications[0]?.issued.split(" ").pop() ?? "—"}
-                  </div>
-                  <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                    Verified since
-                  </div>
-                </div>
+              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-reps-muted-light">
+                <span>
+                  <strong className="font-semibold text-reps-charcoal">{pro.years}+</strong> years experience
+                </span>
+                <span className="text-reps-stone" aria-hidden>·</span>
+                <span>
+                  <strong className="font-semibold text-reps-charcoal">{pro.clients}</strong> clients helped
+                </span>
+                {pro.qualifications[0]?.issued ? (
+                  <>
+                    <span className="text-reps-stone" aria-hidden>·</span>
+                    <span>
+                      Verified since{" "}
+                      <strong className="font-semibold text-reps-charcoal">
+                        {pro.qualifications[0].issued.split(" ").pop()}
+                      </strong>
+                    </span>
+                  </>
+                ) : null}
               </div>
             </div>
 
-            {/* Services */}
-            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            {/* Services — light card, light rows */}
+            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:p-7">
               <div className="flex items-baseline justify-between gap-3">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+                <h2 className="font-display text-[20px] font-bold text-reps-charcoal">
                   Services &amp; Pricing
                 </h2>
                 <a
                   href={`/pro/${pro.slug}/services`}
-                  className="text-[12px] font-semibold text-reps-orange hover:underline"
+                  className="text-[13px] font-semibold text-reps-orange hover:underline"
                 >
-                  View all services →
+                  View all →
                 </a>
               </div>
-              <div className="mt-4 flex flex-col gap-3">
+              <div className="mt-5 flex flex-col gap-3">
                 {pro.services.map((s) => (
                   <article
                     key={s.title}
-                    className="flex items-stretch gap-4 rounded-[18px] bg-reps-panel p-3 text-white"
+                    className="flex items-stretch gap-4 rounded-[18px] border border-reps-stone bg-reps-ivory p-3"
                   >
                     {s.image ? (
-                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/5 ring-1 ring-white/10">
+                      <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[12px] bg-reps-stone">
                         <img
                           src={s.image}
                           alt=""
@@ -859,263 +856,93 @@ function ProProfilePage() {
                       </div>
                     ) : null}
                     <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-                      <div className="font-display text-[16px] font-bold leading-tight text-white">
+                      <div className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
                         {s.title}
                       </div>
-                      <div className="text-[13px] leading-snug text-white/65 line-clamp-2">
+                      <div className="line-clamp-2 text-[13px] leading-snug text-reps-muted-light">
                         {s.desc}
                       </div>
                     </div>
-                    <div className="flex shrink-0 flex-col items-end justify-center pl-2 pr-1 text-right">
-                      <div className="font-display text-[16px] font-bold leading-tight text-white">
+                    <div className="flex shrink-0 flex-col items-end justify-center pl-2 text-right">
+                      <div className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
                         {s.price}
                       </div>
-                      <div className="mt-0.5 text-[12px] text-white/60">
+                      <div className="mt-0.5 text-[12px] text-reps-muted-light">
                         {s.unit}
                       </div>
                     </div>
                   </article>
                 ))}
               </div>
-
-
             </div>
 
-            {/* Specialisms + Location */}
-            <div className="flex flex-col gap-5">
-              <div id="specialisms" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Specialisms</h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {pro.specialisms.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">Location</h2>
-                <div className="mt-3 grid grid-cols-[1fr_1.1fr] gap-3">
-                  <div className="relative aspect-square overflow-hidden rounded-[12px] bg-reps-stone ring-1 ring-inset ring-reps-charcoal/5">
-                    {pro.lat != null && pro.lng != null ? (
-                      <LocationMap lat={pro.lat} lng={pro.lng} label={pro.location} />
-                    ) : (
-                      <MapPlaceholder />
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2 text-[13px] text-reps-muted-light">
-                    <div>
-                      <div className="text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
-                      <div className="text-[12px] text-reps-muted-light">{pro.region}</div>
-                    </div>
-                    <div className="leading-snug">
-                      In-person at private
-                      <br />
-                      studio or local gym
-                    </div>
-                    {pro.lat != null && pro.lng != null ? (
-                      <a
-                        href={`https://www.google.com/maps?q=${pro.lat},${pro.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-ivory"
-                      >
-                        <MapPin className="h-3.5 w-3.5" />
-                        View on map
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-
-
-              <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                  Trains at
-                </h2>
-                {(() => {
-                  const gyms =
-                    pro.gyms ??
-                    [
-                      { label: "Virgin Active", branch: "Barbican" },
-                      { label: "PureGym", branch: "Old Street" },
-                      { label: "Third Space", branch: "City" },
-                    ];
-                  if (gyms.length === 0) {
-                    return (
-                      <p className="mt-3 text-[13px] text-reps-muted-light">
-                        No gyms listed yet.
-                      </p>
-                    );
-                  }
-                  return (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {gyms.map((v) => (
-                        <span
-                          key={`${v.label}-${v.branch}`}
-                          className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1 text-[12px] font-medium text-reps-charcoal"
-                        >
-                          {v.label}
-                          {v.branch ? ` · ${v.branch}` : ""}
-                        </span>
-                      ))}
-                    </div>
-                  );
-                })()}
+            {/* Specialisms — no card */}
+            <div id="specialisms">
+              <h2 className="font-display text-[20px] font-bold text-reps-charcoal">
+                Specialisms
+              </h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {pro.specialisms.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center rounded-full border border-reps-stone bg-reps-warm-white px-3 py-1.5 text-[13px] font-medium text-reps-charcoal"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ============ QUALIFICATIONS + TRUST ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 pb-8 lg:px-10">
-          <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
-            <div id="qualifications" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
+            {/* Qualifications — card */}
+            <div id="qualifications" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:p-7">
+              <h2 className="font-display text-[20px] font-bold text-reps-charcoal">
                 Qualifications &amp; Credentials
               </h2>
               {pro.qualifications.length === 0 ? (
-                <p className="mt-5 text-[13px] text-reps-muted-light">
+                <p className="mt-5 text-[14px] text-reps-muted-light">
                   Verified qualifications will appear here once added.
                 </p>
               ) : (
-                <>
-                  <div className="mt-5 space-y-5">
-                    {pro.qualifications.map((q) => (
-                      <div
-                        key={q.id}
-                        className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border-b border-reps-stone/70 pb-5 last:border-0 last:pb-0"
-                      >
-                        <div className="flex h-12 w-16 items-center justify-center rounded-[10px] bg-reps-ivory text-[11px] font-bold text-reps-charcoal">
-                          {q.badge}
-                        </div>
-                        <div>
-                          <div className="text-[14px] font-semibold text-reps-charcoal">{q.title}</div>
-                          <div className="text-[12px] text-reps-muted-light">{q.issuer}</div>
-                          <div className="mt-0.5 text-[11px] text-reps-muted-light">ID: {q.id}</div>
-                        </div>
-                        <div className="text-right text-[12px] text-reps-muted-light">
-                          <div>Issued: {q.issued}</div>
-                          <div className="mt-1 text-[11px] font-medium text-reps-green">
-                            {q.verified === false ? "Approved" : "Verified"}
-                          </div>
-                        </div>
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-reps-green text-white">
-                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                        </span>
+                <div className="mt-5 space-y-5">
+                  {pro.qualifications.map((q) => (
+                    <div
+                      key={q.id}
+                      className="grid grid-cols-[64px_1fr_auto_auto] items-center gap-4 border-b border-reps-stone/70 pb-5 last:border-0 last:pb-0"
+                    >
+                      <div className="flex h-12 w-16 items-center justify-center rounded-[10px] bg-reps-ivory text-[11px] font-bold text-reps-charcoal">
+                        {q.badge}
                       </div>
-                    ))}
-                  </div>
-                  <a className="mt-5 inline-block text-[13px] font-semibold text-reps-orange hover:underline" href="#qualifications">
-                    View all qualifications ({pro.qualifications.length})
-                  </a>
-                </>
+                      <div className="min-w-0">
+                        <div className="text-[14px] font-semibold text-reps-charcoal">{q.title}</div>
+                        <div className="text-[12px] text-reps-muted-light">{q.issuer}</div>
+                        <div className="mt-0.5 text-[11px] text-reps-muted-light">ID: {q.id}</div>
+                      </div>
+                      <div className="text-right text-[12px] text-reps-muted-light">
+                        <div>Issued: {q.issued}</div>
+                        <div className="mt-1 text-[11px] font-medium text-reps-green">
+                          {q.verified === false ? "Approved" : "Verified"}
+                        </div>
+                      </div>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-reps-green text-white">
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                      </span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                Trust &amp; Assurance
-              </h2>
-              {(() => {
-                const isFixture = !!PROS[slug];
-                const trust = pro.trust ?? {
-                  verified: true,
-                  insuranceExpiry: "2025-12-12",
-                  cpd: { done: 18, total: 20 },
-                };
-                const insuranceLabel = trust.insuranceExpiry
-                  ? `Active until ${new Date(trust.insuranceExpiry).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-                  : "Not on file";
-                const cpd = trust.cpd ?? (isFixture ? { done: 18, total: 20 } : null);
-                const items = [
-                  {
-                    on: !!trust.identityVerifiedAt || (isFixture && trust.verified),
-                    t: "Identity Verified",
-                    s: trust.identityVerifiedAt
-                      ? `Confirmed ${new Date(trust.identityVerifiedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-                      : "Not yet verified",
-                  },
-                  {
-                    on: !!trust.qualificationsCheckedAt || (isFixture && trust.verified),
-                    t: "Qualifications Approved",
-                    s: trust.qualificationsCheckedAt
-                      ? `Checked ${new Date(trust.qualificationsCheckedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-                      : "Awaiting review",
-                  },
-                  {
-                    on: !!trust.insuranceExpiry,
-                    t: "Professional Indemnity Insurance",
-                    s: insuranceLabel,
-                  },
-                  ...(cpd
-                    ? [{
-                        on: cpd.done >= cpd.total * 0.5,
-                        t: "CPD Compliant",
-                        s: `${cpd.done} / ${cpd.total} points this cycle`,
-                      }]
-                    : []),
-                ];
-                const pct = cpd ? Math.min(100, Math.round((cpd.done / Math.max(1, cpd.total)) * 100)) : null;
-                return (
-                  <>
-                    <ul className="mt-4 space-y-3 text-[13px]">
-                      {items.map((i) => (
-                        <li key={i.t} className="flex items-start gap-3">
-                          <span
-                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white ${i.on ? "bg-reps-green" : "bg-reps-stone"}`}
-                          >
-                            <Check className="h-3 w-3" strokeWidth={3} />
-                          </span>
-                          <div>
-                            <div className="font-semibold text-reps-charcoal">{i.t}</div>
-                            <div className="text-[12px] text-reps-muted-light">{i.s}</div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                    {pct !== null ? (
-                      <div className="mt-5">
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-reps-stone">
-                          <div className="h-full rounded-full bg-reps-orange" style={{ width: `${pct}%` }} />
-                        </div>
-                        <div className="mt-1 text-right text-[11px] font-medium text-reps-muted-light">{pct}%</div>
-                      </div>
-                    ) : null}
-                  </>
-                );
-              })()}
-              <a
-                href="#qualifications"
-                className="mt-2 flex items-center justify-between text-[13px] font-semibold text-reps-orange hover:underline"
-              >
-                View full verification
-                <ChevronRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ REVIEWS + FAQ ============ */}
-      <section className="bg-reps-ivory">
-        <div className="mx-auto max-w-[1320px] px-6 pb-10 lg:px-10">
-          <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
-            {/* Reviews */}
-            <div id="reviews" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+            {/* Reviews — card */}
+            <div id="reviews" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:p-7">
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                  What Clients Say
+                <h2 className="font-display text-[20px] font-bold text-reps-charcoal">
+                  What clients say
                 </h2>
-                <a className="text-[12px] font-medium text-reps-orange hover:underline" href="#reviews">
-                  See all {reviewSummary.count} reviews
-                </a>
+                {reviewSummary.count > 0 ? (
+                  <a className="text-[13px] font-medium text-reps-orange hover:underline" href="#reviews">
+                    See all {reviewSummary.count} reviews
+                  </a>
+                ) : null}
               </div>
 
               <div className="mt-5 grid gap-6 sm:grid-cols-[220px_1fr]">
@@ -1152,7 +979,7 @@ function ProProfilePage() {
 
                 <div className="space-y-5">
                   {hasRealReviews
-                    ? realReviews.slice(0, 6).map((r, i) => (
+                    ? realReviews.slice(0, 6).map((r) => (
                         <div key={r.id} className="grid grid-cols-[44px_1fr] gap-3">
                           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-reps-orange/10 text-[13px] font-semibold text-reps-orange">
                             {r.client_name
@@ -1178,11 +1005,7 @@ function ProProfilePage() {
                               {Array.from({ length: 5 }).map((_, k) => (
                                 <Star
                                   key={k}
-                                  className={`h-3 w-3 ${
-                                    k < r.rating
-                                      ? "fill-reps-orange text-reps-orange"
-                                      : "text-reps-stone"
-                                  }`}
+                                  className={`h-3 w-3 ${k < r.rating ? "fill-reps-orange text-reps-orange" : "text-reps-stone"}`}
                                 />
                               ))}
                             </div>
@@ -1191,8 +1014,8 @@ function ProProfilePage() {
                                 {r.title}
                               </p>
                             ) : null}
-                            <p className="mt-2 text-[13px] leading-relaxed text-reps-muted-light whitespace-pre-wrap">
-                              “{r.body}”
+                            <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-reps-muted-light">
+                              &ldquo;{r.body}&rdquo;
                             </p>
                           </div>
                         </div>
@@ -1208,41 +1031,213 @@ function ProProfilePage() {
               </div>
             </div>
 
-            {/* FAQ */}
-            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h2 className="font-display text-[18px] font-bold text-reps-charcoal">
-                Frequently Asked Questions
-              </h2>
-              <div className="mt-4 space-y-2">
-                {pro.faqs.map((f) => (
-                  <div
-                    key={f.q}
-                    className={`rounded-[12px] border border-reps-stone ${f.open ? "bg-reps-ivory" : "bg-reps-warm-white"}`}
-                  >
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[13px] font-semibold text-reps-charcoal"
+            {/* FAQ — no card */}
+            {pro.faqs.length > 0 ? (
+              <div id="faq">
+                <h2 className="font-display text-[20px] font-bold text-reps-charcoal">
+                  Frequently asked questions
+                </h2>
+                <div className="mt-4 space-y-2">
+                  {pro.faqs.map((f) => (
+                    <div
+                      key={f.q}
+                      className={`rounded-[12px] border border-reps-stone ${f.open ? "bg-reps-warm-white" : "bg-transparent"}`}
                     >
-                      {f.q}
-                      <ChevronDown
-                        className={`h-4 w-4 text-reps-muted-light transition-transform ${f.open ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                    {f.open && f.a && (
-                      <div className="px-4 pb-4 text-[12.5px] leading-relaxed text-reps-muted-light">
-                        {f.a}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[13px] font-semibold text-reps-charcoal"
+                      >
+                        {f.q}
+                        <ChevronDown
+                          className={`h-4 w-4 text-reps-muted-light transition-transform ${f.open ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {f.open && f.a ? (
+                        <div className="px-4 pb-4 text-[12.5px] leading-relaxed text-reps-muted-light">
+                          {f.a}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <a href="#" className="mt-4 flex items-center gap-1 text-[13px] font-semibold text-reps-orange hover:underline">
-                View all FAQs <ChevronRight className="h-4 w-4" />
-              </a>
-            </div>
+            ) : null}
           </div>
+
+          {/* ===== STICKY SIDEBAR ===== */}
+          <aside className="flex flex-col gap-5 lg:sticky lg:top-[130px] lg:self-start">
+            {/* CTA */}
+            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                Work with {pro.firstName}
+              </div>
+              {pro.services[0]?.price ? (
+                <>
+                  <div className="mt-1.5 font-display text-[22px] font-bold leading-none text-reps-charcoal">
+                    {pro.services[0].price}
+                  </div>
+                  {pro.services[0].unit ? (
+                    <div className="mt-1 text-[12px] text-reps-muted-light">{pro.services[0].unit}</div>
+                  ) : null}
+                </>
+              ) : (
+                <div className="mt-1.5 font-display text-[20px] font-bold leading-none text-reps-charcoal">
+                  Enquire for pricing
+                </div>
+              )}
+              {pro.modes.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {pro.modes.map((m) => (
+                    <span
+                      key={m}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-ivory px-3 py-1 text-[12px] font-medium text-reps-charcoal"
+                    >
+                      {m === "In-person" ? <Users className="h-3.5 w-3.5" /> : <Laptop className="h-3.5 w-3.5" />}
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="mt-5 flex flex-col gap-2">
+                <Link
+                  to="/pro/$slug/enquire"
+                  params={{ slug }}
+                  onClick={() => {
+                    void import("@/lib/analytics/track").then(({ track }) =>
+                      track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
+                    );
+                  }}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Enquire now
+                </Link>
+                <button
+                  type="button"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-5 text-[14px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
+                >
+                  <Bookmark className="h-4 w-4" />
+                  Save profile
+                </button>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Location</h3>
+              <div className="relative mt-3 aspect-[16/10] overflow-hidden rounded-[12px] bg-reps-stone ring-1 ring-inset ring-reps-charcoal/5">
+                {pro.lat != null && pro.lng != null ? (
+                  <LocationMap lat={pro.lat} lng={pro.lng} label={pro.location} />
+                ) : (
+                  <MapPlaceholder />
+                )}
+              </div>
+              <div className="mt-3 text-[14px] font-semibold text-reps-charcoal">{pro.location}</div>
+              {pro.region ? (
+                <div className="text-[12px] text-reps-muted-light">{pro.region}</div>
+              ) : null}
+              {pro.lat != null && pro.lng != null ? (
+                <a
+                  href={`https://www.google.com/maps?q=${pro.lat},${pro.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-ivory px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-warm-white"
+                >
+                  <MapPin className="h-3.5 w-3.5" />
+                  View on map
+                </a>
+              ) : null}
+            </div>
+
+            {/* Trains at */}
+            {(() => {
+              const gyms = pro.gyms ?? [];
+              if (gyms.length === 0) return null;
+              return (
+                <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+                  <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Trains at</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {gyms.map((v) => (
+                      <span
+                        key={`${v.label}-${v.branch}`}
+                        className="inline-flex items-center rounded-full border border-reps-stone bg-reps-ivory px-3 py-1 text-[12px] font-medium text-reps-charcoal"
+                      >
+                        {v.label}
+                        {v.branch ? ` · ${v.branch}` : ""}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Trust & Assurance — compact checklist */}
+            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">
+                Trust &amp; Assurance
+              </h3>
+              {(() => {
+                const isFixturePro = !!PROS[slug];
+                const trust = pro.trust ?? {
+                  verified: true,
+                  insuranceExpiry: "2025-12-12",
+                  cpd: { done: 18, total: 20 },
+                };
+                const insuranceLabel = trust.insuranceExpiry
+                  ? `Active until ${new Date(trust.insuranceExpiry).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                  : "Not on file";
+                const cpd = trust.cpd ?? (isFixturePro ? { done: 18, total: 20 } : null);
+                const items = [
+                  {
+                    on: !!trust.identityVerifiedAt || (isFixturePro && trust.verified),
+                    t: "Identity Verified",
+                    s: trust.identityVerifiedAt
+                      ? `Confirmed ${new Date(trust.identityVerifiedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                      : "Not yet verified",
+                  },
+                  {
+                    on: !!trust.qualificationsCheckedAt || (isFixturePro && trust.verified),
+                    t: "Qualifications Approved",
+                    s: trust.qualificationsCheckedAt
+                      ? `Checked ${new Date(trust.qualificationsCheckedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                      : "Awaiting review",
+                  },
+                  {
+                    on: !!trust.insuranceExpiry,
+                    t: "Professional Indemnity",
+                    s: insuranceLabel,
+                  },
+                  ...(cpd
+                    ? [{
+                        on: cpd.done >= cpd.total * 0.5,
+                        t: "CPD Compliant",
+                        s: `${cpd.done} / ${cpd.total} points`,
+                      }]
+                    : []),
+                ];
+                return (
+                  <ul className="mt-4 space-y-3 text-[12.5px]">
+                    {items.map((i) => (
+                      <li key={i.t} className="flex items-start gap-2.5">
+                        <span
+                          className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-white ${i.on ? "bg-reps-green" : "bg-reps-stone"}`}
+                        >
+                          <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="font-semibold leading-tight text-reps-charcoal">{i.t}</div>
+                          <div className="text-[11.5px] leading-tight text-reps-muted-light">{i.s}</div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
+            </div>
+          </aside>
         </div>
       </section>
+
 
       {/* ============ CTA BAND ============ */}
       <section className="bg-reps-ivory">
