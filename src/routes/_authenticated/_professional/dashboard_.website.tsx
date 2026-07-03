@@ -172,19 +172,31 @@ function ShopFrontEditorPage() {
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
 
+  const [taglineDialogOpen, setTaglineDialogOpen] = React.useState(false);
+  const [aboutDialogOpen, setAboutDialogOpen] = React.useState(false);
+  const [taglineAudience, setTaglineAudience] = React.useState("");
+  const [taglineSpecialisms, setTaglineSpecialisms] = React.useState<string[]>([]);
+  const [aboutAudience, setAboutAudience] = React.useState("");
+  const [aboutDifferentiator, setAboutDifferentiator] = React.useState("");
+  const [aboutTone, setAboutTone] = React.useState<"warm" | "direct" | "professional" | "playful">("warm");
+
   const draftTaglineMut = useMutation({
-    mutationFn: () => draftTaglineFn({ data: {} }),
+    mutationFn: (input: { audience: string; specialisms: string[] }) =>
+      draftTaglineFn({ data: input }),
     onSuccess: (r) => {
       setTagline(r.tagline);
+      setTaglineDialogOpen(false);
       toast.success("Tagline drafted — review and save.");
     },
     onError: (e: Error) => toast.error(e.message || "Could not draft tagline"),
   });
 
   const draftAboutMut = useMutation({
-    mutationFn: () => draftAboutFn({ data: {} }),
+    mutationFn: (input: { audience: string; differentiator: string; tone: "warm" | "direct" | "professional" | "playful" }) =>
+      draftAboutFn({ data: input }),
     onSuccess: (r) => {
       setAbout(r.about);
+      setAboutDialogOpen(false);
       toast.success("About drafted — review and save.");
     },
     onError: (e: Error) => toast.error(e.message || "Could not draft About"),
