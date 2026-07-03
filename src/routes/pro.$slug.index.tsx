@@ -689,23 +689,23 @@ function ProProfilePage() {
                   Get in touch
                 </div>
                 <div className="mt-1 text-[12.5px] text-reps-muted-light">
-                  Free, no-obligation enquiry. Most replies within a day.
+                  Free, no-obligation enquiry.
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-3 border-y border-reps-stone py-3 text-[12px]">
-                  <div>
-                    <div className="inline-flex items-center gap-1 text-reps-muted-light">
-                      <Clock className="h-3.5 w-3.5" /> Response
-                    </div>
-                    <div className="mt-0.5 font-semibold text-reps-charcoal">Within 1 day</div>
-                  </div>
-                  <div>
-                    <div className="inline-flex items-center gap-1 text-reps-muted-light">
-                      <Check className="h-3.5 w-3.5" /> Reply rate
-                    </div>
-                    <div className="mt-0.5 font-semibold text-reps-charcoal">98%</div>
-                  </div>
-                </div>
+                <ul className="mt-4 space-y-2 border-y border-reps-stone py-4 text-[12.5px] text-reps-charcoal">
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-green" strokeWidth={3} />
+                    Send a private enquiry
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-green" strokeWidth={3} />
+                    No obligation to book
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-green" strokeWidth={3} />
+                    Details shared only with {pro.firstName}
+                  </li>
+                </ul>
 
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
@@ -723,13 +723,6 @@ function ProProfilePage() {
                   </Link>
                   <button
                     type="button"
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-4 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
-                  >
-                    <Phone className="h-4 w-4" />
-                    Call
-                  </button>
-                  <button
-                    type="button"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] text-[13px] font-semibold text-reps-muted-light transition-colors hover:text-reps-charcoal"
                   >
                     <Bookmark className="h-4 w-4" />
@@ -738,6 +731,7 @@ function ProProfilePage() {
                 </div>
               </div>
             </aside>
+
           </div>
 
 
