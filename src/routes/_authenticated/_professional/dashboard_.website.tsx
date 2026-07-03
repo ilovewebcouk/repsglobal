@@ -1128,10 +1128,64 @@ function ServiceEditDialog({
 }
 
 
+/* ===================================================================== */
+/* Hero subtitle field — inline in the Website basics panel               */
+/* ===================================================================== */
+
+function HeroSubtitleField() {
+  const qc = useQueryClient();
+  const fetch_ = useServerFn(getMyWebsiteContent);
+  const save_ = useServerFn(saveMyWebsiteContent);
+
+  const { data } = useQuery({
+    queryKey: ["my-website-content"],
+    queryFn: () => fetch_(),
+  });
+
+  const [subtitle, setSubtitle] = React.useState("");
+  const [initialised, setInitialised] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!data || initialised) return;
+    setSubtitle(data.content.subtitle ?? "");
+    setInitialised(true);
+  }, [data, initialised]);
+
+  const saveMut = useMutation({
+    mutationFn: (patch: Record<string, unknown>) => save_({ data: patch as never }),
+    onSuccess: () => {
+      toast.success("Saved");
+      qc.invalidateQueries({ queryKey: ["my-website-content"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not save"),
+  });
+
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+      <div className="flex-1">
+        <TextInput
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          maxLength={200}
+          placeholder="e.g. Strength + hybrid coaching for busy professionals"
+        />
+      </div>
+      <button
+        type="button"
+        onClick={() => saveMut.mutate({ subtitle: subtitle.trim() || null })}
+        disabled={saveMut.isPending}
+        className="h-10 shrink-0 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+      >
+        {saveMut.isPending ? "Saving…" : "Save"}
+      </button>
+    </div>
+  );
+}
 
 /* ===================================================================== */
-/* Website content editor (Hero subtitle, Method, Venues, Results, FAQs)   */
+/* Website content editor (Method, Venues, Results, FAQs)                */
 /* ===================================================================== */
+
 
 function WebsiteContentEditor() {
   const qc = useQueryClient();
