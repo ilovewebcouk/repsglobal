@@ -382,13 +382,6 @@ function ShopFrontEditorPage() {
             >
               <HeroImageEditor value={hero} onChange={setHero} />
             </Field>
-            <Field label="Accent colour" hint="Hex like #f97316. Optional.">
-              <TextInput
-                value={accent}
-                onChange={(e) => setAccent(e.target.value)}
-                placeholder="#f97316"
-              />
-            </Field>
             <Field label="Layout" hint={isPro ? "Full website available on Pro." : "Lite layout for Core."}>
               <select
                 value={layout}
