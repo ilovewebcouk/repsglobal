@@ -1251,7 +1251,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Your pitch"
                 subtitle="What clients read on your directory card and profile."
-                step="04"
+                step="03"
               />
               <div className="flex flex-col gap-5">
                 <div data-field="headline">
@@ -1309,7 +1309,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Specialisms"
                 subtitle={`Unlocked by your profession — pick up to ${MAX_SPECIALISMS}.`}
-                step="05"
+                step="04"
               />
               <SpecialismsPicker
                 values={form.specialisms}
@@ -1325,7 +1325,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Languages & socials"
                 subtitle="Extras that help the right clients find you."
-                step="06"
+                step="05"
               />
               <div className="flex flex-col gap-5">
                 <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language.">
