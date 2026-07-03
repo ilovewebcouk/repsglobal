@@ -298,9 +298,9 @@ export const Route = createFileRoute("/professions/$profession")({
         },
         { property: "og:title", content: `${meta.plural} — REPS` },
         { property: "og:description", content: meta.blurb },
-        { property: "og:url", content: `/professions/${meta.slug}` },
+        { property: "og:url", content: `https://repsuk.org/professions/${meta.slug}` },
       ],
-      links: [{ rel: "canonical", href: `/professions/${meta.slug}` }],
+      links: [{ rel: "canonical", href: `https://repsuk.org/professions/${meta.slug}` }],
     };
   },
   component: ProfessionLanding,
