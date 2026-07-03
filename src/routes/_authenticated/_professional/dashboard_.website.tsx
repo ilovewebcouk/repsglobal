@@ -121,6 +121,70 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   );
 }
 
+const WEBSITE_SECTIONS: Array<{ id: string; label: string }> = [
+  { id: "basics", label: "Basics" },
+  { id: "services", label: "Services" },
+  { id: "method", label: "Method" },
+  { id: "specialisms", label: "Specialisms" },
+  { id: "location", label: "Location" },
+  { id: "transformations", label: "Transformations" },
+  { id: "results-intro", label: "Results" },
+  { id: "faqs", label: "FAQs" },
+];
+
+function WebsiteSectionNav() {
+  const [active, setActive] = React.useState<string>(WEBSITE_SECTIONS[0].id);
+
+  React.useEffect(() => {
+    const els = WEBSITE_SECTIONS
+      .map((s) => document.getElementById(s.id))
+      .filter((el): el is HTMLElement => !!el);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]?.target?.id) setActive(visible[0].target.id);
+      },
+      { rootMargin: "-40% 0px -50% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  function jump(id: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  return (
+    <div className="sticky top-0 z-10 -mx-4 mb-6 border-b border-reps-border bg-reps-ink/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="flex gap-1.5 overflow-x-auto">
+        {WEBSITE_SECTIONS.map((s) => {
+          const isActive = active === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => jump(s.id)}
+              className={
+                "shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors " +
+                (isActive
+                  ? "bg-reps-orange text-white"
+                  : "border border-reps-border bg-reps-panel-soft text-white/70 hover:text-white")
+              }
+            >
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ShopFrontEditorPage() {
   const tier = useTrainerTier();
   const blocked = false;
@@ -306,6 +370,37 @@ function ShopFrontEditorPage() {
 
   if (blocked) return null;
 
+  const saveAll = React.useCallback(() => {
+    saveMutation.mutate();
+    // Fan-out to child sections that own their own local state.
+    window.dispatchEvent(new CustomEvent("reps:website:save-all"));
+  }, [saveMutation]);
+
+  const SaveButton = ({ compact = false }: { compact?: boolean }) => (
+    <button
+      type="button"
+      disabled={saveMutation.isPending}
+      onClick={saveAll}
+      className={`flex ${compact ? "h-9 px-3 text-[12.5px]" : "h-10 px-4 text-[13px]"} items-center gap-2 rounded-[10px] bg-reps-orange font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60`}
+    >
+      <Save className="h-4 w-4" />
+      {saveMutation.isPending ? "Saving…" : "Save & publish"}
+    </button>
+  );
+
+  const ViewPublicButton = ({ compact = false }: { compact?: boolean }) =>
+    slug ? (
+      <Link
+        to="/c/$slug"
+        params={{ slug }}
+        target="_blank"
+        className={`flex ${compact ? "h-9 px-3 text-[12.5px]" : "h-10 px-4 text-[13px]"} items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft font-semibold text-white hover:bg-reps-panel`}
+      >
+        <ExternalLink className="h-4 w-4" />
+        View public page
+      </Link>
+    ) : null;
+
   return (
     <DashboardShell
       role="trainer"
@@ -319,27 +414,9 @@ function ShopFrontEditorPage() {
           : "Your public REPS website. Pro unlocks deeper customisation — join the waitlist."
       }
       actions={
-        <div className="flex items-center gap-2">
-          {slug && (
-            <Link
-              to="/c/$slug"
-              params={{ slug }}
-              target="_blank"
-              className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white hover:bg-reps-panel"
-            >
-              <ExternalLink className="h-4 w-4" />
-              View public page
-            </Link>
-          )}
-          <button
-            type="button"
-            disabled={saveMutation.isPending}
-            onClick={() => saveMutation.mutate()}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            <Save className="h-4 w-4" />
-            {saveMutation.isPending ? "Saving…" : "Save changes"}
-          </button>
+        <div className="hidden items-center gap-2 md:flex">
+          <ViewPublicButton />
+          <SaveButton />
         </div>
       }
     >
@@ -352,58 +429,73 @@ function ShopFrontEditorPage() {
           </p>
         </PCard>
       ) : (
-        <div className="space-y-6">
-          <ProfilePhotoPanel />
-          <PPanel>
-            <div className="border-b border-reps-border px-5 py-4">
-              <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
-              <p className="mt-0.5 text-[12px] text-white/55">
-                Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
-              </p>
+        <>
+          <WebsiteSectionNav />
+          <div className="space-y-6 pb-24">
+            <ProfilePhotoPanel />
+            <section id="basics" className="scroll-mt-24">
+              <PPanel>
+                <div className="border-b border-reps-border px-5 py-4">
+                  <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
+                  <p className="mt-0.5 text-[12px] text-white/55">
+                    Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
+                  </p>
+                </div>
+                <Field
+                  label="Tagline"
+                  hint="The H1 on your public page. One short line that sums you up."
+                  action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
+                >
+                  <TextInput
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
+                    maxLength={200}
+                    placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
+                  />
+                </Field>
+                <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
+                <Field
+                  label="About"
+                  hint="A short bio. Plain paragraphs, separated by blank lines."
+                  action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
+                >
+                  <TextArea
+                    value={about}
+                    onChange={(e) => setAbout(e.target.value)}
+                    maxLength={4000}
+                    placeholder="Tell clients who you help and how."
+                  />
+                </Field>
+                <Field
+                  label="Hero image"
+                  hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
+                >
+                  <HeroImageEditor value={hero} onChange={setHero} />
+                </Field>
+              </PPanel>
+            </section>
+
+            <section id="services" className="scroll-mt-24">
+              <ServicesEditor
+                services={services}
+                onSave={(s) => upsertServiceMut.mutate(s)}
+                onDelete={(id) => deleteServiceMut.mutate(id)}
+                onReorder={(ids) => reorderServicesMut.mutate(ids)}
+                saving={upsertServiceMut.isPending}
+              />
+            </section>
+
+            <WebsiteContentEditor />
+          </div>
+
+          {/* Sticky footer save bar */}
+          <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+            <div className="flex items-center justify-end gap-2">
+              <ViewPublicButton compact />
+              <SaveButton compact />
             </div>
-            <Field
-              label="Tagline"
-              hint="The H1 on your public page. One short line that sums you up."
-              action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
-            >
-              <TextInput
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
-                maxLength={200}
-                placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
-              />
-            </Field>
-            <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
-            <Field
-              label="About"
-              hint="A short bio. Plain paragraphs, separated by blank lines."
-              action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
-            >
-              <TextArea
-                value={about}
-                onChange={(e) => setAbout(e.target.value)}
-                maxLength={4000}
-                placeholder="Tell clients who you help and how."
-              />
-            </Field>
-            <Field
-              label="Hero image"
-              hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
-            >
-              <HeroImageEditor value={hero} onChange={setHero} />
-            </Field>
-          </PPanel>
-
-          <ServicesEditor
-            services={services}
-            onSave={(s) => upsertServiceMut.mutate(s)}
-            onDelete={(id) => deleteServiceMut.mutate(id)}
-            onReorder={(ids) => reorderServicesMut.mutate(ids)}
-            saving={upsertServiceMut.isPending}
-          />
-
-          <WebsiteContentEditor />
-        </div>
+          </div>
+        </>
       )}
 
       <Dialog open={taglineDialogOpen} onOpenChange={setTaglineDialogOpen}>
@@ -1274,11 +1366,37 @@ function WebsiteContentEditor() {
     });
   const onSaveResultsIntro = () => saveMut.mutate({ client_results_intro: clientResultsIntro || null });
 
+  // Listen for the page-level "Save & publish" and fan out to a single
+  // merged patch so we don't stampede the same mutation.
+  const saveAllRef = React.useRef<() => void>(() => {});
+  saveAllRef.current = () => {
+    if (!data) return;
+    saveMut.mutate({
+      method_name: methodName || null,
+      method_intro: methodIntro || null,
+      method_pillars: pillars.filter((p) => p.title.trim() && p.body.trim()),
+      client_results_intro: clientResultsIntro || null,
+      coaching_reach: {
+        cities: cities
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean),
+        online_worldwide: data.content.coaching_reach.online_worldwide ?? false,
+      },
+    });
+  };
+  React.useEffect(() => {
+    const h = () => saveAllRef.current();
+    window.addEventListener("reps:website:save-all", h);
+    return () => window.removeEventListener("reps:website:save-all", h);
+  }, []);
+
   if (isLoading || !data) return <PCard>Loading website content…</PCard>;
 
   return (
     <>
       {/* Method */}
+      <section id="method" className="scroll-mt-24">
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
           <div>
@@ -1360,37 +1478,17 @@ function WebsiteContentEditor() {
             );
           })}
         </div>
-
-        <div className="sticky bottom-0 z-10 flex items-center justify-end gap-2 border-t border-reps-border bg-reps-panel/95 px-5 py-3 backdrop-blur rounded-b-[22px]">
-          <button
-            type="button"
-            onClick={onSaveMethod}
-            disabled={saveMut.isPending}
-            className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            <Save className="h-3.5 w-3.5" />
-            {saveMut.isPending ? "Saving…" : "Save"}
-          </button>
-        </div>
       </PPanel>
+      </section>
 
       <SpecialismsDeliveryPanel />
 
       {/* Results intro */}
+      <section id="results-intro" className="scroll-mt-24">
       <PPanel>
-        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
-          </div>
-          <button
-            type="button"
-            onClick={onSaveResultsIntro}
-            disabled={saveMut.isPending}
-            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            Save
-          </button>
+        <div className="border-b border-reps-border px-5 py-4">
+          <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
+          <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
         </div>
         <div className="px-5 py-4">
           <TextArea
@@ -1401,21 +1499,24 @@ function WebsiteContentEditor() {
           />
         </div>
       </PPanel>
+      </section>
 
       {/* Where I train — postcode + Google-Places gyms + reach */}
+      <section id="location" className="scroll-mt-24">
       <WhereITrainPanel
         cities={cities}
         setCities={setCities}
-        onSaveReach={onSaveVenues}
-        saving={saveMut.isPending}
       />
+      </section>
 
       {/* Transformations */}
+      <section id="transformations" className="scroll-mt-24">
       <TransformationsEditor
         items={data.transformations}
         onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
         onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
       />
+      </section>
 
       <ClientResultsEditor
         items={data.clientResults}
@@ -1424,6 +1525,7 @@ function WebsiteContentEditor() {
       />
 
       {/* FAQs */}
+      <section id="faqs" className="scroll-mt-24">
       <FaqsEditor
         items={data.faqs}
         onSave={(f) => upsertF({ data: f }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
@@ -1452,6 +1554,7 @@ function WebsiteContentEditor() {
         }}
         drafting={draftingFaqs}
       />
+      </section>
     </>
   );
 }
@@ -1765,13 +1868,9 @@ function FaqsEditor({
 function WhereITrainPanel({
   cities,
   setCities,
-  onSaveReach,
-  saving,
 }: {
   cities: string;
   setCities: (v: string) => void;
-  onSaveReach: () => void;
-  saving: boolean;
 }) {
   const qc = useQueryClient();
   const fetchLocation = useServerFn(getMyPrimaryLocation);
@@ -1802,11 +1901,25 @@ function WhereITrainPanel({
   const postcodeMut = useMutation({
     mutationFn: (pc: string) => savePostcode({ data: { postcode: pc } }),
     onSuccess: () => {
-      toast.success("Postcode saved");
       qc.invalidateQueries({ queryKey: ["my-primary-location"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save postcode"),
   });
+
+  // Listen for the page-level "Save & publish".
+  const saveAllRef = React.useRef<() => void>(() => {});
+  saveAllRef.current = () => {
+    const trimmed = postcode.trim();
+    if (trimmed && trimmed !== (primaryLocation?.postcode ?? "")) {
+      postcodeMut.mutate(trimmed);
+    }
+  };
+  React.useEffect(() => {
+    const h = () => saveAllRef.current();
+    window.addEventListener("reps:website:save-all", h);
+    return () => window.removeEventListener("reps:website:save-all", h);
+  }, []);
+
 
   return (
     <PPanel>
@@ -1830,16 +1943,6 @@ function WhereITrainPanel({
       <Field
         label="Primary training postcode"
         hint="We use this to calculate distance and show your town. Your full postcode is never shown publicly."
-        action={
-          <button
-            type="button"
-            onClick={() => postcodeMut.mutate(postcode)}
-            disabled={postcodeMut.isPending || !postcode.trim()}
-            className="h-8 rounded-[10px] bg-reps-orange px-2.5 text-[11px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            {postcodeMut.isPending ? "Saving…" : "Save"}
-          </button>
-        }
       >
         <div className="relative">
           <MapPin className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
@@ -1876,16 +1979,6 @@ function WhereITrainPanel({
       <Field
         label="Cities you cover"
         hint="Comma-separated list shown as chips on your website."
-        action={
-          <button
-            type="button"
-            onClick={onSaveReach}
-            disabled={saving}
-            className="h-8 rounded-[10px] bg-reps-orange px-2.5 text-[11px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-        }
       >
         <TextInput value={cities} onChange={(e) => setCities(e.target.value)} placeholder="Leeds, Bradford" />
       </Field>

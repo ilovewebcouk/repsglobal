@@ -1,29 +1,55 @@
-## Brutal-honest read
+## Goal
+On `/dashboard/website`, replace the current mix of per-section save buttons with:
+1. A **sticky section nav** near the top so users can jump between sections.
+2. **One unified save** wired into a sticky footer bar (and the existing top "Save changes" button), so a single click saves everything on the page.
 
-You're right — Coaching plans reads cleanly because each plan is a self-contained card with a clear header (name, price, one description). Foundation Method is currently a **flat vertical stack of 8 inputs**: Method name, Intro, then Pillar 1 (title + body), Pillar 2 (title + body), Pillar 3 (title + body). The three pillars look identical, there's no visual grouping, and the placeholders ("Pillar title", "Pillar description") don't hint at what a good answer looks like. It scans as a form dump, not as "the thing that renders as the neat 01/02/03 cards on my public page."
+## Section nav (sticky, in-page)
+Add a horizontal sub-nav directly below the DashboardShell page header, sticky under the topbar:
 
-Two problems worth fixing:
-1. The editor doesn't mirror the frontend structure, so it's hard to picture the output while filling it in.
-2. Placeholder text is generic, so trainers stare at blank inputs.
+```text
+[ Basics ] [ Services ] [ Method ] [ Specialisms ] [ Transformations ] [ Results ] [ FAQs ] [ Location ]
+```
 
-## Plan
+- Each button smooth-scrolls to a `<section id="…">` anchor.
+- Active section is highlighted using `IntersectionObserver`.
+- Sticky offset accounts for the existing dashboard topbar height, matching the coach shop-front sub-nav shadow convention (`shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]` on scroll — see `mem://design/coach-shopfront`).
+- Radius `rounded-full` pills, semantic tokens only.
 
-**1. Restructure the Foundation Method panel into two visual groups inside the same `PPanel`:**
+## One unified save
+Currently the page has separate save calls:
+- `upsertMyShopFront` — Website basics (tagline, subtitle, about, hero)
+- `saveMyPrimaryPostcode` — primary postcode
+- `saveMyWebsiteContent` — cities covered, method intro, results intro, etc.
+- `updateMyDashboardProfile` — specialisms
+- `upsertTransformation` / `upsertFaq` / `upsertClientResult` — list items (already saved per-row on add/edit; leave those in place because they need per-row lifecycle)
 
-- **Method overview** (top): Method name + Intro, kept as-is.
-- **Three pillars** (below, under a small divider + subheading "The three pillars"): each pillar wrapped in its own bordered mini-card matching the public site's look — a numbered chip (`01`, `02`, `03`) in orange on the left, title input + body textarea stacked on the right. This mirrors the screenshot the user shared (numbered orange squares next to title + description), so the dashboard visually previews what the public page will render.
+Introduce a single `saveAll` mutation that runs the four *page-level* saves in parallel via `Promise.allSettled`, toasts once, and invalidates the relevant queries. Wire it to:
+- The existing top-right "Save changes" button.
+- A new **sticky footer save bar** at the bottom of the page (mirrors top button, always visible while scrolling).
 
-**2. Wire the reference copy as placeholder text** (not as default values — they only appear when the field is empty, so existing content isn't overwritten):
+Remove the per-section save buttons from:
+- Website basics (already the top save's scope)
+- Specialisms
+- Method / Results intro / About / any section that only writes page-level fields
 
-- Method name placeholder: `The Foundation Method`
-- Intro placeholder: `A three-phase system I've refined over 100+ clients. Same shape every time, written from scratch for every person.`
-- Pillar 1 title / body: `Build the base` / `Two weeks fixing technique on the four lifts that matter. No ego, no fluff.`
-- Pillar 2 title / body: `Train the plan` / `Eight weeks of progressive, measurable work — written around your schedule, not a template.`
-- Pillar 3 title / body: `Make it stick` / `Habits, nutrition rails and recovery so the result still holds 12 months later.`
+Keep per-row Save/Delete on list editors (Transformations, FAQs, Client Results, Services) — these are item CRUD, not page-level fields.
 
-**3. Keep everything else identical** — same state, same save handler, same AI draft button, same character limits, same submit flow. Zero backend or logic change.
+## Sticky footer save bar
+- Fixed to viewport bottom inside the DashboardShell content area.
+- Contains: "View public page" link (if slug) + primary "Save changes" button + subtle "Unsaved changes" indicator driven by a dirty-state flag (comparing local state to loaded query data for the four page-level payloads).
+- Matches radius rules (10px button) and status tokens.
 
-## Scope
-- Single file: `src/routes/_authenticated/_professional/dashboard_.website.tsx` (lines ~1281–1341)
-- No new components, no new props, no schema change
-- Numbered chips use existing `reps-orange` token — no new colors
+## Dirty-state indicator
+Track a `dirty` boolean derived from comparing current form state to the loaded server state for: basics, cities/method/results copy, specialisms, primary postcode. Show "Unsaved changes" text in the sticky footer when true; disable Save when false.
+
+## Technical notes
+- File: `src/routes/_authenticated/_professional/dashboard_.website.tsx`.
+- New small component `WebsiteSectionNav` co-located in the same file (or `src/components/dashboard/WebsiteSectionNav.tsx` if it grows).
+- Section wrappers: add `id="basics" | "services" | "method" | "specialisms" | "transformations" | "results" | "faqs" | "location"` to their PPanel roots.
+- Sticky offsets: nav `top-[calc(var(--dashboard-topbar-h,64px))]`; footer `bottom-0` with a `bg-reps-bg/95 backdrop-blur border-t border-reps-border`.
+- No backend changes. No new deps.
+
+## Out of scope
+- Bulk save for per-row lists (Transformations/FAQs/Services).
+- Accordion / tab restructure (rejected earlier).
+- Any other dashboard page.
