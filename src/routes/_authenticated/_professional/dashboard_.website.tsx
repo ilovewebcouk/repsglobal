@@ -122,7 +122,6 @@ function ShopFrontEditorPage() {
   const [hero, setHero] = React.useState("");
   const [accent, setAccent] = React.useState("");
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
-  const [isPublished, setIsPublished] = React.useState(false);
 
   React.useEffect(() => {
     if (!sf) return;
@@ -131,7 +130,6 @@ function ShopFrontEditorPage() {
     setHero(sf.hero_image_url ?? "");
     setAccent(sf.accent_hex ?? "");
     setLayout(sf.layout_variant);
-    setIsPublished(sf.is_published);
   }, [sf]);
 
   const saveMutation = useMutation({
@@ -143,7 +141,8 @@ function ShopFrontEditorPage() {
           hero_image_url: hero || null,
           accent_hex: accent || null,
           layout_variant: layout,
-          is_published: isPublished,
+          // Every member's website is always live — no owner-facing toggle.
+          is_published: true,
         },
       }),
     onSuccess: () => {
@@ -342,17 +341,6 @@ function ShopFrontEditorPage() {
                 <option value="lite">Lite (Verified)</option>
                 <option value="full">Full (Pro)</option>
               </select>
-            </Field>
-            <Field label="Published" hint="When on, your page is publicly visible.">
-              <label className="flex items-center gap-2 text-[13px] text-white/85">
-                <input
-                  type="checkbox"
-                  checked={isPublished}
-                  onChange={(e) => setIsPublished(e.target.checked)}
-                  className="h-4 w-4 accent-reps-orange"
-                />
-                Page is live
-              </label>
             </Field>
           </PPanel>
 
