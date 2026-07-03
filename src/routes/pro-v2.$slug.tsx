@@ -24,7 +24,7 @@ import {
   Umbrella,
   Users,
 } from "lucide-react";
-import PublicHeader from "@/components/public/PublicHeader";
+import { PublicHeader } from "@/components/public/PublicHeader";
 import { samplePro } from "@/components/pro-v2/sample-pro";
 
 export const Route = createFileRoute("/pro-v2/$slug")({
