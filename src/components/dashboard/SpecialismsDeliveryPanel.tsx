@@ -2,7 +2,6 @@ import * as React from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
 
 import { PPanel } from "@/components/dashboard/primitives";
 import { SpecialismsPicker } from "@/components/profile/SpecialismsPicker";
@@ -15,11 +14,11 @@ import type { SpecialismSlug } from "@/lib/specialisms";
 /**
  * Specialism chips.
  *
- * Lives at the top of the Website editor. The chips feed the directory
- * card, search filters and the enquire form's "What kind of coaching"
- * options. The In-person / Online delivery toggle has been moved to
- * "Where I train" (see DeliveryModePanel) since it also controls the
- * Online (worldwide) chip on the public page.
+ * Lives inside the Website editor. The chips feed the directory card,
+ * search filters and the enquire form's "What kind of coaching" options.
+ * Saving is handled by the page-level "Save & publish" — this panel
+ * listens for the `reps:website:save-all` event and fires its own save
+ * when the chips are dirty.
  */
 export function SpecialismsDeliveryPanel() {
   const qc = useQueryClient();
@@ -67,33 +66,31 @@ export function SpecialismsDeliveryPanel() {
       });
     },
     onSuccess: () => {
-      toast.success("Specialisms updated");
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       qc.invalidateQueries({ queryKey: ["shop-front-public"] });
     },
-    onError: (e: Error) => toast.error(e.message || "Could not save"),
+    onError: (e: Error) => toast.error(e.message || "Could not save specialisms"),
   });
+
+  const saveAllRef = React.useRef<() => void>(() => {});
+  saveAllRef.current = () => {
+    if (dirty) saveMut.mutate();
+  };
+  React.useEffect(() => {
+    const h = () => saveAllRef.current();
+    window.addEventListener("reps:website:save-all", h);
+    return () => window.removeEventListener("reps:website:save-all", h);
+  }, []);
 
   return (
     <div id="specialisms" className="scroll-mt-24">
     <PPanel>
-      <div className="flex items-start justify-between gap-4 border-b border-reps-border px-5 py-4">
-        <div>
-          <h3 className="text-[14px] font-semibold text-white">Specialisms</h3>
-          <p className="mt-0.5 text-[12px] text-white/55">
-            Pick up to 3 specialisms. These power your directory card chips, search
-            filters and the enquire form's "What kind of coaching" options.
-          </p>
-        </div>
-        <button
-          type="button"
-          disabled={!dirty || saveMut.isPending}
-          onClick={() => saveMut.mutate()}
-          className="flex h-9 shrink-0 items-center gap-2 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Save className="h-3.5 w-3.5" />
-          {saveMut.isPending ? "Saving…" : "Save"}
-        </button>
+      <div className="border-b border-reps-border px-5 py-4">
+        <h3 className="text-[14px] font-semibold text-white">Specialisms</h3>
+        <p className="mt-0.5 text-[12px] text-white/55">
+          Pick up to 3 specialisms. These power your directory card chips, search
+          filters and the enquire form's "What kind of coaching" options.
+        </p>
       </div>
 
       <div className="px-5 py-5">
@@ -112,43 +109,3 @@ export function SpecialismsDeliveryPanel() {
   );
 }
 
-function ModeToggle({
-  label,
-  hint,
-  on,
-  onChange,
-}: {
-  label: string;
-  hint: string;
-  on: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!on)}
-      aria-pressed={on}
-      className={
-        "flex items-start gap-3 rounded-[12px] border p-4 text-left transition-colors " +
-        (on
-          ? "border-reps-orange-border bg-reps-orange-soft/40"
-          : "border-reps-border bg-reps-panel-soft hover:border-reps-orange-border/60")
-      }
-    >
-      <span
-        className={
-          "mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " +
-          (on
-            ? "border-reps-orange bg-reps-orange text-white"
-            : "border-reps-border bg-reps-ink text-transparent")
-        }
-      >
-        ✓
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[13.5px] font-semibold text-white">{label}</span>
-        <span className="mt-0.5 block text-[12px] text-white/55">{hint}</span>
-      </span>
-    </button>
-  );
-}
