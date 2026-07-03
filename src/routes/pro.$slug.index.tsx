@@ -592,16 +592,16 @@ function ProProfilePage() {
           })()}
         </div>
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-4 lg:px-10">
-          <div className="grid gap-8 lg:grid-cols-[460px_1fr] lg:gap-10">
+          <div className="grid gap-8 lg:grid-cols-[380px_1fr_320px] lg:gap-8">
             {/* Portrait */}
-            <div className="relative block aspect-[4/3] overflow-hidden rounded-[24px] bg-reps-stone">
+            <div className="relative block aspect-[4/5] overflow-hidden rounded-[24px] bg-reps-stone">
               {pro.image ? (
                 <img
                   src={pro.image}
                   alt={`${pro.name} — ${pro.role}`}
                   className="h-full w-full object-cover"
-                  width={920}
-                  height={690}
+                  width={760}
+                  height={950}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
