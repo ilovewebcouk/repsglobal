@@ -46,6 +46,8 @@ import {
   deleteClientResult,
   aiDraftMethod,
   aiDraftFaqs,
+  aiDraftTagline,
+  aiDraftAbout,
   type MethodPillar,
   type Venue,
   type TransformationDTO,
@@ -67,15 +69,32 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/w
   component: ShopFrontEditorPage,
 });
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, hint, action, children }: { label: string; hint?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-1 gap-3 border-b border-reps-border/60 px-5 py-4 last:border-b-0 md:grid-cols-[220px_1fr]">
       <div>
-        <div className="text-[13px] font-semibold text-white">{label}</div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-[13px] font-semibold text-white">{label}</div>
+          {action}
+        </div>
         {hint && <p className="mt-0.5 text-[12px] text-white/55">{hint}</p>}
       </div>
       <div>{children}</div>
     </div>
+  );
+}
+
+function AIDraftButton({ onClick, pending, label = "AI draft" }: { onClick: () => void; pending: boolean; label?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={pending}
+      className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel-soft px-2 py-1 text-[11px] font-semibold text-white/80 hover:bg-reps-panel hover:text-white disabled:opacity-60"
+    >
+      <Sparkles className="h-3 w-3" />
+      {pending ? "Drafting…" : label}
+    </button>
   );
 }
 
@@ -108,6 +127,8 @@ function ShopFrontEditorPage() {
   const upsertSf = useServerFn(upsertMyShopFront);
   const upsertSvc = useServerFn(upsertMyService);
   const deleteSvc = useServerFn(deleteMyService);
+  const draftTaglineFn = useServerFn(aiDraftTagline);
+  const draftAboutFn = useServerFn(aiDraftAbout);
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-shop-front"],
@@ -149,6 +170,24 @@ function ShopFrontEditorPage() {
       qc.invalidateQueries({ queryKey: ["my-shop-front"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
+  });
+
+  const draftTaglineMut = useMutation({
+    mutationFn: () => draftTaglineFn({ data: {} }),
+    onSuccess: (r) => {
+      setTagline(r.tagline);
+      toast.success("Tagline drafted — review and save.");
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not draft tagline"),
+  });
+
+  const draftAboutMut = useMutation({
+    mutationFn: () => draftAboutFn({ data: {} }),
+    onSuccess: (r) => {
+      setAbout(r.about);
+      toast.success("About drafted — review and save.");
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not draft About"),
   });
 
   const upsertServiceMut = useMutation({
@@ -301,15 +340,23 @@ function ShopFrontEditorPage() {
                 Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
               </p>
             </div>
-            <Field label="Tagline" hint="One short line that sums you up.">
+            <Field
+              label="Tagline"
+              hint="The H1 on your public page. One short line that sums you up."
+              action={<AIDraftButton onClick={() => draftTaglineMut.mutate()} pending={draftTaglineMut.isPending} />}
+            >
               <TextInput
                 value={tagline}
                 onChange={(e) => setTagline(e.target.value)}
                 maxLength={200}
-                placeholder="Stronger, leaner, sharper — in 12 weeks."
+                placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
               />
             </Field>
-            <Field label="About" hint="A short bio. Plain paragraphs, separated by blank lines.">
+            <Field
+              label="About"
+              hint="A short bio. Plain paragraphs, separated by blank lines."
+              action={<AIDraftButton onClick={() => draftAboutMut.mutate()} pending={draftAboutMut.isPending} />}
+            >
               <TextArea
                 value={about}
                 onChange={(e) => setAbout(e.target.value)}
