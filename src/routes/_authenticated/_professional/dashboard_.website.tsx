@@ -366,6 +366,12 @@ function ShopFrontEditorPage() {
               />
             </Field>
             <Field
+              label="Subtitle"
+              hint={`Sits directly under your tagline on /c/${slug ?? "your-slug"} — one short supporting line.`}
+            >
+              <HeroSubtitleField />
+            </Field>
+            <Field
               label="About"
               hint="A short bio. Plain paragraphs, separated by blank lines."
               action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
@@ -1122,10 +1128,64 @@ function ServiceEditDialog({
 }
 
 
+/* ===================================================================== */
+/* Hero subtitle field — inline in the Website basics panel               */
+/* ===================================================================== */
+
+function HeroSubtitleField() {
+  const qc = useQueryClient();
+  const fetch_ = useServerFn(getMyWebsiteContent);
+  const save_ = useServerFn(saveMyWebsiteContent);
+
+  const { data } = useQuery({
+    queryKey: ["my-website-content"],
+    queryFn: () => fetch_(),
+  });
+
+  const [subtitle, setSubtitle] = React.useState("");
+  const [initialised, setInitialised] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!data || initialised) return;
+    setSubtitle(data.content.subtitle ?? "");
+    setInitialised(true);
+  }, [data, initialised]);
+
+  const saveMut = useMutation({
+    mutationFn: (patch: Record<string, unknown>) => save_({ data: patch as never }),
+    onSuccess: () => {
+      toast.success("Saved");
+      qc.invalidateQueries({ queryKey: ["my-website-content"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not save"),
+  });
+
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+      <div className="flex-1">
+        <TextInput
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          maxLength={200}
+          placeholder="e.g. Strength + hybrid coaching for busy professionals"
+        />
+      </div>
+      <button
+        type="button"
+        onClick={() => saveMut.mutate({ subtitle: subtitle.trim() || null })}
+        disabled={saveMut.isPending}
+        className="h-10 shrink-0 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+      >
+        {saveMut.isPending ? "Saving…" : "Save"}
+      </button>
+    </div>
+  );
+}
 
 /* ===================================================================== */
-/* Website content editor (Hero subtitle, Method, Venues, Results, FAQs)   */
+/* Website content editor (Method, Venues, Results, FAQs)                */
 /* ===================================================================== */
+
 
 function WebsiteContentEditor() {
   const qc = useQueryClient();
@@ -1145,7 +1205,7 @@ function WebsiteContentEditor() {
     queryFn: () => fetch_(),
   });
 
-  const [subtitle, setSubtitle] = React.useState("");
+  // subtitle now lives in HeroSubtitleField (rendered in the basics panel)
   const [methodName, setMethodName] = React.useState("");
   const [methodIntro, setMethodIntro] = React.useState("");
   const [pillars, setPillars] = React.useState<MethodPillar[]>([]);
@@ -1158,7 +1218,7 @@ function WebsiteContentEditor() {
 
   React.useEffect(() => {
     if (!data) return;
-    setSubtitle(data.content.subtitle ?? "");
+    // subtitle handled by HeroSubtitleField
     setMethodName(data.content.method_name ?? "");
     setMethodIntro(data.content.method_intro ?? "");
     setPillars(
@@ -1200,7 +1260,7 @@ function WebsiteContentEditor() {
     }
   };
 
-  const onSaveHero = () => saveMut.mutate({ subtitle: subtitle || null });
+  // onSaveHero removed — HeroSubtitleField saves independently
   const onSaveMethod = () =>
     saveMut.mutate({
       method_name: methodName || null,
@@ -1226,34 +1286,6 @@ function WebsiteContentEditor() {
 
   return (
     <>
-      {/* Hero subtitle */}
-      <PPanel>
-        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-[14px] font-semibold text-white">Hero subtitle</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">
-              Shown directly under your H1 on /c/{"{slug}"} — one short line.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onSaveHero}
-            disabled={saveMut.isPending}
-            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            Save
-          </button>
-        </div>
-        <div className="px-5 py-4">
-          <TextInput
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            maxLength={200}
-            placeholder="e.g. Strength + hybrid coaching for busy professionals"
-          />
-        </div>
-      </PPanel>
-
       {/* Venues + reach */}
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
