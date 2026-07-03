@@ -513,10 +513,8 @@ function ProV2Page() {
                   Eve
                 </div>
                 {pro.availability.map((d) => (
-                  <>
-                    <div key={`${d.day}-lbl`} className="font-semibold text-reps-charcoal">
-                      {d.day}
-                    </div>
+                  <Fragment key={d.day}>
+                    <div className="font-semibold text-reps-charcoal">{d.day}</div>
                     {(["morning", "afternoon", "evening"] as const).map((slot) => {
                       const on = d.slots.includes(slot);
                       return (
@@ -532,7 +530,7 @@ function ProV2Page() {
                         </div>
                       );
                     })}
-                  </>
+                  </Fragment>
                 ))}
               </div>
               <p className="mt-5 text-[12px] text-reps-muted-light">
