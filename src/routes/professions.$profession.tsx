@@ -289,18 +289,41 @@ function getProfession(slug: string): ProfessionMeta {
 export const Route = createFileRoute("/professions/$profession")({
   head: ({ params }) => {
     const meta = getProfession(params.profession);
+    const desc =
+      meta.blurb.length > 160 ? `${meta.blurb.slice(0, 157).trimEnd()}…` : meta.blurb;
     return {
       meta: [
         { title: `${meta.plural} — REPS-Verified | REPS` },
-        {
-          name: "description",
-          content: `${meta.blurb} Browse REPS-verified ${meta.plural.toLowerCase()}.`,
-        },
+        { name: "description", content: desc },
         { property: "og:title", content: `${meta.plural} — REPS` },
-        { property: "og:description", content: meta.blurb },
+        { property: "og:description", content: desc },
         { property: "og:url", content: `https://repsuk.org/professions/${meta.slug}` },
       ],
       links: [{ rel: "canonical", href: `https://repsuk.org/professions/${meta.slug}` }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: FAQS.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: `${meta.plural} on REPS`,
+            description: desc,
+            url: `https://repsuk.org/professions/${meta.slug}`,
+          }),
+        },
+      ],
     };
   },
   component: ProfessionLanding,
