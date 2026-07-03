@@ -1651,8 +1651,7 @@ function ClientResultsEditor({
         {items.length === 0 && (
           <div className="px-5 py-4 text-[13px] text-white/55">No written client results yet — add one below.</div>
         )}
-      </div>
-      <div className="border-t border-reps-border px-5 py-5">
+        <div className="px-5 py-5">
         <div className="text-[13px] font-semibold text-white">Add a client result quote</div>
         <div className="mt-3 space-y-3">
           <TextInput
