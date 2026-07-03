@@ -1137,14 +1137,22 @@ function HeroSubtitleField() {
   const qc = useQueryClient();
   const fetch_ = useServerFn(getMyWebsiteContent);
   const save_ = useServerFn(saveMyWebsiteContent);
+  const fetchSf = useServerFn(getMyShopFront);
+  const draftFn = useServerFn(aiDraftSubtitle);
 
   const { data } = useQuery({
     queryKey: ["my-website-content"],
     queryFn: () => fetch_(),
   });
+  const { data: sfData } = useQuery({
+    queryKey: ["my-shop-front"],
+    queryFn: () => fetchSf(),
+  });
 
   const [subtitle, setSubtitle] = React.useState("");
   const [initialised, setInitialised] = React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [audience, setAudience] = React.useState("");
 
   React.useEffect(() => {
     if (!data || initialised) return;
@@ -1161,25 +1169,93 @@ function HeroSubtitleField() {
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
 
+  const draftMut = useMutation({
+    mutationFn: (input: { tagline: string; audience: string }) => draftFn({ data: input }),
+    onSuccess: (r) => {
+      setSubtitle(r.subtitle);
+      setDialogOpen(false);
+      toast.success("Subtitle drafted — review and save.");
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not draft subtitle"),
+  });
+
+  const currentTagline = sfData?.shopFront?.tagline ?? "";
+
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-      <div className="flex-1">
-        <TextInput
-          value={subtitle}
-          onChange={(e) => setSubtitle(e.target.value)}
-          maxLength={200}
-          placeholder="e.g. Strength + hybrid coaching for busy professionals"
+    <>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+        <div className="flex-1">
+          <TextInput
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+            maxLength={200}
+            placeholder="e.g. Strength + hybrid coaching for busy professionals"
+          />
+        </div>
+        <AIDraftButton
+          onClick={() => setDialogOpen(true)}
+          pending={draftMut.isPending}
         />
+        <button
+          type="button"
+          onClick={() => saveMut.mutate({ subtitle: subtitle.trim() || null })}
+          disabled={saveMut.isPending}
+          className="h-10 shrink-0 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+        >
+          {saveMut.isPending ? "Saving…" : "Save"}
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={() => saveMut.mutate({ subtitle: subtitle.trim() || null })}
-        disabled={saveMut.isPending}
-        className="h-10 shrink-0 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-      >
-        {saveMut.isPending ? "Saving…" : "Save"}
-      </button>
-    </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg border-reps-border bg-reps-panel text-white">
+          <DialogHeader>
+            <DialogTitle>Draft my subtitle</DialogTitle>
+            <DialogDescription>
+              One quick line about who this is for — we'll write a subtitle that supports your tagline.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {currentTagline ? (
+              <div className="rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 py-2">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-white/50">Your tagline</div>
+                <div className="mt-0.5 text-[13px] text-white/90">{currentTagline}</div>
+              </div>
+            ) : (
+              <p className="rounded-[10px] border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
+                Add and save your tagline first for a sharper subtitle.
+              </p>
+            )}
+            <div>
+              <div className="mb-1.5 text-[13px] font-semibold text-white">Who is this for and how do you deliver it?</div>
+              <TextArea
+                value={audience}
+                onChange={(e) => setAudience(e.target.value)}
+                maxLength={400}
+                placeholder='e.g. "Busy professionals — small-group and 1:1, in person in Bridgend or online worldwide."'
+                className="min-h-[90px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setDialogOpen(false)}
+              className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={draftMut.isPending}
+              onClick={() => draftMut.mutate({ tagline: currentTagline, audience })}
+              className="h-10 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+            >
+              {draftMut.isPending ? "Drafting…" : "Draft subtitle"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
