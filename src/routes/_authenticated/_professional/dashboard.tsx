@@ -24,7 +24,6 @@ import {
   NeedsAttention,
   ProUpsellStrip,
   ReviewsSnapshot,
-  ServicesStrip,
   VerificationStatusCard,
   WelcomeBanner,
   useHubData,
@@ -259,10 +258,7 @@ function DashboardPage() {
           </div>
 
 
-          {/* ROW 6 — Services */}
-          <ServicesStrip services={hub.shopFront.data?.services ?? []} />
-
-          {/* ROW 7 — Pro upsell (Verified only) */}
+          {/* ROW 6 — Pro upsell (Verified only) */}
           {!hasProAccess ? <ProUpsellStrip /> : null}
         </div>
       )}
