@@ -654,6 +654,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           coaching_reach: asReach(resolvedSf.coaching_reach),
           client_results_intro: resolvedSf.client_results_intro ?? null,
           layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
+          theme: ((resolvedSf as { theme?: string | null }).theme as "dark" | "light") ?? "dark",
           slug: pro.slug,
           full_name: prof?.full_name ?? null,
           avatar_url: prof?.avatar_url ?? null,
