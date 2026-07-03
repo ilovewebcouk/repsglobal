@@ -77,7 +77,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import {
   DashboardDialog,
   DashboardDialogContent,
@@ -401,70 +401,8 @@ function ChipInput({
   );
 }
 
-function DeliveryModePicker({
-  inPerson,
-  online,
-  onChange,
-}: {
-  inPerson: boolean;
-  online: boolean;
-  onChange: (next: { inPerson: boolean; online: boolean }) => void;
-}) {
-  const value = React.useMemo(() => {
-    const v: string[] = [];
-    if (inPerson) v.push("in-person");
-    if (online) v.push("online");
-    return v;
-  }, [inPerson, online]);
+// DeliveryModePicker removed — delivery mode now lives on the Website tab.
 
-  const handleChange = (next: string[]) => {
-    // Enforce min 1: ignore an attempt to clear the last active mode.
-    if (next.length === 0) return;
-    onChange({
-      inPerson: next.includes("in-person"),
-      online: next.includes("online"),
-    });
-  };
-
-  const isHybrid = inPerson && online;
-
-  return (
-    <div
-      role="group"
-      aria-label="How you work with clients"
-      className="inline-flex w-fit max-w-full flex-wrap items-center gap-2"
-    >
-      <ToggleGroup
-        type="multiple"
-        value={value}
-        onValueChange={handleChange}
-        className="w-fit justify-start gap-2"
-      >
-        <ToggleGroupItem
-          value="in-person"
-          aria-label="In person"
-          className="h-9 w-auto shrink-0 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
-        >
-          In person
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="online"
-          aria-label="Online"
-          className="h-9 w-auto shrink-0 rounded-full border border-reps-border bg-reps-ink px-4 text-[12px] font-semibold text-white/70 hover:bg-reps-ink hover:text-white data-[state=on]:border-reps-orange-border data-[state=on]:bg-reps-orange-soft data-[state=on]:text-reps-orange focus-visible:ring-2 focus-visible:ring-reps-orange/40 focus-visible:ring-offset-0"
-        >
-          Online
-        </ToggleGroupItem>
-      </ToggleGroup>
-      <span aria-live="polite" className="contents">
-        {isHybrid ? (
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
-            Hybrid
-          </span>
-        ) : null}
-      </span>
-    </div>
-  );
-}
 
 // SpecialismPicker is now the shared `SpecialismsPicker` from
 // `@/components/profile/SpecialismsPicker` (profession-scoped).
@@ -741,8 +679,8 @@ function ProfileEditorPage() {
             headline: form.headline || null,
             primary_profession: form.primary_profession || null,
             specialisms: form.specialisms,
-            in_person_available: form.in_person_available,
-            online_available: form.online_available,
+            // in_person_available / online_available now saved from the Website tab.
+
             city: form.city || null,
             contact_phone: form.contact_phone || null,
             bio: form.bio || null,
@@ -1241,34 +1179,9 @@ function ProfileEditorPage() {
               </div>
             </Card>
 
-            {/* 03 Where you work — delivery mode + location + gyms. */}
-            <Card>
-              <SectionHeader
-                title="Where you work"
-                subtitle="How you train clients, your base, and the gyms or studios you use."
-                step="03"
-              />
-              <div className="flex flex-col gap-4">
-                <Field
-                  label="How you work with clients"
-                  hint="Pick one or both. Shown on your directory card so clients can filter."
-                >
-                  <DeliveryModePicker
-                    inPerson={form.in_person_available}
-                    online={form.online_available}
-                    onChange={(next) =>
-                      setForm((f) => ({
-                        ...f,
-                        in_person_available: next.inPerson,
-                        online_available: next.online,
-                      }))
-                    }
-                  />
-                </Field>
-                {/* Primary training postcode and gyms have moved to the Website tab. */}
+            {/* "Where you work" (delivery mode, postcode, gyms) has moved to the Website tab. */}
 
-              </div>
-            </Card>
+
 
 
             {/* 04 Your pitch — tagline + bio together (both marketing copy) */}
@@ -1276,7 +1189,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Your pitch"
                 subtitle="What clients read on your directory card and profile."
-                step="04"
+                step="03"
               />
               <div className="flex flex-col gap-5">
                 <div data-field="headline">
@@ -1334,7 +1247,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Specialisms"
                 subtitle={`Unlocked by your profession — pick up to ${MAX_SPECIALISMS}.`}
-                step="05"
+                step="04"
               />
               <SpecialismsPicker
                 values={form.specialisms}
@@ -1350,7 +1263,7 @@ function ProfileEditorPage() {
               <SectionHeader
                 title="Languages & socials"
                 subtitle="Extras that help the right clients find you."
-                step="06"
+                step="05"
               />
               <div className="flex flex-col gap-5">
                 <Field label="Languages spoken" hint="Pick up to 4 — clients filter by language.">
