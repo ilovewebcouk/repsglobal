@@ -392,13 +392,6 @@ function ShopFrontEditorPage() {
             </Field>
           </PPanel>
 
-          <ProfilePhotoPanel />
-
-          <SpecialismsDeliveryPanel />
-
-
-          <WebsiteContentEditor />
-
           <ServicesEditor
             services={services}
             onSave={(s) => upsertServiceMut.mutate(s)}
@@ -406,6 +399,13 @@ function ShopFrontEditorPage() {
             onReorder={(ids) => reorderServicesMut.mutate(ids)}
             saving={upsertServiceMut.isPending}
           />
+
+          <ProfilePhotoPanel />
+
+          <SpecialismsDeliveryPanel />
+
+
+          <WebsiteContentEditor />
         </div>
       )}
 
