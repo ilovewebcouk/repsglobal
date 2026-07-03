@@ -14,14 +14,17 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Set a new password — REPs" },
-      { name: "description", content: "Choose a new password for your REPs account." },
-      { property: "og:title", content: "Set a new password — REPs" },
+      { title: "Set a new password — REPS" },
+      { name: "description", content: "Choose a new password for your REPS account." },
+      { property: "og:title", content: "Set a new password — REPS" },
       {
         property: "og:description",
-        content: "Set a new password to regain access to your REPs account.",
+        content: "Set a new password to regain access to your REPS account.",
       },
+      { property: "og:url", content: "https://repsuk.org/reset-password" },
+      { name: "robots", content: "noindex,follow" },
     ],
+    links: [{ rel: "canonical", href: "https://repsuk.org/reset-password" }],
   }),
   component: ResetPasswordPage,
 });
