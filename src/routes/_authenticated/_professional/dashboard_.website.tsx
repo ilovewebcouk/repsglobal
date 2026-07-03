@@ -371,7 +371,7 @@ function ShopFrontEditorPage() {
                 placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
               />
             </Field>
-            <HeroSubtitleField slug={slug} />
+            <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
             <Field
               label="About"
               hint="A short bio. Plain paragraphs, separated by blank lines."
