@@ -18,6 +18,8 @@ import coverLevel4 from "@/assets/resources/choosing-level-4-specialism.jpg";
 import coverFreeVsPaidCpd from "@/assets/resources/free-vs-paid-cpd-2026.jpg";
 import coverWhatsNew from "@/assets/resources/whats-new-reps-q2-2026.jpg";
 import coverRoadmap from "@/assets/resources/reps-roadmap-next.jpg";
+import coverLevel3RequirementsAsset from "@/assets/resources/level-3-pt-requirements.jpg.asset.json";
+const coverLevel3Requirements = coverLevel3RequirementsAsset.url;
 
 import coverHowToVetAPersonalTrainerIn30Minutes from "@/assets/resources/how-to-vet-a-personal-trainer-in-30-minutes.jpg";
 import coverGroupTrainingVsOneToOne from "@/assets/resources/group-training-vs-one-to-one.jpg";
@@ -3061,7 +3063,153 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
         cite: "REPS Standards Charter",
       },
     ],
-  }
+  },
+  {
+    slug: "level-3-pt-requirements",
+    title: "Level 3 Personal Trainer Qualification: what it is and what you actually need",
+    excerpt:
+      "A plain-English guide to the Level 3 Personal Trainer qualification — prerequisites, what's covered, how to choose an awarding body, and how it connects to REPS registration.",
+    category: "Education & CPD",
+    ...MARK,
+    date: "2026-07-03",
+    dateLabel: "3 July 2026",
+    readTime: "8 min read",
+    cover: coverLevel3Requirements,
+    featured: true,
+    featuredOrder: 3,
+    body: [
+      {
+        type: "p",
+        text: "If you want to work as a personal trainer, the Level 3 Personal Trainer qualification is the industry benchmark. It's the qualification that lets you programme, coach and take payment from clients one-to-one — in a gym, in a studio, in a park, or online. This guide covers what the qualification actually is, what you need before you start it, what it covers, how to pick a training provider, and how it connects to a REPS profile once you're qualified.",
+      },
+      { type: "h2", text: "What is a Level 3 Personal Trainer qualification?" },
+      {
+        type: "p",
+        text: "\"Level 3\" refers to the qualification's level on the Regulated Qualifications Framework (RQF) — the same framework as A-levels. A Level 3 Personal Trainer qualification is an Ofqual-regulated qualification delivered by a recognised awarding body and taught by an approved training provider. It's the qualification employers, gyms and clients recognise, and the qualification REPS accepts as the minimum for a Personal Trainer profile on the register.",
+      },
+      {
+        type: "p",
+        text: "The full qualification is typically titled \"Level 3 Diploma in Personal Training\" or \"Level 3 Diploma in Fitness Instructing and Personal Training\" and combines the older Level 2 Gym Instructor content with Level 3 programming, nutrition-within-scope, and one-to-one coaching skills.",
+      },
+      { type: "h2", text: "Level 2 vs Level 3: what's the difference?" },
+      {
+        type: "p",
+        text: "The two qualifications sit on top of each other, and it's worth understanding how they relate before you choose a course.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Level 2 Gym Instructor / Fitness Instructor — lets you deliver gym inductions, run programmes designed by someone else, and instruct group circuits. You can be employed on a gym floor. You cannot design bespoke one-to-one programmes for paying private clients.",
+          "Level 3 Personal Trainer — lets you consult with clients, design and progress individual programmes, coach one-to-one sessions, and charge as a self-employed professional. Most gyms require it before they'll license you to train private clients on their floor.",
+        ],
+      },
+      { type: "h2", text: "Prerequisites: what you need before you start" },
+      {
+        type: "p",
+        text: "Every Ofqual-regulated Level 3 Personal Trainer qualification has the same core prerequisites. A reputable training provider will make these clear upfront:",
+      },
+      {
+        type: "ul",
+        items: [
+          "A recognised Level 2 Gym Instructor / Fitness Instructor qualification — this is non-negotiable. Level 3 assumes you already know anatomy, physiology, programming basics and gym safety at Level 2 standard.",
+          "Age 16 or over (most providers set 18+ as the practical minimum for insurance and placement).",
+          "GCSE-level English and Maths (or equivalent) — you'll be writing consultations, reading research and calculating loads and calories.",
+          "Reasonable baseline fitness and the ability to demonstrate the exercises you'll coach — you don't need to be an athlete, but you do need to move well.",
+        ],
+      },
+      {
+        type: "p",
+        text: "Some providers bundle Level 2 and Level 3 into a single \"Diploma in Personal Training\" package — this is often the fastest and cheapest route if you're starting from scratch.",
+      },
+      { type: "h2", text: "What the Level 3 qualification actually covers" },
+      {
+        type: "p",
+        text: "The exact unit structure varies slightly between awarding bodies, but every Ofqual-regulated Level 3 Personal Trainer qualification covers the same core areas:",
+      },
+      {
+        type: "ul",
+        items: [
+          "Applied anatomy and physiology — energy systems, muscle action, cardiovascular and endocrine response to training.",
+          "Nutrition within the scope of a personal trainer — energy balance, macronutrients, hydration, and knowing where your scope ends and a Registered Nutritionist's begins.",
+          "Client consultation, screening and goal-setting — including PAR-Q, informed consent and when to refer on.",
+          "Programme design and periodisation for the general population — resistance, cardiovascular and mobility programming across a training block.",
+          "Instructing and coaching one-to-one sessions — cueing, correcting, adapting and progressing.",
+          "Professionalism, safeguarding and reflective practice — the business and ethical side of coaching a paying client.",
+        ],
+      },
+      {
+        type: "p",
+        text: "Assessment is a mix of multiple-choice theory papers, written case studies (usually a full 12-week programme design for a real client), and a practical assessment where you consult, plan and deliver a session under observation.",
+      },
+      { type: "h2", text: "How to choose an awarding body and training provider" },
+      {
+        type: "p",
+        text: "The awarding body sets and quality-assures the qualification. The training provider is the school that teaches you and enters you for assessment. Both matter, but for different reasons.",
+      },
+      {
+        type: "p",
+        text: "For the awarding body, the only thing that matters is that the qualification sits on Ofqual's Register of Regulated Qualifications. If it does, it's recognised by REPS, insurers and the vast majority of UK gyms. If a qualification isn't on the Ofqual register, walk away — no matter how impressive the marketing looks.",
+      },
+      {
+        type: "p",
+        text: "For the training provider, quality varies enormously. Use this checklist before you hand over any money:",
+      },
+      {
+        type: "ul",
+        items: [
+          "Confirm the qualification title and awarding body in writing, and check it on the Ofqual Register of Regulated Qualifications.",
+          "Ask how much of the course is face-to-face vs online self-study. Fully online with no practical contact time is a red flag for a coaching qualification.",
+          "Ask who the assessors are and how many practical hours you'll get with a qualified tutor observing you coach.",
+          "Ask about resit policy and cost — reputable providers include at least one resit; sharp ones charge £100+ per attempt.",
+          "Ask what happens after you qualify — insurance guidance, gym placement support, and (crucially) getting your profile onto the REPS register.",
+          "Read independent reviews outside the provider's own website. Look for consistent themes, not one-off complaints.",
+        ],
+      },
+      { type: "h2", text: "How much does it cost, and how long does it take?" },
+      {
+        type: "p",
+        text: "A combined Level 2 + Level 3 Diploma in Personal Training typically costs £1,200–£2,500 in 2026, depending on delivery format (fully in-person residential courses sit at the top of that range; blended online + weekend practicals sit in the middle; low-touch online-only packages sit at the bottom). Standalone Level 3 (if you already hold Level 2) is usually £700–£1,400.",
+      },
+      {
+        type: "p",
+        text: "Timelines vary from a 6-week intensive residential through to 9–12 months of part-time evening and weekend study. As a rule, faster courses front-load more self-study; slower courses give you more contact time with tutors. Neither is better — it depends on how you learn and how much time you can commit.",
+      },
+      { type: "h2", text: "What Level 3 lets you actually do" },
+      {
+        type: "p",
+        text: "Once you hold a full Level 3 Personal Trainer qualification, you can:",
+      },
+      {
+        type: "ul",
+        items: [
+          "Register as self-employed and take one-to-one paying clients in-person or online.",
+          "Apply for insurance as a personal trainer (public liability and professional indemnity).",
+          "Apply to train clients on the floor of most commercial gyms — usually via a rent-a-space or employed licence.",
+          "Design and sell 4-, 8- or 12-week programmes to private clients.",
+          "Register on REPS as a Verified Personal Trainer, once your qualification, insurance and identity are checked.",
+        ],
+      },
+      {
+        type: "p",
+        text: "It does not, on its own, qualify you to work with clinical or specialist populations — pre and postnatal clients, cardiac rehab, complex low-back rehab, older adults with multiple comorbidities, disordered eating recovery, or high-performance athletes. Those need Level 4 specialist qualifications or a relevant degree pathway.",
+      },
+      { type: "h2", text: "How Level 3 connects to a REPS profile" },
+      {
+        type: "p",
+        text: "REPS is a professional register — it's not a training provider and doesn't sell qualifications. What we do is check every professional who joins the register: identity, qualification (a full Ofqual-regulated Level 3 Personal Trainer qualification or accepted equivalent), current insurance covering the way they work, and — where required — a DBS check. Once you're verified, your profile is searchable on the public register, you get a Verified badge, and clients can enquire and book through your REPS shop-front.",
+      },
+      {
+        type: "quote",
+        text: "Level 3 is the qualification that lets you coach. REPS is the register that lets clients trust you're still qualified today.",
+        cite: "REPS Standards Charter",
+      },
+      { type: "h2", text: "Where to go from here" },
+      {
+        type: "p",
+        text: "If you're just starting out, pick a combined Level 2 + Level 3 Diploma from a training provider whose awarding body sits on the Ofqual register, and prioritise contact hours over slick marketing. Once you qualify, get insurance, then create your REPS profile — verification typically takes 5 working days and unlocks the register, your public shop-front and the enquiry and booking tools you need to run a coaching business properly.",
+      },
+    ],
+  },
 ];
 
 export function getArticle(slug: string): ResourceArticle | undefined {
