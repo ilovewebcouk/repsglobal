@@ -215,7 +215,7 @@ export function GymPicker() {
       toast.error(e instanceof Error ? e.message : "Couldn't remove gym."),
   });
 
-  const full = mine.length >= 3;
+  const full = mine.length >= 4;
   const empty = local.length === 0 && external.length === 0;
 
   return (
