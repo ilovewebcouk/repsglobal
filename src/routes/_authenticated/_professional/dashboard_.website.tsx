@@ -1135,7 +1135,7 @@ function ServiceEditDialog({
 /* Hero subtitle field — inline in the Website basics panel               */
 /* ===================================================================== */
 
-function HeroSubtitleField() {
+function HeroSubtitleField({ slug }: { slug?: string | null }) {
   const qc = useQueryClient();
   const fetch_ = useServerFn(getMyWebsiteContent);
   const save_ = useServerFn(saveMyWebsiteContent);
