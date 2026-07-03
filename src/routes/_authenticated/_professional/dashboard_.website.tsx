@@ -1428,38 +1428,40 @@ function WebsiteContentEditor() {
       />
       </section>
 
-      {/* Results intro */}
-      <section id="results-intro" className="scroll-mt-24">
-      <PPanel>
-        <div className="border-b border-reps-border px-5 py-4">
-          <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
-          <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
-        </div>
-        <div className="px-5 py-4">
-          <TextArea
-            value={clientResultsIntro}
-            onChange={(e) => setClientResultsIntro(e.target.value)}
-            maxLength={600}
-            placeholder="Use this to explain what clients can expect from the results below."
+      <section id="results" className="scroll-mt-24">
+        <PPanel>
+          <div className="border-b border-reps-border px-5 py-4">
+            <h3 className="text-[14px] font-semibold text-white">Client Results</h3>
+            <p className="mt-0.5 text-[12px] text-white/55">Short proof cards and written results shown in the Results section of your website.</p>
+          </div>
+          <div className="px-5 py-4">
+            <TextArea
+              value={clientResultsIntro}
+              onChange={(e) => setClientResultsIntro(e.target.value)}
+              maxLength={600}
+              placeholder="Use this to explain what clients can expect from the results below."
+            />
+          </div>
+          <div className="border-t border-reps-border px-5 py-4">
+            <div className="text-[13px] font-semibold text-white">Proof cards</div>
+            <p className="mt-0.5 text-[12px] text-white/55">Image + metric cards shown in the Results section.</p>
+          </div>
+          <TransformationsEditor
+            items={data.transformations}
+            onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+            onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
           />
-        </div>
-      </PPanel>
+          <div className="border-t border-reps-border px-5 py-4">
+            <div className="text-[13px] font-semibold text-white">Written results</div>
+            <p className="mt-0.5 text-[12px] text-white/55">Text-only testimonial-style cards shown alongside proof cards.</p>
+          </div>
+          <ClientResultsEditor
+            items={data.clientResults}
+            onSave={(r) => upsertR({ data: r }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+            onDelete={(id) => delR({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+          />
+        </PPanel>
       </section>
-
-      {/* Transformations */}
-      <section id="transformations" className="scroll-mt-24">
-      <TransformationsEditor
-        items={data.transformations}
-        onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-        onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-      />
-      </section>
-
-      <ClientResultsEditor
-        items={data.clientResults}
-        onSave={(r) => upsertR({ data: r }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-        onDelete={(id) => delR({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-      />
 
       {/* FAQs */}
       <section id="faqs" className="scroll-mt-24">
@@ -1514,12 +1516,7 @@ function TransformationsEditor({
   });
 
   return (
-    <PPanel>
-      <div className="border-b border-reps-border px-5 py-4">
-        <h3 className="text-[14px] font-semibold text-white">Client transformations</h3>
-        <p className="mt-0.5 text-[12px] text-white/55">Short proof cards shown in the Results section.</p>
-      </div>
-      <div className="divide-y divide-reps-border/60">
+    <div className="divide-y divide-reps-border/60">
         {items.map((t) => (
           <div key={t.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
             <div>
@@ -1550,8 +1547,7 @@ function TransformationsEditor({
         {items.length === 0 && (
           <div className="px-5 py-4 text-[13px] text-white/55">No transformations yet — add one below.</div>
         )}
-      </div>
-      <div className="border-t border-reps-border px-5 py-5">
+        <div className="px-5 py-5">
         <div className="text-[13px] font-semibold text-white">Add a transformation</div>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           <TextInput
@@ -1608,7 +1604,7 @@ function TransformationsEditor({
           </button>
         </div>
       </div>
-    </PPanel>
+    </div>
   );
 }
 
@@ -1624,14 +1620,7 @@ function ClientResultsEditor({
   const [draft, setDraft] = React.useState({ headline: "", body: "" });
 
   return (
-    <PPanel>
-      <div className="border-b border-reps-border px-5 py-4">
-        <h3 className="text-[14px] font-semibold text-white">Client result quotes</h3>
-        <p className="mt-0.5 text-[12px] text-white/55">
-          Optional written result cards. These feed the client results/testimonial-style section on your website.
-        </p>
-      </div>
-      <div className="divide-y divide-reps-border/60">
+    <div className="divide-y divide-reps-border/60">
         {items.map((r) => (
           <div key={r.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
             <div>
@@ -1662,8 +1651,7 @@ function ClientResultsEditor({
         {items.length === 0 && (
           <div className="px-5 py-4 text-[13px] text-white/55">No written client results yet — add one below.</div>
         )}
-      </div>
-      <div className="border-t border-reps-border px-5 py-5">
+        <div className="px-5 py-5">
         <div className="text-[13px] font-semibold text-white">Add a client result quote</div>
         <div className="mt-3 space-y-3">
           <TextInput
@@ -1698,7 +1686,7 @@ function ClientResultsEditor({
           </button>
         </div>
       </div>
-    </PPanel>
+    </div>
   );
 }
 
