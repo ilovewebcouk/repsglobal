@@ -1686,7 +1686,7 @@ function ClientResultsEditor({
           </button>
         </div>
       </div>
-    </PPanel>
+    </div>
   );
 }
 
