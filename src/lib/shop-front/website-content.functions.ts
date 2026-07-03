@@ -218,6 +218,8 @@ export const saveMyWebsiteContent = createServerFn({ method: "POST" })
 const TransformationSchema = z.object({
   id: z.string().uuid().optional(),
   client_first_name: z.string().trim().max(60).nullable().optional(),
+  client_role: z.string().trim().max(60).nullable().optional(),
+  duration_label: z.string().trim().max(40).nullable().optional(),
   metric: z.string().trim().max(80).nullable().optional(),
   headline: z.string().trim().max(120).nullable().optional(),
   quote: z.string().trim().max(600).nullable().optional(),
