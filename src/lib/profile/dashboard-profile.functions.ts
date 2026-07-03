@@ -34,6 +34,10 @@ export type DashboardProfile = {
   specialisms: SpecialismSlug[];
   in_person_available: boolean;
   online_available: boolean;
+  /** Trains clients at their own home / private studio (no address shown publicly). */
+  trains_at_home_studio: boolean;
+  /** Travels to the client's home (mobile PT). */
+  trains_at_clients_home: boolean;
   city: string | null;
   /** Internal-only — never rendered on any public page. E.164 format. */
   contact_phone: string | null;
