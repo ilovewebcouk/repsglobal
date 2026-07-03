@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { ExternalLink, GripVertical, MapPin, Plus, Save, Sparkles, Trash2 } from "lucide-react";
 import { GymPicker } from "@/components/profile/GymPicker";
 import { getMyPrimaryLocation, saveMyPrimaryPostcode } from "@/lib/profile/location.functions";
-import { getMyDashboardProfile } from "@/lib/profile/dashboard-profile.functions";
+import { getMyDashboardProfile, updateMyTrainingBase } from "@/lib/profile/dashboard-profile.functions";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
