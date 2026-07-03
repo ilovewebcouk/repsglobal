@@ -10,7 +10,7 @@ import {
   
   Check,
   ChevronDown,
-  ChevronRight,
+  
   GraduationCap,
   Globe,
   Info,
