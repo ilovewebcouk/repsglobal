@@ -127,19 +127,6 @@ function DashboardPage() {
           </DashboardButton>
         </div>
       }
-      preHeader={
-        !status.isLoading && !status.isError ? (
-          <WelcomeBanner
-            name={memberName}
-            avatarUrl={data?.identity?.avatar_url}
-            headline={data?.profile?.headline}
-            tierLabel={tierLabel}
-            isPublished={isPublished}
-            slug={slug}
-            trust={hub.trust.data ?? null}
-          />
-        ) : null
-      }
     >
       {status.isLoading ? (
         <div className="flex flex-col gap-4">
@@ -162,7 +149,16 @@ function DashboardPage() {
         </Alert>
       ) : (
         <div className="flex flex-col gap-4">
-
+          {/* ROW 1 — Welcome */}
+          <WelcomeBanner
+            name={memberName}
+            avatarUrl={data?.identity?.avatar_url}
+            headline={data?.profile?.headline}
+            tierLabel={tierLabel}
+            isPublished={isPublished}
+            slug={slug}
+            trust={hub.trust.data ?? null}
+          />
 
           {/* ROW 2 — KPI strip */}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

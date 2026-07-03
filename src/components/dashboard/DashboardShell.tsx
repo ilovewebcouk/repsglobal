@@ -155,8 +155,6 @@ export type DashboardShellProps = {
   member?: DashboardShellMember;
   mainClassName?: string;
   showTopbarSearch?: boolean;
-  /** Optional slot rendered ABOVE the TopBar (greeting header). */
-  preHeader?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -174,7 +172,6 @@ export function DashboardShell({
   member,
   mainClassName,
   showTopbarSearch = true,
-  preHeader,
   children,
 }: DashboardShellProps) {
   const searchPlaceholder =
@@ -194,9 +191,6 @@ export function DashboardShell({
           <DashboardSidebar role={role} tier={tier} active={active} member={member} />
           <SidebarInset className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-reps-ink">
             <ImpersonationBanner />
-            {preHeader ? (
-              <div className="px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">{preHeader}</div>
-            ) : null}
             <TopBar
               role={role}
               title={title}
