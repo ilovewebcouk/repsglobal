@@ -425,9 +425,9 @@ function ShopFrontEditorPage() {
             <WebsiteContentEditor />
           </div>
 
-          {/* Sticky footer save bar */}
-          <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <div className="flex items-center justify-end gap-2">
+          {/* Fixed footer save bar — pinned to viewport bottom */}
+          <div className="fixed bottom-0 right-0 left-0 z-30 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8 md:left-[var(--sidebar-width,232px)] group-data-[collapsible=icon]/sidebar-wrapper:md:left-[var(--sidebar-width-icon,3.25rem)]">
+            <div className="mx-auto flex max-w-[1200px] items-center justify-end gap-2">
               <ViewPublicButton compact />
               <SaveButton compact />
             </div>
