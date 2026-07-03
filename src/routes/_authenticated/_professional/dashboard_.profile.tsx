@@ -1042,69 +1042,9 @@ function ProfileEditorPage() {
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
           <div className="flex flex-col gap-4 xl:col-span-8">
-            {/* Profile photo */}
-            <Card>
-              <SectionHeader
-                title="Profile photo"
-                subtitle="A clear headshot helps clients trust and recognise you."
-                step="01"
-              />
-              <div className="flex flex-col gap-5">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <Avatar className="size-20 rounded-[8px] ring-2 ring-reps-border">
-                      {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="rounded-[8px]" /> : null}
-                      <AvatarFallback className="rounded-[8px] bg-reps-orange text-white">
-                        {initialsFromName(form.full_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-reps-panel bg-reps-orange text-white">
-                      <Camera className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handlePickAvatar}
-                        disabled={avatarPending}
-                        className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:opacity-60"
-                      >
-                        {avatarBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
-                        {avatarBusy === "uploading" && "Uploading…"}
-                        {avatarBusy === "validating" && "Checking photo…"}
-                        {avatarBusy === "cropping" && "Cropping…"}
-                        {avatarBusy === "generating" && "Generating…"}
-                        {!avatarBusy && "Change photo"}
-                      </button>
-                      <DashboardButton
-                        type="button"
-                        variant="ghost"
-                        onClick={handleRemoveAvatar}
-                        disabled={!profile.avatar_url || avatarPending}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        Remove
-                      </DashboardButton>
-                      {lastUploadedPath ? (
-                        <button
-                          type="button"
-                          onClick={handleStartRegenerate}
-                          disabled={avatarPending}
-                          className="flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 shadow-none transition-colors hover:text-white disabled:opacity-50"
-                        >
-                          <Sparkles className="h-3.5 w-3.5 text-reps-orange" />
-                          Generate AI portrait
-                        </button>
-                      ) : null}
-                    </div>
-                    <p className="text-[11px] text-white/45">
-                      Real headshot only · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+            {/* Profile photo moved to the Website tab (ProfilePhotoPanel). */}
+
+
 
             {/* 02 Identity — single column, no half-empty rail */}
             <Card>
