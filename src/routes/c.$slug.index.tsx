@@ -453,13 +453,19 @@ function mergeLiveIntoCoach(
   ];
   const liveTransformations: Transformation[] = transformations
     .filter((t) => t.is_published)
-    .map((t, i) => ({
-      image: t.image_url ?? base.transformations[i % Math.max(base.transformations.length, 1)]?.image ?? base.heroImage,
-      client: t.client_first_name ? `${t.client_first_name}` : `Client ${i + 1}`,
-      meta: t.headline ?? "Client result",
-      metric: t.metric ?? t.headline ?? "Client progress",
-      quote: t.quote ?? t.headline ?? "Great progress from consistent coaching.",
-    }));
+    .map((t, i) => {
+      const metaParts = [t.client_role, t.duration_label].filter((s): s is string => !!s && s.trim().length > 0);
+      const clientLabel = t.client_first_name?.trim()
+        ? t.client_first_name.trim()
+        : `Client ${i + 1}`;
+      return {
+        image: t.image_url ?? base.transformations[i % Math.max(base.transformations.length, 1)]?.image ?? base.heroImage,
+        client: clientLabel,
+        meta: metaParts.length ? metaParts.join(" · ") : "",
+        metric: t.metric ?? t.headline ?? "Client progress",
+        quote: t.quote ?? t.headline ?? "Great progress from consistent coaching.",
+      };
+    });
   const liveFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
   const liveTestimonials = clientResults
     .filter((r) => r.is_published && (r.headline || r.body))
@@ -1560,7 +1566,7 @@ function TransformationsSection({ coach }: { coach: Coach }) {
                 </p>
                 <div className="mt-4 border-t border-reps-border pt-3">
                   <div className="text-[13.5px] font-semibold text-reps-text">{t.client}</div>
-                  <div className="text-[12px] text-reps-muted">{t.meta}</div>
+                  {t.meta ? <div className="text-[12px] text-reps-muted">{t.meta}</div> : null}
                 </div>
               </div>
             </article>

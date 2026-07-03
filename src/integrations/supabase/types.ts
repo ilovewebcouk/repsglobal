@@ -4256,7 +4256,9 @@ export type Database = {
       shop_front_transformations: {
         Row: {
           client_first_name: string | null
+          client_role: string | null
           created_at: string
+          duration_label: string | null
           headline: string | null
           id: string
           image_url: string | null
@@ -4269,7 +4271,9 @@ export type Database = {
         }
         Insert: {
           client_first_name?: string | null
+          client_role?: string | null
           created_at?: string
+          duration_label?: string | null
           headline?: string | null
           id?: string
           image_url?: string | null
@@ -4282,7 +4286,9 @@ export type Database = {
         }
         Update: {
           client_first_name?: string | null
+          client_role?: string | null
           created_at?: string
+          duration_label?: string | null
           headline?: string | null
           id?: string
           image_url?: string | null

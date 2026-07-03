@@ -3,7 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, GripVertical, MapPin, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { ExternalLink, GripVertical, MapPin, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
+import { TransformationImageEditor } from "@/components/dashboard/TransformationImageEditor";
 import { GymPicker } from "@/components/profile/GymPicker";
 import { getMyPrimaryLocation, saveMyPrimaryPostcode } from "@/lib/profile/location.functions";
 import { getMyDashboardProfile, updateMyTrainingBase } from "@/lib/profile/dashboard-profile.functions";
@@ -1489,6 +1490,12 @@ function WebsiteContentEditor() {
   );
 }
 
+/**
+ * TransformationsEditor
+ * Every field in this editor maps 1:1 to what shows on the public
+ * proof card at /c/$slug. A live preview on the right mirrors that
+ * card so pros can see exactly what they're building.
+ */
 function TransformationsEditor({
   items,
   onSave,
@@ -1498,106 +1505,288 @@ function TransformationsEditor({
   onSave: (t: Partial<TransformationDTO> & { sort_order: number; is_published: boolean }) => void;
   onDelete: (id: string) => void;
 }) {
-  const [draft, setDraft] = React.useState({
-    client_first_name: "",
-    metric: "",
-    headline: "",
-    quote: "",
-    image_url: "",
-  });
+  return (
+    <div className="space-y-4 px-5 py-5">
+      {items.map((t) => (
+        <TransformationRow
+          key={t.id}
+          item={t}
+          onSave={onSave}
+          onDelete={onDelete}
+        />
+      ))}
+      {items.length === 0 && (
+        <p className="text-[13px] text-white/55">No client results yet — add your first one below.</p>
+      )}
+      <TransformationRow
+        key="new"
+        item={null}
+        onSave={(t) => onSave({ ...t, sort_order: items.length })}
+        onDelete={() => {}}
+      />
+    </div>
+  );
+}
+
+/**
+ * A single card editor. Left column = fields, right column = live
+ * card preview mirroring TransformationsSection on /c/$slug.
+ * When `item` is null this is an "Add new" form; otherwise it edits in place.
+ */
+function TransformationRow({
+  item,
+  onSave,
+  onDelete,
+}: {
+  item: TransformationDTO | null;
+  onSave: (t: Partial<TransformationDTO> & { sort_order: number; is_published: boolean }) => void;
+  onDelete: (id: string) => void;
+}) {
+  const isNew = item === null;
+  const [clientFirstName, setClientFirstName] = React.useState(item?.client_first_name ?? "");
+  const [clientRole, setClientRole] = React.useState(item?.client_role ?? "");
+  const [duration, setDuration] = React.useState(item?.duration_label ?? "");
+  const [metric, setMetric] = React.useState(item?.metric ?? "");
+  const [quote, setQuote] = React.useState(item?.quote ?? "");
+  const [imageUrl, setImageUrl] = React.useState(item?.image_url ?? "");
+  const [dirty, setDirty] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!item) return;
+    setClientFirstName(item.client_first_name ?? "");
+    setClientRole(item.client_role ?? "");
+    setDuration(item.duration_label ?? "");
+    setMetric(item.metric ?? "");
+    setQuote(item.quote ?? "");
+    setImageUrl(item.image_url ?? "");
+    setDirty(false);
+  }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const mark = <T,>(setter: (v: T) => void) => (v: T) => {
+    setter(v);
+    setDirty(true);
+  };
+
+  const canSave = metric.trim().length > 0 || clientFirstName.trim().length > 0;
+
+  const handleSave = () => {
+    onSave({
+      ...(item ? { id: item.id } : {}),
+      client_first_name: clientFirstName.trim() || null,
+      client_role: clientRole.trim() || null,
+      duration_label: duration.trim() || null,
+      metric: metric.trim() || null,
+      // headline column kept nullable for back-compat; not exposed in UI
+      headline: null,
+      quote: quote.trim() || null,
+      image_url: imageUrl.trim() || null,
+      sort_order: item?.sort_order ?? 0,
+      is_published: item?.is_published ?? true,
+    });
+    if (isNew) {
+      setClientFirstName("");
+      setClientRole("");
+      setDuration("");
+      setMetric("");
+      setQuote("");
+      setImageUrl("");
+    }
+    setDirty(false);
+  };
+
+  const previewMeta = [clientRole, duration].filter((s) => s.trim().length > 0).join(" · ");
 
   return (
-    <div className="divide-y divide-reps-border/60">
-        {items.map((t) => (
-          <div key={t.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
-            <div>
-              <div className="text-[13px] font-semibold text-white">
-                {t.client_first_name ?? "Client"} {t.metric ? `· ${t.metric}` : ""}
-              </div>
-              {t.headline && <div className="text-[12px] text-white/70 mt-0.5">{t.headline}</div>}
-              {t.quote && <p className="text-[12px] text-white/55 mt-1 line-clamp-2">"{t.quote}"</p>}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => onSave({ ...t, is_published: !t.is_published })}
-                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
-              >
-                {t.is_published ? "Hide" : "Show"}
-              </button>
-              <button
-                type="button"
-                onClick={() => confirm("Delete this transformation?") && onDelete(t.id)}
-                className="flex h-9 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Delete
-              </button>
-            </div>
+    <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4">
+      {!isNew && (
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-[12px] font-semibold uppercase tracking-wide text-white/50">
+            {item?.is_published ? "Live on your page" : "Hidden — not on your page"}
           </div>
-        ))}
-        {items.length === 0 && (
-          <div className="px-5 py-4 text-[13px] text-white/55">No transformations yet — add one below.</div>
-        )}
-        <div className="px-5 py-5">
-        <div className="text-[13px] font-semibold text-white">Add a transformation</div>
-        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-          <TextInput
-            value={draft.client_first_name}
-            onChange={(e) => setDraft({ ...draft, client_first_name: e.target.value })}
-            placeholder="Client first name (e.g. Sarah)"
-            maxLength={60}
-          />
-          <TextInput
-            value={draft.metric}
-            onChange={(e) => setDraft({ ...draft, metric: e.target.value })}
-            placeholder="Metric (e.g. -8kg in 16 weeks)"
-            maxLength={80}
-          />
-          <TextInput
-            value={draft.headline}
-            onChange={(e) => setDraft({ ...draft, headline: e.target.value })}
-            placeholder="Headline"
-            maxLength={120}
-          />
-          <TextInput
-            value={draft.image_url}
-            onChange={(e) => setDraft({ ...draft, image_url: e.target.value })}
-            placeholder="Image URL (optional)"
-          />
-          <div className="md:col-span-2">
-            <TextArea
-              value={draft.quote}
-              onChange={(e) => setDraft({ ...draft, quote: e.target.value })}
-              placeholder="Short client quote (optional)"
-              maxLength={600}
-            />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                onSave({
+                  id: item!.id,
+                  is_published: !item!.is_published,
+                  sort_order: item!.sort_order,
+                })
+              }
+              className="h-8 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
+            >
+              {item!.is_published ? "Hide" : "Show"}
+            </button>
+            <button
+              type="button"
+              onClick={() => confirm("Delete this client result?") && onDelete(item!.id)}
+              className="flex h-8 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </button>
           </div>
         </div>
-        <div className="mt-3 flex justify-end">
-          <button
-            type="button"
-            disabled={!draft.client_first_name.trim() && !draft.headline.trim()}
-            onClick={() => {
-              onSave({
-                client_first_name: draft.client_first_name || null,
-                metric: draft.metric || null,
-                headline: draft.headline || null,
-                quote: draft.quote || null,
-                image_url: draft.image_url || null,
-                sort_order: items.length,
-                is_published: true,
-              });
-              setDraft({ client_first_name: "", metric: "", headline: "", quote: "", image_url: "" });
-            }}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            <Plus className="h-4 w-4" /> Add
-          </button>
+      )}
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
+        {/* Fields */}
+        <div className="space-y-3">
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Photo</label>
+            <div className="mt-1.5">
+              <TransformationImageEditor value={imageUrl} onChange={mark(setImageUrl)} />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+              Result headline
+            </label>
+            <p className="text-[11px] text-white/45">Bold line on the card, e.g. "−8kg · first unassisted pull-up".</p>
+            <div className="mt-1.5">
+              <TextInput
+                value={metric}
+                onChange={(e) => mark(setMetric)(e.target.value)}
+                placeholder="e.g. −8kg · first unassisted pull-up"
+                maxLength={80}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+              Client quote (optional)
+            </label>
+            <div className="mt-1.5">
+              <TextArea
+                value={quote}
+                onChange={(e) => mark(setQuote)(e.target.value)}
+                placeholder="A short quote from the client about their result."
+                maxLength={600}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+                Client name
+              </label>
+              <div className="mt-1.5">
+                <TextInput
+                  value={clientFirstName}
+                  onChange={(e) => mark(setClientFirstName)(e.target.value)}
+                  placeholder="e.g. Sophie L."
+                  maxLength={60}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+                Role (optional)
+              </label>
+              <div className="mt-1.5">
+                <TextInput
+                  value={clientRole}
+                  onChange={(e) => mark(setClientRole)(e.target.value)}
+                  placeholder="e.g. Marketing Director"
+                  maxLength={60}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+                Duration (optional)
+              </label>
+              <div className="mt-1.5">
+                <TextInput
+                  value={duration}
+                  onChange={(e) => mark(setDuration)(e.target.value)}
+                  placeholder="e.g. 12 weeks"
+                  maxLength={40}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end pt-1">
+            <button
+              type="button"
+              disabled={!canSave || (!isNew && !dirty)}
+              onClick={handleSave}
+              className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
+            >
+              {isNew ? <><Plus className="h-4 w-4" /> Add result</> : <><Save className="h-4 w-4" /> Save changes</>}
+            </button>
+          </div>
+        </div>
+
+        {/* Live preview — mirrors TransformationsSection on /c/$slug */}
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Preview</div>
+          <p className="mb-2 text-[11px] text-white/45">How this card looks on your public page.</p>
+          <TransformationPreviewCard
+            image={imageUrl}
+            metric={metric.trim() || "Your result headline"}
+            quote={quote.trim() || "A short quote from the client goes here."}
+            client={clientFirstName.trim() || "Client name"}
+            meta={previewMeta}
+          />
         </div>
       </div>
     </div>
   );
 }
+
+function TransformationPreviewCard({
+  image,
+  metric,
+  quote,
+  client,
+  meta,
+}: {
+  image: string;
+  metric: string;
+  quote: string;
+  client: string;
+  meta: string;
+}) {
+  return (
+    <article className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-midnight">
+      <div className="relative aspect-[4/3] overflow-hidden bg-reps-panel-soft">
+        {image ? (
+          <img src={image} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[11px] text-white/40">
+            Add a photo
+          </div>
+        )}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(180deg, transparent 50%, rgba(11,13,16,0.85) 100%)" }}
+        />
+        <div className="absolute inset-x-0 bottom-0 p-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+            Result
+          </div>
+          <div className="mt-1.5 font-display text-[15px] font-bold leading-tight text-white">
+            {metric}
+          </div>
+        </div>
+      </div>
+      <div className="p-4">
+        <Quote className="h-4 w-4 text-reps-orange" />
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/80">&ldquo;{quote}&rdquo;</p>
+        <div className="mt-3 border-t border-reps-border pt-2.5">
+          <div className="text-[12.5px] font-semibold text-white">{client}</div>
+          {meta ? <div className="text-[11px] text-white/55">{meta}</div> : null}
+        </div>
+      </div>
+    </article>
+  );
+}
+
 
 function ClientResultsEditor({
   items,

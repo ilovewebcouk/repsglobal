@@ -28,6 +28,8 @@ export type WebsiteContentDTO = {
 export type TransformationDTO = {
   id: string;
   client_first_name: string | null;
+  client_role: string | null;
+  duration_label: string | null;
   metric: string | null;
   headline: string | null;
   quote: string | null;
@@ -122,7 +124,7 @@ export const getMyWebsiteContent = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("shop_front_transformations")
           .select(
-            "id, client_first_name, metric, headline, quote, image_url, sort_order, is_published",
+            "id, client_first_name, client_role, duration_label, metric, headline, quote, image_url, sort_order, is_published",
           )
           .eq("user_id", userId)
           .order("sort_order", { ascending: true }),
@@ -216,6 +218,8 @@ export const saveMyWebsiteContent = createServerFn({ method: "POST" })
 const TransformationSchema = z.object({
   id: z.string().uuid().optional(),
   client_first_name: z.string().trim().max(60).nullable().optional(),
+  client_role: z.string().trim().max(60).nullable().optional(),
+  duration_label: z.string().trim().max(40).nullable().optional(),
   metric: z.string().trim().max(80).nullable().optional(),
   headline: z.string().trim().max(120).nullable().optional(),
   quote: z.string().trim().max(600).nullable().optional(),
