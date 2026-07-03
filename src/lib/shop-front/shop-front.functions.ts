@@ -567,7 +567,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         method_name: sfRow.method_name ?? null,
         method_intro: sfRow.method_intro ?? null,
         method_pillars: asPillars(sfRow.method_pillars),
-        venues: asVenues(sfRow.venues),
+        venues: gymVenues.length ? gymVenues : asVenues(sfRow.venues),
         coaching_reach: asReach(sfRow.coaching_reach),
         client_results_intro: sfRow.client_results_intro ?? null,
         layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
@@ -638,9 +638,10 @@ export const getMyShopFront = createServerFn({ method: "GET" })
 
     if (!pro) return { shopFront: null, services: [] };
 
-    const [coachingSinceYear, trust] = await Promise.all([
+    const [coachingSinceYear, trust, gymVenues] = await Promise.all([
       fetchCoachingSinceYear(supabaseAdmin, userId, pro.primary_title_slug ?? null),
       fetchTrustSummary(supabaseAdmin, userId, pro.primary_title_slug ?? null),
+      loadProfessionalGymVenues(supabaseAdmin, userId),
     ]);
 
     const tier =
@@ -677,7 +678,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           method_name: resolvedSf.method_name ?? null,
           method_intro: resolvedSf.method_intro ?? null,
           method_pillars: asPillars(resolvedSf.method_pillars),
-          venues: asVenues(resolvedSf.venues),
+          venues: gymVenues.length ? gymVenues : asVenues(resolvedSf.venues),
           coaching_reach: asReach(resolvedSf.coaching_reach),
           client_results_intro: resolvedSf.client_results_intro ?? null,
           layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
