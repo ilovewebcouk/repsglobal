@@ -1206,7 +1206,7 @@ function WebsiteContentEditor() {
     }
   };
 
-  const onSaveHero = () => saveMut.mutate({ subtitle: subtitle || null });
+  // onSaveHero removed — HeroSubtitleField saves independently
   const onSaveMethod = () =>
     saveMut.mutate({
       method_name: methodName || null,
