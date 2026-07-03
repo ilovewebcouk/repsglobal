@@ -1428,38 +1428,40 @@ function WebsiteContentEditor() {
       />
       </section>
 
-      {/* Results intro */}
-      <section id="results-intro" className="scroll-mt-24">
-      <PPanel>
-        <div className="border-b border-reps-border px-5 py-4">
-          <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
-          <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
-        </div>
-        <div className="px-5 py-4">
-          <TextArea
-            value={clientResultsIntro}
-            onChange={(e) => setClientResultsIntro(e.target.value)}
-            maxLength={600}
-            placeholder="Use this to explain what clients can expect from the results below."
+      <section id="results" className="scroll-mt-24">
+        <PPanel>
+          <div className="border-b border-reps-border px-5 py-4">
+            <h3 className="text-[14px] font-semibold text-white">Client Results</h3>
+            <p className="mt-0.5 text-[12px] text-white/55">Short proof cards and written results shown in the Results section of your website.</p>
+          </div>
+          <div className="px-5 py-4">
+            <TextArea
+              value={clientResultsIntro}
+              onChange={(e) => setClientResultsIntro(e.target.value)}
+              maxLength={600}
+              placeholder="Use this to explain what clients can expect from the results below."
+            />
+          </div>
+          <div className="border-t border-reps-border px-5 py-4">
+            <div className="text-[13px] font-semibold text-white">Proof cards</div>
+            <p className="mt-0.5 text-[12px] text-white/55">Image + metric cards shown in the Results section.</p>
+          </div>
+          <TransformationsEditor
+            items={data.transformations}
+            onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+            onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
           />
-        </div>
-      </PPanel>
+          <div className="border-t border-reps-border px-5 py-4">
+            <div className="text-[13px] font-semibold text-white">Written results</div>
+            <p className="mt-0.5 text-[12px] text-white/55">Text-only testimonial-style cards shown alongside proof cards.</p>
+          </div>
+          <ClientResultsEditor
+            items={data.clientResults}
+            onSave={(r) => upsertR({ data: r }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+            onDelete={(id) => delR({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+          />
+        </PPanel>
       </section>
-
-      {/* Transformations */}
-      <section id="transformations" className="scroll-mt-24">
-      <TransformationsEditor
-        items={data.transformations}
-        onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-        onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-      />
-      </section>
-
-      <ClientResultsEditor
-        items={data.clientResults}
-        onSave={(r) => upsertR({ data: r }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-        onDelete={(id) => delR({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-      />
 
       {/* FAQs */}
       <section id="faqs" className="scroll-mt-24">
