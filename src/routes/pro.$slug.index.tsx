@@ -231,9 +231,8 @@ const SUB_NAV = [
   "About",
   "Services",
   "Specialisms",
-  "Reviews",
   "Qualifications",
-  "Availability",
+  "Reviews",
   "Location",
 ];
 
