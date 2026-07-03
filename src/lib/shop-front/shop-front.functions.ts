@@ -723,7 +723,13 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           method_name: resolvedSf.method_name ?? null,
           method_intro: resolvedSf.method_intro ?? null,
           method_pillars: asPillars(resolvedSf.method_pillars),
-          venues: gymVenues.length ? gymVenues : asVenues(resolvedSf.venues),
+          venues: [
+            ...(gymVenues.length ? gymVenues : asVenues(resolvedSf.venues)),
+            ...buildTrainingBaseVenues(
+              !!(pro as { trains_at_home_studio?: boolean | null }).trains_at_home_studio,
+              !!(pro as { trains_at_clients_home?: boolean | null }).trains_at_clients_home,
+            ),
+          ],
           coaching_reach: asReach(resolvedSf.coaching_reach),
           client_results_intro: resolvedSf.client_results_intro ?? null,
           layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
