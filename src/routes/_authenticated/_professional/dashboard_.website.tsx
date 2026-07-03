@@ -1306,38 +1306,72 @@ function WebsiteContentEditor() {
             </button>
           </div>
         </div>
-        <Field label="Method name" hint="e.g. Foundation Method">
-          <TextInput value={methodName} onChange={(e) => setMethodName(e.target.value)} maxLength={80} />
+        <Field label="Method name" hint="The bold headline shown at the top of this section.">
+          <TextInput
+            value={methodName}
+            onChange={(e) => setMethodName(e.target.value)}
+            maxLength={80}
+            placeholder="The Foundation Method"
+          />
         </Field>
-        <Field label="Intro" hint="One short paragraph.">
-          <TextArea value={methodIntro} onChange={(e) => setMethodIntro(e.target.value)} maxLength={600} />
+        <Field label="Intro" hint="One short paragraph under the headline.">
+          <TextArea
+            value={methodIntro}
+            onChange={(e) => setMethodIntro(e.target.value)}
+            maxLength={600}
+            placeholder="A three-phase system I've refined over 100+ clients. Same shape every time, written from scratch for every person."
+          />
         </Field>
-        {pillars.map((p, i) => (
-          <Field key={i} label={`Pillar ${i + 1}`} hint="Title + 1-2 sentences.">
-            <div className="space-y-2">
-              <TextInput
-                value={p.title}
-                onChange={(e) => {
-                  const next = [...pillars];
-                  next[i] = { ...next[i], title: e.target.value };
-                  setPillars(next);
-                }}
-                placeholder="Pillar title"
-                maxLength={60}
-              />
-              <TextArea
-                value={p.body}
-                onChange={(e) => {
-                  const next = [...pillars];
-                  next[i] = { ...next[i], body: e.target.value };
-                  setPillars(next);
-                }}
-                placeholder="Pillar description"
-                maxLength={400}
-              />
-            </div>
-          </Field>
-        ))}
+
+        <div className="border-b border-reps-border/60 px-5 pt-5 pb-2">
+          <div className="text-[13px] font-semibold text-white">The three pillars</div>
+          <p className="mt-0.5 text-[12px] text-white/55">Each renders as a numbered card (01 · 02 · 03) on your public page.</p>
+        </div>
+
+        <div className="space-y-3 px-5 py-4">
+          {pillars.map((p, i) => {
+            const placeholders = [
+              { title: "Build the base", body: "Two weeks fixing technique on the four lifts that matter. No ego, no fluff." },
+              { title: "Train the plan", body: "Eight weeks of progressive, measurable work — written around your schedule, not a template." },
+              { title: "Make it stick", body: "Habits, nutrition rails and recovery so the result still holds 12 months later." },
+            ][i] ?? { title: "Pillar title", body: "Pillar description" };
+            return (
+              <div
+                key={i}
+                className="rounded-[16px] border border-reps-border bg-reps-panel-soft/60 p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange/15 text-[13px] font-semibold text-reps-orange">
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <TextInput
+                      value={p.title}
+                      onChange={(e) => {
+                        const next = [...pillars];
+                        next[i] = { ...next[i], title: e.target.value };
+                        setPillars(next);
+                      }}
+                      placeholder={placeholders.title}
+                      maxLength={60}
+                    />
+                    <TextArea
+                      value={p.body}
+                      onChange={(e) => {
+                        const next = [...pillars];
+                        next[i] = { ...next[i], body: e.target.value };
+                        setPillars(next);
+                      }}
+                      placeholder={placeholders.body}
+                      maxLength={400}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
       </PPanel>
 
       {/* Results intro */}
