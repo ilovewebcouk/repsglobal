@@ -398,7 +398,7 @@ export function DashboardSidebar({
             R
           </span>
         </Link>
-        {role === "admin" ? <AdminBadgeRow /> : null}
+        {role === "admin" ? <AdminBadgeRow /> : <VerificationSidebarPill />}
       </SidebarHeader>
 
       <SidebarContent
