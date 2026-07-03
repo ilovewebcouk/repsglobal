@@ -520,6 +520,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       coaching_reach: null,
       client_results_intro: null,
       layout_variant: "full" as const,
+      theme: "dark" as const,
     };
 
     const tier =
