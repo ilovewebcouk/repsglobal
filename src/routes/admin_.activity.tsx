@@ -234,10 +234,11 @@ function AdminActivityPage() {
       .filter((m) => m.public > 0)
       .map((m) => ({
         city: m.city ?? "",
+        region: m.region,
         country_code: m.country_code,
         latitude: m.latitude,
         longitude: m.longitude,
-        online_now: m.public,
+        online: m.public,
       }));
   }, [cc?.map_markers]);
 
