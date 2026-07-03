@@ -145,7 +145,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           url: "https://repsuk.org",
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://repsuk.org/find-a-trainer?q={search_term_string}",
+            target: "https://repsuk.org/find-a-professional?q={search_term_string}",
             "query-input": "required name=search_term_string",
           },
         }),
