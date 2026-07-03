@@ -3069,7 +3069,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     title: "Level 3 Personal Trainer Qualification: what it is and what you actually need",
     excerpt:
       "A plain-English guide to the Level 3 Personal Trainer qualification — prerequisites, what's covered, how to choose an awarding body, and how it connects to REPS registration.",
-    category: "Education & CPD",
+    category: "CPD & Education",
     ...MARK,
     date: "2026-07-03",
     dateLabel: "3 July 2026",
