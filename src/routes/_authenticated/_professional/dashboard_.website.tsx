@@ -53,7 +53,6 @@ import {
   aiDraftAbout,
   aiDraftSubtitle,
   type MethodPillar,
-  type Venue,
   type TransformationDTO,
   type ClientResultDTO,
   type FaqDTO,
