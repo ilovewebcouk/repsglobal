@@ -40,7 +40,7 @@ function loadMapsApi(): Promise<void> {
   return window.__repsMapLoading;
 }
 
-export function LocationMap({ lat, lng, label }: Props) {
+export function LocationMap({ lat, lng, label, radiusKm }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
 
@@ -50,9 +50,17 @@ export function LocationMap({ lat, lng, label }: Props) {
       .then(() => {
         const g = (window as any).google;
         if (cancelled || !ref.current || !g?.maps) return;
+        const radiusMeters = radiusKm ? radiusKm * 1000 : 0;
+        // Zoom out slightly for a wide coverage radius so the circle fits.
+        const zoom = radiusKm
+          ? radiusKm >= 25 ? 9
+            : radiusKm >= 15 ? 10
+            : radiusKm >= 8 ? 11
+            : 12
+          : 13;
         const map = new g.maps.Map(ref.current, {
           center: { lat, lng },
-          zoom: 13,
+          zoom,
           disableDefaultUI: true,
           gestureHandling: "cooperative",
           clickableIcons: false,
@@ -66,13 +74,29 @@ export function LocationMap({ lat, lng, label }: Props) {
             { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9d8d6" }] },
           ],
         });
-        new g.maps.Marker({ position: { lat, lng }, map, title: label });
+        if (radiusMeters > 0) {
+          // Dashed orange coverage radius — no pin, radius conveys the location.
+          new g.maps.Circle({
+            map,
+            center: { lat, lng },
+            radius: radiusMeters,
+            strokeColor: "#FF7A00",
+            strokeOpacity: 0.9,
+            strokeWeight: 2,
+            fillColor: "#FF7A00",
+            fillOpacity: 0.12,
+            clickable: false,
+          });
+        } else {
+          new g.maps.Marker({ position: { lat, lng }, map, title: label });
+        }
       })
       .catch(() => !cancelled && setFailed(true));
     return () => {
       cancelled = true;
     };
-  }, [lat, lng, label]);
+  }, [lat, lng, label, radiusKm]);
+
 
   if (failed || !BROWSER_KEY) {
     return (
