@@ -172,19 +172,31 @@ function ShopFrontEditorPage() {
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
 
+  const [taglineDialogOpen, setTaglineDialogOpen] = React.useState(false);
+  const [aboutDialogOpen, setAboutDialogOpen] = React.useState(false);
+  const [taglineAudience, setTaglineAudience] = React.useState("");
+  const [taglineSpecialisms, setTaglineSpecialisms] = React.useState<string[]>([]);
+  const [aboutAudience, setAboutAudience] = React.useState("");
+  const [aboutDifferentiator, setAboutDifferentiator] = React.useState("");
+  const [aboutTone, setAboutTone] = React.useState<"warm" | "direct" | "professional" | "playful">("warm");
+
   const draftTaglineMut = useMutation({
-    mutationFn: () => draftTaglineFn({ data: {} }),
+    mutationFn: (input: { audience: string; specialisms: string[] }) =>
+      draftTaglineFn({ data: input }),
     onSuccess: (r) => {
       setTagline(r.tagline);
+      setTaglineDialogOpen(false);
       toast.success("Tagline drafted — review and save.");
     },
     onError: (e: Error) => toast.error(e.message || "Could not draft tagline"),
   });
 
   const draftAboutMut = useMutation({
-    mutationFn: () => draftAboutFn({ data: {} }),
+    mutationFn: (input: { audience: string; differentiator: string; tone: "warm" | "direct" | "professional" | "playful" }) =>
+      draftAboutFn({ data: input }),
     onSuccess: (r) => {
       setAbout(r.about);
+      setAboutDialogOpen(false);
       toast.success("About drafted — review and save.");
     },
     onError: (e: Error) => toast.error(e.message || "Could not draft About"),
@@ -343,7 +355,7 @@ function ShopFrontEditorPage() {
             <Field
               label="Tagline"
               hint="The H1 on your public page. One short line that sums you up."
-              action={<AIDraftButton onClick={() => draftTaglineMut.mutate()} pending={draftTaglineMut.isPending} />}
+              action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
             >
               <TextInput
                 value={tagline}
@@ -355,7 +367,7 @@ function ShopFrontEditorPage() {
             <Field
               label="About"
               hint="A short bio. Plain paragraphs, separated by blank lines."
-              action={<AIDraftButton onClick={() => draftAboutMut.mutate()} pending={draftAboutMut.isPending} />}
+              action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
             >
               <TextArea
                 value={about}
@@ -401,6 +413,154 @@ function ShopFrontEditorPage() {
           />
         </div>
       )}
+
+      <Dialog open={taglineDialogOpen} onOpenChange={setTaglineDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Draft my tagline</DialogTitle>
+            <DialogDescription>
+              A couple of quick answers so the draft actually sounds like you.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <div className="mb-1.5 text-[13px] font-semibold text-white">Who do you help and how?</div>
+              <TextArea
+                value={taglineAudience}
+                onChange={(e) => setTaglineAudience(e.target.value)}
+                maxLength={400}
+                placeholder='e.g. "Busy professionals in Manchester get lean and strong in 3 sessions a week — at home or online."'
+                className="min-h-[90px]"
+              />
+            </div>
+            <div>
+              <div className="mb-2 text-[13px] font-semibold text-white">Focus areas <span className="font-normal text-white/55">(optional)</span></div>
+              <div className="flex flex-wrap gap-2">
+                {["Fat loss", "Strength", "Postnatal", "Over 50s", "Athletes", "Rehab", "Hypertrophy", "Endurance"].map((s) => {
+                  const active = taglineSpecialisms.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() =>
+                        setTaglineSpecialisms((cur) =>
+                          cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s],
+                        )
+                      }
+                      className={`rounded-full border px-3 py-1 text-[12px] font-semibold ${
+                        active
+                          ? "border-reps-orange bg-reps-orange/15 text-white"
+                          : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setTaglineDialogOpen(false)}
+              className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={draftTaglineMut.isPending}
+              onClick={() =>
+                draftTaglineMut.mutate({ audience: taglineAudience.trim(), specialisms: taglineSpecialisms })
+              }
+              className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+            >
+              <Sparkles className="h-4 w-4" />
+              {draftTaglineMut.isPending ? "Drafting…" : "Draft tagline"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={aboutDialogOpen} onOpenChange={setAboutDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Draft my About</DialogTitle>
+            <DialogDescription>
+              Two quick answers so the draft sounds like you, not a template.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <div className="mb-1.5 text-[13px] font-semibold text-white">Who do you help and how?</div>
+              <TextArea
+                value={aboutAudience}
+                onChange={(e) => setAboutAudience(e.target.value)}
+                maxLength={400}
+                placeholder='e.g. "Busy professionals in Manchester get lean and strong in 3 sessions a week."'
+                className="min-h-[90px]"
+              />
+            </div>
+            <div>
+              <div className="mb-1.5 text-[13px] font-semibold text-white">What makes your coaching different?</div>
+              <TextArea
+                value={aboutDifferentiator}
+                onChange={(e) => setAboutDifferentiator(e.target.value)}
+                maxLength={400}
+                placeholder='e.g. "20 years in the game, ex-Team GB S&C, no fluff, results tracked weekly."'
+                className="min-h-[90px]"
+              />
+            </div>
+            <div>
+              <div className="mb-2 text-[13px] font-semibold text-white">Tone</div>
+              <div className="flex flex-wrap gap-2">
+                {(["warm", "direct", "professional", "playful"] as const).map((t) => {
+                  const active = aboutTone === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setAboutTone(t)}
+                      className={`rounded-full border px-3 py-1 text-[12px] font-semibold capitalize ${
+                        active
+                          ? "border-reps-orange bg-reps-orange/15 text-white"
+                          : "border-reps-border bg-reps-panel-soft text-white/70 hover:text-white"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setAboutDialogOpen(false)}
+              className="h-10 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/80 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={draftAboutMut.isPending}
+              onClick={() =>
+                draftAboutMut.mutate({
+                  audience: aboutAudience.trim(),
+                  differentiator: aboutDifferentiator.trim(),
+                  tone: aboutTone,
+                })
+              }
+              className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+            >
+              <Sparkles className="h-4 w-4" />
+              {draftAboutMut.isPending ? "Drafting…" : "Draft About"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
