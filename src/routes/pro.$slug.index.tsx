@@ -7,12 +7,12 @@ import {
   BadgeCheck,
   Bookmark,
   Calendar,
-  
   Check,
   ChevronDown,
-  
+  Compass,
+  Dumbbell,
   GraduationCap,
-  Globe,
+  Home as HomeIcon,
   Info,
   Laptop,
   MapPin,
@@ -20,8 +20,10 @@ import {
   ShieldCheck,
   Star,
   Umbrella,
+  UserPlus,
   Users,
 } from "lucide-react";
+
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
@@ -219,22 +221,14 @@ const REVIEWS = [
   },
 ];
 
-const STATS = [
-  { icon: Users, value: "25,000+", label: "Verified Professionals" },
-  { icon: Star, value: "50,000+", label: "Client Reviews" },
-  { icon: Globe, value: "120+", label: "Countries Worldwide" },
-  { icon: Calendar, value: "1M+", label: "Sessions Booked" },
-  { icon: ShieldCheck, value: "100%", label: "REPS Verified" },
+const WHO_I_HELP: { icon: typeof Dumbbell; label: string }[] = [
+  { icon: Dumbbell, label: "Want to get stronger, leaner & healthier" },
+  { icon: UserPlus, label: "Are new to training or returning after a break" },
+  { icon: HomeIcon, label: "Prefer training in the comfort of home" },
+  { icon: Compass, label: "Need support, structure and accountability" },
 ];
 
-const SUB_NAV = [
-  "About",
-  "Services",
-  "Specialisms",
-  "Qualifications",
-  "Reviews",
-  "Location",
-];
+
 
 const RATING_DIST = [
   { stars: 5, count: 115 },
@@ -690,6 +684,13 @@ function ProProfilePage() {
                   Save Profile
                 </button>
               </div>
+              {pro.services[0]?.price ? (
+                <div className="mt-3 text-[13px] text-reps-muted-light">
+                  <span className="font-semibold text-reps-charcoal">From {pro.services[0].price}</span>
+                  {pro.services[0].unit ? ` ${pro.services[0].unit}` : null}
+                </div>
+              ) : null}
+
             </div>
           </div>
 
@@ -763,26 +764,32 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ SUB NAV (sticky, honest) ============ */}
-      <section className="sticky top-[64px] z-30 border-b border-reps-stone/70 bg-reps-ivory/95 backdrop-blur">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <nav className="flex flex-wrap items-center gap-x-1 gap-y-1 py-3 text-[13px]">
-            {SUB_NAV.map((s, i) => (
-              <a
-                key={s}
-                href={`#${s.toLowerCase()}`}
-                className={`rounded-full px-3 py-1.5 font-medium transition-colors ${
-                  i === 0
-                    ? "bg-reps-orange/10 text-reps-orange"
-                    : "text-reps-muted-light hover:bg-reps-warm-white hover:text-reps-charcoal"
-                }`}
-              >
-                {s}
-              </a>
-            ))}
-          </nav>
+      {/* ============ WHO I HELP ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 pb-6 lg:px-10">
+          <div className="grid gap-6 rounded-[22px] border border-reps-stone bg-reps-ivory p-6 lg:grid-cols-[220px_1fr] lg:items-center lg:gap-8 lg:p-7">
+            <div>
+              <h2 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
+                Who I help
+              </h2>
+              <p className="mt-1 text-[13px] text-reps-muted-light">
+                I work best with people who:
+              </p>
+            </div>
+            <ul className="grid grid-cols-2 gap-5 lg:grid-cols-4 lg:gap-6">
+              {WHO_I_HELP.map((w) => (
+                <li key={w.label} className="flex flex-col items-start gap-2 text-[12.5px] leading-snug text-reps-charcoal">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-reps-orange/25 bg-reps-orange-soft text-reps-orange">
+                    <w.icon className="h-4 w-4" strokeWidth={1.75} />
+                  </span>
+                  <span className="font-semibold">{w.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
+
 
       {/* ============ SPINE: main + sticky sidebar ============ */}
       <section className="bg-reps-ivory">
@@ -826,8 +833,8 @@ function ProProfilePage() {
               </div>
             </div>
 
-            {/* Services — light card, light rows */}
-            <div id="services" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6 lg:p-7">
+            {/* Services — dark navy tiles, matches /c/$slug */}
+            <div id="services">
               <div className="flex items-baseline justify-between gap-3">
                 <h2 className="font-display text-[20px] font-bold text-reps-charcoal">
                   Services &amp; Pricing
@@ -839,42 +846,49 @@ function ProProfilePage() {
                   View all →
                 </a>
               </div>
-              <div className="mt-5 flex flex-col gap-3">
-                {pro.services.map((s) => (
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {pro.services.slice(0, 3).map((s, i) => (
                   <article
                     key={s.title}
-                    className="flex items-stretch gap-4 rounded-[18px] border border-reps-stone bg-reps-ivory p-3"
+                    className="relative flex flex-col overflow-hidden rounded-[18px] border border-reps-charcoal/10 bg-reps-charcoal text-reps-warm-white shadow-[0_1px_0_rgba(0,0,0,0.04)]"
                   >
+                    {i === 1 ? (
+                      <span className="absolute right-3 top-3 z-10 rounded-full bg-reps-orange px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-reps-warm-white">
+                        Most popular
+                      </span>
+                    ) : null}
                     {s.image ? (
-                      <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[12px] bg-reps-stone">
-                        <img
-                          src={s.image}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
+                      <div className="h-32 w-full overflow-hidden bg-reps-charcoal/60">
+                        <img src={s.image} alt="" className="h-full w-full object-cover opacity-90" loading="lazy" />
                       </div>
                     ) : null}
-                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-                      <div className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
+                    <div className="flex flex-1 flex-col p-5">
+                      <div className="font-display text-[17px] font-bold leading-tight">
                         {s.title}
                       </div>
-                      <div className="line-clamp-2 text-[13px] leading-snug text-reps-muted-light">
+                      <div className="mt-2 line-clamp-3 text-[13px] leading-snug text-reps-warm-white/70">
                         {s.desc}
                       </div>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end justify-center pl-2 text-right">
-                      <div className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">
-                        {s.price}
-                      </div>
-                      <div className="mt-0.5 text-[12px] text-reps-muted-light">
-                        {s.unit}
+                      <div className="mt-4 flex items-end justify-between border-t border-reps-warm-white/10 pt-4">
+                        <div>
+                          <div className="font-display text-[20px] font-bold leading-none">
+                            {s.price}
+                          </div>
+                          <div className="mt-1 text-[11px] text-reps-warm-white/60">{s.unit}</div>
+                        </div>
+                        <a
+                          href={`/pro/${pro.slug}/services`}
+                          className="rounded-full bg-reps-orange px-3.5 py-1.5 text-[12px] font-semibold text-reps-warm-white hover:brightness-110"
+                        >
+                          Enquire
+                        </a>
                       </div>
                     </div>
                   </article>
                 ))}
               </div>
             </div>
+
 
             {/* Specialisms — no card */}
             <div id="specialisms">
@@ -1038,28 +1052,32 @@ function ProProfilePage() {
                   Frequently asked questions
                 </h2>
                 <div className="mt-4 space-y-2">
-                  {pro.faqs.map((f) => (
-                    <div
-                      key={f.q}
-                      className={`rounded-[12px] border border-reps-stone ${f.open ? "bg-reps-warm-white" : "bg-transparent"}`}
-                    >
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[13px] font-semibold text-reps-charcoal"
+                  {pro.faqs.map((f, i) => {
+                    const open = f.open || i === 0;
+                    return (
+                      <div
+                        key={f.q}
+                        className={`rounded-[12px] border border-reps-stone ${open ? "bg-reps-warm-white" : "bg-transparent"}`}
                       >
-                        {f.q}
-                        <ChevronDown
-                          className={`h-4 w-4 text-reps-muted-light transition-transform ${f.open ? "rotate-180" : ""}`}
-                        />
-                      </button>
-                      {f.open && f.a ? (
-                        <div className="px-4 pb-4 text-[12.5px] leading-relaxed text-reps-muted-light">
-                          {f.a}
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
+                        <button
+                          type="button"
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[13px] font-semibold text-reps-charcoal"
+                        >
+                          {f.q}
+                          <ChevronDown
+                            className={`h-4 w-4 text-reps-muted-light transition-transform ${open ? "rotate-180" : ""}`}
+                          />
+                        </button>
+                        {open && f.a ? (
+                          <div className="px-4 pb-4 text-[12.5px] leading-relaxed text-reps-muted-light">
+                            {f.a}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
+
               </div>
             ) : null}
           </div>
@@ -1122,12 +1140,12 @@ function ProProfilePage() {
               </div>
             </div>
 
-            {/* Location */}
+            {/* Location & Coverage */}
             <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Location</h3>
+              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Location &amp; Coverage</h3>
               <div className="relative mt-3 aspect-[16/10] overflow-hidden rounded-[12px] bg-reps-stone ring-1 ring-inset ring-reps-charcoal/5">
                 {pro.lat != null && pro.lng != null ? (
-                  <LocationMap lat={pro.lat} lng={pro.lng} label={pro.location} />
+                  <LocationMap lat={pro.lat} lng={pro.lng} label={pro.location} radiusKm={15} />
                 ) : (
                   <MapPlaceholder />
                 )}
@@ -1136,18 +1154,39 @@ function ProProfilePage() {
               {pro.region ? (
                 <div className="text-[12px] text-reps-muted-light">{pro.region}</div>
               ) : null}
+              <div className="mt-1 text-[12px] text-reps-muted-light">
+                Covers a ~15 km radius from {pro.location.split(",")[0]}.
+              </div>
               {pro.lat != null && pro.lng != null ? (
-                <a
-                  href={`https://www.google.com/maps?q=${pro.lat},${pro.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-ivory px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-warm-white"
+                <form
+                  className="mt-4 flex items-center gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const fd = new FormData(e.currentTarget);
+                    const pc = String(fd.get("postcode") || "").trim();
+                    if (!pc) return;
+                    window.open(
+                      `https://www.google.com/maps/dir/${encodeURIComponent(pc)}/${pro.lat},${pro.lng}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                  }}
                 >
-                  <MapPin className="h-3.5 w-3.5" />
-                  View on map
-                </a>
+                  <input
+                    name="postcode"
+                    placeholder="Your postcode"
+                    className="h-9 flex-1 rounded-[10px] border border-reps-stone bg-reps-ivory px-3 text-[12px] text-reps-charcoal placeholder:text-reps-muted-light focus:border-reps-orange focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="h-9 rounded-[10px] bg-reps-charcoal px-3 text-[12px] font-semibold text-reps-warm-white hover:brightness-110"
+                  >
+                    Check
+                  </button>
+                </form>
               ) : null}
             </div>
+
 
             {/* Trains at */}
             {(() => {
@@ -1277,26 +1316,6 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ STATS ============ */}
-      <section className="bg-reps-ivory pb-10">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <div className="grid grid-cols-2 gap-4 border-t border-reps-stone pt-6 sm:grid-cols-3 lg:grid-cols-5">
-            {STATS.map((s) => (
-              <div key={s.label} className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-reps-ivory text-reps-charcoal">
-                  <s.icon className="h-4 w-4" />
-                </span>
-                <div>
-                  <div className="font-display text-[18px] font-bold leading-none text-reps-charcoal">
-                    {s.value}
-                  </div>
-                  <div className="mt-1 text-[11px] text-reps-muted-light">{s.label}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <PublicFooter />
     </div>

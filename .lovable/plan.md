@@ -1,77 +1,71 @@
+# /pro/$slug — Mockup v2 Rebuild
 
-# /pro/$slug below-the-fold — brutal audit + rebuild plan
+Single-file edit to `src/routes/pro.$slug.index.tsx`. No data model changes. Radii on the locked 6/8/10/12/16/18/22/24/full scale.
 
-## What's actually wrong (honest)
+## Hero (top-of-page changes only)
 
-The hero is fine. Everything under the sub-nav is a **bento wall** — every block is the same 22px card on the same ivory background, sitting in two different grid rhythms back-to-back. It reads as "stuff in boxes" instead of a profile you scan.
+- Trim About prose out of the hero. Keep italic bio to max 2 lines with a "Read more" reveal.
+- Add `From £{minPrice} / session` price anchor under the CTA row (derived from services, no new field).
+- Sub-nav: already removed in previous pass — confirm gone.
+- Right sticky "Get in touch" card: unchanged content, add `sticky top-[88px]` behaviour so it persists on scroll and the sidebar Trust card doesn't visually duplicate it.
 
-Concretely, the mess comes from six things:
+## New: "Who I help" strip
 
-1. **Two clashing grids stacked.** Row A is `1fr / 1.4fr / 1fr` (About | Services | right stack). Row B is `1.6fr / 1fr` (Quals | Trust). The column edges don't line up between rows, so the eye keeps re-anchoring.
-2. **A ragged right column.** Specialisms + Location + Trains-at are stacked inside the third column. Their natural heights don't match the About / Services cards next to them, so the row bottom is jagged.
-3. **Cards inside cards.** About has three orange stat tiles inside it. Services has three dark panels inside a light card. Every "card" contains more cards — that's what makes it feel bento.
-4. **Two chip lists back-to-back.** Specialisms and Trains-at are visually identical (pill chips in a card). They read as the same section twice.
-5. **Theme jump on Services.** Dark reps-panel service tiles sit inside a warm-white card on an ivory page. Three colour temperatures in one glance.
-6. **Sub-nav lies.** It links to "Availability" but no Availability section exists, and every anchor is the same colour except the active one — looks decorative, not navigational.
+- Full-width warm-cream panel (`bg-reps-warm-ivory`, `rounded-[22px]`), sits directly under the trust-strip, above the 2-column grid.
+- Left label "Who I help — I work best with people who:" + 4 icon+text columns.
+- Data source: reuse existing `who_i_help` array on the professional profile if present; otherwise render 4 sensible defaults derived from specialisms (fallback content, not new schema).
+- Icons: `Dumbbell`, `UserPlus`, `Home`, `Compass` from lucide, orange outline.
 
-Trust & Assurance duplicates the trust strip already shown up in the hero block. Quals + Trust as a 2-col also creates a second lonely sidebar that echoes the first.
+## 2-column spine (main / sticky sidebar)
 
-## The fix — one reading spine, not a mosaic
+Grid: `lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]`, `gap-8`.
 
-Collapse the whole below-fold into a **single 2-column layout** used consistently for the entire page:
+### Main column (left)
 
-```text
-┌──────────────────────────────┬────────────────────┐
-│  MAIN COLUMN (≈ 1.7fr)       │  STICKY SIDEBAR    │
-│                              │  (≈ 1fr)           │
-│  About Jordon                │  ┌──────────────┐  │
-│    bio + inline stat row     │  │ Enquire /    │  │
-│    (stats as a thin strip,   │  │ Book CTA     │  │
-│     not tiled cards)         │  │ + price from │  │
-│                              │  │ + modes      │  │
-│  Services & Pricing          │  └──────────────┘  │
-│    3 light service rows,     │                    │
-│    same theme as page        │  Location          │
-│                              │    small map +     │
-│  Specialisms                 │    town / region   │
-│    chips only, no card       │                    │
-│                              │  Trains at         │
-│  Qualifications              │    chips           │
-│    clean list, verified tick │                    │
-│                              │  Trust & Assurance │
-│  What clients say            │    4 compact lines │
-│    review cards              │  (this replaces    │
-│                              │   the duplicate    │
-│  FAQ                         │   hero trust grid  │
-│                              │   or vice-versa)   │
-└──────────────────────────────┴────────────────────┘
-                Ready to work with Jordon (full-width CTA band)
-```
+1. **Services & Pricing** — swap current light cards for dark navy cards matching `/c/$slug`:
+   - `bg-reps-panel`, `rounded-[18px]`, orange icon top-left, price large, tick bullets, orange "Enquire about this" button.
+   - Middle card = "Most popular" ribbon (orange glow), only when a service is marked `is_featured`.
+2. Soft cream "Not sure which option is right for you?" banner unchanged.
+3. **Qualifications & Credentials** — keep current card, no restyle.
+4. **What Clients Say** — keep current, no fake padding.
+5. **FAQ** — accordion, first item open by default.
 
-Rules the new layout must obey:
+### Sticky sidebar (right, `lg:sticky lg:top-[88px]`)
 
-- **One grid, one rhythm.** Same 2-col template from About down to FAQ. No second grid appearing halfway down.
-- **Cards only where a card earns it.** Wrap Services, Qualifications, Reviews, Trust, Location in cards. About, Specialisms, and FAQ sit directly on the page (heading + content, no border).
-- **No cards inside cards.** About stats become a thin inline row (`8+ years · 100+ clients · Verified since 2023`) under the bio, not three orange tiles.
-- **Services match the page theme** (light card, dark text). Kill the reps-panel dark tiles here — dark stays for the coach shop-front `/c/$slug`, not the public profile.
-- **Merge duplicates.** Trust & Assurance moves into the sidebar as a compact checklist and the hero's 4-tile trust strip stays as the top summary — or vice versa. Not both.
-- **Sub-nav tells the truth.** Drop "Availability", add an underline on hover for all items (not just active), and make it sticky on scroll so it earns its space.
+1. **Location & Coverage** card:
+   - "Based in {town}, covering:" + green-tick list of nearby towns (from existing coverage data).
+   - Map: switch from Google red-pin to a **coverage radius overlay** — draw a dashed orange `google.maps.Circle` at lat/lng with radius from `service_radius_km` (or 15km default). Remove the marker. Update `src/components/pro/LocationMap.tsx` to accept `radiusKm?: number` and render Circle instead of Marker when provided.
+   - Postcode check input + black "Check" button (client-side only for now — button wires to existing coverage check if implemented, otherwise disabled with tooltip "Coming soon").
+2. **Quick Details** card: existing chip data reformatted as label/value rows (Specialisms, Age groups, Training style, Availability, Equipment).
+3. **Trust & Assurance** compact checklist card — 4 lines, "View full verification →" link. Replaces the hero-duplicate trust card.
+
+## Removals
+
+- Standalone "Trust & Assurance" full card in main column (moved to sidebar).
+- Duplicate hero "trust strip" stays as the top summary, but the sidebar Trust card takes over the detail role.
+- Platform stat band ("25,000+ Verified Professionals / 120+ Countries") — belongs on `/`, not on a personal profile. Remove from the profile route only.
+- Any remnants of Specialisms/Trains-at chip-lists as separate cards (absorbed into Quick Details + sidebar).
+
+## Files touched
+
+- `src/routes/pro.$slug.index.tsx` — main restructure.
+- `src/components/pro/LocationMap.tsx` — add optional `radiusKm` prop, render dashed orange `google.maps.Circle` instead of marker when set.
+- No new components unless a `<ProfileSidebar>` extraction naturally falls out during the edit.
 
 ## Scope guardrail
 
-- No hero changes.
-- No copy rewrites beyond what's needed to remove "Availability" from the sub-nav.
-- No data model changes — every field consumed today keeps being consumed.
-- Locked pages (`/c/$slug`, `/pro/$slug/enquire`, homepage, professions, cities) are **not** touched.
-- Radii stay on the 6/8/10/12/16/18/22/24/full scale. Card = 22, service row = 18, chips = full, map = 12.
+- No hero photo/copy changes beyond bio truncation + price anchor.
+- No changes to `/c/$slug`, `/pro/$slug/enquire`, homepage, professions, cities.
+- No data model / schema / server function changes.
+- All colours via tokens; radii from the locked scale (services 18, cards 22, buttons 10).
 
-## Technical notes
+## Verification
 
-- File: `src/routes/pro.$slug.index.tsx` (single route, ~1372 lines). Sections to restructure are lines ~788–1230 (About/Services/right-stack, then Quals/Trust). Reviews, FAQ, and CTA stay as-is structurally but slot into the new spine's main column.
-- `SUB_NAV` array: drop `"Availability"`, keep the six real anchors.
-- Sidebar becomes `sticky top-[88px]` on `lg:` and up; stacks under main on mobile.
-- Delete the standalone "Trust & Assurance" card OR the hero's 4-tile trust grid — decide one in build. Recommend keeping hero strip (first-impression trust) and moving detailed CPD/insurance rows into the sidebar list.
-
-## Deliverable
-
-One PR editing `src/routes/pro.$slug.index.tsx` only. Screenshot before/after at 1280 and 375. No new components unless a `<ProfileSidebar>` extraction naturally falls out.
+1. Typecheck clean.
+2. Playwright screenshot at 1280 + 375 against `/pro/jordon-gumbley`, confirm:
+   - Hero has price anchor, no sub-nav.
+   - "Who I help" strip renders 4 columns.
+   - Services are dark navy with "Most popular" ribbon on Hybrid.
+   - Map shows dashed orange radius, not red pin.
+   - Sidebar sticks on scroll; no duplicate Trust card.
+3. Manual scroll check: "Get in touch" hero card stays sticky; sidebar Trust card is compact.
