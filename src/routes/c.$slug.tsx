@@ -812,7 +812,7 @@ function HeroSection({
             <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="secondary"
-                className="rounded-full bg-reps-green/15 text-reps-green ring-1 ring-reps-green/30"
+                className="rounded-full bg-reps-green/15 text-reps-green ring-1 ring-reps-green/30 hover:bg-reps-green/15"
               >
                 <BadgeCheck className="h-3 w-3 mr-1" />
                 REPS Verified · Insured
