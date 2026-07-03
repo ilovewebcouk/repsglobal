@@ -30,7 +30,12 @@ export type ShopFrontDTO = {
   method_name: string | null;
   method_intro: string | null;
   method_pillars: Array<{ title: string; body: string }>;
-  venues: Array<{ name: string; address?: string | null }>;
+  venues: Array<{
+    name: string;
+    address?: string | null;
+    googlePlaceId?: string | null;
+    kind: "gym" | "home_studio" | "mobile";
+  }>;
   coaching_reach: { cities: string[]; online_worldwide: boolean };
   client_results_intro: string | null;
   layout_variant: "lite" | "full";
