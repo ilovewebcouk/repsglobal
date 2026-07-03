@@ -124,6 +124,19 @@ export const Route = createFileRoute("/find-a-professional")({
       { property: "og:url", content: "https://repsuk.org/find-a-professional" },
     ],
     links: [{ rel: "canonical", href: "https://repsuk.org/find-a-professional" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Find a REPS-verified professional",
+          description:
+            "Browse REPS-verified fitness professionals. Filter by specialism, location, gym and training type.",
+          url: "https://repsuk.org/find-a-professional",
+        }),
+      },
+    ],
   }),
   component: DirectoryPage,
 });

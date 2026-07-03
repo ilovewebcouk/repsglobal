@@ -77,8 +77,7 @@ const heroImg = cpdTutorMomentAsset.url;
 /* ------------------------------------------------------------------ */
 
 const CANONICAL = "https://repsuk.org/cpd";
-const META_TITLE =
-  "Education, CPD & Career Growth for Fitness Professionals | REPS";
+const META_TITLE = "CPD & Career Growth for Fitness Pros | REPS";
 const META_DESC =
   "Build your professional profile, track your development and find recognised education that helps you stay credible, visible and trusted through REPS.";
 
