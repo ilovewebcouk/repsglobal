@@ -33,12 +33,14 @@ import {
   getActivityFeed, type ActivityEvent, type ActivitySource, type ActivitySeverity,
 } from "@/lib/ops/activity-feed.functions";
 import {
-  getActivityKpis, getOnlineNow, getCurrentPages, getTopMemberPages,
-  getGeoActivity, getNeedsAttention,
+  getActivityKpis, getTopMemberPages, getGeoActivity, getNeedsAttention,
 } from "@/lib/ops/activity-panels.functions";
-import { getRealtimeSummary } from "@/lib/ops/activity-realtime.functions";
-import { getPublicRealtime } from "@/lib/admin/public-realtime.functions";
 
+// v5 — one canonical live source of truth. No PostHog anywhere on this page.
+import {
+  getActivityCommandCenter,
+  type CommandCenterPayload,
+} from "@/lib/activity/command-center.functions";
 
 import {
   GeoPanel, TopMemberPagesPanel, NeedsAttentionPanel,
@@ -47,16 +49,13 @@ import { ClientOnlyMap } from "@/components/admin/activity/WorldMapPanel";
 import {
   ActivityFeedV2, EventDetailSheet,
 } from "@/components/admin/activity/feed-and-sheet";
-import { PublicVisitorsPanel } from "@/components/admin/activity/PublicVisitorsPanel";
 import { LiveActivityRail, type SupabaseVisitorRow } from "@/components/admin/activity/LiveActivityRail";
 import { RealtimeSummaryCard } from "@/components/admin/activity/RealtimeSummaryCard";
 import { PublicVisitorDrawer } from "@/components/admin/activity/PublicVisitorDrawer";
-
 import { AnalyticsStrip, type AnalyticsSeries } from "@/components/admin/activity/AnalyticsStrip";
-import { DiagnosticsDrawer } from "@/components/admin/activity/DiagnosticsDrawer";
 import { CompactStatusStrip } from "@/components/admin/activity/CompactStatusStrip";
 import { PagesBeingViewedNow } from "@/components/admin/activity/PagesBeingViewedNow";
-import { getPublicVisitorsLive, getPublicIngestHealth, getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
+import { getPublicConversionsLive } from "@/lib/activity/live-visitors.functions";
 
 const SOURCES: ActivitySource[] = [
   "auth", "session", "payment", "subscription", "dispute", "review",
@@ -111,42 +110,29 @@ function AdminActivityPage() {
   const [visitorDrawerId, setVisitorDrawerId] = useState<string | null>(null);
 
   // ── Server function bindings
+  const runCommand = useServerFn(getActivityCommandCenter);
   const runKpis = useServerFn(getActivityKpis);
-  const runRealtime = useServerFn(getRealtimeSummary);
-  const runOnline = useServerFn(getOnlineNow);
-  const runCurrent = useServerFn(getCurrentPages);
   const runTop = useServerFn(getTopMemberPages);
   const runGeo = useServerFn(getGeoActivity);
   const runAttention = useServerFn(getNeedsAttention);
   const runFeed = useServerFn(getActivityFeed);
-  const runPublicRealtime = useServerFn(getPublicRealtime);
-
-  const runPublicVisitorsLive = useServerFn(getPublicVisitorsLive);
-  const runPublicIngestHealth = useServerFn(getPublicIngestHealth);
   const runPublicConversions = useServerFn(getPublicConversionsLive);
 
-  // ── Queries — realtime queries poll fast (5–8s); heavier aggregates poll slower.
-  const realtimeQ = useQuery({ queryKey: ["a-realtime"], queryFn: () => runRealtime(), refetchInterval: 6_000 });
-  const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
-  const publicRealtimeQ = useQuery({
-    queryKey: ["a-public-realtime"],
-    queryFn: () => runPublicRealtime().catch(() => null),
-    refetchInterval: 6_000, // server TTL 5s → poll every ~6s for a live feel
-    retry: false,
+  // ── ONE canonical live query. Everything on the "live" surface reads from
+  // this payload so the numbers cannot disagree with each other.
+  const ccQ = useQuery<CommandCenterPayload>({
+    queryKey: ["a-command-center"],
+    queryFn: () => runCommand(),
+    refetchInterval: 6_000,
   });
+  const cc = ccQ.data;
 
-  const publicVisitorsQ = useQuery({
-    queryKey: ["a-public-visitors-live"],
-    queryFn: () => runPublicVisitorsLive({ data: { limit: 50 } }).catch(() => null),
-    refetchInterval: 8_000,
-    retry: false,
-  });
-  const publicHealthQ = useQuery({
-    queryKey: ["a-public-health"],
-    queryFn: () => runPublicIngestHealth().catch(() => null),
-    refetchInterval: 20_000,
-    retry: false,
-  });
+  // ── Slower / secondary queries (unchanged sources — Supabase only).
+  const kpisQ = useQuery({ queryKey: ["a-kpis"], queryFn: () => runKpis(), refetchInterval: 30_000 });
+  const topQ = useQuery({ queryKey: ["a-top", topWindow], queryFn: () => runTop({ data: { limit: 10, hours: topWindow } }), refetchInterval: 60_000 });
+  const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo(), refetchInterval: 20_000 });
+  const attentionQ = useQuery({ queryKey: ["a-attention"], queryFn: () => runAttention(), refetchInterval: 30_000 });
+
   const KEY_ACTIONS = new Set(["enquiry_started", "enquiry_created", "signup_started", "checkout_started", "signup_complete"]);
   const conversionsQ = useQuery({
     queryKey: ["a-public-conversions"],
@@ -155,65 +141,122 @@ function AdminActivityPage() {
     retry: false,
   });
 
-
-  const onlineQ = useQuery({ queryKey: ["a-online"], queryFn: () => runOnline({ data: { limit: 50 } }), refetchInterval: 8_000 });
-  const currentQ = useQuery({ queryKey: ["a-current"], queryFn: () => runCurrent({ data: { limit: 8 } }), refetchInterval: 8_000 });
-  const topQ = useQuery({ queryKey: ["a-top", topWindow], queryFn: () => runTop({ data: { limit: 10, hours: topWindow } }), refetchInterval: 60_000 });
-  const geoQ = useQuery({ queryKey: ["a-geo"], queryFn: () => runGeo(), refetchInterval: 20_000 });
-  const attentionQ = useQuery({ queryKey: ["a-attention"], queryFn: () => runAttention(), refetchInterval: 30_000 });
-
   const feedQ = useQuery({
     queryKey: ["a-feed", source ?? "all", severity ?? "all", range.hours],
     queryFn: () => runFeed({ data: { limit: 200, since_hours: range.hours, source, severity } }),
     refetchInterval: 15_000,
   });
 
+  // ── Adapt command-centre payload into the shapes existing components expect.
+  const supabaseVisitorRows: SupabaseVisitorRow[] = useMemo(() => {
+    return (cc?.public_live ?? []).map((v) => ({
+      journey_id: v.journey_id,
+      session_id: v.session_id,
+      user_id: v.user_id,
+      member_name: v.member_name,
+      masked_ip: v.masked_ip,
+      city: v.city,
+      region: v.region,
+      country_code: v.country_code,
+      latest_path: v.latest_path,
+      latest_event: v.latest_event,
+      path_history: v.path_history,
+      referrer: v.referrer,
+      source: v.source,
+      first_seen_at: v.first_seen_at,
+      last_seen_at: v.last_seen_at,
+      status: v.status === "live" ? "live" : "stale",
+    }));
+  }, [cc?.public_live]);
+
+  const onlineMembers = useMemo(() => (cc?.members_live ?? []).map((m) => ({
+    session_id: m.session_id,
+    user_id: m.user_id,
+    name: m.name,
+    email: m.email,
+    avatar_url: m.avatar_url,
+    current_path: m.current_path,
+    device: m.device,
+    browser: m.browser,
+    country_code: m.country_code,
+    city: m.city,
+    region: m.region,
+    latitude: m.latitude,
+    longitude: m.longitude,
+    started_at: m.started_at,
+    last_seen_at: m.last_seen_at,
+    pages_viewed: 0,
+    tier: null,
+    badges: [] as string[],
+  })), [cc?.members_live]);
+
+  const currentPages = useMemo(() => (cc?.pages_being_viewed_now ?? []).map((p) => ({
+    path: p.path,
+    online_count: p.total,
+    avatars: p.member_avatars,
+    views_24h: 0,
+    trend_pct: null,
+  })), [cc?.pages_being_viewed_now]);
+
+  // Realtime card wants the old `RealtimeSummary` shape — adapt from cc slice.
+  const realtimeForCard = useMemo(() => {
+    if (!cc) return undefined;
+    const r = cc.realtime_summary;
+    return {
+      online_now: r.members_now,
+      members_last_30min: r.members_now,
+      activity_last_30min: r.events_30m,
+      per_minute: r.per_minute,
+      devices: r.devices,
+      sign_ins_today: 0,
+      member_views_24h: 0,
+      new_members_24h: 0,
+      generated_at: r.updated_at,
+      scope_label: "Public visitors (Supabase visitor_journeys) + logged-in members (user_sessions).",
+    };
+  }, [cc]);
+
+  const memberMapCities = useMemo(() => {
+    return (cc?.map_markers ?? [])
+      .filter((m) => m.members > 0)
+      .map((m) => ({
+        city: m.city ?? "",
+        region: m.region,
+        country_code: m.country_code,
+        latitude: m.latitude,
+        longitude: m.longitude,
+        online: m.members,
+      }));
+  }, [cc?.map_markers]);
+
+  const publicMapCities = useMemo(() => {
+    return (cc?.map_markers ?? [])
+      .filter((m) => m.public > 0)
+      .map((m) => ({
+        city: m.city ?? "",
+        region: m.region,
+        country_code: m.country_code,
+        latitude: m.latitude,
+        longitude: m.longitude,
+        online: m.public,
+      }));
+  }, [cc?.map_markers]);
+
   const events = useMemo(() => {
     const list = feedQ.data?.events ?? [];
     if (!country) return list;
-    const online = onlineQ.data?.users ?? [];
-    const usersInCountry = new Set(online.filter((u) => u.country_code === country).map((u) => u.user_id).filter(Boolean));
+    const usersInCountry = new Set(onlineMembers.filter((u) => u.country_code === country).map((u) => u.user_id).filter(Boolean));
     return list.filter((e) => e.user_id && usersInCountry.has(e.user_id));
-  }, [feedQ.data, country, onlineQ.data]);
+  }, [feedQ.data, country, onlineMembers]);
 
   const compactEvents = useMemo(() => events.slice(0, 8), [events]);
 
-  // ── Command strip metrics — Supabase is the single source of truth.
-  // publicOnline is derived from the same visitor rows the Rail and Realtime
-  // card use, so counts across the page cannot disagree. PostHog is used only
-  // for map coordinates (publicRealtimeQ), never for live counts.
-  const supabaseVisitorRows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
-  const publicOnline = supabaseVisitorRows.filter((v) => v.status === "live").length;
-  const membersOnline = realtimeQ.data?.online_now ?? 0;
+  // ── Command strip metrics — one source: `cc.live_now`.
+  const publicOnline = cc?.live_now.public ?? 0;
+  const membersOnline = cc?.live_now.members ?? 0;
   const attentionRows = attentionQ.data?.rows ?? [];
   const attentionCount = attentionRows.length;
   const criticalCount = attentionRows.filter((r) => r.severity === "critical").length;
-
-  const memberMapCities = useMemo(() => {
-    const map = new Map<string, {
-      city: string;
-      region: string | null;
-      country_code: string;
-      latitude: number;
-      longitude: number;
-      online: number;
-    }>();
-    for (const u of onlineQ.data?.users ?? []) {
-      if (!u.city || !u.country_code || typeof u.latitude !== "number" || typeof u.longitude !== "number") continue;
-      const key = `${u.city}|${u.region ?? ""}|${u.country_code}|${u.latitude.toFixed(3)}|${u.longitude.toFixed(3)}`;
-      const existing = map.get(key);
-      if (existing) existing.online += 1;
-      else map.set(key, {
-        city: u.city,
-        region: u.region,
-        country_code: u.country_code,
-        latitude: u.latitude,
-        longitude: u.longitude,
-        online: 1,
-      });
-    }
-    return Array.from(map.values()).sort((a, b) => b.online - a.online);
-  }, [onlineQ.data]);
 
   // Amendment 1 — "Key actions today" counts commercial events only.
   const keyActionsToday = useMemo(() => {
@@ -224,21 +267,10 @@ function AdminActivityPage() {
     return rows.filter((r) => KEY_ACTIONS.has(r.event_kind) && new Date(r.occurred_at).getTime() >= cutoff).length;
   }, [conversionsQ.data]);
 
-  // ── Timing / degraded panels
-  const timings = useMemo(() => {
-    return [
-      kpisQ.data?.timing, onlineQ.data?.timing, currentQ.data?.timing,
-      topQ.data?.timing, geoQ.data?.timing, attentionQ.data?.timing,
-    ].filter((t): t is NonNullable<typeof t> => Boolean(t));
-  }, [kpisQ.data, onlineQ.data, currentQ.data, topQ.data, geoQ.data, attentionQ.data]);
-  const degraded = timings.filter((t) => t.degraded);
-  const slow = timings.filter((t) => !t.degraded && t.ms > 1500);
-  const feedDegraded = feedQ.data?.degraded_sources ?? [];
-
-  const publicStale = Boolean(publicHealthQ.data?.supabase_live.stale) || Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok);
+  const publicStale = Boolean(cc?.stale);
   const ingestStatus: "healthy" | "degraded" | "down" =
-    realtimeQ.error || publicRealtimeQ.error ? "down"
-    : degraded.length > 0 || feedDegraded.length > 0 ? "degraded"
+    ccQ.error ? "down"
+    : publicStale ? "degraded"
     : "healthy";
 
 
@@ -347,15 +379,14 @@ function AdminActivityPage() {
                 layer={mapLayer}
                 onLayerChange={setMapLayer}
                 memberCities={memberMapCities}
-                publicCountries={publicRealtimeQ.data?.countries ?? []}
-                publicCities={publicRealtimeQ.data?.cities ?? []}
+                publicCountries={[]}
+                publicCities={publicMapCities}
                 publicOnline={publicOnline}
-                publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
-                updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
+                publicStale={publicStale}
+                updatedAt={ccQ.dataUpdatedAt || null}
                 onOpenVisitorAtCity={(city) => {
-                  const rows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
-                  const match = rows.find((r) => r.status === "live" && (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code)
-                    ?? rows.find((r) => (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code);
+                  const match = supabaseVisitorRows.find((r) => r.status === "live" && (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code)
+                    ?? supabaseVisitorRows.find((r) => (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code);
                   if (match) setVisitorDrawerId(match.journey_id);
                 }}
               />
@@ -363,13 +394,13 @@ function AdminActivityPage() {
           </div>
           <div className="xl:col-span-4">
             <RealtimeSummaryCard
-              data={realtimeQ.data}
-              loading={realtimeQ.isLoading}
+              data={realtimeForCard}
+              loading={ccQ.isLoading}
               publicSummary={{
-                online_now: ((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).filter((v) => v.status === "live").length,
-                events_30m: ((publicVisitorsQ.data ?? []) as unknown as Array<SupabaseVisitorRow & { event_count?: number }>).reduce((s, v) => s + (v.event_count ?? 0), 0),
-                last_event_at: publicHealthQ.data?.supabase_live.last_journey_at ?? null,
-                stale: publicHealthQ.data?.supabase_live.stale ?? false,
+                online_now: publicOnline,
+                events_30m: cc?.realtime_summary.events_30m ?? 0,
+                last_event_at: cc?.ingest.last_journey_at ?? null,
+                stale: publicStale,
               }}
             />
           </div>
@@ -379,25 +410,25 @@ function AdminActivityPage() {
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
           <LiveActivityRail
             className="h-full w-full"
-            members={onlineQ.data?.users ?? []}
-            memberPages={currentQ.data?.pages ?? []}
-            membersLoading={onlineQ.isLoading}
-            publicRealtime={publicRealtimeQ.data ?? null}
-            publicLoading={publicRealtimeQ.isLoading}
-            realtime={realtimeQ.data}
-            updatedAt={publicVisitorsQ.dataUpdatedAt || publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
-            supabaseVisitors={(publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]}
-            supabaseVisitorsLoading={publicVisitorsQ.isLoading}
+            members={onlineMembers}
+            memberPages={currentPages}
+            membersLoading={ccQ.isLoading}
+            publicRealtime={null}
+            publicLoading={ccQ.isLoading}
+            realtime={realtimeForCard}
+            updatedAt={ccQ.dataUpdatedAt || null}
+            supabaseVisitors={supabaseVisitorRows}
+            supabaseVisitorsLoading={ccQ.isLoading}
             onOpenVisitor={(id) => setVisitorDrawerId(id)}
           />
           <PagesBeingViewedNow
-            memberPages={currentQ.data?.pages ?? []}
-            publicVisitors={((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).map((v) => ({
+            memberPages={currentPages}
+            publicVisitors={supabaseVisitorRows.map((v) => ({
               latest_path: v.latest_path ?? null,
               status: v.status,
               last_seen_at: v.last_seen_at,
             }))}
-            loading={currentQ.isLoading || publicVisitorsQ.isLoading}
+            loading={ccQ.isLoading}
           />
         </div>
 
@@ -432,12 +463,12 @@ function AdminActivityPage() {
           </section>
         </div>
 
-        {/* ── Secondary (below the fold): member activity + public analytics rollup ── */}
+        {/* ── Secondary (below the fold): member activity + geo ── */}
         <details className="group rounded-[18px] border border-reps-border bg-reps-panel/60">
           <summary className="cursor-pointer list-none px-4 py-3 text-[12px] font-medium text-white/70 hover:text-white">
             <span className="inline-flex items-center gap-2">
               <ChevronRight className="h-3.5 w-3.5 transition group-open:rotate-90" />
-              Historical analytics · member activity, top pages, public rollup
+              Historical analytics · member activity, top pages, geography
             </span>
           </summary>
           <div className="space-y-4 border-t border-reps-border/70 p-4">
@@ -459,20 +490,11 @@ function AdminActivityPage() {
                 />
               </div>
             </div>
-            <PublicVisitorsPanel />
+            <p className="text-[11px] text-white/40">
+              Diagnostics have moved to <a className="underline hover:text-white/70" href="/admin/system">/admin/system</a>.
+            </p>
           </div>
         </details>
-
-
-        {/* ── 6. DIAGNOSTICS (collapsed by default) ── */}
-        <DiagnosticsDrawer
-          ingestStatus={ingestStatus}
-          degradedPanels={[...degraded.map((d) => d.panel), ...feedDegraded]}
-          slowPanels={slow}
-          lastJourneyAt={publicHealthQ.data?.supabase_live.last_journey_at ?? null}
-          publicOnline={publicOnline}
-          membersOnline={membersOnline}
-        />
 
       </div>
 
