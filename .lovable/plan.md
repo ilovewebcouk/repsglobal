@@ -1,57 +1,73 @@
-## Brutal honest opinion first
+## Goal
 
-**Yes to everything, but with one strong pushback on "Home / private studio".**
+Rebuild the **Client Results** editor on `/dashboard/website` so every field maps 1:1 to a proof card on the public shop-front (`/c/$slug`), with a proper image uploader (not a URL text box) and a live preview that mirrors the public card.
 
-- **4 max instead of 3** — fine. Realistically most PTs work out of 1–3 places; 4 is the honest upper bound before it starts to look padded. I wouldn't go higher.
-- **Home / private studio option** — makes total sense (mobile PTs, garage gyms, small studio operators genuinely need this) *but* it should be its own chip type, not a "gym". Reasons:
-  - Home addresses **must never** be exposed publicly. If we let people search for it in the gym picker it'll end up in the `gyms` table with real coordinates and leak into directory search.
-  - No Google link, no address line, no map pin behaviour — it's just a label.
-  - So: treat it as a **separate "training base" type** stored on the professional (not in `gyms`). Options: `Home / private studio` and `Client's home / mobile`. Pick one or both, they render as chips with no address.
-- **Link real gyms to Google Business profile** — good move, adds trust and lets clients check reviews/directions. Use `https://www.google.com/maps/place/?q=place_id:{google_place_id}` (canonical Google-recommended URL), `target="_blank" rel="noopener"`. Only render as a link when `google_place_id` exists — some `gyms` rows are internally added and won't have one.
-- **Name + address on the public site** — yes, upgrade from "London" to real street address. Third Space Soho → "67 Brewer St, London W1F 9US" is way more useful than "London".
-- **Orange pins** — agreed, `text-reps-orange` on the venue-card and coaching-reach chip pins. Keep the *dashboard editor* pins muted grey (chrome, not content).
+## Why
 
-One thing I'd flag but not block on: showing the full street address publicly is a small privacy nudge for boutique/1-person studios. For chain gyms it's obviously fine. If we want to be careful we can show address only when the venue is a chain/verified gym and fall back to "City" for solo studios. Happy to skip that unless you want it.
+The pipeline already exists end-to-end (`shop_front_transformations` → `TransformationsSection`), but the editor UX is broken:
 
-## Plan
+- Image is a raw URL text field (no upload, no crop, no image at all for most pros)
+- Editor has both `metric` and `headline` — the public card only shows one of them, so one field is invisible
+- No place to enter the "Marketing Director · 12 weeks" line under the client name — the shopfront currently duplicates the headline into that slot
+- No preview, so pros can't see what they're building
 
-### 1. Bump cap 3 → 4
-`src/components/profile/GymPicker.tsx`
-- `const full = mine.length >= 4` and update the "You've added the maximum of 3 gyms" copy.
-`src/routes/_authenticated/_professional/dashboard_.website.tsx`
-- Panel label `"Trains at (optional · max 3)"` → `max 4`, help text `"Add up to 3"` → `"Add up to 4"`.
+## What the public card shows
 
-### 2. Add "Home / private studio" as a separate training-base type
-- **DB (migration):** add two boolean columns on `professionals` — `trains_at_home_studio` and `trains_at_clients_home` (both default `false`). No new table; these are properties of the pro, not gyms.
-- **Editor:** in `WhereITrainPanel`, above the `GymPicker`, add a small 2-checkbox row ("Home / private studio", "Client's home / mobile"). Wire into the existing save flow that already writes `professionals`.
-- **Public site (`VenuesSection` in `src/routes/c.$slug.index.tsx`):** render these as venue cards alongside real gyms, with no address subline and no Google link (label only). They count toward the "does the coach have any in-person venue?" check but don't add to the 4-gym cap (that cap stays on `professional_gyms`).
-- **Shop-front loader (`src/lib/shop-front/shop-front.functions.ts`):** extend the `venues` shape to `{ name; address?; googlePlaceId?; kind: "gym" | "home_studio" | "mobile" }` and merge the two flags in.
+```
+┌────────────────────────────┐
+│  [ 4:3 photo ]             │
+│  [RESULT pill]             │
+│  −8kg · first unassisted   │  ← Result headline (bold)
+│  pull-up                   │
+├────────────────────────────┤
+│  "Quote from the client…"  │  ← Quote
+│  ─────────                 │
+│  Sophie L.                 │  ← Client name
+│  Marketing Director ·      │  ← Role · duration
+│  12 weeks                  │
+└────────────────────────────┘
+```
 
-### 3. Link real gyms to their Google Business profile
-- **Loader:** include `google_place_id` when reading `professional_gyms → gyms` in `shop-front.functions.ts` (and the profile loader if it feeds the same section).
-- **Public render:** in `VenuesSection`, if `googlePlaceId` is present, wrap the venue card in an `<a href={"https://www.google.com/maps/place/?q=place_id:" + id} target="_blank" rel="noopener noreferrer">` with a subtle hover state (border → `reps-orange-border`, no colour flip on the text). Non-linked (home/studio/mobile, or gyms missing a place_id) stay as plain `<div>`.
+## Editor fields (new)
 
-### 4. Show name + street address, not just city
-- **Loader:** select `gyms.address` (or `formatted_address` — whichever column exists; if only `area`/`city`, fall back to `${area}, ${city}`) and pass through as `venue.address`.
-- **Public render:** venue card shows `name` on line 1, `address ?? city` on line 2 in `text-white/55`.
-- **Fallback:** if address is missing, keep the current city string.
+| Field | Type | Maps to |
+| --- | --- | --- |
+| Photo | Image uploader (Upload / URL) with **4:3 crop → 1600×1200 JPEG** | `image_url` |
+| Result headline | Single line, 80 chars, bold text on the card | `metric` (existing column, canonical) |
+| Client quote | Textarea, 600 chars, optional | `quote` |
+| Client name | Text, 60 chars (e.g. "Sophie L.") | `client_first_name` (kept for compat, label reworded) |
+| Client role | Text, 60 chars, optional (e.g. "Marketing Director") | `client_role` **(new column)** |
+| Duration | Text, 40 chars, optional (e.g. "12 weeks") | `duration_label` **(new column)** |
+| Show on site | Toggle | `is_published` |
 
-### 5. Orange pins on the public site
-- In `VenuesSection` (`src/routes/c.$slug.index.tsx`), change the venue-card `<MapPin>` and the coaching-reach chip `<MapPin>` / `<Globe>` from `text-reps-muted` → `text-reps-orange`.
-- Dashboard editor pins stay grey (they're chrome).
+A **live card preview** renders to the right of the fields inside the editor, using the exact same visual as `TransformationsSection`.
 
-### Out of scope
-- Fetching fresh Google address/hours at render time (we already store address on import — no live Google call needed per page view).
-- Redesigning the venue cards beyond adding the address line + link affordance.
-- Removing the current gym-editor pin colour.
+## Public card wiring changes
 
-### Files touched
-- `supabase/migrations/<new>.sql` — 2 columns on `professionals` + grants unchanged (existing table).
-- `src/components/profile/GymPicker.tsx` — cap + copy.
-- `src/routes/_authenticated/_professional/dashboard_.website.tsx` — panel copy, 2 new checkboxes, save wiring.
-- `src/lib/shop-front/shop-front.functions.ts` — venue shape + loader.
-- `src/routes/c.$slug.index.tsx` — `VenuesSection`: address line, Google link, orange pins, home/mobile chips.
+In `mergeLiveIntoCoach` (`src/routes/c.$slug.index.tsx`):
 
-### Open question before I build
+- `metric` → the bold headline (already correct)
+- `meta` → **`[client_role, duration_label].filter(Boolean).join(" · ")`** instead of duplicating `headline`. Falls back to empty when both blank so the "Marketing Director · 12 weeks" line simply doesn't render for pros who haven't filled it in.
+- Drop the redundant `headline` mapping.
 
-Do you want **both** "Home / private studio" *and* "Client's home / mobile" as separate toggles, or just the single "Home / private studio" option you mentioned? They mean different things to clients (fixed private space vs mobile-to-you), so I'd lean toward both — but happy to ship one if you'd rather keep it simple.
+## Image upload
+
+- New bucket **`shop-front-results`** (public, mirrors `shop-front-hero` config).
+- New server fn `uploadTransformationImageFromBase64` — takes a data URL, decodes → re-encodes 1600×1200 JPEG server-side, writes under `<userId>/<uuid>.jpg`, returns public URL. Owner-scoped storage policies.
+- Reuse the cropper pattern from `HeroImageEditor` but locked to **4:3** aspect (not 9:16). Extract the cropper modal into a small shared primitive if trivial; otherwise inline in a new `TransformationImageEditor.tsx`.
+
+## Files touched
+
+1. **Migration** — add `client_role text`, `duration_label text` to `shop_front_transformations`; create `shop-front-results` storage bucket + owner RLS policies.
+2. `src/lib/shop-front/website-content.functions.ts` — extend `TransformationSchema` + `TransformationDTO` with the two new fields.
+3. `src/lib/shop-front/transformation-image.functions.ts` — **new** upload server fn (mirrors `hero.functions.ts`).
+4. `src/components/dashboard/TransformationImageEditor.tsx` — **new** uploader component (Upload / URL modes, 4:3 cropper).
+5. `src/routes/_authenticated/_professional/dashboard_.website.tsx` — replace `TransformationsEditor` with the rebuilt version: field grid + live card preview + inline edit for existing rows (currently they're read-only chips).
+6. `src/routes/c.$slug.index.tsx` — update `liveTransformations` mapping so `meta` = role · duration (drop headline duplication).
+7. `src/lib/shop-front/shop-front.functions.ts` — include `client_role`, `duration_label` in the `ShopFrontTransformationDTO` and the select column list.
+
+## Out of scope
+
+- Reviews wiring for the "In their words" section below (that's the next slice per the previous turn's decision to remove the Written Results editor).
+- AI-drafted transformations.
+- Changing card layout / styling on the public site — only the meta line text changes.
