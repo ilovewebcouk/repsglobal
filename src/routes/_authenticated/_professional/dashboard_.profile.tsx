@@ -1045,7 +1045,8 @@ function ProfileEditorPage() {
       }
     >
       <div className="flex flex-col gap-4">
-        <VerificationStatusPill />
+        {/* VerificationStatusPill moved to the dashboard sidebar. */}
+
 
         {/* Page-sections callout — Services + Website editors live here for
             now and will fold into anchored sections of this page in Pass 2.
