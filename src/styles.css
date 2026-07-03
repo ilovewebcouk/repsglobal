@@ -262,3 +262,47 @@
 @utility animate-marquee {
   animation: marquee 38s linear infinite;
 }
+
+/* -------------------------------------------------------------
+   Coach shop-front — LIGHT theme override (scoped)
+   Applied only when a wrapper carries `data-coach-theme="light"`.
+   Redefines the shared --reps-* tokens inside the scope so every
+   `bg-reps-*` / `text-reps-*` / `border-reps-*` class auto-inverts.
+   Hardcoded `text-white`/`text-white/N` inside the scope is
+   remapped to dark. Buttons/pills that MUST stay white on orange
+   use `text-[#fff]` (arbitrary value) so they escape the override.
+   ------------------------------------------------------------- */
+[data-coach-theme="light"] {
+  color-scheme: light;
+  --reps-ink: #ffffff;
+  --reps-midnight: #f7f6f2;
+  --reps-panel: #ffffff;
+  --reps-panel-soft: #f2f1ec;
+  --reps-border: rgba(15, 15, 15, 0.10);
+  --reps-border-soft: rgba(15, 15, 15, 0.18);
+  --reps-text: #0a0a0a;
+  --reps-text-soft: rgba(10, 10, 10, 0.72);
+  --reps-muted: rgba(10, 10, 10, 0.55);
+  --reps-muted-light: rgba(10, 10, 10, 0.45);
+  --reps-bg: #ffffff;
+  --reps-orange-tint: #FFF3E6;
+  --reps-orange-soft: rgba(255, 122, 0, 0.10);
+}
+
+/* Flip hardcoded whites to dark inside the light-theme scope */
+[data-coach-theme="light"] .text-white { color: #0a0a0a; }
+[data-coach-theme="light"] .text-white\/90 { color: rgba(10, 10, 10, 0.90); }
+[data-coach-theme="light"] .text-white\/80 { color: rgba(10, 10, 10, 0.78); }
+[data-coach-theme="light"] .text-white\/70 { color: rgba(10, 10, 10, 0.72); }
+[data-coach-theme="light"] .text-white\/65 { color: rgba(10, 10, 10, 0.68); }
+[data-coach-theme="light"] .text-white\/60 { color: rgba(10, 10, 10, 0.62); }
+[data-coach-theme="light"] .text-white\/55 { color: rgba(10, 10, 10, 0.55); }
+[data-coach-theme="light"] .text-white\/50 { color: rgba(10, 10, 10, 0.50); }
+[data-coach-theme="light"] .text-white\/45 { color: rgba(10, 10, 10, 0.45); }
+[data-coach-theme="light"] .text-white\/40 { color: rgba(10, 10, 10, 0.40); }
+[data-coach-theme="light"] .text-white\/25 { color: rgba(10, 10, 10, 0.20); }
+
+/* Keep text on brand-orange surfaces WHITE regardless of theme */
+[data-coach-theme="light"] .bg-reps-orange { color: #ffffff; }
+[data-coach-theme="light"] .bg-reps-orange .text-white,
+[data-coach-theme="light"] .bg-reps-orange.text-white { color: #ffffff; }
