@@ -46,8 +46,6 @@ import {
   deleteTransformation,
   upsertFaq,
   deleteFaq,
-  upsertClientResult,
-  deleteClientResult,
   aiDraftMethod,
   aiDraftFaqs,
   aiDraftTagline,
@@ -55,7 +53,6 @@ import {
   aiDraftSubtitle,
   type MethodPillar,
   type TransformationDTO,
-  type ClientResultDTO,
   type FaqDTO,
 } from "@/lib/shop-front/website-content.functions";
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
@@ -1215,8 +1212,6 @@ function WebsiteContentEditor() {
   const save_ = useServerFn(saveMyWebsiteContent);
   const upsertT = useServerFn(upsertTransformation);
   const delT = useServerFn(deleteTransformation);
-  const upsertR = useServerFn(upsertClientResult);
-  const delR = useServerFn(deleteClientResult);
   const upsertF = useServerFn(upsertFaq);
   const delF = useServerFn(deleteFaq);
   const draftMethod = useServerFn(aiDraftMethod);
@@ -1432,7 +1427,7 @@ function WebsiteContentEditor() {
         <PPanel>
           <div className="border-b border-reps-border px-5 py-4">
             <h3 className="text-[14px] font-semibold text-white">Client Results</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">Short proof cards and written results shown in the Results section of your website.</p>
+            <p className="mt-0.5 text-[12px] text-white/55">Short proof cards shown in the Results section of your website.</p>
           </div>
           <div className="px-5 py-4">
             <TextArea
@@ -1450,15 +1445,6 @@ function WebsiteContentEditor() {
             items={data.transformations}
             onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
             onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-          />
-          <div className="border-t border-reps-border px-5 py-4">
-            <div className="text-[13px] font-semibold text-white">Written results</div>
-            <p className="mt-0.5 text-[12px] text-white/55">Text-only testimonial-style cards shown alongside proof cards.</p>
-          </div>
-          <ClientResultsEditor
-            items={data.clientResults}
-            onSave={(r) => upsertR({ data: r }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-            onDelete={(id) => delR({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
           />
         </PPanel>
       </section>
@@ -1608,87 +1594,6 @@ function TransformationsEditor({
   );
 }
 
-function ClientResultsEditor({
-  items,
-  onSave,
-  onDelete,
-}: {
-  items: ClientResultDTO[];
-  onSave: (r: Partial<ClientResultDTO> & { sort_order: number; is_published: boolean }) => void;
-  onDelete: (id: string) => void;
-}) {
-  const [draft, setDraft] = React.useState({ headline: "", body: "" });
-
-  return (
-    <div className="divide-y divide-reps-border/60">
-        {items.map((r) => (
-          <div key={r.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
-            <div>
-              <div className="text-[13px] font-semibold text-white">{r.headline ?? "Client result"}</div>
-              {r.body && <p className="mt-1 line-clamp-2 text-[12px] text-white/55">&quot;{r.body}&quot;</p>}
-              {!r.is_published && (
-                <span className="mt-1 inline-block text-[10px] uppercase tracking-wide text-white/40">Hidden</span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => onSave({ ...r, is_published: !r.is_published })}
-                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
-              >
-                {r.is_published ? "Hide" : "Show"}
-              </button>
-              <button
-                type="button"
-                onClick={() => confirm("Delete this client result?") && onDelete(r.id)}
-                className="flex h-9 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Delete
-              </button>
-            </div>
-          </div>
-        ))}
-        {items.length === 0 && (
-          <div className="px-5 py-4 text-[13px] text-white/55">No written client results yet — add one below.</div>
-        )}
-        <div className="px-5 py-5">
-        <div className="text-[13px] font-semibold text-white">Add a client result quote</div>
-        <div className="mt-3 space-y-3">
-          <TextInput
-            value={draft.headline}
-            onChange={(e) => setDraft({ ...draft, headline: e.target.value })}
-            placeholder="Headline (e.g. Stronger and more confident in 12 weeks)"
-            maxLength={120}
-          />
-          <TextArea
-            value={draft.body}
-            onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-            placeholder="Short result story or quote"
-            maxLength={800}
-          />
-        </div>
-        <div className="mt-3 flex justify-end">
-          <button
-            type="button"
-            disabled={!draft.headline.trim() && !draft.body.trim()}
-            onClick={() => {
-              onSave({
-                headline: draft.headline || null,
-                body: draft.body || null,
-                sort_order: items.length,
-                is_published: true,
-              });
-              setDraft({ headline: "", body: "" });
-            }}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            <Plus className="h-4 w-4" /> Add result
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function FaqsEditor({
   items,
