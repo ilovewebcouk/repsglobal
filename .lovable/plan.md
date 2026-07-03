@@ -1,43 +1,40 @@
-## What's actually happening
+## Problem
+The "AI draft" buttons on Tagline and About currently fire blind — the model has no context about the trainer's style, niche, or clients, so drafts are generic.
 
-Navigating to `/c/jordon-gumbley/enquire` currently re-renders the coach shop-front (H1 "Get visibly stronger in 12 weeks", no `<form>`) instead of the enquiry form. Confirmed by inspecting the live DOM.
+## Fix: Add a lightweight prompt dialog before drafting
 
-## Why
+When the user clicks **AI draft**, open a small shadcn `Dialog` that asks 1–2 quick questions. Answers get passed into the existing `aiDraftTagline` / `aiDraftAbout` server functions as extra context, then the returned text populates the field (user can still edit).
 
-TanStack file-based routing:
+### Tagline dialog
+One field only — keep it fast:
+- **"Who do you help and how?"** (Textarea, 1–2 lines, placeholder: *"Busy professionals in Manchester get lean and strong in 3 sessions a week — at home or online."*)
 
-- `src/routes/c.$slug.tsx` — full shop-front page component
-- `src/routes/c.$slug.enquire.tsx` — the enquiry form (route id `/c/$slug/enquire`)
+Optional chips above the textarea for quick-fill: `Fat loss`, `Strength`, `Postnatal`, `Over 50s`, `Athletes`, `Rehab` (multi-select, appended as context).
 
-Because `c.$slug.enquire.tsx` exists, the router treats `c.$slug.tsx` as a **parent/layout route** whose child is `/enquire`. TanStack only renders a child route inside its parent's `<Outlet />`. `c.$slug.tsx` never renders `<Outlet />` — it just renders the shop-front — so the URL matches, the enquire route mounts as a child, but there is nowhere for it to display. The shop-front UI is what you see.
+### About dialog
+Two fields:
+- **"Who do you help and how?"** (Textarea — same as above, prefilled from tagline answer if given)
+- **"What makes your coaching different?"** (Textarea, 1–2 lines, placeholder: *"20 years in the game, ex-Team GB S&C, no fluff, results tracked weekly."*)
+- Tone chips (single-select): `Warm`, `Direct`, `Professional`, `Playful` — default `Warm`.
 
-Same class of bug the docs warn about: "Converted a leaf into a layout but kept its old body — children never mount."
+### Server function changes
+Extend `aiDraftTagline` and `aiDraftAbout` in `src/lib/shop-front/website-content.functions.ts`:
+- Add optional `context: { audience?: string; differentiator?: string; specialisms?: string[]; tone?: string }` to the input validator.
+- Inject that context into the Gemini prompt. Keep the existing deterministic fallback if context is empty (so backfill / silent calls still work).
 
-## Fix (structural — no visual changes)
+### UI wiring
+In `src/routes/_authenticated/_professional/dashboard_.website.tsx`:
+- Replace the direct `onClick` handler on each **AI draft** button with `setDialogOpen(true)`.
+- Add `<TaglineDraftDialog />` and `<AboutDraftDialog />` components (co-located in the same file or `src/components/dashboard/website/`).
+- On dialog submit: call the server fn with the context, show inline loading state inside the dialog, insert result into the form field, close the dialog. Toast on error.
+- Remember the last answers in component state so re-opening the dialog is faster; do not persist to DB.
 
-Split `c.$slug.tsx` into a pathless layout + an index leaf:
+### Backfill script
+No change — the one-off backfill keeps calling the functions with no context and uses the deterministic fallback path.
 
-1. **Create `src/routes/c.$slug.route.tsx`** — a minimal layout:
-   ```tsx
-   import { createFileRoute, Outlet } from "@tanstack/react-router";
-   export const Route = createFileRoute("/c/$slug")({
-     component: () => <Outlet />,
-   });
-   ```
-2. **Rename** `src/routes/c.$slug.tsx` → `src/routes/c.$slug.index.tsx` and update its `createFileRoute("/c/$slug")` → `createFileRoute("/c/$slug/")`. All existing shop-front code, head metadata, loaders and helpers stay exactly as they are.
-3. `c.$slug.enquire.tsx` and `c.$slug.review.tsx` need no changes — they already declare `/c/$slug/enquire` and `/c/$slug/review` and will now mount inside the layout's `<Outlet />`.
-4. Let the TanStack Router Vite plugin regenerate `src/routeTree.gen.ts` (never hand-edit).
+## Files touched
+- `src/routes/_authenticated/_professional/dashboard_.website.tsx` — add dialogs, rewire buttons
+- `src/lib/shop-front/website-content.functions.ts` — accept optional context, thread into prompt
+- (optional) `src/components/dashboard/website/AiDraftDialogs.tsx` — extract dialogs if the route file gets long
 
-## Verification
-
-- Visit `/c/jordon-gumbley` → shop-front renders unchanged (same H1, same sections, same head metadata).
-- Visit `/c/jordon-gumbley/enquire` → enquiry form page renders (H1 "Send an enquiry…" style, visible `<form>`).
-- Click the "Enquire now" button on the shop-front → lands on the form, not the shop-front.
-- Same check for `/c/$slug/review`.
-- No visual/design change on the shop-front — the LOCKED `/c/$slug` mock-up is preserved.
-
-## Out of scope
-
-- No copy, layout, or styling changes on either page.
-- No changes to `pro.$slug.*` redirect stubs.
-- No changes to loaders, server functions, or SEO metadata.
+No schema, no migrations, no changes to `/c/$slug`.
