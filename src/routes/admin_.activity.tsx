@@ -378,15 +378,14 @@ function AdminActivityPage() {
                 layer={mapLayer}
                 onLayerChange={setMapLayer}
                 memberCities={memberMapCities}
-                publicCountries={publicRealtimeQ.data?.countries ?? []}
-                publicCities={publicRealtimeQ.data?.cities ?? []}
+                publicCountries={[]}
+                publicCities={publicMapCities}
                 publicOnline={publicOnline}
-                publicStale={Boolean(publicRealtimeQ.data && !publicRealtimeQ.data.ok)}
-                updatedAt={publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
+                publicStale={publicStale}
+                updatedAt={ccQ.dataUpdatedAt || null}
                 onOpenVisitorAtCity={(city) => {
-                  const rows = (publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[];
-                  const match = rows.find((r) => r.status === "live" && (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code)
-                    ?? rows.find((r) => (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code);
+                  const match = supabaseVisitorRows.find((r) => r.status === "live" && (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code)
+                    ?? supabaseVisitorRows.find((r) => (r.city ?? null) === city.city && (r.country_code ?? null) === city.country_code);
                   if (match) setVisitorDrawerId(match.journey_id);
                 }}
               />
@@ -394,13 +393,13 @@ function AdminActivityPage() {
           </div>
           <div className="xl:col-span-4">
             <RealtimeSummaryCard
-              data={realtimeQ.data}
-              loading={realtimeQ.isLoading}
+              data={realtimeForCard}
+              loading={ccQ.isLoading}
               publicSummary={{
-                online_now: ((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).filter((v) => v.status === "live").length,
-                events_30m: ((publicVisitorsQ.data ?? []) as unknown as Array<SupabaseVisitorRow & { event_count?: number }>).reduce((s, v) => s + (v.event_count ?? 0), 0),
-                last_event_at: publicHealthQ.data?.supabase_live.last_journey_at ?? null,
-                stale: publicHealthQ.data?.supabase_live.stale ?? false,
+                online_now: publicOnline,
+                events_30m: cc?.realtime_summary.events_30m ?? 0,
+                last_event_at: cc?.ingest.last_journey_at ?? null,
+                stale: publicStale,
               }}
             />
           </div>
@@ -410,25 +409,25 @@ function AdminActivityPage() {
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
           <LiveActivityRail
             className="h-full w-full"
-            members={onlineQ.data?.users ?? []}
-            memberPages={currentQ.data?.pages ?? []}
-            membersLoading={onlineQ.isLoading}
-            publicRealtime={publicRealtimeQ.data ?? null}
-            publicLoading={publicRealtimeQ.isLoading}
-            realtime={realtimeQ.data}
-            updatedAt={publicVisitorsQ.dataUpdatedAt || publicRealtimeQ.dataUpdatedAt || realtimeQ.dataUpdatedAt || null}
-            supabaseVisitors={(publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]}
-            supabaseVisitorsLoading={publicVisitorsQ.isLoading}
+            members={onlineMembers}
+            memberPages={currentPages}
+            membersLoading={ccQ.isLoading}
+            publicRealtime={null}
+            publicLoading={ccQ.isLoading}
+            realtime={realtimeForCard}
+            updatedAt={ccQ.dataUpdatedAt || null}
+            supabaseVisitors={supabaseVisitorRows}
+            supabaseVisitorsLoading={ccQ.isLoading}
             onOpenVisitor={(id) => setVisitorDrawerId(id)}
           />
           <PagesBeingViewedNow
-            memberPages={currentQ.data?.pages ?? []}
-            publicVisitors={((publicVisitorsQ.data ?? []) as unknown as SupabaseVisitorRow[]).map((v) => ({
+            memberPages={currentPages}
+            publicVisitors={supabaseVisitorRows.map((v) => ({
               latest_path: v.latest_path ?? null,
               status: v.status,
               last_seen_at: v.last_seen_at,
             }))}
-            loading={currentQ.isLoading || publicVisitorsQ.isLoading}
+            loading={ccQ.isLoading}
           />
         </div>
 
@@ -463,12 +462,12 @@ function AdminActivityPage() {
           </section>
         </div>
 
-        {/* ── Secondary (below the fold): member activity + public analytics rollup ── */}
+        {/* ── Secondary (below the fold): member activity + geo ── */}
         <details className="group rounded-[18px] border border-reps-border bg-reps-panel/60">
           <summary className="cursor-pointer list-none px-4 py-3 text-[12px] font-medium text-white/70 hover:text-white">
             <span className="inline-flex items-center gap-2">
               <ChevronRight className="h-3.5 w-3.5 transition group-open:rotate-90" />
-              Historical analytics · member activity, top pages, public rollup
+              Historical analytics · member activity, top pages, geography
             </span>
           </summary>
           <div className="space-y-4 border-t border-reps-border/70 p-4">
@@ -490,20 +489,11 @@ function AdminActivityPage() {
                 />
               </div>
             </div>
-            <PublicVisitorsPanel />
+            <p className="text-[11px] text-white/40">
+              Diagnostics have moved to <a className="underline hover:text-white/70" href="/admin/system">/admin/system</a>.
+            </p>
           </div>
         </details>
-
-
-        {/* ── 6. DIAGNOSTICS (collapsed by default) ── */}
-        <DiagnosticsDrawer
-          ingestStatus={ingestStatus}
-          degradedPanels={[...degraded.map((d) => d.panel), ...feedDegraded]}
-          slowPanels={slow}
-          lastJourneyAt={publicHealthQ.data?.supabase_live.last_journey_at ?? null}
-          publicOnline={publicOnline}
-          membersOnline={membersOnline}
-        />
 
       </div>
 
