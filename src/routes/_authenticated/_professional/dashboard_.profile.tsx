@@ -741,8 +741,8 @@ function ProfileEditorPage() {
             headline: form.headline || null,
             primary_profession: form.primary_profession || null,
             specialisms: form.specialisms,
-            in_person_available: form.in_person_available,
-            online_available: form.online_available,
+            // in_person_available / online_available now saved from the Website tab.
+
             city: form.city || null,
             contact_phone: form.contact_phone || null,
             bio: form.bio || null,
