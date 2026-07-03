@@ -165,6 +165,7 @@ function ShopFrontEditorPage() {
       upsertSf({
         data: {
           tagline: tagline || null,
+          subtitle: subtitle || null,
           about: about || null,
           hero_image_url: hero || null,
           accent_hex: null,
