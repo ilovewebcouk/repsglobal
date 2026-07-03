@@ -1604,7 +1604,7 @@ function TransformationsEditor({
           </button>
         </div>
       </div>
-    </PPanel>
+    </div>
   );
 }
 
