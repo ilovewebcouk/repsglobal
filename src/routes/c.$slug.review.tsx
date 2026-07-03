@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { submitReview } from "@/lib/reviews/reviews.functions";
 import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
 
-export const Route = createFileRoute("/pro/$slug/review")({
+export const Route = createFileRoute("/c/$slug/review")({
   head: () => ({
     meta: [
       { title: "Leave a review — REPS" },
@@ -93,7 +93,7 @@ function ReviewPage() {
               <Button asChild className="h-11 rounded-[10px] bg-reps-orange px-6 font-semibold text-white hover:bg-reps-orange-dark">
                 <Link to="/auth">Sign in to continue</Link>
               </Button>
-              <Link to="/pro/$slug" params={{ slug }} className="text-[13px] text-white/55 hover:text-white">
+              <Link to="/c/$slug" params={{ slug }} className="text-[13px] text-white/55 hover:text-white">
                 Back to profile
               </Link>
             </div>
@@ -108,7 +108,7 @@ function ReviewPage() {
     <div className="min-h-screen bg-reps-bg text-white">
       <PublicHeader />
       <main className="mx-auto max-w-[640px] px-5 py-12">
-        <Link to="/pro/$slug" params={{ slug }} className="text-[13px] text-white/55 hover:text-white">
+        <Link to="/c/$slug" params={{ slug }} className="text-[13px] text-white/55 hover:text-white">
           ← Back to profile
         </Link>
         <h1 className="mt-4 font-display text-[32px] font-bold leading-tight">
@@ -201,7 +201,7 @@ function ReviewPage() {
             >
               {mutation.isPending ? "Posting…" : "Post review"}
             </Button>
-            <Link to="/pro/$slug" params={{ slug }} className="text-[13px] text-white/55 hover:text-white">
+            <Link to="/c/$slug" params={{ slug }} className="text-[13px] text-white/55 hover:text-white">
               Cancel
             </Link>
           </div>

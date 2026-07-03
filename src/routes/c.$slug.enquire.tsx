@@ -53,7 +53,7 @@ import { Monogram } from "@/components/directory/Monogram";
 /* Route                                                               */
 /* ------------------------------------------------------------------ */
 
-export const Route = createFileRoute("/pro/$slug/enquire")({
+export const Route = createFileRoute("/c/$slug/enquire")({
   head: ({ params }) => ({
     meta: [
       { title: `Send an enquiry — REPS` },
@@ -64,10 +64,10 @@ export const Route = createFileRoute("/pro/$slug/enquire")({
       },
       { property: "og:title", content: "Send an enquiry — REPS" },
       { property: "og:description", content: "Enquire about coaching with a REPS-verified professional." },
-      { property: "og:url", content: `/pro/${params.slug}/enquire` },
+      { property: "og:url", content: `/c/${params.slug}/enquire` },
       { name: "robots", content: "noindex" },
     ],
-    links: [{ rel: "canonical", href: `/pro/${params.slug}/enquire` }],
+    links: [{ rel: "canonical", href: `/c/${params.slug}/enquire` }],
   }),
   component: EnquirePage,
 });
@@ -325,7 +325,7 @@ function EnquirePage() {
       {/* Breadcrumb + back */}
       <div className="mx-auto max-w-[1320px] px-6 pt-6 lg:px-10">
         <Link
-          to="/pro/$slug"
+          to="/c/$slug"
           params={{ slug }}
           className="inline-flex items-center gap-1 text-[13px] font-semibold text-reps-muted-light hover:text-reps-charcoal"
         >
@@ -494,7 +494,7 @@ function EnquirePage() {
                 variant="outline"
                 className="h-11 rounded-[10px] border-reps-stone bg-reps-warm-white px-5 text-[13px] font-semibold text-reps-charcoal shadow-none hover:border-reps-orange hover:bg-reps-warm-white hover:text-reps-charcoal"
               >
-                <Link to="/pro/$slug" params={{ slug }}>
+                <Link to="/c/$slug" params={{ slug }}>
                   <ChevronLeft data-icon="inline-start" />
                   Back to profile
                 </Link>
