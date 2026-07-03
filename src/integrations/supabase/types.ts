@@ -3172,6 +3172,8 @@ export type Database = {
           suspended_at: string | null
           suspension_reason: string | null
           timezone: string
+          trains_at_clients_home: boolean
+          trains_at_home_studio: boolean
           updated_at: string
           value_prop: string | null
           verification: Database["public"]["Enums"]["verification_status"]
@@ -3223,6 +3225,8 @@ export type Database = {
           suspended_at?: string | null
           suspension_reason?: string | null
           timezone?: string
+          trains_at_clients_home?: boolean
+          trains_at_home_studio?: boolean
           updated_at?: string
           value_prop?: string | null
           verification?: Database["public"]["Enums"]["verification_status"]
@@ -3274,6 +3278,8 @@ export type Database = {
           suspended_at?: string | null
           suspension_reason?: string | null
           timezone?: string
+          trains_at_clients_home?: boolean
+          trains_at_home_studio?: boolean
           updated_at?: string
           value_prop?: string | null
           verification?: Database["public"]["Enums"]["verification_status"]
