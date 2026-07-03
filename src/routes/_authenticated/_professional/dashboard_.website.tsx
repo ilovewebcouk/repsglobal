@@ -1366,11 +1366,37 @@ function WebsiteContentEditor() {
     });
   const onSaveResultsIntro = () => saveMut.mutate({ client_results_intro: clientResultsIntro || null });
 
+  // Listen for the page-level "Save & publish" and fan out to a single
+  // merged patch so we don't stampede the same mutation.
+  const saveAllRef = React.useRef<() => void>(() => {});
+  saveAllRef.current = () => {
+    if (!data) return;
+    saveMut.mutate({
+      method_name: methodName || null,
+      method_intro: methodIntro || null,
+      method_pillars: pillars.filter((p) => p.title.trim() && p.body.trim()),
+      client_results_intro: clientResultsIntro || null,
+      coaching_reach: {
+        cities: cities
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean),
+        online_worldwide: data.content.coaching_reach.online_worldwide ?? false,
+      },
+    });
+  };
+  React.useEffect(() => {
+    const h = () => saveAllRef.current();
+    window.addEventListener("reps:website:save-all", h);
+    return () => window.removeEventListener("reps:website:save-all", h);
+  }, []);
+
   if (isLoading || !data) return <PCard>Loading website content…</PCard>;
 
   return (
     <>
       {/* Method */}
+      <section id="method" className="scroll-mt-24">
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
           <div>
@@ -1452,37 +1478,17 @@ function WebsiteContentEditor() {
             );
           })}
         </div>
-
-        <div className="sticky bottom-0 z-10 flex items-center justify-end gap-2 border-t border-reps-border bg-reps-panel/95 px-5 py-3 backdrop-blur rounded-b-[22px]">
-          <button
-            type="button"
-            onClick={onSaveMethod}
-            disabled={saveMut.isPending}
-            className="flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            <Save className="h-3.5 w-3.5" />
-            {saveMut.isPending ? "Saving…" : "Save"}
-          </button>
-        </div>
       </PPanel>
+      </section>
 
       <SpecialismsDeliveryPanel />
 
       {/* Results intro */}
+      <section id="results-intro" className="scroll-mt-24">
       <PPanel>
-        <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
-          </div>
-          <button
-            type="button"
-            onClick={onSaveResultsIntro}
-            disabled={saveMut.isPending}
-            className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            Save
-          </button>
+        <div className="border-b border-reps-border px-5 py-4">
+          <h3 className="text-[14px] font-semibold text-white">Client results intro</h3>
+          <p className="mt-0.5 text-[12px] text-white/55">This is the short paragraph above your result cards.</p>
         </div>
         <div className="px-5 py-4">
           <TextArea
@@ -1493,21 +1499,24 @@ function WebsiteContentEditor() {
           />
         </div>
       </PPanel>
+      </section>
 
       {/* Where I train — postcode + Google-Places gyms + reach */}
+      <section id="location" className="scroll-mt-24">
       <WhereITrainPanel
         cities={cities}
         setCities={setCities}
-        onSaveReach={onSaveVenues}
-        saving={saveMut.isPending}
       />
+      </section>
 
       {/* Transformations */}
+      <section id="transformations" className="scroll-mt-24">
       <TransformationsEditor
         items={data.transformations}
         onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
         onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
       />
+      </section>
 
       <ClientResultsEditor
         items={data.clientResults}
@@ -1516,6 +1525,7 @@ function WebsiteContentEditor() {
       />
 
       {/* FAQs */}
+      <section id="faqs" className="scroll-mt-24">
       <FaqsEditor
         items={data.faqs}
         onSave={(f) => upsertF({ data: f }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
@@ -1544,6 +1554,7 @@ function WebsiteContentEditor() {
         }}
         drafting={draftingFaqs}
       />
+      </section>
     </>
   );
 }
