@@ -1446,14 +1446,6 @@ function WebsiteContentEditor() {
       </PPanel>
       </section>
 
-      {/* Where I train — postcode + Google-Places gyms + reach */}
-      <section id="location" className="scroll-mt-24">
-      <WhereITrainPanel
-        cities={cities}
-        setCities={setCities}
-      />
-      </section>
-
       {/* Transformations */}
       <section id="transformations" className="scroll-mt-24">
       <TransformationsEditor
