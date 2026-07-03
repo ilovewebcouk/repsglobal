@@ -514,7 +514,7 @@ function mergeLiveIntoCoach(
 }
 
 
-export const Route = createFileRoute("/c/$slug")({
+export const Route = createFileRoute("/c/$slug/")({
   loader: async ({ params }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const, live: null };

@@ -74,7 +74,6 @@ import { Route as CompareRepsVsTrainerizeRouteImport } from './routes/compare_.r
 import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare_.reps-vs-pt-distinction'
 import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
-import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
@@ -94,6 +93,7 @@ import { Route as AdminActivityRouteImport } from './routes/admin_.activity'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
+import { Route as CSlugIndexRouteImport } from './routes/c.$slug.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
@@ -479,11 +479,6 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CSlugRoute = CSlugRouteImport.update({
-  id: '/c/$slug',
-  path: '/c/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
   id: '/admin_/verification',
   path: '/admin/verification',
@@ -579,6 +574,11 @@ const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => HelpCategoryRoute,
 } as any)
+const CSlugIndexRoute = CSlugIndexRouteImport.update({
+  id: '/c/$slug/',
+  path: '/c/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
   path: '/u/insurance/$sessionId',
@@ -620,14 +620,14 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugReviewRoute = CSlugReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => CSlugRoute,
+  id: '/c/$slug/review',
+  path: '/c/$slug/review',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
-  id: '/enquire',
-  path: '/enquire',
-  getParentRoute: () => CSlugRoute,
+  id: '/c/$slug/enquire',
+  path: '/c/$slug/enquire',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   id: '/admin_/seo/legacy-redirects',
@@ -969,7 +969,6 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
-  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -1015,6 +1014,7 @@ export interface FileRoutesByFullPath {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/c/$slug/': typeof CSlugIndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1111,7 +1111,6 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
-  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -1155,6 +1154,7 @@ export interface FileRoutesByTo {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/c/$slug': typeof CSlugIndexRoute
   '/help/$category': typeof HelpCategoryIndexRoute
   '/pro/$slug': typeof ProSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1254,7 +1254,6 @@ export interface FileRoutesById {
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
   '/admin_/verification': typeof AdminVerificationRoute
-  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare_/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -1301,6 +1300,7 @@ export interface FileRoutesById {
   '/pro/$slug/review': typeof ProSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
+  '/c/$slug/': typeof CSlugIndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
@@ -1400,7 +1400,6 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/team'
     | '/admin/verification'
-    | '/c/$slug'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
@@ -1446,6 +1445,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/c/$slug/'
     | '/help/$category/'
     | '/pro/$slug/'
     | '/checkout/credits'
@@ -1542,7 +1542,6 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/team'
     | '/admin/verification'
-    | '/c/$slug'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
@@ -1586,6 +1585,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/c/$slug'
     | '/help/$category'
     | '/pro/$slug'
     | '/checkout/credits'
@@ -1684,7 +1684,6 @@ export interface FileRouteTypes {
     | '/admin_/support'
     | '/admin_/team'
     | '/admin_/verification'
-    | '/c/$slug'
     | '/checkout/return'
     | '/compare_/reps-vs-mypthub'
     | '/compare_/reps-vs-pt-distinction'
@@ -1731,6 +1730,7 @@ export interface FileRouteTypes {
     | '/pro/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
+    | '/c/$slug/'
     | '/help/$category/'
     | '/pro/$slug/'
     | '/_authenticated/_professional/checkout_/credits'
@@ -1830,7 +1830,6 @@ export interface RootRouteChildren {
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
-  CSlugRoute: typeof CSlugRouteWithChildren
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
   CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
@@ -1862,10 +1861,13 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
   AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
+  CSlugEnquireRoute: typeof CSlugEnquireRoute
+  CSlugReviewRoute: typeof CSlugReviewRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
+  CSlugIndexRoute: typeof CSlugIndexRoute
   ApiPublicASplatRoute: typeof ApiPublicASplatRoute
   ApiPublicActivityAuthEventRoute: typeof ApiPublicActivityAuthEventRoute
   ApiPublicActivityPublicConversionRoute: typeof ApiPublicActivityPublicConversionRoute
@@ -2339,13 +2341,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/c/$slug': {
-      id: '/c/$slug'
-      path: '/c/$slug'
-      fullPath: '/c/$slug'
-      preLoaderRoute: typeof CSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin_/verification': {
       id: '/admin_/verification'
       path: '/admin/verification'
@@ -2479,6 +2474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HelpCategoryIndexRouteImport
       parentRoute: typeof HelpCategoryRoute
     }
+    '/c/$slug/': {
+      id: '/c/$slug/'
+      path: '/c/$slug'
+      fullPath: '/c/$slug/'
+      preLoaderRoute: typeof CSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
       path: '/u/insurance/$sessionId'
@@ -2537,17 +2539,17 @@ declare module '@tanstack/react-router' {
     }
     '/c/$slug/review': {
       id: '/c/$slug/review'
-      path: '/review'
+      path: '/c/$slug/review'
       fullPath: '/c/$slug/review'
       preLoaderRoute: typeof CSlugReviewRouteImport
-      parentRoute: typeof CSlugRoute
+      parentRoute: typeof rootRouteImport
     }
     '/c/$slug/enquire': {
       id: '/c/$slug/enquire'
-      path: '/enquire'
+      path: '/c/$slug/enquire'
       fullPath: '/c/$slug/enquire'
       preLoaderRoute: typeof CSlugEnquireRouteImport
-      parentRoute: typeof CSlugRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
@@ -3100,18 +3102,6 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
-interface CSlugRouteChildren {
-  CSlugEnquireRoute: typeof CSlugEnquireRoute
-  CSlugReviewRoute: typeof CSlugReviewRoute
-}
-
-const CSlugRouteChildren: CSlugRouteChildren = {
-  CSlugEnquireRoute: CSlugEnquireRoute,
-  CSlugReviewRoute: CSlugReviewRoute,
-}
-
-const CSlugRouteWithChildren = CSlugRoute._addFileChildren(CSlugRouteChildren)
-
 interface InLocationRouteChildren {
   InLocationProfessionRoute: typeof InLocationProfessionRoute
 }
@@ -3190,7 +3180,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
   AdminVerificationRoute: AdminVerificationRoute,
-  CSlugRoute: CSlugRouteWithChildren,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
   CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
@@ -3222,10 +3211,13 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
   AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
+  CSlugEnquireRoute: CSlugEnquireRoute,
+  CSlugReviewRoute: CSlugReviewRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
+  CSlugIndexRoute: CSlugIndexRoute,
   ApiPublicASplatRoute: ApiPublicASplatRoute,
   ApiPublicActivityAuthEventRoute: ApiPublicActivityAuthEventRoute,
   ApiPublicActivityPublicConversionRoute:
