@@ -24,27 +24,27 @@ export const Route = createFileRoute("/coming-soon")({
   }),
   head: () => ({
     meta: [
-      { title: "REPS — Launching 26 June 2026" },
+      { title: "REPS — The professional standard for fitness" },
       {
         name: "description",
         content:
-          "The professional platform for the modern fitness industry. Launching Friday 26 June 2026. Join the waitlist.",
+          "The professional platform for the modern fitness industry. Verified trainers, coaches and studios worldwide.",
       },
-      { property: "og:title", content: "REPS — Launching 26 June 2026" },
+      { property: "og:title", content: "REPS — The professional standard for fitness" },
       {
         property: "og:description",
-        content: "The professional platform for the modern fitness industry. Launching Friday 26 June 2026.",
+        content: "The professional platform for the modern fitness industry.",
       },
       { property: "og:image", content: heroAsset.url },
-      { property: "og:url", content: "/coming-soon" },
+      { property: "og:url", content: "https://repsuk.org/coming-soon" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "REPS — Launching 26 June 2026" },
+      { name: "twitter:title", content: "REPS — The professional standard for fitness" },
       { name: "twitter:image", content: heroAsset.url },
       // Keep page live but excluded from search results.
       { name: "robots", content: "noindex, follow" },
     ],
-    links: [{ rel: "canonical", href: "/coming-soon" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/coming-soon" }],
   }),
   component: ComingSoonPage,
 });
