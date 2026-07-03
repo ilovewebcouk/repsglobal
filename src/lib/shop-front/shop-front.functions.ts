@@ -85,6 +85,8 @@ export type ShopFrontDTO = {
 export type ShopFrontTransformationDTO = {
   id: string;
   client_first_name: string | null;
+  client_role: string | null;
+  duration_label: string | null;
   metric: string | null;
   headline: string | null;
   quote: string | null;
