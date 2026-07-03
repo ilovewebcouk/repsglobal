@@ -222,6 +222,53 @@ function AdminBadgeRow() {
   );
 }
 
+function VerificationSidebarPill() {
+  const { user } = useSessionUser();
+  const fetchTrust = useServerFn(getTrustState);
+  const { data } = useQuery({
+    queryKey: ["my-trust-state"],
+    queryFn: () => fetchTrust(),
+    staleTime: 30_000,
+    enabled: !!user,
+  });
+  const ticks = data?.ticks;
+  const tier = tierFromCounts({
+    identity: !!ticks?.identity,
+    insurance: !!ticks?.insurance,
+    qualifications: !!ticks?.qualifications,
+  });
+  const completed = data?.completedCount ?? 0;
+  const allDone = completed === 3;
+  const profession =
+    data?.qualifications.professionLabel ??
+    data?.qualifications.primaryTitle ??
+    data?.qualifications.titles?.[0] ??
+    null;
+
+  return (
+    <Link
+      to="/dashboard/verification"
+      aria-label={allDone ? "Verification — manage" : `Verification — ${completed} of 3 complete`}
+      className={cn(
+        "group/vpill flex items-center gap-2.5 rounded-[12px] border border-reps-border bg-reps-panel-soft/60 px-2.5 py-2 transition hover:border-reps-orange-border",
+        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0",
+      )}
+    >
+      <VerifiedBadge tier={tier} size="sm" profession={profession} />
+      <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+        <div className="truncate text-[11.5px] font-semibold text-white">
+          {allDone ? "Credential live" : `${completed} of 3 verified`}
+        </div>
+        <div className="truncate text-[10.5px] text-white/55">
+          {allDone ? "Manage verification" : "Continue verification"}
+        </div>
+      </div>
+      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-reps-orange opacity-70 transition-transform group-hover/vpill:translate-x-0.5 group-data-[collapsible=icon]:hidden" />
+    </Link>
+  );
+}
+
+
 /* ------------------------------------------------------------------------- */
 /* DashboardSidebar                                                           */
 /* ------------------------------------------------------------------------- */
