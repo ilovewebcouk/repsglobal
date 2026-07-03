@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.list_fully_verified_pro_ids() TO anon, authenticated;
