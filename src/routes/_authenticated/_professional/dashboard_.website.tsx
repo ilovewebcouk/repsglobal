@@ -1943,16 +1943,6 @@ function WhereITrainPanel({
       <Field
         label="Primary training postcode"
         hint="We use this to calculate distance and show your town. Your full postcode is never shown publicly."
-        action={
-          <button
-            type="button"
-            onClick={() => postcodeMut.mutate(postcode)}
-            disabled={postcodeMut.isPending || !postcode.trim()}
-            className="h-8 rounded-[10px] bg-reps-orange px-2.5 text-[11px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            {postcodeMut.isPending ? "Saving…" : "Save"}
-          </button>
-        }
       >
         <div className="relative">
           <MapPin className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
@@ -1989,16 +1979,6 @@ function WhereITrainPanel({
       <Field
         label="Cities you cover"
         hint="Comma-separated list shown as chips on your website."
-        action={
-          <button
-            type="button"
-            onClick={onSaveReach}
-            disabled={saving}
-            className="h-8 rounded-[10px] bg-reps-orange px-2.5 text-[11px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-        }
       >
         <TextInput value={cities} onChange={(e) => setCities(e.target.value)} placeholder="Leeds, Bradford" />
       </Field>
