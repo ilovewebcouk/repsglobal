@@ -509,6 +509,7 @@ function mergeLiveIntoCoach(
       return memberYear ? String(memberYear) : base.verifiedSince;
     })(),
     trust: sf.trust,
+    theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
     socials: sf.socials.length ? sf.socials : base.socials,
   };
 
