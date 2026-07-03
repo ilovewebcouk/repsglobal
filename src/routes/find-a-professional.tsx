@@ -121,9 +121,9 @@ export const Route = createFileRoute("/find-a-professional")({
         content:
           "Browse REPS-verified fitness professionals. Filter by specialism, location, gym and training type.",
       },
-      { property: "og:url", content: "/find-a-professional" },
+      { property: "og:url", content: "https://repsuk.org/find-a-professional" },
     ],
-    links: [{ rel: "canonical", href: "/find-a-professional" }],
+    links: [{ rel: "canonical", href: "https://repsuk.org/find-a-professional" }],
   }),
   component: DirectoryPage,
 });
