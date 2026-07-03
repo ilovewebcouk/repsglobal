@@ -552,7 +552,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .maybeSingle(),
       supabaseAdmin
         .from("shop_front_transformations")
-        .select("id, client_first_name, metric, headline, quote, image_url, sort_order, is_published")
+        .select("id, client_first_name, client_role, duration_label, metric, headline, quote, image_url, sort_order, is_published")
         .eq("user_id", pro.id)
         .eq("is_published", true)
         .order("sort_order", { ascending: true }),
