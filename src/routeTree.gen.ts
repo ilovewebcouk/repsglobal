@@ -51,6 +51,7 @@ import { Route as RenewTokenRouteImport } from './routes/renew.$token'
 import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
+import { Route as ProV2SlugRouteImport } from './routes/pro-v2.$slug'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
 import { Route as PortalProgrammeRouteImport } from './routes/portal_.programme'
 import { Route as PortalProfileRouteImport } from './routes/portal_.profile'
@@ -358,6 +359,11 @@ const ProfessionsProfessionRoute = ProfessionsProfessionRouteImport.update({
 const ProSlugRoute = ProSlugRouteImport.update({
   id: '/pro/$slug',
   path: '/pro/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProV2SlugRoute = ProV2SlugRouteImport.update({
+  id: '/pro-v2/$slug',
+  path: '/pro-v2/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalTodayRoute = PortalTodayRouteImport.update({
@@ -974,6 +980,7 @@ export interface FileRoutesByFullPath {
   '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
+  '/pro-v2/$slug': typeof ProV2SlugRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
@@ -1112,6 +1119,7 @@ export interface FileRoutesByTo {
   '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
+  '/pro-v2/$slug': typeof ProV2SlugRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
   '/renew/$token': typeof RenewTokenRoute
@@ -1253,6 +1261,7 @@ export interface FileRoutesById {
   '/portal_/profile': typeof PortalProfileRoute
   '/portal_/programme': typeof PortalProgrammeRoute
   '/portal_/today': typeof PortalTodayRoute
+  '/pro-v2/$slug': typeof ProV2SlugRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
@@ -1396,6 +1405,7 @@ export interface FileRouteTypes {
     | '/portal/profile'
     | '/portal/programme'
     | '/portal/today'
+    | '/pro-v2/$slug'
     | '/pro/$slug'
     | '/professions/$profession'
     | '/r/$token'
@@ -1534,6 +1544,7 @@ export interface FileRouteTypes {
     | '/portal/profile'
     | '/portal/programme'
     | '/portal/today'
+    | '/pro-v2/$slug'
     | '/professions/$profession'
     | '/r/$token'
     | '/renew/$token'
@@ -1674,6 +1685,7 @@ export interface FileRouteTypes {
     | '/portal_/profile'
     | '/portal_/programme'
     | '/portal_/today'
+    | '/pro-v2/$slug'
     | '/pro/$slug'
     | '/professions/$profession'
     | '/r/$token'
@@ -1816,6 +1828,7 @@ export interface RootRouteChildren {
   PortalProfileRoute: typeof PortalProfileRoute
   PortalProgrammeRoute: typeof PortalProgrammeRoute
   PortalTodayRoute: typeof PortalTodayRoute
+  ProV2SlugRoute: typeof ProV2SlugRoute
   ProSlugRoute: typeof ProSlugRouteWithChildren
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
   RTokenRoute: typeof RTokenRoute
@@ -2139,6 +2152,13 @@ declare module '@tanstack/react-router' {
       path: '/pro/$slug'
       fullPath: '/pro/$slug'
       preLoaderRoute: typeof ProSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro-v2/$slug': {
+      id: '/pro-v2/$slug'
+      path: '/pro-v2/$slug'
+      fullPath: '/pro-v2/$slug'
+      preLoaderRoute: typeof ProV2SlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal_/today': {
@@ -3142,6 +3162,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalProfileRoute: PortalProfileRoute,
   PortalProgrammeRoute: PortalProgrammeRoute,
   PortalTodayRoute: PortalTodayRoute,
+  ProV2SlugRoute: ProV2SlugRoute,
   ProSlugRoute: ProSlugRouteWithChildren,
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,
   RTokenRoute: RTokenRoute,

@@ -1,53 +1,60 @@
 
-# Pro profile header refresh
+# Pro Profile v2 — Full Redesign (Mock, Un-wired)
 
-Scope: header block of `src/routes/pro.$slug.index.tsx` only (photo card + name column + Get in touch card, plus the trust strip directly beneath). Everything below the trust strip (sub-nav, About, Services, etc.) is untouched. All other locked pages untouched.
+Rebuild `/pro/$slug` from scratch as a **parallel** page. The current `pro.$slug.index.tsx` stays exactly as-is and keeps serving live traffic. v2 is a static design surface with hard-coded sample data so we can iterate on layout, hierarchy, and polish without dragging Supabase, analytics, saved-profiles, or trust-strip logic along.
 
-## What changes
+## Where it lives
 
-**Name column, new vertical order:**
+- New route: `src/routes/pro-v2.$slug.tsx` — accessible at `/pro-v2/jordon-gumbley`
+- New folder: `src/components/pro-v2/` — all v2-only building blocks live here, fully isolated from `src/components/pro/*`
+- Sample data file: `src/components/pro-v2/sample-pro.ts` — one hard-coded pro object (Jordon) so the page renders identically every load
+- `noindex` in the route head — this is a design sandbox, not a public URL
 
-1. Verified pill — `REPS VERIFIED PROFESSIONAL` (unchanged, kept green outline style already in use).
-2. H1 name (unchanged).
-3. Profession line — `Personal Trainer & Nutrition Coach` (unchanged).
-4. **New tagline paragraph** — one short italic/quoted sentence pulled from the profile's existing intro/headline field (e.g. `profile.headline` or first sentence of `profile.about`). Muted foreground, ~2 lines max, `max-w-[560px]`.
-5. **Meta row (swapped order + inline):** star rating + review count → then map-pin + location. Single row on desktop, wraps on mobile. Removes the current "Telford" pill above the star row.
-6. **Mode chips row — exactly three, icon + label, no filled pill:**
-   - `At Home` (home icon)
-   - `Online Coaching` (monitor icon)
-   - `Telford & Surrounding Areas` (map icon) — kept, since it communicates travel radius (open question below to drop it).
-   Chips are transparent with subtle border, muted text — matches reference.
-7. CTA row: `Send Enquiry` (primary orange) + `Save Profile` (outline) — unchanged.
+Nothing outside these three paths gets touched.
 
-Removes: the standalone `In-person` pill and the standalone "At Home Personal Training — Telford & Surrounding Areas" line (both now absorbed into tagline + chip row).
+## Page structure (top → bottom)
 
-**Get in touch card (right column):** kept as-is. Already matches the reference (usually replies / free chat / no obligation checklist, response rate 100%, Last active Just now, Send an enquiry button, Call `07834 123456` button, secure-details footnote).
+1. **Sticky sub-nav** — thin bar under the site header, in-page anchors: About · Services · Reviews · Qualifications · Location. Active section highlights on scroll.
+2. **Hero (3-column, matches the reference screenshot)**
+   - Left: portrait, 4:5 tall
+   - Middle: verified pill → H1 name → role → tagline paragraph → review row (rating + "Based on N verified reviews") → location row → three service chips (At Home / Online Coaching / [City] & Surrounding Areas)
+   - Right: **Get in touch** card — last active, response rate, verified pro; primary "Send an enquiry" CTA; secondary "Save profile"; small reassurance line about contact details
+3. **Trust strip** — 4-tile band (REPS Verified · Qualifications Checked · Insurance Active · Member Since)
+4. **About** — long-form bio, 2-column on desktop, with a small "At a glance" side card (years experience, sessions delivered, specialisms)
+5. **Services & pricing** — three service cards (1:1, Small Group, Online), each with price, duration, what's included, "Enquire" CTA; one card marked "Most popular"
+6. **Specialisms & who I help** — chip cloud + short paragraphs for 3 client types
+7. **Qualifications & credentials** — grid of qualification cards with awarding body, level, year, expiry indicator
+8. **Transformations / proof** — 3 proof cards (before/after style, but numbers-led not photos): outcome headline + short story + client initials
+9. **Reviews** — rating summary, distribution bar, 4–6 review cards, "Read all reviews" link
+10. **Location & availability** — static map placeholder (image, no Google Maps SDK), coverage radius chip, weekly availability grid (7×3 morning/afternoon/evening)
+11. **FAQ** — 5 accordion items (session length, cancellation, first-session, kit needed, online setup)
+12. **Final CTA band** — full-width dark band, "Ready to train with [Name]?" + Send an enquiry button
+13. **Mobile sticky footer** — Enquire button pinned at bottom on `< lg`
 
-**Trust strip beneath header:** unchanged (REPS Verified / Qualifications Checked / Professional Indemnity / CPD Tracking).
+## Visual direction
 
-## Data wiring
+- Reuse the locked REPs tokens (`bg-reps-ivory`, `text-reps-charcoal`, `bg-reps-orange`, `border-reps-stone`, etc.) — no new colors
+- Radii from the 9-step scale only: buttons `10px`, inputs `12px`, service/profile cards `18px`, hero panel `24px`, pills full
+- Typography: `font-display` for H1/H2, existing body stack for prose
+- Flat buttons (no shadows), emerald reserved for verified/status semantics only
+- No REPS wordmark artwork on the portrait (we're using the existing Jordon photo, not regenerating)
 
-- Tagline source: reuse `profile.headline` if populated; fall back to the first sentence of `profile.about`; hide if neither exists (no placeholder text).
-- Rating + review count: existing `reviews_summary` fields.
-- Location: existing `profile.city` (+ region if present).
-- Mode chips: driven by existing `service_modes` / `works_at_home` / `works_online` flags on the profile record — do not hardcode.
+## What is intentionally excluded
 
-## Files touched
+- No Supabase queries, no `createServerFn`, no loader
+- No analytics tracking calls
+- No saved-profiles logic, no auth-gated buttons
+- No Google Maps — static image placeholder for the location tile
+- No breadcrumb (this is a sandbox route)
+- No routing to `/pro/$slug/enquire` — CTAs are `<button type="button">` with no handler
+- No responsive polish pass on tablet — desktop and mobile only for v1 of v2
 
-- `src/routes/pro.$slug.index.tsx` — header JSX only (name column reorder, add tagline, swap star/location, replace chips block).
-- No new components, no new server functions, no schema changes, no style tokens added.
+## Deliverable
 
-## Out of scope
+One new route rendering the 13 sections above with sample data. You visit `/pro-v2/jordon-gumbley`, review it, tell me what to change. Once the layout is signed off, a separate follow-up plan will handle wiring real data, analytics, and CTAs, and swapping the live `/pro/$slug` over.
 
-- Photo card, gallery button, breadcrumb, sub-nav, About/Services/Specialisms/Reviews/Qualifications/Location panels.
-- The `Get in touch` card contents.
-- Locked pages: homepage, city pages, professions pages, coach shop-front `/c/$slug`, enquire page.
+## Out of scope for this plan
 
-## Open question before I build
-
-The reference keeps `Telford & Surrounding Areas` as the third chip; you said "not sure if we need it." Two options:
-
-- **A. Keep it** as chip #3 (matches reference exactly, tells clients travel radius up front).
-- **B. Drop it** and show only two chips (`At Home`, `Online Coaching`) — cleaner, but travel area only appears in the tagline or lower Location panel.
-
-Default is **A** unless you say otherwise on approval.
+- Any change to the current `pro.$slug.index.tsx`
+- Wiring, data fetching, tracking, auth
+- Redesigning `/pro/$slug/enquire`, `/c/$slug`, or any other locked page
