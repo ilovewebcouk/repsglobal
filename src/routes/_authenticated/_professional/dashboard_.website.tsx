@@ -1185,28 +1185,30 @@ function HeroSubtitleField({ slug }: { slug?: string | null }) {
 
   return (
     <>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-        <div className="flex-1">
-          <TextInput
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            maxLength={200}
-            placeholder="e.g. Strength + hybrid coaching for busy professionals"
-          />
+      <Field
+        label="Subtitle"
+        hint={`Sits directly under your tagline on /c/${slug ?? "your-slug"} — one short supporting line.`}
+        action={<AIDraftButton onClick={() => setDialogOpen(true)} pending={draftMut.isPending} />}
+      >
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+          <div className="flex-1">
+            <TextInput
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              maxLength={200}
+              placeholder="e.g. Strength + hybrid coaching for busy professionals"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => saveMut.mutate({ subtitle: subtitle.trim() || null })}
+            disabled={saveMut.isPending}
+            className="h-10 shrink-0 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            {saveMut.isPending ? "Saving…" : "Save"}
+          </button>
         </div>
-        <AIDraftButton
-          onClick={() => setDialogOpen(true)}
-          pending={draftMut.isPending}
-        />
-        <button
-          type="button"
-          onClick={() => saveMut.mutate({ subtitle: subtitle.trim() || null })}
-          disabled={saveMut.isPending}
-          className="h-10 shrink-0 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-        >
-          {saveMut.isPending ? "Saving…" : "Save"}
-        </button>
-      </div>
+      </Field>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg border-reps-border bg-reps-panel text-white">
