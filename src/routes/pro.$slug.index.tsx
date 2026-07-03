@@ -1136,12 +1136,12 @@ function ProProfilePage() {
               </div>
             </div>
 
-            {/* Location */}
+            {/* Location & Coverage */}
             <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Location</h3>
+              <h3 className="font-display text-[16px] font-bold text-reps-charcoal">Location &amp; Coverage</h3>
               <div className="relative mt-3 aspect-[16/10] overflow-hidden rounded-[12px] bg-reps-stone ring-1 ring-inset ring-reps-charcoal/5">
                 {pro.lat != null && pro.lng != null ? (
-                  <LocationMap lat={pro.lat} lng={pro.lng} label={pro.location} />
+                  <LocationMap lat={pro.lat} lng={pro.lng} label={pro.location} radiusKm={15} />
                 ) : (
                   <MapPlaceholder />
                 )}
@@ -1150,18 +1150,39 @@ function ProProfilePage() {
               {pro.region ? (
                 <div className="text-[12px] text-reps-muted-light">{pro.region}</div>
               ) : null}
+              <div className="mt-1 text-[12px] text-reps-muted-light">
+                Covers a ~15 km radius from {pro.location.split(",")[0]}.
+              </div>
               {pro.lat != null && pro.lng != null ? (
-                <a
-                  href={`https://www.google.com/maps?q=${pro.lat},${pro.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[10px] border border-reps-stone bg-reps-ivory px-3 py-1.5 text-[12px] font-medium text-reps-charcoal hover:bg-reps-warm-white"
+                <form
+                  className="mt-4 flex items-center gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const fd = new FormData(e.currentTarget);
+                    const pc = String(fd.get("postcode") || "").trim();
+                    if (!pc) return;
+                    window.open(
+                      `https://www.google.com/maps/dir/${encodeURIComponent(pc)}/${pro.lat},${pro.lng}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                  }}
                 >
-                  <MapPin className="h-3.5 w-3.5" />
-                  View on map
-                </a>
+                  <input
+                    name="postcode"
+                    placeholder="Your postcode"
+                    className="h-9 flex-1 rounded-[10px] border border-reps-stone bg-reps-ivory px-3 text-[12px] text-reps-charcoal placeholder:text-reps-muted-light focus:border-reps-orange focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="h-9 rounded-[10px] bg-reps-charcoal px-3 text-[12px] font-semibold text-reps-warm-white hover:brightness-110"
+                  >
+                    Check
+                  </button>
+                </form>
               ) : null}
             </div>
+
 
             {/* Trains at */}
             {(() => {
