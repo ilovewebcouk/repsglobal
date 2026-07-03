@@ -74,6 +74,7 @@ import { Route as CompareRepsVsTrainerizeRouteImport } from './routes/compare_.r
 import { Route as CompareRepsVsPtDistinctionRouteImport } from './routes/compare_.reps-vs-pt-distinction'
 import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps-vs-mypthub'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
@@ -479,6 +480,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CSlugRoute = CSlugRouteImport.update({
+  id: '/c/$slug',
+  path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminVerificationRoute = AdminVerificationRouteImport.update({
   id: '/admin_/verification',
   path: '/admin/verification',
@@ -575,9 +581,9 @@ const HelpCategoryIndexRoute = HelpCategoryIndexRouteImport.update({
   getParentRoute: () => HelpCategoryRoute,
 } as any)
 const CSlugIndexRoute = CSlugIndexRouteImport.update({
-  id: '/c/$slug/',
-  path: '/c/$slug/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => CSlugRoute,
 } as any)
 const UInsuranceSessionIdRoute = UInsuranceSessionIdRouteImport.update({
   id: '/u/insurance/$sessionId',
@@ -620,14 +626,14 @@ const CheckoutCreditsReturnRoute = CheckoutCreditsReturnRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugReviewRoute = CSlugReviewRouteImport.update({
-  id: '/c/$slug/review',
-  path: '/c/$slug/review',
-  getParentRoute: () => rootRouteImport,
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => CSlugRoute,
 } as any)
 const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
-  id: '/c/$slug/enquire',
-  path: '/c/$slug/enquire',
-  getParentRoute: () => rootRouteImport,
+  id: '/enquire',
+  path: '/enquire',
+  getParentRoute: () => CSlugRoute,
 } as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   id: '/admin_/seo/legacy-redirects',
@@ -969,6 +975,7 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/verification': typeof AdminVerificationRoute
+  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -1254,6 +1261,7 @@ export interface FileRoutesById {
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
   '/admin_/verification': typeof AdminVerificationRoute
+  '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare_/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
   '/compare_/reps-vs-pt-distinction': typeof CompareRepsVsPtDistinctionRoute
@@ -1400,6 +1408,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/team'
     | '/admin/verification'
+    | '/c/$slug'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
     | '/compare/reps-vs-pt-distinction'
@@ -1684,6 +1693,7 @@ export interface FileRouteTypes {
     | '/admin_/support'
     | '/admin_/team'
     | '/admin_/verification'
+    | '/c/$slug'
     | '/checkout/return'
     | '/compare_/reps-vs-mypthub'
     | '/compare_/reps-vs-pt-distinction'
@@ -1830,6 +1840,7 @@ export interface RootRouteChildren {
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
+  CSlugRoute: typeof CSlugRouteWithChildren
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CompareRepsVsMypthubRoute: typeof CompareRepsVsMypthubRoute
   CompareRepsVsPtDistinctionRoute: typeof CompareRepsVsPtDistinctionRoute
@@ -1861,13 +1872,10 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
   AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
-  CSlugEnquireRoute: typeof CSlugEnquireRoute
-  CSlugReviewRoute: typeof CSlugReviewRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
-  CSlugIndexRoute: typeof CSlugIndexRoute
   ApiPublicASplatRoute: typeof ApiPublicASplatRoute
   ApiPublicActivityAuthEventRoute: typeof ApiPublicActivityAuthEventRoute
   ApiPublicActivityPublicConversionRoute: typeof ApiPublicActivityPublicConversionRoute
@@ -2341,6 +2349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/c/$slug': {
+      id: '/c/$slug'
+      path: '/c/$slug'
+      fullPath: '/c/$slug'
+      preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/verification': {
       id: '/admin_/verification'
       path: '/admin/verification'
@@ -2476,10 +2491,10 @@ declare module '@tanstack/react-router' {
     }
     '/c/$slug/': {
       id: '/c/$slug/'
-      path: '/c/$slug'
+      path: '/'
       fullPath: '/c/$slug/'
       preLoaderRoute: typeof CSlugIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CSlugRoute
     }
     '/u/insurance/$sessionId': {
       id: '/u/insurance/$sessionId'
@@ -2539,17 +2554,17 @@ declare module '@tanstack/react-router' {
     }
     '/c/$slug/review': {
       id: '/c/$slug/review'
-      path: '/c/$slug/review'
+      path: '/review'
       fullPath: '/c/$slug/review'
       preLoaderRoute: typeof CSlugReviewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CSlugRoute
     }
     '/c/$slug/enquire': {
       id: '/c/$slug/enquire'
-      path: '/c/$slug/enquire'
+      path: '/enquire'
       fullPath: '/c/$slug/enquire'
       preLoaderRoute: typeof CSlugEnquireRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CSlugRoute
     }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
@@ -3102,6 +3117,20 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
+interface CSlugRouteChildren {
+  CSlugEnquireRoute: typeof CSlugEnquireRoute
+  CSlugReviewRoute: typeof CSlugReviewRoute
+  CSlugIndexRoute: typeof CSlugIndexRoute
+}
+
+const CSlugRouteChildren: CSlugRouteChildren = {
+  CSlugEnquireRoute: CSlugEnquireRoute,
+  CSlugReviewRoute: CSlugReviewRoute,
+  CSlugIndexRoute: CSlugIndexRoute,
+}
+
+const CSlugRouteWithChildren = CSlugRoute._addFileChildren(CSlugRouteChildren)
+
 interface InLocationRouteChildren {
   InLocationProfessionRoute: typeof InLocationProfessionRoute
 }
@@ -3180,6 +3209,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
   AdminVerificationRoute: AdminVerificationRoute,
+  CSlugRoute: CSlugRouteWithChildren,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CompareRepsVsMypthubRoute: CompareRepsVsMypthubRoute,
   CompareRepsVsPtDistinctionRoute: CompareRepsVsPtDistinctionRoute,
@@ -3211,13 +3241,10 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
   AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
-  CSlugEnquireRoute: CSlugEnquireRoute,
-  CSlugReviewRoute: CSlugReviewRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
-  CSlugIndexRoute: CSlugIndexRoute,
   ApiPublicASplatRoute: ApiPublicASplatRoute,
   ApiPublicActivityAuthEventRoute: ApiPublicActivityAuthEventRoute,
   ApiPublicActivityPublicConversionRoute:
@@ -3238,3 +3265,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
