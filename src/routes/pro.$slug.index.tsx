@@ -764,26 +764,32 @@ function ProProfilePage() {
         </div>
       </section>
 
-      {/* ============ SUB NAV (sticky, honest) ============ */}
-      <section className="sticky top-[64px] z-30 border-b border-reps-stone/70 bg-reps-ivory/95 backdrop-blur">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
-          <nav className="flex flex-wrap items-center gap-x-1 gap-y-1 py-3 text-[13px]">
-            {SUB_NAV.map((s, i) => (
-              <a
-                key={s}
-                href={`#${s.toLowerCase()}`}
-                className={`rounded-full px-3 py-1.5 font-medium transition-colors ${
-                  i === 0
-                    ? "bg-reps-orange/10 text-reps-orange"
-                    : "text-reps-muted-light hover:bg-reps-warm-white hover:text-reps-charcoal"
-                }`}
-              >
-                {s}
-              </a>
-            ))}
-          </nav>
+      {/* ============ WHO I HELP ============ */}
+      <section className="bg-reps-warm-white">
+        <div className="mx-auto max-w-[1320px] px-6 pb-6 lg:px-10">
+          <div className="grid gap-6 rounded-[22px] border border-reps-stone bg-reps-ivory p-6 lg:grid-cols-[220px_1fr] lg:items-center lg:gap-8 lg:p-7">
+            <div>
+              <h2 className="font-display text-[18px] font-bold leading-tight text-reps-charcoal">
+                Who I help
+              </h2>
+              <p className="mt-1 text-[13px] text-reps-muted-light">
+                I work best with people who:
+              </p>
+            </div>
+            <ul className="grid grid-cols-2 gap-5 lg:grid-cols-4 lg:gap-6">
+              {WHO_I_HELP.map((w) => (
+                <li key={w.label} className="flex flex-col items-start gap-2 text-[12.5px] leading-snug text-reps-charcoal">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-reps-orange/25 bg-reps-orange-soft text-reps-orange">
+                    <w.icon className="h-4 w-4" strokeWidth={1.75} />
+                  </span>
+                  <span className="font-semibold">{w.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
+
 
       {/* ============ SPINE: main + sticky sidebar ============ */}
       <section className="bg-reps-ivory">
