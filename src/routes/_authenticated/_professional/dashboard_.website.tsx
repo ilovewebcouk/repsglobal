@@ -366,6 +366,12 @@ function ShopFrontEditorPage() {
               />
             </Field>
             <Field
+              label="Subtitle"
+              hint={`Sits directly under your tagline on /c/${slug ?? "your-slug"} — one short supporting line.`}
+            >
+              <HeroSubtitleField />
+            </Field>
+            <Field
               label="About"
               hint="A short bio. Plain paragraphs, separated by blank lines."
               action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
