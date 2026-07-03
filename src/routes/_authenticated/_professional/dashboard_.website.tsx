@@ -655,8 +655,10 @@ function ServicesEditor({
       description: draft.description?.trim() || null,
       cta_label: draft.cta_label?.trim() || null,
       image_url: draft.image_url || null,
+      is_featured: (draft.sort_order ?? 0) === 1,
     };
   }
+
 
   function submit() {
     onSave(buildPayload());
