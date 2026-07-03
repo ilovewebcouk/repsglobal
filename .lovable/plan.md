@@ -1,71 +1,69 @@
-# /pro/$slug — Mockup v2 Rebuild
 
-Single-file edit to `src/routes/pro.$slug.index.tsx`. No data model changes. Radii on the locked 6/8/10/12/16/18/22/24/full scale.
+# /pro/$slug — Complete Mock-up Rebuild (one pass, no rolling patches)
 
-## Hero (top-of-page changes only)
+Rebuild `src/routes/pro.$slug.index.tsx` end-to-end in a single implementation pass to match `user-uploads://...pro-mockup...` (3-column hero + premium sidebar + dark navy service cards + coverage radius map + honest data). No partial ships. Screenshots at the end, not between sections.
 
-- Trim About prose out of the hero. Keep italic bio to max 2 lines with a "Read more" reveal.
-- Add `From £{minPrice} / session` price anchor under the CTA row (derived from services, no new field).
-- Sub-nav: already removed in previous pass — confirm gone.
-- Right sticky "Get in touch" card: unchanged content, add `sticky top-[88px]` behaviour so it persists on scroll and the sidebar Trust card doesn't visually duplicate it.
+## Non-negotiables
 
-## New: "Who I help" strip
+- One pass, all 16 build-order items completed before returning to user.
+- Every existing hex/radius must comply with `skill/reps-build-compliance` (orange tokens only, radii 6/8/10/12/16/18/22/24/full).
+- Data honesty: no fabricated response rates, reply %s, client counts, years, phone/call buttons, availability, or footer marketplace stats. Missing fields hide cleanly.
+- Cookie banner: dismiss/hide during Playwright QA via `localStorage` seed so screenshots are not blocked. No banner code changes.
+- Locked memory rules respected (no "BD migration", no "UK" qualifier, radius scale, brand orange, emerald-status-only, shadcn primitives, marketing primitives where applicable — the profile is not a marketing page so `SectionHeading`/etc. do NOT apply here).
 
-- Full-width warm-cream panel (`bg-reps-warm-ivory`, `rounded-[22px]`), sits directly under the trust-strip, above the 2-column grid.
-- Left label "Who I help — I work best with people who:" + 4 icon+text columns.
-- Data source: reuse existing `who_i_help` array on the professional profile if present; otherwise render 4 sensible defaults derived from specialisms (fallback content, not new schema).
-- Icons: `Dumbbell`, `UserPlus`, `Home`, `Compass` from lucide, orange outline.
+## Build order (executed in one pass)
 
-## 2-column spine (main / sticky sidebar)
-
-Grid: `lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]`, `gap-8`.
-
-### Main column (left)
-
-1. **Services & Pricing** — swap current light cards for dark navy cards matching `/c/$slug`:
-   - `bg-reps-panel`, `rounded-[18px]`, orange icon top-left, price large, tick bullets, orange "Enquire about this" button.
-   - Middle card = "Most popular" ribbon (orange glow), only when a service is marked `is_featured`.
-2. Soft cream "Not sure which option is right for you?" banner unchanged.
-3. **Qualifications & Credentials** — keep current card, no restyle.
-4. **What Clients Say** — keep current, no fake padding.
-5. **FAQ** — accordion, first item open by default.
-
-### Sticky sidebar (right, `lg:sticky lg:top-[88px]`)
-
-1. **Location & Coverage** card:
-   - "Based in {town}, covering:" + green-tick list of nearby towns (from existing coverage data).
-   - Map: switch from Google red-pin to a **coverage radius overlay** — draw a dashed orange `google.maps.Circle` at lat/lng with radius from `service_radius_km` (or 15km default). Remove the marker. Update `src/components/pro/LocationMap.tsx` to accept `radiusKm?: number` and render Circle instead of Marker when provided.
-   - Postcode check input + black "Check" button (client-side only for now — button wires to existing coverage check if implemented, otherwise disabled with tooltip "Coming soon").
-2. **Quick Details** card: existing chip data reformatted as label/value rows (Specialisms, Age groups, Training style, Availability, Equipment).
-3. **Trust & Assurance** compact checklist card — 4 lines, "View full verification →" link. Replaces the hero-duplicate trust card.
-
-## Removals
-
-- Standalone "Trust & Assurance" full card in main column (moved to sidebar).
-- Duplicate hero "trust strip" stays as the top summary, but the sidebar Trust card takes over the detail role.
-- Platform stat band ("25,000+ Verified Professionals / 120+ Countries") — belongs on `/`, not on a personal profile. Remove from the profile route only.
-- Any remnants of Specialisms/Trains-at chip-lists as separate cards (absorbed into Quick Details + sidebar).
+1. **Hero refactor** — `lg:grid-cols-[280px_minmax(0,1fr)_320px]`, gap-8. Left = portrait (rounded-[18px]) + gallery pill (`ImageIcon` count) shown only if `pro.gallery?.length`. Middle = REPs Verified badge → H1 name → role/location line → rating line (only if `reviewCount >= 3`) → mode chips (In-person / Online — only truthy) → 2-line clamped bio with "Read more" reveal → "From £{minPrice} / session" anchor derived from services. Right = sticky Get-in-Touch card (see §2).
+2. **Get in Touch card** — sticky `top-[92px]`, `rounded-[18px]` cream card. Copy: "Get in touch" / "Free, no-obligation enquiry." 3 honest bullets (private enquiry / no obligation / details shared only with {firstName}). Primary orange "Send enquiry" → `/pro/$slug/enquire`. Secondary ghost "Save profile". NO Call button, NO response-time stat, NO reply-rate.
+3. **Trust strip** — 4 compact cards under hero (Verified on REPs / Qualifications on file / Insurance verified / CPD current) — each hides if underlying flag is false. Radius 16, `bg-reps-warm-white`, `Check` icon in emerald token.
+4. **Who I Help** — full-width `bg-reps-warm-ivory` panel, radius 22, 4 icon columns (Dumbbell, UserPlus, Home, Compass) sourced from `pro.who_i_help` array with sensible defaults derived from specialisms when empty.
+5. **About** — main-column card, radius 18. Show `pro.bio_long`. Stats row ("clients helped" / "years experience") rendered only when both values are truthy and > 0.
+6. **Services & Pricing** — dark navy cards matching `/c/$slug`: `bg-reps-panel`, radius 18, orange service icon top-left, price large + `/session` or `/month` from data, bullet features from `service.features[]`, orange "Enquire about this" button. "Most popular" ribbon on `is_featured` service (orange glow). Empty state: single "Contact for pricing" card if no services.
+7. **Location & Coverage** — sidebar card, radius 18. Header "Based in {town}, covering:" + green-tick list from `pro.coverage_towns` (max 6, "+N more" collapse). Map via `LocationMap` with `radiusKm={pro.service_radius_km ?? 15}` (already renders orange dashed circle, no pin). Postcode input + Check button — disabled with `Tooltip` "Coming soon" if no coverage RPC exists.
+8. **Quick Details** — sidebar card, radius 18. Label/value rows for: Specialisms, Age groups, Training style, Availability, Equipment. Each row hides if empty. No chip-soup.
+9. **Qualifications** — main-column card, radius 18. List with awarding-body pill + year. Hides section entirely if none.
+10. **Trust & Assurance** — sidebar compact checklist card, radius 18. 4 lines with "View full verification →" linking to verification detail page. Replaces standalone main-column trust card.
+11. **Reviews** — main-column, radius 18. Star distribution histogram shown only if `reviewCount >= 3`. Otherwise show compact "New to REPs — reviews coming soon" empty state. Individual review cards with initials avatar (no fake photos).
+12. **FAQ** — accordion (shadcn `Accordion`), first item `defaultValue` open. Hides section if `pro.faq` empty.
+13. **Final CTA band** — reuse styling from `/c/$slug` end-of-page CTA, orange primary "Send enquiry", ghost "Back to search". No platform stats.
+14. **Footer stats honesty** — audit `PublicFooter.tsx`; remove any marketplace count / country count / verified-pro count if still present. (Prior audit said clean — re-verify in same pass.)
+15. **Mobile polish** — hero collapses to single column, portrait full-width capped 320px, Get-in-Touch becomes sticky bottom bar (`fixed bottom-0` with safe-area padding) showing "From £X" + "Send enquiry" button. Sidebar cards flow inline after main sections. Trust strip becomes 2×2 grid.
+16. **Screenshot QA** — Playwright script (`tests/e2e/profile-shot.py`) with webdriver masked, cookie banner pre-dismissed via `localStorage.setItem('reps.consent.v1', JSON.stringify({analytics:true,ts:Date.now()}))`. Capture desktop 1280×1800 + mobile 390×1600 full-page → `/tmp/browser/profile/desktop.png` + `mobile.png`. View both, verify against mock-up before returning.
 
 ## Files touched
 
-- `src/routes/pro.$slug.index.tsx` — main restructure.
-- `src/components/pro/LocationMap.tsx` — add optional `radiusKm` prop, render dashed orange `google.maps.Circle` instead of marker when set.
-- No new components unless a `<ProfileSidebar>` extraction naturally falls out during the edit.
+- `src/routes/pro.$slug.index.tsx` — full rebuild of body (hero, sections, sidebar, mobile CTA). Single file, complete rewrite of the visible JSX; keep loader/head/data wiring intact.
+- `src/components/pro/LocationMap.tsx` — no change needed (radius already wired).
+- `src/components/public/PublicFooter.tsx` — verify honesty; edit only if fabricated stats present.
+- `tests/e2e/profile-shot.py` — new Playwright QA script.
 
-## Scope guardrail
+No new components extracted unless a natural `<ProfileSidebar>` split emerges during the rewrite. No schema changes. No server function changes.
 
-- No hero photo/copy changes beyond bio truncation + price anchor.
-- No changes to `/c/$slug`, `/pro/$slug/enquire`, homepage, professions, cities.
-- No data model / schema / server function changes.
-- All colours via tokens; radii from the locked scale (services 18, cards 22, buttons 10).
+## Data-honesty guardrails (applied throughout)
 
-## Verification
+| Field | Rule |
+|---|---|
+| `pro.years`, `pro.clients` | render only if truthy && `> 0` |
+| `pro.contact_phone` | NEVER rendered publicly (locked contact-channels policy) |
+| `pro.response_time`, reply rate | NEVER rendered |
+| `pro.availability` free text | render only if non-empty |
+| `pro.reviews` | histogram only if count ≥ 3; else empty state |
+| `pro.gallery` | gallery pill only if length > 0 |
+| `pro.coverage_towns` | list only if length > 0 |
+| `pro.faq` | section only if length > 0 |
+| Footer marketplace stats | removed |
 
-1. Typecheck clean.
-2. Playwright screenshot at 1280 + 375 against `/pro/jordon-gumbley`, confirm:
-   - Hero has price anchor, no sub-nav.
-   - "Who I help" strip renders 4 columns.
-   - Services are dark navy with "Most popular" ribbon on Hybrid.
-   - Map shows dashed orange radius, not red pin.
-   - Sidebar sticks on scroll; no duplicate Trust card.
-3. Manual scroll check: "Get in touch" hero card stays sticky; sidebar Trust card is compact.
+## Acceptance
+
+- Desktop screenshot `/tmp/browser/profile/desktop.png` shows: 3-col hero, orange price anchor, dark navy service cards with "Most popular" ribbon, orange dashed radius map, sticky sidebar with 4 stacked cards.
+- Mobile screenshot `/tmp/browser/profile/mobile.png` shows: stacked sections, sticky bottom Send-enquiry bar, 2×2 trust strip.
+- Typecheck clean.
+- `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` exits 0.
+- Response includes both screenshots and audit result; no partial-progress claims.
+
+## Out of scope
+
+- No changes to `/c/$slug`, `/pro/$slug/enquire`, homepage, professions, cities, dashboard.
+- No new data model or server functions.
+- No cookie-banner logic changes (only test-side dismiss).
+- No new component library primitives beyond what already ships.
