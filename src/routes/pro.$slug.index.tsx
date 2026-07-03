@@ -852,27 +852,46 @@ function ProProfilePage() {
                   <p key={p}>{p}</p>
                 ))}
               </div>
-              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-reps-muted-light">
-                <span>
-                  <strong className="font-semibold text-reps-charcoal">{pro.years}+</strong> years experience
-                </span>
-                <span className="text-reps-stone" aria-hidden>·</span>
-                <span>
-                  <strong className="font-semibold text-reps-charcoal">{pro.clients}</strong> clients helped
-                </span>
-                {pro.qualifications[0]?.issued ? (
-                  <>
-                    <span className="text-reps-stone" aria-hidden>·</span>
-                    <span>
-                      Verified since{" "}
+              {(() => {
+                const parts: React.ReactNode[] = [];
+                if (pro.years > 0) {
+                  parts.push(
+                    <span key="years">
+                      <strong className="font-semibold text-reps-charcoal">{pro.years}+</strong> years qualified
+                    </span>,
+                  );
+                }
+                if (pro.clients && pro.clients !== "—" && pro.clients !== "0") {
+                  parts.push(
+                    <span key="clients">
+                      <strong className="font-semibold text-reps-charcoal">{pro.clients}</strong> clients helped
+                    </span>,
+                  );
+                }
+                if (pro.qualifications[0]?.issued && pro.qualifications[0].issued !== "—") {
+                  parts.push(
+                    <span key="verified">
+                      Qualified since{" "}
                       <strong className="font-semibold text-reps-charcoal">
                         {pro.qualifications[0].issued.split(" ").pop()}
                       </strong>
-                    </span>
-                  </>
-                ) : null}
-              </div>
+                    </span>,
+                  );
+                }
+                if (parts.length === 0) return null;
+                return (
+                  <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-reps-muted-light">
+                    {parts.map((p, i) => (
+                      <React.Fragment key={i}>
+                        {i > 0 ? <span className="text-reps-stone" aria-hidden>·</span> : null}
+                        {p}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
+
 
             {/* Services — dark navy tiles, matches /c/$slug */}
             <div id="services">
