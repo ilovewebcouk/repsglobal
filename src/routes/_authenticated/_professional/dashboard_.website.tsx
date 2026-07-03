@@ -154,6 +154,7 @@ function ShopFrontEditorPage() {
   React.useEffect(() => {
     if (!sf) return;
     setTagline(sf.tagline ?? "");
+    setSubtitle(sf.subtitle ?? "");
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
     setLayout(sf.layout_variant);
