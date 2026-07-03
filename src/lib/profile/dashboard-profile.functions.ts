@@ -108,6 +108,8 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
         : [],
       in_person_available: (proRow.in_person_available as boolean | null) ?? true,
       online_available: (proRow.online_available as boolean | null) ?? true,
+      trains_at_home_studio: (proRow.trains_at_home_studio as boolean | null) ?? false,
+      trains_at_clients_home: (proRow.trains_at_clients_home as boolean | null) ?? false,
       city: (proRow.city as string | null) ?? null,
       contact_phone: (proRow.contact_phone as string | null) ?? null,
       bio: (proRow.bio as string | null) ?? null,
