@@ -221,22 +221,14 @@ const REVIEWS = [
   },
 ];
 
-const STATS = [
-  { icon: Users, value: "25,000+", label: "Verified Professionals" },
-  { icon: Star, value: "50,000+", label: "Client Reviews" },
-  { icon: Globe, value: "120+", label: "Countries Worldwide" },
-  { icon: Calendar, value: "1M+", label: "Sessions Booked" },
-  { icon: ShieldCheck, value: "100%", label: "REPS Verified" },
+const WHO_I_HELP: { icon: typeof Dumbbell; label: string }[] = [
+  { icon: Dumbbell, label: "Want to get stronger, leaner & healthier" },
+  { icon: UserPlus, label: "Are new to training or returning after a break" },
+  { icon: HomeIcon, label: "Prefer training in the comfort of home" },
+  { icon: Compass, label: "Need support, structure and accountability" },
 ];
 
-const SUB_NAV = [
-  "About",
-  "Services",
-  "Specialisms",
-  "Qualifications",
-  "Reviews",
-  "Location",
-];
+
 
 const RATING_DIST = [
   { stars: 5, count: 115 },
