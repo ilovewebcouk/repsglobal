@@ -34,9 +34,9 @@ export const Route = createFileRoute("/how-it-works")({
         property:"og:description",
         content:"Find, enquire, train — the simple way to work with a verified REPS professional.",
       },
-      { property:"og:url", content:"/how-it-works" },
+      { property:"og:url", content:"https://repsuk.org/how-it-works" },
     ],
-    links: [{ rel:"canonical", href:"/how-it-works" }],
+    links: [{ rel:"canonical", href:"https://repsuk.org/how-it-works" }],
   }),
   component: HowItWorksPage,
 });
