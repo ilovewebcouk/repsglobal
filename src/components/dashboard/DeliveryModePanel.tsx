@@ -2,48 +2,46 @@ import * as React from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
 
-import { PPanel } from "@/components/dashboard/primitives";
-import { SpecialismsPicker } from "@/components/profile/SpecialismsPicker";
 import {
   getMyDashboardProfile,
   updateMyDashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
-import type { SpecialismSlug } from "@/lib/specialisms";
 
 /**
- * Specialism chips.
+ * In-person / Online delivery toggle.
  *
- * Lives at the top of the Website editor. The chips feed the directory
- * card, search filters and the enquire form's "What kind of coaching"
- * options. The In-person / Online delivery toggle has been moved to
- * "Where I train" (see DeliveryModePanel) since it also controls the
- * Online (worldwide) chip on the public page.
+ * Extracted from SpecialismsDeliveryPanel so it can live inside the
+ * "Where I train" panel on the Website tab. Owns its own query + mutation
+ * against the same dashboard profile record so the two panels never
+ * clobber each other's writes.
  */
-export function SpecialismsDeliveryPanel() {
+export function DeliveryModePanel() {
   const qc = useQueryClient();
   const fetchProfile = useServerFn(getMyDashboardProfile);
   const saveProfile = useServerFn(updateMyDashboardProfile);
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["my-dashboard-profile"],
     queryFn: () => fetchProfile(),
   });
 
-  const [specialisms, setSpecialisms] = React.useState<SpecialismSlug[]>([]);
+  const [inPerson, setInPerson] = React.useState(true);
+  const [online, setOnline] = React.useState(true);
+  const [initialised, setInitialised] = React.useState(false);
 
   React.useEffect(() => {
-    if (!data) return;
-    setSpecialisms(data.specialisms ?? []);
-  }, [data]);
-
-  const dirty =
-    !!data && JSON.stringify(specialisms) !== JSON.stringify(data.specialisms ?? []);
+    if (!data || initialised) return;
+    setInPerson(!!data.in_person_available);
+    setOnline(!!data.online_available);
+    setInitialised(true);
+  }, [data, initialised]);
 
   const saveMut = useMutation({
-    mutationFn: () => {
+    mutationFn: (next: { inPerson: boolean; online: boolean }) => {
       if (!data) throw new Error("Profile not loaded");
+      if (!next.inPerson && !next.online)
+        throw new Error("Pick at least one — in-person or online.");
       return saveProfile({
         data: {
           full_name: data.full_name,
@@ -51,9 +49,9 @@ export function SpecialismsDeliveryPanel() {
           business_name: data.business_name,
           headline: data.headline,
           primary_profession: data.primary_profession,
-          specialisms,
-          in_person_available: data.in_person_available,
-          online_available: data.online_available,
+          specialisms: data.specialisms,
+          in_person_available: next.inPerson,
+          online_available: next.online,
           city: data.city,
           contact_phone: data.contact_phone,
           bio: data.bio,
@@ -67,47 +65,50 @@ export function SpecialismsDeliveryPanel() {
       });
     },
     onSuccess: () => {
-      toast.success("Specialisms updated");
+      toast.success("Delivery updated");
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       qc.invalidateQueries({ queryKey: ["shop-front-public"] });
     },
-    onError: (e: Error) => toast.error(e.message || "Could not save"),
+    onError: (e: Error) => {
+      // Roll back local state to the last saved value.
+      if (data) {
+        setInPerson(!!data.in_person_available);
+        setOnline(!!data.online_available);
+      }
+      toast.error(e.message || "Could not save");
+    },
   });
 
-  return (
-    <div id="specialisms" className="scroll-mt-24">
-    <PPanel>
-      <div className="flex items-start justify-between gap-4 border-b border-reps-border px-5 py-4">
-        <div>
-          <h3 className="text-[14px] font-semibold text-white">Specialisms</h3>
-          <p className="mt-0.5 text-[12px] text-white/55">
-            Pick up to 3 specialisms. These power your directory card chips, search
-            filters and the enquire form's "What kind of coaching" options.
-          </p>
-        </div>
-        <button
-          type="button"
-          disabled={!dirty || saveMut.isPending}
-          onClick={() => saveMut.mutate()}
-          className="flex h-9 shrink-0 items-center gap-2 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Save className="h-3.5 w-3.5" />
-          {saveMut.isPending ? "Saving…" : "Save"}
-        </button>
-      </div>
+  const toggle = (which: "inPerson" | "online") => {
+    const next = { inPerson, online, [which]: which === "inPerson" ? !inPerson : !online };
+    if (!next.inPerson && !next.online) {
+      toast.error("Pick at least one — in-person or online.");
+      return;
+    }
+    setInPerson(next.inPerson);
+    setOnline(next.online);
+    saveMut.mutate({ inPerson: next.inPerson, online: next.online });
+  };
 
-      <div className="px-5 py-5">
-        {isLoading ? (
-          <div className="h-32 animate-pulse rounded-[16px] bg-reps-panel-soft" />
-        ) : (
-          <SpecialismsPicker
-            values={specialisms}
-            profession={data?.primary_profession ?? null}
-            onChange={setSpecialisms}
-          />
-        )}
+  return (
+    <div>
+      <p className="text-[12px] text-white/55">
+        At least one. Toggling both surfaces you in both "In-person" and "Online" filters.
+      </p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <ModeToggle
+          label="In-person"
+          hint="Studio, gym, or client's home"
+          on={inPerson}
+          onChange={() => toggle("inPerson")}
+        />
+        <ModeToggle
+          label="Online"
+          hint="Remote programmes and check-ins — adds the Online (worldwide) chip"
+          on={online}
+          onChange={() => toggle("online")}
+        />
       </div>
-    </PPanel>
     </div>
   );
 }

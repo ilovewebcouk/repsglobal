@@ -60,6 +60,7 @@ import {
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
 import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 import { SpecialismsDeliveryPanel } from "@/components/dashboard/SpecialismsDeliveryPanel";
+import { DeliveryModePanel } from "@/components/dashboard/DeliveryModePanel";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/website")({
   head: () => ({
@@ -1290,7 +1291,7 @@ function WebsiteContentEditor() {
   const [pillars, setPillars] = React.useState<MethodPillar[]>([]);
   // venues are now managed by the GymPicker in WhereITrainPanel (professional_gyms table)
   const [cities, setCities] = React.useState("");
-  const [onlineWorldwide, setOnlineWorldwide] = React.useState(false);
+  // online-worldwide chip is now driven by the "Online" delivery toggle (see DeliveryModePanel)
   const [clientResultsIntro, setClientResultsIntro] = React.useState("");
   const [drafting, setDrafting] = React.useState(false);
   const [draftingFaqs, setDraftingFaqs] = React.useState(false);
@@ -1311,7 +1312,7 @@ function WebsiteContentEditor() {
     );
     // venues: managed by GymPicker
     setCities(data.content.coaching_reach.cities.join(", "));
-    setOnlineWorldwide(data.content.coaching_reach.online_worldwide);
+    // online_worldwide handled by DeliveryModePanel
     setClientResultsIntro(data.content.client_results_intro ?? "");
   }, [data]);
 
@@ -1353,7 +1354,9 @@ function WebsiteContentEditor() {
           .split(",")
           .map((c) => c.trim())
           .filter(Boolean),
-        online_worldwide: onlineWorldwide,
+        // Preserve stored online_worldwide value; the public chip now derives
+        // from the profile's online_available flag (DeliveryModePanel).
+        online_worldwide: data?.content.coaching_reach.online_worldwide ?? false,
       },
     });
   const onSaveResultsIntro = () => saveMut.mutate({ client_results_intro: clientResultsIntro || null });
@@ -1366,8 +1369,6 @@ function WebsiteContentEditor() {
       <WhereITrainPanel
         cities={cities}
         setCities={setCities}
-        onlineWorldwide={onlineWorldwide}
-        setOnlineWorldwide={setOnlineWorldwide}
         onSaveReach={onSaveVenues}
         saving={saveMut.isPending}
       />
@@ -1815,15 +1816,11 @@ function FaqsEditor({
 function WhereITrainPanel({
   cities,
   setCities,
-  onlineWorldwide,
-  setOnlineWorldwide,
   onSaveReach,
   saving,
 }: {
   cities: string;
   setCities: (v: string) => void;
-  onlineWorldwide: boolean;
-  setOnlineWorldwide: (v: boolean) => void;
   onSaveReach: () => void;
   saving: boolean;
 }) {
@@ -1868,11 +1865,18 @@ function WhereITrainPanel({
         <div>
           <h3 className="text-[14px] font-semibold text-white">Where I train</h3>
           <p className="mt-0.5 text-[12px] text-white/55">
-            Your training base, the gyms you work out of, and where you'll travel or coach online.
-            Powers distance search and the venue chips on your website.
+            How you train, your training base, the gyms you work out of, and the cities you cover.
+            Powers distance search and the location chips on your website.
           </p>
         </div>
       </div>
+
+      <Field
+        label="How you train clients"
+        hint="At least one. Turning on Online also adds the Online (worldwide) chip to your website."
+      >
+        <DeliveryModePanel />
+      </Field>
 
       <Field
         label="Primary training postcode"
@@ -1910,7 +1914,7 @@ function WhereITrainPanel({
         hint={
           inPerson
             ? "Add up to 3 gyms or studios you work from. Search picks live venues so your website chips stay accurate."
-            : "You're set to online-only. Enable in-person delivery on the Profile tab to list gyms."
+            : "You're set to online-only. Enable in-person above to list gyms."
         }
       >
         {inPerson ? (
@@ -1920,32 +1924,22 @@ function WhereITrainPanel({
         )}
       </Field>
 
-      <Field label="Cities you cover" hint="Comma-separated list shown as chips on your website.">
-        <TextInput value={cities} onChange={(e) => setCities(e.target.value)} placeholder="Leeds, Bradford, Online" />
+      <Field
+        label="Cities you cover"
+        hint="Comma-separated list shown as chips on your website."
+        action={
+          <button
+            type="button"
+            onClick={onSaveReach}
+            disabled={saving}
+            className="h-8 rounded-[10px] bg-reps-orange px-2.5 text-[11px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        }
+      >
+        <TextInput value={cities} onChange={(e) => setCities(e.target.value)} placeholder="Leeds, Bradford" />
       </Field>
-
-      <Field label="Online worldwide" hint="Adds the online/worldwide chip.">
-        <label className="flex items-center gap-2 text-[13px] text-white/85">
-          <input
-            type="checkbox"
-            checked={onlineWorldwide}
-            onChange={(e) => setOnlineWorldwide(e.target.checked)}
-            className="h-4 w-4 accent-reps-orange"
-          />
-          I coach online and worldwide
-        </label>
-      </Field>
-
-      <div className="border-t border-reps-border px-5 py-3 flex justify-end">
-        <button
-          type="button"
-          onClick={onSaveReach}
-          disabled={saving}
-          className="h-9 rounded-[10px] bg-reps-orange px-3 text-[12px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-        >
-          {saving ? "Saving…" : "Save reach"}
-        </button>
-      </div>
     </PPanel>
   );
 }
