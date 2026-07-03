@@ -677,29 +677,63 @@ function ProProfilePage() {
               </div>
 
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  to="/pro/$slug/enquire"
-                  params={{ slug }}
-                  onClick={() => {
-                    void import("@/lib/analytics/track").then(({ track }) =>
-                      track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
-                    );
-                  }}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Enquire Now
-                </Link>
-                <button
-                  type="button"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
-                >
-                  <Bookmark className="h-4 w-4" />
-                  Save Profile
-                </button>
-              </div>
             </div>
+
+            {/* Get in touch card */}
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <div className="rounded-[18px] border border-reps-stone bg-reps-warm-white p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.06)]">
+                <div className="text-[13px] font-semibold uppercase tracking-wider text-reps-muted-light">
+                  Get in touch
+                </div>
+                <div className="mt-3 font-display text-[22px] font-bold leading-tight text-reps-charcoal">
+                  Send {pro.name.split(" ")[0]} an enquiry
+                </div>
+
+                <dl className="mt-4 space-y-2.5 text-[13px]">
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-reps-muted-light">Last active</dt>
+                    <dd className="font-medium text-reps-charcoal">Today</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-reps-muted-light">Response rate</dt>
+                    <dd className="font-medium text-reps-charcoal">Usually within 24h</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-reps-muted-light">Verified pro</dt>
+                    <dd className="font-medium text-reps-charcoal">
+                      {pro.trust?.verified ? "Yes" : "Pending"}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="mt-5 flex flex-col gap-2.5">
+                  <Link
+                    to="/pro/$slug/enquire"
+                    params={{ slug }}
+                    onClick={() => {
+                      void import("@/lib/analytics/track").then(({ track }) =>
+                        track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
+                      );
+                    }}
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Send an enquiry
+                  </Link>
+                  <button
+                    type="button"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
+                  >
+                    <Bookmark className="h-4 w-4" />
+                    Save profile
+                  </button>
+                </div>
+
+                <p className="mt-4 text-center text-[11px] text-reps-muted-light">
+                  Contact details shared once your enquiry is accepted.
+                </p>
+              </div>
+            </aside>
           </div>
 
           {/* Trust strip */}
