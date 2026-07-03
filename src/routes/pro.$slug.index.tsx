@@ -586,20 +586,20 @@ function ProProfilePage() {
           })()}
         </div>
         <div className="mx-auto max-w-[1320px] px-6 pb-8 pt-4 lg:px-10">
-          <div className="grid gap-8 lg:grid-cols-[420px_1fr_320px] lg:gap-8">
+          <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)_320px] lg:gap-8">
             {/* Portrait with gallery pill */}
-            <div className="relative block aspect-[4/3] overflow-hidden rounded-[24px] bg-reps-stone">
+            <div className="relative block aspect-[4/5] overflow-hidden rounded-[18px] bg-reps-stone">
               {pro.image ? (
                 <img
                   src={pro.image}
                   alt={`${pro.name} — ${pro.role}`}
                   className="h-full w-full object-cover"
-                  width={920}
-                  height={690}
+                  width={600}
+                  height={750}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <Monogram name={pro.name} size={220} className="!rounded-[24px]" />
+                  <Monogram name={pro.name} size={200} className="!rounded-[18px]" />
                 </div>
               )}
               {(pro.gallery?.length ?? 0) > 0 ? (
@@ -769,7 +769,7 @@ function ProProfilePage() {
                                 return `Checked ${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
                               }
                             }
-                            return "Checked Jun 2026";
+                            return "On file";
                           })()
                   }
                 />
@@ -842,10 +842,7 @@ function ProProfilePage() {
               <h2 className="font-display text-[24px] font-bold text-reps-charcoal">
                 About {pro.firstName}
               </h2>
-              <p className="mt-4 border-l-2 border-reps-orange pl-4 font-display text-[17px] italic leading-snug text-reps-charcoal">
-                &ldquo;{pro.blurb}&rdquo;
-              </p>
-              <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-reps-muted-light">
+              <div className="mt-4 space-y-4 text-[15px] leading-relaxed text-reps-muted-light">
                 {pro.bio.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
@@ -1145,61 +1142,43 @@ function ProProfilePage() {
 
           {/* ===== STICKY SIDEBAR ===== */}
           <aside className="flex flex-col gap-5 lg:sticky lg:top-[130px] lg:self-start">
-            {/* CTA */}
-            <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-reps-muted-light">
-                Work with {pro.firstName}
-              </div>
-              {pro.services[0]?.price ? (
-                <>
-                  <div className="mt-1.5 font-display text-[22px] font-bold leading-none text-reps-charcoal">
-                    {pro.services[0].price}
-                  </div>
-                  {pro.services[0].unit ? (
-                    <div className="mt-1 text-[12px] text-reps-muted-light">{pro.services[0].unit}</div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="mt-1.5 font-display text-[20px] font-bold leading-none text-reps-charcoal">
-                  Enquire for pricing
+            {/* Quick Details — spec sheet */}
+            {(() => {
+              const rows: { label: string; value: React.ReactNode }[] = [];
+              if (pro.specialisms.length > 0) {
+                rows.push({ label: "Specialisms", value: pro.specialisms.slice(0, 4).join(", ") });
+              }
+              if (pro.modes.length > 0) {
+                rows.push({ label: "Training modes", value: pro.modes.join(" · ") });
+              }
+              if (pro.services[0]?.price) {
+                rows.push({
+                  label: "From",
+                  value: `${pro.services[0].price}${pro.services[0].unit ? " " + pro.services[0].unit : ""}`,
+                });
+              }
+              if (pro.years > 0) {
+                rows.push({ label: "Experience", value: `${pro.years}+ years qualified` });
+              }
+              if (rows.length === 0) return null;
+              return (
+                <div className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
+                  <h3 className="font-display text-[16px] font-bold text-reps-charcoal">
+                    Quick details
+                  </h3>
+                  <dl className="mt-4 divide-y divide-reps-stone/70 text-[13px]">
+                    {rows.map((r) => (
+                      <div key={r.label} className="grid grid-cols-[110px_1fr] gap-3 py-2.5">
+                        <dt className="text-[12px] uppercase tracking-wide text-reps-muted-light">
+                          {r.label}
+                        </dt>
+                        <dd className="text-reps-charcoal">{r.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
-              )}
-              {pro.modes.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {pro.modes.map((m) => (
-                    <span
-                      key={m}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-reps-stone bg-reps-ivory px-3 py-1 text-[12px] font-medium text-reps-charcoal"
-                    >
-                      {m === "In-person" ? <Users className="h-3.5 w-3.5" /> : <Laptop className="h-3.5 w-3.5" />}
-                      {m}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              <div className="mt-5 flex flex-col gap-2">
-                <Link
-                  to="/pro/$slug/enquire"
-                  params={{ slug }}
-                  onClick={() => {
-                    void import("@/lib/analytics/track").then(({ track }) =>
-                      track.profileCtaClick({ slug, cta: "enquire", professional_id: db?.id ?? null }),
-                    );
-                  }}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-dark"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Enquire now
-                </Link>
-                <button
-                  type="button"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-5 text-[14px] font-semibold text-reps-charcoal shadow-none transition-colors hover:bg-reps-ivory"
-                >
-                  <Bookmark className="h-4 w-4" />
-                  Save profile
-                </button>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Location & Coverage */}
             <div id="location" className="rounded-[22px] border border-reps-stone bg-reps-warm-white p-6">
@@ -1278,29 +1257,30 @@ function ProProfilePage() {
               </h3>
               {(() => {
                 const isFixturePro = !!PROS[slug];
-                const trust = pro.trust ?? {
-                  verified: true,
-                  insuranceExpiry: "2025-12-12",
-                  cpd: { done: 18, total: 20 },
-                };
+                const trust = pro.trust ?? { verified: false, insuranceExpiry: null };
                 const insuranceLabel = trust.insuranceExpiry
                   ? `Active until ${new Date(trust.insuranceExpiry).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
                   : "Not on file";
-                const cpd = trust.cpd ?? (isFixturePro ? { done: 18, total: 20 } : null);
+                // Only render CPD row when there is real data (or an admin-only fixture).
+                const cpd = trust.cpd ?? null;
                 const items = [
                   {
                     on: !!trust.identityVerifiedAt || (isFixturePro && trust.verified),
                     t: "Identity Verified",
                     s: trust.identityVerifiedAt
                       ? `Confirmed ${new Date(trust.identityVerifiedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-                      : "Not yet verified",
+                      : trust.verified
+                        ? "Confirmed on file"
+                        : "Not yet verified",
                   },
                   {
-                    on: !!trust.qualificationsCheckedAt || (isFixturePro && trust.verified),
+                    on: !!trust.qualificationsCheckedAt || (isFixturePro && trust.verified) || (pro.qualifications?.length ?? 0) > 0,
                     t: "Qualifications Approved",
                     s: trust.qualificationsCheckedAt
                       ? `Checked ${new Date(trust.qualificationsCheckedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
-                      : "Awaiting review",
+                      : (pro.qualifications?.length ?? 0) > 0
+                        ? "On file"
+                        : "Awaiting review",
                   },
                   {
                     on: !!trust.insuranceExpiry,
@@ -1365,23 +1345,50 @@ function ProProfilePage() {
                 <MessageCircle className="h-4 w-4" />
                 Send Enquiry
               </Link>
-              <button
-                type="button"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-stone bg-reps-warm-white px-6 text-[14px] font-semibold text-reps-charcoal transition-colors hover:bg-reps-ivory"
-              >
-                <Bookmark className="h-4 w-4" />
-                Save Profile
-              </button>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Mobile sticky CTA — visible below lg only. Adds safe-area padding. */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-reps-stone bg-reps-warm-white/95 px-4 py-3 backdrop-blur lg:hidden"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
+        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate text-[11px] uppercase tracking-wider text-reps-muted-light">
+              {pro.firstName}
+            </div>
+            {pro.services[0]?.price ? (
+              <div className="truncate font-display text-[15px] font-bold text-reps-charcoal">
+                From {pro.services[0].price}
+              </div>
+            ) : (
+              <div className="truncate font-display text-[15px] font-bold text-reps-charcoal">
+                Enquire for pricing
+              </div>
+            )}
+          </div>
+          <Link
+            to="/pro/$slug/enquire"
+            params={{ slug }}
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white hover:bg-reps-orange-dark"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Send enquiry
+          </Link>
+        </div>
+      </div>
+
+      {/* Bottom spacer so footer content isn't hidden behind mobile CTA */}
+      <div className="h-20 lg:hidden" aria-hidden />
 
       <PublicFooter />
     </div>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Small helpers                                                       */
