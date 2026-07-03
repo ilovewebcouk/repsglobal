@@ -348,8 +348,6 @@ function ShopFrontEditorPage() {
         </PCard>
       ) : (
         <div className="space-y-6">
-          <SpecialismsDeliveryPanel />
-
           <PPanel>
             <div className="border-b border-reps-border px-5 py-4">
               <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
@@ -394,6 +392,8 @@ function ShopFrontEditorPage() {
               <HeroImageEditor value={hero} onChange={setHero} />
             </Field>
           </PPanel>
+
+          <SpecialismsDeliveryPanel />
 
           <WebsiteContentEditor />
 
