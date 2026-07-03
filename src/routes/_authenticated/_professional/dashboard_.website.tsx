@@ -1399,7 +1399,7 @@ function WebsiteContentEditor() {
                       placeholder={placeholders.title}
                       maxLength={60}
                     />
-                    <TextArea
+                    <TextInput
                       value={p.body}
                       onChange={(e) => {
                         const next = [...pillars];
@@ -1407,7 +1407,7 @@ function WebsiteContentEditor() {
                         setPillars(next);
                       }}
                       placeholder={placeholders.body}
-                      maxLength={400}
+                      maxLength={110}
                     />
                   </div>
                 </div>
