@@ -1420,6 +1420,14 @@ function WebsiteContentEditor() {
 
       <SpecialismsDeliveryPanel />
 
+      {/* Where I train — postcode + Google-Places gyms + reach */}
+      <section id="location" className="scroll-mt-24">
+      <WhereITrainPanel
+        cities={cities}
+        setCities={setCities}
+      />
+      </section>
+
       {/* Results intro */}
       <section id="results-intro" className="scroll-mt-24">
       <PPanel>
