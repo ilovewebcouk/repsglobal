@@ -698,7 +698,7 @@ function CoachShopFrontPage() {
     ["--accent-color" as string]: accent,
   } as React.CSSProperties;
 
-  const enquireHref = "/pro/$slug/enquire" as const;
+  const enquireHref = "/c/$slug/enquire" as const;
 
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
@@ -791,7 +791,7 @@ function HeroSection({
   slug,
 }: {
   coach: Coach;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
   slug: string;
 }) {
   return (
@@ -1018,7 +1018,7 @@ function ServicesSection({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   return (
     <section id="services" className="scroll-mt-28 bg-reps-ink">
@@ -1057,7 +1057,7 @@ function TierCard({
 }: {
   tier: Tier;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   const isHighlight = !!tier.highlight;
   return (
@@ -1586,7 +1586,7 @@ function ContactSection({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   return (
     <section id="contact" className="scroll-mt-28 bg-reps-ink">
@@ -1737,7 +1737,7 @@ function StickyMobileBar({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/pro/$slug/enquire";
+  enquireHref: "/c/$slug/enquire";
 }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur lg:hidden">
