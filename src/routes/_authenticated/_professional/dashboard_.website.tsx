@@ -1620,14 +1620,7 @@ function ClientResultsEditor({
   const [draft, setDraft] = React.useState({ headline: "", body: "" });
 
   return (
-    <PPanel>
-      <div className="border-b border-reps-border px-5 py-4">
-        <h3 className="text-[14px] font-semibold text-white">Client result quotes</h3>
-        <p className="mt-0.5 text-[12px] text-white/55">
-          Optional written result cards. These feed the client results/testimonial-style section on your website.
-        </p>
-      </div>
-      <div className="divide-y divide-reps-border/60">
+    <div className="divide-y divide-reps-border/60">
         {items.map((r) => (
           <div key={r.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
             <div>
