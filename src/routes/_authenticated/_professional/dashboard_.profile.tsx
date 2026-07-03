@@ -756,6 +756,7 @@ function ProfileEditorPage() {
         });
       }
       // Postcode saved separately from the Website tab.
+    },
 
     onSuccess: () => {
       if (manualSaveRef.current) toast.success("Profile saved.");
