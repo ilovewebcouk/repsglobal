@@ -46,8 +46,6 @@ import {
   deleteTransformation,
   upsertFaq,
   deleteFaq,
-  upsertClientResult,
-  deleteClientResult,
   aiDraftMethod,
   aiDraftFaqs,
   aiDraftTagline,
