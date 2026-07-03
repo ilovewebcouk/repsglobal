@@ -312,6 +312,7 @@ function ShopFrontEditorPage() {
       active="Website"
       tier={tier}
       title="Website"
+      showTopbarSearch={false}
       subtitle={
         isPro
           ? "Your public REPS website — services, pricing, method and branding."
