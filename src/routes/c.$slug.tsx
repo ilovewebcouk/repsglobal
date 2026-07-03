@@ -504,12 +504,13 @@ export const Route = createFileRoute("/c/$slug")({
   loader: async ({ params }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const, live: null };
-    // DB-backed: any paying tier (Verified, Pro, Studio) can publish a website.
+    // Every published member gets the website — the public-visibility gate
+    // inside getShopFrontBySlug already checks published + paid subscription.
+    // No additional tier gate here: page renders the same for Core, Pro and
+    // Studio; only what plugs in behind the page (enquiries inbox, bookings,
+    // payments, analytics) differs by tier.
     const live = await getShopFrontBySlug({ data: { slug: params.slug } });
     if (!live) throw notFound();
-    if (!live.shopFront.tier || !["verified", "pro", "studio"].includes(live.shopFront.tier)) {
-      throw notFound();
-    }
     return { gated: false as const, live };
   },
   notFoundComponent: () => (
