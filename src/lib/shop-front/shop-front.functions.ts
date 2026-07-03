@@ -587,7 +587,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("shop_fronts")
           .select(
-            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, is_published, published_at",
+            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant",
           )
           .eq("professional_id", userId)
           .maybeSingle(),
@@ -623,11 +623,11 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           const { data: created, error } = await supabaseAdmin
             .from("shop_fronts")
             .upsert(
-              { professional_id: userId, layout_variant: layoutVariant, is_published: false },
+              { professional_id: userId, layout_variant: layoutVariant },
               { onConflict: "professional_id" },
             )
             .select(
-              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, is_published, published_at",
+              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant",
             )
             .single();
           if (error) throw error;
@@ -650,8 +650,6 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           coaching_reach: asReach(resolvedSf.coaching_reach),
           client_results_intro: resolvedSf.client_results_intro ?? null,
           layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
-          is_published: resolvedSf.is_published,
-          published_at: resolvedSf.published_at,
           slug: pro.slug,
           full_name: prof?.full_name ?? null,
           avatar_url: prof?.avatar_url ?? null,
@@ -688,11 +686,7 @@ export const upsertMyShopFront = createServerFn({ method: "POST" })
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const patch = { ...data, professional_id: userId } as {
-      professional_id: string;
-      published_at?: string;
-    } & z.infer<typeof ShopFrontUpsertSchema>;
-    if (data.is_published === true) patch.published_at = new Date().toISOString();
+    const patch = { ...data, professional_id: userId };
 
     const { data: row, error } = await supabaseAdmin
       .from("shop_fronts")
@@ -702,6 +696,7 @@ export const upsertMyShopFront = createServerFn({ method: "POST" })
     if (error) throw error;
     return row;
   });
+
 
 /* ---------------- Services CRUD ---------------- */
 
