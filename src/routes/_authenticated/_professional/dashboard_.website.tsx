@@ -1801,6 +1801,7 @@ function WhereITrainPanel({
   const fetchLocation = useServerFn(getMyPrimaryLocation);
   const savePostcode = useServerFn(saveMyPrimaryPostcode);
   const fetchProfile = useServerFn(getMyDashboardProfile);
+  const saveTrainingBase = useServerFn(updateMyTrainingBase);
 
   const locationQuery = useQuery({
     queryKey: ["my-primary-location"],
@@ -1812,6 +1813,8 @@ function WhereITrainPanel({
     queryFn: () => fetchProfile(),
   });
   const inPerson = !!profileQuery.data?.in_person_available;
+  const homeStudio = !!profileQuery.data?.trains_at_home_studio;
+  const clientsHome = !!profileQuery.data?.trains_at_clients_home;
 
   const [postcode, setPostcode] = React.useState("");
   const [initialised, setInitialised] = React.useState(false);
@@ -1829,6 +1832,15 @@ function WhereITrainPanel({
       qc.invalidateQueries({ queryKey: ["my-primary-location"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save postcode"),
+  });
+
+  const trainingBaseMut = useMutation({
+    mutationFn: (v: { trains_at_home_studio: boolean; trains_at_clients_home: boolean }) =>
+      saveTrainingBase({ data: v }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not save training base"),
   });
 
   // Listen for the page-level "Save & publish".
@@ -1887,15 +1899,58 @@ function WhereITrainPanel({
       </Field>
 
       <Field
-        label="Trains at (optional · max 3)"
+        label="Trains at (optional · max 4)"
         hint={
           inPerson
-            ? "Add up to 3 gyms or studios you work from. Search picks live venues so your website chips stay accurate."
+            ? "Add up to 4 gyms or studios you work from. Search picks live venues so your website chips stay accurate — each one links out to its Google Business profile."
             : "You're set to online-only. Enable in-person above to list gyms."
         }
       >
         {inPerson ? (
-          <GymPicker />
+          <>
+            <GymPicker />
+            <div className="mt-4 space-y-2 border-t border-reps-border/60 pt-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                Also train from
+              </p>
+              <label className="flex items-start gap-2.5 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2.5 text-[12.5px] text-white/85 hover:border-white/25">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-3.5 w-3.5 accent-reps-orange"
+                  checked={homeStudio}
+                  disabled={trainingBaseMut.isPending}
+                  onChange={(e) =>
+                    trainingBaseMut.mutate({
+                      trains_at_home_studio: e.target.checked,
+                      trains_at_clients_home: clientsHome,
+                    })
+                  }
+                />
+                <span>
+                  <span className="font-semibold text-white">Home / private studio</span>
+                  <span className="ml-1 text-white/55">— your own space. Address stays private.</span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2.5 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2.5 text-[12.5px] text-white/85 hover:border-white/25">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-3.5 w-3.5 accent-reps-orange"
+                  checked={clientsHome}
+                  disabled={trainingBaseMut.isPending}
+                  onChange={(e) =>
+                    trainingBaseMut.mutate({
+                      trains_at_home_studio: homeStudio,
+                      trains_at_clients_home: e.target.checked,
+                    })
+                  }
+                />
+                <span>
+                  <span className="font-semibold text-white">Client's home / mobile</span>
+                  <span className="ml-1 text-white/55">— you travel to them.</span>
+                </span>
+              </label>
+            </div>
+          </>
         ) : (
           <p className="text-[12px] text-white/55">No gyms shown while you're online-only.</p>
         )}
