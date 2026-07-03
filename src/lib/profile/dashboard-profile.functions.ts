@@ -70,7 +70,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "slug, headline, primary_profession, in_person_available, online_available, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
+          "slug, headline, primary_profession, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
         )
         .eq("id", userId)
         .maybeSingle(),
