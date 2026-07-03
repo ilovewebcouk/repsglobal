@@ -155,6 +155,8 @@ export type DashboardShellProps = {
   member?: DashboardShellMember;
   mainClassName?: string;
   showTopbarSearch?: boolean;
+  /** Optional slot rendered ABOVE the TopBar (greeting header). */
+  preHeader?: React.ReactNode;
   children: React.ReactNode;
 };
 
