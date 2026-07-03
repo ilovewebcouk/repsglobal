@@ -400,7 +400,7 @@ export function DashboardSidebar({
             R
           </span>
         </Link>
-        {role === "admin" ? <AdminBadgeRow /> : <VerificationSidebarPill />}
+        {role === "admin" ? <AdminBadgeRow /> : null}
       </SidebarHeader>
 
       <SidebarContent
