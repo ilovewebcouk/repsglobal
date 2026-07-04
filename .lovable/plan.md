@@ -1,39 +1,37 @@
-## What "Where we all fit!" actually is
+## What "profile photo" enforces today
 
-That line on the dashboard hub is `professionals.headline` — a **legacy column** left over from the old profile editor. Confirmed against the DB:
+Two layers gate an upload:
 
-- `professionals.headline` = `"Where we all fit!"` (orphan — no editor writes to it any more)
-- `websites.tagline` = `"Active group exercise classes for local residents"` (what the Website editor actually saves)
+1. **Copy** (`ProfilePhotoPanel.tsx` 352, 411, 474; `dashboard_.website.tsx:561`; help article) says "Real headshot only".
+2. **Gemini gatekeeper** (`src/lib/avatar/validate.shared.ts`):
+   - Prompt rejects anything not "head-and-shoulders or similar portrait".
+   - `MIN_FACE_AREA = 0.15` — a head-and-torso (chest/waist up) mid-shot sits at ~0.06–0.12 and fails today.
 
-The hub header (`src/components/dashboard/hub/index.tsx:138`) and the sidebar footer (`src/components/dashboard/DashboardSidebar.tsx:186`) both still read `professionals.headline`, so the trainer sees a value they can't find or edit anywhere in the current UI. Your instinct is right: it's loose text.
+BD backfill routes through the same `decideAvatar` — one bar, one file to change.
 
-## Scope of the orphan audit
+## Plan — loosen to "head-and-shoulders OR head-to-torso"
 
-Grep across `src/components/dashboard` + `src/routes/_authenticated` for legacy profile fields that still render but have no editor surface:
+1. **Prompt** — change the framing rule to *"head-and-shoulders or head-to-torso (chest/waist up) portrait — NOT a full-body, distant, or group shot"*. All other rules unchanged (one person, front-facing, in focus, not obscured, clean background, no logos/illustrations).
+2. **Threshold** — lower `MIN_FACE_AREA` from `0.15` → `0.07`. Admits mid-shots; still rejects true full-body (~0.005–0.02) and distant/group shots.
+3. **Reject copy** — update the "face too small" message to *"…head-and-shoulders or waist-up portrait where your face is clearly visible"*. Internal `full_body` category name stays.
+4. **User-facing copy** — swap "Real headshot only" → "Real photo of you (head-and-shoulders or waist-up)" in:
+   - `src/components/dashboard/ProfilePhotoPanel.tsx` (lines 352, 411, 474)
+   - `src/routes/_authenticated/_professional/dashboard_.website.tsx` (561)
+   - `src/content/help/articles/profile-photo.tsx` (line 18 body copy; tags stay)
 
-| Field | Rendered in | Editor today | Verdict |
-|---|---|---|---|
-| `professionals.headline` | Hub header, Sidebar footer fallback | none (Website editor uses `websites.tagline`) | **orphan — fix** |
-| `professionals.bio` | not rendered on dashboard (verified) | none (Website editor uses `websites.about`) | dead read; safe |
-| `professionals.city` | dashboard read, not surfaced in hub | Where I train (`location`) | overlap; note only |
+## Stays strict (unchanged)
 
-Only `headline` is actually shown. Nothing else on the dashboard leaks a stale legacy field to the user.
+- One real person, front-facing, in focus, face not obscured.
+- Background rules (no logos, storefronts, busy text).
+- `MIN_QUALITY = 3` sharpness/lighting bar.
+- Face bounding box still required — no crop without a locatable face.
 
-## Fix
+## Out of scope
 
-1. **Hub header** — change the source from `data.profile.headline` to `data.website?.tagline`. Same fallback rule (hide `<p>` when empty). File: `src/routes/_authenticated/_professional/dashboard.tsx` (loader shape) + hub prop wiring; no change to `hub/index.tsx` other than the prop it consumes.
-2. **Sidebar footer** — drop the `member?.headline` fallback in `DashboardSidebar.tsx:186`. Sidebar there is meant to show the account email; the headline fallback was noise.
-3. **Loader** — extend `getDashboardOverview` to include `websites.tagline` alongside the existing profile row so both surfaces read the same value the Website editor writes.
-4. **Data**: leave `professionals.headline` in place in the DB (don't destroy old copy); just stop reading it. If you want it wiped from the 1 affected account, that's a one-line follow-up UPDATE — call it out and I'll do it on your say-so.
-
-## Out of scope this pass
-
-- Removing `professionals.headline`/`bio` columns from the schema (bigger migration; other systems may still read them — needs its own audit).
-- Redesigning the hub header layout — purely a data-source swap.
-- Any Website editor changes — the tagline field already exists and works.
+- Re-validating previously accepted/rejected avatars.
+- Changing the output crop (still centred on `faceBox`; a torso shot crops tighter to the face for the round avatar).
+- New "action shot" / gallery surface — separate feature.
 
 ## Verify
 
-- Reload `/dashboard` as Charlotte: hub header now shows the website tagline (or nothing if blank), never `"Where we all fit!"`.
-- Sidebar footer shows email only.
-- Edit tagline in Website editor → publish → hub header updates on refetch.
+Upload three test images: tight headshot (passes), chest-up shot (now passes — previously rejected as `full_body`), full-body distant shot (still rejects).
