@@ -373,22 +373,21 @@ function CropperModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="w-full max-w-[420px] overflow-hidden rounded-[16px] border border-reps-border bg-reps-ink shadow-2xl">
-        <div className="flex items-center justify-between border-b border-reps-border px-4 py-3">
-          <div>
-            <div className="text-[14px] font-semibold text-white">Crop hero image</div>
-            <div className="text-[11px] text-white/55">Portrait 9:16 · saves as 1080 × 1920 JPEG</div>
-          </div>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white"
-            aria-label="Cancel"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        // Ignore close attempts while an upload is in flight so we don't
+        // strand an in-progress mutation with the parent unmounted.
+        if (!open && !uploading) onCancel();
+      }}
+    >
+      <DialogContent className="max-w-[440px] gap-0 border border-reps-border bg-reps-ink p-0">
+        <DialogHeader className="border-b border-reps-border px-4 py-3">
+          <DialogTitle className="text-[14px] font-semibold text-white">Crop hero image</DialogTitle>
+          <DialogDescription className="text-[11px] text-white/55">
+            Portrait 9:16 · saves as 1080 × 1920 JPEG
+          </DialogDescription>
+        </DialogHeader>
         <div className="relative h-[480px] w-full bg-black">
           <Cropper
             image={src}
@@ -403,8 +402,9 @@ function CropperModal({
         </div>
         <div className="space-y-3 border-t border-reps-border px-4 py-3">
           <div className="flex items-center gap-3">
-            <span className="text-[11px] text-white/55">Zoom</span>
+            <label htmlFor="hero-crop-zoom" className="text-[11px] text-white/55">Zoom</label>
             <input
+              id="hero-crop-zoom"
               type="range"
               min={1}
               max={3}
@@ -414,11 +414,12 @@ function CropperModal({
               className="flex-1 accent-reps-orange"
             />
           </div>
-          <div className="flex items-center justify-end gap-2">
+          <DialogFooter className="gap-2 sm:gap-2">
             <button
               type="button"
+              disabled={uploading}
               onClick={onCancel}
-              className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white/80 hover:bg-reps-panel"
+              className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white/80 hover:bg-reps-panel disabled:opacity-60"
             >
               Cancel
             </button>
@@ -431,11 +432,54 @@ function CropperModal({
               <Check className="h-4 w-4" />
               {uploading ? "Saving…" : "Use this image"}
             </button>
-          </div>
+          </DialogFooter>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
+}
+
+/**
+ * Fetch a remote image URL and pass it to setEditing as a data URL.
+ * Hardened: 10s timeout, content-type check, and a 20 MB response cap.
+ */
+async function loadRemoteImageToDataUrl(
+  url: string,
+  setEditing: (s: string) => void,
+): Promise<void> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10_000);
+  try {
+    const r = await fetch(url, { signal: controller.signal, redirect: "follow" });
+    if (!r.ok) throw new Error(`Server returned ${r.status}`);
+    const ct = r.headers.get("content-type") ?? "";
+    if (!/^image\//i.test(ct)) throw new Error("That URL isn't an image");
+    // Read as a bounded stream so a malicious huge response can't OOM the tab.
+    const reader = r.body?.getReader();
+    if (!reader) throw new Error("Streaming not supported here");
+    const MAX = 20 * 1024 * 1024;
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      received += value.byteLength;
+      if (received > MAX) {
+        try { await reader.cancel(); } catch { /* ignore */ }
+        throw new Error("That image is over 20 MB");
+      }
+      chunks.push(value);
+    }
+    const blob = new Blob(chunks as BlobPart[], { type: ct });
+    const fr = new FileReader();
+    await new Promise<void>((resolve, reject) => {
+      fr.onload = () => { setEditing(String(fr.result)); resolve(); };
+      fr.onerror = () => reject(new Error("Could not read the fetched image"));
+      fr.readAsDataURL(blob);
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function renderCrop(src: string, area: Area): Promise<string> {
