@@ -51,17 +51,16 @@ export type AvatarDecision =
 
 /**
  * Minimum head bounding-box area (width × height as a fraction of the whole
- * image). A tight head-and-shoulders portrait reads at ~0.20–0.40. A full-body
- * shot reads at ~0.005–0.02. A "face takes up ~¼ of the frame" selfie reads
- * at ~0.06–0.10.
+ * image). A tight head-and-shoulders portrait reads at ~0.20–0.40. A
+ * head-to-torso (chest/waist up) mid-shot reads at ~0.06–0.12. A true
+ * full-body shot reads at ~0.005–0.02.
  *
- * 0.15 matches the visual bar set by accepted Featured-rail cards (Matt /
- * Jemma / Jen ~0.18–0.30). 0.06 was a triage default for the initial BD
- * backfill and let through selfies that didn't read as professional headshots
- * next to the rest of the rail. Note: Gemini's bounding boxes carry ±20%
- * noise — tune from real-world reject counts, not from theoretical area math.
+ * 0.07 admits head-and-shoulders AND head-to-torso portraits while still
+ * rejecting full-body / distant / group shots. Gemini's bounding boxes
+ * carry ±20% noise — tune from real-world reject counts, not theoretical
+ * area math.
  */
-export const MIN_FACE_AREA = 0.15;
+export const MIN_FACE_AREA = 0.07;
 
 /** Minimum Gemini quality score (1-5). 3 = "acceptable", 4-5 = "good/great". */
 export const MIN_QUALITY = 3;
