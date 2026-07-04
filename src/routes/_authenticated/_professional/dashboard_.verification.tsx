@@ -26,6 +26,7 @@ import {
   IdentityProfileCard,
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
+import { NameProfessionCard } from "@/components/dashboard/verification/NameProfessionCard";
 import {
   VerifiedBadge,
   tierFromCounts,
