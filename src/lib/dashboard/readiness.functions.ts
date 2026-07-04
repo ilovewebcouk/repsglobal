@@ -100,8 +100,7 @@ export const getMyReadiness = createServerFn({ method: "GET" })
       supabase
         .from("website_faqs")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .eq("is_published", true),
+        .eq("user_id", userId),
       supabase
         .from("professional_locations")
         .select("postcode")
