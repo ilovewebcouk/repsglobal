@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { submitReview } from "@/lib/reviews/reviews.functions";
-import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
+import { getWebsiteBySlug } from "@/lib/website/website.functions";
 
 export const Route = createFileRoute("/c/$slug/review")({
   head: () => ({
@@ -29,9 +29,9 @@ function ReviewPage() {
   const { slug } = Route.useParams();
   const router = useRouter();
 
-  const { data: shopFront } = useQuery({
-    queryKey: ["shop-front", slug],
-    queryFn: () => getShopFrontBySlug({ data: { slug } }),
+  const { data: website } = useQuery({
+    queryKey: ["website", slug],
+    queryFn: () => getWebsiteBySlug({ data: { slug } }),
     staleTime: 60_000,
   });
 
@@ -76,7 +76,7 @@ function ReviewPage() {
     },
   });
 
-  const proName = shopFront?.shopFront.full_name ?? "this professional";
+  const proName = website?.website.full_name ?? "this professional";
 
   if (!session) {
     return (

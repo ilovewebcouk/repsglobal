@@ -1,6 +1,6 @@
 // Transformation (Client Results proof card) image uploader.
 // Client crops to 4:3 → 1600×1200 JPEG, sends as data URL, we re-verify
-// and write to the shop-front-results bucket. Owner-scoped by folder.
+// and write to the website-results bucket. Owner-scoped by folder.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
@@ -26,10 +26,10 @@ export const uploadTransformationImageFromBase64 = createServerFn({ method: "POS
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const objectPath = `${userId}/result-${Date.now()}.${ext}`;
     const { error: uploadError } = await supabaseAdmin.storage
-      .from("shop-front-results")
+      .from("website-results")
       .upload(objectPath, bytes, { contentType, upsert: true, cacheControl: "31536000" });
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    const { data: pub } = supabaseAdmin.storage.from("shop-front-results").getPublicUrl(objectPath);
+    const { data: pub } = supabaseAdmin.storage.from("website-results").getPublicUrl(objectPath);
     return { url: pub.publicUrl };
   });

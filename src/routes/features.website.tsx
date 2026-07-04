@@ -255,18 +255,18 @@ export const Route = createFileRoute("/features/website")({
 "Bring your offer, proof, bookings, enquiries and client journey into one professional website page. Included in Pro and Studio.",
       },
       { property:"og:image", content: coachJamesCoaching },
-      { property:"og:url", content:"https://repsuk.org/features/shop-front" },
+      { property:"og:url", content:"https://repsuk.org/features/website" },
     ],
-    links: [{ rel:"canonical", href:"https://repsuk.org/features/shop-front" }],
+    links: [{ rel:"canonical", href:"https://repsuk.org/features/website" }],
   }),
-  component: ShopFrontPage,
+  component: WebsitePage,
 });
 
 // -----------------------------------------------------------------------------
 // Page
 // -----------------------------------------------------------------------------
 
-function ShopFrontPage() {
+function WebsitePage() {
   return (
     <div className="min-h-screen overflow-x-clip bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />

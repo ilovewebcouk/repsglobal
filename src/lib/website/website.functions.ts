@@ -2,9 +2,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
-import { DEFAULT_SERVICE_CARDS } from "@/lib/shop-front/default-services";
+import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
 
-const ShopFrontUpsertSchema = z.object({
+const WebsiteUpsertSchema = z.object({
   tagline: z.string().trim().max(200).nullable().optional(),
   subtitle: z.string().trim().max(200).nullable().optional(),
   about: z.string().trim().max(4000).nullable().optional(),
@@ -20,7 +20,7 @@ const ShopFrontUpsertSchema = z.object({
 });
 
 
-export type ShopFrontDTO = {
+export type WebsiteDTO = {
   professional_id: string;
   tagline: string | null;
   subtitle: string | null;
@@ -82,7 +82,7 @@ export type ShopFrontDTO = {
   }>;
 };
 
-export type ShopFrontTransformationDTO = {
+export type WebsiteTransformationDTO = {
   id: string;
   client_first_name: string | null;
   client_role: string | null;
@@ -95,7 +95,7 @@ export type ShopFrontTransformationDTO = {
   is_published: boolean;
 };
 
-export type ShopFrontFaqDTO = {
+export type WebsiteFaqDTO = {
   id: string;
   question: string;
   answer: string;
@@ -103,7 +103,7 @@ export type ShopFrontFaqDTO = {
   source: string;
 };
 
-export type ShopFrontClientResultDTO = {
+export type WebsiteClientResultDTO = {
   id: string;
   headline: string | null;
   body: string | null;
@@ -124,7 +124,7 @@ function asPillars(v: unknown): Array<{ title: string; body: string }> {
     .slice(0, 6);
 }
 
-type VenueDTO = ShopFrontDTO["venues"][number];
+type VenueDTO = WebsiteDTO["venues"][number];
 
 function asVenues(v: unknown): VenueDTO[] {
   if (!Array.isArray(v)) return [];
@@ -142,7 +142,7 @@ function asVenues(v: unknown): VenueDTO[] {
 
 /**
  * Load the coach's gym list (source of truth = professional_gyms + gyms).
- * Returns [] if none — callers should fall back to legacy shop_fronts.venues.
+ * Returns [] if none — callers should fall back to legacy websites.venues.
  */
 async function loadProfessionalGymVenues(
   supabaseAdmin: { from: (t: string) => any },
@@ -210,8 +210,8 @@ function buildSocials(row: {
   social_youtube?: string | null;
   social_x?: string | null;
   social_linkedin?: string | null;
-}): ShopFrontDTO["socials"] {
-  const out: ShopFrontDTO["socials"] = [];
+}): WebsiteDTO["socials"] {
+  const out: WebsiteDTO["socials"] = [];
   const ig = (row.social_instagram ?? "").trim();
   const tt = (row.social_tiktok ?? "").trim();
   const yt = (row.social_youtube ?? "").trim();
@@ -287,7 +287,7 @@ async function fetchTrustSummary(
   supabaseAdmin: { from: (t: string) => any },
   professionalId: string,
   primaryTitleSlug: string | null,
-): Promise<ShopFrontDTO["trust"]> {
+): Promise<WebsiteDTO["trust"]> {
   const today = new Date().toISOString().slice(0, 10);
   const [{ data: pro }, { data: ins }, { data: subs }] = await Promise.all([
     supabaseAdmin
@@ -341,7 +341,7 @@ async function fetchTrustSummary(
     return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
   };
 
-  const items: ShopFrontDTO["trust"]["items"] = [];
+  const items: WebsiteDTO["trust"]["items"] = [];
   for (const q of approved) {
     if (!q.qualification) continue;
     const dateLabel =
@@ -506,9 +506,9 @@ async function ensureDefaultServices(
 
 /* ---------------- Public reads ---------------- */
 
-export const getShopFrontBySlug = createServerFn({ method: "GET" })
+export const getWebsiteBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
-  .handler(async ({ data }): Promise<{ shopFront: ShopFrontDTO; services: ServiceDTO[]; transformations: ShopFrontTransformationDTO[]; clientResults: ShopFrontClientResultDTO[]; faqs: ShopFrontFaqDTO[] } | null> => {
+  .handler(async ({ data }): Promise<{ website: WebsiteDTO; services: ServiceDTO[]; transformations: WebsiteTransformationDTO[]; clientResults: WebsiteClientResultDTO[]; faqs: WebsiteFaqDTO[] } | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: pro } = await supabaseAdmin
@@ -530,7 +530,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
 
     const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
       supabaseAdmin
-        .from("shop_fronts")
+        .from("websites")
         .select(
           "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme",
         )
@@ -551,19 +551,19 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
         .eq("user_id", pro.id)
         .maybeSingle(),
       supabaseAdmin
-        .from("shop_front_transformations")
+        .from("website_transformations")
         .select("id, client_first_name, client_role, duration_label, metric, headline, quote, image_url, sort_order, is_published")
         .eq("user_id", pro.id)
         .eq("is_published", true)
         .order("sort_order", { ascending: true }),
       supabaseAdmin
-        .from("shop_front_client_results")
+        .from("website_client_results")
         .select("id, headline, body, review_id, sort_order, is_published")
         .eq("user_id", pro.id)
         .eq("is_published", true)
         .order("sort_order", { ascending: true }),
       supabaseAdmin
-        .from("shop_front_faqs")
+        .from("website_faqs")
         .select("id, question, answer, sort_order, source")
         .eq("user_id", pro.id)
         .order("sort_order", { ascending: true }),
@@ -572,7 +572,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
       loadProfessionalGymVenues(supabaseAdmin, pro.id),
     ]);
 
-    // Tolerant: if no shop_fronts row exists yet, synthesise defaults from the
+    // Tolerant: if no websites row exists yet, synthesise defaults from the
     // pro record so /c/$slug never 404s on a paying member.
     const sfRow = sf ?? {
       professional_id: pro.id,
@@ -598,7 +598,7 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
 
 
     return {
-      shopFront: {
+      website: {
         professional_id: pro.id,
         tagline: sfRow.tagline,
         subtitle: sfRow.subtitle ?? null,
@@ -637,18 +637,18 @@ export const getShopFrontBySlug = createServerFn({ method: "GET" })
 
       },
       services: (services ?? []) as ServiceDTO[],
-      transformations: (transformations ?? []) as ShopFrontTransformationDTO[],
-      clientResults: (clientResults ?? []) as ShopFrontClientResultDTO[],
-      faqs: (faqs ?? []) as ShopFrontFaqDTO[],
+      transformations: (transformations ?? []) as WebsiteTransformationDTO[],
+      clientResults: (clientResults ?? []) as WebsiteClientResultDTO[],
+      faqs: (faqs ?? []) as WebsiteFaqDTO[],
     };
   });
 
 
 /* ---------------- Pro-side reads / writes ---------------- */
 
-export const getMyShopFront = createServerFn({ method: "GET" })
+export const getMyWebsite = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
-  .handler(async ({ context }): Promise<{ shopFront: ShopFrontDTO | null; services: ServiceDTO[] }> => {
+  .handler(async ({ context }): Promise<{ website: WebsiteDTO | null; services: ServiceDTO[] }> => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -663,7 +663,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           .maybeSingle(),
         supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
         supabaseAdmin
-          .from("shop_fronts")
+          .from("websites")
           .select(
             "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme",
           )
@@ -683,7 +683,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
           .maybeSingle(),
       ]);
 
-    if (!pro) return { shopFront: null, services: [] };
+    if (!pro) return { website: null, services: [] };
 
     const [coachingSinceYear, trust, gymVenues] = await Promise.all([
       fetchCoachingSinceYear(supabaseAdmin, userId, pro.primary_title_slug ?? null),
@@ -700,7 +700,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       ? await (async () => {
           const layoutVariant = tier === "pro" || tier === "studio" ? "full" : "lite";
           const { data: created, error } = await supabaseAdmin
-            .from("shop_fronts")
+            .from("websites")
             .upsert(
               { professional_id: userId, layout_variant: layoutVariant },
               { onConflict: "professional_id" },
@@ -714,7 +714,7 @@ export const getMyShopFront = createServerFn({ method: "GET" })
         })()
       : null);
 
-    const shopFront: ShopFrontDTO | null = resolvedSf
+    const website: WebsiteDTO | null = resolvedSf
       ? {
           professional_id: userId,
           tagline: resolvedSf.tagline,
@@ -761,13 +761,13 @@ export const getMyShopFront = createServerFn({ method: "GET" })
       (services ?? []) as ServiceDTO[],
     );
 
-    return { shopFront, services: resolvedServices };
+    return { website, services: resolvedServices };
 
   });
 
-export const upsertMyShopFront = createServerFn({ method: "POST" })
+export const upsertMyWebsite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
-  .inputValidator((d: unknown) => ShopFrontUpsertSchema.parse(d))
+  .inputValidator((d: unknown) => WebsiteUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -775,7 +775,7 @@ export const upsertMyShopFront = createServerFn({ method: "POST" })
     const patch = { ...data, professional_id: userId };
 
     const { data: row, error } = await supabaseAdmin
-      .from("shop_fronts")
+      .from("websites")
       .upsert(patch, { onConflict: "professional_id" })
       .select()
       .single();

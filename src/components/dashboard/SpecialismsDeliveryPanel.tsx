@@ -67,7 +67,7 @@ export function SpecialismsDeliveryPanel() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
-      qc.invalidateQueries({ queryKey: ["shop-front-public"] });
+      qc.invalidateQueries({ queryKey: ["website-public"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save specialisms"),
   });

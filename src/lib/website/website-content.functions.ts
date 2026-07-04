@@ -1,5 +1,5 @@
 // Phase 5/7: Website editor — content fields + child sections + AI drafting.
-// Lives alongside website.functions.ts; the editor at /dashboard/shop-front
+// Lives alongside website.functions.ts; the editor at /dashboard/website
 // calls these to manage subtitle, method, venues, transformations, client
 // results, FAQs, plus AI-assisted draft helpers.
 
@@ -115,26 +115,26 @@ export const getMyWebsiteContent = createServerFn({ method: "GET" })
 
       const [{ data: sf }, { data: t }, { data: r }, { data: f }] = await Promise.all([
         supabaseAdmin
-          .from("shop_fronts")
+          .from("websites")
           .select(
             "subtitle, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, faq_auto_generated",
           )
           .eq("professional_id", userId)
           .maybeSingle(),
         supabaseAdmin
-          .from("shop_front_transformations")
+          .from("website_transformations")
           .select(
             "id, client_first_name, client_role, duration_label, metric, headline, quote, image_url, sort_order, is_published",
           )
           .eq("user_id", userId)
           .order("sort_order", { ascending: true }),
         supabaseAdmin
-          .from("shop_front_client_results")
+          .from("website_client_results")
           .select("id, headline, body, review_id, sort_order, is_published")
           .eq("user_id", userId)
           .order("sort_order", { ascending: true }),
         supabaseAdmin
-          .from("shop_front_faqs")
+          .from("website_faqs")
           .select("id, question, answer, sort_order, source")
           .eq("user_id", userId)
           .order("sort_order", { ascending: true }),
@@ -205,7 +205,7 @@ export const saveMyWebsiteContent = createServerFn({ method: "POST" })
       patch.client_results_intro = data.client_results_intro;
 
     const { error } = await supabaseAdmin
-      .from("shop_fronts")
+      .from("websites")
       .upsert(patch as never, { onConflict: "professional_id" });
     if (error) throw error;
     return { ok: true };
@@ -235,7 +235,7 @@ export const upsertTransformation = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
-      .from("shop_front_transformations")
+      .from("website_transformations")
       .upsert(row)
       .select()
       .single();
@@ -249,7 +249,7 @@ export const deleteTransformation = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
-      .from("shop_front_transformations")
+      .from("website_transformations")
       .delete()
       .eq("id", data.id)
       .eq("user_id", context.userId);
@@ -277,7 +277,7 @@ export const upsertClientResult = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
-      .from("shop_front_client_results")
+      .from("website_client_results")
       .upsert(row)
       .select()
       .single();
@@ -291,7 +291,7 @@ export const deleteClientResult = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
-      .from("shop_front_client_results")
+      .from("website_client_results")
       .delete()
       .eq("id", data.id)
       .eq("user_id", context.userId);
@@ -318,7 +318,7 @@ export const upsertFaq = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
-      .from("shop_front_faqs")
+      .from("website_faqs")
       .upsert(row)
       .select()
       .single();
@@ -332,7 +332,7 @@ export const deleteFaq = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
-      .from("shop_front_faqs")
+      .from("website_faqs")
       .delete()
       .eq("id", data.id)
       .eq("user_id", context.userId);

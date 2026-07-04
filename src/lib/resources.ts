@@ -3196,7 +3196,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "How Level 3 connects to a REPS profile" },
       {
         type: "p",
-        text: "REPS is a professional register — it's not a training provider and doesn't sell qualifications. What we do is check every professional who joins the register: identity, qualification (a full Ofqual-regulated Level 3 Personal Trainer qualification or accepted equivalent), current insurance covering the way they work, and — where required — a DBS check. Once you're verified, your profile is searchable on the public register, you get a Verified badge, and clients can enquire and book through your REPS shop-front.",
+        text: "REPS is a professional register — it's not a training provider and doesn't sell qualifications. What we do is check every professional who joins the register: identity, qualification (a full Ofqual-regulated Level 3 Personal Trainer qualification or accepted equivalent), current insurance covering the way they work, and — where required — a DBS check. Once you're verified, your profile is searchable on the public register, you get a Verified badge, and clients can enquire and book through your REPS website.",
       },
       {
         type: "quote",
@@ -3206,7 +3206,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Where to go from here" },
       {
         type: "p",
-        text: "If you're just starting out, pick a combined Level 2 + Level 3 Diploma from a training provider whose awarding body sits on the Ofqual register, and prioritise contact hours over slick marketing. Once you qualify, get insurance, then create your REPS profile — verification typically takes 5 working days and unlocks the register, your public shop-front and the enquiry and booking tools you need to run a coaching business properly.",
+        text: "If you're just starting out, pick a combined Level 2 + Level 3 Diploma from a training provider whose awarding body sits on the Ofqual register, and prioritise contact hours over slick marketing. Once you qualify, get insurance, then create your REPS profile — verification typically takes 5 working days and unlocks the register, your public website and the enquiry and booking tools you need to run a coaching business properly.",
       },
     ],
   },

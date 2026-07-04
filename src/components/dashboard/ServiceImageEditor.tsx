@@ -1,6 +1,6 @@
 // Service-card image editor (square 1:1, 1080x1080).
 // Mirrors HeroImageEditor but locked square and routed to the
-// shop-front-services bucket.
+// website-services bucket.
 import * as React from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { useMutation } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import { Image as ImageIcon, Sparkles, Upload, Link2, X, Check } from "lucide-re
 import {
   uploadServiceImageFromBase64,
   generateServiceImageFromAi,
-} from "@/lib/shop-front/service-image.functions";
+} from "@/lib/website/service-image.functions";
 
 const TARGET = 1080;
 const ASPECT = 1;

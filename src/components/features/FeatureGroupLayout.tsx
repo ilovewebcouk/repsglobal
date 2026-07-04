@@ -223,9 +223,9 @@ export function FeatureGroupLayout({
                 );
                 const cardClass =
                   "group flex h-full flex-col rounded-[18px] border border-reps-border bg-reps-panel p-6 transition-colors hover:border-reps-orange-border";
-                if (f.customHref === "/features/shop-front") {
+                if (f.customHref === "/features/website") {
                   return (
-                    <Link key={`${f.slug}-${groupKey}`} to="/features/shop-front" className={cardClass}>
+                    <Link key={`${f.slug}-${groupKey}`} to="/features/website" className={cardClass}>
                       {cardInner}
                     </Link>
                   );
@@ -322,7 +322,7 @@ export function AINarrativeCard({
 
 const GROUP_ROUTES = {
   visibility: "/features/visibility",
-  shopfront: "/features/shop-front",
+  website: "/features/website",
   operations: "/features/operations",
   coaching: "/features/coaching",
   ai: "/features/ai",

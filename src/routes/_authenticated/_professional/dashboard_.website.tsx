@@ -33,13 +33,13 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import {
-  getMyShopFront,
-  upsertMyShopFront,
+  getMyWebsite,
+  upsertMyWebsite,
   upsertMyService,
   deleteMyService,
   type ServiceDTO,
-} from "@/lib/shop-front/shop-front.functions";
-import { DEFAULT_SERVICE_CARDS, defaultServiceForSlot } from "@/lib/shop-front/default-services";
+} from "@/lib/website/website.functions";
+import { DEFAULT_SERVICE_CARDS, defaultServiceForSlot } from "@/lib/website/default-services";
 import {
   getMyWebsiteContent,
   saveMyWebsiteContent,
@@ -58,7 +58,7 @@ import {
   type TransformationDTO,
   type ClientResultDTO,
   type FaqDTO,
-} from "@/lib/shop-front/website-content.functions";
+} from "@/lib/website/website-content.functions";
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
 import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 import { SpecialismsDeliveryPanel } from "@/components/dashboard/SpecialismsDeliveryPanel";
@@ -72,7 +72,7 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/w
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
-  component: ShopFrontEditorPage,
+  component: WebsiteEditorPage,
 });
 
 function Field({ label, hint, action, children }: { label: string; hint?: string; action?: React.ReactNode; children: React.ReactNode }) {
@@ -123,26 +123,26 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 
-function ShopFrontEditorPage() {
+function WebsiteEditorPage() {
   const tier = useTrainerTier();
   const blocked = false;
 
   // Core members get the Lite website; Pro/Studio get the full editor.
 
   const qc = useQueryClient();
-  const fetchMine = useServerFn(getMyShopFront);
-  const upsertSf = useServerFn(upsertMyShopFront);
+  const fetchMine = useServerFn(getMyWebsite);
+  const upsertSf = useServerFn(upsertMyWebsite);
   const upsertSvc = useServerFn(upsertMyService);
   const deleteSvc = useServerFn(deleteMyService);
   const draftTaglineFn = useServerFn(aiDraftTagline);
   const draftAboutFn = useServerFn(aiDraftAbout);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["my-shop-front"],
+    queryKey: ["my-website"],
     queryFn: () => fetchMine(),
   });
 
-  const sf = data?.shopFront ?? null;
+  const sf = data?.website ?? null;
   const services = data?.services ?? [];
 
   const [tagline, setTagline] = React.useState("");
@@ -178,7 +178,7 @@ function ShopFrontEditorPage() {
 
     onSuccess: () => {
       toast.success("Website saved");
-      qc.invalidateQueries({ queryKey: ["my-shop-front"] });
+      qc.invalidateQueries({ queryKey: ["my-website"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
@@ -259,7 +259,7 @@ function ShopFrontEditorPage() {
     },
     onSuccess: () => {
       toast.success("Service saved");
-      qc.invalidateQueries({ queryKey: ["my-shop-front"] });
+      qc.invalidateQueries({ queryKey: ["my-website"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save service"),
   });
@@ -289,7 +289,7 @@ function ShopFrontEditorPage() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["my-shop-front"] });
+      qc.invalidateQueries({ queryKey: ["my-website"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not reorder"),
   });
@@ -299,7 +299,7 @@ function ShopFrontEditorPage() {
     mutationFn: (id: string) => deleteSvc({ data: { id } }),
     onSuccess: () => {
       toast.success("Service removed");
-      qc.invalidateQueries({ queryKey: ["my-shop-front"] });
+      qc.invalidateQueries({ queryKey: ["my-website"] });
     },
   });
 

@@ -1,6 +1,6 @@
 // Hero image pipeline for the trainer Website editor.
 // - uploadHeroFromBase64: writes a re-encoded 1080x1920 JPEG to the
-//   shop-front-hero storage bucket and returns the public URL.
+//   website-hero storage bucket and returns the public URL.
 // - generateHeroFromAi: calls Lovable AI Gateway (Gemini 3 Pro Image)
 //   with TWO references — the trainer's avatar (for likeness) AND the
 //   locked James Carter cinematic hero (for style), returns the
@@ -33,11 +33,11 @@ export const uploadHeroFromBase64 = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const objectPath = `${userId}/hero-${Date.now()}.${ext}`;
     const { error: uploadError } = await supabaseAdmin.storage
-      .from("shop-front-hero")
+      .from("website-hero")
       .upload(objectPath, bytes, { contentType, upsert: true, cacheControl: "31536000" });
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    const { data: pub } = supabaseAdmin.storage.from("shop-front-hero").getPublicUrl(objectPath);
+    const { data: pub } = supabaseAdmin.storage.from("website-hero").getPublicUrl(objectPath);
     return { url: pub.publicUrl };
   });
 

@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import proJames from "@/assets/pro-james.jpg";
 import { submitEnquiry } from "@/lib/enquiries/enquiries.functions";
-import { getShopFrontBySlug } from "@/lib/shop-front/shop-front.functions";
+import { getWebsiteBySlug } from "@/lib/website/website.functions";
 import { getPublicProfileBySlug } from "@/lib/profile/public-profile.functions";
 import { listPublicReviewsBySlug, type ReviewDTO } from "@/lib/reviews/reviews.functions";
 import { getProfessionLabel } from "@/lib/professions";
@@ -149,12 +149,12 @@ function EnquirePage() {
 
   // Live overlay (name, avatar, services). Falls back to static if not found.
   const liveQuery = useQuery({
-    queryKey: ["shop-front-public", slug],
-    queryFn: () => getShopFrontBySlug({ data: { slug } }),
+    queryKey: ["website-public", slug],
+    queryFn: () => getWebsiteBySlug({ data: { slug } }),
     staleTime: 60_000,
   });
 
-  // Public profile fallback — covers pros without a published shop_front
+  // Public profile fallback — covers pros without a published website
   // so name/avatar/city still come from the real account.
   const profileQuery = useQuery({
     queryKey: ["public-profile", slug],
@@ -171,7 +171,7 @@ function EnquirePage() {
   const pro = useMemo(() => {
     const live = liveQuery.data;
     const profile = profileQuery.data;
-    const sf = live?.shopFront;
+    const sf = live?.website;
     const loc = profile?.location;
     const reviews = reviewsQuery.data?.reviews ?? [];
     const count = reviews.length;

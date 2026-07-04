@@ -16,7 +16,7 @@ Frozen 2026-06-10. Do not redesign without an explicit, section-named request.
 4. **Heritage bridge** — 50/50 (1.1fr/1fr). Locked bridge copy verbatim + `heritageAsset` 4:5 portrait with orange radial glow below.
 5. **Built around trust** — `bg-reps-panel/30`. 50/50 (1fr/1.1fr). Editorial copy + three real `FeaturedProCard`s (James Wilson, Sophie Taylor, Liam Roberts) — reuse city-page cards as the proof moment.
 6. **More than a directory. More than software.** — Centred eyebrow+heading, then two `BlockHeading` blocks side-by-side: "For the public." / "For professionals."
-7. **System behind the listing** — `bg-reps-panel/15`. Zigzag 50/50 (image left, copy right). `professionalsAsset` portrait + 6-pillar text-only link list (Visibility, Shop Front, Operations, Coaching, REPs AI, Growth). Each row: label + body + ArrowUpRight, divide-y border-y, hover lifts the arrow to brand orange.
+7. **System behind the listing** — `bg-reps-panel/15`. Zigzag 50/50 (image left, copy right). `professionalsAsset` portrait + 6-pillar text-only link list (Visibility, Website, Operations, Coaching, REPs AI, Growth). Each row: label + body + ArrowUpRight, divide-y border-y, hover lifts the arrow to brand orange.
 8. **Built for independence** — 50/50 (1.1fr/1fr). Editorial + `independenceAsset` 3:4 portrait.
 9. **Horizon close** — Pure `bg-reps-ink` with bottom radial brand-orange glow. Page-local type **EXCEPTION**: H2 `text-[34px] lg:text-[56px]` triplet, "stronger ecosystem" highlighted with a brand-orange underline strip.
 10. **FinalCta** — Shared `<FinalCta />`, `eyebrow={null}`, heading "Build your professional presence with" + accent "REPs.", primary `/for-professionals`, secondary `/find-a-professional`.

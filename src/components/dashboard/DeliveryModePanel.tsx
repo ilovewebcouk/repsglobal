@@ -67,7 +67,7 @@ export function DeliveryModePanel() {
     onSuccess: () => {
       toast.success("Delivery updated");
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
-      qc.invalidateQueries({ queryKey: ["shop-front-public"] });
+      qc.invalidateQueries({ queryKey: ["website-public"] });
     },
     onError: (e: Error) => {
       // Roll back local state to the last saved value.

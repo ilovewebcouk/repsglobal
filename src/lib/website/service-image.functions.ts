@@ -27,11 +27,11 @@ export const uploadServiceImageFromBase64 = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const objectPath = `${userId}/service-${Date.now()}.${ext}`;
     const { error: uploadError } = await supabaseAdmin.storage
-      .from("shop-front-services")
+      .from("website-services")
       .upload(objectPath, bytes, { contentType, upsert: true, cacheControl: "31536000" });
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    const { data: pub } = supabaseAdmin.storage.from("shop-front-services").getPublicUrl(objectPath);
+    const { data: pub } = supabaseAdmin.storage.from("website-services").getPublicUrl(objectPath);
     return { url: pub.publicUrl };
   });
 
