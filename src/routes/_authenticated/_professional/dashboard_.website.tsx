@@ -402,12 +402,16 @@ function WebsiteEditorPage() {
   const publishMut = useMutation({
     mutationFn: async () => {
       // If any basics fields are still dirty, persist them first so the
-      // snapshot includes them.
+      // snapshot includes them. Suppress the "Website saved" toast — the
+      // upcoming "Website published" toast is the one the user cares about.
       if (basicsDirty) {
+        suppressSaveToastRef.current = true;
         try {
           await saveAll();
         } catch (e) {
           throw new Error((e as Error).message || "Save failed");
+        } finally {
+          suppressSaveToastRef.current = false;
         }
       }
       return publishNowFn();
