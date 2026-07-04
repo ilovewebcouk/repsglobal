@@ -1,37 +1,39 @@
-## What "profile photo" enforces today
+## What this is
 
-Two layers gate an upload:
+The "Currently coaching **3 of 20** available spaces" line lives in the coach shop-front hero at `src/routes/c.$slug.index.tsx:928`, hardcoded. You want the **3** editable from the Website editor; the **20** stays a fixed cap.
 
-1. **Copy** (`ProfilePhotoPanel.tsx` 352, 411, 474; `dashboard_.website.tsx:561`; help article) says "Real headshot only".
-2. **Gemini gatekeeper** (`src/lib/avatar/validate.shared.ts`):
-   - Prompt rejects anything not "head-and-shoulders or similar portrait".
-   - `MIN_FACE_AREA = 0.15` — a head-and-torso (chest/waist up) mid-shot sits at ~0.06–0.12 and fails today.
+Not a visual redesign — /skill:redesign doesn't fit. Small data + editor field addition instead.
 
-BD backfill routes through the same `decideAvatar` — one bar, one file to change.
+## Plan
 
-## Plan — loosen to "head-and-shoulders OR head-to-torso"
+**1. DB migration**
+- Add `websites.current_clients smallint` (nullable). Null = hide the strip; `0..20` = show it.
+- Validation trigger enforces `current_clients between 0 and 20` (avoids a CHECK, matches repo convention).
+- No new grants/policies needed — extending an existing table.
 
-1. **Prompt** — change the framing rule to *"head-and-shoulders or head-to-torso (chest/waist up) portrait — NOT a full-body, distant, or group shot"*. All other rules unchanged (one person, front-facing, in focus, not obscured, clean background, no logos/illustrations).
-2. **Threshold** — lower `MIN_FACE_AREA` from `0.15` → `0.07`. Admits mid-shots; still rejects true full-body (~0.005–0.02) and distant/group shots.
-3. **Reject copy** — update the "face too small" message to *"…head-and-shoulders or waist-up portrait where your face is clearly visible"*. Internal `full_body` category name stays.
-4. **User-facing copy** — swap "Real headshot only" → "Real photo of you (head-and-shoulders or waist-up)" in:
-   - `src/components/dashboard/ProfilePhotoPanel.tsx` (lines 352, 411, 474)
-   - `src/routes/_authenticated/_professional/dashboard_.website.tsx` (561)
-   - `src/content/help/articles/profile-photo.tsx` (line 18 body copy; tags stay)
+**2. DTO + save handler** (`src/lib/website/website.functions.ts`)
+- Add `current_clients: number | null` to `WebsiteDTO`.
+- Extend the Basics upsert (currently persists `tagline / subtitle / about / hero_image_url`) with `current_clients`. Clamp to `0..20` server-side; treat `null` as "hide".
 
-## Stays strict (unchanged)
+**3. Editor UI** (`src/routes/_authenticated/_professional/dashboard_.website.tsx`, Basics panel around line 679)
+- Add a small field under Hero subtitle: **"Currently coaching"** — number input `0–20` + a "Hide on my page" toggle.
+- Helper text: *"Shown in the hero as 'Currently coaching X of 20 available spaces'. The cap of 20 is fixed."*
+- Wire into the existing dirty-tracking + save flow (mirrors `subtitle`).
 
-- One real person, front-facing, in focus, face not obscured.
-- Background rules (no logos, storefronts, busy text).
-- `MIN_QUALITY = 3` sharpness/lighting bar.
-- Face bounding box still required — no crop without a locatable face.
+**4. Render** (`src/routes/c.$slug.index.tsx:925–930`)
+- Replace hardcoded `3 of 20` with `{website.current_clients} of 20`.
+- If `current_clients == null`, hide the whole `<div>` (strip disappears — no zero-state weirdness).
 
 ## Out of scope
 
-- Re-validating previously accepted/rejected avatars.
-- Changing the output crop (still centred on `faceBox`; a torso shot crops tighter to the face for the round avatar).
-- New "action shot" / gallery surface — separate feature.
+- Making **20** editable (locked per your ask).
+- Live "auto-count" from actual client records — this is a manually curated marketing number.
+- Copy variants ("filling fast", "waitlist only", etc.).
+- Any other shop-front hero changes — the page stays locked otherwise.
 
 ## Verify
 
-Upload three test images: tight headshot (passes), chest-up shot (now passes — previously rejected as `full_body`), full-body distant shot (still rejects).
+1. Editor: set to `3`, save, hit `/c/$slug` — strip shows "Currently coaching 3 of 20 available spaces".
+2. Set to `0` — shows "0 of 20".
+3. Toggle Hide → strip disappears from the public page.
+4. Try to save `25` via API — clamped to `20`.

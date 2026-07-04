@@ -5078,6 +5078,7 @@ export type Database = {
           client_results_intro: string | null
           coaching_reach: Json
           created_at: string
+          current_clients: number | null
           faq_auto_generated: boolean
           has_unpublished_changes: boolean
           hero_image_url: string | null
@@ -5100,6 +5101,7 @@ export type Database = {
           client_results_intro?: string | null
           coaching_reach?: Json
           created_at?: string
+          current_clients?: number | null
           faq_auto_generated?: boolean
           has_unpublished_changes?: boolean
           hero_image_url?: string | null
@@ -5122,6 +5124,7 @@ export type Database = {
           client_results_intro?: string | null
           coaching_reach?: Json
           created_at?: string
+          current_clients?: number | null
           faq_auto_generated?: boolean
           has_unpublished_changes?: boolean
           hero_image_url?: string | null
