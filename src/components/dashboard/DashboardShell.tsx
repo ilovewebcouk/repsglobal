@@ -218,7 +218,6 @@ export function DashboardShell({
           </SidebarInset>
         </SidebarProvider>
       </div>
-      <DashboardToaster />
     </DashboardTooltipProvider>
   );
 }
