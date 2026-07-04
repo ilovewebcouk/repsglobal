@@ -42,6 +42,8 @@ export type WebsiteDTO = {
   client_results_intro: string | null;
   layout_variant: "lite" | "full";
   theme: "dark" | "light";
+  /** Currently coaching X of 20 available spaces. null = hide the strip on the public page. */
+  current_clients: number | null;
   // Embedded pro info for the public page
   slug: string | null;
 
