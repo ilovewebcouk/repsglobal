@@ -59,11 +59,11 @@ export function ContactSocialsPanel() {
     !!data &&
     (JSON.stringify(languages) !== JSON.stringify(data.languages ?? []) ||
       (contactPhone || "") !== (data.contact_phone ?? "") ||
-      socials.social_instagram !== data.social_instagram ||
-      socials.social_linkedin !== data.social_linkedin ||
-      socials.social_youtube !== data.social_youtube ||
-      socials.social_tiktok !== data.social_tiktok ||
-      socials.social_x !== data.social_x);
+      socials.social_instagram !== (data.social_instagram ?? "") ||
+      socials.social_linkedin !== (data.social_linkedin ?? "") ||
+      socials.social_youtube !== (data.social_youtube ?? "") ||
+      socials.social_tiktok !== (data.social_tiktok ?? "") ||
+      socials.social_x !== (data.social_x ?? ""));
 
   const saveMut = useMutation({
     mutationFn: () => {
