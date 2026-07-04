@@ -216,13 +216,12 @@ function DashboardPage() {
                 unreadSupport={hub.supportUnread}
                 insuranceExpiringDays={insuranceExpiringDays}
                 insuranceExpired={insuranceExpired}
-                profilePct={profilePct}
-                isPublished={isPublished}
+                readiness={hub.readiness.data ?? null}
                 trust={hub.trust.data ?? null}
               />
             </div>
             <div className="min-h-[340px] xl:col-span-4">
-              <CompletenessCard profile={hub.profile.data ?? null} />
+              <CompletenessCard readiness={hub.readiness.data ?? null} />
             </div>
           </div>
 
