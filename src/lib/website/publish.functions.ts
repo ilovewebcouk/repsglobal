@@ -127,13 +127,15 @@ export const getMyPublishState = createServerFn({ method: "GET" })
 
 /** Sections the editor tracks for per-section dirty dots + discard. */
 export type DiffSection =
+  | "profile"
   | "basics"
-  | "method"
+  | "specialisms"
+  | "location"
   | "plans"
+  | "method"
   | "results"
   | "faqs"
-  | "specialisms"
-  | "location";
+  | "contact";
 
 export type SectionDiff = {
   dirty: Record<DiffSection, boolean>;
