@@ -170,8 +170,68 @@ export function HeroImageEditor({
       {mode === "ai" && (
         <div className="space-y-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/60 p-4">
           <div className="text-[12px] text-white/65">
-            We use your profile photo as a likeness reference and our locked REPs cinematic
-            shot as a style anchor, so the result matches our brand quality bar.
+            By default we use your profile photo as the likeness reference and our locked
+            REPs cinematic shot as the style anchor. You can also upload a different photo
+            of yourself below — great if you have a stronger shot you want restyled.
+          </div>
+
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+                Likeness reference
+              </div>
+              {aiReference ? (
+                <button
+                  type="button"
+                  onClick={() => setAiReference(null)}
+                  className="text-[11px] text-white/55 hover:text-white"
+                >
+                  Use profile photo instead
+                </button>
+              ) : null}
+            </div>
+            {aiReference ? (
+              <div className="flex items-start gap-3 rounded-[10px] border border-reps-border bg-reps-ink/60 p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={aiReference}
+                  alt="Reference"
+                  className="h-16 w-16 shrink-0 rounded-[8px] object-cover"
+                />
+                <div className="min-w-0 flex-1 text-[12px] text-white/70">
+                  <div className="font-medium text-white/85">Custom reference photo</div>
+                  <p className="mt-0.5 text-white/55">
+                    We'll match this person's face and build, then apply the style + brief below.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => aiRefFileRef.current?.click()}
+                    className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel-soft px-2 text-[11px] text-white/75 hover:bg-reps-panel"
+                  >
+                    <Upload className="h-3 w-3" /> Replace
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => aiRefFileRef.current?.click()}
+                className="inline-flex h-8 items-center gap-1.5 rounded-[10px] border border-dashed border-reps-border bg-reps-panel-soft/60 px-3 text-[12px] text-white/70 hover:bg-reps-panel"
+              >
+                <Upload className="h-3.5 w-3.5" /> Upload a different photo of yourself
+              </button>
+            )}
+            <input
+              ref={aiRefFileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleAiReferenceFile(f);
+                e.target.value = "";
+              }}
+            />
           </div>
 
           <div>
