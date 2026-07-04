@@ -779,6 +779,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           client_results_intro: resolvedSf.client_results_intro ?? null,
           layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
           theme: ((resolvedSf as { theme?: string | null }).theme as "dark" | "light") ?? "dark",
+          current_clients: (resolvedSf as { current_clients?: number | null }).current_clients ?? null,
           slug: pro.slug,
           full_name: prof?.full_name ?? null,
           avatar_url: prof?.avatar_url ?? null,
