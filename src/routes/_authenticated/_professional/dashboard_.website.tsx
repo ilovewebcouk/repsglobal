@@ -2247,19 +2247,13 @@ function WhereITrainPanel({
     onError: (e: Error) => toast.error(e.message || "Could not save training base"),
   });
 
-  // Listen for the page-level "Save & publish".
-  const saveAllRef = React.useRef<() => void>(() => {});
-  saveAllRef.current = () => {
+  // Register a flusher so the page-level Publish awaits our postcode edit.
+  useSaveFlusher(async () => {
     const trimmed = postcode.trim();
     if (trimmed && trimmed !== (primaryLocation?.postcode ?? "")) {
-      postcodeMut.mutate(trimmed);
+      await postcodeMut.mutateAsync(trimmed);
     }
-  };
-  React.useEffect(() => {
-    const h = () => saveAllRef.current();
-    window.addEventListener("reps:website:save-all", h);
-    return () => window.removeEventListener("reps:website:save-all", h);
-  }, []);
+  });
 
 
   return (
