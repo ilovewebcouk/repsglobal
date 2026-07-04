@@ -88,6 +88,35 @@ import { ContactSocialsPanel } from "@/components/dashboard/ContactSocialsPanel"
 import { DeliveryModePanel } from "@/components/dashboard/DeliveryModePanel";
 import { FieldCounter } from "@/components/dashboard/website/FieldCounter";
 
+/* -------------------------------------------------------------------- */
+/* Save-all flusher registry                                            */
+/*                                                                       */
+/* Child editors that hold their own local, unsaved state register a    */
+/* `flush()` async function. `saveAll()` at the page level awaits every */
+/* registered flusher in parallel BEFORE publishing, so Publish never   */
+/* snapshots stale server data while the coach has unsaved edits.       */
+/* -------------------------------------------------------------------- */
+type SaveFlusher = () => Promise<void>;
+const saveFlushers = new Set<SaveFlusher>();
+function registerSaveFlusher(f: SaveFlusher): () => void {
+  saveFlushers.add(f);
+  return () => { saveFlushers.delete(f); };
+}
+async function runAllFlushers(): Promise<void> {
+  const list = Array.from(saveFlushers);
+  await Promise.all(list.map((f) => f()));
+}
+function useSaveFlusher(flush: SaveFlusher) {
+  // Keep the registered ref pointing at the latest closure, but only
+  // (un)register once so we don't churn the Set on every render.
+  const ref = React.useRef(flush);
+  ref.current = flush;
+  React.useEffect(() => {
+    const unregister = registerSaveFlusher(() => ref.current());
+    return unregister;
+  }, []);
+}
+
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/website")({
   head: () => ({
     meta: [
