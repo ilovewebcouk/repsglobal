@@ -97,7 +97,7 @@ function useStripeIdentityReturn() {
       qc.invalidateQueries({ queryKey: ["my-trust-state"] });
       toast.success("ID check submitted — we'll confirm shortly.");
       router.navigate({
-        to: "/dashboard/profile",
+        to: "/dashboard/verification",
         search: {},
         hash: "identity",
         replace: true,
