@@ -1531,6 +1531,7 @@ function formatList(items: string[]): string {
 /* ------------------------------------------------------------------ */
 
 function TransformationsSection({ coach }: { coach: Coach }) {
+  if (coach.transformations.length === 0) return null;
   return (
     <section id="results" className="scroll-mt-28 bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-24">
