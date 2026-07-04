@@ -1896,54 +1896,6 @@ function TransformationRow({
   );
 }
 
-function TransformationPreviewCard({
-  image,
-  metric,
-  quote,
-  client,
-  meta,
-}: {
-  image: string;
-  metric: string;
-  quote: string;
-  client: string;
-  meta: string;
-}) {
-  return (
-    <article className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-midnight">
-      <div className="relative aspect-[4/3] overflow-hidden bg-reps-panel-soft">
-        {image ? (
-          <img src={image} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[11px] text-white/40">
-            Add a photo
-          </div>
-        )}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(180deg, transparent 50%, rgba(11,13,16,0.85) 100%)" }}
-        />
-        <div className="absolute inset-x-0 bottom-0 p-3">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-            Result
-          </div>
-          <div className="mt-1.5 font-display text-[15px] font-bold leading-tight text-white">
-            {metric}
-          </div>
-        </div>
-      </div>
-      <div className="p-4">
-        <Quote className="h-4 w-4 text-reps-orange" />
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/80">&ldquo;{quote}&rdquo;</p>
-        <div className="mt-3 border-t border-reps-border pt-2.5">
-          <div className="text-[12.5px] font-semibold text-white">{client}</div>
-          {meta ? <div className="text-[11px] text-white/55">{meta}</div> : null}
-        </div>
-      </div>
-    </article>
-  );
-}
 
 
 function ClientResultsEditor({
