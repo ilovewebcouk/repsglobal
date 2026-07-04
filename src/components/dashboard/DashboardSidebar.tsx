@@ -183,7 +183,7 @@ function MemberRow({ member }: { member?: DashboardShellMember }) {
   const name = id.name ?? member?.name ?? "REPS Member";
   const email = id.email;
   const avatarUrl = id.avatarUrl ?? member?.avatarUrl ?? null;
-  const headline = email ?? member?.headline ?? "Professional";
+  const headline = email ?? "Professional";
   const tierLabel = id.tierLabel ?? member?.tierLabel ?? null;
   const initials = initialsFromName(name);
   const tierBadgeClass = id.isImpersonating
