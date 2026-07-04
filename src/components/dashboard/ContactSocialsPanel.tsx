@@ -34,11 +34,11 @@ export function ContactSocialsPanel() {
   const [languages, setLanguages] = React.useState<string[]>([]);
   const [contactPhone, setContactPhone] = React.useState<string>("");
   const [socials, setSocials] = React.useState({
-    social_instagram: null as string | null,
-    social_linkedin: null as string | null,
-    social_youtube: null as string | null,
-    social_tiktok: null as string | null,
-    social_x: null as string | null,
+    social_instagram: "",
+    social_linkedin: "",
+    social_youtube: "",
+    social_tiktok: "",
+    social_x: "",
   });
 
   React.useEffect(() => {
