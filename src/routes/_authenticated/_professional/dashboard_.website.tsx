@@ -496,6 +496,21 @@ function WebsiteEditorPage() {
   // content changed since last publish.
   const isDirty = basicsDirty || !!publishState?.has_unpublished_changes;
 
+  // Guard navigation while there are unsaved basics edits. Content editors
+  // that hold their own local state register with the save-flusher registry
+  // above; when they're mid-edit, `runAllFlushers()` will still catch it if
+  // the coach clicks Publish, and this blocker catches direct navigations.
+  useBlocker({
+    shouldBlockFn: () => {
+      if (typeof window === "undefined") return false;
+      if (!basicsDirty) return false;
+      return !window.confirm(
+        "You have unsaved basics edits. Leave without saving?",
+      );
+    },
+    enableBeforeUnload: () => basicsDirty,
+  });
+
   const saveAll = React.useCallback(async () => {
     // Fire the legacy event for any listeners that haven't migrated to the
     // flusher registry yet (harmless when registry is fully adopted).
@@ -538,12 +553,12 @@ function WebsiteEditorPage() {
     onError: (e: Error) => toast.error(e.message || "Could not publish"),
   });
 
-  // Publish confirm dialog wiring. Clicking Publish always opens the dialog;
-  // the dialog's "Publish now" action runs the mutation.
+  // Publish confirm dialog wiring. Clicking Publish awaits the section diff
+  // refetch so the dialog's first-publish vs re-publish copy is correct
+  // (rather than flashing whichever branch loaded first).
   const [publishDialogOpen, setPublishDialogOpen] = React.useState(false);
-  const publishNow = React.useCallback(() => {
-    // Refresh the diff before opening so the dialog summary is current.
-    sectionDiffQuery.refetch();
+  const publishNow = React.useCallback(async () => {
+    await sectionDiffQuery.refetch();
     setPublishDialogOpen(true);
   }, [sectionDiffQuery]);
 
