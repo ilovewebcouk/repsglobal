@@ -406,13 +406,14 @@ function WebsiteEditorPage() {
   });
   const sectionDiff = sectionDiffQuery.data;
 
-  // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero).
+  // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero/current_clients).
   const basicsDirty =
     !!sf &&
     ((tagline || "") !== (sf.tagline ?? "") ||
       (subtitle || "") !== (sf.subtitle ?? "") ||
       (about || "") !== (sf.about ?? "") ||
-      (hero || "") !== (sf.hero_image_url ?? ""));
+      (hero || "") !== (sf.hero_image_url ?? "") ||
+      (currentClients ?? null) !== (sf.current_clients ?? null));
 
   // What the sidebar/publish bar considers "unpublished" — either the
   // in-form basics haven't been saved yet, or the server tells us there's
