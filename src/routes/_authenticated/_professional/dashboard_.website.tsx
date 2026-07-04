@@ -1,9 +1,9 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, GripVertical, MapPin, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
+import { GripVertical, MapPin, Plus, Quote, Sparkles, Trash2 } from "lucide-react";
 import { TransformationImageEditor } from "@/components/dashboard/TransformationImageEditor";
 import { GymPicker } from "@/components/profile/GymPicker";
 import { getMyPrimaryLocation, saveMyPrimaryPostcode } from "@/lib/profile/location.functions";
@@ -13,6 +13,11 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { ProfilePhotoPanel } from "@/components/dashboard/ProfilePhotoPanel";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+import {
+  WebsiteEditorLayout,
+  type SectionStatus,
+  type WebsiteEditorSection,
+} from "@/components/dashboard/website/WebsiteEditorLayout";
 import {
   Dialog,
   DialogContent,
