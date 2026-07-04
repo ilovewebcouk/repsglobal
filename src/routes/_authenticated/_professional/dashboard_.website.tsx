@@ -414,6 +414,17 @@ function WebsiteEditorPage() {
   });
   const publishNow = React.useCallback(() => publishMut.mutate(), [publishMut]);
 
+  // Any time content queries refetch (services/transformations/faqs saved
+  // via child mutations), refresh publish-state too so the "Unpublished
+  // changes" pill and the Publish button reflect reality.
+  const contentUpdatedAt = contentQuery.dataUpdatedAt;
+  const websiteUpdatedAt = data && (data as unknown as { updatedAt?: number }).updatedAt;
+  React.useEffect(() => {
+    qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentUpdatedAt, websiteUpdatedAt, services.length]);
+
+
 
   // Build the section list + completeness. Kept tolerant so the rail
   // still renders while queries load. Ordering: photo → basics →
