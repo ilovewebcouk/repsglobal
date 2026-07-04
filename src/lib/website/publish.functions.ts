@@ -72,6 +72,7 @@ export const publishMyWebsite = createServerFn({ method: "POST" })
 
     // Force live read: pass an owner token so getWebsiteBySlug bypasses
     // any existing snapshot and returns the current draft.
+    const { signPreviewToken } = await import("./preview-token.server");
     const previewToken = signPreviewToken(pro.slug, 60);
     const live = await getWebsiteBySlug({
       data: { slug: pro.slug, preview: previewToken },
