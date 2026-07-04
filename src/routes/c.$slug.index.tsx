@@ -530,6 +530,7 @@ function mergeLiveIntoCoach(
     trust: sf.trust,
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
     socials: sf.socials.length ? sf.socials : base.socials,
+    currentClients: sf.current_clients,
   };
 
 }
