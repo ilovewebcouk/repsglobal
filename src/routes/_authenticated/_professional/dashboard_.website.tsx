@@ -381,6 +381,27 @@ function WebsiteEditorPage() {
   const publishState = publishStateQuery.data;
   const publishNowFn = useServerFn(publishMyWebsite);
 
+  // Signed preview token for the iframe. Refetched on a slow interval so a
+  // long editing session doesn't hit the 4h expiry mid-flight.
+  const fetchPreviewTokenFn = useServerFn(getMyPreviewToken);
+  const previewTokenQuery = useQuery({
+    queryKey: ["my-website-preview-token"],
+    queryFn: () => fetchPreviewTokenFn(),
+    staleTime: 60 * 60 * 1000, // 1h — server issues 4h tokens
+    refetchInterval: 60 * 60 * 1000,
+  });
+  const previewToken = previewTokenQuery.data?.token ?? null;
+
+  // Per-section diff (live vs snapshot) — drives sidebar dirty dots and the
+  // publish confirm dialog. Cheap to fetch; re-runs whenever any section
+  // saves via the invalidation below.
+  const fetchSectionDiffFn = useServerFn(getMySectionDiff);
+  const sectionDiffQuery = useQuery({
+    queryKey: ["my-website-section-diff"],
+    queryFn: () => fetchSectionDiffFn(),
+  });
+  const sectionDiff = sectionDiffQuery.data;
+
   // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero).
   const basicsDirty =
     !!sf &&
@@ -409,9 +430,6 @@ function WebsiteEditorPage() {
 
   const publishMut = useMutation({
     mutationFn: async () => {
-      // If any basics fields are still dirty, persist them first so the
-      // snapshot includes them. Suppress the "Website saved" toast — the
-      // upcoming "Website published" toast is the one the user cares about.
       if (basicsDirty) {
         suppressSaveToastRef.current = true;
         try {
@@ -427,11 +445,51 @@ function WebsiteEditorPage() {
     onSuccess: () => {
       toast.success("Website published — your public page is live.");
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+      setPublishDialogOpen(false);
       setReloadNonce((n) => n + 1);
     },
     onError: (e: Error) => toast.error(e.message || "Could not publish"),
   });
-  const publishNow = React.useCallback(() => publishMut.mutate(), [publishMut]);
+
+  // Publish confirm dialog wiring. Clicking Publish always opens the dialog;
+  // the dialog's "Publish now" action runs the mutation.
+  const [publishDialogOpen, setPublishDialogOpen] = React.useState(false);
+  const publishNow = React.useCallback(() => {
+    // Refresh the diff before opening so the dialog summary is current.
+    sectionDiffQuery.refetch();
+    setPublishDialogOpen(true);
+  }, [sectionDiffQuery]);
+
+  // Per-section discard.
+  const discardFn = useServerFn(discardMySectionChanges);
+  const [discardingId, setDiscardingId] = React.useState<string | null>(null);
+  const discardMut = useMutation({
+    mutationFn: (section: "basics" | "method" | "plans" | "results" | "faqs") =>
+      discardFn({ data: { section } }),
+    onSuccess: (_r, section) => {
+      toast.success(`${section} reverted to last published version`);
+      // Full refresh — the live rows just changed underneath us.
+      qc.invalidateQueries({ queryKey: ["my-website"] });
+      qc.invalidateQueries({ queryKey: ["my-website-content"] });
+      qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      setDiscardingId(null);
+      setReloadNonce((n) => n + 1);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message || "Could not discard changes");
+      setDiscardingId(null);
+    },
+  });
+  const onDiscardSection = React.useCallback(
+    (id: "basics" | "method" | "plans" | "results" | "faqs") => {
+      setDiscardingId(id);
+      discardMut.mutate(id);
+    },
+    [discardMut],
+  );
+
 
   // Any time content queries refetch (services/transformations/faqs saved
   // via child mutations), refresh publish-state too so the "Unpublished
