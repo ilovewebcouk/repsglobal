@@ -30,6 +30,9 @@ import { PublishConfirmDialog } from "@/components/dashboard/website/PublishConf
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ProfilePhotoPanel } from "@/components/dashboard/ProfilePhotoPanel";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
