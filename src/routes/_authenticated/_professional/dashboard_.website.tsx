@@ -1301,7 +1301,7 @@ function HeroSubtitleField({
 /* ===================================================================== */
 
 
-function WebsiteContentEditor() {
+function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
   const qc = useQueryClient();
   const fetch_ = useServerFn(getMyWebsiteContent);
   const save_ = useServerFn(saveMyWebsiteContent);
