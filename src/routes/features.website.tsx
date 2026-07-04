@@ -234,7 +234,7 @@ const FAQ_ITEMS = [
 // Route
 // -----------------------------------------------------------------------------
 
-export const Route = createFileRoute("/features/shop-front")({
+export const Route = createFileRoute("/features/website")({
   head: () => ({
     meta: [
       {

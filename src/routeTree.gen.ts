@@ -61,8 +61,8 @@ import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
 import { Route as HelpCategoryRouteImport } from './routes/help.$category'
 import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
+import { Route as FeaturesWebsiteRouteImport } from './routes/features.website'
 import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
-import { Route as FeaturesShopFrontRouteImport } from './routes/features.shop-front'
 import { Route as FeaturesOperationsRouteImport } from './routes/features.operations'
 import { Route as FeaturesGrowthRouteImport } from './routes/features.growth'
 import { Route as FeaturesCoachingRouteImport } from './routes/features.coaching'
@@ -127,7 +127,6 @@ import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admi
 import { Route as AuthenticatedProfessionalDashboardWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.website'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
-import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
 import { Route as AuthenticatedProfessionalDashboardReviewsRouteImport } from './routes/_authenticated/_professional/dashboard_.reviews'
@@ -414,14 +413,14 @@ const GymsSlugRoute = GymsSlugRouteImport.update({
   path: '/gyms/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeaturesWebsiteRoute = FeaturesWebsiteRouteImport.update({
+  id: '/features/website',
+  path: '/features/website',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeaturesVisibilityRoute = FeaturesVisibilityRouteImport.update({
   id: '/features/visibility',
   path: '/features/visibility',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeaturesShopFrontRoute = FeaturesShopFrontRouteImport.update({
-  id: '/features/shop-front',
-  path: '/features/shop-front',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesOperationsRoute = FeaturesOperationsRouteImport.update({
@@ -762,12 +761,6 @@ const AuthenticatedProfessionalDashboardSupportRoute =
     path: '/dashboard/support',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
-const AuthenticatedProfessionalDashboardShopFrontRoute =
-  AuthenticatedProfessionalDashboardShopFrontRouteImport.update({
-    id: '/dashboard_/shop-front',
-    path: '/dashboard/shop-front',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
 const AuthenticatedProfessionalDashboardSettingsRoute =
   AuthenticatedProfessionalDashboardSettingsRouteImport.update({
     id: '/dashboard_/settings',
@@ -987,8 +980,8 @@ export interface FileRoutesByFullPath {
   '/features/coaching': typeof FeaturesCoachingRoute
   '/features/growth': typeof FeaturesGrowthRoute
   '/features/operations': typeof FeaturesOperationsRoute
-  '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
@@ -1032,7 +1025,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -1129,8 +1121,8 @@ export interface FileRoutesByTo {
   '/features/coaching': typeof FeaturesCoachingRoute
   '/features/growth': typeof FeaturesGrowthRoute
   '/features/operations': typeof FeaturesOperationsRoute
-  '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/in/$location': typeof InLocationRouteWithChildren
   '/portal/check-ins': typeof PortalCheckInsRoute
@@ -1172,7 +1164,6 @@ export interface FileRoutesByTo {
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
@@ -1273,8 +1264,8 @@ export interface FileRoutesById {
   '/features/coaching': typeof FeaturesCoachingRoute
   '/features/growth': typeof FeaturesGrowthRoute
   '/features/operations': typeof FeaturesOperationsRoute
-  '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
@@ -1319,7 +1310,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
-  '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/_authenticated/_professional/dashboard_/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -1420,8 +1410,8 @@ export interface FileRouteTypes {
     | '/features/coaching'
     | '/features/growth'
     | '/features/operations'
-    | '/features/shop-front'
     | '/features/visibility'
+    | '/features/website'
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
@@ -1465,7 +1455,6 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/services'
     | '/dashboard/settings'
-    | '/dashboard/shop-front'
     | '/dashboard/support'
     | '/dashboard/verification'
     | '/dashboard/website'
@@ -1562,8 +1551,8 @@ export interface FileRouteTypes {
     | '/features/coaching'
     | '/features/growth'
     | '/features/operations'
-    | '/features/shop-front'
     | '/features/visibility'
+    | '/features/website'
     | '/gyms/$slug'
     | '/in/$location'
     | '/portal/check-ins'
@@ -1605,7 +1594,6 @@ export interface FileRouteTypes {
     | '/dashboard/reviews'
     | '/dashboard/services'
     | '/dashboard/settings'
-    | '/dashboard/shop-front'
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
@@ -1705,8 +1693,8 @@ export interface FileRouteTypes {
     | '/features/coaching'
     | '/features/growth'
     | '/features/operations'
-    | '/features/shop-front'
     | '/features/visibility'
+    | '/features/website'
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
@@ -1751,7 +1739,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/reviews'
     | '/_authenticated/_professional/dashboard_/services'
     | '/_authenticated/_professional/dashboard_/settings'
-    | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/_authenticated/_professional/dashboard_/website'
@@ -1852,8 +1839,8 @@ export interface RootRouteChildren {
   FeaturesCoachingRoute: typeof FeaturesCoachingRoute
   FeaturesGrowthRoute: typeof FeaturesGrowthRoute
   FeaturesOperationsRoute: typeof FeaturesOperationsRoute
-  FeaturesShopFrontRoute: typeof FeaturesShopFrontRoute
   FeaturesVisibilityRoute: typeof FeaturesVisibilityRoute
+  FeaturesWebsiteRoute: typeof FeaturesWebsiteRoute
   GymsSlugRoute: typeof GymsSlugRoute
   InLocationRoute: typeof InLocationRouteWithChildren
   PortalCheckInsRoute: typeof PortalCheckInsRoute
@@ -2258,18 +2245,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GymsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/features/website': {
+      id: '/features/website'
+      path: '/features/website'
+      fullPath: '/features/website'
+      preLoaderRoute: typeof FeaturesWebsiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/features/visibility': {
       id: '/features/visibility'
       path: '/features/visibility'
       fullPath: '/features/visibility'
       preLoaderRoute: typeof FeaturesVisibilityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/features/shop-front': {
-      id: '/features/shop-front'
-      path: '/features/shop-front'
-      fullPath: '/features/shop-front'
-      preLoaderRoute: typeof FeaturesShopFrontRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features/operations': {
@@ -2720,13 +2707,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSupportRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
-    '/_authenticated/_professional/dashboard_/shop-front': {
-      id: '/_authenticated/_professional/dashboard_/shop-front'
-      path: '/dashboard/shop-front'
-      fullPath: '/dashboard/shop-front'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardShopFrontRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
     '/_authenticated/_professional/dashboard_/settings': {
       id: '/_authenticated/_professional/dashboard_/settings'
       path: '/dashboard/settings'
@@ -3024,7 +3004,6 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardReviewsRoute: typeof AuthenticatedProfessionalDashboardReviewsRoute
   AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
-  AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
   AuthenticatedProfessionalDashboardSupportRoute: typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
   AuthenticatedProfessionalDashboardWebsiteRoute: typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -3050,8 +3029,6 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardServicesRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
       AuthenticatedProfessionalDashboardSettingsRoute,
-    AuthenticatedProfessionalDashboardShopFrontRoute:
-      AuthenticatedProfessionalDashboardShopFrontRoute,
     AuthenticatedProfessionalDashboardSupportRoute:
       AuthenticatedProfessionalDashboardSupportRouteWithChildren,
     AuthenticatedProfessionalDashboardVerificationRoute:
@@ -3221,8 +3198,8 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesCoachingRoute: FeaturesCoachingRoute,
   FeaturesGrowthRoute: FeaturesGrowthRoute,
   FeaturesOperationsRoute: FeaturesOperationsRoute,
-  FeaturesShopFrontRoute: FeaturesShopFrontRoute,
   FeaturesVisibilityRoute: FeaturesVisibilityRoute,
+  FeaturesWebsiteRoute: FeaturesWebsiteRoute,
   GymsSlugRoute: GymsSlugRoute,
   InLocationRoute: InLocationRouteWithChildren,
   PortalCheckInsRoute: PortalCheckInsRoute,
