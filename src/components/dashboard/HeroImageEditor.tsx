@@ -15,14 +15,6 @@ import {
   uploadHeroFromBase64,
   generateHeroFromAi,
 } from "@/lib/website/hero.functions";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const TARGET_W = 1080;
 const TARGET_H = 1920;
@@ -43,7 +35,6 @@ export function HeroImageEditor({
   const [prompt, setPrompt] = React.useState("");
   const [style, setStyle] = React.useState<"editorial" | "studio" | "action">("editorial");
   const [aiReference, setAiReference] = React.useState<string | null>(null); // data URL, optional
-  const [urlLoading, setUrlLoading] = React.useState(false);
   const fileRef = React.useRef<HTMLInputElement>(null);
   const aiRefFileRef = React.useRef<HTMLInputElement>(null);
 
@@ -53,12 +44,6 @@ export function HeroImageEditor({
   const aiMut = useMutation({
     mutationFn: () => aiFn({ data: { prompt, style, referenceDataUrl: aiReference ?? undefined } }),
     onSuccess: (r) => {
-      // Sanity-check the AI output shape before feeding it into the cropper —
-      // an empty or malformed dataUrl would otherwise crash react-easy-crop.
-      if (typeof r.dataUrl !== "string" || !r.dataUrl.startsWith("data:image/")) {
-        toast.error("The AI returned an unexpected response — try again");
-        return;
-      }
       setEditing(r.dataUrl);
     },
     onError: (e: Error) => toast.error(e.message || "AI couldn't generate that image"),
@@ -320,20 +305,21 @@ export function HeroImageEditor({
             <span className="text-[11px] text-white/45">We'll re-host and crop it to 1080 × 1920.</span>
             <button
               type="button"
-              disabled={!urlDraft.trim() || urlLoading}
+              disabled={!urlDraft.trim()}
               onClick={async () => {
-                setUrlLoading(true);
                 try {
-                  await loadRemoteImageToDataUrl(urlDraft, setEditing);
-                } catch (e) {
-                  toast.error((e as Error).message || "Couldn't fetch that URL");
-                } finally {
-                  setUrlLoading(false);
+                  const r = await fetch(urlDraft);
+                  const blob = await r.blob();
+                  const reader = new FileReader();
+                  reader.onload = () => setEditing(String(reader.result));
+                  reader.readAsDataURL(blob);
+                } catch {
+                  toast.error("Couldn't fetch that URL");
                 }
               }}
               className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
             >
-              <Check className="h-4 w-4" /> {urlLoading ? "Loading…" : "Load"}
+              <Check className="h-4 w-4" /> Load
             </button>
           </div>
         </div>
@@ -373,21 +359,22 @@ function CropperModal({
   }
 
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        // Ignore close attempts while an upload is in flight so we don't
-        // strand an in-progress mutation with the parent unmounted.
-        if (!open && !uploading) onCancel();
-      }}
-    >
-      <DialogContent className="max-w-[440px] gap-0 border border-reps-border bg-reps-ink p-0">
-        <DialogHeader className="border-b border-reps-border px-4 py-3">
-          <DialogTitle className="text-[14px] font-semibold text-white">Crop hero image</DialogTitle>
-          <DialogDescription className="text-[11px] text-white/55">
-            Portrait 9:16 · saves as 1080 × 1920 JPEG
-          </DialogDescription>
-        </DialogHeader>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="w-full max-w-[420px] overflow-hidden rounded-[16px] border border-reps-border bg-reps-ink shadow-2xl">
+        <div className="flex items-center justify-between border-b border-reps-border px-4 py-3">
+          <div>
+            <div className="text-[14px] font-semibold text-white">Crop hero image</div>
+            <div className="text-[11px] text-white/55">Portrait 9:16 · saves as 1080 × 1920 JPEG</div>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white"
+            aria-label="Cancel"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
         <div className="relative h-[480px] w-full bg-black">
           <Cropper
             image={src}
@@ -402,9 +389,8 @@ function CropperModal({
         </div>
         <div className="space-y-3 border-t border-reps-border px-4 py-3">
           <div className="flex items-center gap-3">
-            <label htmlFor="hero-crop-zoom" className="text-[11px] text-white/55">Zoom</label>
+            <span className="text-[11px] text-white/55">Zoom</span>
             <input
-              id="hero-crop-zoom"
               type="range"
               min={1}
               max={3}
@@ -414,12 +400,11 @@ function CropperModal({
               className="flex-1 accent-reps-orange"
             />
           </div>
-          <DialogFooter className="gap-2 sm:gap-2">
+          <div className="flex items-center justify-end gap-2">
             <button
               type="button"
-              disabled={uploading}
               onClick={onCancel}
-              className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white/80 hover:bg-reps-panel disabled:opacity-60"
+              className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white/80 hover:bg-reps-panel"
             >
               Cancel
             </button>
@@ -432,54 +417,11 @@ function CropperModal({
               <Check className="h-4 w-4" />
               {uploading ? "Saving…" : "Use this image"}
             </button>
-          </DialogFooter>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
-}
-
-/**
- * Fetch a remote image URL and pass it to setEditing as a data URL.
- * Hardened: 10s timeout, content-type check, and a 20 MB response cap.
- */
-async function loadRemoteImageToDataUrl(
-  url: string,
-  setEditing: (s: string) => void,
-): Promise<void> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10_000);
-  try {
-    const r = await fetch(url, { signal: controller.signal, redirect: "follow" });
-    if (!r.ok) throw new Error(`Server returned ${r.status}`);
-    const ct = r.headers.get("content-type") ?? "";
-    if (!/^image\//i.test(ct)) throw new Error("That URL isn't an image");
-    // Read as a bounded stream so a malicious huge response can't OOM the tab.
-    const reader = r.body?.getReader();
-    if (!reader) throw new Error("Streaming not supported here");
-    const MAX = 20 * 1024 * 1024;
-    const chunks: Uint8Array[] = [];
-    let received = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      received += value.byteLength;
-      if (received > MAX) {
-        try { await reader.cancel(); } catch { /* ignore */ }
-        throw new Error("That image is over 20 MB");
-      }
-      chunks.push(value);
-    }
-    const blob = new Blob(chunks as BlobPart[], { type: ct });
-    const fr = new FileReader();
-    await new Promise<void>((resolve, reject) => {
-      fr.onload = () => { setEditing(String(fr.result)); resolve(); };
-      fr.onerror = () => reject(new Error("Could not read the fetched image"));
-      fr.readAsDataURL(blob);
-    });
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 async function renderCrop(src: string, area: Area): Promise<string> {

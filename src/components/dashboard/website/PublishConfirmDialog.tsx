@@ -23,15 +23,13 @@ type Props = {
 };
 
 const SECTION_LABEL: Record<DiffSection, string> = {
-  profile: "Profile photo",
   basics: "Website basics",
-  specialisms: "Specialisms",
-  location: "Where I train",
-  plans: "Coaching plans",
   method: "How I coach",
+  plans: "Coaching plans",
   results: "Client results",
   faqs: "FAQs",
-  contact: "Contact & socials",
+  specialisms: "Specialisms",
+  location: "Where I train",
 };
 
 /**

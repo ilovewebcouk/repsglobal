@@ -559,10 +559,8 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         | null
         | undefined;
       if (snap && snap.website) return snap;
-      // No snapshot AND no valid preview token → the pro has never published.
-      // Do NOT fall through to the live draft — that would leak unpublished
-      // content to anonymous visitors. Return null so the route 404s.
-      return null;
+      // No snapshot yet → fall through to live read (backwards-compatible
+      // for anyone who hasn't clicked Publish since this feature shipped).
     }
 
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, useBlocker } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -30,9 +30,6 @@ import { PublishConfirmDialog } from "@/components/dashboard/website/PublishConf
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ProfilePhotoPanel } from "@/components/dashboard/ProfilePhotoPanel";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
@@ -91,35 +88,6 @@ import { ContactSocialsPanel } from "@/components/dashboard/ContactSocialsPanel"
 import { DeliveryModePanel } from "@/components/dashboard/DeliveryModePanel";
 import { FieldCounter } from "@/components/dashboard/website/FieldCounter";
 
-/* -------------------------------------------------------------------- */
-/* Save-all flusher registry                                            */
-/*                                                                       */
-/* Child editors that hold their own local, unsaved state register a    */
-/* `flush()` async function. `saveAll()` at the page level awaits every */
-/* registered flusher in parallel BEFORE publishing, so Publish never   */
-/* snapshots stale server data while the coach has unsaved edits.       */
-/* -------------------------------------------------------------------- */
-type SaveFlusher = () => Promise<void>;
-const saveFlushers = new Set<SaveFlusher>();
-function registerSaveFlusher(f: SaveFlusher): () => void {
-  saveFlushers.add(f);
-  return () => { saveFlushers.delete(f); };
-}
-async function runAllFlushers(): Promise<void> {
-  const list = Array.from(saveFlushers);
-  await Promise.all(list.map((f) => f()));
-}
-function useSaveFlusher(flush: SaveFlusher) {
-  // Keep the registered ref pointing at the latest closure, but only
-  // (un)register once so we don't churn the Set on every render.
-  const ref = React.useRef(flush);
-  ref.current = flush;
-  React.useEffect(() => {
-    const unregister = registerSaveFlusher(() => ref.current());
-    return unregister;
-  }, []);
-}
-
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/website")({
   head: () => ({
     meta: [
@@ -132,33 +100,16 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/w
 });
 
 function Field({ label, hint, action, children }: { label: string; hint?: string; action?: React.ReactNode; children: React.ReactNode }) {
-  // Inject a stable id into a single input/textarea/select child so the
-  // <label htmlFor> association works even when the caller didn't supply one.
-  // Callers that already set their own id keep it (we won't clobber).
-  const generatedId = React.useId();
-  let renderedChild: React.ReactNode = children;
-  let labelId: string | undefined;
-  if (React.isValidElement(children)) {
-    const existingId = (children.props as { id?: string }).id;
-    labelId = existingId ?? generatedId;
-    if (!existingId) {
-      renderedChild = React.cloneElement(children as React.ReactElement<{ id?: string }>, { id: generatedId });
-    }
-  }
   return (
     <div className="flex flex-col gap-2 border-b border-reps-border/60 px-5 py-4 last:border-b-0">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          {labelId ? (
-            <label htmlFor={labelId} className="block text-[13px] font-semibold text-white">{label}</label>
-          ) : (
-            <div className="text-[13px] font-semibold text-white">{label}</div>
-          )}
+          <div className="text-[13px] font-semibold text-white">{label}</div>
           {hint && <p className="mt-0.5 text-[12px] text-white/55">{hint}</p>}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-      <div className="min-w-0">{renderedChild}</div>
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }
@@ -210,7 +161,7 @@ function WebsiteEditorPage() {
   const draftTaglineFn = useServerFn(aiDraftTagline);
   const draftAboutFn = useServerFn(aiDraftAbout);
 
-  const { data, isLoading, isError: isMyWebsiteError, refetch: refetchMyWebsite } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["my-website"],
     queryFn: () => fetchMine(),
   });
@@ -294,16 +245,6 @@ function WebsiteEditorPage() {
     onError: (e: Error) => toast.error(e.message || "Could not draft About"),
   });
 
-  // Invalidate every downstream query that depends on services so the
-  // sidebar dirty-dot, Publish button badge, section diff, and public
-  // preview all update immediately after a save/reorder/delete.
-  const invalidateWebsiteQueries = React.useCallback(() => {
-    qc.invalidateQueries({ queryKey: ["my-website"] });
-    qc.invalidateQueries({ queryKey: ["my-website-content"] });
-    qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
-    qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
-  }, [qc]);
-
   const upsertServiceMut = useMutation({
     mutationFn: async (s: Partial<ServiceDTO> & { title: string }) => {
       // Enforce single "Most popular": when marking this one featured,
@@ -326,7 +267,6 @@ function WebsiteEditorPage() {
               is_featured: false,
               bullets: Array.isArray(o.bullets) ? o.bullets : [],
               cta_label: o.cta_label ?? null,
-              image_url: o.image_url ?? null,
             },
           });
         }
@@ -346,13 +286,12 @@ function WebsiteEditorPage() {
           is_featured: s.is_featured ?? false,
           bullets: Array.isArray(s.bullets) ? s.bullets : [],
           cta_label: s.cta_label ?? null,
-          image_url: s.image_url ?? null,
         },
       });
     },
     onSuccess: () => {
       toast.success("Service saved");
-      invalidateWebsiteQueries();
+      qc.invalidateQueries({ queryKey: ["my-website"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save service"),
   });
@@ -377,13 +316,12 @@ function WebsiteEditorPage() {
             is_featured: o.is_featured ?? false,
             bullets: Array.isArray(o.bullets) ? o.bullets : [],
             cta_label: o.cta_label ?? null,
-            image_url: o.image_url ?? null,
           },
         });
       }
     },
     onSuccess: () => {
-      invalidateWebsiteQueries();
+      qc.invalidateQueries({ queryKey: ["my-website"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not reorder"),
   });
@@ -393,7 +331,7 @@ function WebsiteEditorPage() {
     mutationFn: (id: string) => deleteSvc({ data: { id } }),
     onSuccess: () => {
       toast.success("Service removed");
-      invalidateWebsiteQueries();
+      qc.invalidateQueries({ queryKey: ["my-website"] });
     },
   });
 
@@ -464,25 +402,6 @@ function WebsiteEditorPage() {
   });
   const sectionDiff = sectionDiffQuery.data;
 
-  // Aggregate error signal — if any editor query failed, show a single
-  // top-of-page banner with a retry button rather than silently rendering
-  // a broken editor.
-  const anyError =
-    isMyWebsiteError ||
-    contentQuery.isError ||
-    profileQuery.isError ||
-    locationQuery.isError ||
-    publishStateQuery.isError ||
-    sectionDiffQuery.isError;
-  const retryAllQueries = React.useCallback(() => {
-    refetchMyWebsite();
-    contentQuery.refetch();
-    profileQuery.refetch();
-    locationQuery.refetch();
-    publishStateQuery.refetch();
-    sectionDiffQuery.refetch();
-  }, [refetchMyWebsite, contentQuery, profileQuery, locationQuery, publishStateQuery, sectionDiffQuery]);
-
   // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero).
   const basicsDirty =
     !!sf &&
@@ -496,55 +415,35 @@ function WebsiteEditorPage() {
   // content changed since last publish.
   const isDirty = basicsDirty || !!publishState?.has_unpublished_changes;
 
-  // Guard navigation while there are unsaved basics edits. Content editors
-  // that hold their own local state register with the save-flusher registry
-  // above; when they're mid-edit, `runAllFlushers()` will still catch it if
-  // the coach clicks Publish, and this blocker catches direct navigations.
-  useBlocker({
-    shouldBlockFn: () => {
-      if (typeof window === "undefined") return false;
-      if (!basicsDirty) return false;
-      return !window.confirm(
-        "You have unsaved basics edits. Leave without saving?",
-      );
-    },
-    enableBeforeUnload: () => basicsDirty,
-  });
-
-  const saveAll = React.useCallback(async () => {
-    // Fire the legacy event for any listeners that haven't migrated to the
-    // flusher registry yet (harmless when registry is fully adopted).
-    window.dispatchEvent(new CustomEvent("reps:website:save-all"));
-    // Wait for BOTH the basics mutation and every child section flusher.
-    const basicsPromise = new Promise<void>((resolve, reject) => {
+  const saveAll = React.useCallback(() => {
+    return new Promise<void>((resolve, reject) => {
       saveMutation.mutate(undefined, {
-        onSuccess: () => resolve(),
+        onSuccess: () => {
+          // Fan-out to child sections that own their own local state.
+          window.dispatchEvent(new CustomEvent("reps:website:save-all"));
+          resolve();
+        },
         onError: (e) => reject(e),
       });
     });
-    await Promise.all([basicsPromise, runAllFlushers()]);
   }, [saveMutation]);
 
   const publishMut = useMutation({
     mutationFn: async () => {
-      // Always flush every editor (basics + every registered child) BEFORE
-      // publish. Never gate on basicsDirty — a clean basics row doesn't mean
-      // clean method/plans/results/faqs. Silently skipping caused snapshots
-      // to be built from stale server rows, losing coach edits.
-      suppressSaveToastRef.current = true;
-      try {
-        await saveAll();
-      } catch (e) {
-        throw new Error((e as Error).message || "Save failed");
-      } finally {
-        suppressSaveToastRef.current = false;
+      if (basicsDirty) {
+        suppressSaveToastRef.current = true;
+        try {
+          await saveAll();
+        } catch (e) {
+          throw new Error((e as Error).message || "Save failed");
+        } finally {
+          suppressSaveToastRef.current = false;
+        }
       }
       return publishNowFn();
     },
     onSuccess: () => {
       toast.success("Website published — your public page is live.");
-      qc.invalidateQueries({ queryKey: ["my-website"] });
-      qc.invalidateQueries({ queryKey: ["my-website-content"] });
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
       qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
       setPublishDialogOpen(false);
@@ -553,12 +452,12 @@ function WebsiteEditorPage() {
     onError: (e: Error) => toast.error(e.message || "Could not publish"),
   });
 
-  // Publish confirm dialog wiring. Clicking Publish awaits the section diff
-  // refetch so the dialog's first-publish vs re-publish copy is correct
-  // (rather than flashing whichever branch loaded first).
+  // Publish confirm dialog wiring. Clicking Publish always opens the dialog;
+  // the dialog's "Publish now" action runs the mutation.
   const [publishDialogOpen, setPublishDialogOpen] = React.useState(false);
-  const publishNow = React.useCallback(async () => {
-    await sectionDiffQuery.refetch();
+  const publishNow = React.useCallback(() => {
+    // Refresh the diff before opening so the dialog summary is current.
+    sectionDiffQuery.refetch();
     setPublishDialogOpen(true);
   }, [sectionDiffQuery]);
 
@@ -593,12 +492,10 @@ function WebsiteEditorPage() {
 
 
   // Any time content queries refetch (services/transformations/faqs saved
-  // via child mutations), refresh publish-state so the "Unpublished
-  // changes" pill and the Publish button reflect reality. The individual
-  // mutation onSuccess handlers already invalidate the diff/publish-state
-  // keys, but this catches out-of-band refetches (e.g. tab focus).
+  // via child mutations), refresh publish-state too so the "Unpublished
+  // changes" pill and the Publish button reflect reality.
   const contentUpdatedAt = contentQuery.dataUpdatedAt;
-  const websiteUpdatedAt = data ? contentQuery.dataUpdatedAt : 0;
+  const websiteUpdatedAt = data && (data as unknown as { updatedAt?: number }).updatedAt;
   React.useEffect(() => {
     qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
     qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
@@ -729,33 +626,8 @@ function WebsiteEditorPage() {
         />
       }
     >
-      {anyError ? (
-        <div className="p-6">
-          <Alert variant="destructive">
-            <AlertTitle>We couldn't load your editor</AlertTitle>
-            <AlertDescription className="mt-1 flex flex-col gap-3">
-              <span>
-                Something went wrong loading your website data. Check your
-                connection and try again.
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-fit"
-                onClick={retryAllQueries}
-              >
-                Retry
-              </Button>
-            </AlertDescription>
-          </Alert>
-        </div>
-      ) : isLoading ? (
-        <div className="flex flex-col gap-4 p-6">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
+      {isLoading ? (
+        <div className="p-6"><PCard>Loading…</PCard></div>
       ) : !sf ? (
         <div className="p-6">
           <PCard>
@@ -1636,7 +1508,7 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
   const draftMethod = useServerFn(aiDraftMethod);
   const draftFaqs = useServerFn(aiDraftFaqs);
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["my-website-content"],
     queryFn: () => fetch_(),
   });
@@ -1677,8 +1549,6 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
     onSuccess: () => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["my-website-content"] });
-      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
-      qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
@@ -1719,11 +1589,12 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
     });
   const onSaveResultsIntro = () => saveMut.mutate({ client_results_intro: clientResultsIntro || null });
 
-  // Register a flusher so the page-level Publish awaits our local edits
-  // (method / cities / client-results intro) before snapshotting.
-  useSaveFlusher(async () => {
+  // Listen for the page-level "Save & publish" and fan out to a single
+  // merged patch so we don't stampede the same mutation.
+  const saveAllRef = React.useRef<() => void>(() => {});
+  saveAllRef.current = () => {
     if (!data) return;
-    await saveMut.mutateAsync({
+    saveMut.mutate({
       method_name: methodName || null,
       method_intro: methodIntro || null,
       method_pillars: pillars.filter((p) => p.title.trim() && p.body.trim()),
@@ -1736,27 +1607,14 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
         online_worldwide: data.content.coaching_reach.online_worldwide ?? false,
       },
     });
-  });
+  };
+  React.useEffect(() => {
+    const h = () => saveAllRef.current();
+    window.addEventListener("reps:website:save-all", h);
+    return () => window.removeEventListener("reps:website:save-all", h);
+  }, []);
 
-  if (isError) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Couldn't load this section</AlertTitle>
-        <AlertDescription className="mt-1 flex flex-col gap-3">
-          <span>Something went wrong loading your content.</span>
-          <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => refetch()}>Retry</Button>
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  if (isLoading || !data) {
-    return (
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    );
-  }
+  if (isLoading || !data) return <PCard>Loading website content…</PCard>;
 
   return (
     <>
@@ -1845,16 +1703,8 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
           </div>
           <TransformationsEditor
             items={data.transformations}
-            onSave={(t) => upsertT({ data: t }).then(() => {
-              qc.invalidateQueries({ queryKey: ["my-website-content"] });
-              qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
-              qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
-            })}
-            onDelete={(id) => delT({ data: { id } }).then(() => {
-              qc.invalidateQueries({ queryKey: ["my-website-content"] });
-              qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
-              qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
-            })}
+            onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+            onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
           />
         </PPanel>
       </section>
@@ -2348,13 +2198,19 @@ function WhereITrainPanel({
     onError: (e: Error) => toast.error(e.message || "Could not save training base"),
   });
 
-  // Register a flusher so the page-level Publish awaits our postcode edit.
-  useSaveFlusher(async () => {
+  // Listen for the page-level "Save & publish".
+  const saveAllRef = React.useRef<() => void>(() => {});
+  saveAllRef.current = () => {
     const trimmed = postcode.trim();
     if (trimmed && trimmed !== (primaryLocation?.postcode ?? "")) {
-      await postcodeMut.mutateAsync(trimmed);
+      postcodeMut.mutate(trimmed);
     }
-  });
+  };
+  React.useEffect(() => {
+    const h = () => saveAllRef.current();
+    window.addEventListener("reps:website:save-all", h);
+    return () => window.removeEventListener("reps:website:save-all", h);
+  }, []);
 
 
   return (
