@@ -1517,54 +1517,14 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
 
         <div className="border-b border-reps-border/60 px-5 pt-5 pb-2">
           <div className="text-[13px] font-semibold text-white">The three pillars</div>
-          <p className="mt-0.5 text-[12px] text-white/55">Each renders as a numbered card (01 · 02 · 03) on your public page.</p>
+          <p className="mt-0.5 text-[12px] text-white/55">Each renders as a numbered card (01 · 02 · 03) on your public page. Click Edit to open the pillar in a focused editor.</p>
         </div>
 
-        <div className="space-y-3 px-5 py-4">
-          {pillars.map((p, i) => {
-            const titleMax = 60;
-            const bodyMax = 200;
-            return (
-              <div
-                key={i}
-                className="rounded-[16px] border border-reps-border bg-reps-panel-soft/60 p-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange/15 text-[13px] font-semibold text-reps-orange">
-                    {String(i + 1).padStart(2, "0")}
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <TextInput
-                      value={p.title}
-                      onChange={(e) => {
-                        const next = [...pillars];
-                        next[i] = { ...next[i], title: e.target.value };
-                        setPillars(next);
-                      }}
-                      placeholder="[Pillar title — e.g. Build the base]"
-                      maxLength={titleMax}
-                    />
-                    <FieldCounter current={p.title.length} max={titleMax} />
-                    <TextInput
-                      value={p.body}
-                      onChange={(e) => {
-                        const next = [...pillars];
-                        next[i] = { ...next[i], body: e.target.value };
-                        setPillars(next);
-                      }}
-                      placeholder="[Pillar body — one clear sentence about what happens in this phase]"
-                      maxLength={bodyMax}
-                    />
-                    <FieldCounter current={p.body.length} max={bodyMax} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <PillarsRowList pillars={pillars} onChange={setPillars} />
       </PPanel>
       </section>
       </div>
+
 
       <div hidden={activeSection !== "specialisms"}>
         <SpecialismsDeliveryPanel />
