@@ -67,6 +67,7 @@ type Tier = {
   includes: string[];
   highlight?: boolean;
   ctaLabel?: string | null;
+  imageUrl?: string | null;
 };
 
 function priceUnitLabel(u: string | null | undefined): string | null {
@@ -119,6 +120,8 @@ type Coach = {
   verifiedSince: string;
   insuranceUntil: string;
   accent: AccentKey;
+  /** When set, overrides the AccentKey palette with a raw hex value from `websites.accent_hex`. */
+  accentHex?: string | null;
   modes: ("In-person" | "Online")[];
   specialisms: string[];
   tiers: Tier[];
@@ -403,6 +406,7 @@ function mergeLiveIntoCoach(
   transformations: WebsiteTransformationDTO[] = [],
   clientResults: WebsiteClientResultDTO[] = [],
   faqs: WebsiteFaqDTO[] = [],
+  isFixture = false,
 ): Coach {
   const liveTiers: Tier[] = services.length === 0
     ? DEFAULT_SERVICE_CARDS.map((card) => ({
@@ -426,6 +430,7 @@ function mergeLiveIntoCoach(
         includes: Array.isArray(s.bullets) ? s.bullets.filter((b) => b && b.trim()) : [],
         highlight: s.is_featured || (services.every((x) => !x.is_featured) && i === 1),
         ctaLabel: s.cta_label ?? null,
+        imageUrl: s.image_url ?? null,
       }));
 
 
@@ -458,14 +463,19 @@ function mergeLiveIntoCoach(
       const clientLabel = t.client_first_name?.trim()
         ? t.client_first_name.trim()
         : `Client ${i + 1}`;
+      // Real coaches: only render a card when the coach uploaded an image.
+      // Fixture coaches: fall back to the mock imagery so /c/james-wilson stays polished.
+      const image = t.image_url
+        ?? (isFixture ? (base.transformations[i % Math.max(base.transformations.length, 1)]?.image ?? base.heroImage) : null);
       return {
-        image: t.image_url ?? base.transformations[i % Math.max(base.transformations.length, 1)]?.image ?? base.heroImage,
+        image: image ?? "",
         client: clientLabel,
         meta: metaParts.length ? metaParts.join(" · ") : "",
         metric: t.metric ?? t.headline ?? "Client progress",
         quote: t.quote ?? t.headline ?? "Great progress from consistent coaching.",
       };
-    });
+    })
+    .filter((t) => !!t.image);
   const liveFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
   const liveTestimonials = clientResults
     .filter((r) => r.is_published && (r.headline || r.body))
@@ -487,35 +497,41 @@ function mergeLiveIntoCoach(
       : "in person";
   const fallbackTagline = `${firstName} — ${professionLabel} in ${cityLabel}`;
   const fallbackAbout = `I'm ${firstName}, a ${professionLabel} based in ${cityLabel}, working with clients ${modeLabel}. Get in touch to talk about what you're working towards and how I can help.`;
+  // Fixture pages (james-wilson etc.) fall back to the mock arrays so the
+  // demo stays polished. Real coaches with zero content render empty arrays;
+  // downstream sections self-hide when empty.
+  const emptyOrBase = <T,>(live: T[], baseVal: T[]): T[] =>
+    live.length ? live : (isFixture ? baseVal : []);
+
   return {
     ...base,
     name: sf.full_name ?? base.name,
     firstName,
     role: professionLabel,
     promise: sf.tagline?.trim() || fallbackTagline,
-    subhead: sf.subtitle ?? base.subhead,
+    subhead: sf.subtitle ?? (isFixture ? base.subhead : ""),
     bio: sf.about?.trim()
       ? sf.about.split(/\n\n+/).filter(Boolean)
       : [fallbackAbout],
     heroImage: sf.hero_image_url ?? base.heroImage,
     aboutImage: sf.avatar_url ?? sf.hero_image_url ?? base.aboutImage,
     city: sf.city ?? base.city,
-    modes: liveModes.length ? liveModes : base.modes,
-    specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
-    tiers: liveTiers.length ? liveTiers : base.tiers,
+    modes: liveModes.length ? liveModes : (isFixture ? base.modes : []),
+    specialisms: sf.specialisms.length ? sf.specialisms : (isFixture ? base.specialisms : []),
+    tiers: liveTiers.length ? liveTiers : (isFixture ? base.tiers : []),
     method: {
-      name: sf.method_name ?? base.method.name,
-      intro: sf.method_intro ?? base.method.intro,
+      name: sf.method_name ?? (isFixture ? base.method.name : ""),
+      intro: sf.method_intro ?? (isFixture ? base.method.intro : ""),
       pillars: sf.method_pillars.length
         ? sf.method_pillars.map((p) => ({ title: p.title, desc: p.body }))
-        : base.method.pillars,
+        : (isFixture ? base.method.pillars : []),
     },
-    venues: liveVenues.length ? liveVenues : base.venues,
-    cities: liveCities.length ? liveCities : base.cities,
-    transformations: liveTransformations.length ? liveTransformations : base.transformations,
-    testimonials: liveTestimonials.length ? liveTestimonials : base.testimonials,
-    clientResultsIntro: sf.client_results_intro ?? base.clientResultsIntro ?? null,
-    faqs: liveFaqs.length ? liveFaqs : base.faqs,
+    venues: emptyOrBase(liveVenues, base.venues),
+    cities: emptyOrBase(liveCities, base.cities),
+    transformations: emptyOrBase(liveTransformations, base.transformations),
+    testimonials: emptyOrBase(liveTestimonials, base.testimonials),
+    clientResultsIntro: sf.client_results_intro ?? (isFixture ? (base.clientResultsIntro ?? null) : null),
+    faqs: emptyOrBase(liveFaqs, base.faqs),
     years: yearsCoaching,
     verifiedSince: (() => {
       const idAt = sf.trust?.identityVerifiedAt;
@@ -527,7 +543,8 @@ function mergeLiveIntoCoach(
     })(),
     trust: sf.trust,
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
-    socials: sf.socials.length ? sf.socials : base.socials,
+    socials: sf.socials.length ? sf.socials : (isFixture ? base.socials : []),
+    accentHex: sf.accent_hex ?? null,
   };
 
 }
@@ -724,6 +741,7 @@ function CoachWebsitePage() {
         live.transformations,
         live.clientResults,
         live.faqs,
+        isFixture,
       )
     : baseCoach!;
   if (!isFixture && reviewsData) {
@@ -733,7 +751,10 @@ function CoachWebsitePage() {
       reviews: reviewsData.count,
     };
   }
-  const accent = `var(--coach-accent-${coach.accent})`;
+  // accent_hex (raw hex from the editor) wins over the fixed palette so
+  // coaches actually get the colour they picked. Basic sanity check on shape.
+  const hexOverride = /^#[0-9a-fA-F]{6}$/.test(coach.accentHex ?? "") ? coach.accentHex! : null;
+  const accent = hexOverride ?? `var(--coach-accent-${coach.accent})`;
 
   const accentStyle = {
     ["--accent-color" as string]: accent,
@@ -1134,6 +1155,17 @@ function TierCard({
         </span>
       )}
 
+      {tier.imageUrl ? (
+        <div className="mt-3 -mx-1 aspect-[16/9] overflow-hidden rounded-[14px] border border-reps-border/60 bg-reps-panel-soft">
+          <img
+            src={tier.imageUrl}
+            alt={`${tier.name} service`}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : null}
+
       <h3
         className={[
           "font-display text-[24px] font-bold text-reps-text",
@@ -1518,6 +1550,7 @@ function formatList(items: string[]): string {
 /* ------------------------------------------------------------------ */
 
 function TransformationsSection({ coach }: { coach: Coach }) {
+  if (coach.transformations.length === 0) return null;
   return (
     <section id="results" className="scroll-mt-28 bg-reps-ink">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-24">
@@ -1589,6 +1622,7 @@ function TransformationsSection({ coach }: { coach: Coach }) {
 /* ------------------------------------------------------------------ */
 
 function TestimonialsSection({ coach }: { coach: Coach }) {
+  if (coach.testimonials.length === 0) return null;
   return (
     <section id="reviews" className="scroll-mt-28 bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-24">
@@ -1743,6 +1777,7 @@ function QualificationsSection({ coach }: { coach: Coach }) {
 /* ------------------------------------------------------------------ */
 
 function FaqSection({ coach }: { coach: Coach }) {
+  if (coach.faqs.length === 0) return null;
   return (
     <section id="faq" className="scroll-mt-28 bg-reps-midnight">
       <div className="mx-auto max-w-[920px] px-6 py-16 lg:px-10 lg:py-24">
