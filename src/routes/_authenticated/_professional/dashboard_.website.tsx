@@ -1465,16 +1465,18 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
             value={methodName}
             onChange={(e) => setMethodName(e.target.value)}
             maxLength={80}
-            placeholder="The Foundation Method"
+            placeholder="[Your method name — e.g. The Foundation Method]"
           />
+          <FieldCounter current={methodName.length} max={80} />
         </Field>
         <Field label="Intro" hint="One short paragraph under the headline.">
           <TextArea
             value={methodIntro}
             onChange={(e) => setMethodIntro(e.target.value)}
             maxLength={600}
-            placeholder="A three-phase system I've refined over 100+ clients. Same shape every time, written from scratch for every person."
+            placeholder="[One short paragraph about how you coach — 2–3 sentences]"
           />
+          <FieldCounter current={methodIntro.length} max={600} />
         </Field>
 
         <div className="border-b border-reps-border/60 px-5 pt-5 pb-2">
@@ -1484,11 +1486,8 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
 
         <div className="space-y-3 px-5 py-4">
           {pillars.map((p, i) => {
-            const placeholders = [
-              { title: "Build the base", body: "Two weeks fixing technique on the four lifts that matter. No ego, no fluff." },
-              { title: "Train the plan", body: "Eight weeks of progressive, measurable work — written around your schedule, not a template." },
-              { title: "Make it stick", body: "Habits, nutrition rails and recovery so the result still holds 12 months later." },
-            ][i] ?? { title: "Pillar title", body: "Pillar description" };
+            const titleMax = 60;
+            const bodyMax = 200;
             return (
               <div
                 key={i}
@@ -1506,9 +1505,10 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
                         next[i] = { ...next[i], title: e.target.value };
                         setPillars(next);
                       }}
-                      placeholder={placeholders.title}
-                      maxLength={60}
+                      placeholder="[Pillar title — e.g. Build the base]"
+                      maxLength={titleMax}
                     />
+                    <FieldCounter current={p.title.length} max={titleMax} />
                     <TextInput
                       value={p.body}
                       onChange={(e) => {
@@ -1516,9 +1516,10 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
                         next[i] = { ...next[i], body: e.target.value };
                         setPillars(next);
                       }}
-                      placeholder={placeholders.body}
-                      maxLength={200}
+                      placeholder="[Pillar body — one clear sentence about what happens in this phase]"
+                      maxLength={bodyMax}
                     />
+                    <FieldCounter current={p.body.length} max={bodyMax} />
                   </div>
                 </div>
               </div>
