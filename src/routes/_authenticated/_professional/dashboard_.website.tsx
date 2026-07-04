@@ -1321,8 +1321,6 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
   const save_ = useServerFn(saveMyWebsiteContent);
   const upsertT = useServerFn(upsertTransformation);
   const delT = useServerFn(deleteTransformation);
-  const upsertR = useServerFn(upsertClientResult);
-  const delR = useServerFn(deleteClientResult);
   const upsertF = useServerFn(upsertFaq);
   const delF = useServerFn(deleteFaq);
   const draftMethod = useServerFn(aiDraftMethod);
