@@ -1425,6 +1425,7 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
   return (
     <>
       {/* Method */}
+      <div hidden={activeSection !== "method"}>
       <section id="method" className="scroll-mt-24">
       <PPanel>
         <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
