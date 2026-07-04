@@ -1955,18 +1955,24 @@ function FaqsEditor({
       <div className="border-t border-reps-border px-5 py-5">
         <div className="text-[13px] font-semibold text-white">Add a FAQ</div>
         <div className="mt-3 space-y-3">
-          <TextInput
-            value={draft.question}
-            onChange={(e) => setDraft({ ...draft, question: e.target.value })}
-            placeholder="Question"
-            maxLength={200}
-          />
-          <TextArea
-            value={draft.answer}
-            onChange={(e) => setDraft({ ...draft, answer: e.target.value })}
-            placeholder="Answer"
-            maxLength={1200}
-          />
+          <div>
+            <TextInput
+              value={draft.question}
+              onChange={(e) => setDraft({ ...draft, question: e.target.value })}
+              placeholder="[Question a client actually asks — e.g. Do you offer online-only coaching?]"
+              maxLength={200}
+            />
+            <FieldCounter current={draft.question.length} max={200} />
+          </div>
+          <div>
+            <TextArea
+              value={draft.answer}
+              onChange={(e) => setDraft({ ...draft, answer: e.target.value })}
+              placeholder="[Straight answer — 2–4 short sentences]"
+              maxLength={1200}
+            />
+            <FieldCounter current={draft.answer.length} max={1200} />
+          </div>
         </div>
         <div className="mt-3 flex justify-end">
           <button
