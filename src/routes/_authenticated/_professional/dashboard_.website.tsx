@@ -498,8 +498,10 @@ function WebsiteEditorPage() {
   const websiteUpdatedAt = data && (data as unknown as { updatedAt?: number }).updatedAt;
   React.useEffect(() => {
     qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+    qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentUpdatedAt, websiteUpdatedAt, services.length]);
+
 
 
 
