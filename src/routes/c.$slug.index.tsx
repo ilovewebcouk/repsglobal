@@ -1758,6 +1758,7 @@ function QualificationsSection({ coach }: { coach: Coach }) {
 /* ------------------------------------------------------------------ */
 
 function FaqSection({ coach }: { coach: Coach }) {
+  if (coach.faqs.length === 0) return null;
   return (
     <section id="faq" className="scroll-mt-28 bg-reps-midnight">
       <div className="mx-auto max-w-[920px] px-6 py-16 lg:px-10 lg:py-24">
