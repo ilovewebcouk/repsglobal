@@ -544,6 +544,7 @@ function mergeLiveIntoCoach(
     trust: sf.trust,
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
     socials: sf.socials.length ? sf.socials : (isFixture ? base.socials : []),
+    accentHex: sf.accent_hex ?? null,
   };
 
 }
