@@ -657,6 +657,9 @@ function WebsiteEditorPage() {
           onPublish={publishNow}
           publishPending={publishMut.isPending || saveMutation.isPending}
           publicUrl={slug ? `/c/${slug}` : "#"}
+          dirtyMap={sectionDiff?.dirty}
+          onDiscardSection={onDiscardSection}
+          discardingId={discardingId}
         />
       }
     >
@@ -684,7 +687,9 @@ function WebsiteEditorPage() {
           publishPending={publishMut.isPending || saveMutation.isPending}
           reloadNonce={reloadNonce}
           onReloadPreview={() => setReloadNonce((n) => n + 1)}
+          previewToken={previewToken}
         >
+
           <div hidden={active.id !== "profile"}><ProfilePhotoPanel /></div>
           <div hidden={active.id !== "contact"}><ContactSocialsPanel /></div>
           <div hidden={active.id !== "basics"}>
