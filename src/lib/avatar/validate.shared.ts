@@ -168,7 +168,7 @@ export function decideAvatar(parsed: RawAvatarValidation): AvatarDecision {
     return {
       ok: false,
       reason:
-        "The face is too small in this photo — please upload a head-and-shoulders portrait where your face fills more of the frame.",
+        "The face is too small in this photo — please upload a head-and-shoulders or waist-up portrait where your face is clearly visible.",
       category: "full_body",
     };
   }
