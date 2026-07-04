@@ -95,7 +95,7 @@ export function DeliveryModePanel() {
       <p className="text-[12px] text-white/55">
         At least one. Toggling both surfaces you in both "In-person" and "Online" filters.
       </p>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-3 min-[520px]:grid-cols-2">
         <ModeToggle
           label="In-person"
           hint="Studio, gym, or client's home"
