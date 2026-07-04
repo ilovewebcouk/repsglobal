@@ -543,10 +543,12 @@ function WebsiteEditorPage() {
 
 
   // Any time content queries refetch (services/transformations/faqs saved
-  // via child mutations), refresh publish-state too so the "Unpublished
-  // changes" pill and the Publish button reflect reality.
+  // via child mutations), refresh publish-state so the "Unpublished
+  // changes" pill and the Publish button reflect reality. The individual
+  // mutation onSuccess handlers already invalidate the diff/publish-state
+  // keys, but this catches out-of-band refetches (e.g. tab focus).
   const contentUpdatedAt = contentQuery.dataUpdatedAt;
-  const websiteUpdatedAt = data && (data as unknown as { updatedAt?: number }).updatedAt;
+  const websiteUpdatedAt = data ? contentQuery.dataUpdatedAt : 0;
   React.useEffect(() => {
     qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
     qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
