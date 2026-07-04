@@ -464,6 +464,25 @@ function WebsiteEditorPage() {
   });
   const sectionDiff = sectionDiffQuery.data;
 
+  // Aggregate error signal — if any editor query failed, show a single
+  // top-of-page banner with a retry button rather than silently rendering
+  // a broken editor.
+  const anyError =
+    isMyWebsiteError ||
+    contentQuery.isError ||
+    profileQuery.isError ||
+    locationQuery.isError ||
+    publishStateQuery.isError ||
+    sectionDiffQuery.isError;
+  const retryAllQueries = React.useCallback(() => {
+    refetchMyWebsite();
+    contentQuery.refetch();
+    profileQuery.refetch();
+    locationQuery.refetch();
+    publishStateQuery.refetch();
+    sectionDiffQuery.refetch();
+  }, [refetchMyWebsite, contentQuery, profileQuery, locationQuery, publishStateQuery, sectionDiffQuery]);
+
   // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero).
   const basicsDirty =
     !!sf &&
