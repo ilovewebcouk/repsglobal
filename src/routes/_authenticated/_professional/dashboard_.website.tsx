@@ -1886,14 +1886,36 @@ function FaqsEditor({
   onAiDraft: () => void;
   drafting: boolean;
 }) {
-  const [draft, setDraft] = React.useState({ question: "", answer: "" });
+  const [open, setOpen] = React.useState(false);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [draft, setDraft] = React.useState<FaqDraft>(() => draftFromFaq(null, 0));
+
+  function startAdd() {
+    setEditingId(null);
+    setDraft(draftFromFaq(null, items.length));
+    setOpen(true);
+  }
+  function startEdit(f: FaqDTO) {
+    setEditingId(f.id);
+    setDraft(draftFromFaq(f, f.sort_order));
+    setOpen(true);
+  }
+  function handleSave(next: FaqDraft) {
+    onSave({
+      ...(next.id ? { id: next.id } : {}),
+      question: next.question,
+      answer: next.answer,
+      sort_order: next.sort_order,
+      source: next.source,
+    });
+  }
 
   return (
     <PPanel>
       <div className="border-b border-reps-border px-5 py-4 flex items-center justify-between">
         <div>
           <h3 className="text-[14px] font-semibold text-white">FAQs</h3>
-          <p className="mt-0.5 text-[12px] text-white/55">5 short Q&amp;A shown near the bottom of your website.</p>
+          <p className="mt-0.5 text-[12px] text-white/55">Short Q&amp;A shown near the bottom of your website.</p>
         </div>
         <button
           type="button"
@@ -1905,72 +1927,80 @@ function FaqsEditor({
           {drafting ? "Drafting…" : "AI draft 5 FAQs"}
         </button>
       </div>
-      <div className="divide-y divide-reps-border/60">
-        {items.map((f) => (
-          <div key={f.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
-            <div>
-              <div className="text-[13px] font-semibold text-white">{f.question}</div>
-              <p className="mt-1 text-[12px] text-white/65 whitespace-pre-line line-clamp-3">{f.answer}</p>
-              {f.source === "ai" && (
-                <span className="mt-1 inline-block text-[10px] uppercase tracking-wide text-white/40">AI draft · edit me</span>
-              )}
+
+      {items.length === 0 ? (
+        <div className="px-5 py-8">
+          <div className="rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-5 py-10 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/15 text-reps-orange">
+              <Sparkles className="h-4 w-4" />
             </div>
+            <div className="text-[14px] font-semibold text-white">No FAQs yet</div>
+            <p className="mx-auto mt-1 max-w-[380px] text-[12.5px] text-white/60">
+              Answer the questions clients actually ask before they enquire — pricing, availability, format, cancellation.
+            </p>
             <button
               type="button"
-              onClick={() => confirm("Delete this FAQ?") && onDelete(f.id)}
-              className="flex h-9 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
+              onClick={startAdd}
+              className="mt-4 inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
             >
-              <Trash2 className="h-3.5 w-3.5" /> Delete
+              <Plus className="h-4 w-4" /> Add your first FAQ
             </button>
           </div>
-        ))}
-        {items.length === 0 && (
-          <div className="px-5 py-4 text-[13px] text-white/55">
-            No FAQs yet — click "AI draft 5 FAQs" or add one manually below.
-          </div>
-        )}
-      </div>
-      <div className="border-t border-reps-border px-5 py-5">
-        <div className="text-[13px] font-semibold text-white">Add a FAQ</div>
-        <div className="mt-3 space-y-3">
-          <div>
-            <TextInput
-              value={draft.question}
-              onChange={(e) => setDraft({ ...draft, question: e.target.value })}
-              placeholder="[Question a client actually asks — e.g. Do you offer online-only coaching?]"
-              maxLength={200}
-            />
-            <FieldCounter current={draft.question.length} max={200} />
-          </div>
-          <div>
-            <TextArea
-              value={draft.answer}
-              onChange={(e) => setDraft({ ...draft, answer: e.target.value })}
-              placeholder="[Straight answer — 2–4 short sentences]"
-              maxLength={1200}
-            />
-            <FieldCounter current={draft.answer.length} max={1200} />
-          </div>
         </div>
-        <div className="mt-3 flex justify-end">
+      ) : (
+        <div className="flex flex-col gap-3 px-5 pb-5 pt-4">
+          {items.map((f, i) => (
+            <div key={f.id} className="flex items-stretch gap-2">
+              <div className="relative flex flex-1 items-start justify-between gap-3 rounded-[14px] border border-reps-border bg-reps-panel-soft px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-white/45 tabular-nums">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="truncate text-[13.5px] font-semibold text-white">
+                      {f.question || "Untitled question"}
+                    </div>
+                    {f.source === "ai" ? (
+                      <span className="rounded-full bg-reps-orange/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-reps-orange">
+                        AI draft
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="mt-1 line-clamp-1 text-[12.5px] text-white/60">
+                    {f.answer || "No answer yet"}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(f)}
+                    className="flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Edit
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
           <button
             type="button"
-            disabled={draft.question.trim().length < 3 || draft.answer.trim().length < 3}
-            onClick={() => {
-              onSave({
-                question: draft.question.trim(),
-                answer: draft.answer.trim(),
-                sort_order: items.length,
-                source: "manual",
-              });
-              setDraft({ question: "", answer: "" });
-            }}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+            onClick={startAdd}
+            className="flex h-11 items-center justify-center gap-2 rounded-[14px] border border-dashed border-reps-border bg-transparent text-[13px] font-semibold text-white/70 hover:border-reps-orange/50 hover:text-white"
           >
-            <Plus className="h-4 w-4" /> Add FAQ
+            <Plus className="h-4 w-4" /> Add another FAQ
           </button>
         </div>
-      </div>
+      )}
+
+      <FaqEditDialog
+        open={open}
+        onOpenChange={setOpen}
+        editing={!!editingId}
+        initial={draft}
+        onSave={handleSave}
+        onDelete={editingId ? () => onDelete(editingId) : undefined}
+      />
     </PPanel>
   );
 }
