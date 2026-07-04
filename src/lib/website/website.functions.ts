@@ -661,6 +661,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         client_results_intro: sfRow.client_results_intro ?? null,
         layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
         theme: (sfRow.theme as "dark" | "light") ?? "dark",
+        current_clients: (sfRow as { current_clients?: number | null }).current_clients ?? null,
         slug: pro.slug,
         full_name: prof?.full_name ?? null,
         avatar_url: prof?.avatar_url ?? null,
