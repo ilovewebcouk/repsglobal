@@ -504,8 +504,9 @@ function WebsiteEditorPage() {
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   maxLength={200}
-                  placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
+                  placeholder="[Your tagline — e.g. Stronger, leaner, sharper in 12 weeks]"
                 />
+                <FieldCounter current={tagline.length} max={200} />
               </Field>
               <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
               <Field
@@ -517,8 +518,9 @@ function WebsiteEditorPage() {
                   value={about}
                   onChange={(e) => setAbout(e.target.value)}
                   maxLength={4000}
-                  placeholder="Tell clients who you help and how."
+                  placeholder="[Tell clients who you help and how — 2–3 short paragraphs]"
                 />
+                <FieldCounter current={about.length} max={4000} />
               </Field>
               <Field
                 label="Hero image"
