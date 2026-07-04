@@ -52,6 +52,12 @@ export function HeroImageEditor({
   const aiMut = useMutation({
     mutationFn: () => aiFn({ data: { prompt, style, referenceDataUrl: aiReference ?? undefined } }),
     onSuccess: (r) => {
+      // Sanity-check the AI output shape before feeding it into the cropper —
+      // an empty or malformed dataUrl would otherwise crash react-easy-crop.
+      if (typeof r.dataUrl !== "string" || !r.dataUrl.startsWith("data:image/")) {
+        toast.error("The AI returned an unexpected response — try again");
+        return;
+      }
       setEditing(r.dataUrl);
     },
     onError: (e: Error) => toast.error(e.message || "AI couldn't generate that image"),
