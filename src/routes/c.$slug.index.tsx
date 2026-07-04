@@ -403,6 +403,7 @@ function mergeLiveIntoCoach(
   transformations: WebsiteTransformationDTO[] = [],
   clientResults: WebsiteClientResultDTO[] = [],
   faqs: WebsiteFaqDTO[] = [],
+  isFixture = false,
 ): Coach {
   const liveTiers: Tier[] = services.length === 0
     ? DEFAULT_SERVICE_CARDS.map((card) => ({
