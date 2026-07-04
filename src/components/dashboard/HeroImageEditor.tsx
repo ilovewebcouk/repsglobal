@@ -74,6 +74,21 @@ export function HeroImageEditor({
     reader.readAsDataURL(file);
   }
 
+  function handleAiReferenceFile(file: File) {
+    if (!/^image\/(jpeg|jpg|png|webp)$/i.test(file.type)) {
+      toast.error("Use a JPG, PNG or WebP image");
+      return;
+    }
+    if (file.size > 6 * 1024 * 1024) {
+      toast.error("Reference photo must be under 6 MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setAiReference(String(reader.result));
+    reader.onerror = () => toast.error("Could not read that file");
+    reader.readAsDataURL(file);
+  }
+
   return (
     <div className="space-y-3">
       {value ? (
