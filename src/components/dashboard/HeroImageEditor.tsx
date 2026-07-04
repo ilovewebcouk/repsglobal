@@ -15,6 +15,14 @@ import {
   uploadHeroFromBase64,
   generateHeroFromAi,
 } from "@/lib/website/hero.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const TARGET_W = 1080;
 const TARGET_H = 1920;
