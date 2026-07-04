@@ -701,6 +701,15 @@ function WebsiteEditorPage() {
               >
                 <HeroImageEditor value={hero} onChange={setHero} />
               </Field>
+              <Field
+                label="Currently coaching"
+                hint="Shown in the hero as 'Currently coaching X of 20 available spaces'. Leave empty to hide."
+              >
+                <CurrentClientsField
+                  value={currentClients}
+                  onChange={setCurrentClients}
+                />
+              </Field>
             </PPanel>
           </div>
           <div hidden={active.id !== "plans"}>
