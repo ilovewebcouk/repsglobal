@@ -489,6 +489,19 @@ function WebsiteEditorPage() {
         ? "done"
         : "empty";
 
+    const langCount = profile?.languages?.length ?? 0;
+    const socialsCount = [
+      profile?.social_instagram,
+      profile?.social_linkedin,
+      profile?.social_youtube,
+      profile?.social_tiktok,
+      profile?.social_x,
+    ].filter((v) => !!v?.trim()).length;
+    const hasPhone = !!trimmed(profile?.contact_phone ?? "");
+    const contactFilled = [langCount > 0, socialsCount > 0, hasPhone].filter(Boolean).length;
+    const contactStatus: SectionStatus =
+      contactFilled === 3 ? "done" : contactFilled === 0 ? "empty" : "partial";
+
     return [
       { id: "profile", label: "Profile photo", status: photoStatus },
       { id: "basics", label: "Website basics", status: basicsStatus },
@@ -498,6 +511,7 @@ function WebsiteEditorPage() {
       { id: "method", label: "How I coach", status: methodStatus },
       { id: "results", label: "Client results", status: resultsStatus },
       { id: "faqs", label: "FAQs", status: faqsStatus },
+      { id: "contact", label: "Languages & socials", status: contactStatus },
     ];
   }, [
     tagline,
