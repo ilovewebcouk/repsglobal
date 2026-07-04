@@ -177,7 +177,7 @@ export function WelcomeBanner({
             </>
           ) : (
             <DashboardButton asChild size="sm" variant="primary">
-              <Link to="/dashboard/profile">Finish profile</Link>
+              <Link to="/dashboard/website">Finish profile</Link>
             </DashboardButton>
           )}
         </div>
