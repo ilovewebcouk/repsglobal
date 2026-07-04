@@ -82,15 +82,15 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/w
 
 function Field({ label, hint, action, children }: { label: string; hint?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-1 gap-3 border-b border-reps-border/60 px-5 py-4 last:border-b-0 md:grid-cols-[220px_1fr]">
-      <div>
-        <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-col gap-2 border-b border-reps-border/60 px-5 py-4 last:border-b-0">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
           <div className="text-[13px] font-semibold text-white">{label}</div>
-          {action}
+          {hint && <p className="mt-0.5 text-[12px] text-white/55">{hint}</p>}
         </div>
-        {hint && <p className="mt-0.5 text-[12px] text-white/55">{hint}</p>}
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-      <div>{children}</div>
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }
