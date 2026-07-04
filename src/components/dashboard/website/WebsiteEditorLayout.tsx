@@ -54,7 +54,7 @@ export function WebsiteEditorLayout({
   const iframeSrc = slug ? `/c/${slug}?preview=1#nonce-${reloadNonce}` : "";
 
   return (
-    <div className="-mx-4 -mt-6 flex h-[calc(100vh-88px)] flex-col overflow-hidden border-t border-reps-border sm:-mx-6 lg:-mx-8">
+    <div className="flex h-full min-h-[640px] flex-col overflow-hidden border-t border-reps-border">
       {/* Mobile pill nav */}
       <div className="flex items-center gap-1.5 overflow-x-auto border-b border-reps-border bg-reps-panel/40 px-4 py-2 lg:hidden">
         {sections.map((s) => (
