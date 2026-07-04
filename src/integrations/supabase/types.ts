@@ -5079,12 +5079,15 @@ export type Database = {
           coaching_reach: Json
           created_at: string
           faq_auto_generated: boolean
+          has_unpublished_changes: boolean
           hero_image_url: string | null
           layout_variant: string
           method_intro: string | null
           method_name: string | null
           method_pillars: Json
           professional_id: string
+          published_at: string | null
+          published_snapshot: Json | null
           subtitle: string | null
           tagline: string | null
           theme: string
@@ -5098,12 +5101,15 @@ export type Database = {
           coaching_reach?: Json
           created_at?: string
           faq_auto_generated?: boolean
+          has_unpublished_changes?: boolean
           hero_image_url?: string | null
           layout_variant?: string
           method_intro?: string | null
           method_name?: string | null
           method_pillars?: Json
           professional_id: string
+          published_at?: string | null
+          published_snapshot?: Json | null
           subtitle?: string | null
           tagline?: string | null
           theme?: string
@@ -5117,12 +5123,15 @@ export type Database = {
           coaching_reach?: Json
           created_at?: string
           faq_auto_generated?: boolean
+          has_unpublished_changes?: boolean
           hero_image_url?: string | null
           layout_variant?: string
           method_intro?: string | null
           method_name?: string | null
           method_pillars?: Json
           professional_id?: string
+          published_at?: string | null
+          published_snapshot?: Json | null
           subtitle?: string | null
           tagline?: string | null
           theme?: string

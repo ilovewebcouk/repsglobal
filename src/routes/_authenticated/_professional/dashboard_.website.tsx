@@ -19,6 +19,7 @@ import {
   draftFromFaq,
   type FaqDraft,
 } from "@/components/dashboard/website/FaqEditDialog";
+import { publishMyWebsite, getMyPublishState } from "@/lib/website/publish.functions";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -194,6 +195,7 @@ function WebsiteEditorPage() {
     onSuccess: () => {
       toast.success("Website saved");
       qc.invalidateQueries({ queryKey: ["my-website"] });
+      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
@@ -352,21 +354,77 @@ function WebsiteEditorPage() {
   // Which section is focused in the editor.
   const [activeSection, setActiveSection] = React.useState<string>("basics");
 
+  // Draft-vs-published state. Editor writes update live rows; triggers flip
+  // has_unpublished_changes on the websites row. Publishing snapshots the
+  // current live content into websites.published_snapshot; the public
+  // /c/$slug page reads that snapshot until the next publish.
+  const fetchPublishStateFn = useServerFn(getMyPublishState);
+  const publishStateQuery = useQuery({
+    queryKey: ["my-website-publish-state"],
+    queryFn: () => fetchPublishStateFn(),
+  });
+  const publishState = publishStateQuery.data;
+  const publishNowFn = useServerFn(publishMyWebsite);
+
   // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero).
-  const isDirty =
+  const basicsDirty =
     !!sf &&
     ((tagline || "") !== (sf.tagline ?? "") ||
       (subtitle || "") !== (sf.subtitle ?? "") ||
       (about || "") !== (sf.about ?? "") ||
       (hero || "") !== (sf.hero_image_url ?? ""));
 
+  // What the sidebar/publish bar considers "unpublished" — either the
+  // in-form basics haven't been saved yet, or the server tells us there's
+  // content changed since last publish.
+  const isDirty = basicsDirty || !!publishState?.has_unpublished_changes;
+
   const saveAll = React.useCallback(() => {
-    saveMutation.mutate(undefined, {
-      onSuccess: () => setReloadNonce((n) => n + 1),
+    return new Promise<void>((resolve, reject) => {
+      saveMutation.mutate(undefined, {
+        onSuccess: () => {
+          // Fan-out to child sections that own their own local state.
+          window.dispatchEvent(new CustomEvent("reps:website:save-all"));
+          resolve();
+        },
+        onError: (e) => reject(e),
+      });
     });
-    // Fan-out to child sections that own their own local state.
-    window.dispatchEvent(new CustomEvent("reps:website:save-all"));
   }, [saveMutation]);
+
+  const publishMut = useMutation({
+    mutationFn: async () => {
+      // If any basics fields are still dirty, persist them first so the
+      // snapshot includes them.
+      if (basicsDirty) {
+        try {
+          await saveAll();
+        } catch (e) {
+          throw new Error((e as Error).message || "Save failed");
+        }
+      }
+      return publishNowFn();
+    },
+    onSuccess: () => {
+      toast.success("Website published — your public page is live.");
+      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      setReloadNonce((n) => n + 1);
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not publish"),
+  });
+  const publishNow = React.useCallback(() => publishMut.mutate(), [publishMut]);
+
+  // Any time content queries refetch (services/transformations/faqs saved
+  // via child mutations), refresh publish-state too so the "Unpublished
+  // changes" pill and the Publish button reflect reality.
+  const contentUpdatedAt = contentQuery.dataUpdatedAt;
+  const websiteUpdatedAt = data && (data as unknown as { updatedAt?: number }).updatedAt;
+  React.useEffect(() => {
+    qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentUpdatedAt, websiteUpdatedAt, services.length]);
+
+
 
   // Build the section list + completeness. Kept tolerant so the rail
   // still renders while queries load. Ordering: photo → basics →
@@ -498,8 +556,8 @@ function WebsiteEditorPage() {
           activeId={active.id}
           onActive={setActiveSection}
           isDirty={isDirty}
-          onPublish={saveAll}
-          publishPending={saveMutation.isPending}
+          onPublish={publishNow}
+          publishPending={publishMut.isPending || saveMutation.isPending}
           publicUrl={slug ? `/c/${slug}` : "#"}
         />
       }
@@ -524,8 +582,8 @@ function WebsiteEditorPage() {
           title={activeCopy.title}
           description={activeCopy.description}
           isDirty={isDirty}
-          onPublish={saveAll}
-          publishPending={saveMutation.isPending}
+          onPublish={publishNow}
+          publishPending={publishMut.isPending || saveMutation.isPending}
           reloadNonce={reloadNonce}
           onReloadPreview={() => setReloadNonce((n) => n + 1)}
         >
