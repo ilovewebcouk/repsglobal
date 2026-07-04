@@ -1556,12 +1556,13 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
               value={clientResultsIntro}
               onChange={(e) => setClientResultsIntro(e.target.value)}
               maxLength={600}
-              placeholder="Use this to explain what clients can expect from the results below."
+              placeholder="[Short intro — what clients can expect from the results below]"
             />
+            <FieldCounter current={clientResultsIntro.length} max={600} />
           </div>
           <div className="border-t border-reps-border px-5 py-4">
             <div className="text-[13px] font-semibold text-white">Proof cards</div>
-            <p className="mt-0.5 text-[12px] text-white/55">Image + metric cards shown in the Results section.</p>
+            <p className="mt-0.5 text-[12px] text-white/55">Image + metric cards shown in the Results section. Preview updates on the right after you save.</p>
           </div>
           <TransformationsEditor
             items={data.transformations}
