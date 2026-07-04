@@ -146,6 +146,47 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   );
 }
 
+function CurrentClientsField({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (v: number | null) => void;
+}) {
+  const shown = value !== null;
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="flex items-center gap-2 text-[12px] text-white/70">
+        <input
+          type="checkbox"
+          checked={shown}
+          onChange={(e) => onChange(e.target.checked ? 0 : null)}
+          className="h-3.5 w-3.5 rounded-[4px] border-reps-border bg-reps-panel-soft accent-reps-orange"
+        />
+        Show this on my public page
+      </label>
+      {shown ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={20}
+            value={value ?? 0}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              if (Number.isFinite(n)) onChange(Math.max(0, Math.min(20, Math.round(n))));
+            }}
+            className="h-10 w-20 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-reps-orange"
+          />
+          <span className="text-[12px] text-white/55">of 20 spaces (cap is fixed)</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+
+
 
 function WebsiteEditorPage() {
   const tier = useTrainerTier();
@@ -173,6 +214,7 @@ function WebsiteEditorPage() {
   const [subtitle, setSubtitle] = React.useState("");
   const [about, setAbout] = React.useState("");
   const [hero, setHero] = React.useState("");
+  const [currentClients, setCurrentClients] = React.useState<number | null>(null);
   
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
   const [theme] = React.useState<"dark" | "light">("dark");
@@ -183,6 +225,7 @@ function WebsiteEditorPage() {
     setSubtitle(sf.subtitle ?? "");
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
+    setCurrentClients(sf.current_clients ?? null);
     setLayout(sf.layout_variant);
   }, [sf]);
 
@@ -202,8 +245,10 @@ function WebsiteEditorPage() {
           accent_hex: null,
           layout_variant: layout,
           theme,
+          current_clients: currentClients,
         },
       }),
+
 
     onSuccess: () => {
       if (!suppressSaveToastRef.current) {
@@ -402,13 +447,14 @@ function WebsiteEditorPage() {
   });
   const sectionDiff = sectionDiffQuery.data;
 
-  // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero).
+  // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero/current_clients).
   const basicsDirty =
     !!sf &&
     ((tagline || "") !== (sf.tagline ?? "") ||
       (subtitle || "") !== (sf.subtitle ?? "") ||
       (about || "") !== (sf.about ?? "") ||
-      (hero || "") !== (sf.hero_image_url ?? ""));
+      (hero || "") !== (sf.hero_image_url ?? "") ||
+      (currentClients ?? null) !== (sf.current_clients ?? null));
 
   // What the sidebar/publish bar considers "unpublished" — either the
   // in-form basics haven't been saved yet, or the server tells us there's
@@ -695,6 +741,15 @@ function WebsiteEditorPage() {
                 hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
               >
                 <HeroImageEditor value={hero} onChange={setHero} />
+              </Field>
+              <Field
+                label="Currently coaching"
+                hint="Shown in the hero as 'Currently coaching X of 20 available spaces'. Leave empty to hide."
+              >
+                <CurrentClientsField
+                  value={currentClients}
+                  onChange={setCurrentClients}
+                />
               </Field>
             </PPanel>
           </div>

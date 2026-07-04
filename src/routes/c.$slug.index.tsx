@@ -157,6 +157,8 @@ type Coach = {
     }>;
   };
   theme?: "dark" | "light";
+  /** Currently coaching X of 20 available spaces. null = hide the strip; undefined = fixture default. */
+  currentClients?: number | null;
 };
 
 const TITLE_SHORT_LABEL: Record<string, string> = {
@@ -528,6 +530,7 @@ function mergeLiveIntoCoach(
     trust: sf.trust,
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
     socials: sf.socials.length ? sf.socials : base.socials,
+    currentClients: sf.current_clients,
   };
 
 }
@@ -922,12 +925,19 @@ function HeroSection({
               </a>
             </div>
 
-            <div className="mt-8 flex items-center gap-3 text-[12.5px] text-reps-muted">
-              <Sparkles className="h-3.5 w-3.5" style={{ color: "var(--accent-color)" }} />
-              <span>
-                Currently coaching <strong className="font-semibold text-reps-text-soft">3 of 20</strong> available spaces
-              </span>
-            </div>
+            {(() => {
+              // undefined = fixture (show default 3); null = owner hid it; number = owner set
+              const shown = coach.currentClients === undefined ? 3 : coach.currentClients;
+              if (shown === null) return null;
+              return (
+                <div className="mt-8 flex items-center gap-3 text-[12.5px] text-reps-muted">
+                  <Sparkles className="h-3.5 w-3.5" style={{ color: "var(--accent-color)" }} />
+                  <span>
+                    Currently coaching <strong className="font-semibold text-reps-text-soft">{shown} of 20</strong> available spaces
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Image */}

@@ -18,6 +18,7 @@ const WebsiteUpsertSchema = z.object({
     .optional(),
   layout_variant: z.enum(["lite", "full"]).optional(),
   theme: z.enum(["dark", "light"]).optional(),
+  current_clients: z.number().int().min(0).max(20).nullable().optional(),
 });
 
 
@@ -41,6 +42,8 @@ export type WebsiteDTO = {
   client_results_intro: string | null;
   layout_variant: "lite" | "full";
   theme: "dark" | "light";
+  /** Currently coaching X of 20 available spaces. null = hide the strip on the public page. */
+  current_clients: number | null;
   // Embedded pro info for the public page
   slug: string | null;
 
@@ -570,7 +573,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("websites")
         .select(
-          "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme",
+          "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
         )
         .eq("professional_id", pro.id)
         .maybeSingle(),
@@ -627,6 +630,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       client_results_intro: null,
       layout_variant: "full" as const,
       theme: "dark" as const,
+      current_clients: null,
     };
 
     const tier =
@@ -657,6 +661,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         client_results_intro: sfRow.client_results_intro ?? null,
         layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
         theme: (sfRow.theme as "dark" | "light") ?? "dark",
+        current_clients: (sfRow as { current_clients?: number | null }).current_clients ?? null,
         slug: pro.slug,
         full_name: prof?.full_name ?? null,
         avatar_url: prof?.avatar_url ?? null,
@@ -703,7 +708,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("websites")
           .select(
-            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme",
+            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
           )
           .eq("professional_id", userId)
           .maybeSingle(),
@@ -744,7 +749,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
               { onConflict: "professional_id" },
             )
             .select(
-              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme",
+              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
             )
             .single();
           if (error) throw error;
@@ -774,6 +779,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           client_results_intro: resolvedSf.client_results_intro ?? null,
           layout_variant: (resolvedSf.layout_variant as "lite" | "full") ?? "lite",
           theme: ((resolvedSf as { theme?: string | null }).theme as "dark" | "light") ?? "dark",
+          current_clients: (resolvedSf as { current_clients?: number | null }).current_clients ?? null,
           slug: pro.slug,
           full_name: prof?.full_name ?? null,
           avatar_url: prof?.avatar_url ?? null,
