@@ -630,6 +630,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       client_results_intro: null,
       layout_variant: "full" as const,
       theme: "dark" as const,
+      current_clients: null,
     };
 
     const tier =
