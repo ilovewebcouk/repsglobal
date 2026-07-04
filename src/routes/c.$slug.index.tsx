@@ -459,14 +459,19 @@ function mergeLiveIntoCoach(
       const clientLabel = t.client_first_name?.trim()
         ? t.client_first_name.trim()
         : `Client ${i + 1}`;
+      // Real coaches: only render a card when the coach uploaded an image.
+      // Fixture coaches: fall back to the mock imagery so /c/james-wilson stays polished.
+      const image = t.image_url
+        ?? (isFixture ? (base.transformations[i % Math.max(base.transformations.length, 1)]?.image ?? base.heroImage) : null);
       return {
-        image: t.image_url ?? base.transformations[i % Math.max(base.transformations.length, 1)]?.image ?? base.heroImage,
+        image: image ?? "",
         client: clientLabel,
         meta: metaParts.length ? metaParts.join(" · ") : "",
         metric: t.metric ?? t.headline ?? "Client progress",
         quote: t.quote ?? t.headline ?? "Great progress from consistent coaching.",
       };
-    });
+    })
+    .filter((t) => !!t.image);
   const liveFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
   const liveTestimonials = clientResults
     .filter((r) => r.is_published && (r.headline || r.body))
