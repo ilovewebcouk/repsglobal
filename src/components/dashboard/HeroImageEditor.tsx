@@ -42,7 +42,7 @@ export function HeroImageEditor({
   const aiFn = useServerFn(generateHeroFromAi);
 
   const aiMut = useMutation({
-    mutationFn: () => aiFn({ data: { prompt, style } }),
+    mutationFn: () => aiFn({ data: { prompt, style, referenceDataUrl: aiReference ?? undefined } }),
     onSuccess: (r) => {
       setEditing(r.dataUrl);
     },
