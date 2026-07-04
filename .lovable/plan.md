@@ -1,93 +1,47 @@
-## Deliverable
+# Website editor launch email — HTML build
 
-One long-form doc — **`docs/website-editor-audit-final.md`** — plus a companion **`docs/website-editor-fix-list.md`** with a prioritised P0/P1/P2 bug + polish backlog ready to hand back as the next build turn. No code changes in this pass.
+Deliverable: a single, polished, email-client-safe HTML file at `/mnt/documents/repsuk-website-editor-launch.html` you can paste straight into your ESP (Resend / Mailgun / Lovable Emails) or forward to yourself to test.
 
-## Scope
+## What I'll build
 
-Everything under the Website editor umbrella, front-end and back-end, given equal depth per section:
+A brand-matched HTML email using the copy from the previous plan, with the two uploaded snapshots embedded as hero visuals.
 
-**Front-end surface**
-- `src/routes/_authenticated/_professional/dashboard_.website.tsx` (2.3k LOC route)
-- `src/components/dashboard/website/` — `WebsiteEditorLayout`, `WebsiteSectionsSidebar`, `PublishConfirmDialog`, `FaqEditDialog`, `PillarEditDialog`, `ResultEditDialog`, `FieldCounter`
-- `src/components/dashboard/HeroImageEditor.tsx` (upload + AI restyle flow)
-- Shared helpers: `src/lib/dashboard/website-sections.ts`, `readiness.functions.ts`
+### Structure
+1. **Preheader** (hidden) — "Your £34/year now includes a full professional website."
+2. **Logo header** — REPS wordmark, dark bar, matches site header.
+3. **H1** — "Your REPs website is here — and it's included."
+4. **Intro paragraph** — one line, founder voice.
+5. **Snapshot #1** — the public shop-front screenshot (`James-Wilson---Personal-Trainer...png`) with caption "This is what your public REPs page can look like."
+6. **"Replaces your…" block** — Wix / Squarespace / Shopify / Carrd / bespoke, as styled pill tags.
+7. **Price reassurance panel** — "£34/year. Unchanged. Website included." (orange accent card.)
+8. **Snapshot #2** — the enquiry flow screenshot (`Send-an-enquiry---REPS...png`) with caption "Clients enquire, book and pay through your REPs page — no extra tools."
+9. **Verification CTA block** — "Your site stays locked until you're verified" + 3-step list (ID / Insurance / Qualifications) + big orange **Get verified** button.
+10. **What's next** — daily updates + REPs Insurance (coming) + REPs Business Software (coming).
+11. **Final CTA** — "Log in and open the Website tab" button.
+12. **Signature** — founder name + role.
+13. **Footer** — REPS strapline, address line, unsubscribe token placeholder.
 
-**Back-end surface**
-- `src/lib/website/website.functions.ts` (879 LOC — reads/writes for basics, specialisms, location, contact, socials, languages)
-- `src/lib/website/website-content.functions.ts` (549 LOC — plans/method/results/faqs)
-- `src/lib/website/publish.functions.ts` (487 LOC — publish snapshot, `getMyPublishState`, discard-to-snapshot per section)
-- `src/lib/website/hero.functions.ts` (AI hero generation from upload OR profile photo)
-- `src/lib/website/service-image.functions.ts`, `transformation-image.functions.ts`
-- `src/lib/website/preview-token.server.ts`
-- `src/lib/website/default-services.ts`
+### Design tokens (matches the live site)
+- Background: `#0B0B0C` outer, `#131316` card
+- Text: `#F4F4F5` primary, `#A1A1AA` secondary
+- Accent: REPs orange `#FF6A1A`
+- Radius: 16px cards, 12px buttons, 999px pills
+- Font stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif` (web-safe — no external fonts, they don't render in most clients)
+- Max width: 600px, centred, mobile-responsive with `<meta viewport>` + fluid images
 
-**Data layer**
-- Tables: `websites`, `services`, `website_transformations`, `website_faqs`, `website_client_results`, `professionals`, `professional_locations`, `professional_photos`
-- RLS policies on each, GRANTs to `authenticated` / `service_role` / `anon`
-- Storage buckets used by hero / service / transformation uploads
-- Live row probe on the demo trainer + 5–10 recent real trainers to catch drift between UI state and DB truth
+### Email-client safety rules I'll follow
+- Tables for layout (not flexbox / grid) — required for Outlook.
+- All CSS inlined on elements — no `<style>` reliance beyond a small `<head>` block for dark-mode + media queries.
+- `alt` text on every image so the message still reads if images are blocked.
+- `role="presentation"` on layout tables, VML fallback for the primary button (Outlook).
+- Images referenced by absolute HTTPS URL — I'll upload both snapshots via lovable-assets to get stable CDN URLs, then hotlink them from the email (this is how every ESP handles inline images).
+- Total HTML weight kept under 100KB (Gmail clipping threshold).
 
-## What each section gets
+### Handoff notes
+- Merge fields left as `{{first_name}}`, `{{verify_url}}`, `{{login_url}}`, `{{sender_name}}`, `{{unsubscribe_url}}` so your ESP can substitute them.
+- A matching **plain-text version** written to `/mnt/documents/repsuk-website-editor-launch.txt` (email clients expect a text alternative for deliverability).
+- After generating, I'll render the HTML to an image and eyeball it end-to-end so you don't ship anything with clipped hero images, broken buttons, or dark-mode inversion problems.
 
-For all 9 editor sections — Profile, Basics, Specialisms, Location, Plans, Method, Results, FAQs, Contact — the report has the same 10-part rubric so nothing is skimmed:
+Out of scope for this turn: wiring it into the app as a sendable template, building an admin "send to all members" button, or triggering the send. Those are follow-ups if you want them.
 
-1. **Purpose** — one line: what this section stores and where it shows on the public page.
-2. **DB shape** — tables/columns touched, defaults, NOT NULLs, FKs, uniqueness.
-3. **RLS + GRANTs** — policies, roles, and whether the shape matches how the editor and publish snapshot actually query.
-4. **Read path** — server fn(s) that hydrate the editor, validators, error shape, N+1 risks.
-5. **Write path** — save/patch server fn(s), input validation (Zod), auth middleware, race conditions, partial-save behaviour.
-6. **Dirty detection** — how `dirtyMap[section]` is computed vs. the last-published snapshot; false positives, false negatives.
-7. **Discard-to-snapshot** — only 5 sections are discardable (`basics/method/plans/results/faqs`); verify each restores cleanly and the other 4 have a correct reason to be excluded (or file a P1).
-8. **Publish snapshot** — what `publish.functions.ts` copies into the snapshot for this section, and whether the public page reads from the snapshot or live rows.
-9. **UI states** — empty / partial / done rules from `website-sections.ts`, sidebar pill, dashboard readiness contribution, a11y (labels, focus, keyboard traps in dialogs), mobile behaviour.
-10. **Edge cases** — long text, unicode, empty arrays, deleted rows, orphaned images, unpublished draft on a never-published site, image upload failures, AI generation failures/timeouts, concurrent edits in two tabs.
-
-## Cross-cutting audits (equal weight)
-
-- **Publish pipeline end-to-end** — draft → `has_unpublished_changes` flag → publish → `published_at` → public route read. Verify the flag flips correctly on every write path (not just basics), and that `getMyPublishState` matches reality on the demo account + a random sample.
-- **Readiness rollup** — trace one full render: editor → `computeWebsiteSections` → `getMyReadiness` → `CompletenessCard` + `NeedsAttention` + sidebar `x/9`. Confirm no drift between sidebar count and dashboard "x of 9 sections" on live data.
-- **Hero image + AI restyle** — upload → storage → AI gateway call → replace URL → dirty flag → publish. Check retries, partial-image streaming, file-size limits, MIME allow-list, orphaned uploads.
-- **Service / transformation images** — same pipeline, same checks.
-- **Preview token** — `preview-token.server.ts` scope, expiry, leakage risk.
-- **Auth + role** — every server fn uses `requireSupabaseAuth`; no accidental `supabaseAdmin` in a `.functions.ts` module scope; no public route calling a protected fn in a loader.
-- **Client-side state** — React Query keys, invalidation on save/publish/discard, stale reads after publish, optimistic update rollbacks.
-- **Type safety** — Zod validators on every input; DTO shape matches DB; no `any` leaking into publish snapshot.
-- **A11y + keyboard** — dialogs (Faq/Pillar/Result), focus return, escape behaviour, sidebar radio semantics, screen-reader labels on status pills.
-- **Copy + i18n** — button labels, empty-state copy, error toasts (are they human, or "Error: undefined"?).
-- **Perf** — route size (2.3k LOC), initial fetch fan-out, image lazy loading, bundle impact of `HeroImageEditor` + AI SDK.
-
-## Live DB probe (read-only, in this pass)
-
-Runs against the live Supabase project using `supabase--read_query` — nothing is written. Findings feed the fix list.
-
-- Row counts + null-rate per column for the 7 editor-owned tables.
-- Distribution of `websites.published_at`, `has_unpublished_changes`, `websites.updated_at` for the last 30 days — to size how many trainers are in each publish state.
-- Orphan check: `services` / `website_transformations` / `website_faqs` / `website_client_results` rows whose `professional_id` no longer exists.
-- Storage-vs-DB drift: image URLs stored in DB that no longer resolve.
-- RLS spot-check: run every editor SELECT/UPDATE/DELETE policy against the demo trainer's own row vs. a sibling row to confirm the policy blocks cross-tenant access.
-- Sanity: does the demo trainer's stored `has_unpublished_changes` match what the sidebar shows in the preview right now?
-
-## Fix-list format
-
-`docs/website-editor-fix-list.md` — one row per finding:
-
-```
-| ID | Sev | Area | Symptom | Root cause | Suggested fix | Files touched |
-```
-
-- **P0** = data loss, security (RLS gap, missing GRANT, cross-tenant read), publish/discard corruption, blank editor.
-- **P1** = wrong state shown to trainer (dirty flag lies, readiness drift, orphan images), broken AI/upload path, a11y block.
-- **P2** = copy, empty-state polish, mobile spacing, perf wins, dead code.
-
-Grouped by section, then by cross-cutting area, so you can grant approval per group.
-
-## Out of scope (this pass)
-
-- No code changes, no migrations, no destructive DB actions.
-- Public profile page (`/pro/$slug`) is only touched insofar as it reads from the publish snapshot — its own audit is separate.
-- Verification, education, billing, admin — separate surfaces.
-- No visual redesign of the editor (the `redesign` skill was invoked, but you asked for a QA audit — I'll flag any visual/UX issues in the fix list as P2s rather than propose a new look).
-
-## Ready to run
-
-On approval I'll produce both docs in a single pass — full section-by-section rubric, cross-cutting audits, live DB probe results embedded inline, and the prioritised fix list.
+Say go and I'll produce the HTML, text, and QA screenshots.
