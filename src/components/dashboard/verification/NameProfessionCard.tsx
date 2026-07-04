@@ -1,0 +1,153 @@
+import * as React from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Lock, UserRound } from "lucide-react";
+
+import {
+  getMyDashboardProfile,
+  updateMyDashboardProfile,
+} from "@/lib/profile/dashboard-profile.functions";
+import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
+import type { ProfessionSlug } from "@/lib/professions";
+
+/**
+ * Name & profession — the identity fields that used to live at the top of
+ * the retired /dashboard/profile page. They belong on Verification: legal
+ * name has to match the government ID uploaded here, and the profession is
+ * unlocked by the qualifications also managed here.
+ */
+export function NameProfessionCard({ step }: { step?: string }) {
+  const qc = useQueryClient();
+  const fetchProfile = useServerFn(getMyDashboardProfile);
+  const saveProfile = useServerFn(updateMyDashboardProfile);
+
+  const { data } = useQuery({
+    queryKey: ["my-dashboard-profile"],
+    queryFn: () => fetchProfile(),
+  });
+
+  const [fullName, setFullName] = React.useState("");
+  const [profession, setProfession] = React.useState<ProfessionSlug | null>(null);
+  const [justSaved, setJustSaved] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!data) return;
+    setFullName(data.full_name ?? "");
+    setProfession(data.primary_profession ?? null);
+  }, [data]);
+
+  const locked = data?.legal_name_locked ?? false;
+  const dirty =
+    !!data &&
+    ((fullName || "") !== (data.full_name ?? "") ||
+      profession !== (data.primary_profession ?? null));
+
+  const saveMut = useMutation({
+    mutationFn: () => {
+      if (!data) throw new Error("Profile not loaded");
+      return saveProfile({
+        data: {
+          full_name: fullName,
+          display_name: data.display_name,
+          business_name: data.business_name,
+          headline: data.headline,
+          primary_profession: profession,
+          specialisms: data.specialisms,
+          in_person_available: data.in_person_available,
+          online_available: data.online_available,
+          city: data.city,
+          contact_phone: data.contact_phone,
+          bio: data.bio,
+          languages: data.languages,
+          social_instagram: data.social_instagram,
+          social_linkedin: data.social_linkedin,
+          social_youtube: data.social_youtube,
+          social_tiktok: data.social_tiktok,
+          social_x: data.social_x,
+        },
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
+      qc.invalidateQueries({ queryKey: ["my-trust-state"] });
+      setJustSaved(true);
+      window.setTimeout(() => setJustSaved(false), 2000);
+      toast.success("Name & profession saved");
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not save"),
+  });
+
+  return (
+    <section
+      id="name"
+      className="scroll-mt-24 rounded-[16px] border border-reps-border bg-reps-panel p-5"
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <UserRound className="h-4 w-4 text-reps-orange" />
+            <h2 className="font-display text-[15px] font-semibold text-white">
+              Name & profession
+            </h2>
+          </div>
+          <p className="mt-0.5 text-[12px] text-white/55">
+            Your legal name must match your government ID and your qualification
+            certificates. Profession is unlocked by the qualifications you upload below.
+          </p>
+        </div>
+        {step ? (
+          <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/60">
+            {step}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <div>
+          <label className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-white/75">
+            Legal name
+            {locked ? <Lock className="h-3 w-3 text-white/40" /> : null}
+          </label>
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            disabled={locked}
+            className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange disabled:opacity-60"
+            placeholder="As it appears on your government ID"
+          />
+          <p className="mt-1.5 text-[11.5px] text-white/45">
+            {locked
+              ? "Locked — matches your verified ID. Contact REPs support to change it."
+              : "Must match your government ID and your regulated qualification certificates."}
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-[12.5px] font-medium text-white/75">
+            Profession
+          </label>
+          <EarnedTitlePicker />
+          {/* EarnedTitlePicker manages its own state via server fns; the
+              local `profession` state above stays in sync via the query
+              cache invalidation triggered when it saves. */}
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-center justify-end gap-3">
+        {justSaved && !dirty ? (
+          <span className="text-[12px] text-emerald-300">Saved.</span>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => saveMut.mutate()}
+          disabled={!dirty || saveMut.isPending || locked && fullName === data?.full_name}
+          className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
+        >
+          {saveMut.isPending ? "Saving…" : "Save"}
+        </button>
+      </div>
+    </section>
+  );
+}
