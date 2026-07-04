@@ -1,53 +1,75 @@
 
-## Problem
+## QA on the editor pane
 
-Two real issues in the current split-view editor shell (`WebsiteEditorLayout.tsx`):
+Captured the three squashed sections (`Website basics`, `Where I train`, `Client results`) at the current 1550px viewport. Root causes:
 
-1. **Preview panel is too narrow.** It's a fixed `w-[420px]` column only shown at `xl:` (≥1280px). After padding + border, the iframe sits inside a ~388px slot. The trainer's public page (`/c/$slug`) is a full desktop layout, so at 388px it collapses to its mobile breakpoints. That's why the preview looks small and cramped.
-
-2. **Desktop vs Mobile toggle produces the same view.** Desktop mode sets the frame to `w-full` (≈388px). Mobile mode sets it to `w-[320px]`. Both are below the site's `md`/`lg` breakpoints, so both render the mobile stack of the public page. The toggle changes the frame width by ~68px but not the rendered layout — so the two states look almost identical.
+1. **Middle pane is too narrow.** Layout is now `rail 236 / center flex-1 max-w-[640px] / preview flex-1`. The preview grabs ~500px, leaving the center at ~500px minus 48px padding ≈ **452px usable**. On top of that, `max-w-[640px]` caps it further even if space were available.
+2. **Every row is a 2-column split.** Sections render `[left: label + helper text] | [right: form control]`, which halves the already-narrow center to ~220px per side. That's why:
+   - Tagline / Subtitle inputs clip to ~15 visible chars.
+   - `In-person` / `Online` delivery cards break every word onto its own line.
+   - Hero image `Upload / AI generate / Paste URL` tabs wrap to two lines each.
+   - Client Results `Photo | Preview` side-by-side truncates the preview card.
+3. **Duplicate section header.** The page header ("Website basics · Tagline, About and hero image") and the inner Card header ("Website basics · Shown on your public page at /c/charlotte-evans") repeat the same information — wastes ~90px of vertical space in a scrolled pane.
+4. **Preview iframe is blank** (unrelated to squashing, worth confirming separately). Not in scope for this pass unless you want it bundled in.
 
 ## Fix
 
-Rework only the right-hand preview pane inside `WebsiteEditorLayout.tsx`. No changes to the editor content, section nav, save flow, or any public route.
+### A. Rebalance the shell (small)
 
-### 1. Give the preview real room
+`WebsiteEditorLayout.tsx`:
+- Give the editor more room than the preview by default. Change to
+  `grid-cols-[236px_minmax(520px,1.2fr)_minmax(420px,1fr)]` at `lg`, `1.4fr / 1fr` at `xl`.
+- Bump the editor content max-width from `max-w-[640px]` to `max-w-[760px]` so it can breathe when the preview is collapsed.
+- Remove the redundant page-header (`title` + `description`) since every section already renders its own header inside the form. Keep only a slim breadcrumb row with the collapse-preview button and a "View public" link.
 
-- Preview column becomes **flex-1** (fills remaining width) instead of `w-[420px]`, with `min-w-[360px]` and `max-w-[720px]`.
-- Show it from **`lg:` (≥1024px)** instead of `xl:`. Below `lg:` keep the current "View public" fallback (no iframe).
-- Center column keeps `min-w-0` and a comfortable editor max-width (`max-w-[640px]`) so the middle stays readable when the preview expands.
+### B. Convert every section to a single-column stacked form (main work)
 
-Resulting rough proportions at 1440px: rail 236 / editor ~560 / preview ~640.
+Standard rule: **label + helper text on top, control full-width below** — the shadcn `Field` / `FieldGroup` pattern. No more left-description / right-field splits inside the editor pane.
 
-### 2. Make Desktop and Mobile visually distinct via scaled iframes
+Sections to refactor (all live inline in `dashboard_.website.tsx`, ~2.2k lines; individual editor components in `src/components/dashboard/`):
 
-Render the iframe at a **true device width** and CSS-scale it to fit the panel. This is the standard pattern (Framer, Webflow, Vercel preview).
+- **Website basics** (`BasicsEditor` inline block)
+  - Tagline: single-line input, full-width, char counter `0/80`.
+  - Subtitle: single-line input, full-width, char counter `0/120`.
+  - About: `Textarea` auto-grow (min 6 rows), char counter `0/600`.
+  - Hero image: `HeroImageEditor` — turn the `Upload / AI / Paste URL` tabs into a full-width `Tabs` control (shadcn), stack the drop zone underneath.
+- **How I coach** — Method name, intro, three pillars — each pillar becomes a stacked `Fieldset` with title + body full-width.
+- **Specialisms** (`SpecialismsDeliveryPanel`) — chip grid stays, but move the "0 / 3 selected" counter to the top-right of the section header.
+- **Where I train** (`DeliveryModePanel` + inline postcode + gyms + cities)
+  - Delivery cards: swap the current cramped 2-col `Card` layout for a horizontal `ToggleGroup` (`type="multiple"`) — `In-person` and `Online` as full-width toggle buttons with an inline check state, help text stacked below the group.
+  - Postcode: full-width input with inline "Public location: Bridgend" as a caption underneath.
+  - Trains at: full-width list with `Add gym` button at the end (existing pattern already works, just needs full width).
+  - Also train from: stacked checkboxes (existing pattern, widened).
+  - Cities: full-width tokenized input.
+- **Client results** (`TransformationImageEditor`)
+  - Stack `Photo` above `Preview` on the narrow pane (single column), promote to side-by-side only at `>= 900px` container width via a container query or a manual breakpoint on the editor pane.
+  - Result headline / Client quote / Client + Role + Duration → single stacked `FieldGroup`.
+- **FAQs** — each Q&A pair becomes a stacked pair (question above, answer below), delete/reorder buttons on the row's right edge.
 
-- **Desktop mode**: iframe intrinsic `width: 1280px`, `height: 100%` of a scaled wrapper. Compute `scale = panelWidth / 1280` (measured with a `ResizeObserver` on the preview container). Wrapper uses `transform: scale(var(--s)); transform-origin: top left;` and the outer box compensates height. Result: the real desktop layout, shrunk to fit — clearly different from mobile.
-- **Mobile mode**: iframe intrinsic `width: 390px`, centered in a phone-shaped frame (`rounded-[22px]`, thin bezel). Scale only if `panelWidth < 390`, otherwise 1:1.
-- Small badge above the frame: `Desktop · 1280 → 62%` or `Mobile · 390`.
+### C. Section-header hygiene
 
-### 3. QA polish while in the file
-
-- Default device: `desktop` (matches "large preview" intent). Mobile is opt-in.
-- Preview panel gets a lightweight header row: device toggle (left), width label (center), reload + open-in-new-tab (right).
-- Add a **collapse-preview** button (chevron) so a trainer can reclaim full editor width on a smaller laptop; state persisted in `localStorage`.
-- Iframe gets `sandbox="allow-same-origin allow-scripts allow-forms"` and `title` for a11y.
-- Fix the current `key={reloadNonce}` + `#nonce-…` combo — one mechanism is enough; keep `key` and drop the hash so the URL stays clean.
-- Empty-slug state gets a proper illustration slot instead of a single line of grey text.
+Every editor section gets one header only:
+- `SectionHeading` (h3, 15px semibold) + `SectionCaption` (12.5px white/55) — matches shadcn `FieldSet` legend/description pattern.
+- Drop the outer Card wrapper so the section reads as a form group, not a boxed panel-in-a-panel.
 
 ## Technical notes
 
-- Scaling implementation uses one `ResizeObserver` on the preview container, writing `--preview-scale` on a wrapper div. No layout thrash on the iframe itself.
-- Height compensation: wrapper height = `panelHeight / scale`, then transformed back down — keeps the scaled desktop page fully scrollable inside the pane.
-- No changes to `/c/$slug`, no new routes, no data-fetching changes, no new deps.
+- Use shadcn primitives already in the project: `Field`, `FieldGroup`, `Fieldset`, `Label`, `Input`, `Textarea`, `ToggleGroup`, `Tabs`, `Checkbox`. Do not hand-roll.
+- Char counters via a tiny local `FieldCounter` helper (`current/max`, amber at ≥90%).
+- No changes to submit/save logic, validation, or the public page.
+- No new deps.
+
+## Files touched
+
+- `src/components/dashboard/website/WebsiteEditorLayout.tsx` (shell rebalance, drop duplicate header)
+- `src/routes/_authenticated/_professional/dashboard_.website.tsx` (inline `BasicsEditor`, `MethodEditor`, `ResultsEditor`, `FaqsEditor`, `LocationsEditor`)
+- `src/components/dashboard/DeliveryModePanel.tsx` (ToggleGroup swap)
+- `src/components/dashboard/HeroImageEditor.tsx` (Tabs full-width)
+- `src/components/dashboard/TransformationImageEditor.tsx` (stacked Photo/Preview + full-width fields)
+- `src/components/dashboard/SpecialismsDeliveryPanel.tsx` (header counter placement)
 
 ## Out of scope
 
-- Section-scroll sync between editor and preview (already noted as future work).
-- Any changes to the public coach page or to other editor sections.
-- Design-system token changes.
-
-## File touched
-
-- `src/components/dashboard/website/WebsiteEditorLayout.tsx` (only)
+- Blank preview iframe bug (call out separately — likely CSP / auth redirect on `/c/$slug?preview=1`).
+- Section-scroll sync between editor and preview.
+- Any changes to the public coach page or to design tokens.
