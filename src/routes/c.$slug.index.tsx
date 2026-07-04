@@ -67,6 +67,7 @@ type Tier = {
   includes: string[];
   highlight?: boolean;
   ctaLabel?: string | null;
+  imageUrl?: string | null;
 };
 
 function priceUnitLabel(u: string | null | undefined): string | null {
