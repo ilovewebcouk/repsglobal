@@ -493,35 +493,41 @@ function mergeLiveIntoCoach(
       : "in person";
   const fallbackTagline = `${firstName} — ${professionLabel} in ${cityLabel}`;
   const fallbackAbout = `I'm ${firstName}, a ${professionLabel} based in ${cityLabel}, working with clients ${modeLabel}. Get in touch to talk about what you're working towards and how I can help.`;
+  // Fixture pages (james-wilson etc.) fall back to the mock arrays so the
+  // demo stays polished. Real coaches with zero content render empty arrays;
+  // downstream sections self-hide when empty.
+  const emptyOrBase = <T,>(live: T[], baseVal: T[]): T[] =>
+    live.length ? live : (isFixture ? baseVal : []);
+
   return {
     ...base,
     name: sf.full_name ?? base.name,
     firstName,
     role: professionLabel,
     promise: sf.tagline?.trim() || fallbackTagline,
-    subhead: sf.subtitle ?? base.subhead,
+    subhead: sf.subtitle ?? (isFixture ? base.subhead : ""),
     bio: sf.about?.trim()
       ? sf.about.split(/\n\n+/).filter(Boolean)
       : [fallbackAbout],
     heroImage: sf.hero_image_url ?? base.heroImage,
     aboutImage: sf.avatar_url ?? sf.hero_image_url ?? base.aboutImage,
     city: sf.city ?? base.city,
-    modes: liveModes.length ? liveModes : base.modes,
-    specialisms: sf.specialisms.length ? sf.specialisms : base.specialisms,
-    tiers: liveTiers.length ? liveTiers : base.tiers,
+    modes: liveModes.length ? liveModes : (isFixture ? base.modes : []),
+    specialisms: sf.specialisms.length ? sf.specialisms : (isFixture ? base.specialisms : []),
+    tiers: liveTiers.length ? liveTiers : (isFixture ? base.tiers : []),
     method: {
-      name: sf.method_name ?? base.method.name,
-      intro: sf.method_intro ?? base.method.intro,
+      name: sf.method_name ?? (isFixture ? base.method.name : ""),
+      intro: sf.method_intro ?? (isFixture ? base.method.intro : ""),
       pillars: sf.method_pillars.length
         ? sf.method_pillars.map((p) => ({ title: p.title, desc: p.body }))
-        : base.method.pillars,
+        : (isFixture ? base.method.pillars : []),
     },
-    venues: liveVenues.length ? liveVenues : base.venues,
-    cities: liveCities.length ? liveCities : base.cities,
-    transformations: liveTransformations.length ? liveTransformations : base.transformations,
-    testimonials: liveTestimonials.length ? liveTestimonials : base.testimonials,
-    clientResultsIntro: sf.client_results_intro ?? base.clientResultsIntro ?? null,
-    faqs: liveFaqs.length ? liveFaqs : base.faqs,
+    venues: emptyOrBase(liveVenues, base.venues),
+    cities: emptyOrBase(liveCities, base.cities),
+    transformations: emptyOrBase(liveTransformations, base.transformations),
+    testimonials: emptyOrBase(liveTestimonials, base.testimonials),
+    clientResultsIntro: sf.client_results_intro ?? (isFixture ? (base.clientResultsIntro ?? null) : null),
+    faqs: emptyOrBase(liveFaqs, base.faqs),
     years: yearsCoaching,
     verifiedSince: (() => {
       const idAt = sf.trust?.identityVerifiedAt;
@@ -533,7 +539,7 @@ function mergeLiveIntoCoach(
     })(),
     trust: sf.trust,
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
-    socials: sf.socials.length ? sf.socials : base.socials,
+    socials: sf.socials.length ? sf.socials : (isFixture ? base.socials : []),
   };
 
 }
