@@ -178,6 +178,11 @@ function WebsiteEditorPage() {
     setLayout(sf.layout_variant);
   }, [sf]);
 
+  // Ref used to suppress the "Website saved" toast when Save is being
+  // invoked internally as a prerequisite of Publish (the Publish toast is
+  // enough — no need to fire two toasts for one click).
+  const suppressSaveToastRef = React.useRef(false);
+
   const saveMutation = useMutation({
     mutationFn: () =>
       upsertSf({
@@ -193,7 +198,9 @@ function WebsiteEditorPage() {
       }),
 
     onSuccess: () => {
-      toast.success("Website saved");
+      if (!suppressSaveToastRef.current) {
+        toast.success("Website saved");
+      }
       qc.invalidateQueries({ queryKey: ["my-website"] });
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
     },
@@ -395,12 +402,16 @@ function WebsiteEditorPage() {
   const publishMut = useMutation({
     mutationFn: async () => {
       // If any basics fields are still dirty, persist them first so the
-      // snapshot includes them.
+      // snapshot includes them. Suppress the "Website saved" toast — the
+      // upcoming "Website published" toast is the one the user cares about.
       if (basicsDirty) {
+        suppressSaveToastRef.current = true;
         try {
           await saveAll();
         } catch (e) {
           throw new Error((e as Error).message || "Save failed");
+        } finally {
+          suppressSaveToastRef.current = false;
         }
       }
       return publishNowFn();

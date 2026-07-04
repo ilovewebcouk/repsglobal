@@ -234,7 +234,7 @@ function RootComponent() {
           <Outlet />
         </div>
         <CookieBanner />
-        <Toaster richColors position="top-right" />
+        <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
   );
