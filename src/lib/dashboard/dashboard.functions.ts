@@ -6,7 +6,7 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [{ data: profile }, { data: identity }, { data: subs }, { data: lastSub }] =
+    const [{ data: profile }, { data: identity }, { data: subs }, { data: lastSub }, { data: website }] =
       await Promise.all([
         supabase
           .from("professionals")
@@ -34,7 +34,13 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
+        supabase
+          .from("websites")
+          .select("tagline")
+          .eq("professional_id", userId)
+          .maybeSingle(),
       ]);
+
 
     const profileComplete = !!(
       profile?.slug &&
