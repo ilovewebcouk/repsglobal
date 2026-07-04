@@ -46,11 +46,11 @@ export function ContactSocialsPanel() {
     setLanguages(data.languages ?? []);
     setContactPhone(data.contact_phone ?? "");
     setSocials({
-      social_instagram: data.social_instagram,
-      social_linkedin: data.social_linkedin,
-      social_youtube: data.social_youtube,
-      social_tiktok: data.social_tiktok,
-      social_x: data.social_x,
+      social_instagram: data.social_instagram ?? "",
+      social_linkedin: data.social_linkedin ?? "",
+      social_youtube: data.social_youtube ?? "",
+      social_tiktok: data.social_tiktok ?? "",
+      social_x: data.social_x ?? "",
     });
   }, [data]);
 
