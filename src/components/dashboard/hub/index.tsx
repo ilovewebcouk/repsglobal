@@ -406,7 +406,7 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
         ))}
       </ul>
       <DashboardButton asChild size="sm" variant="ghost" className="mt-4 w-full">
-        <Link to="/dashboard/profile">Edit profile</Link>
+        <Link to="/dashboard/website">Edit profile</Link>
       </DashboardButton>
     </PPanel>
   );
