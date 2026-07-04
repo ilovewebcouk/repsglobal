@@ -310,39 +310,132 @@ function WebsiteEditorPage() {
 
   const slug = sf?.slug;
   const isPro = tier === "pro" || tier === "studio";
+  void isPro;
 
-  if (blocked) return null;
+  // Live-preview reload nonce (used to force iframe refresh after publish).
+  const [reloadNonce, setReloadNonce] = React.useState(0);
+
+  // Fetch website content at page level so we can drive completeness pills
+  // for method / results / faqs / location in the section rail. The
+  // WebsiteContentEditor child re-reads the same query key from cache.
+  const fetchContent = useServerFn(getMyWebsiteContent);
+  const contentQuery = useQuery({
+    queryKey: ["my-website-content"],
+    queryFn: () => fetchContent(),
+  });
+  const content = contentQuery.data;
+
+  // Which section is focused in the editor.
+  const [activeSection, setActiveSection] = React.useState<string>("basics");
+
+  // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero).
+  const isDirty =
+    !!sf &&
+    ((tagline || "") !== (sf.tagline ?? "") ||
+      (subtitle || "") !== (sf.subtitle ?? "") ||
+      (about || "") !== (sf.about ?? "") ||
+      (hero || "") !== (sf.hero_image_url ?? ""));
 
   const saveAll = React.useCallback(() => {
-    saveMutation.mutate();
+    saveMutation.mutate(undefined, {
+      onSuccess: () => setReloadNonce((n) => n + 1),
+    });
     // Fan-out to child sections that own their own local state.
     window.dispatchEvent(new CustomEvent("reps:website:save-all"));
   }, [saveMutation]);
 
-  const SaveButton = ({ compact = false }: { compact?: boolean }) => (
-    <button
-      type="button"
-      disabled={saveMutation.isPending}
-      onClick={saveAll}
-      className={`flex ${compact ? "h-9 px-3 text-[12.5px]" : "h-10 px-4 text-[13px]"} items-center gap-2 rounded-[10px] bg-reps-orange font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60`}
-    >
-      <Save className="h-4 w-4" />
-      {saveMutation.isPending ? "Saving…" : "Save & publish"}
-    </button>
-  );
+  // Build the section list + completeness. Kept tolerant so the rail
+  // still renders while queries load.
+  const sections: WebsiteEditorSection[] = React.useMemo(() => {
+    const trimmed = (s: string | null | undefined) => (s ?? "").trim();
 
-  const ViewPublicButton = ({ compact = false }: { compact?: boolean }) =>
-    slug ? (
-      <Link
-        to="/c/$slug"
-        params={{ slug }}
-        target="_blank"
-        className={`flex ${compact ? "h-9 px-3 text-[12.5px]" : "h-10 px-4 text-[13px]"} items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft font-semibold text-white hover:bg-reps-panel`}
-      >
-        <ExternalLink className="h-4 w-4" />
-        View public page
-      </Link>
-    ) : null;
+    const basicsFilled = [tagline, subtitle, about, hero].filter((v) => trimmed(v)).length;
+    const basicsStatus: SectionStatus =
+      basicsFilled === 4 ? "done" : basicsFilled === 0 ? "empty" : "partial";
+
+    const plansStatus: SectionStatus =
+      services.length >= 3 ? "done" : services.length > 0 ? "partial" : "empty";
+
+    const methodPillars = (content?.content.method_pillars ?? []).filter(
+      (p) => p.title?.trim() && p.body?.trim(),
+    );
+    const methodStatus: SectionStatus = !content
+      ? "optional"
+      : content.content.method_name && methodPillars.length >= 3
+        ? "done"
+        : content.content.method_name || methodPillars.length
+          ? "partial"
+          : "empty";
+
+    const resultsStatus: SectionStatus = !content
+      ? "optional"
+      : (content.transformations?.length ?? 0) >= 3
+        ? "done"
+        : (content.transformations?.length ?? 0) > 0
+          ? "partial"
+          : "empty";
+
+    const faqsStatus: SectionStatus = !content
+      ? "optional"
+      : (content.faqs?.length ?? 0) >= 3
+        ? "done"
+        : (content.faqs?.length ?? 0) > 0
+          ? "partial"
+          : "empty";
+
+    return [
+      { id: "profile", label: "Profile photo", status: "optional" },
+      { id: "basics", label: "Website basics", status: basicsStatus },
+      { id: "plans", label: "Coaching plans", status: plansStatus },
+      { id: "method", label: "How I coach", status: methodStatus },
+      { id: "specialisms", label: "Specialisms", status: "optional" },
+      { id: "location", label: "Where I train", status: "optional" },
+      { id: "results", label: "Client results", status: resultsStatus },
+      { id: "faqs", label: "FAQs", status: faqsStatus },
+    ];
+  }, [tagline, subtitle, about, hero, services.length, content]);
+
+  const active = sections.find((s) => s.id === activeSection) ?? sections[0];
+  const sectionCopy: Record<string, { title: string; description: string }> = {
+    profile: {
+      title: "Profile photo",
+      description: "A clear headshot helps clients trust and recognise you.",
+    },
+    basics: {
+      title: "Website basics",
+      description: slug
+        ? `Tagline, About and hero image for /c/${slug}.`
+        : "Tagline, About and hero image for your public page.",
+    },
+    plans: {
+      title: "Coaching plans",
+      description:
+        "Three cards on your public website. The middle card is always marked \u201cMost popular\u201d.",
+    },
+    method: {
+      title: "How I coach",
+      description: "A short method name, intro and three pillars.",
+    },
+    specialisms: {
+      title: "Specialisms",
+      description: "Which specialisms show on your public page.",
+    },
+    location: {
+      title: "Where I train",
+      description: "Postcode, gyms and cities. Powers distance search and location chips.",
+    },
+    results: {
+      title: "Client results",
+      description: "Image + metric proof cards shown in the Results section.",
+    },
+    faqs: {
+      title: "Frequently asked questions",
+      description: "Answer the questions clients ask before they book.",
+    },
+  };
+  const activeCopy = sectionCopy[active.id] ?? { title: active.label, description: "" };
+
+  if (blocked) return null;
 
   return (
     <DashboardShell
@@ -351,94 +444,87 @@ function WebsiteEditorPage() {
       tier={tier}
       title="Website"
       showTopbarSearch={false}
-      subtitle={
-        isPro
-          ? "Your public REPS website — services, pricing, method and branding."
-          : "Your public REPS website. Pro unlocks deeper customisation — join the waitlist."
-      }
-      actions={
-        <div className="hidden items-center gap-2 md:flex">
-          <ViewPublicButton />
-          <SaveButton />
-        </div>
-      }
+      subtitle="Edit one section at a time — the live preview updates when you publish."
+      mainClassName="!p-0"
     >
       {isLoading ? (
-        <PCard>Loading…</PCard>
+        <div className="p-6"><PCard>Loading…</PCard></div>
       ) : !sf ? (
-        <PCard>
-          <p className="text-[13px] text-white/70">
-            Your Website isn't ready yet. Once your identity, qualifications and insurance are approved, your Lite website is created automatically.
-          </p>
-        </PCard>
+        <div className="p-6">
+          <PCard>
+            <p className="text-[13px] text-white/70">
+              Your Website isn't ready yet. Once your identity, qualifications and insurance are approved, your Lite website is created automatically.
+            </p>
+          </PCard>
+        </div>
       ) : (
-        <>
-          
-          <div className="space-y-6 pb-32">
-            <ProfilePhotoPanel />
-            <section id="basics" className="scroll-mt-24">
-              <PPanel>
-                <div className="border-b border-reps-border px-5 py-4">
-                  <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
-                  <p className="mt-0.5 text-[12px] text-white/55">
-                    Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
-                  </p>
-                </div>
-                <Field
-                  label="Tagline"
-                  hint="The H1 on your public page. One short line that sums you up."
-                  action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
-                >
-                  <TextInput
-                    value={tagline}
-                    onChange={(e) => setTagline(e.target.value)}
-                    maxLength={200}
-                    placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
-                  />
-                </Field>
-                <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
-                <Field
-                  label="About"
-                  hint="A short bio. Plain paragraphs, separated by blank lines."
-                  action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
-                >
-                  <TextArea
-                    value={about}
-                    onChange={(e) => setAbout(e.target.value)}
-                    maxLength={4000}
-                    placeholder="Tell clients who you help and how."
-                  />
-                </Field>
-                <Field
-                  label="Hero image"
-                  hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
-                >
-                  <HeroImageEditor value={hero} onChange={setHero} />
-                </Field>
-              </PPanel>
-            </section>
-
-            <section id="services" className="scroll-mt-24">
-              <ServicesEditor
-                services={services}
-                onSave={(s) => upsertServiceMut.mutate(s)}
-                onDelete={(id) => deleteServiceMut.mutate(id)}
-                onReorder={(ids) => reorderServicesMut.mutate(ids)}
-                saving={upsertServiceMut.isPending}
-              />
-            </section>
-
-            <WebsiteContentEditor />
+        <WebsiteEditorLayout
+          sections={sections}
+          activeId={active.id}
+          onActive={setActiveSection}
+          slug={slug ?? null}
+          publicUrl={slug ? `/c/${slug}` : "#"}
+          title={activeCopy.title}
+          description={activeCopy.description}
+          isDirty={isDirty}
+          onPublish={saveAll}
+          publishPending={saveMutation.isPending}
+          reloadNonce={reloadNonce}
+          onReloadPreview={() => setReloadNonce((n) => n + 1)}
+        >
+          <div hidden={active.id !== "profile"}><ProfilePhotoPanel /></div>
+          <div hidden={active.id !== "basics"}>
+            <PPanel>
+              <div className="border-b border-reps-border px-5 py-4">
+                <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
+                <p className="mt-0.5 text-[12px] text-white/55">
+                  Shown on your public page at <span className="text-white/80">/c/{slug ?? "your-slug"}</span>.
+                </p>
+              </div>
+              <Field
+                label="Tagline"
+                hint="The H1 on your public page. One short line that sums you up."
+                action={<AIDraftButton onClick={() => setTaglineDialogOpen(true)} pending={draftTaglineMut.isPending} />}
+              >
+                <TextInput
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  maxLength={200}
+                  placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
+                />
+              </Field>
+              <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
+              <Field
+                label="About"
+                hint="A short bio. Plain paragraphs, separated by blank lines."
+                action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
+              >
+                <TextArea
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  maxLength={4000}
+                  placeholder="Tell clients who you help and how."
+                />
+              </Field>
+              <Field
+                label="Hero image"
+                hint="Portrait 9:16, 1080 × 1920. Upload, generate with AI, or paste a URL."
+              >
+                <HeroImageEditor value={hero} onChange={setHero} />
+              </Field>
+            </PPanel>
           </div>
-
-          {/* Fixed footer save bar — pinned to viewport bottom */}
-          <div className="fixed bottom-0 right-0 left-0 z-30 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8 md:left-[var(--sidebar-width,232px)] group-data-[collapsible=icon]/sidebar-wrapper:md:left-[var(--sidebar-width-icon,3.25rem)]">
-            <div className="mx-auto flex max-w-[1200px] items-center justify-end gap-2">
-              <ViewPublicButton compact />
-              <SaveButton compact />
-            </div>
+          <div hidden={active.id !== "plans"}>
+            <ServicesEditor
+              services={services}
+              onSave={(s) => upsertServiceMut.mutate(s)}
+              onDelete={(id) => deleteServiceMut.mutate(id)}
+              onReorder={(ids) => reorderServicesMut.mutate(ids)}
+              saving={upsertServiceMut.isPending}
+            />
           </div>
-        </>
+          <WebsiteContentEditor activeSection={active.id} />
+        </WebsiteEditorLayout>
       )}
 
       <Dialog open={taglineDialogOpen} onOpenChange={setTaglineDialogOpen}>
