@@ -1,5 +1,13 @@
 import * as React from "react";
-import { Check, ExternalLink, Monitor, RefreshCw, Smartphone } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Monitor,
+  RefreshCw,
+  Smartphone,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type SectionStatus = "done" | "partial" | "empty" | "optional";
@@ -26,14 +34,16 @@ type Props = {
   children: React.ReactNode;
 };
 
+const DESKTOP_WIDTH = 1280;
+const MOBILE_WIDTH = 390;
+const PREVIEW_COLLAPSE_KEY = "reps.editor.previewCollapsed";
+
 /**
  * Focus-per-section website editor shell.
  * Left rail = sections + status pills + Publish.
  * Middle  = header (title / description) + active section body.
- * Right   = live iframe preview of the trainer's public page with device toggle.
- *
- * On <lg the preview and rail collapse: rail becomes a horizontal pill row,
- * preview becomes a "View public" link (kept off-screen — full iframe on desktop only).
+ * Right   = live iframe preview of the trainer's public page, rendered at the
+ *           real device width (1280 desktop / 390 mobile) and CSS-scaled to fit.
  */
 export function WebsiteEditorLayout({
   sections,
@@ -50,8 +60,17 @@ export function WebsiteEditorLayout({
   onReloadPreview,
   children,
 }: Props) {
-  const [device, setDevice] = React.useState<"mobile" | "desktop">("mobile");
-  const iframeSrc = slug ? `/c/${slug}?preview=1#nonce-${reloadNonce}` : "";
+  const [device, setDevice] = React.useState<"mobile" | "desktop">("desktop");
+  const [collapsed, setCollapsed] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(PREVIEW_COLLAPSE_KEY) === "1";
+  });
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(PREVIEW_COLLAPSE_KEY, collapsed ? "1" : "0");
+  }, [collapsed]);
+
+  const iframeSrc = slug ? `/c/${slug}?preview=1` : "";
 
   return (
     <div className="flex h-[calc(100vh-120px)] min-h-[640px] flex-col overflow-hidden border-t border-reps-border">
@@ -106,91 +125,182 @@ export function WebsiteEditorLayout({
               </h2>
               <p className="mt-0.5 line-clamp-2 text-[12.5px] text-white/55">{description}</p>
             </div>
-            <div className="flex shrink-0 items-center gap-2 lg:hidden">
+            <div className="flex shrink-0 items-center gap-2">
+              {collapsed ? (
+                <button
+                  type="button"
+                  onClick={() => setCollapsed(false)}
+                  className="hidden h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-medium text-white/70 hover:text-white lg:flex"
+                  aria-label="Show preview"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" /> Preview
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={onPublish}
                 disabled={publishPending}
-                className="flex h-9 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+                className="flex h-9 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60 lg:hidden"
               >
                 {publishPending ? "Publishing…" : "Publish"}
               </button>
             </div>
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-            <div className="mx-auto max-w-[720px] space-y-6">{children}</div>
+            <div className="mx-auto max-w-[640px] space-y-6">{children}</div>
           </div>
         </main>
 
         {/* Right — live preview */}
-        <aside className="hidden w-[420px] shrink-0 flex-col border-l border-reps-border bg-reps-panel/30 xl:flex">
-          <div className="flex items-center justify-between gap-2 border-b border-reps-border px-4 py-3">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-0.5 rounded-[8px] border border-reps-border bg-reps-panel-soft p-0.5">
-                <DeviceToggle
-                  active={device === "mobile"}
-                  onClick={() => setDevice("mobile")}
-                  aria-label="Mobile preview"
-                >
-                  <Smartphone className="h-3.5 w-3.5" />
-                </DeviceToggle>
-                <DeviceToggle
-                  active={device === "desktop"}
-                  onClick={() => setDevice("desktop")}
-                  aria-label="Desktop preview"
-                >
-                  <Monitor className="h-3.5 w-3.5" />
-                </DeviceToggle>
+        {!collapsed ? (
+          <aside className="hidden min-w-[360px] max-w-[760px] flex-1 shrink-0 flex-col border-l border-reps-border bg-reps-panel/30 lg:flex">
+            <div className="flex items-center justify-between gap-2 border-b border-reps-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5 rounded-[8px] border border-reps-border bg-reps-panel-soft p-0.5">
+                  <DeviceToggle
+                    active={device === "desktop"}
+                    onClick={() => setDevice("desktop")}
+                    aria-label="Desktop preview"
+                  >
+                    <Monitor className="h-3.5 w-3.5" />
+                  </DeviceToggle>
+                  <DeviceToggle
+                    active={device === "mobile"}
+                    onClick={() => setDevice("mobile")}
+                    aria-label="Mobile preview"
+                  >
+                    <Smartphone className="h-3.5 w-3.5" />
+                  </DeviceToggle>
+                </div>
+                <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/45">
+                  Live preview
+                </span>
               </div>
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/45">
-                Live preview
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={onReloadPreview}
-                className="grid h-8 w-8 place-items-center rounded-[8px] text-white/60 hover:bg-white/[0.06] hover:text-white"
-                aria-label="Reload preview"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-              </button>
-              {slug ? (
-                <a
-                  href={publicUrl}
-                  target="_blank"
-                  rel="noreferrer"
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={onReloadPreview}
                   className="grid h-8 w-8 place-items-center rounded-[8px] text-white/60 hover:bg-white/[0.06] hover:text-white"
-                  aria-label="Open in new tab"
+                  aria-label="Reload preview"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              ) : null}
+                  <RefreshCw className="h-3.5 w-3.5" />
+                </button>
+                {slug ? (
+                  <a
+                    href={publicUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="grid h-8 w-8 place-items-center rounded-[8px] text-white/60 hover:bg-white/[0.06] hover:text-white"
+                    aria-label="Open in new tab"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setCollapsed(true)}
+                  className="grid h-8 w-8 place-items-center rounded-[8px] text-white/60 hover:bg-white/[0.06] hover:text-white"
+                  aria-label="Hide preview"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+            <PreviewStage
+              slug={slug}
+              iframeSrc={iframeSrc}
+              device={device}
+              reloadNonce={reloadNonce}
+            />
+          </aside>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function PreviewStage({
+  slug,
+  iframeSrc,
+  device,
+  reloadNonce,
+}: {
+  slug: string | null | undefined;
+  iframeSrc: string;
+  device: "mobile" | "desktop";
+  reloadNonce: number;
+}) {
+  const stageRef = React.useRef<HTMLDivElement | null>(null);
+  const [stage, setStage] = React.useState({ w: 0, h: 0 });
+
+  React.useLayoutEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setStage({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const intrinsic = device === "desktop" ? DESKTOP_WIDTH : MOBILE_WIDTH;
+  // Leave a little breathing room around the frame
+  const availW = Math.max(0, stage.w - 32);
+  const availH = Math.max(0, stage.h - 32);
+  const scale = availW > 0 ? Math.min(1, availW / intrinsic) : 1;
+  const scaledW = intrinsic * scale;
+  const scaledH = availH; // fill vertically
+  const frameHeight = scale > 0 ? scaledH / scale : availH;
+  const percent = Math.round(scale * 100);
+
+  return (
+    <div className="min-h-0 flex-1 overflow-hidden bg-reps-ink">
+      <div className="flex items-center justify-center gap-2 border-b border-reps-border/60 px-4 py-1.5 text-[10.5px] font-medium tracking-wide text-white/45">
+        {device === "desktop" ? (
+          <>Desktop · {DESKTOP_WIDTH}px · {percent}%</>
+        ) : (
+          <>Mobile · {MOBILE_WIDTH}px{scale < 1 ? ` · ${percent}%` : ""}</>
+        )}
+      </div>
+      <div ref={stageRef} className="relative h-[calc(100%-28px)] w-full">
+        {slug ? (
+          <div
+            className="absolute left-1/2 top-4"
+            style={{
+              width: scaledW,
+              height: scaledH,
+              transform: `translateX(-50%)`,
+            }}
+          >
+            <div
+              className={cn(
+                "origin-top-left overflow-hidden border bg-black shadow-2xl",
+                device === "mobile"
+                  ? "rounded-[28px] border-white/10"
+                  : "rounded-[12px] border-reps-border",
+              )}
+              style={{
+                width: intrinsic,
+                height: frameHeight,
+                transform: `scale(${scale})`,
+              }}
+            >
+              <iframe
+                key={reloadNonce}
+                src={iframeSrc}
+                title="Public page preview"
+                sandbox="allow-same-origin allow-scripts allow-forms"
+                className="h-full w-full border-0"
+                loading="lazy"
+              />
             </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-hidden bg-reps-ink p-4">
-            {slug ? (
-              <div
-                className={cn(
-                  "mx-auto h-full overflow-hidden rounded-[16px] border border-reps-border bg-black shadow-2xl transition-all",
-                  device === "mobile" ? "w-[320px]" : "w-full",
-                )}
-              >
-                <iframe
-                  key={reloadNonce}
-                  src={iframeSrc}
-                  title="Public page preview"
-                  className="h-full w-full border-0"
-                  loading="lazy"
-                />
-              </div>
-            ) : (
-              <div className="grid h-full place-items-center text-center text-[12.5px] text-white/55">
-                Preview appears once your public page is live.
-              </div>
-            )}
+        ) : (
+          <div className="grid h-full place-items-center px-6 text-center text-[12.5px] text-white/55">
+            Preview appears once your public page is live.
           </div>
-        </aside>
+        )}
       </div>
     </div>
   );
