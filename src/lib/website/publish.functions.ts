@@ -54,7 +54,7 @@ export const publishMyWebsite = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin
       .from("websites")
       .update({
-        published_snapshot: live as unknown as WebsiteSnapshot,
+        published_snapshot: JSON.parse(JSON.stringify(live)),
         published_at: now,
         has_unpublished_changes: false,
       })
