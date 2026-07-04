@@ -1255,8 +1255,9 @@ function HeroSubtitleField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           maxLength={200}
-          placeholder="e.g. Strength + hybrid coaching for busy professionals"
+          placeholder="[Supporting line — e.g. Strength + hybrid coaching for busy professionals]"
         />
+        <FieldCounter current={value.length} max={200} />
       </Field>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
