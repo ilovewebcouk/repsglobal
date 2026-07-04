@@ -38,6 +38,7 @@ import {
   type WebsiteEditorSection,
 } from "@/components/dashboard/website/WebsiteEditorLayout";
 import { WebsiteSectionsSidebar } from "@/components/dashboard/website/WebsiteSectionsSidebar";
+import { computeWebsiteSections } from "@/lib/dashboard/website-sections";
 import {
   Dialog,
   DialogContent,
