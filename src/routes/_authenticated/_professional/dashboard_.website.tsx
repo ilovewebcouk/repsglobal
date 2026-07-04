@@ -195,6 +195,7 @@ function WebsiteEditorPage() {
     onSuccess: () => {
       toast.success("Website saved");
       qc.invalidateQueries({ queryKey: ["my-website"] });
+      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
