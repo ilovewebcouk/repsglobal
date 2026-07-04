@@ -286,7 +286,7 @@ export function NeedsAttention({
       tone: "neutral",
       title: `Your profile is ${profilePct}% complete`,
       detail: "A complete profile ranks higher and gets more enquiries.",
-      to: "/dashboard/profile",
+      to: "/dashboard/website",
       cta: "Polish",
     });
   }
