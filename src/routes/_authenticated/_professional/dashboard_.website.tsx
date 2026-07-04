@@ -173,6 +173,7 @@ function WebsiteEditorPage() {
   const [subtitle, setSubtitle] = React.useState("");
   const [about, setAbout] = React.useState("");
   const [hero, setHero] = React.useState("");
+  const [currentClients, setCurrentClients] = React.useState<number | null>(null);
   
   const [layout, setLayout] = React.useState<"lite" | "full">("lite");
   const [theme] = React.useState<"dark" | "light">("dark");
@@ -183,6 +184,7 @@ function WebsiteEditorPage() {
     setSubtitle(sf.subtitle ?? "");
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
+    setCurrentClients(sf.current_clients ?? null);
     setLayout(sf.layout_variant);
   }, [sf]);
 
