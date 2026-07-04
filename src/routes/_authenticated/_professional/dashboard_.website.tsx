@@ -729,8 +729,33 @@ function WebsiteEditorPage() {
         />
       }
     >
-      {isLoading ? (
-        <div className="p-6"><PCard>Loading…</PCard></div>
+      {anyError ? (
+        <div className="p-6">
+          <Alert variant="destructive">
+            <AlertTitle>We couldn't load your editor</AlertTitle>
+            <AlertDescription className="mt-1 flex flex-col gap-3">
+              <span>
+                Something went wrong loading your website data. Check your
+                connection and try again.
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-fit"
+                onClick={retryAllQueries}
+              >
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : isLoading ? (
+        <div className="flex flex-col gap-4 p-6">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
       ) : !sf ? (
         <div className="p-6">
           <PCard>
