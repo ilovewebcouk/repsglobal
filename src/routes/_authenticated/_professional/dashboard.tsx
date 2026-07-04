@@ -94,7 +94,6 @@ function DashboardPage() {
   const firstName = memberName.split(" ")[0];
 
   const enqStats = hub.enqStats.data;
-  const profilePct = hub.profile.data ? profileCompleteness(hub.profile.data).pct : 0;
   const reviewKpis = hub.reviewKpis.data;
 
   const greeting = useGreeting();
