@@ -534,18 +534,24 @@ function mergeLiveIntoCoach(
 
 
 export const Route = createFileRoute("/c/$slug/")({
-  loader: async ({ params }) => {
+  validateSearch: (search: Record<string, unknown>) => ({
+    preview: search.preview === "1" || search.preview === 1 || search.preview === true,
+  }),
+  loaderDeps: ({ search }) => ({ preview: search.preview }),
+  loader: async ({ params, deps }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const, live: null };
-    // Every published member gets the website — the public-visibility gate
-    // inside getWebsiteBySlug already checks published + paid subscription.
-    // No additional tier gate here: page renders the same for Core, Pro and
-    // Studio; only what plugs in behind the page (enquiries inbox, bookings,
-    // payments, analytics) differs by tier.
-    const live = await getWebsiteBySlug({ data: { slug: params.slug } });
+    // `?preview=1` bypasses the published snapshot and reads live draft
+    // content, so the editor's iframe shows unpublished edits. NOTE: this
+    // flag is currently un-signed — signed preview tokens are a phase-2
+    // hardening pass.
+    const live = await getWebsiteBySlug({
+      data: { slug: params.slug, preview: !!deps.preview },
+    });
     if (!live) throw notFound();
     return { gated: false as const, live };
   },
+
   notFoundComponent: () => (
     <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
       <div>
