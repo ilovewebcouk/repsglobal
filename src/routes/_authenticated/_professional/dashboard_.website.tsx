@@ -570,8 +570,8 @@ function WebsiteEditorPage() {
           title={activeCopy.title}
           description={activeCopy.description}
           isDirty={isDirty}
-          onPublish={saveAll}
-          publishPending={saveMutation.isPending}
+          onPublish={publishNow}
+          publishPending={publishMut.isPending || saveMutation.isPending}
           reloadNonce={reloadNonce}
           onReloadPreview={() => setReloadNonce((n) => n + 1)}
         >
