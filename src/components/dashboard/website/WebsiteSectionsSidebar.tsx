@@ -76,9 +76,28 @@ export function WebsiteSectionsSidebar({
         )}
       >
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/40">
-            Website sections
-          </SidebarGroupLabel>
+          <div className="mb-1 flex items-center justify-between px-2 group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="p-0 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/40">
+              Website sections
+            </SidebarGroupLabel>
+            {(() => {
+              const done = sections.filter((s) => s.status === "done").length;
+              const total = sections.length;
+              const complete = done === total;
+              return (
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
+                    complete
+                      ? "bg-emerald-500/15 text-emerald-300"
+                      : "bg-white/[0.06] text-white/60",
+                  )}
+                >
+                  {done}/{total}
+                </span>
+              );
+            })()}
+          </div>
           <SidebarGroupContent>
             <SidebarMenu>
               {sections.map((s) => {
@@ -180,19 +199,17 @@ function StatusPill({ status }: { status: WebsiteEditorSection["status"] }) {
       </span>
     );
   }
-  if (status === "empty") {
-    return (
-      <span className="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-amber-300">
-        Empty
-      </span>
-    );
-  }
   if (status === "partial") {
     return (
-      <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white/60">
-        Draft
+      <span className="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-amber-300">
+        In progress
       </span>
     );
   }
-  return null;
+  // empty & optional both render "Add" — no section is ever silently unlabeled.
+  return (
+    <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white/55">
+      Add
+    </span>
+  );
 }

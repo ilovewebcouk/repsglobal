@@ -3,11 +3,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MapPin, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
+import { MapPin, Pencil, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
 import { TransformationImageEditor } from "@/components/dashboard/TransformationImageEditor";
 import { GymPicker } from "@/components/profile/GymPicker";
 import { getMyPrimaryLocation, saveMyPrimaryPostcode } from "@/lib/profile/location.functions";
 import { getMyDashboardProfile, updateMyTrainingBase } from "@/lib/profile/dashboard-profile.functions";
+import { PillarEditDialog } from "@/components/dashboard/website/PillarEditDialog";
+import {
+  ResultEditDialog,
+  draftFromResult,
+  type ResultDraft,
+} from "@/components/dashboard/website/ResultEditDialog";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
@@ -324,6 +330,20 @@ function WebsiteEditorPage() {
   });
   const content = contentQuery.data;
 
+  // Page-level fetches used purely to derive sidebar status pills for
+  // Profile photo, Specialisms and Where I train. The editor panels have
+  // their own copies of these queries — react-query dedupes them.
+  const fetchProfileFn = useServerFn(getMyDashboardProfile);
+  const profileQuery = useQuery({
+    queryKey: ["my-dashboard-profile"],
+    queryFn: () => fetchProfileFn(),
+  });
+  const fetchLocationFn = useServerFn(getMyPrimaryLocation);
+  const locationQuery = useQuery({
+    queryKey: ["my-primary-location"],
+    queryFn: () => fetchLocationFn(),
+  });
+
   // Which section is focused in the editor.
   const [activeSection, setActiveSection] = React.useState<string>("basics");
 
@@ -344,13 +364,29 @@ function WebsiteEditorPage() {
   }, [saveMutation]);
 
   // Build the section list + completeness. Kept tolerant so the rail
-  // still renders while queries load.
+  // still renders while queries load. Ordering: photo → basics →
+  // specialisms → location → plans → method → results → faqs.
   const sections: WebsiteEditorSection[] = React.useMemo(() => {
     const trimmed = (s: string | null | undefined) => (s ?? "").trim();
+
+    const profile = profileQuery.data;
+    const photoStatus: SectionStatus = profile?.avatar_url ? "done" : "empty";
 
     const basicsFilled = [tagline, subtitle, about, hero].filter((v) => trimmed(v)).length;
     const basicsStatus: SectionStatus =
       basicsFilled === 4 ? "done" : basicsFilled === 0 ? "empty" : "partial";
+
+    const specialismCount = profile?.specialisms?.length ?? 0;
+    const specialismsStatus: SectionStatus = specialismCount > 0 ? "done" : "empty";
+
+    const loc = locationQuery.data;
+    const hasPostcode = !!trimmed(loc?.postcode ?? "");
+    const hasDelivery = !!(profile?.in_person_available || profile?.online_available);
+    const locationStatus: SectionStatus = hasPostcode && hasDelivery
+      ? "done"
+      : hasPostcode || hasDelivery
+        ? "partial"
+        : "empty";
 
     const plansStatus: SectionStatus =
       services.length >= 3 ? "done" : services.length > 0 ? "partial" : "empty";
@@ -359,7 +395,7 @@ function WebsiteEditorPage() {
       (p) => p.title?.trim() && p.body?.trim(),
     );
     const methodStatus: SectionStatus = !content
-      ? "optional"
+      ? "empty"
       : content.content.method_name && methodPillars.length >= 3
         ? "done"
         : content.content.method_name || methodPillars.length
@@ -367,32 +403,37 @@ function WebsiteEditorPage() {
           : "empty";
 
     const resultsStatus: SectionStatus = !content
-      ? "optional"
-      : (content.transformations?.length ?? 0) >= 3
+      ? "empty"
+      : (content.transformations?.length ?? 0) >= 1
         ? "done"
-        : (content.transformations?.length ?? 0) > 0
-          ? "partial"
-          : "empty";
+        : "empty";
 
     const faqsStatus: SectionStatus = !content
-      ? "optional"
-      : (content.faqs?.length ?? 0) >= 3
+      ? "empty"
+      : (content.faqs?.length ?? 0) >= 1
         ? "done"
-        : (content.faqs?.length ?? 0) > 0
-          ? "partial"
-          : "empty";
+        : "empty";
 
     return [
-      { id: "profile", label: "Profile photo", status: "optional" },
+      { id: "profile", label: "Profile photo", status: photoStatus },
       { id: "basics", label: "Website basics", status: basicsStatus },
+      { id: "specialisms", label: "Specialisms", status: specialismsStatus },
+      { id: "location", label: "Where I train", status: locationStatus },
       { id: "plans", label: "Coaching plans", status: plansStatus },
       { id: "method", label: "How I coach", status: methodStatus },
-      { id: "specialisms", label: "Specialisms", status: "optional" },
-      { id: "location", label: "Where I train", status: "optional" },
       { id: "results", label: "Client results", status: resultsStatus },
       { id: "faqs", label: "FAQs", status: faqsStatus },
     ];
-  }, [tagline, subtitle, about, hero, services.length, content]);
+  }, [
+    tagline,
+    subtitle,
+    about,
+    hero,
+    services.length,
+    content,
+    profileQuery.data,
+    locationQuery.data,
+  ]);
 
   const active = sections.find((s) => s.id === activeSection) ?? sections[0];
   const sectionCopy: Record<string, { title: string; description: string }> = {
@@ -1476,54 +1517,14 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
 
         <div className="border-b border-reps-border/60 px-5 pt-5 pb-2">
           <div className="text-[13px] font-semibold text-white">The three pillars</div>
-          <p className="mt-0.5 text-[12px] text-white/55">Each renders as a numbered card (01 · 02 · 03) on your public page.</p>
+          <p className="mt-0.5 text-[12px] text-white/55">Each renders as a numbered card (01 · 02 · 03) on your public page. Click Edit to open the pillar in a focused editor.</p>
         </div>
 
-        <div className="space-y-3 px-5 py-4">
-          {pillars.map((p, i) => {
-            const titleMax = 60;
-            const bodyMax = 200;
-            return (
-              <div
-                key={i}
-                className="rounded-[16px] border border-reps-border bg-reps-panel-soft/60 p-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange/15 text-[13px] font-semibold text-reps-orange">
-                    {String(i + 1).padStart(2, "0")}
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <TextInput
-                      value={p.title}
-                      onChange={(e) => {
-                        const next = [...pillars];
-                        next[i] = { ...next[i], title: e.target.value };
-                        setPillars(next);
-                      }}
-                      placeholder="[Pillar title — e.g. Build the base]"
-                      maxLength={titleMax}
-                    />
-                    <FieldCounter current={p.title.length} max={titleMax} />
-                    <TextInput
-                      value={p.body}
-                      onChange={(e) => {
-                        const next = [...pillars];
-                        next[i] = { ...next[i], body: e.target.value };
-                        setPillars(next);
-                      }}
-                      placeholder="[Pillar body — one clear sentence about what happens in this phase]"
-                      maxLength={bodyMax}
-                    />
-                    <FieldCounter current={p.body.length} max={bodyMax} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <PillarsRowList pillars={pillars} onChange={setPillars} />
       </PPanel>
       </section>
       </div>
+
 
       <div hidden={activeSection !== "specialisms"}>
         <SpecialismsDeliveryPanel />
@@ -1607,10 +1608,10 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
 
 /**
  * TransformationsEditor
- * Every field in this editor maps 1:1 to what shows on the public
- * proof card at /c/$slug. The live preview iframe on the right of the
- * page is the source of truth for how the card renders — this editor
- * intentionally does NOT duplicate that preview inline.
+ * Compact row list + focused edit dialog (matches Coaching plans pattern).
+ * The live preview iframe on the right is the source of truth for how the
+ * card renders — this editor intentionally does NOT duplicate that preview
+ * inline. Click Edit on any row to open the full editor in a dialog.
  */
 function TransformationsEditor({
   items,
@@ -1621,275 +1622,247 @@ function TransformationsEditor({
   onSave: (t: Partial<TransformationDTO> & { sort_order: number; is_published: boolean }) => void;
   onDelete: (id: string) => void;
 }) {
-  const [adding, setAdding] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [draft, setDraft] = React.useState<ResultDraft>(() => draftFromResult(null, 0));
 
-  // Empty state: single hero CTA. The form only appears once the trainer
-  // taps "Add your first client result".
-  if (items.length === 0 && !adding) {
+  function startAdd() {
+    setEditingId(null);
+    setDraft(draftFromResult(null, items.length));
+    setOpen(true);
+  }
+  function startEdit(t: TransformationDTO) {
+    setEditingId(t.id);
+    setDraft(draftFromResult(t, t.sort_order));
+    setOpen(true);
+  }
+  function handleSave(next: ResultDraft) {
+    onSave({
+      ...(next.id ? { id: next.id } : {}),
+      client_first_name: next.client_first_name || null,
+      client_role: next.client_role || null,
+      duration_label: next.duration_label || null,
+      metric: next.metric || null,
+      headline: null,
+      quote: next.quote || null,
+      image_url: next.image_url || null,
+      sort_order: next.sort_order,
+      is_published: next.is_published,
+    });
+  }
+
+  // Empty state: single hero CTA.
+  if (items.length === 0) {
     return (
-      <div className="px-5 py-8">
-        <div className="rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-5 py-10 text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/15 text-reps-orange">
-            <Quote className="h-4 w-4" />
+      <>
+        <div className="px-5 py-8">
+          <div className="rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-5 py-10 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/15 text-reps-orange">
+              <Quote className="h-4 w-4" />
+            </div>
+            <div className="text-[14px] font-semibold text-white">No client results yet</div>
+            <p className="mx-auto mt-1 max-w-[380px] text-[12.5px] text-white/60">
+              Proof cards show a photo, a headline result and a short quote below your services on your public page.
+            </p>
+            <button
+              type="button"
+              onClick={startAdd}
+              className="mt-4 inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
+            >
+              <Plus className="h-4 w-4" /> Add your first client result
+            </button>
           </div>
-          <div className="text-[14px] font-semibold text-white">No client results yet</div>
-          <p className="mx-auto mt-1 max-w-[380px] text-[12.5px] text-white/60">
-            Proof cards show a photo, a headline result and a short quote below your services on your public page.
-          </p>
-          <button
-            type="button"
-            onClick={() => setAdding(true)}
-            className="mt-4 inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
-          >
-            <Plus className="h-4 w-4" /> Add your first client result
-          </button>
         </div>
-      </div>
+
+        <ResultEditDialog
+          open={open}
+          onOpenChange={setOpen}
+          editing={false}
+          initial={draft}
+          onSave={handleSave}
+        />
+      </>
     );
   }
 
   return (
-    <div className="space-y-4 px-5 py-5">
-      {items.map((t) => (
-        <TransformationRow
-          key={t.id}
-          item={t}
-          onSave={onSave}
-          onDelete={onDelete}
-        />
-      ))}
-      <TransformationRow
-        key="new"
-        item={null}
-        onSave={(t) => {
-          onSave({ ...t, sort_order: items.length });
-          if (items.length === 0) setAdding(false);
-        }}
-        onDelete={() => {}}
+    <>
+      <div className="flex flex-col gap-3 px-5 pb-5 pt-1">
+        {items.map((t, i) => (
+          <div
+            key={t.id}
+            className="flex items-stretch gap-2"
+          >
+            <div
+              className={[
+                "relative flex flex-1 items-start justify-between gap-3 rounded-[14px] px-4 py-3 transition",
+                t.is_published
+                  ? "border border-reps-border bg-reps-panel-soft"
+                  : "border border-dashed border-reps-border/70 bg-reps-panel-soft/30",
+              ].join(" ")}
+            >
+              {t.image_url ? (
+                <img
+                  src={t.image_url}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-[10px] object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[10px] bg-reps-orange/10 text-reps-orange">
+                  <Quote className="h-4 w-4" />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-white/45 tabular-nums">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="truncate text-[13.5px] font-semibold text-white">
+                    {t.metric || t.client_first_name || "Untitled result"}
+                  </div>
+                  {!t.is_published ? (
+                    <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white/55">
+                      Hidden
+                    </span>
+                  ) : null}
+                </div>
+                {t.quote ? (
+                  <div className="mt-1 line-clamp-2 text-[12.5px] italic text-white/60">
+                    "{t.quote}"
+                  </div>
+                ) : null}
+                <div className="mt-1 text-[11.5px] text-white/45">
+                  {[t.client_first_name, t.client_role, t.duration_label]
+                    .filter(Boolean)
+                    .join(" · ") || "No client details yet"}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center">
+                <button
+                  type="button"
+                  onClick={() => startEdit(t)}
+                  className="flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
+                >
+                  <Pencil className="h-3.5 w-3.5" /> Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={startAdd}
+          className="flex h-11 items-center justify-center gap-2 rounded-[14px] border border-dashed border-reps-border bg-transparent text-[13px] font-semibold text-white/70 hover:border-reps-orange/50 hover:text-white"
+        >
+          <Plus className="h-4 w-4" /> Add another client result
+        </button>
+      </div>
+
+      <ResultEditDialog
+        open={open}
+        onOpenChange={setOpen}
+        editing={!!editingId}
+        initial={draft}
+        onSave={handleSave}
+        onDelete={editingId ? () => onDelete(editingId) : undefined}
       />
-    </div>
+    </>
   );
 }
 
 /**
- * A single card editor. Full-width fields — the live preview iframe
- * on the right of the page shows exactly how this card will render.
- * When `item` is null this is an "Add new" form; otherwise it edits in place.
+ * PillarsRowList
+ * Compact row list for the three method pillars + focused edit dialog
+ * (matches Coaching plans + Client results). The pillars array is always
+ * length 3; each row opens the dialog for that slot.
  */
-function TransformationRow({
-  item,
-  onSave,
-  onDelete,
+function PillarsRowList({
+  pillars,
+  onChange,
 }: {
-  item: TransformationDTO | null;
-  onSave: (t: Partial<TransformationDTO> & { sort_order: number; is_published: boolean }) => void;
-  onDelete: (id: string) => void;
+  pillars: MethodPillar[];
+  onChange: (next: MethodPillar[]) => void;
 }) {
-  const isNew = item === null;
-  const [clientFirstName, setClientFirstName] = React.useState(item?.client_first_name ?? "");
-  const [clientRole, setClientRole] = React.useState(item?.client_role ?? "");
-  const [duration, setDuration] = React.useState(item?.duration_label ?? "");
-  const [metric, setMetric] = React.useState(item?.metric ?? "");
-  const [quote, setQuote] = React.useState(item?.quote ?? "");
-  const [imageUrl, setImageUrl] = React.useState(item?.image_url ?? "");
-  const [dirty, setDirty] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [editingIndex, setEditingIndex] = React.useState(0);
 
-  React.useEffect(() => {
-    if (!item) return;
-    setClientFirstName(item.client_first_name ?? "");
-    setClientRole(item.client_role ?? "");
-    setDuration(item.duration_label ?? "");
-    setMetric(item.metric ?? "");
-    setQuote(item.quote ?? "");
-    setImageUrl(item.image_url ?? "");
-    setDirty(false);
-  }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Guarantee three slots so the UI is stable even if data is short.
+  const slots: MethodPillar[] = [0, 1, 2].map(
+    (i) => pillars[i] ?? { title: "", body: "" },
+  );
 
-  const mark = <T,>(setter: (v: T) => void) => (v: T) => {
-    setter(v);
-    setDirty(true);
-  };
-
-  const METRIC_MAX = 80;
-  const QUOTE_MAX = 600;
-  const NAME_MAX = 60;
-  const ROLE_MAX = 60;
-  const DURATION_MAX = 40;
-
-  const canSave = metric.trim().length > 0 || clientFirstName.trim().length > 0;
-  const buttonDisabled = !canSave || (!isNew && !dirty);
-
-  const handleSave = () => {
-    onSave({
-      ...(item ? { id: item.id } : {}),
-      client_first_name: clientFirstName.trim() || null,
-      client_role: clientRole.trim() || null,
-      duration_label: duration.trim() || null,
-      metric: metric.trim() || null,
-      headline: null,
-      quote: quote.trim() || null,
-      image_url: imageUrl.trim() || null,
-      sort_order: item?.sort_order ?? 0,
-      is_published: item?.is_published ?? true,
-    });
-    if (isNew) {
-      setClientFirstName("");
-      setClientRole("");
-      setDuration("");
-      setMetric("");
-      setQuote("");
-      setImageUrl("");
-    }
-    setDirty(false);
-  };
+  function startEdit(i: number) {
+    setEditingIndex(i);
+    setOpen(true);
+  }
+  function handleSave(next: MethodPillar) {
+    const arr = [...slots];
+    arr[editingIndex] = next;
+    onChange(arr);
+  }
 
   return (
-    <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4">
-      {!isNew && (
-        <div className="mb-3 flex items-center justify-between">
-          <div className="text-[12px] font-semibold uppercase tracking-wide text-white/50">
-            {item?.is_published ? "Live on your page" : "Hidden — not on your page"}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                onSave({
-                  id: item!.id,
-                  is_published: !item!.is_published,
-                  sort_order: item!.sort_order,
-                })
-              }
-              className="h-8 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
-            >
-              {item!.is_published ? "Hide" : "Show"}
-            </button>
-            <button
-              type="button"
-              onClick={() => confirm("Delete this client result?") && onDelete(item!.id)}
-              className="flex h-8 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
-            >
-              <Trash2 className="h-3.5 w-3.5" /> Delete
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isNew && (
-        <div className="mb-3 text-[12px] font-semibold uppercase tracking-wide text-white/50">
-          Add a new result
-        </div>
-      )}
-
-      <div className="space-y-3">
-        <div>
-          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Photo</label>
-          <p className="text-[11px] text-white/45">Landscape 4:3 — face and result visible. Min 800 × 600.</p>
-          <div className="mt-1.5">
-            <TransformationImageEditor value={imageUrl} onChange={mark(setImageUrl)} />
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-            Result headline
-          </label>
-          <p className="text-[11px] text-white/45">Bold line on the card, e.g. "−8kg · first unassisted pull-up".</p>
-          <div className="mt-1.5">
-            <TextInput
-              value={metric}
-              onChange={(e) => mark(setMetric)(e.target.value)}
-              placeholder="[Result headline — e.g. −8kg · first unassisted pull-up]"
-              maxLength={METRIC_MAX}
-            />
-            <FieldCounter current={metric.length} max={METRIC_MAX} />
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-            Client quote (optional)
-          </label>
-          <div className="mt-1.5">
-            <TextArea
-              value={quote}
-              onChange={(e) => mark(setQuote)(e.target.value)}
-              placeholder="[Short quote from the client about their result]"
-              maxLength={QUOTE_MAX}
-            />
-            <FieldCounter current={quote.length} max={QUOTE_MAX} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-              Client name
-            </label>
-            <div className="mt-1.5">
-              <TextInput
-                value={clientFirstName}
-                onChange={(e) => mark(setClientFirstName)(e.target.value)}
-                placeholder="[First name]"
-                maxLength={NAME_MAX}
-              />
+    <>
+      <div className="flex flex-col gap-3 px-5 pb-5 pt-1">
+        {slots.map((p, i) => {
+          const isEmpty = !p.title.trim() && !p.body.trim();
+          const previousFilled = i === 0 || (slots[i - 1]?.title?.trim().length ?? 0) > 0;
+          return (
+            <div key={i} className="flex items-stretch gap-2">
+              <div
+                className={[
+                  "flex flex-1 items-start justify-between gap-3 rounded-[14px] px-4 py-3 transition",
+                  isEmpty
+                    ? "border border-dashed border-reps-border/70 bg-reps-panel-soft/30"
+                    : "border border-reps-border bg-reps-panel-soft",
+                ].join(" ")}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-reps-orange/15 text-[13px] font-semibold text-reps-orange">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className={["text-[13.5px] font-semibold", isEmpty ? "text-white/50" : "text-white"].join(" ")}>
+                    {p.title.trim() || `Pillar ${i + 1}`}
+                  </div>
+                  <div className="mt-0.5 line-clamp-2 text-[12.5px] text-white/60">
+                    {p.body.trim() || "One clear sentence about what happens in this phase."}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(i)}
+                    disabled={isEmpty && !previousFilled}
+                    className={
+                      isEmpty && !previousFilled
+                        ? "flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft/50 px-3 text-[12.5px] font-semibold text-white/35 cursor-not-allowed"
+                        : isEmpty
+                          ? "flex h-9 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover"
+                          : "flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12.5px] font-semibold text-white hover:bg-reps-panel/80"
+                    }
+                  >
+                    {isEmpty ? <><Plus className="h-3.5 w-3.5" /> Add</> : <><Pencil className="h-3.5 w-3.5" /> Edit</>}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-              Role (optional)
-            </label>
-            <div className="mt-1.5">
-              <TextInput
-                value={clientRole}
-                onChange={(e) => mark(setClientRole)(e.target.value)}
-                placeholder="[e.g. Marketing Director]"
-                maxLength={ROLE_MAX}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-              Duration (optional)
-            </label>
-            <div className="mt-1.5">
-              <TextInput
-                value={duration}
-                onChange={(e) => mark(setDuration)(e.target.value)}
-                placeholder="[e.g. 12 weeks]"
-                maxLength={DURATION_MAX}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <p className="text-[11px] text-white/45">
-            {isNew
-              ? canSave
-                ? "Ready to add — the preview on the right refreshes after Publish."
-                : "Add a headline or client name to enable."
-              : dirty
-                ? "Unsaved changes."
-                : "Saved."}
-          </p>
-          <button
-            type="button"
-            disabled={buttonDisabled}
-            onClick={handleSave}
-            className={
-              buttonDisabled
-                ? "flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/40 cursor-not-allowed"
-                : "flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
-            }
-          >
-            {isNew ? <><Plus className="h-4 w-4" /> Add result</> : <><Save className="h-4 w-4" /> Save changes</>}
-          </button>
-        </div>
+          );
+        })}
       </div>
-    </div>
+
+      <PillarEditDialog
+        open={open}
+        onOpenChange={setOpen}
+        index={editingIndex}
+        pillar={slots[editingIndex] ?? { title: "", body: "" }}
+        onSave={handleSave}
+      />
+    </>
   );
 }
+
 
 
 

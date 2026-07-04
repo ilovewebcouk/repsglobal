@@ -193,3 +193,50 @@ Estimate: single focused pass, all editor-side, no schema changes.
 - Preview iframe blank state (X.4) — likely an auth/CSP investigation, worth its own turn.
 - Drag/reorder for Coaching plans, Pillars, FAQs, Client results — needs a shared reorder pattern (dnd-kit already in stack?), not a copy-paste per section.
 - Autosave (X.6) — implies persistence changes.
+
+---
+
+## 2026-07-04 · Pass 2: dialog-first editing + status audit
+
+### Card + dialog rollout (matches Coaching plans)
+- **How I coach — pillars**: replaced the always-open triple stack with a compact row list. Each row shows `[NN] title — body preview` and opens a focused `PillarEditDialog` on Edit. Empty slots surface `+ Add` (orange when the previous slot is filled, disabled otherwise). Discard-confirm on dirty close.
+- **Client results**: dropped the inline "Add new" row. List becomes compact rows with thumbnail + headline + quote preview + client meta. Edit opens `ResultEditDialog` (image + all fields + delete + hide toggle). Trailing `+ Add another client result` CTA replaces the inline form.
+- Both dialogs mirror the `ServiceEditDialog` UX contract: snapshot on open, dirty tracking, discard confirmation via AlertDialog, save-and-close as the only exit for changes.
+
+### Sidebar status system (renamed + expanded)
+Replaced the two-axis (`done | partial | empty | optional`) vocabulary. `optional` no longer renders as blank — every section now shows a real pill:
+
+| Old label | New label | When |
+|---|---|---|
+| Done | Done (emerald) | Section meets threshold |
+| Draft | In progress (amber) | Partial content |
+| Empty / — (optional) | Add (muted) | Nothing yet |
+
+Thresholds (all now real, no silent "optional"):
+
+- Profile photo → Done when `avatar_url` set.
+- Website basics → Done when 4/4 fields filled.
+- Specialisms → Done when ≥1 selected (was silently blank).
+- Where I train → Done when postcode AND (online OR in-person) both set; partial if only one.
+- Coaching plans → Done ≥3, partial >0.
+- How I coach → Done when method name AND ≥3 pillars.
+- Client results → Done ≥1 (was ≥3 — too aggressive).
+- FAQs → Done ≥1 (was ≥3).
+
+### Sidebar reorder
+Old order mixed foundational and rich-content sections. New order is foundational → practice → content:
+1. Profile photo
+2. Website basics
+3. Specialisms
+4. Where I train
+5. Coaching plans
+6. How I coach
+7. Client results
+8. FAQs
+
+A `N/8` progress chip lives in the sidebar section-header row so trainers see completion at a glance.
+
+### Out of scope this pass
+- DnD reorder for pillars/results (Edit-only for now).
+- Autosave in the new dialogs — explicit Save & close by design.
+- Live preview blank-state (unchanged).
