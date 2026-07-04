@@ -751,7 +751,10 @@ function CoachWebsitePage() {
       reviews: reviewsData.count,
     };
   }
-  const accent = `var(--coach-accent-${coach.accent})`;
+  // accent_hex (raw hex from the editor) wins over the fixed palette so
+  // coaches actually get the colour they picked. Basic sanity check on shape.
+  const hexOverride = /^#[0-9a-fA-F]{6}$/.test(coach.accentHex ?? "") ? coach.accentHex! : null;
+  const accent = hexOverride ?? `var(--coach-accent-${coach.accent})`;
 
   const accentStyle = {
     ["--accent-color" as string]: accent,
