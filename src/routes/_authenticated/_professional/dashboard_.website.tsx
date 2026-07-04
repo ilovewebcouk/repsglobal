@@ -330,6 +330,20 @@ function WebsiteEditorPage() {
   });
   const content = contentQuery.data;
 
+  // Page-level fetches used purely to derive sidebar status pills for
+  // Profile photo, Specialisms and Where I train. The editor panels have
+  // their own copies of these queries — react-query dedupes them.
+  const fetchProfileFn = useServerFn(getMyDashboardProfile);
+  const profileQuery = useQuery({
+    queryKey: ["my-dashboard-profile"],
+    queryFn: () => fetchProfileFn(),
+  });
+  const fetchLocationFn = useServerFn(getMyPrimaryLocation);
+  const locationQuery = useQuery({
+    queryKey: ["my-primary-location"],
+    queryFn: () => fetchLocationFn(),
+  });
+
   // Which section is focused in the editor.
   const [activeSection, setActiveSection] = React.useState<string>("basics");
 
@@ -350,13 +364,29 @@ function WebsiteEditorPage() {
   }, [saveMutation]);
 
   // Build the section list + completeness. Kept tolerant so the rail
-  // still renders while queries load.
+  // still renders while queries load. Ordering: photo → basics →
+  // specialisms → location → plans → method → results → faqs.
   const sections: WebsiteEditorSection[] = React.useMemo(() => {
     const trimmed = (s: string | null | undefined) => (s ?? "").trim();
+
+    const profile = profileQuery.data;
+    const photoStatus: SectionStatus = profile?.avatar_url ? "done" : "empty";
 
     const basicsFilled = [tagline, subtitle, about, hero].filter((v) => trimmed(v)).length;
     const basicsStatus: SectionStatus =
       basicsFilled === 4 ? "done" : basicsFilled === 0 ? "empty" : "partial";
+
+    const specialismCount = profile?.specialisms?.length ?? 0;
+    const specialismsStatus: SectionStatus = specialismCount > 0 ? "done" : "empty";
+
+    const loc = locationQuery.data;
+    const hasPostcode = !!trimmed(loc?.postcode ?? "");
+    const hasDelivery = !!(profile?.in_person_available || profile?.online_available);
+    const locationStatus: SectionStatus = hasPostcode && hasDelivery
+      ? "done"
+      : hasPostcode || hasDelivery
+        ? "partial"
+        : "empty";
 
     const plansStatus: SectionStatus =
       services.length >= 3 ? "done" : services.length > 0 ? "partial" : "empty";
@@ -365,7 +395,7 @@ function WebsiteEditorPage() {
       (p) => p.title?.trim() && p.body?.trim(),
     );
     const methodStatus: SectionStatus = !content
-      ? "optional"
+      ? "empty"
       : content.content.method_name && methodPillars.length >= 3
         ? "done"
         : content.content.method_name || methodPillars.length
@@ -373,32 +403,37 @@ function WebsiteEditorPage() {
           : "empty";
 
     const resultsStatus: SectionStatus = !content
-      ? "optional"
-      : (content.transformations?.length ?? 0) >= 3
+      ? "empty"
+      : (content.transformations?.length ?? 0) >= 1
         ? "done"
-        : (content.transformations?.length ?? 0) > 0
-          ? "partial"
-          : "empty";
+        : "empty";
 
     const faqsStatus: SectionStatus = !content
-      ? "optional"
-      : (content.faqs?.length ?? 0) >= 3
+      ? "empty"
+      : (content.faqs?.length ?? 0) >= 1
         ? "done"
-        : (content.faqs?.length ?? 0) > 0
-          ? "partial"
-          : "empty";
+        : "empty";
 
     return [
-      { id: "profile", label: "Profile photo", status: "optional" },
+      { id: "profile", label: "Profile photo", status: photoStatus },
       { id: "basics", label: "Website basics", status: basicsStatus },
+      { id: "specialisms", label: "Specialisms", status: specialismsStatus },
+      { id: "location", label: "Where I train", status: locationStatus },
       { id: "plans", label: "Coaching plans", status: plansStatus },
       { id: "method", label: "How I coach", status: methodStatus },
-      { id: "specialisms", label: "Specialisms", status: "optional" },
-      { id: "location", label: "Where I train", status: "optional" },
       { id: "results", label: "Client results", status: resultsStatus },
       { id: "faqs", label: "FAQs", status: faqsStatus },
     ];
-  }, [tagline, subtitle, about, hero, services.length, content]);
+  }, [
+    tagline,
+    subtitle,
+    about,
+    hero,
+    services.length,
+    content,
+    profileQuery.data,
+    locationQuery.data,
+  ]);
 
   const active = sections.find((s) => s.id === activeSection) ?? sections[0];
   const sectionCopy: Record<string, { title: string; description: string }> = {
