@@ -483,7 +483,14 @@ export function CompletenessCard({
       <div className="flex items-center gap-4">
         <Ring value={pct} />
         <div className="min-w-0">
-          <p className="font-display text-[22px] font-semibold text-white">{pct}%</p>
+          <p
+            className={cn(
+              "font-display text-[22px] font-semibold",
+              pct === 100 ? "text-emerald-300" : "text-white",
+            )}
+          >
+            {pct}%
+          </p>
           <p className="text-[12px] text-white/55">
             {pct === 100
               ? "Your public page is ready."
@@ -518,7 +525,9 @@ export function CompletenessCard({
 function MiniRing({ value }: { value: number }) {
   const r = 14;
   const c = 2 * Math.PI * r;
-  const offset = c - (Math.max(0, Math.min(100, value)) / 100) * c;
+  const v = Math.max(0, Math.min(100, value));
+  const offset = c - (v / 100) * c;
+  const done = v >= 100;
   return (
     <svg width={36} height={36} viewBox="0 0 36 36" aria-hidden="true" className="shrink-0">
       <circle cx={18} cy={18} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={4} fill="none" />
@@ -526,7 +535,7 @@ function MiniRing({ value }: { value: number }) {
         cx={18}
         cy={18}
         r={r}
-        stroke="var(--reps-orange)"
+        stroke={done ? "rgb(52 211 153)" : "var(--reps-orange)"}
         strokeWidth={4}
         fill="none"
         strokeDasharray={c}
@@ -534,6 +543,16 @@ function MiniRing({ value }: { value: number }) {
         strokeLinecap="round"
         transform="rotate(-90 18 18)"
       />
+      {done ? (
+        <path
+          d="M12 18.5l4 4 8-8"
+          fill="none"
+          stroke="rgb(52 211 153)"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : null}
     </svg>
   );
 }
@@ -541,7 +560,9 @@ function MiniRing({ value }: { value: number }) {
 function Ring({ value }: { value: number }) {
   const r = 26;
   const c = 2 * Math.PI * r;
-  const offset = c - (value / 100) * c;
+  const v = Math.max(0, Math.min(100, value));
+  const offset = c - (v / 100) * c;
+  const done = v >= 100;
   return (
     <svg width={64} height={64} viewBox="0 0 64 64" aria-label={`${value}% complete`}>
       <circle cx={32} cy={32} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={6} fill="none" />
@@ -549,7 +570,7 @@ function Ring({ value }: { value: number }) {
         cx={32}
         cy={32}
         r={r}
-        stroke="var(--reps-orange)"
+        stroke={done ? "rgb(52 211 153)" : "var(--reps-orange)"}
         strokeWidth={6}
         fill="none"
         strokeDasharray={c}
@@ -557,6 +578,16 @@ function Ring({ value }: { value: number }) {
         strokeLinecap="round"
         transform="rotate(-90 32 32)"
       />
+      {done ? (
+        <path
+          d="M22 32.5l7 7 13-14"
+          fill="none"
+          stroke="rgb(52 211 153)"
+          strokeWidth={4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : null}
     </svg>
   );
 }
