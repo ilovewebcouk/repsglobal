@@ -297,7 +297,7 @@ export function NeedsAttention({
       tone: "warn",
       title: "Your listing is still a draft",
       detail: "Publish to appear on the REPS directory.",
-      to: "/dashboard/profile",
+      to: "/dashboard/website",
       cta: "Publish",
     });
   }
