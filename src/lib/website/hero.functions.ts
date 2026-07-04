@@ -49,6 +49,13 @@ const Style = z.enum(["editorial", "studio", "action"]);
 const AiInput = z.object({
   prompt: z.string().trim().min(3).max(400),
   style: Style.optional().default("editorial"),
+  // Optional: coach-supplied reference photo (data URL). When present, this
+  // is used as the likeness anchor instead of their profile avatar.
+  referenceDataUrl: z
+    .string()
+    .regex(/^data:image\/(jpeg|jpg|png|webp);base64,/i)
+    .max(8 * 1024 * 1024)
+    .optional(),
 });
 
 const STYLE_DIRECTION: Record<z.infer<typeof Style>, string> = {
