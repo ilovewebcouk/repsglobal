@@ -291,6 +291,16 @@ function WebsiteEditorPage() {
     onError: (e: Error) => toast.error(e.message || "Could not draft About"),
   });
 
+  // Invalidate every downstream query that depends on services so the
+  // sidebar dirty-dot, Publish button badge, section diff, and public
+  // preview all update immediately after a save/reorder/delete.
+  const invalidateWebsiteQueries = React.useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["my-website"] });
+    qc.invalidateQueries({ queryKey: ["my-website-content"] });
+    qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+    qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+  }, [qc]);
+
   const upsertServiceMut = useMutation({
     mutationFn: async (s: Partial<ServiceDTO> & { title: string }) => {
       // Enforce single "Most popular": when marking this one featured,
@@ -313,6 +323,7 @@ function WebsiteEditorPage() {
               is_featured: false,
               bullets: Array.isArray(o.bullets) ? o.bullets : [],
               cta_label: o.cta_label ?? null,
+              image_url: o.image_url ?? null,
             },
           });
         }
@@ -332,12 +343,13 @@ function WebsiteEditorPage() {
           is_featured: s.is_featured ?? false,
           bullets: Array.isArray(s.bullets) ? s.bullets : [],
           cta_label: s.cta_label ?? null,
+          image_url: s.image_url ?? null,
         },
       });
     },
     onSuccess: () => {
       toast.success("Service saved");
-      qc.invalidateQueries({ queryKey: ["my-website"] });
+      invalidateWebsiteQueries();
     },
     onError: (e: Error) => toast.error(e.message || "Could not save service"),
   });
@@ -362,12 +374,13 @@ function WebsiteEditorPage() {
             is_featured: o.is_featured ?? false,
             bullets: Array.isArray(o.bullets) ? o.bullets : [],
             cta_label: o.cta_label ?? null,
+            image_url: o.image_url ?? null,
           },
         });
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["my-website"] });
+      invalidateWebsiteQueries();
     },
     onError: (e: Error) => toast.error(e.message || "Could not reorder"),
   });
@@ -377,7 +390,7 @@ function WebsiteEditorPage() {
     mutationFn: (id: string) => deleteSvc({ data: { id } }),
     onSuccess: () => {
       toast.success("Service removed");
-      qc.invalidateQueries({ queryKey: ["my-website"] });
+      invalidateWebsiteQueries();
     },
   });
 
