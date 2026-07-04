@@ -619,6 +619,7 @@ function WebsiteEditorPage() {
           onReloadPreview={() => setReloadNonce((n) => n + 1)}
         >
           <div hidden={active.id !== "profile"}><ProfilePhotoPanel /></div>
+          <div hidden={active.id !== "contact"}><ContactSocialsPanel /></div>
           <div hidden={active.id !== "basics"}>
             <PPanel>
               <div className="border-b border-reps-border px-5 py-4">
