@@ -35,7 +35,7 @@ export const article: HelpArticle = {
         Break paragraphs into one-sentence lines. It reads better on mobile, which is where 70%
         of enquiries start.
       </Callout>
-      <DeepLinkButton to="/dashboard/profile" label="Edit your profile" />
+      <DeepLinkButton to="/dashboard/website" label="Edit your website" />
     </>
   ),
 };
