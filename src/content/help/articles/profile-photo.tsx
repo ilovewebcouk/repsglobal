@@ -15,7 +15,8 @@ export const article: HelpArticle = {
     <>
       <p>
         Profile photo is the strongest signal you give a prospective client. We measure it: a
-        clear headshot lifts enquiry rate by roughly 2x against the platform average.
+        clear photo of you — head-and-shoulders or waist-up — lifts enquiry rate by roughly 2x
+        against the platform average.
       </p>
       <h2 id="what-works">What works</h2>
       <ul>

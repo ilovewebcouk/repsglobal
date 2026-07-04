@@ -558,7 +558,7 @@ function WebsiteEditorPage() {
   const sectionCopy: Record<string, { title: string; description: string }> = {
     profile: {
       title: "Profile photo",
-      description: "A clear headshot helps clients trust and recognise you.",
+      description: "A clear photo of you (head-and-shoulders or waist-up) helps clients trust and recognise you.",
     },
     basics: {
       title: "Website basics",

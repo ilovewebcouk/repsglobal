@@ -349,7 +349,7 @@ export function ProfilePhotoPanel() {
         <div className="border-b border-reps-border px-5 py-4">
           <h3 className="text-[14px] font-semibold text-white">Profile photo</h3>
           <p className="mt-0.5 text-[12px] text-white/55">
-            A clear headshot helps clients trust and recognise you.
+            A clear photo of you (head-and-shoulders or waist-up) helps clients trust and recognise you.
           </p>
         </div>
         <div className="p-5">
@@ -408,7 +408,7 @@ export function ProfilePhotoPanel() {
                 ) : null}
               </div>
               <p className="text-[11px] text-white/45">
-                Real headshot only · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
+                Real photo of you (head-and-shoulders or waist-up) · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
               </p>
             </div>
           </div>
@@ -430,7 +430,7 @@ export function ProfilePhotoPanel() {
             <ul className="list-disc space-y-0.5 pl-4 text-white/70">
               <li>A clear photograph of you (not a logo, illustration or graphic)</li>
               <li>Just you — no group photos</li>
-              <li>Head-and-shoulders, face clearly visible</li>
+              <li>Head-and-shoulders or waist-up, face clearly visible</li>
               <li>Good lighting, in focus</li>
             </ul>
           </DashboardDialogNote>
@@ -471,7 +471,7 @@ export function ProfilePhotoPanel() {
                 </DashboardDialogDescription>
               </DashboardDialogHeader>
               <DashboardDialogNote>
-                Most pros prefer their real photo. Use AI only if you don't have a good headshot yet.
+                Most pros prefer their real photo. Use AI only if you don't have a good photo of yourself yet.
               </DashboardDialogNote>
               <DashboardDialogFooter>
                 <DashboardButton
