@@ -736,6 +736,7 @@ function CoachWebsitePage() {
         live.transformations,
         live.clientResults,
         live.faqs,
+        isFixture,
       )
     : baseCoach!;
   if (!isFixture && reviewsData) {
