@@ -119,6 +119,8 @@ type Coach = {
   verifiedSince: string;
   insuranceUntil: string;
   accent: AccentKey;
+  /** When set, overrides the AccentKey palette with a raw hex value from `websites.accent_hex`. */
+  accentHex?: string | null;
   modes: ("In-person" | "Online")[];
   specialisms: string[];
   tiers: Tier[];
