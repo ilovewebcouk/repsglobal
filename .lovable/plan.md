@@ -1,92 +1,96 @@
-## The problem
+# Website editor — full remediation plan
 
-The dashboard has two "am I done?" widgets that disagree with the actual Website editor:
+Fix all 56 audit findings across 6 sequential phases. Phases are ordered so each ships value on its own and the risky changes (DB, publish flow) land after the safety-net changes (error paths, unsaved-work guard).
 
-- **Profile completeness** (`src/lib/dashboard/profileCompleteness.ts`) checks 7 polish items only: name/city, About (>80 chars), avatar, specialisms, languages, phone, one social. It never looks at Website basics (tagline/subtitle/hero), Coaching plans, How I coach, Client results, FAQs, or whether the site has ever been published. It also never looks at verification (identity/insurance/qualifications) or education (certs uploaded). Result: a trainer with a 6/9 IN PROGRESS, never-published website sees **100% – "Looking great"**.
-- **Needs your attention** (`NeedsAttention` in `src/components/dashboard/hub/index.tsx`) checks `isPublished` from `professionals.is_published`. That flag is set to `true` at signup by defaults / legacy code (`website.functions.ts` lines 444, 461, 484) and is unrelated to whether the trainer has clicked **Publish** in the Website editor. Real publish state lives on `websites.published_at` / `websites.has_unpublished_changes` (see `getMyPublishState`). Result: the "Your listing is still a draft" card never fires, even for sites that were never published.
-- Neither widget shows *which* section is broken, so a trainer sees "All caught up" and has no cue to open the editor.
+**Demo preservation rule (applies to all phases):** the existing `isFixture` flag on `/c/$slug` already flags `james-wilson` and any other slug in the `COACHES` fixture map. Every "no more fake fallback / hardcoded copy" change is gated on `!isFixture`, so `/c/james-wilson` keeps its full polished look; real coaches get real-only content.
 
-Verified via DB: every recent professional row has `is_published=true`, but many have `has_hero=false`, `has_method=false`, `pillar_ct=0`, etc. The two widgets are wallpapering over real gaps.
+## Assumed defaults (call out now to reject before Phase 1 lands)
 
-## What "100%" should mean
+- Never-published sites → `notFound()` (404), no "coming soon" placeholder.
+- Hardcoded "100+ clients trained" and "3 of 20 spaces" widgets → **hidden** on real coach pages until a proper editor field ships (not shown as blank/zero).
+- Fixture fallback (photos, quotes, FAQs) → real coaches with zero content render **empty sections that self-hide**, not empty shells with headers.
+- Atomic discard → implemented via a single Postgres RPC transaction (cleanest fix for #15).
+- Section source-of-truth unification → one shared `computeWebsiteSections` helper, extended to include contact + profile in the diff and discard flows.
 
-Redefine the trainer's overall readiness as three equally-weighted pillars, matching what actually determines whether their public page works and ranks:
+---
 
-1. **Website** — every editor section done (Profile photo, Website basics, Specialisms, Where I train, Coaching plans, How I coach, Client results, FAQs, Languages & socials) **AND** the site has been published at least once with no unpublished changes.
-2. **Verification** — 3 REPS ticks: identity, insurance, qualifications (already computed by `getTrustState`).
-3. **Education / CPD** — at least one qualification certificate uploaded (`professionals.cert_uploaded_at`). This is the "education" pillar the trainer mentioned; it overlaps with Verified qualifications but is surfaced separately so unverified members still see the ask.
+## Phase 1 — Ship-blockers (data loss + trust + security)
 
-Percentage = weighted roll-up (Website 50%, Verification 30%, Education 20%), so "100%" only appears when the public page is genuinely ready to send traffic to.
+1. `dashboard_.website.tsx:432–443` — `publishMut` always calls `saveAll()` and awaits it. `saveAll()` becomes return-awaitable by holding a `Promise` on a ref that child editors resolve after their save mutation completes. Fixes #3, #D-01.
+2. `c.$slug.index.tsx:515–518` — `mergeLiveIntoCoach` no longer falls back to fixture arrays for transformations / testimonials / faqs / clients / hero widgets when `!isFixture`. Public page renders empty sections that self-hide. Fixes #1, #22, #23.
+3. `website.functions.ts:551–564` — `getWebsiteBySlug` returns `null` when there's no snapshot and no valid preview token; `/c/$slug` loader throws `notFound()`. Fixes #2.
+4. `website-content.functions.ts:236,278,319` — add ownership pre-check (`select id where id = data.id and user_id = context.userId`) before every admin-client upsert on transformations / client-results / faqs. Fixes #4.
+5. `dashboard_.website.tsx:102–115` — `Field` renders `<label htmlFor>`; all fields pass a stable `id` (via `useId`). Fixes #5, #A-03.
 
-## Plan
+## Phase 2 — Editor ↔ public rendering drift + error/UX safety net
 
-### 1. New shared readiness computation
+6. Render `accent_hex` — map into `coach.accent` in `mergeLiveIntoCoach` and expose as `--accent-color` CSS var. Fixes #6.
+7. Render `services.image_url` on `TierCard`. Fixes #7.
+8. Add `isError` branch with retry to all six `useQuery` calls in the editor (skeleton for loading, inline error for failure). Fixes #8, #L-01…L-04.
+9. Cache invalidation: every service/content/FAQ/result mutation invalidates `my-website`, `my-website-publish-state`, `my-website-section-diff`. Delete the dead `updatedAt` effect at `dashboard_.website.tsx:498`. Fixes #9, #10, #C-01…C-05.
+10. Add `useBlocker` guard tied to a unified `anyLocalDirty` flag exposed by `WebsiteContentEditor`. Fixes #11, #D-02.
+11. Replace `CropperModal` bare div with shadcn `Dialog` (title, focus trap, aria). Fixes #12, #A-02.
+12. Harden URL-paste in `HeroImageEditor`: `AbortController` timeout (10s), `HEAD` check for `Content-Type: image/*`, 20 MB response cap via streaming reader, `reader.onerror` toast, `data:image/` guard before crop. Fixes #13, #H-01, #H-02, #H-04.
+13. Publish dialog awaits `sectionDiffQuery.isFetching === false` before opening, so first-publish copy never flashes. Fixes #33.
 
-Create `src/lib/dashboard/readiness.ts`:
+## Phase 3 — Publish / discard / diff correctness
 
-- `computeWebsiteSections(profile, website, services, publishState)` — reuses the exact same 9-section rules already in `dashboard_.website.tsx` (lines 511–582) so the sidebar and the dashboard agree byte-for-byte. Extract them into this helper and import from both places (kills a real drift bug — today the two lists can diverge).
-- `computeReadiness({ profile, website, services, publishState, trust })` returns:
-  ```ts
-  {
-    pct: number,                 // weighted overall
-    website:  { pct, done, total, sections: [{ id, label, status, to }], everPublished, hasUnpublished },
-    verification: { pct, ticks, missing: ("identity"|"insurance"|"qualifications")[] },
-    education:    { pct, hasCert },
-  }
-  ```
+14. Unify section source of truth — extend `computeWebsiteSections` return shape and use it in `getMySectionDiff`, `DiscardableSection`, sidebar, and readiness. Fixes #27, #28.
+15. `getMySectionDiff` compares `client_results_intro` inside `resultsDirty`, adds `clientResults` to the snap type and comparison. Fixes #25, #26.
+16. `DiscardableSection` gains `specialisms`, `location`, `profile`, `contact` with server handlers. Fixes #17, #F-11.
+17. `discardMySectionChanges` uses one atomic RPC (Postgres function `discard_website_section` with `BEGIN…COMMIT`) for services / transformations / faqs / client_results; preserves service `id` values via `upsert` + tombstone delete of rows-not-in-snapshot. Fixes #15, #F-04, #47.
+18. Discard restores `website_client_results` in `results` section. Fixes #14.
+19. Discard explicitly clears `has_unpublished_changes` after re-diff shows clean. Fixes #16, #F-05.
+20. `getMyPublishState` returns `has_unpublished_changes: false` when no `websites` row exists. Fixes #38.
+21. `publishMyWebsite` separates subscription check from data read so lapsed subscribers see "Your subscription is inactive" instead of "Nothing to publish yet". Fixes #39.
 
-### 2. Rework Profile completeness card
+## Phase 4 — DB & security hardening (single migration, reviewed together)
 
-Rename card to **"Your REPS readiness"** and rewrite `CompletenessCard`:
+22. Tighten RLS on `website_client_results`, `website_faqs`, `website_transformations` — public SELECT changes from `USING (true)` to `USING (is_published = true)`; owner SELECT policy added for editor reads. Fixes #19, #F-08.
+23. Create `public.websites_public_v` view that strips `published_snapshot`, `has_unpublished_changes`, `published_at`; anon policy on the base table swapped to the view. Fixes #20, #F-07.
+24. Add `websites.defaults_seeded_at` column; gate `ensureDefaultServices` on it. Fixes #29, #F-13.
+25. Add `discard_website_section(section text, snapshot jsonb)` RPC used by Phase 3 item 17.
+26. Add `service_email` (or reuse `contact_email`) to `professionals` if needed for #43.
 
-- Ring shows overall weighted pct.
-- Three stacked rows (Website / Verification / Education) each with mini pct + one-line status ("6 of 9 sections", "Identity + Insurance done, add qualifications", "Add a certificate").
-- Each row is a link deep into the right editor.
-- Keep it visually the same shape as today (one ring + a checklist below), just three grouped rows instead of 7 polish items.
+Migration reviewed by user before it runs.
 
-### 3. Rework Needs your attention
+## Phase 5 — Fixture-copy leaks + cosmetic bugs + tokens
 
-In `NeedsAttention`:
+27. `AboutSection` H2 (`c.$slug.index.tsx:1262`) becomes coach-name-driven when `!isFixture`. Fixes #21.
+28. `ServicesSection` subheading generic when `!isFixture`. Fixes #24.
+29. `ServiceEditDialog` — title reflects add-vs-edit; save button copy differs; add `FieldCounter` to all capped inputs. Fixes #34, #V-01, #B-01, #B-02.
+30. `PillarEditDialog` requires non-empty body to save. Fixes #37.
+31. Replace raw "Loading…" strings with proper `Skeleton` components. Fixes #35.
+32. Replace hardcoded `emerald-*` / `amber-*` / `red-*` classes with `--reps-status-done/partial/empty/destructive` tokens in `src/styles.css`; shared `StatusDot` / `StatusPill` component consumed by both `WebsiteEditorLayout` and `WebsiteSectionsSidebar`. Fixes #36, #T-01…T-04.
+33. Remove dead `blocked = false` const and `void isPro;` computation. Fixes #B-03, #B-04.
 
-- Drop the current `profilePct < 100` catch-all row.
-- Add per-website-section attention items generated from the shared readiness helper, e.g.:
-  - "Add your hero image and About copy" → `/dashboard/website` (basics)
-  - "Add your 3 coaching plans" → `/dashboard/website` (plans)
-  - "Describe how you coach" → `/dashboard/website` (method)
-  - "Add at least one client result" → `/dashboard/website` (results)
-  - "Answer common FAQs" → `/dashboard/website` (faqs)
-  - "Add languages, phone or a social link" → `/dashboard/website` (contact)
-  - Only surface sections that are `partial` or `empty`; cap total site-related rows at 3 to avoid a wall of noise; a "+N more" chip links to the editor for the rest.
-- Replace the current publish check (`isPublished` from `professionals.is_published`) with `getMyPublishState`:
-  - If `ever_published === false`: **"Your website has never been published"** → Publish now.
-  - Else if `has_unpublished_changes === true`: **"You have unpublished website changes"** → Review & publish.
-  - Otherwise no row.
-- Keep enquiries / review replies / insurance / verification / support rows as they are.
+## Phase 6 — Low / nit cleanup
 
-### 4. Wire the new data
+34. `hero.functions.ts` / `service-image.functions.ts` — dynamic-import style anchor + bundle asset as base64 constant (drop `node:fs` + `process.cwd()` from module scope). Fixes #18, #F-03, #F-21.
+35. Extract shared `assembleWebsiteDTO()` used by both `getMyWebsite` and `getWebsiteBySlug`; also extract `asVenues`/`asPillars`/`asReach` into `coerce.ts`. Fixes #30, #F-19.
+36. Add `Cache-Control: public, s-maxage=60, stale-while-revalidate=600` header on `/c/$slug` GET; bust via revalidation on publish. Fixes #31.
+37. `/c/$slug` client-side `useQuery` preserves `preview` param in `queryKey` + `queryFn`. Fixes #32, #2.2.
+38. Emit `robots: noindex,nofollow` in `/c/$slug` `head()` when `deps.preview` is set. Fixes #44, #3.2.
+39. Zod `max` on all image `dataUrl` schemas = decoded byte cap × 1.4. Fixes #40, #F-06.
+40. Add `"linkedin"` (+`"email"` for real coaches) kind to socials union; `buildSocials` maps LinkedIn correctly. Fixes #41, #43.
+41. Remove dead `professionals.headline` from DTO. Fixes #42.
+42. `verifyPreviewToken` uses `split(":", 2)` with proper reconstruction; TTL constant re-exported from `preview-token.server.ts`. Fixes #45, #46, #F-15, #F-16.
+43. `asVenues` reads stored `kind` when present. Fixes #51, #F-18.
+44. Add domain allowlist regex to `image_url` fields (Supabase Storage URLs for this project). Fixes #48, #F-05.
+45. Cloudflare Worker cron / scheduled cleanup task deletes hero/service objects with no `image_url` row reference older than 24h. Fixes #49, #F-17.
+46. Sticky mobile bar uses `coach.aboutImage`. Fixes #50, #9.1.
+47. Replace London-specific `default-services.ts` copy with city-agnostic placeholder. Fixes #53, #F-26.
+48. `FieldCounter` uses `aria-live="off"` and announces on blur only. Fixes #54, #A-06.
+49. Restructure `SidebarMenuButton` discard trigger to sibling (no button-in-button). Fixes #55, #A-05.
+50. Add `FieldCounter` under all capped inputs identified in the audit (Results dialog, Hero AI prompt, Cities). Fixes #56, #V-02, #V-04, #V-05.
 
-- Add `getMyPublishState` to `useHubData` (already exists in `publish.functions.ts`) and pass it into both cards.
-- Pass `hub.website.data` (services, transformations, faqs, method_*) into the readiness helper — `useHubData` already fetches it, it just isn't used by these cards.
-- Extract and share the section-status logic between `dashboard_.website.tsx` and the new helper so the sidebar's "6/9 IN PROGRESS" and the dashboard's "6 of 9 sections" are guaranteed to match.
+## Out of scope (explicit)
 
-### 5. Backward-safe DB check
+- Column-level RLS on `published_snapshot` (view approach used instead).
+- Rewriting `/c/$slug.index.tsx` (1968 lines) — only surgical edits per findings.
+- Redesign of any section — audit fixes only.
+- New editor fields for "clients trained" and "spaces available" — widgets are hidden, not added.
 
-No migration required — every field is already tracked. As a small correctness fix, stop trusting `professionals.is_published` as the "website is live" signal anywhere on the dashboard; use `websites.published_at` via `getMyPublishState` instead. `professionals.is_published` stays as-is for directory eligibility (that's a separate concern owned by admin/verification flow).
+## Delivery order
 
-### 6. QA / verification pass
-
-After the change, verify on the current demo account (Charlotte Evans, `about_len=695`, `has_hero=false`, `has_method=false`, `pillar_ct=0`, `ever_published=true`, `has_unpublished_changes=false`):
-
-- Readiness ring should read roughly ~65–75% (Website partial, Verification varies, Education varies), NOT 100%.
-- Needs-your-attention should surface Website basics (hero missing), How I coach (empty), FAQs (empty), and whichever verification / education tick is missing.
-- Sidebar `6/9` and dashboard "6 of 9 sections" must match exactly.
-- A brand-new sign-up should see ~0% and a full checklist.
-- A trainer with all sections done + published + all 3 ticks + cert uploaded should be the only path to 100%.
-
-### Technical notes (implementation)
-
-- Weights (Website 50 / Verification 30 / Education 20) live in a single constant in `readiness.ts` so they can be tuned later without hunting.
-- `computeWebsiteSections` returns the same `SectionStatus` union (`done` / `partial` / `empty`) already used by the sidebar; the sidebar and dashboard both consume the same shape.
-- Deep-links use existing `activeSection` support in the website editor via `/dashboard/website` + section anchor / stored active tab (already handled by that route).
-- No changes to Verified badge logic — `getTrustState` remains the single source of truth.
-- Legacy `profileCompleteness.ts` stays exported for one release but delegates to `computeReadiness().website.pct` so any stray consumers keep working; remove in a follow-up.
+Each phase ships as one edit batch, verified, then next phase starts. Phase 4 (migration) is presented on its own for review before running. Total ~50 file touches across the 6 phases.
