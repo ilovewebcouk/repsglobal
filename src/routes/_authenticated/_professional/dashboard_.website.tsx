@@ -461,35 +461,40 @@ function WebsiteEditorPage() {
   // content changed since last publish.
   const isDirty = basicsDirty || !!publishState?.has_unpublished_changes;
 
-  const saveAll = React.useCallback(() => {
-    return new Promise<void>((resolve, reject) => {
+  const saveAll = React.useCallback(async () => {
+    // Fire the legacy event for any listeners that haven't migrated to the
+    // flusher registry yet (harmless when registry is fully adopted).
+    window.dispatchEvent(new CustomEvent("reps:website:save-all"));
+    // Wait for BOTH the basics mutation and every child section flusher.
+    const basicsPromise = new Promise<void>((resolve, reject) => {
       saveMutation.mutate(undefined, {
-        onSuccess: () => {
-          // Fan-out to child sections that own their own local state.
-          window.dispatchEvent(new CustomEvent("reps:website:save-all"));
-          resolve();
-        },
+        onSuccess: () => resolve(),
         onError: (e) => reject(e),
       });
     });
+    await Promise.all([basicsPromise, runAllFlushers()]);
   }, [saveMutation]);
 
   const publishMut = useMutation({
     mutationFn: async () => {
-      if (basicsDirty) {
-        suppressSaveToastRef.current = true;
-        try {
-          await saveAll();
-        } catch (e) {
-          throw new Error((e as Error).message || "Save failed");
-        } finally {
-          suppressSaveToastRef.current = false;
-        }
+      // Always flush every editor (basics + every registered child) BEFORE
+      // publish. Never gate on basicsDirty — a clean basics row doesn't mean
+      // clean method/plans/results/faqs. Silently skipping caused snapshots
+      // to be built from stale server rows, losing coach edits.
+      suppressSaveToastRef.current = true;
+      try {
+        await saveAll();
+      } catch (e) {
+        throw new Error((e as Error).message || "Save failed");
+      } finally {
+        suppressSaveToastRef.current = false;
       }
       return publishNowFn();
     },
     onSuccess: () => {
       toast.success("Website published — your public page is live.");
+      qc.invalidateQueries({ queryKey: ["my-website"] });
+      qc.invalidateQueries({ queryKey: ["my-website-content"] });
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
       qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
       setPublishDialogOpen(false);
