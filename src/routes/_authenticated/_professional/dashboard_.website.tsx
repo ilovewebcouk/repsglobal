@@ -1765,8 +1765,16 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
           </div>
           <TransformationsEditor
             items={data.transformations}
-            onSave={(t) => upsertT({ data: t }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
-            onDelete={(id) => delT({ data: { id } }).then(() => qc.invalidateQueries({ queryKey: ["my-website-content"] }))}
+            onSave={(t) => upsertT({ data: t }).then(() => {
+              qc.invalidateQueries({ queryKey: ["my-website-content"] });
+              qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+              qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+            })}
+            onDelete={(id) => delT({ data: { id } }).then(() => {
+              qc.invalidateQueries({ queryKey: ["my-website-content"] });
+              qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+              qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+            })}
           />
         </PPanel>
       </section>
