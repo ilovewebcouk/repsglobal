@@ -1,77 +1,92 @@
-# Retire `/dashboard/profile`, fold its pieces into Verification + Website
+## The problem
 
-## Brutal honest truth
+The dashboard has two "am I done?" widgets that disagree with the actual Website editor:
 
-You're right — `/dashboard/profile` is a vestigial page. Every card on it already has a better home:
+- **Profile completeness** (`src/lib/dashboard/profileCompleteness.ts`) checks 7 polish items only: name/city, About (>80 chars), avatar, specialisms, languages, phone, one social. It never looks at Website basics (tagline/subtitle/hero), Coaching plans, How I coach, Client results, FAQs, or whether the site has ever been published. It also never looks at verification (identity/insurance/qualifications) or education (certs uploaded). Result: a trainer with a 6/9 IN PROGRESS, never-published website sees **100% – "Looking great"**.
+- **Needs your attention** (`NeedsAttention` in `src/components/dashboard/hub/index.tsx`) checks `isPublished` from `professionals.is_published`. That flag is set to `true` at signup by defaults / legacy code (`website.functions.ts` lines 444, 461, 484) and is unrelated to whether the trainer has clicked **Publish** in the Website editor. Real publish state lives on `websites.published_at` / `websites.has_unpublished_changes` (see `getMyPublishState`). Result: the "Your listing is still a draft" card never fires, even for sites that were never published.
+- Neither widget shows *which* section is broken, so a trainer sees "All caught up" and has no cue to open the editor.
 
-| Card on `/dashboard/profile` today | Better home | Why |
-| --- | --- | --- |
-| **01 Identity** (legal name + profession) | `/dashboard/verification` | These ARE identity fields — legal name has to match your ID; profession is derived from the qualifications you upload. Users only touch them when Stripe or an admin flags a mismatch. Verification is where they'll look. |
-| **02 Your pitch** (tagline + about) | `/dashboard/website` | Already there. `websites.tagline` + `websites.about` are what ship on `/c/$slug`. `professionals.headline` and `professionals.bio` are legacy duplicates. |
-| **03 Specialisms** | `/dashboard/website` | Already there ("Specialisms" section in the website editor sidebar). |
-| **04 Languages & socials** | `/dashboard/website` | Not there yet — needs to be added, but conceptually correct (both surface on `/c/$slug`). |
+Verified via DB: every recent professional row has `is_published=true`, but many have `has_hero=false`, `has_method=false`, `pillar_ct=0`, etc. The two widgets are wallpapering over real gaps.
 
-On the migration question — **there is nothing to migrate.** I checked:
+## What "100%" should mean
 
-- **333/333** pros already have `websites.about` populated.
-- **333/333** pros already have `websites.tagline` populated.
-- **0** pros have a `bio` that isn't already mirrored to `websites.about`.
-- **149/333** have drift (someone edited one field but not the other). For these, **`websites.about` is already what ships publicly**, so nothing gets lost — we just stop letting the old copy get out of sync.
+Redefine the trainer's overall readiness as three equally-weighted pillars, matching what actually determines whether their public page works and ranks:
 
-No data migration, no admin action needed.
+1. **Website** — every editor section done (Profile photo, Website basics, Specialisms, Where I train, Coaching plans, How I coach, Client results, FAQs, Languages & socials) **AND** the site has been published at least once with no unpublished changes.
+2. **Verification** — 3 REPS ticks: identity, insurance, qualifications (already computed by `getTrustState`).
+3. **Education / CPD** — at least one qualification certificate uploaded (`professionals.cert_uploaded_at`). This is the "education" pillar the trainer mentioned; it overlaps with Verified qualifications but is surfaced separately so unverified members still see the ask.
 
-## What to build
+Percentage = weighted roll-up (Website 50%, Verification 30%, Education 20%), so "100%" only appears when the public page is genuinely ready to send traffic to.
 
-### 1. Move Identity into Verification
+## Plan
 
-In `src/routes/_authenticated/_professional/dashboard_.verification.tsx`, add a new card at the top **above** the three trust steps:
+### 1. New shared readiness computation
 
-- **Name & profession** — legal name (respecting `profile.legal_name_locked`), `EarnedTitlePicker` for profession.
-- Uses the same `upsertMyDashboardProfile` server fn; no schema change.
-- Small explainer: *"Your legal name must match your government ID and your qualification certificates. Profession is unlocked by the qualifications you upload below."*
+Create `src/lib/dashboard/readiness.ts`:
 
-### 2. Add the missing website surfaces
+- `computeWebsiteSections(profile, website, services, publishState)` — reuses the exact same 9-section rules already in `dashboard_.website.tsx` (lines 511–582) so the sidebar and the dashboard agree byte-for-byte. Extract them into this helper and import from both places (kills a real drift bug — today the two lists can diverge).
+- `computeReadiness({ profile, website, services, publishState, trust })` returns:
+  ```ts
+  {
+    pct: number,                 // weighted overall
+    website:  { pct, done, total, sections: [{ id, label, status, to }], everPublished, hasUnpublished },
+    verification: { pct, ticks, missing: ("identity"|"insurance"|"qualifications")[] },
+    education:    { pct, hasCert },
+  }
+  ```
 
-In the website editor, add three new sections to the sidebar so the field parity is complete before we delete the profile page:
+### 2. Rework Profile completeness card
 
-- **Languages spoken** — reuse existing `LanguagePicker`.
-- **Social links** — reuse existing `SocialLinksPicker`.
-- **Contact phone** — small single input.
+Rename card to **"Your REPS readiness"** and rewrite `CompletenessCard`:
 
-These write to the same `professionals` columns they always have (`languages`, `social_*`, `contact_phone`) — website editor becomes the sole editor for those columns. Each gets its own status pill in the completeness rail.
+- Ring shows overall weighted pct.
+- Three stacked rows (Website / Verification / Education) each with mini pct + one-line status ("6 of 9 sections", "Identity + Insurance done, add qualifications", "Add a certificate").
+- Each row is a link deep into the right editor.
+- Keep it visually the same shape as today (one ring + a checklist below), just three grouped rows instead of 7 polish items.
 
-### 3. Delete `/dashboard/profile`
+### 3. Rework Needs your attention
 
-- Delete `src/routes/_authenticated/_professional/dashboard_.profile.tsx`.
-- Remove "Public Profile" from `VERIFIED_NAV` and `PRO_NAV` in `src/components/dashboard/nav-data.ts`.
-- Rewrite every remaining `to: "/dashboard/profile"` link:
+In `NeedsAttention`:
 
-  | Site | Currently points to `/dashboard/profile` | Repoint to |
-  | --- | --- | --- |
-  | `WelcomeBanner` "Finish profile" CTA | `/dashboard/profile` | `/dashboard/website` |
-  | `NeedsAttention` "Polish" row | `/dashboard/profile` | `/dashboard/website` |
-  | `NeedsAttention` "Publish" row | `/dashboard/profile` | `/dashboard/website` |
-  | `CompletenessCard` "Edit profile" footer | `/dashboard/profile` | `/dashboard/website` |
-  | `DashboardDemoContent` "View profile" | `/dashboard/profile` | `/dashboard/website` |
-  | `TrustBlock` "Complete your profile" | `/dashboard/profile` | `/dashboard/verification` |
-  | Reviews page CTA | `/dashboard/profile` | `/dashboard/website` |
+- Drop the current `profilePct < 100` catch-all row.
+- Add per-website-section attention items generated from the shared readiness helper, e.g.:
+  - "Add your hero image and About copy" → `/dashboard/website` (basics)
+  - "Add your 3 coaching plans" → `/dashboard/website` (plans)
+  - "Describe how you coach" → `/dashboard/website` (method)
+  - "Add at least one client result" → `/dashboard/website` (results)
+  - "Answer common FAQs" → `/dashboard/website` (faqs)
+  - "Add languages, phone or a social link" → `/dashboard/website` (contact)
+  - Only surface sections that are `partial` or `empty`; cap total site-related rows at 3 to avoid a wall of noise; a "+N more" chip links to the editor for the rest.
+- Replace the current publish check (`isPublished` from `professionals.is_published`) with `getMyPublishState`:
+  - If `ever_published === false`: **"Your website has never been published"** → Publish now.
+  - Else if `has_unpublished_changes === true`: **"You have unpublished website changes"** → Review & publish.
+  - Otherwise no row.
+- Keep enquiries / review replies / insurance / verification / support rows as they are.
 
-### 4. Deprecate the legacy columns quietly
+### 4. Wire the new data
 
-- `professionals.bio` and `professionals.headline` stay in the schema — old rows still hold data, and some public reads may still fall back to them — but nothing in the app writes to them any more.
-- Audit which public reads still use them (`/c/$slug`, `/pro/$slug`, directory cards) and switch to `websites.about` / `websites.tagline` as the primary source with the legacy column as fallback. This is a one-file check and swap.
+- Add `getMyPublishState` to `useHubData` (already exists in `publish.functions.ts`) and pass it into both cards.
+- Pass `hub.website.data` (services, transformations, faqs, method_*) into the readiness helper — `useHubData` already fetches it, it just isn't used by these cards.
+- Extract and share the section-status logic between `dashboard_.website.tsx` and the new helper so the sidebar's "6/9 IN PROGRESS" and the dashboard's "6 of 9 sections" are guaranteed to match.
 
-## Out of scope (say so if you want it added)
+### 5. Backward-safe DB check
 
-- The dashboard-home "Needs your attention" / "Profile completeness" merge from the previous message — I'll do that as a separate pass once this is landed, because the completeness score will need to be redefined against the new field homes.
-- No SQL migration.
-- No admin tool to reconcile the 149 drifted `bio` vs `about` rows — `websites.about` already ships, so silently keeping the newer copy is correct.
+No migration required — every field is already tracked. As a small correctness fix, stop trusting `professionals.is_published` as the "website is live" signal anywhere on the dashboard; use `websites.published_at` via `getMyPublishState` instead. `professionals.is_published` stays as-is for directory eligibility (that's a separate concern owned by admin/verification flow).
 
-## Files touched
+### 6. QA / verification pass
 
-- `src/routes/_authenticated/_professional/dashboard_.verification.tsx` — add Name & profession card at top.
-- `src/routes/_authenticated/_professional/dashboard_.website.tsx` — add Languages / Socials / Contact phone sections and their sidebar entries.
-- `src/components/dashboard/nav-data.ts` — remove "Public Profile" from both nav constants.
-- `src/components/dashboard/hub/index.tsx`, `src/components/dashboard/DashboardDemoContent.tsx`, `src/components/dashboard/verification/TrustBlock.tsx`, `src/routes/_authenticated/_professional/dashboard_.reviews.tsx` — repoint links.
-- `src/routes/_authenticated/_professional/dashboard_.profile.tsx` — delete.
-- Public-facing reads that still consume `professionals.bio` / `.headline` — one grep + swap.
+After the change, verify on the current demo account (Charlotte Evans, `about_len=695`, `has_hero=false`, `has_method=false`, `pillar_ct=0`, `ever_published=true`, `has_unpublished_changes=false`):
+
+- Readiness ring should read roughly ~65–75% (Website partial, Verification varies, Education varies), NOT 100%.
+- Needs-your-attention should surface Website basics (hero missing), How I coach (empty), FAQs (empty), and whichever verification / education tick is missing.
+- Sidebar `6/9` and dashboard "6 of 9 sections" must match exactly.
+- A brand-new sign-up should see ~0% and a full checklist.
+- A trainer with all sections done + published + all 3 ticks + cert uploaded should be the only path to 100%.
+
+### Technical notes (implementation)
+
+- Weights (Website 50 / Verification 30 / Education 20) live in a single constant in `readiness.ts` so they can be tuned later without hunting.
+- `computeWebsiteSections` returns the same `SectionStatus` union (`done` / `partial` / `empty`) already used by the sidebar; the sidebar and dashboard both consume the same shape.
+- Deep-links use existing `activeSection` support in the website editor via `/dashboard/website` + section anchor / stored active tab (already handled by that route).
+- No changes to Verified badge logic — `getTrustState` remains the single source of truth.
+- Legacy `profileCompleteness.ts` stays exported for one release but delegates to `computeReadiness().website.pct` so any stray consumers keep working; remove in a follow-up.

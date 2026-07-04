@@ -34,10 +34,10 @@ import { ProfilePhotoPanel } from "@/components/dashboard/ProfilePhotoPanel";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   WebsiteEditorLayout,
-  type SectionStatus,
   type WebsiteEditorSection,
 } from "@/components/dashboard/website/WebsiteEditorLayout";
 import { WebsiteSectionsSidebar } from "@/components/dashboard/website/WebsiteSectionsSidebar";
+import { computeWebsiteSections } from "@/lib/dashboard/website-sections";
 import {
   Dialog,
   DialogContent,
@@ -510,76 +510,38 @@ function WebsiteEditorPage() {
   // specialisms → location → plans → method → results → faqs.
   const sections: WebsiteEditorSection[] = React.useMemo(() => {
     const trimmed = (s: string | null | undefined) => (s ?? "").trim();
-
     const profile = profileQuery.data;
-    const photoStatus: SectionStatus = profile?.avatar_url ? "done" : "empty";
-
-    const basicsFilled = [tagline, subtitle, about, hero].filter((v) => trimmed(v)).length;
-    const basicsStatus: SectionStatus =
-      basicsFilled === 4 ? "done" : basicsFilled === 0 ? "empty" : "partial";
-
-    const specialismCount = profile?.specialisms?.length ?? 0;
-    const specialismsStatus: SectionStatus = specialismCount > 0 ? "done" : "empty";
-
     const loc = locationQuery.data;
-    const hasPostcode = !!trimmed(loc?.postcode ?? "");
-    const hasDelivery = !!(profile?.in_person_available || profile?.online_available);
-    const locationStatus: SectionStatus = hasPostcode && hasDelivery
-      ? "done"
-      : hasPostcode || hasDelivery
-        ? "partial"
-        : "empty";
 
-    const plansStatus: SectionStatus =
-      services.length >= 3 ? "done" : services.length > 0 ? "partial" : "empty";
-
-    const methodPillars = (content?.content.method_pillars ?? []).filter(
+    const methodPillarCount = (content?.content.method_pillars ?? []).filter(
       (p) => p.title?.trim() && p.body?.trim(),
-    );
-    const methodStatus: SectionStatus = !content
-      ? "empty"
-      : content.content.method_name && methodPillars.length >= 3
-        ? "done"
-        : content.content.method_name || methodPillars.length
-          ? "partial"
-          : "empty";
+    ).length;
 
-    const resultsStatus: SectionStatus = !content
-      ? "empty"
-      : (content.transformations?.length ?? 0) >= 1
-        ? "done"
-        : "empty";
-
-    const faqsStatus: SectionStatus = !content
-      ? "empty"
-      : (content.faqs?.length ?? 0) >= 1
-        ? "done"
-        : "empty";
-
-    const langCount = profile?.languages?.length ?? 0;
-    const socialsCount = [
-      profile?.social_instagram,
-      profile?.social_linkedin,
-      profile?.social_youtube,
-      profile?.social_tiktok,
-      profile?.social_x,
-    ].filter((v) => !!v?.trim()).length;
-    const hasPhone = !!trimmed(profile?.contact_phone ?? "");
-    const contactFilled = [langCount > 0, socialsCount > 0, hasPhone].filter(Boolean).length;
-    const contactStatus: SectionStatus =
-      contactFilled === 3 ? "done" : contactFilled === 0 ? "empty" : "partial";
-
-    return [
-      { id: "profile", label: "Profile photo", status: photoStatus },
-      { id: "basics", label: "Website basics", status: basicsStatus },
-      { id: "specialisms", label: "Specialisms", status: specialismsStatus },
-      { id: "location", label: "Where I train", status: locationStatus },
-      { id: "plans", label: "Coaching plans", status: plansStatus },
-      { id: "method", label: "How I coach", status: methodStatus },
-      { id: "results", label: "Client results", status: resultsStatus },
-      { id: "faqs", label: "FAQs", status: faqsStatus },
-      { id: "contact", label: "Languages & socials", status: contactStatus },
-    ];
+    return computeWebsiteSections({
+      hasAvatar: !!profile?.avatar_url,
+      tagline,
+      subtitle,
+      about,
+      heroImageUrl: hero,
+      specialismCount: profile?.specialisms?.length ?? 0,
+      hasPostcode: !!trimmed(loc?.postcode ?? ""),
+      hasDelivery: !!(profile?.in_person_available || profile?.online_available),
+      serviceCount: services.length,
+      hasWebsiteRow: !!content,
+      methodName: content?.content.method_name ?? null,
+      methodPillarCount,
+      transformationCount: content?.transformations?.length ?? 0,
+      faqCount: content?.faqs?.length ?? 0,
+      languageCount: profile?.languages?.length ?? 0,
+      socialCount: [
+        profile?.social_instagram,
+        profile?.social_linkedin,
+        profile?.social_youtube,
+        profile?.social_tiktok,
+        profile?.social_x,
+      ].filter((v) => !!v?.trim()).length,
+      hasPhone: !!trimmed(profile?.contact_phone ?? ""),
+    });
   }, [
     tagline,
     subtitle,
@@ -590,6 +552,7 @@ function WebsiteEditorPage() {
     profileQuery.data,
     locationQuery.data,
   ]);
+
 
   const active = sections.find((s) => s.id === activeSection) ?? sections[0];
   const sectionCopy: Record<string, { title: string; description: string }> = {

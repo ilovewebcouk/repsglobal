@@ -36,7 +36,12 @@ import {
   getMyDashboardProfile,
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
-import { profileCompleteness } from "@/lib/dashboard/profileCompleteness";
+import {
+  getMyReadiness,
+  verificationSummary,
+  type ReadinessResult,
+} from "@/lib/dashboard/readiness.functions";
+import { SECTION_ATTENTION_COPY } from "@/lib/dashboard/website-sections";
 import {
   getEnquiryStats,
   listMyEnquiries,
@@ -206,8 +211,7 @@ export function NeedsAttention({
   unreadSupport,
   insuranceExpiringDays,
   insuranceExpired,
-  profilePct,
-  isPublished,
+  readiness,
   trust,
 }: {
   unreadEnquiries: number;
@@ -215,8 +219,7 @@ export function NeedsAttention({
   unreadSupport: number;
   insuranceExpiringDays: number | null;
   insuranceExpired: boolean;
-  profilePct: number;
-  isPublished: boolean;
+  readiness: ReadinessResult | null | undefined;
   trust: TrustState | null | undefined;
 }) {
   // Single source of truth — same 3-of-3 ticks the header badge uses.
@@ -279,28 +282,73 @@ export function NeedsAttention({
       cta: "Verify",
     });
   }
-  if (profilePct < 100) {
-    items.push({
-      key: "profile",
-      icon: Sparkles,
-      tone: "neutral",
-      title: `Your profile is ${profilePct}% complete`,
-      detail: "A complete profile ranks higher and gets more enquiries.",
-      to: "/dashboard/website",
-      cta: "Polish",
+
+  // Website publish state — uses the real websites.published_at + has_unpublished_changes,
+  // NOT professionals.is_published (which is set at signup by legacy defaults).
+  if (readiness) {
+    if (!readiness.website.everPublished) {
+      items.push({
+        key: "publish-first",
+        icon: ShieldCheck,
+        tone: "warn",
+        title: "Your website has never been published",
+        detail: "Publish to appear on the REPS directory.",
+        to: "/dashboard/website",
+        cta: "Publish",
+      });
+    } else if (readiness.website.hasUnpublishedChanges) {
+      items.push({
+        key: "publish-changes",
+        icon: ShieldCheck,
+        tone: "warn",
+        title: "You have unpublished website changes",
+        detail: "Review and publish so the public page matches.",
+        to: "/dashboard/website",
+        cta: "Publish",
+      });
+    }
+
+    // Per-section attention rows — cap at 3 to avoid a wall of noise.
+    const incomplete = readiness.website.sections.filter((s) => s.status !== "done");
+    const shown = incomplete.slice(0, 3);
+    shown.forEach((s) => {
+      const copy = SECTION_ATTENTION_COPY[s.id];
+      items.push({
+        key: `section-${s.id}`,
+        icon: Sparkles,
+        tone: "neutral",
+        title: s.status === "partial" ? copy.partial : copy.empty,
+        detail: `Website section: ${s.status === "partial" ? "in progress" : "not started"}`,
+        to: "/dashboard/website",
+        cta: "Fix",
+      });
     });
+    if (incomplete.length > shown.length) {
+      const rest = incomplete.length - shown.length;
+      items.push({
+        key: "section-more",
+        icon: Sparkles,
+        tone: "neutral",
+        title: `${rest} more website ${rest === 1 ? "section" : "sections"} to finish`,
+        detail: "Open the editor to complete them.",
+        to: "/dashboard/website",
+        cta: "Open",
+      });
+    }
+
+    if (!readiness.education.hasCert) {
+      items.push({
+        key: "education",
+        icon: GraduationCap,
+        tone: "neutral",
+        title: "Upload a qualification certificate",
+        detail: "Adds your REPS Qualifications tick and improves ranking.",
+        to: "/dashboard/verification",
+        cta: "Upload",
+      });
+    }
   }
-  if (!isPublished) {
-    items.push({
-      key: "publish",
-      icon: ShieldCheck,
-      tone: "warn",
-      title: "Your listing is still a draft",
-      detail: "Publish to appear on the REPS directory.",
-      to: "/dashboard/website",
-      cta: "Publish",
-    });
-  }
+
   if (unreadSupport > 0) {
     items.push({
       key: "support",
@@ -313,7 +361,7 @@ export function NeedsAttention({
     });
   }
 
-  const visible = items.slice(0, 6);
+  const visible = items.slice(0, 8);
 
   return (
     <PPanel className="flex h-full flex-col p-5">
@@ -372,43 +420,121 @@ export function NeedsAttention({
 }
 
 /* ------------------------------------------------------------------ */
-/* Profile completeness card                                          */
+/* Readiness card (Website / Verification / Education)                */
 /* ------------------------------------------------------------------ */
 
-export function CompletenessCard({ profile }: { profile: DashboardProfile | null }) {
-  const { pct, checklist } = profileCompleteness(profile);
+export function CompletenessCard({
+  readiness,
+}: {
+  readiness: ReadinessResult | null | undefined;
+}) {
+  const pct = readiness?.pct ?? 0;
+  const websitePct = readiness?.website.pct ?? 0;
+  const verificationPct = readiness?.verification.pct ?? 0;
+  const educationPct = readiness?.education.pct ?? 0;
+
+  const websiteLine = readiness
+    ? readiness.website.done === readiness.website.total
+      ? readiness.website.everPublished && !readiness.website.hasUnpublishedChanges
+        ? "All sections done and published"
+        : readiness.website.everPublished
+          ? "All sections done — publish latest changes"
+          : "All sections done — publish to go live"
+      : `${readiness.website.done} of ${readiness.website.total} sections done`
+    : "Loading…";
+
+  const verificationLine = readiness
+    ? verificationSummary(readiness.verification)
+    : "Loading…";
+
+  const educationLine = readiness
+    ? readiness.education.hasCert
+      ? "Certificate on file"
+      : "Upload at least one qualification"
+    : "Loading…";
+
+  const rows = [
+    {
+      key: "website",
+      label: "Website",
+      pct: websitePct,
+      detail: websiteLine,
+      to: "/dashboard/website",
+    },
+    {
+      key: "verification",
+      label: "Verification",
+      pct: verificationPct,
+      detail: verificationLine,
+      to: "/dashboard/verification",
+    },
+    {
+      key: "education",
+      label: "Education",
+      pct: educationPct,
+      detail: educationLine,
+      to: "/dashboard/verification",
+    },
+  ] as const;
+
   return (
     <PPanel className="flex h-full flex-col p-5">
-      <SectionHeader title="Profile completeness" icon={Sparkles} />
+      <SectionHeader title="Your REPS readiness" icon={Sparkles} />
       <div className="flex items-center gap-4">
         <Ring value={pct} />
         <div className="min-w-0">
           <p className="font-display text-[22px] font-semibold text-white">{pct}%</p>
           <p className="text-[12px] text-white/55">
-            {pct === 100 ? "Looking great." : "Finish the last steps to boost ranking."}
+            {pct === 100
+              ? "Your public page is ready."
+              : "Website, verification and education roll up here."}
           </p>
         </div>
       </div>
-      <ul className="mt-4 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
-        {checklist.map((c) => (
-          <li
-            key={c.label}
-            className="flex items-center gap-2 text-[12.5px] text-white/75"
-          >
-            <CheckCircle2
-              className={cn(
-                "size-3.5 shrink-0",
-                c.done ? "text-emerald-400" : "text-white/25",
-              )}
-            />
-            <span className={cn(c.done ? "text-white/75" : "text-white/55")}>{c.label}</span>
+      <ul className="mt-4 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
+        {rows.map((r) => (
+          <li key={r.key}>
+            <Link
+              to={r.to as any}
+              className="group flex items-center gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 p-2.5 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+            >
+              <MiniRing value={r.pct} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-medium text-white">{r.label}</p>
+                <p className="truncate text-[12px] text-white/55">{r.detail}</p>
+              </div>
+              <ChevronRight className="size-3.5 shrink-0 text-white/45 group-hover:text-reps-orange" />
+            </Link>
           </li>
         ))}
       </ul>
       <DashboardButton asChild size="sm" variant="ghost" className="mt-4 w-full">
-        <Link to="/dashboard/website">Edit profile</Link>
+        <Link to="/dashboard/website">Open website editor</Link>
       </DashboardButton>
     </PPanel>
+  );
+}
+
+function MiniRing({ value }: { value: number }) {
+  const r = 14;
+  const c = 2 * Math.PI * r;
+  const offset = c - (Math.max(0, Math.min(100, value)) / 100) * c;
+  return (
+    <svg width={36} height={36} viewBox="0 0 36 36" aria-hidden="true" className="shrink-0">
+      <circle cx={18} cy={18} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={4} fill="none" />
+      <circle
+        cx={18}
+        cy={18}
+        r={r}
+        stroke="var(--reps-orange)"
+        strokeWidth={4}
+        fill="none"
+        strokeDasharray={c}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform="rotate(-90 18 18)"
+      />
+    </svg>
   );
 }
 
@@ -890,6 +1016,7 @@ export function useHubData(enabled: boolean) {
   const fetchReviews = useServerFn(listMyReviews);
   const fetchWebsite = useServerFn(getMyWebsite);
   const fetchTrust = useServerFn(getTrustState);
+  const fetchReadiness = useServerFn(getMyReadiness);
 
   const profile = useQuery({
     queryKey: ["my-dashboard-profile"],
@@ -926,6 +1053,11 @@ export function useHubData(enabled: boolean) {
     queryFn: () => fetchTrust(),
     enabled,
   });
+  const readiness = useQuery({
+    queryKey: ["my-readiness"],
+    queryFn: () => fetchReadiness(),
+    enabled,
+  });
 
 
   const reviewsUnread = useReviewsUnread({ enabled });
@@ -943,6 +1075,7 @@ export function useHubData(enabled: boolean) {
     reviews,
     website,
     trust,
+    readiness,
     reviewsUnread: reviewsUnread.unread,
     supportUnread: supportUnread.unread,
     pendingReviewReplies,
