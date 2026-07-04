@@ -483,7 +483,14 @@ export function CompletenessCard({
       <div className="flex items-center gap-4">
         <Ring value={pct} />
         <div className="min-w-0">
-          <p className="font-display text-[22px] font-semibold text-white">{pct}%</p>
+          <p
+            className={cn(
+              "font-display text-[22px] font-semibold",
+              pct === 100 ? "text-emerald-300" : "text-white",
+            )}
+          >
+            {pct}%
+          </p>
           <p className="text-[12px] text-white/55">
             {pct === 100
               ? "Your public page is ready."
