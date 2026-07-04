@@ -1,71 +1,50 @@
+## FAQs → Row + Dialog
 
-## Brutal honest answer first
+Bring FAQs in line with the pattern we already use for Coaching Plans, How I coach (Pillars), and Client results — so the editor is a clean list of compact rows, and all editing happens in a focused pop-up.
 
-Yes — the coaching-plans pattern (list of cards → click "Edit" → focused dialog) is the right pattern for **How I coach pillars** and **Client results** too. Right now both sections dump every field for every item into a long inline stack, which is what makes the editor feel "squashed" even after we widened the pane. Same-shaped repeating items belong in a compact row + modal editor.
+### 1. New component: `FaqEditDialog.tsx`
+- Location: `src/components/dashboard/website/FaqEditDialog.tsx`
+- Props: `open`, `onOpenChange`, `initial` (FaqDTO or null for "new"), `onSave(faq)`, `onDelete?(id)`.
+- Local draft state + dirty tracking + `AlertDialog` "Discard unsaved changes?" confirm on cancel/backdrop-close (same as Pillar/Result dialogs).
+- Fields:
+  - Question — `TextInput`, max 200, `FieldCounter`, required (≥3 chars).
+  - Answer — `TextArea`, max 1200, `FieldCounter`, required (≥3 chars).
+- Footer:
+  - Left: `Delete` (only when editing existing) → `AlertDialog` confirm, matches Result dialog.
+  - Right: `Cancel` (neutral) + `Save` (orange, disabled until valid + dirty).
+- If `initial.source === "ai"` show a subtle "AI draft — edit me" hint at the top of the dialog.
 
-Sidebar statuses are also genuinely confusing: three "optional" sections (Profile photo, Specialisms, Where I train) render **no pill at all**, so users can't tell if they're done, skipped, or broken. And "Draft" vs "Empty" vs "Done" isn't a scale — it's two axes (progress + intent) crammed into one label.
+### 2. Rewrite `FaqsEditor` as compact rows
+Replace the current inline "Add a FAQ" form + full-answer rows with:
 
----
+- Header (unchanged): title, sub-copy, `AI draft 5 FAQs` button on the right.
+- Row list — one row per FAQ:
+  - Left: question (single line, truncate) + one-line answer preview (`line-clamp-1`, muted) + optional "AI draft" chip.
+  - Right: `Edit` button + `⋯` menu with `Delete` (uses `AlertDialog`, not native `confirm`).
+  - Click row body or Edit → opens `FaqEditDialog` in edit mode.
+- Empty state: single hero CTA "Add your first FAQ" (matches the Client results empty state), plus the existing "AI draft 5 FAQs" affordance in the header.
+- Footer of the panel: `+ Add FAQ` button (orange) → opens `FaqEditDialog` in create mode with empty draft.
+- Remove the always-visible inline form and the raw `confirm()` delete.
 
-## Plan
+### 3. Wiring
+- `FaqsEditor` owns `dialogOpen` + `editing: FaqDTO | null` state.
+- On save from dialog: call existing `onSave` with `{ question, answer, sort_order, source, id? }`. For new items, `sort_order = items.length`, `source = "manual"`. For AI-drafted items being edited, preserve original `source`.
+- No changes to the parent mutation, server functions, or DTOs.
+- No changes to sidebar status thresholds (FAQs stays "Done at ≥1").
 
-### 1. Pillars: card + dialog (matches Coaching plans)
+### 4. Out of scope
+- Drag-to-reorder (existing behaviour, add later if asked).
+- Live-preview iframe changes.
+- Any change to AI-draft server function.
 
-**How I coach** editor becomes:
-- Method name + intro stay inline at the top (they're single fields, no repetition).
-- Pillars render as 3 compact rows: `[#] Pillar title — one-line body preview` with `Edit` / `⋯ (Move up/down, Reset to example)` on the right.
-- Clicking Edit opens `PillarEditDialog` (same shell as `ServiceEditDialog`): pillar title (30) + one-liner (30) + body (600), all with `FieldCounter`, Save/Cancel, "Discard unsaved changes?" confirm on dirty close.
-- Empty pillar slot shows an `Empty`-style CTA row: `+ Add pillar 2` (orange when previous is filled, muted otherwise).
+### Files
+- **Create**: `src/components/dashboard/website/FaqEditDialog.tsx`
+- **Edit**: `src/routes/_authenticated/_professional/dashboard_.website.tsx` (rewrite `FaqsEditor`, remove inline form)
+- **Edit**: `docs/website-editor-audit.md` (log the change)
 
-### 2. Client results: card + dialog (matches Coaching plans)
+### Verification
+- Build passes.
+- Playwright at 1280×1800: open FAQs section → add via dialog → edit existing → delete via AlertDialog → confirm rows render truncated and the sidebar pill flips to "Done" at ≥1.
 
-- List renders as compact result rows: `Headline — "quote preview…"` with client name/age chip, `Edit` / `⋯ (Move up/down, Delete)`.
-- Clicking Edit opens `ResultEditDialog`: headline (60), quote (400), client name (60), context (60), metric (40), all with `FieldCounter`.
-- Empty state = single hero CTA `+ Add your first client result` (already shipped last pass — keep, just remove the inline expanded editor underneath).
-- Delete moves from inline red button to dialog footer, behind an AlertDialog confirm (matches services).
-
-### 3. Sidebar status audit + fix
-
-Replace the current 4-value (`done | partial | empty | optional`) system, which mixes "how full" with "is this required", with a cleaner 3-value model that **always renders a pill** so no section looks broken:
-
-| State | Pill | When |
-|---|---|---|
-| **Done** (emerald) | `Done` | Section meets its "complete" threshold |
-| **In progress** (amber) | `In progress` | At least one field filled but not complete |
-| **Not started** (muted) | `Add` | Nothing filled yet |
-
-Rename "Draft" → "In progress" and "Empty" → "Add" (verb, invites action). Drop the invisible `optional` state entirely — every section gets a real threshold:
-
-- **Profile photo** — Done when `avatar_url` set; else `Add`.
-- **Website basics** — unchanged (4 fields).
-- **Coaching plans** — unchanged (≥3).
-- **How I coach** — unchanged (method name + ≥3 pillars).
-- **Specialisms** — Done when ≥1 specialism selected (was silently "optional"); In progress if editor touched but empty; else `Add`.
-- **Where I train** — Done when delivery mode set AND (online OR ≥1 location); In progress if partial; else `Add`.
-- **Client results** — soften threshold: Done at ≥1 (was ≥3), In progress rules kept, else `Add`. Three-plus was too aggressive — plenty of trainers legitimately ship with one hero result.
-- **FAQs** — Done at ≥1 (was ≥3), else `Add`.
-
-Also:
-- Move the pill inside the button so it never gets clipped in icon-collapsed sidebar (already handled via `group-data-[collapsible=icon]:hidden` — verify).
-- Add a `Getting started · N of 8 done` progress row at the top of the sidebar section list so the whole list has a legible summary.
-- Reorder sections so foundational-first: Profile photo → Website basics → Specialisms → Where I train → Coaching plans → How I coach → Client results → FAQs. (Right now Specialisms and Where I train sit awkwardly between How I coach and Client results.)
-
-### 4. Out of scope this pass
-
-- Drag-and-drop reorder for pillars/results (up/down arrows only, same as services).
-- Autosave inside the new dialogs (Save button, matches services).
-- Changing the live-preview iframe.
-- Any copy/tone changes to placeholders (last pass locked those).
-
-## Files
-
-- `src/routes/_authenticated/_professional/dashboard_.website.tsx` — swap inline pillar editors + result editors for row+dialog, wire new status thresholds, reorder sections, add progress header data.
-- `src/components/dashboard/website/WebsiteSectionsSidebar.tsx` — new pill labels ("In progress" / "Add"), progress summary row, always-visible pill.
-- `src/components/dashboard/website/WebsiteEditorLayout.tsx` — mirror the pill label changes in the inline `StatusPill`.
-- `src/components/dashboard/website/PillarEditDialog.tsx` — **new**, cloned from `ServiceEditDialog`.
-- `src/components/dashboard/website/ResultEditDialog.tsx` — **new**, cloned from `ServiceEditDialog`.
-- `docs/website-editor-audit.md` — log the status-model change + threshold table.
-
-## Verification
-
-Playwright at 1280×1800: open `/dashboard/website`, screenshot sidebar (every section has a pill), open How I coach → click Edit on pillar 1 → screenshot dialog, open Client results → click Edit → screenshot dialog. Confirm build passes.
+### Brutal honest truth
+Yes — this is the right call. The FAQs panel is currently the odd one out: it forces users into a full-height form while three other sections (Plans, Pillars, Results) all use the tight row+dialog rhythm. Unifying it makes the sidebar sections feel like one system instead of "each section invents its own editor," and it kills the last remaining raw `window.confirm()` in the website editor.
