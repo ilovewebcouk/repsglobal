@@ -63,9 +63,11 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
       userId,
       identity,
       profile,
+      website,
       profileComplete,
       subscription: subs,
       lastSubmission: lastSub,
+
       entitlement: {
         tier,
         hasPaidTier,
