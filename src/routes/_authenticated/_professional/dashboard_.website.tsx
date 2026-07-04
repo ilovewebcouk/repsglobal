@@ -207,7 +207,7 @@ function WebsiteEditorPage() {
   const draftTaglineFn = useServerFn(aiDraftTagline);
   const draftAboutFn = useServerFn(aiDraftAbout);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError: isMyWebsiteError, refetch: refetchMyWebsite } = useQuery({
     queryKey: ["my-website"],
     queryFn: () => fetchMine(),
   });
