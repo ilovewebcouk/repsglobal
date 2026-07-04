@@ -1510,17 +1510,23 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
         </div>
       </PPanel>
       </section>
+      </div>
 
-      <SpecialismsDeliveryPanel />
+      <div hidden={activeSection !== "specialisms"}>
+        <SpecialismsDeliveryPanel />
+      </div>
 
       {/* Where I train — postcode + Google-Places gyms + reach */}
+      <div hidden={activeSection !== "location"}>
       <section id="location" className="scroll-mt-24">
       <WhereITrainPanel
         cities={cities}
         setCities={setCities}
       />
       </section>
+      </div>
 
+      <div hidden={activeSection !== "results"}>
       <section id="results" className="scroll-mt-24">
         <PPanel>
           <div className="border-b border-reps-border px-5 py-4">
@@ -1546,8 +1552,10 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
           />
         </PPanel>
       </section>
+      </div>
 
       {/* FAQs */}
+      <div hidden={activeSection !== "faqs"}>
       <section id="faqs" className="scroll-mt-24">
       <FaqsEditor
         items={data.faqs}
@@ -1578,6 +1586,7 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
         drafting={draftingFaqs}
       />
       </section>
+      </div>
     </>
   );
 }
