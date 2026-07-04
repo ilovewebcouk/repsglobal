@@ -3,11 +3,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MapPin, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
+import { MapPin, Pencil, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
 import { TransformationImageEditor } from "@/components/dashboard/TransformationImageEditor";
 import { GymPicker } from "@/components/profile/GymPicker";
 import { getMyPrimaryLocation, saveMyPrimaryPostcode } from "@/lib/profile/location.functions";
 import { getMyDashboardProfile, updateMyTrainingBase } from "@/lib/profile/dashboard-profile.functions";
+import { PillarEditDialog } from "@/components/dashboard/website/PillarEditDialog";
+import {
+  ResultEditDialog,
+  draftFromResult,
+  type ResultDraft,
+} from "@/components/dashboard/website/ResultEditDialog";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
