@@ -180,19 +180,17 @@ function StatusPill({ status }: { status: WebsiteEditorSection["status"] }) {
       </span>
     );
   }
-  if (status === "empty") {
-    return (
-      <span className="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-amber-300">
-        Empty
-      </span>
-    );
-  }
   if (status === "partial") {
     return (
-      <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white/60">
-        Draft
+      <span className="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-amber-300">
+        In progress
       </span>
     );
   }
-  return null;
+  // empty & optional both render "Add" — no section is ever silently unlabeled.
+  return (
+    <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white/55">
+      Add
+    </span>
+  );
 }
