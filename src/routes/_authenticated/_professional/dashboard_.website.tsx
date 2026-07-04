@@ -748,6 +748,17 @@ function WebsiteEditorPage() {
         </WebsiteEditorLayout>
       )}
 
+      <PublishConfirmDialog
+        open={publishDialogOpen}
+        onOpenChange={setPublishDialogOpen}
+        summary={sectionDiff?.summary ?? {}}
+        everPublished={!!sectionDiff?.ever_published || !!publishState?.ever_published}
+        publishing={publishMut.isPending || saveMutation.isPending}
+        onConfirm={() => publishMut.mutate()}
+      />
+
+
+
       <Dialog open={taglineDialogOpen} onOpenChange={setTaglineDialogOpen}>
         <DialogContent className="max-w-lg border-reps-border bg-reps-panel text-white">
           <DialogHeader>
