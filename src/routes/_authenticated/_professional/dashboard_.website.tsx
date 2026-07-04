@@ -544,8 +544,8 @@ function WebsiteEditorPage() {
           activeId={active.id}
           onActive={setActiveSection}
           isDirty={isDirty}
-          onPublish={saveAll}
-          publishPending={saveMutation.isPending}
+          onPublish={publishNow}
+          publishPending={publishMut.isPending || saveMutation.isPending}
           publicUrl={slug ? `/c/${slug}` : "#"}
         />
       }
