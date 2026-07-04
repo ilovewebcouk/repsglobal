@@ -43,6 +43,7 @@ export function HeroImageEditor({
   const [prompt, setPrompt] = React.useState("");
   const [style, setStyle] = React.useState<"editorial" | "studio" | "action">("editorial");
   const [aiReference, setAiReference] = React.useState<string | null>(null); // data URL, optional
+  const [urlLoading, setUrlLoading] = React.useState(false);
   const fileRef = React.useRef<HTMLInputElement>(null);
   const aiRefFileRef = React.useRef<HTMLInputElement>(null);
 
