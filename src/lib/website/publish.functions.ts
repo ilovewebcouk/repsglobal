@@ -529,6 +529,32 @@ export const discardMySectionChanges = createServerFn({ method: "POST" })
         const { error } = await supabaseAdmin.from("website_transformations").insert(rows);
         if (error) throw error;
       }
+      // Also restore client_results testimonials — previously omitted, so a
+      // "discard results" left edited testimonials out of sync with the snapshot.
+      const delR = await supabaseAdmin
+        .from("website_client_results")
+        .delete()
+        .eq("user_id", userId);
+      if (delR.error) throw delR.error;
+      const snapClientResults = (snap as { clientResults?: any[] }).clientResults ?? [];
+      const cRows = snapClientResults.map((r: any) => ({
+        user_id: userId,
+        headline: r.headline ?? null,
+        body: r.body ?? null,
+        review_id: r.review_id ?? null,
+        sort_order: r.sort_order ?? 0,
+        is_published: r.is_published ?? true,
+      }));
+      if (cRows.length) {
+        const { error } = await supabaseAdmin.from("website_client_results").insert(cRows);
+        if (error) throw error;
+      }
+      // Restore section intro on the websites row too.
+      const wIntro = (snap.website as { client_results_intro?: string | null } | undefined)?.client_results_intro ?? null;
+      await supabaseAdmin
+        .from("websites")
+        .update({ client_results_intro: wIntro })
+        .eq("professional_id", userId);
     } else if (data.section === "faqs") {
       const del = await supabaseAdmin.from("website_faqs").delete().eq("user_id", userId);
       if (del.error) throw del.error;
@@ -545,12 +571,21 @@ export const discardMySectionChanges = createServerFn({ method: "POST" })
       }
     }
 
-    // Re-sync the dirty flag: if nothing is dirty anymore, clear it. Cheapest
-    // way is to trust the section triggers; but discarding matches snapshot,
-    // so the section triggers on the writes above will fire and mark dirty.
-    // Explicitly recompute by comparing full state.
-    // For simplicity, leave `has_unpublished_changes` alone — the getMySectionDiff
-    // re-fetch will show the section clean; if all sections are clean the
-    // trainer can just publish again to sync the flag.
+    // After a discard, dirty-tracking triggers on the writes above have re-set
+    // `has_unpublished_changes = true`. Recompute the section diff and, if
+    // every section now matches the snapshot, clear the flag so the Publish
+    // button and sidebar dot correctly reflect a clean state.
+    try {
+      const diff = await getMySectionDiff();
+      const anyDirty = Object.values(diff.dirty).some((v) => v === true);
+      if (!anyDirty) {
+        await supabaseAdmin
+          .from("websites")
+          .update({ has_unpublished_changes: false })
+          .eq("professional_id", userId);
+      }
+    } catch {
+      // Non-fatal — the flag stays set until next publish. UI still works.
+    }
     return { ok: true };
   });
