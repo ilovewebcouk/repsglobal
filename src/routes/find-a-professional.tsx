@@ -1053,6 +1053,8 @@ function ProCard({
           <Link
             to="/c/$slug"
             params={{ slug: pro.slug ?? proSlug(pro.name) }}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => {
               const s = pro.slug ?? proSlug(pro.name);
               void import("@/lib/analytics/track").then(({ track }) =>
@@ -1061,8 +1063,9 @@ function ProCard({
             }}
             className="inline-flex items-center justify-center rounded-[10px] bg-reps-orange px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange-dark"
           >
-            View profile
+            View website
           </Link>
+
         </div>
 
         {/* Mobile full-width CTA */}
