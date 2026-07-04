@@ -9,13 +9,16 @@ import {
   updateMyDashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
 import { EarnedTitlePicker } from "@/components/profile/EarnedTitlePicker";
-import type { ProfessionSlug } from "@/lib/professions";
 
 /**
  * Name & profession — the identity fields that used to live at the top of
  * the retired /dashboard/profile page. They belong on Verification: legal
  * name has to match the government ID uploaded here, and the profession is
  * unlocked by the qualifications also managed here.
+ *
+ * Legal name is the only field this card owns directly. Profession is
+ * managed by EarnedTitlePicker, which saves itself via the CPD title
+ * server fns.
  */
 export function NameProfessionCard({ step }: { step?: string }) {
   const qc = useQueryClient();
@@ -28,20 +31,15 @@ export function NameProfessionCard({ step }: { step?: string }) {
   });
 
   const [fullName, setFullName] = React.useState("");
-  const [profession, setProfession] = React.useState<ProfessionSlug | null>(null);
   const [justSaved, setJustSaved] = React.useState(false);
 
   React.useEffect(() => {
     if (!data) return;
     setFullName(data.full_name ?? "");
-    setProfession(data.primary_profession ?? null);
   }, [data]);
 
   const locked = data?.legal_name_locked ?? false;
-  const dirty =
-    !!data &&
-    ((fullName || "") !== (data.full_name ?? "") ||
-      profession !== (data.primary_profession ?? null));
+  const dirty = !!data && (fullName || "") !== (data.full_name ?? "");
 
   const saveMut = useMutation({
     mutationFn: () => {
@@ -52,7 +50,7 @@ export function NameProfessionCard({ step }: { step?: string }) {
           display_name: data.display_name,
           business_name: data.business_name,
           headline: data.headline,
-          primary_profession: profession,
+          primary_profession: data.primary_profession,
           specialisms: data.specialisms,
           in_person_available: data.in_person_available,
           online_available: data.online_available,
@@ -73,7 +71,7 @@ export function NameProfessionCard({ step }: { step?: string }) {
       qc.invalidateQueries({ queryKey: ["my-trust-state"] });
       setJustSaved(true);
       window.setTimeout(() => setJustSaved(false), 2000);
-      toast.success("Name & profession saved");
+      toast.success("Legal name saved");
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
@@ -103,20 +101,35 @@ export function NameProfessionCard({ step }: { step?: string }) {
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <div>
-          <label className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-white/75">
-            Legal name
+          <div className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-white/75">
+            <span>Legal name</span>
             {locked ? <Lock className="h-3 w-3 text-white/40" /> : null}
-          </label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            disabled={locked}
-            className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange disabled:opacity-60"
-            placeholder="As it appears on your government ID"
-          />
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              disabled={locked}
+              className="h-10 flex-1 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange disabled:opacity-60"
+              placeholder="As it appears on your government ID"
+            />
+            <div className="flex items-center gap-3">
+              {justSaved && !dirty ? (
+                <span className="text-[12px] text-emerald-300">Saved.</span>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => saveMut.mutate()}
+                disabled={!dirty || saveMut.isPending || locked}
+                className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
+              >
+                {saveMut.isPending ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
           <p className="mt-1.5 text-[11.5px] text-white/45">
             {locked
               ? "Locked — matches your verified ID. Contact REPs support to change it."
@@ -124,29 +137,12 @@ export function NameProfessionCard({ step }: { step?: string }) {
           </p>
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-[12.5px] font-medium text-white/75">
+        <div className="border-t border-reps-border/60 pt-5">
+          <div className="mb-2 text-[12.5px] font-medium text-white/75">
             Profession
-          </label>
+          </div>
           <EarnedTitlePicker />
-          {/* EarnedTitlePicker manages its own state via server fns; the
-              local `profession` state above stays in sync via the query
-              cache invalidation triggered when it saves. */}
         </div>
-      </div>
-
-      <div className="mt-5 flex items-center justify-end gap-3">
-        {justSaved && !dirty ? (
-          <span className="text-[12px] text-emerald-300">Saved.</span>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => saveMut.mutate()}
-          disabled={!dirty || saveMut.isPending || locked && fullName === data?.full_name}
-          className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
-        >
-          {saveMut.isPending ? "Saving…" : "Save"}
-        </button>
       </div>
     </section>
   );
