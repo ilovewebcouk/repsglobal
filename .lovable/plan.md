@@ -1,73 +1,53 @@
-## Goal
 
-Rebuild the **Client Results** editor on `/dashboard/website` so every field maps 1:1 to a proof card on the public website (`/c/$slug`), with a proper image uploader (not a URL text box) and a live preview that mirrors the public card.
+## Problem
 
-## Why
+Two real issues in the current split-view editor shell (`WebsiteEditorLayout.tsx`):
 
-The pipeline already exists end-to-end (`website_transformations` → `TransformationsSection`), but the editor UX is broken:
+1. **Preview panel is too narrow.** It's a fixed `w-[420px]` column only shown at `xl:` (≥1280px). After padding + border, the iframe sits inside a ~388px slot. The trainer's public page (`/c/$slug`) is a full desktop layout, so at 388px it collapses to its mobile breakpoints. That's why the preview looks small and cramped.
 
-- Image is a raw URL text field (no upload, no crop, no image at all for most pros)
-- Editor has both `metric` and `headline` — the public card only shows one of them, so one field is invisible
-- No place to enter the "Marketing Director · 12 weeks" line under the client name — the website currently duplicates the headline into that slot
-- No preview, so pros can't see what they're building
+2. **Desktop vs Mobile toggle produces the same view.** Desktop mode sets the frame to `w-full` (≈388px). Mobile mode sets it to `w-[320px]`. Both are below the site's `md`/`lg` breakpoints, so both render the mobile stack of the public page. The toggle changes the frame width by ~68px but not the rendered layout — so the two states look almost identical.
 
-## What the public card shows
+## Fix
 
-```
-┌────────────────────────────┐
-│  [ 4:3 photo ]             │
-│  [RESULT pill]             │
-│  −8kg · first unassisted   │  ← Result headline (bold)
-│  pull-up                   │
-├────────────────────────────┤
-│  "Quote from the client…"  │  ← Quote
-│  ─────────                 │
-│  Sophie L.                 │  ← Client name
-│  Marketing Director ·      │  ← Role · duration
-│  12 weeks                  │
-└────────────────────────────┘
-```
+Rework only the right-hand preview pane inside `WebsiteEditorLayout.tsx`. No changes to the editor content, section nav, save flow, or any public route.
 
-## Editor fields (new)
+### 1. Give the preview real room
 
-| Field | Type | Maps to |
-| --- | --- | --- |
-| Photo | Image uploader (Upload / URL) with **4:3 crop → 1600×1200 JPEG** | `image_url` |
-| Result headline | Single line, 80 chars, bold text on the card | `metric` (existing column, canonical) |
-| Client quote | Textarea, 600 chars, optional | `quote` |
-| Client name | Text, 60 chars (e.g. "Sophie L.") | `client_first_name` (kept for compat, label reworded) |
-| Client role | Text, 60 chars, optional (e.g. "Marketing Director") | `client_role` **(new column)** |
-| Duration | Text, 40 chars, optional (e.g. "12 weeks") | `duration_label` **(new column)** |
-| Show on site | Toggle | `is_published` |
+- Preview column becomes **flex-1** (fills remaining width) instead of `w-[420px]`, with `min-w-[360px]` and `max-w-[720px]`.
+- Show it from **`lg:` (≥1024px)** instead of `xl:`. Below `lg:` keep the current "View public" fallback (no iframe).
+- Center column keeps `min-w-0` and a comfortable editor max-width (`max-w-[640px]`) so the middle stays readable when the preview expands.
 
-A **live card preview** renders to the right of the fields inside the editor, using the exact same visual as `TransformationsSection`.
+Resulting rough proportions at 1440px: rail 236 / editor ~560 / preview ~640.
 
-## Public card wiring changes
+### 2. Make Desktop and Mobile visually distinct via scaled iframes
 
-In `mergeLiveIntoCoach` (`src/routes/c.$slug.index.tsx`):
+Render the iframe at a **true device width** and CSS-scale it to fit the panel. This is the standard pattern (Framer, Webflow, Vercel preview).
 
-- `metric` → the bold headline (already correct)
-- `meta` → **`[client_role, duration_label].filter(Boolean).join(" · ")`** instead of duplicating `headline`. Falls back to empty when both blank so the "Marketing Director · 12 weeks" line simply doesn't render for pros who haven't filled it in.
-- Drop the redundant `headline` mapping.
+- **Desktop mode**: iframe intrinsic `width: 1280px`, `height: 100%` of a scaled wrapper. Compute `scale = panelWidth / 1280` (measured with a `ResizeObserver` on the preview container). Wrapper uses `transform: scale(var(--s)); transform-origin: top left;` and the outer box compensates height. Result: the real desktop layout, shrunk to fit — clearly different from mobile.
+- **Mobile mode**: iframe intrinsic `width: 390px`, centered in a phone-shaped frame (`rounded-[22px]`, thin bezel). Scale only if `panelWidth < 390`, otherwise 1:1.
+- Small badge above the frame: `Desktop · 1280 → 62%` or `Mobile · 390`.
 
-## Image upload
+### 3. QA polish while in the file
 
-- New bucket **`website-results`** (public, mirrors `website-hero` config).
-- New server fn `uploadTransformationImageFromBase64` — takes a data URL, decodes → re-encodes 1600×1200 JPEG server-side, writes under `<userId>/<uuid>.jpg`, returns public URL. Owner-scoped storage policies.
-- Reuse the cropper pattern from `HeroImageEditor` but locked to **4:3** aspect (not 9:16). Extract the cropper modal into a small shared primitive if trivial; otherwise inline in a new `TransformationImageEditor.tsx`.
+- Default device: `desktop` (matches "large preview" intent). Mobile is opt-in.
+- Preview panel gets a lightweight header row: device toggle (left), width label (center), reload + open-in-new-tab (right).
+- Add a **collapse-preview** button (chevron) so a trainer can reclaim full editor width on a smaller laptop; state persisted in `localStorage`.
+- Iframe gets `sandbox="allow-same-origin allow-scripts allow-forms"` and `title` for a11y.
+- Fix the current `key={reloadNonce}` + `#nonce-…` combo — one mechanism is enough; keep `key` and drop the hash so the URL stays clean.
+- Empty-slug state gets a proper illustration slot instead of a single line of grey text.
 
-## Files touched
+## Technical notes
 
-1. **Migration** — add `client_role text`, `duration_label text` to `website_transformations`; create `website-results` storage bucket + owner RLS policies.
-2. `src/lib/website/website-content.functions.ts` — extend `TransformationSchema` + `TransformationDTO` with the two new fields.
-3. `src/lib/website/transformation-image.functions.ts` — **new** upload server fn (mirrors `hero.functions.ts`).
-4. `src/components/dashboard/TransformationImageEditor.tsx` — **new** uploader component (Upload / URL modes, 4:3 cropper).
-5. `src/routes/_authenticated/_professional/dashboard_.website.tsx` — replace `TransformationsEditor` with the rebuilt version: field grid + live card preview + inline edit for existing rows (currently they're read-only chips).
-6. `src/routes/c.$slug.index.tsx` — update `liveTransformations` mapping so `meta` = role · duration (drop headline duplication).
-7. `src/lib/website/website.functions.ts` — include `client_role`, `duration_label` in the `WebsiteTransformationDTO` and the select column list.
+- Scaling implementation uses one `ResizeObserver` on the preview container, writing `--preview-scale` on a wrapper div. No layout thrash on the iframe itself.
+- Height compensation: wrapper height = `panelHeight / scale`, then transformed back down — keeps the scaled desktop page fully scrollable inside the pane.
+- No changes to `/c/$slug`, no new routes, no data-fetching changes, no new deps.
 
 ## Out of scope
 
-- Reviews wiring for the "In their words" section below (that's the next slice per the previous turn's decision to remove the Written Results editor).
-- AI-drafted transformations.
-- Changing card layout / styling on the public site — only the meta line text changes.
+- Section-scroll sync between editor and preview (already noted as future work).
+- Any changes to the public coach page or to other editor sections.
+- Design-system token changes.
+
+## File touched
+
+- `src/components/dashboard/website/WebsiteEditorLayout.tsx` (only)
