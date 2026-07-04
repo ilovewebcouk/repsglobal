@@ -117,20 +117,19 @@ export function WebsiteEditorLayout({
         </aside>
 
         {/* Middle — active section */}
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <header className="flex flex-wrap items-start justify-between gap-3 border-b border-reps-border bg-reps-ink/70 px-6 py-4 backdrop-blur">
+        <main className="flex min-w-0 flex-[1.5] flex-col overflow-hidden lg:flex-[1.6] xl:flex-[1.8]">
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border bg-reps-ink/70 px-6 py-3 backdrop-blur">
             <div className="min-w-0 flex-1">
-              <h2 className="truncate font-display text-[18px] font-semibold leading-tight text-white">
+              <h2 className="truncate font-display text-[15px] font-semibold leading-tight text-white">
                 {title}
               </h2>
-              <p className="mt-0.5 line-clamp-2 text-[12.5px] text-white/55">{description}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {collapsed ? (
                 <button
                   type="button"
                   onClick={() => setCollapsed(false)}
-                  className="hidden h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-medium text-white/70 hover:text-white lg:flex"
+                  className="hidden h-8 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-2.5 text-[12px] font-medium text-white/70 hover:text-white lg:flex"
                   aria-label="Show preview"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" /> Preview
@@ -140,20 +139,20 @@ export function WebsiteEditorLayout({
                 type="button"
                 onClick={onPublish}
                 disabled={publishPending}
-                className="flex h-9 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60 lg:hidden"
+                className="flex h-8 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60 lg:hidden"
               >
                 {publishPending ? "Publishing…" : "Publish"}
               </button>
             </div>
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-            <div className="mx-auto max-w-[640px] space-y-6">{children}</div>
+            <div className="mx-auto max-w-[760px] space-y-6">{children}</div>
           </div>
         </main>
 
         {/* Right — live preview */}
         {!collapsed ? (
-          <aside className="hidden min-w-[360px] max-w-[760px] flex-1 shrink-0 flex-col border-l border-reps-border bg-reps-panel/30 lg:flex">
+          <aside className="hidden min-w-[360px] max-w-[560px] flex-1 shrink-0 flex-col border-l border-reps-border bg-reps-panel/30 lg:flex">
             <div className="flex items-center justify-between gap-2 border-b border-reps-border px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-0.5 rounded-[8px] border border-reps-border bg-reps-panel-soft p-0.5">
