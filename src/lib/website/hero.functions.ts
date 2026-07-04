@@ -123,14 +123,17 @@ export const generateHeroFromAi = createServerFn({ method: "POST" })
     const avatarUrl = profile?.avatar_url ?? null;
     const fullName = profile?.full_name ?? "the coach";
 
+    // Coach-supplied reference wins over their profile avatar.
+    const likenessUrl = data.referenceDataUrl ?? avatarUrl;
+
     const styleAnchor = await loadStyleAnchorBase64();
     const styleDirection = STYLE_DIRECTION[data.style];
 
     // Content order matters: image 1 = likeness, image 2 = style anchor,
     // then the text brief. The system prompt names them in that order.
     const userContent: Array<Record<string, unknown>> = [];
-    if (avatarUrl) {
-      userContent.push({ type: "image_url", image_url: { url: avatarUrl } });
+    if (likenessUrl) {
+      userContent.push({ type: "image_url", image_url: { url: likenessUrl } });
     }
     if (styleAnchor) {
       userContent.push({ type: "image_url", image_url: { url: styleAnchor } });
