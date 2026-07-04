@@ -1738,7 +1738,25 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
     });
   });
 
-  if (isLoading || !data) return <PCard>Loading website content…</PCard>;
+  if (isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Couldn't load this section</AlertTitle>
+        <AlertDescription className="mt-1 flex flex-col gap-3">
+          <span>Something went wrong loading your content.</span>
+          <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => refetch()}>Retry</Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  if (isLoading || !data) {
+    return (
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
 
   return (
     <>
