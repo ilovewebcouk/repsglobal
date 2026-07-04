@@ -156,7 +156,7 @@ function DashboardPage() {
           <WelcomeBanner
             name={memberName}
             avatarUrl={data?.identity?.avatar_url}
-            headline={data?.profile?.headline}
+            headline={data?.website?.tagline ?? null}
             tierLabel={tierLabel}
             isPublished={isPublished}
             slug={slug}
