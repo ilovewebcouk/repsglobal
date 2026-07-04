@@ -507,7 +507,14 @@ async function ensureDefaultServices(
 /* ---------------- Public reads ---------------- */
 
 export const getWebsiteBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        slug: z.string().min(1).max(120),
+        preview: z.boolean().optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data }): Promise<{ website: WebsiteDTO; services: ServiceDTO[]; transformations: WebsiteTransformationDTO[]; clientResults: WebsiteClientResultDTO[]; faqs: WebsiteFaqDTO[] } | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -527,6 +534,26 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       "@/lib/visibility/public-gate.server"
     );
     if (!(await isProPubliclyVisible(pro.id))) return null;
+
+    // If a published snapshot exists and this isn't an owner preview,
+    // serve the snapshot verbatim. This is the whole point of the
+    // draft/publish system: edits stay off the public page until the
+    // trainer clicks Publish.
+    if (!data.preview) {
+      const { data: snapRow } = await supabaseAdmin
+        .from("websites")
+        .select("published_snapshot")
+        .eq("professional_id", pro.id)
+        .maybeSingle();
+      const snap = snapRow?.published_snapshot as
+        | { website: WebsiteDTO; services: ServiceDTO[]; transformations: WebsiteTransformationDTO[]; clientResults: WebsiteClientResultDTO[]; faqs: WebsiteFaqDTO[] }
+        | null
+        | undefined;
+      if (snap && snap.website) return snap;
+      // No snapshot yet → fall through to live read (backwards-compatible
+      // for anyone who hasn't clicked Publish since this feature shipped).
+    }
+
 
     const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
       supabaseAdmin
