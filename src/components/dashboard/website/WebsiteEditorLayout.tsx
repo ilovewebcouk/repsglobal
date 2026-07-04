@@ -73,51 +73,11 @@ export function WebsiteEditorLayout({
   const iframeSrc = slug ? `/c/${slug}?preview=1` : "";
 
   return (
-    <div className="flex h-[calc(100vh-120px)] min-h-[640px] flex-col overflow-hidden border-t border-reps-border">
-      {/* Mobile pill nav */}
-      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-reps-border bg-reps-panel/40 px-4 py-2 lg:hidden">
-        {sections.map((s) => (
-          <NavPill key={s.id} section={s} active={s.id === activeId} onClick={() => onActive(s.id)} />
-        ))}
-      </div>
-
+    <div className="flex h-[100vh] min-h-[640px] flex-col overflow-hidden">
       <div className="flex min-h-0 flex-1">
-        {/* Left rail (desktop) */}
-        <aside className="hidden w-[236px] shrink-0 flex-col border-r border-reps-border bg-reps-panel/40 lg:flex">
-          <div className="px-5 py-4">
-            <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/45">
-              Website sections
-            </div>
-          </div>
-          <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
-            {sections.map((s) => (
-              <NavItem key={s.id} section={s} active={s.id === activeId} onClick={() => onActive(s.id)} />
-            ))}
-          </nav>
-          <div className="border-t border-reps-border p-4">
-            {isDirty ? (
-              <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-amber-300">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-300" />
-                Unpublished changes
-              </div>
-            ) : (
-              <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium text-white/45">
-                <Check className="h-3 w-3" /> All changes published
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={onPublish}
-              disabled={publishPending}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
-            >
-              {publishPending ? "Publishing…" : "Publish changes"}
-            </button>
-          </div>
-        </aside>
-
         {/* Middle — active section */}
         <main className="flex min-w-0 flex-[1.5] flex-col overflow-hidden lg:flex-[1.6] xl:flex-[1.8]">
+
           <header className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border bg-reps-ink/70 px-6 py-3 backdrop-blur">
             <div className="min-w-0 flex-1">
               <h2 className="truncate font-display text-[15px] font-semibold leading-tight text-white">

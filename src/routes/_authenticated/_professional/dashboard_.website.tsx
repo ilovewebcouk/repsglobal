@@ -18,6 +18,7 @@ import {
   type SectionStatus,
   type WebsiteEditorSection,
 } from "@/components/dashboard/website/WebsiteEditorLayout";
+import { WebsiteSectionsSidebar } from "@/components/dashboard/website/WebsiteSectionsSidebar";
 import {
   Dialog,
   DialogContent,
@@ -446,6 +447,18 @@ function WebsiteEditorPage() {
       showTopbarSearch={false}
       subtitle="Edit one section at a time — the live preview updates when you publish."
       mainClassName="!p-0"
+      hideTopBar
+      sidebarOverride={
+        <WebsiteSectionsSidebar
+          sections={sections}
+          activeId={active.id}
+          onActive={setActiveSection}
+          isDirty={isDirty}
+          onPublish={saveAll}
+          publishPending={saveMutation.isPending}
+          publicUrl={slug ? `/c/${slug}` : "#"}
+        />
+      }
     >
       {isLoading ? (
         <div className="p-6"><PCard>Loading…</PCard></div>
