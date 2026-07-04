@@ -77,6 +77,7 @@ import {
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
 import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 import { SpecialismsDeliveryPanel } from "@/components/dashboard/SpecialismsDeliveryPanel";
+import { ContactSocialsPanel } from "@/components/dashboard/ContactSocialsPanel";
 import { DeliveryModePanel } from "@/components/dashboard/DeliveryModePanel";
 import { FieldCounter } from "@/components/dashboard/website/FieldCounter";
 
