@@ -77,13 +77,14 @@ export function FeaturedProCard({ pro }: { pro: FeaturedPro }) {
             <span key={t} className="rounded-full bg-reps-ivory px-2 py-0.5 text-[10.5px] font-medium text-reps-charcoal">{t}</span>
           ))}
         </div>
-        <Link
-          to="/c/$slug"
-          params={{ slug }}
+        <a
+          href={`/c/${slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className="mt-auto inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
         >
-          View Profile
-        </Link>
+          View website
+        </a>
       </div>
     </article>
   );
