@@ -233,6 +233,17 @@ export const upsertTransformation = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => TransformationSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // IDOR guard: if an id is supplied, the row must already belong to the
+    // caller. supabaseAdmin bypasses RLS, so this check is mandatory.
+    if (data.id) {
+      const { data: existing } = await supabaseAdmin
+        .from("website_transformations")
+        .select("id")
+        .eq("id", data.id)
+        .eq("user_id", context.userId)
+        .maybeSingle();
+      if (!existing) throw new Error("Not found");
+    }
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
       .from("website_transformations")
