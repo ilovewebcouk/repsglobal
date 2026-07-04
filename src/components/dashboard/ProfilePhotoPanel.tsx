@@ -430,7 +430,7 @@ export function ProfilePhotoPanel() {
             <ul className="list-disc space-y-0.5 pl-4 text-white/70">
               <li>A clear photograph of you (not a logo, illustration or graphic)</li>
               <li>Just you — no group photos</li>
-              <li>Head-and-shoulders, face clearly visible</li>
+              <li>Head-and-shoulders or waist-up, face clearly visible</li>
               <li>Good lighting, in focus</li>
             </ul>
           </DashboardDialogNote>
