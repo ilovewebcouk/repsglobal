@@ -646,7 +646,7 @@ function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
       <a
-        href="/dashboard/profile"
+        href="/dashboard/website"
         className="flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] font-semibold text-white/80 hover:text-white"
       >
         <ArrowUpRight className="h-4 w-4" />
