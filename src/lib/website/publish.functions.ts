@@ -70,6 +70,15 @@ export const publishMyWebsite = createServerFn({ method: "POST" })
       throw new Error("Your public URL isn't ready yet — finish onboarding first.");
     }
 
+    // Check subscription BEFORE the data read so a lapsed subscriber sees an
+    // accurate error rather than the misleading "Nothing to publish yet".
+    const { isProPubliclyVisible } = await import("@/lib/visibility/public-gate.server");
+    if (!(await isProPubliclyVisible(pro.id))) {
+      throw new Error(
+        "Your subscription is inactive — reactivate it to publish updates.",
+      );
+    }
+
     // Force live read: pass an owner token so getWebsiteBySlug bypasses
     // any existing snapshot and returns the current draft.
     const { signPreviewToken } = await import("./preview-token.server");
@@ -114,8 +123,12 @@ export const getMyPublishState = createServerFn({ method: "GET" })
       .eq("professional_id", userId)
       .maybeSingle();
 
+    // Default to FALSE when no row exists — a brand-new coach who hasn't
+    // typed anything yet shouldn't see the dirty pill firing before they
+    // even open the editor. Previously defaulted to true, which inflated
+    // readiness misses and made the Publish button glow immediately.
     return {
-      has_unpublished_changes: !!(data?.has_unpublished_changes ?? true),
+      has_unpublished_changes: !!(data?.has_unpublished_changes ?? false),
       published_at: (data?.published_at as string | null) ?? null,
       ever_published: !!data?.published_snapshot,
     };
