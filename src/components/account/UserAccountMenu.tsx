@@ -55,7 +55,7 @@ function itemsForRole(role: AccountRole): Item[] {
     case "studio":
       return [
         { to: "/dashboard", label: "My dashboard", icon: LayoutDashboard },
-        { to: "/dashboard/profile", label: "Public profile", icon: UserCircle },
+        { to: "/dashboard/website", label: "Public website", icon: UserCircle },
         { to: "/dashboard/leads", label: "Leads", icon: Target },
         { to: "/dashboard/messages", label: "Messages", icon: MessagesSquare },
         { to: "/dashboard/payments", label: "Payments", icon: CreditCard },
