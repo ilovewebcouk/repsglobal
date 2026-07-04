@@ -14,6 +14,11 @@ import {
   draftFromResult,
   type ResultDraft,
 } from "@/components/dashboard/website/ResultEditDialog";
+import {
+  FaqEditDialog,
+  draftFromFaq,
+  type FaqDraft,
+} from "@/components/dashboard/website/FaqEditDialog";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
