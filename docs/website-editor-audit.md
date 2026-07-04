@@ -5,6 +5,19 @@
 **Viewport:** desktop 1550×1800 (new shell: sidebar 232 / editor ~800 / preview ~500)
 **Persona tested:** Charlotte Evans (Core trainer, verified) via admin impersonation
 
+## Shipped in the 2026-07-04 batch
+
+- ✅ 7.1 — Deleted inline preview column from Client Results (`TransformationRow` is now full-width; the page-level iframe is the single preview).
+- ✅ 7.2 — Client Results empty state collapsed to a single `+ Add your first client result` CTA (no ghost form).
+- ✅ 7.3 — "Add result" button now uses a proper neutral disabled treatment when required fields are missing (no more faded orange that reads as broken).
+- ✅ 7.4 — Character counters on Result headline (80) and Client quote (600).
+- ✅ 5.1 — Specialisms header now shows a prominent `N of 3 selected` pill (emerald when at cap).
+- ✅ 5.2 — Selected specialism chips now sort to a "Selected" row above "Available"; over-cap taps toast a friendly limit message.
+- ✅ 4.1 / X.2 — Placeholder text across Basics, How I coach, Client results, FAQs replaced with bracketed watermarks so real content is always distinguishable.
+- ✅ X.1 — New `FieldCounter` helper wired on tagline, subtitle, about, method name, method intro, pillar titles, pillar bodies, results intro, result headline, quote, FAQ question, FAQ answer.
+
+
+
 Scoring axes (each /2, total /10):
 
 - **Clarity** — obvious what this section controls on the public page

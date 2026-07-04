@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { GripVertical, MapPin, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
+import { MapPin, Plus, Quote, Save, Sparkles, Trash2 } from "lucide-react";
 import { TransformationImageEditor } from "@/components/dashboard/TransformationImageEditor";
 import { GymPicker } from "@/components/profile/GymPicker";
 import { getMyPrimaryLocation, saveMyPrimaryPostcode } from "@/lib/profile/location.functions";
@@ -53,8 +53,6 @@ import {
   deleteTransformation,
   upsertFaq,
   deleteFaq,
-  upsertClientResult,
-  deleteClientResult,
   aiDraftMethod,
   aiDraftFaqs,
   aiDraftTagline,
@@ -62,13 +60,13 @@ import {
   aiDraftSubtitle,
   type MethodPillar,
   type TransformationDTO,
-  type ClientResultDTO,
   type FaqDTO,
 } from "@/lib/website/website-content.functions";
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
 import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 import { SpecialismsDeliveryPanel } from "@/components/dashboard/SpecialismsDeliveryPanel";
 import { DeliveryModePanel } from "@/components/dashboard/DeliveryModePanel";
+import { FieldCounter } from "@/components/dashboard/website/FieldCounter";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/website")({
   head: () => ({
@@ -503,8 +501,9 @@ function WebsiteEditorPage() {
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   maxLength={200}
-                  placeholder='e.g. "Stronger, leaner, sharper — in 12 weeks"'
+                  placeholder="[Your tagline — e.g. Stronger, leaner, sharper in 12 weeks]"
                 />
+                <FieldCounter current={tagline.length} max={200} />
               </Field>
               <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
               <Field
@@ -516,8 +515,9 @@ function WebsiteEditorPage() {
                   value={about}
                   onChange={(e) => setAbout(e.target.value)}
                   maxLength={4000}
-                  placeholder="Tell clients who you help and how."
+                  placeholder="[Tell clients who you help and how — 2–3 short paragraphs]"
                 />
+                <FieldCounter current={about.length} max={4000} />
               </Field>
               <Field
                 label="Hero image"
@@ -1252,8 +1252,9 @@ function HeroSubtitleField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           maxLength={200}
-          placeholder="e.g. Strength + hybrid coaching for busy professionals"
+          placeholder="[Supporting line — e.g. Strength + hybrid coaching for busy professionals]"
         />
+        <FieldCounter current={value.length} max={200} />
       </Field>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -1320,8 +1321,6 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
   const save_ = useServerFn(saveMyWebsiteContent);
   const upsertT = useServerFn(upsertTransformation);
   const delT = useServerFn(deleteTransformation);
-  const upsertR = useServerFn(upsertClientResult);
-  const delR = useServerFn(deleteClientResult);
   const upsertF = useServerFn(upsertFaq);
   const delF = useServerFn(deleteFaq);
   const draftMethod = useServerFn(aiDraftMethod);
@@ -1461,16 +1460,18 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
             value={methodName}
             onChange={(e) => setMethodName(e.target.value)}
             maxLength={80}
-            placeholder="The Foundation Method"
+            placeholder="[Your method name — e.g. The Foundation Method]"
           />
+          <FieldCounter current={methodName.length} max={80} />
         </Field>
         <Field label="Intro" hint="One short paragraph under the headline.">
           <TextArea
             value={methodIntro}
             onChange={(e) => setMethodIntro(e.target.value)}
             maxLength={600}
-            placeholder="A three-phase system I've refined over 100+ clients. Same shape every time, written from scratch for every person."
+            placeholder="[One short paragraph about how you coach — 2–3 sentences]"
           />
+          <FieldCounter current={methodIntro.length} max={600} />
         </Field>
 
         <div className="border-b border-reps-border/60 px-5 pt-5 pb-2">
@@ -1480,11 +1481,8 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
 
         <div className="space-y-3 px-5 py-4">
           {pillars.map((p, i) => {
-            const placeholders = [
-              { title: "Build the base", body: "Two weeks fixing technique on the four lifts that matter. No ego, no fluff." },
-              { title: "Train the plan", body: "Eight weeks of progressive, measurable work — written around your schedule, not a template." },
-              { title: "Make it stick", body: "Habits, nutrition rails and recovery so the result still holds 12 months later." },
-            ][i] ?? { title: "Pillar title", body: "Pillar description" };
+            const titleMax = 60;
+            const bodyMax = 200;
             return (
               <div
                 key={i}
@@ -1502,9 +1500,10 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
                         next[i] = { ...next[i], title: e.target.value };
                         setPillars(next);
                       }}
-                      placeholder={placeholders.title}
-                      maxLength={60}
+                      placeholder="[Pillar title — e.g. Build the base]"
+                      maxLength={titleMax}
                     />
+                    <FieldCounter current={p.title.length} max={titleMax} />
                     <TextInput
                       value={p.body}
                       onChange={(e) => {
@@ -1512,9 +1511,10 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
                         next[i] = { ...next[i], body: e.target.value };
                         setPillars(next);
                       }}
-                      placeholder={placeholders.body}
-                      maxLength={200}
+                      placeholder="[Pillar body — one clear sentence about what happens in this phase]"
+                      maxLength={bodyMax}
                     />
+                    <FieldCounter current={p.body.length} max={bodyMax} />
                   </div>
                 </div>
               </div>
@@ -1551,12 +1551,13 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
               value={clientResultsIntro}
               onChange={(e) => setClientResultsIntro(e.target.value)}
               maxLength={600}
-              placeholder="Use this to explain what clients can expect from the results below."
+              placeholder="[Short intro — what clients can expect from the results below]"
             />
+            <FieldCounter current={clientResultsIntro.length} max={600} />
           </div>
           <div className="border-t border-reps-border px-5 py-4">
             <div className="text-[13px] font-semibold text-white">Proof cards</div>
-            <p className="mt-0.5 text-[12px] text-white/55">Image + metric cards shown in the Results section.</p>
+            <p className="mt-0.5 text-[12px] text-white/55">Image + metric cards shown in the Results section. Preview updates on the right after you save.</p>
           </div>
           <TransformationsEditor
             items={data.transformations}
@@ -1607,8 +1608,9 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
 /**
  * TransformationsEditor
  * Every field in this editor maps 1:1 to what shows on the public
- * proof card at /c/$slug. A live preview on the right mirrors that
- * card so pros can see exactly what they're building.
+ * proof card at /c/$slug. The live preview iframe on the right of the
+ * page is the source of truth for how the card renders — this editor
+ * intentionally does NOT duplicate that preview inline.
  */
 function TransformationsEditor({
   items,
@@ -1619,6 +1621,33 @@ function TransformationsEditor({
   onSave: (t: Partial<TransformationDTO> & { sort_order: number; is_published: boolean }) => void;
   onDelete: (id: string) => void;
 }) {
+  const [adding, setAdding] = React.useState(false);
+
+  // Empty state: single hero CTA. The form only appears once the trainer
+  // taps "Add your first client result".
+  if (items.length === 0 && !adding) {
+    return (
+      <div className="px-5 py-8">
+        <div className="rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-5 py-10 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/15 text-reps-orange">
+            <Quote className="h-4 w-4" />
+          </div>
+          <div className="text-[14px] font-semibold text-white">No client results yet</div>
+          <p className="mx-auto mt-1 max-w-[380px] text-[12.5px] text-white/60">
+            Proof cards show a photo, a headline result and a short quote below your services on your public page.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="mt-4 inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
+          >
+            <Plus className="h-4 w-4" /> Add your first client result
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 px-5 py-5">
       {items.map((t) => (
@@ -1629,13 +1658,13 @@ function TransformationsEditor({
           onDelete={onDelete}
         />
       ))}
-      {items.length === 0 && (
-        <p className="text-[13px] text-white/55">No client results yet — add your first one below.</p>
-      )}
       <TransformationRow
         key="new"
         item={null}
-        onSave={(t) => onSave({ ...t, sort_order: items.length })}
+        onSave={(t) => {
+          onSave({ ...t, sort_order: items.length });
+          if (items.length === 0) setAdding(false);
+        }}
         onDelete={() => {}}
       />
     </div>
@@ -1643,8 +1672,8 @@ function TransformationsEditor({
 }
 
 /**
- * A single card editor. Left column = fields, right column = live
- * card preview mirroring TransformationsSection on /c/$slug.
+ * A single card editor. Full-width fields — the live preview iframe
+ * on the right of the page shows exactly how this card will render.
  * When `item` is null this is an "Add new" form; otherwise it edits in place.
  */
 function TransformationRow({
@@ -1681,7 +1710,14 @@ function TransformationRow({
     setDirty(true);
   };
 
+  const METRIC_MAX = 80;
+  const QUOTE_MAX = 600;
+  const NAME_MAX = 60;
+  const ROLE_MAX = 60;
+  const DURATION_MAX = 40;
+
   const canSave = metric.trim().length > 0 || clientFirstName.trim().length > 0;
+  const buttonDisabled = !canSave || (!isNew && !dirty);
 
   const handleSave = () => {
     onSave({
@@ -1690,7 +1726,6 @@ function TransformationRow({
       client_role: clientRole.trim() || null,
       duration_label: duration.trim() || null,
       metric: metric.trim() || null,
-      // headline column kept nullable for back-compat; not exposed in UI
       headline: null,
       quote: quote.trim() || null,
       image_url: imageUrl.trim() || null,
@@ -1707,8 +1742,6 @@ function TransformationRow({
     }
     setDirty(false);
   };
-
-  const previewMeta = [clientRole, duration].filter((s) => s.trim().length > 0).join(" · ");
 
   return (
     <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4">
@@ -1742,247 +1775,125 @@ function TransformationRow({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 min-[1180px]:grid-cols-[1fr_320px]">
-        {/* Fields */}
-        <div className="space-y-3">
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Photo</label>
-            <div className="mt-1.5">
-              <TransformationImageEditor value={imageUrl} onChange={mark(setImageUrl)} />
-            </div>
-          </div>
+      {isNew && (
+        <div className="mb-3 text-[12px] font-semibold uppercase tracking-wide text-white/50">
+          Add a new result
+        </div>
+      )}
 
+      <div className="space-y-3">
+        <div>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Photo</label>
+          <p className="text-[11px] text-white/45">Landscape 4:3 — face and result visible. Min 800 × 600.</p>
+          <div className="mt-1.5">
+            <TransformationImageEditor value={imageUrl} onChange={mark(setImageUrl)} />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+            Result headline
+          </label>
+          <p className="text-[11px] text-white/45">Bold line on the card, e.g. "−8kg · first unassisted pull-up".</p>
+          <div className="mt-1.5">
+            <TextInput
+              value={metric}
+              onChange={(e) => mark(setMetric)(e.target.value)}
+              placeholder="[Result headline — e.g. −8kg · first unassisted pull-up]"
+              maxLength={METRIC_MAX}
+            />
+            <FieldCounter current={metric.length} max={METRIC_MAX} />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+            Client quote (optional)
+          </label>
+          <div className="mt-1.5">
+            <TextArea
+              value={quote}
+              onChange={(e) => mark(setQuote)(e.target.value)}
+              placeholder="[Short quote from the client about their result]"
+              maxLength={QUOTE_MAX}
+            />
+            <FieldCounter current={quote.length} max={QUOTE_MAX} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-              Result headline
+              Client name
             </label>
-            <p className="text-[11px] text-white/45">Bold line on the card, e.g. "−8kg · first unassisted pull-up".</p>
             <div className="mt-1.5">
               <TextInput
-                value={metric}
-                onChange={(e) => mark(setMetric)(e.target.value)}
-                placeholder="e.g. −8kg · first unassisted pull-up"
-                maxLength={80}
+                value={clientFirstName}
+                onChange={(e) => mark(setClientFirstName)(e.target.value)}
+                placeholder="[First name]"
+                maxLength={NAME_MAX}
               />
             </div>
           </div>
-
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-              Client quote (optional)
+              Role (optional)
             </label>
             <div className="mt-1.5">
-              <TextArea
-                value={quote}
-                onChange={(e) => mark(setQuote)(e.target.value)}
-                placeholder="A short quote from the client about their result."
-                maxLength={600}
+              <TextInput
+                value={clientRole}
+                onChange={(e) => mark(setClientRole)(e.target.value)}
+                placeholder="[e.g. Marketing Director]"
+                maxLength={ROLE_MAX}
               />
             </div>
           </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-                Client name
-              </label>
-              <div className="mt-1.5">
-                <TextInput
-                  value={clientFirstName}
-                  onChange={(e) => mark(setClientFirstName)(e.target.value)}
-                  placeholder="e.g. Sophie L."
-                  maxLength={60}
-                />
-              </div>
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+              Duration (optional)
+            </label>
+            <div className="mt-1.5">
+              <TextInput
+                value={duration}
+                onChange={(e) => mark(setDuration)(e.target.value)}
+                placeholder="[e.g. 12 weeks]"
+                maxLength={DURATION_MAX}
+              />
             </div>
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-                Role (optional)
-              </label>
-              <div className="mt-1.5">
-                <TextInput
-                  value={clientRole}
-                  onChange={(e) => mark(setClientRole)(e.target.value)}
-                  placeholder="e.g. Marketing Director"
-                  maxLength={60}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-                Duration (optional)
-              </label>
-              <div className="mt-1.5">
-                <TextInput
-                  value={duration}
-                  onChange={(e) => mark(setDuration)(e.target.value)}
-                  placeholder="e.g. 12 weeks"
-                  maxLength={40}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end pt-1">
-            <button
-              type="button"
-              disabled={!canSave || (!isNew && !dirty)}
-              onClick={handleSave}
-              className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
-            >
-              {isNew ? <><Plus className="h-4 w-4" /> Add result</> : <><Save className="h-4 w-4" /> Save changes</>}
-            </button>
           </div>
         </div>
 
-        {/* Live preview — mirrors TransformationsSection on /c/$slug */}
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Preview</div>
-          <p className="mb-2 text-[11px] text-white/45">How this card looks on your public page.</p>
-          <TransformationPreviewCard
-            image={imageUrl}
-            metric={metric.trim() || "Your result headline"}
-            quote={quote.trim() || "A short quote from the client goes here."}
-            client={clientFirstName.trim() || "Client name"}
-            meta={previewMeta}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TransformationPreviewCard({
-  image,
-  metric,
-  quote,
-  client,
-  meta,
-}: {
-  image: string;
-  metric: string;
-  quote: string;
-  client: string;
-  meta: string;
-}) {
-  return (
-    <article className="overflow-hidden rounded-[18px] border border-reps-border bg-reps-midnight">
-      <div className="relative aspect-[4/3] overflow-hidden bg-reps-panel-soft">
-        {image ? (
-          <img src={image} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[11px] text-white/40">
-            Add a photo
-          </div>
-        )}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(180deg, transparent 50%, rgba(11,13,16,0.85) 100%)" }}
-        />
-        <div className="absolute inset-x-0 bottom-0 p-3">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-            Result
-          </div>
-          <div className="mt-1.5 font-display text-[15px] font-bold leading-tight text-white">
-            {metric}
-          </div>
-        </div>
-      </div>
-      <div className="p-4">
-        <Quote className="h-4 w-4 text-reps-orange" />
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/80">&ldquo;{quote}&rdquo;</p>
-        <div className="mt-3 border-t border-reps-border pt-2.5">
-          <div className="text-[12.5px] font-semibold text-white">{client}</div>
-          {meta ? <div className="text-[11px] text-white/55">{meta}</div> : null}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-
-function ClientResultsEditor({
-  items,
-  onSave,
-  onDelete,
-}: {
-  items: ClientResultDTO[];
-  onSave: (r: Partial<ClientResultDTO> & { sort_order: number; is_published: boolean }) => void;
-  onDelete: (id: string) => void;
-}) {
-  const [draft, setDraft] = React.useState({ headline: "", body: "" });
-
-  return (
-    <div className="divide-y divide-reps-border/60">
-        {items.map((r) => (
-          <div key={r.id} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[1fr_auto]">
-            <div>
-              <div className="text-[13px] font-semibold text-white">{r.headline ?? "Client result"}</div>
-              {r.body && <p className="mt-1 line-clamp-2 text-[12px] text-white/55">&quot;{r.body}&quot;</p>}
-              {!r.is_published && (
-                <span className="mt-1 inline-block text-[10px] uppercase tracking-wide text-white/40">Hidden</span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => onSave({ ...r, is_published: !r.is_published })}
-                className="h-9 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-white/80 hover:bg-reps-panel"
-              >
-                {r.is_published ? "Hide" : "Show"}
-              </button>
-              <button
-                type="button"
-                onClick={() => confirm("Delete this client result?") && onDelete(r.id)}
-                className="flex h-9 items-center gap-1 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] text-red-300 hover:bg-reps-panel"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Delete
-              </button>
-            </div>
-          </div>
-        ))}
-        {items.length === 0 && (
-          <div className="px-5 py-4 text-[13px] text-white/55">No written client results yet — add one below.</div>
-        )}
-        <div className="px-5 py-5">
-        <div className="text-[13px] font-semibold text-white">Add a client result quote</div>
-        <div className="mt-3 space-y-3">
-          <TextInput
-            value={draft.headline}
-            onChange={(e) => setDraft({ ...draft, headline: e.target.value })}
-            placeholder="Headline (e.g. Stronger and more confident in 12 weeks)"
-            maxLength={120}
-          />
-          <TextArea
-            value={draft.body}
-            onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-            placeholder="Short result story or quote"
-            maxLength={800}
-          />
-        </div>
-        <div className="mt-3 flex justify-end">
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <p className="text-[11px] text-white/45">
+            {isNew
+              ? canSave
+                ? "Ready to add — the preview on the right refreshes after Publish."
+                : "Add a headline or client name to enable."
+              : dirty
+                ? "Unsaved changes."
+                : "Saved."}
+          </p>
           <button
             type="button"
-            disabled={!draft.headline.trim() && !draft.body.trim()}
-            onClick={() => {
-              onSave({
-                headline: draft.headline || null,
-                body: draft.body || null,
-                sort_order: items.length,
-                is_published: true,
-              });
-              setDraft({ headline: "", body: "" });
-            }}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
+            disabled={buttonDisabled}
+            onClick={handleSave}
+            className={
+              buttonDisabled
+                ? "flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/40 cursor-not-allowed"
+                : "flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
+            }
           >
-            <Plus className="h-4 w-4" /> Add result
+            {isNew ? <><Plus className="h-4 w-4" /> Add result</> : <><Save className="h-4 w-4" /> Save changes</>}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+
+
+
 
 function FaqsEditor({
   items,
@@ -2044,18 +1955,24 @@ function FaqsEditor({
       <div className="border-t border-reps-border px-5 py-5">
         <div className="text-[13px] font-semibold text-white">Add a FAQ</div>
         <div className="mt-3 space-y-3">
-          <TextInput
-            value={draft.question}
-            onChange={(e) => setDraft({ ...draft, question: e.target.value })}
-            placeholder="Question"
-            maxLength={200}
-          />
-          <TextArea
-            value={draft.answer}
-            onChange={(e) => setDraft({ ...draft, answer: e.target.value })}
-            placeholder="Answer"
-            maxLength={1200}
-          />
+          <div>
+            <TextInput
+              value={draft.question}
+              onChange={(e) => setDraft({ ...draft, question: e.target.value })}
+              placeholder="[Question a client actually asks — e.g. Do you offer online-only coaching?]"
+              maxLength={200}
+            />
+            <FieldCounter current={draft.question.length} max={200} />
+          </div>
+          <div>
+            <TextArea
+              value={draft.answer}
+              onChange={(e) => setDraft({ ...draft, answer: e.target.value })}
+              placeholder="[Straight answer — 2–4 short sentences]"
+              maxLength={1200}
+            />
+            <FieldCounter current={draft.answer.length} max={1200} />
+          </div>
         </div>
         <div className="mt-3 flex justify-end">
           <button
