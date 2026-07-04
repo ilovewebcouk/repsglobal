@@ -35,7 +35,7 @@ export const article: HelpArticle = {
         The face on your profile photo must be the same person who passed identity verification.
         Posing as someone else is grounds for removal.
       </Callout>
-      <DeepLinkButton to="/dashboard/profile" label="Upload your photo" />
+      <DeepLinkButton to="/dashboard/website" label="Upload your photo" />
     </>
   ),
 };
