@@ -319,21 +319,20 @@ export function HeroImageEditor({
             <span className="text-[11px] text-white/45">We'll re-host and crop it to 1080 × 1920.</span>
             <button
               type="button"
-              disabled={!urlDraft.trim()}
+              disabled={!urlDraft.trim() || urlLoading}
               onClick={async () => {
+                setUrlLoading(true);
                 try {
-                  const r = await fetch(urlDraft);
-                  const blob = await r.blob();
-                  const reader = new FileReader();
-                  reader.onload = () => setEditing(String(reader.result));
-                  reader.readAsDataURL(blob);
-                } catch {
-                  toast.error("Couldn't fetch that URL");
+                  await loadRemoteImageToDataUrl(urlDraft, setEditing);
+                } catch (e) {
+                  toast.error((e as Error).message || "Couldn't fetch that URL");
+                } finally {
+                  setUrlLoading(false);
                 }
               }}
               className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-60"
             >
-              <Check className="h-4 w-4" /> Load
+              <Check className="h-4 w-4" /> {urlLoading ? "Loading…" : "Load"}
             </button>
           </div>
         </div>
