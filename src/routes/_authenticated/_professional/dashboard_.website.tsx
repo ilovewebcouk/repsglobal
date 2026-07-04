@@ -53,8 +53,6 @@ import {
   deleteTransformation,
   upsertFaq,
   deleteFaq,
-  upsertClientResult,
-  deleteClientResult,
   aiDraftMethod,
   aiDraftFaqs,
   aiDraftTagline,
@@ -62,7 +60,6 @@ import {
   aiDraftSubtitle,
   type MethodPillar,
   type TransformationDTO,
-  type ClientResultDTO,
   type FaqDTO,
 } from "@/lib/website/website-content.functions";
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
