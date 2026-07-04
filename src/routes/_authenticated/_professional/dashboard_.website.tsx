@@ -34,7 +34,6 @@ import { ProfilePhotoPanel } from "@/components/dashboard/ProfilePhotoPanel";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   WebsiteEditorLayout,
-  type SectionStatus,
   type WebsiteEditorSection,
 } from "@/components/dashboard/website/WebsiteEditorLayout";
 import { WebsiteSectionsSidebar } from "@/components/dashboard/website/WebsiteSectionsSidebar";
