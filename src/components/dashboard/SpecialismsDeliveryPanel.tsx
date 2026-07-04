@@ -82,7 +82,7 @@ export function SpecialismsDeliveryPanel() {
     return () => window.removeEventListener("reps:website:save-all", h);
   }, []);
 
-  const MAX = 3;
+  const MAX = 7;
   const atCap = specialisms.length >= MAX;
 
   return (
