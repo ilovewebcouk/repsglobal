@@ -1155,6 +1155,17 @@ function TierCard({
         </span>
       )}
 
+      {tier.imageUrl ? (
+        <div className="mt-3 -mx-1 aspect-[16/9] overflow-hidden rounded-[14px] border border-reps-border/60 bg-reps-panel-soft">
+          <img
+            src={tier.imageUrl}
+            alt={`${tier.name} service`}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : null}
+
       <h3
         className={[
           "font-display text-[24px] font-bold text-reps-text",
