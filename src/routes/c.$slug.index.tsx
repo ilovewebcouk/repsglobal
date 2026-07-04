@@ -157,6 +157,8 @@ type Coach = {
     }>;
   };
   theme?: "dark" | "light";
+  /** Currently coaching X of 20 available spaces. null = hide the strip; undefined = fixture default. */
+  currentClients?: number | null;
 };
 
 const TITLE_SHORT_LABEL: Record<string, string> = {
