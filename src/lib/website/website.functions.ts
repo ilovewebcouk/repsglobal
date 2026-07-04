@@ -1,6 +1,6 @@
 // Server functions for website (/c/$slug) + services management.
 import { createServerFn } from "@tanstack/react-start";
-import { verifyPreviewToken } from "./publish.functions";
+
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
@@ -543,8 +543,11 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     // published snapshot. Anything else (missing, boolean true, expired,
     // tampered, or minted for a different slug) falls through to the
     // snapshot below.
-    const previewOk =
-      typeof data.preview === "string" && verifyPreviewToken(data.preview, data.slug);
+    const previewOk = await (async () => {
+      if (typeof data.preview !== "string") return false;
+      const { verifyPreviewToken } = await import("./preview-token.server");
+      return verifyPreviewToken(data.preview, data.slug);
+    })();
     if (!previewOk) {
       const { data: snapRow } = await supabaseAdmin
         .from("websites")
