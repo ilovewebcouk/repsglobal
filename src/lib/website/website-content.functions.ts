@@ -337,6 +337,16 @@ export const upsertFaq = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => FaqSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // IDOR guard — supabaseAdmin bypasses RLS.
+    if (data.id) {
+      const { data: existing } = await supabaseAdmin
+        .from("website_faqs")
+        .select("id")
+        .eq("id", data.id)
+        .eq("user_id", context.userId)
+        .maybeSingle();
+      if (!existing) throw new Error("Not found");
+    }
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
       .from("website_faqs")
