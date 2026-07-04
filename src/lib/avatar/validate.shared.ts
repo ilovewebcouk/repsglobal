@@ -75,7 +75,7 @@ REJECT the image unless ALL of these are true:
 - It is a real photograph (not an illustration, drawing, 3D render, AI-generated cartoon, logo, icon, or text/wordmark).
 - It shows exactly ONE human being.
 - The face is clearly visible, roughly front-facing, well-lit, in focus.
-- It is a head-and-shoulders or similar portrait — NOT a full-body, distant, or group shot.
+- It is a head-and-shoulders OR head-to-torso (chest/waist up) portrait — NOT a full-body, distant, or group shot.
 - The face is not heavily obscured (e.g. both sunglasses AND a hat covering the face = reject; mask covering most of face = reject).
 - The background is not visually distracting. REJECT (category "distracting_background") if any of the following dominate the frame behind or beside the person:
   - Large, legible commercial signage, storefronts, branded gym facades, or shop names (e.g. "GOLD'S GYM", "PUREGYM" visible behind the subject).
