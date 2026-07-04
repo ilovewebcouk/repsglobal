@@ -216,12 +216,18 @@ export function WebsiteSectionsSidebar({
             <a
               href={publicUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(publicUrl, "_blank", "noopener,noreferrer");
+              }}
               className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium text-white/55 hover:text-white"
             >
               <ExternalLink className="h-3 w-3" /> View public page
             </a>
           ) : null}
+
         </div>
 
         {/* Icon-mode: compact publish dot */}

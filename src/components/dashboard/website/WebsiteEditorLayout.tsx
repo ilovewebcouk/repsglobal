@@ -155,13 +155,19 @@ export function WebsiteEditorLayout({
                   <a
                     href={publicUrl}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(publicUrl, "_blank", "noopener,noreferrer");
+                    }}
                     className="grid h-8 w-8 place-items-center rounded-[8px] text-white/60 hover:bg-white/[0.06] hover:text-white"
                     aria-label="Open in new tab"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 ) : null}
+
                 <button
                   type="button"
                   onClick={() => setCollapsed(true)}
