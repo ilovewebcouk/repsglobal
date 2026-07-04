@@ -561,6 +561,11 @@ function WebsiteEditorPage() {
       title: "Frequently asked questions",
       description: "Answer the questions clients ask before they book.",
     },
+    contact: {
+      title: "Languages & socials",
+      description:
+        "Languages you speak, social links shown on your public page, and your internal contact phone.",
+    },
   };
   const activeCopy = sectionCopy[active.id] ?? { title: active.label, description: "" };
 
