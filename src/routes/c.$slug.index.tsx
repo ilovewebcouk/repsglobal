@@ -1603,6 +1603,7 @@ function TransformationsSection({ coach }: { coach: Coach }) {
 /* ------------------------------------------------------------------ */
 
 function TestimonialsSection({ coach }: { coach: Coach }) {
+  if (coach.testimonials.length === 0) return null;
   return (
     <section id="reviews" className="scroll-mt-28 bg-reps-midnight">
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-24">
