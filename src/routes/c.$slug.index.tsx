@@ -430,6 +430,7 @@ function mergeLiveIntoCoach(
         includes: Array.isArray(s.bullets) ? s.bullets.filter((b) => b && b.trim()) : [],
         highlight: s.is_featured || (services.every((x) => !x.is_featured) && i === 1),
         ctaLabel: s.cta_label ?? null,
+        imageUrl: s.image_url ?? null,
       }));
 
 
