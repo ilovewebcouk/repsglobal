@@ -18,6 +18,7 @@ import {
   type SectionStatus,
   type WebsiteEditorSection,
 } from "@/components/dashboard/website/WebsiteEditorLayout";
+import { WebsiteSectionsSidebar } from "@/components/dashboard/website/WebsiteSectionsSidebar";
 import {
   Dialog,
   DialogContent,
