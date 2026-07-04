@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+
 import { Bookmark, Laptop, MapPin, Star } from "lucide-react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
