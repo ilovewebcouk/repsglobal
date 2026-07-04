@@ -41,7 +41,10 @@ export type DashboardProfile = {
   city: string | null;
   /** Internal-only — never rendered on any public page. E.164 format. */
   contact_phone: string | null;
+  /** DEPRECATED: legacy `professionals.bio`. Editors now write `websites.about`. */
   bio: string | null;
+  /** Live public "About" copy from `websites.about`. Source of truth for completeness. */
+  about: string | null;
   languages: string[];
   social_instagram: string | null;
   social_linkedin: string | null;
@@ -61,7 +64,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<DashboardProfile> => {
     const { supabase, userId } = context;
 
-    const [{ data: profile }, { data: pro }] = await Promise.all([
+    const [{ data: profile }, { data: pro }, { data: site }] = await Promise.all([
       supabase
         .from("profiles")
         .select("full_name, display_name, business_name, avatar_url")
@@ -73,6 +76,11 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
           "slug, headline, primary_profession, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, city, contact_phone, bio, specialisms, languages, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, is_published, verification_status, identity_status",
         )
         .eq("id", userId)
+        .maybeSingle(),
+      supabase
+        .from("websites")
+        .select("about")
+        .eq("professional_id", userId)
         .maybeSingle(),
     ]);
 
@@ -113,6 +121,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
       city: (proRow.city as string | null) ?? null,
       contact_phone: (proRow.contact_phone as string | null) ?? null,
       bio: (proRow.bio as string | null) ?? null,
+      about: ((site as { about?: string | null } | null)?.about as string | null) ?? null,
       languages: (proRow.languages as string[] | null) ?? [],
       social_instagram: (proRow.social_instagram as string | null) ?? null,
       social_linkedin: (proRow.social_linkedin as string | null) ?? null,
