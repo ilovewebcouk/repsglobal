@@ -1016,6 +1016,7 @@ export function useHubData(enabled: boolean) {
   const fetchReviews = useServerFn(listMyReviews);
   const fetchWebsite = useServerFn(getMyWebsite);
   const fetchTrust = useServerFn(getTrustState);
+  const fetchReadiness = useServerFn(getMyReadiness);
 
   const profile = useQuery({
     queryKey: ["my-dashboard-profile"],
@@ -1052,6 +1053,11 @@ export function useHubData(enabled: boolean) {
     queryFn: () => fetchTrust(),
     enabled,
   });
+  const readiness = useQuery({
+    queryKey: ["my-readiness"],
+    queryFn: () => fetchReadiness(),
+    enabled,
+  });
 
 
   const reviewsUnread = useReviewsUnread({ enabled });
@@ -1069,6 +1075,7 @@ export function useHubData(enabled: boolean) {
     reviews,
     website,
     trust,
+    readiness,
     reviewsUnread: reviewsUnread.unread,
     supportUnread: supportUnread.unread,
     pendingReviewReplies,
