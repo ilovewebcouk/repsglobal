@@ -32,7 +32,7 @@ export const article: HelpArticle = {
         You can change it — but the old URL will 404. If you've shared the old URL anywhere,
         you'll lose those clicks. Pick once if you can.
       </Callout>
-      <DeepLinkButton to="/dashboard/profile" label="Edit your slug" />
+      <DeepLinkButton to="/dashboard/website" label="Edit your slug" />
     </>
   ),
 };

@@ -77,6 +77,7 @@ import {
 import { HeroImageEditor } from "@/components/dashboard/HeroImageEditor";
 import { ServiceImageEditor } from "@/components/dashboard/ServiceImageEditor";
 import { SpecialismsDeliveryPanel } from "@/components/dashboard/SpecialismsDeliveryPanel";
+import { ContactSocialsPanel } from "@/components/dashboard/ContactSocialsPanel";
 import { DeliveryModePanel } from "@/components/dashboard/DeliveryModePanel";
 import { FieldCounter } from "@/components/dashboard/website/FieldCounter";
 
@@ -488,6 +489,19 @@ function WebsiteEditorPage() {
         ? "done"
         : "empty";
 
+    const langCount = profile?.languages?.length ?? 0;
+    const socialsCount = [
+      profile?.social_instagram,
+      profile?.social_linkedin,
+      profile?.social_youtube,
+      profile?.social_tiktok,
+      profile?.social_x,
+    ].filter((v) => !!v?.trim()).length;
+    const hasPhone = !!trimmed(profile?.contact_phone ?? "");
+    const contactFilled = [langCount > 0, socialsCount > 0, hasPhone].filter(Boolean).length;
+    const contactStatus: SectionStatus =
+      contactFilled === 3 ? "done" : contactFilled === 0 ? "empty" : "partial";
+
     return [
       { id: "profile", label: "Profile photo", status: photoStatus },
       { id: "basics", label: "Website basics", status: basicsStatus },
@@ -497,6 +511,7 @@ function WebsiteEditorPage() {
       { id: "method", label: "How I coach", status: methodStatus },
       { id: "results", label: "Client results", status: resultsStatus },
       { id: "faqs", label: "FAQs", status: faqsStatus },
+      { id: "contact", label: "Languages & socials", status: contactStatus },
     ];
   }, [
     tagline,
@@ -545,6 +560,11 @@ function WebsiteEditorPage() {
     faqs: {
       title: "Frequently asked questions",
       description: "Answer the questions clients ask before they book.",
+    },
+    contact: {
+      title: "Languages & socials",
+      description:
+        "Languages you speak, social links shown on your public page, and your internal contact phone.",
     },
   };
   const activeCopy = sectionCopy[active.id] ?? { title: active.label, description: "" };
@@ -599,6 +619,7 @@ function WebsiteEditorPage() {
           onReloadPreview={() => setReloadNonce((n) => n + 1)}
         >
           <div hidden={active.id !== "profile"}><ProfilePhotoPanel /></div>
+          <div hidden={active.id !== "contact"}><ContactSocialsPanel /></div>
           <div hidden={active.id !== "basics"}>
             <PPanel>
               <div className="border-b border-reps-border px-5 py-4">

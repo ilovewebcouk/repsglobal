@@ -28,7 +28,7 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
     const origin = host
       ? host.startsWith("localhost") ? `http://${host}` : `https://${host}`
       : fallbackOrigin;
-    const returnPath = data.return_path ?? "/dashboard/profile";
+    const returnPath = data.return_path ?? "/dashboard/verification";
     const returnUrl = `${origin}${returnPath}?stripe_identity=complete#identity`;
 
     const { createStripeClient } = await import("@/lib/billing/stripe.server");

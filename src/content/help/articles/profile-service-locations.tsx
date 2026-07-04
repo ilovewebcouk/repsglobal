@@ -34,7 +34,7 @@ export const article: HelpArticle = {
         If you take online clients, tick the Online toggle. Online profiles appear in nationwide
         searches as well as your local areas.
       </p>
-      <DeepLinkButton to="/dashboard/profile" label="Edit services & locations" />
+      <DeepLinkButton to="/dashboard/website" label="Edit services & locations" />
     </>
   ),
 };

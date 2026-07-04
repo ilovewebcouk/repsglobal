@@ -177,7 +177,7 @@ export function WelcomeBanner({
             </>
           ) : (
             <DashboardButton asChild size="sm" variant="primary">
-              <Link to="/dashboard/profile">Finish profile</Link>
+              <Link to="/dashboard/website">Finish profile</Link>
             </DashboardButton>
           )}
         </div>
@@ -286,7 +286,7 @@ export function NeedsAttention({
       tone: "neutral",
       title: `Your profile is ${profilePct}% complete`,
       detail: "A complete profile ranks higher and gets more enquiries.",
-      to: "/dashboard/profile",
+      to: "/dashboard/website",
       cta: "Polish",
     });
   }
@@ -297,7 +297,7 @@ export function NeedsAttention({
       tone: "warn",
       title: "Your listing is still a draft",
       detail: "Publish to appear on the REPS directory.",
-      to: "/dashboard/profile",
+      to: "/dashboard/website",
       cta: "Publish",
     });
   }
@@ -406,7 +406,7 @@ export function CompletenessCard({ profile }: { profile: DashboardProfile | null
         ))}
       </ul>
       <DashboardButton asChild size="sm" variant="ghost" className="mt-4 w-full">
-        <Link to="/dashboard/profile">Edit profile</Link>
+        <Link to="/dashboard/website">Edit profile</Link>
       </DashboardButton>
     </PPanel>
   );

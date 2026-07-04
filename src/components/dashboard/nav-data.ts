@@ -44,7 +44,6 @@ export const VERIFIED_NAV = [
     title: "Account",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
     ],
@@ -99,7 +98,6 @@ export const PRO_NAV = [
       { icon: AreaChart, label: "Reports", to: "/dashboard/reports" },
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
-      { icon: UserCircle, label: "Public Profile", to: "/dashboard/profile" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
     ],

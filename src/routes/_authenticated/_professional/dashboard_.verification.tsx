@@ -26,6 +26,7 @@ import {
   IdentityProfileCard,
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
+import { NameProfessionCard } from "@/components/dashboard/verification/NameProfessionCard";
 import {
   VerifiedBadge,
   tierFromCounts,
@@ -102,6 +103,7 @@ function VerificationPage() {
         <Hero trust={t} completed={completed} badgeTier={badgeTier} profession={profession} loading={trustQ.isLoading} />
 
         <div className="flex flex-col gap-4">
+          <NameProfessionCard />
           <IdentityProfileCard step="01" />
           <InsuranceProfileCard step="02" />
           <QualificationsCard trust={t} />
