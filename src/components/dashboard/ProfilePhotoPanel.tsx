@@ -349,7 +349,7 @@ export function ProfilePhotoPanel() {
         <div className="border-b border-reps-border px-5 py-4">
           <h3 className="text-[14px] font-semibold text-white">Profile photo</h3>
           <p className="mt-0.5 text-[12px] text-white/55">
-            A clear headshot helps clients trust and recognise you.
+            A clear photo of you (head-and-shoulders or waist-up) helps clients trust and recognise you.
           </p>
         </div>
         <div className="p-5">
