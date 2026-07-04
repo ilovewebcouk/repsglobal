@@ -211,8 +211,7 @@ export function NeedsAttention({
   unreadSupport,
   insuranceExpiringDays,
   insuranceExpired,
-  profilePct,
-  isPublished,
+  readiness,
   trust,
 }: {
   unreadEnquiries: number;
@@ -220,8 +219,7 @@ export function NeedsAttention({
   unreadSupport: number;
   insuranceExpiringDays: number | null;
   insuranceExpired: boolean;
-  profilePct: number;
-  isPublished: boolean;
+  readiness: ReadinessResult | null | undefined;
   trust: TrustState | null | undefined;
 }) {
   // Single source of truth — same 3-of-3 ticks the header badge uses.
@@ -284,28 +282,73 @@ export function NeedsAttention({
       cta: "Verify",
     });
   }
-  if (profilePct < 100) {
-    items.push({
-      key: "profile",
-      icon: Sparkles,
-      tone: "neutral",
-      title: `Your profile is ${profilePct}% complete`,
-      detail: "A complete profile ranks higher and gets more enquiries.",
-      to: "/dashboard/website",
-      cta: "Polish",
+
+  // Website publish state — uses the real websites.published_at + has_unpublished_changes,
+  // NOT professionals.is_published (which is set at signup by legacy defaults).
+  if (readiness) {
+    if (!readiness.website.everPublished) {
+      items.push({
+        key: "publish-first",
+        icon: ShieldCheck,
+        tone: "warn",
+        title: "Your website has never been published",
+        detail: "Publish to appear on the REPS directory.",
+        to: "/dashboard/website",
+        cta: "Publish",
+      });
+    } else if (readiness.website.hasUnpublishedChanges) {
+      items.push({
+        key: "publish-changes",
+        icon: ShieldCheck,
+        tone: "warn",
+        title: "You have unpublished website changes",
+        detail: "Review and publish so the public page matches.",
+        to: "/dashboard/website",
+        cta: "Publish",
+      });
+    }
+
+    // Per-section attention rows — cap at 3 to avoid a wall of noise.
+    const incomplete = readiness.website.sections.filter((s) => s.status !== "done");
+    const shown = incomplete.slice(0, 3);
+    shown.forEach((s) => {
+      const copy = SECTION_ATTENTION_COPY[s.id];
+      items.push({
+        key: `section-${s.id}`,
+        icon: Sparkles,
+        tone: "neutral",
+        title: s.status === "partial" ? copy.partial : copy.empty,
+        detail: `Website section: ${s.status === "partial" ? "in progress" : "not started"}`,
+        to: "/dashboard/website",
+        cta: "Fix",
+      });
     });
+    if (incomplete.length > shown.length) {
+      const rest = incomplete.length - shown.length;
+      items.push({
+        key: "section-more",
+        icon: Sparkles,
+        tone: "neutral",
+        title: `${rest} more website ${rest === 1 ? "section" : "sections"} to finish`,
+        detail: "Open the editor to complete them.",
+        to: "/dashboard/website",
+        cta: "Open",
+      });
+    }
+
+    if (!readiness.education.hasCert) {
+      items.push({
+        key: "education",
+        icon: GraduationCap,
+        tone: "neutral",
+        title: "Upload a qualification certificate",
+        detail: "Adds your REPS Qualifications tick and improves ranking.",
+        to: "/dashboard/verification",
+        cta: "Upload",
+      });
+    }
   }
-  if (!isPublished) {
-    items.push({
-      key: "publish",
-      icon: ShieldCheck,
-      tone: "warn",
-      title: "Your listing is still a draft",
-      detail: "Publish to appear on the REPS directory.",
-      to: "/dashboard/website",
-      cta: "Publish",
-    });
-  }
+
   if (unreadSupport > 0) {
     items.push({
       key: "support",
@@ -318,7 +361,7 @@ export function NeedsAttention({
     });
   }
 
-  const visible = items.slice(0, 6);
+  const visible = items.slice(0, 8);
 
   return (
     <PPanel className="flex h-full flex-col p-5">
