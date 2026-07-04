@@ -41,6 +41,7 @@ export const getMyPreviewToken = createServerFn({ method: "GET" })
       .maybeSingle();
     const slug = (pro?.slug ?? null) as string | null;
     if (!slug) return { token: null, slug: null, expires_at: new Date().toISOString() };
+    const { signPreviewToken } = await import("./preview-token.server");
     const token = signPreviewToken(slug);
     return {
       token,
@@ -292,6 +293,7 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
     }
 
     // Owner short-token to force live read.
+    const { signPreviewToken } = await import("./preview-token.server");
     const previewToken = signPreviewToken(pro.slug, 60);
     const live = await getWebsiteBySlug({ data: { slug: pro.slug, preview: previewToken } });
     if (!live) return { ...empty, ever_published: true };
