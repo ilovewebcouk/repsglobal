@@ -35,7 +35,7 @@ import {
 
 export type FeatureGroupKey =
   | "visibility"
-  | "shopfront"
+  | "website"
   | "operations"
   | "coaching"
   | "ai"
@@ -44,7 +44,7 @@ export type FeatureGroupKey =
 export type FeatureLink = {
   slug:
     | "profile-and-reviews"
-    | "shop-front"
+    | "website"
     | "bookings"
     | "payments"
     | "clients"
@@ -77,14 +77,14 @@ export const FEATURES: FeatureLink[] = [
     includedIn: ["verified", "pro", "business", "studio"],
   },
   {
-    slug: "shop-front",
+    slug: "website",
     label: "Personalised website",
     tag: "Website",
     oneLiner: "Your own page at /c/your-name — your photo, your method, your tiers.",
     icon: Globe,
-    group: "shopfront",
+    group: "website",
     crossList: ["visibility"],
-    customHref: "/features/shop-front",
+    customHref: "/features/website",
     includedIn: ["pro", "business", "studio"],
   },
   {
@@ -295,7 +295,7 @@ export const FEATURE_GROUPS: FeatureGroupMeta[] = [
     icon: BadgeCheck,
   },
   {
-    key: "shopfront",
+    key: "website",
     label: "Website",
     desc: "Your own page. Your brand. One link.",
     hero: {

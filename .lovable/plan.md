@@ -1,14 +1,14 @@
 ## Goal
 
-Rebuild the **Client Results** editor on `/dashboard/website` so every field maps 1:1 to a proof card on the public shop-front (`/c/$slug`), with a proper image uploader (not a URL text box) and a live preview that mirrors the public card.
+Rebuild the **Client Results** editor on `/dashboard/website` so every field maps 1:1 to a proof card on the public website (`/c/$slug`), with a proper image uploader (not a URL text box) and a live preview that mirrors the public card.
 
 ## Why
 
-The pipeline already exists end-to-end (`shop_front_transformations` → `TransformationsSection`), but the editor UX is broken:
+The pipeline already exists end-to-end (`website_transformations` → `TransformationsSection`), but the editor UX is broken:
 
 - Image is a raw URL text field (no upload, no crop, no image at all for most pros)
 - Editor has both `metric` and `headline` — the public card only shows one of them, so one field is invisible
-- No place to enter the "Marketing Director · 12 weeks" line under the client name — the shopfront currently duplicates the headline into that slot
+- No place to enter the "Marketing Director · 12 weeks" line under the client name — the website currently duplicates the headline into that slot
 - No preview, so pros can't see what they're building
 
 ## What the public card shows
@@ -52,19 +52,19 @@ In `mergeLiveIntoCoach` (`src/routes/c.$slug.index.tsx`):
 
 ## Image upload
 
-- New bucket **`shop-front-results`** (public, mirrors `shop-front-hero` config).
+- New bucket **`website-results`** (public, mirrors `website-hero` config).
 - New server fn `uploadTransformationImageFromBase64` — takes a data URL, decodes → re-encodes 1600×1200 JPEG server-side, writes under `<userId>/<uuid>.jpg`, returns public URL. Owner-scoped storage policies.
 - Reuse the cropper pattern from `HeroImageEditor` but locked to **4:3** aspect (not 9:16). Extract the cropper modal into a small shared primitive if trivial; otherwise inline in a new `TransformationImageEditor.tsx`.
 
 ## Files touched
 
-1. **Migration** — add `client_role text`, `duration_label text` to `shop_front_transformations`; create `shop-front-results` storage bucket + owner RLS policies.
-2. `src/lib/shop-front/website-content.functions.ts` — extend `TransformationSchema` + `TransformationDTO` with the two new fields.
-3. `src/lib/shop-front/transformation-image.functions.ts` — **new** upload server fn (mirrors `hero.functions.ts`).
+1. **Migration** — add `client_role text`, `duration_label text` to `website_transformations`; create `website-results` storage bucket + owner RLS policies.
+2. `src/lib/website/website-content.functions.ts` — extend `TransformationSchema` + `TransformationDTO` with the two new fields.
+3. `src/lib/website/transformation-image.functions.ts` — **new** upload server fn (mirrors `hero.functions.ts`).
 4. `src/components/dashboard/TransformationImageEditor.tsx` — **new** uploader component (Upload / URL modes, 4:3 cropper).
 5. `src/routes/_authenticated/_professional/dashboard_.website.tsx` — replace `TransformationsEditor` with the rebuilt version: field grid + live card preview + inline edit for existing rows (currently they're read-only chips).
 6. `src/routes/c.$slug.index.tsx` — update `liveTransformations` mapping so `meta` = role · duration (drop headline duplication).
-7. `src/lib/shop-front/shop-front.functions.ts` — include `client_role`, `duration_label` in the `ShopFrontTransformationDTO` and the select column list.
+7. `src/lib/website/website.functions.ts` — include `client_role`, `duration_label` in the `WebsiteTransformationDTO` and the select column list.
 
 ## Out of scope
 

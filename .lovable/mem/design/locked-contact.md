@@ -40,7 +40,7 @@ Emerald pulse dot + "RIGHT NOW" label. `rounded-[22px]`, `border-reps-border`, `
 
 ## Emails (LOCKED)
 
-- `pros@repsuk.org` — Professional support (verification, billing, profile, shop-front)
+- `pros@repsuk.org` — Professional support (verification, billing, profile, website)
 - `partners@repsuk.org` — Partnerships (training providers, awarding bodies, integrations)
 - `press@repsuk.org` — Press & media
 

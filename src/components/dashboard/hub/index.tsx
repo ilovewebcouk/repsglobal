@@ -48,7 +48,7 @@ import {
   type ReviewDTO,
   type ReviewKpis,
 } from "@/lib/reviews/reviews.functions";
-import { getMyShopFront, type ServiceDTO } from "@/lib/shop-front/shop-front.functions";
+import { getMyWebsite, type ServiceDTO } from "@/lib/website/website.functions";
 import { getTrustState, type TrustState } from "@/lib/verification/trust.functions";
 import { useReviewsUnread } from "@/hooks/useReviewsUnread";
 import { useMySupportUnread } from "@/hooks/useMySupportUnread";
@@ -888,7 +888,7 @@ export function useHubData(enabled: boolean) {
   const fetchEnqList = useServerFn(listMyEnquiries);
   const fetchReviewKpis = useServerFn(getMyReviewKpis);
   const fetchReviews = useServerFn(listMyReviews);
-  const fetchShopFront = useServerFn(getMyShopFront);
+  const fetchWebsite = useServerFn(getMyWebsite);
   const fetchTrust = useServerFn(getTrustState);
 
   const profile = useQuery({
@@ -916,9 +916,9 @@ export function useHubData(enabled: boolean) {
     queryFn: () => fetchReviews(),
     enabled,
   });
-  const shopFront = useQuery({
-    queryKey: ["shop-front", "mine"],
-    queryFn: () => fetchShopFront(),
+  const website = useQuery({
+    queryKey: ["website", "mine"],
+    queryFn: () => fetchWebsite(),
     enabled,
   });
   const trust = useQuery({
@@ -941,7 +941,7 @@ export function useHubData(enabled: boolean) {
     enquiries,
     reviewKpis,
     reviews,
-    shopFront,
+    website,
     trust,
     reviewsUnread: reviewsUnread.unread,
     supportUnread: supportUnread.unread,

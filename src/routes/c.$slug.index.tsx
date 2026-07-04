@@ -4,14 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useSessionUser } from "@/hooks/use-session-user";
 import {
-  getShopFrontBySlug,
+  getWebsiteBySlug,
   type ServiceDTO,
-  type ShopFrontDTO,
-  type ShopFrontClientResultDTO,
-  type ShopFrontFaqDTO,
-  type ShopFrontTransformationDTO,
-} from "@/lib/shop-front/shop-front.functions";
-import { DEFAULT_SERVICE_CARDS } from "@/lib/shop-front/default-services";
+  type WebsiteDTO,
+  type WebsiteClientResultDTO,
+  type WebsiteFaqDTO,
+  type WebsiteTransformationDTO,
+} from "@/lib/website/website.functions";
+import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import {
   ArrowRight,
@@ -398,11 +398,11 @@ const COACHES: Record<string, Coach> = {
 
 function mergeLiveIntoCoach(
   base: Coach,
-  sf: ShopFrontDTO,
+  sf: WebsiteDTO,
   services: ServiceDTO[],
-  transformations: ShopFrontTransformationDTO[] = [],
-  clientResults: ShopFrontClientResultDTO[] = [],
-  faqs: ShopFrontFaqDTO[] = [],
+  transformations: WebsiteTransformationDTO[] = [],
+  clientResults: WebsiteClientResultDTO[] = [],
+  faqs: WebsiteFaqDTO[] = [],
 ): Coach {
   const liveTiers: Tier[] = services.length === 0
     ? DEFAULT_SERVICE_CARDS.map((card) => ({
@@ -538,11 +538,11 @@ export const Route = createFileRoute("/c/$slug/")({
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const, live: null };
     // Every published member gets the website — the public-visibility gate
-    // inside getShopFrontBySlug already checks published + paid subscription.
+    // inside getWebsiteBySlug already checks published + paid subscription.
     // No additional tier gate here: page renders the same for Core, Pro and
     // Studio; only what plugs in behind the page (enquiries inbox, bookings,
     // payments, analytics) differs by tier.
-    const live = await getShopFrontBySlug({ data: { slug: params.slug } });
+    const live = await getWebsiteBySlug({ data: { slug: params.slug } });
     if (!live) throw notFound();
     return { gated: false as const, live };
   },
@@ -571,7 +571,7 @@ export const Route = createFileRoute("/c/$slug/")({
       };
     }
 
-    const sf = loaderData?.live?.shopFront;
+    const sf = loaderData?.live?.website;
     const canonical = `https://repsuk.org/c/${params.slug}`;
 
     if (!sf) {
@@ -635,7 +635,7 @@ export const Route = createFileRoute("/c/$slug/")({
       ],
     };
   },
-  component: CoachShopFrontPage,
+  component: CoachWebsitePage,
 });
 
 
@@ -652,10 +652,10 @@ const NAV_ITEMS = [
 /* Page                                                               */
 /* ------------------------------------------------------------------ */
 
-function CoachShopFrontPage() {
+function CoachWebsitePage() {
   const { slug } = Route.useParams();
   const loaderData = Route.useLoaderData();
-  const fetchShopFront = useServerFn(getShopFrontBySlug);
+  const fetchWebsite = useServerFn(getWebsiteBySlug);
   const fetchReviews = useServerFn(listPublicReviewsBySlug);
   const isFixture = !!COACHES[slug];
 
@@ -668,15 +668,15 @@ function CoachShopFrontPage() {
   }, []);
 
   const { data: live } = useQuery({
-    queryKey: ["shop-front", slug],
-    queryFn: () => fetchShopFront({ data: { slug } }),
+    queryKey: ["website", slug],
+    queryFn: () => fetchWebsite({ data: { slug } }),
     staleTime: 60_000,
     enabled: !isFixture,
     initialData: loaderData?.live ?? undefined,
   });
 
   const { data: reviewsData } = useQuery({
-    queryKey: ["shop-front-reviews", slug],
+    queryKey: ["website-reviews", slug],
     queryFn: () => fetchReviews({ data: { slug } }),
     staleTime: 60_000,
     enabled: !isFixture,
@@ -712,7 +712,7 @@ function CoachShopFrontPage() {
   let coach = live
     ? mergeLiveIntoCoach(
         baseCoach ?? COACHES["james-wilson"],
-        live.shopFront,
+        live.website,
         live.services,
         live.transformations,
         live.clientResults,

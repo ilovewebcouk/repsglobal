@@ -20,7 +20,7 @@ Migrated BD members keep their **BD price until their next renewal**, then move 
 
 ## 4. Stripe Connect for trainer-taken payments
 
-Each Pro / Studio professional onboards a **Stripe Connect** account so they can take payments from their own clients through the REPs shop-front. This is separate from the REPs membership subscription and is deferred to Phase 2.1+. The decision is locked: Connect, not platform-aggregated payouts.
+Each Pro / Studio professional onboards a **Stripe Connect** account so they can take payments from their own clients through the REPs website. This is separate from the REPs membership subscription and is deferred to Phase 2.1+. The decision is locked: Connect, not platform-aggregated payouts.
 
 ## 5. New Verified signups: 30-day pending window
 

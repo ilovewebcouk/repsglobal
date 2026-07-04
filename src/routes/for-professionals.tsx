@@ -263,7 +263,7 @@ function ForProsPage() {
             imageLabel="Personalised coach website with three service tiers"
             mockup={{ device:"laptop", src:"/c/james-wilson", title:"Coach website live example" }}
             ctaLabel="Explore Website"
-            ctaHref="/features/shop-front"
+            ctaHref="/features/website"
             reverse
           />
         </div>

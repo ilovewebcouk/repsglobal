@@ -2,7 +2,7 @@
 // - Three input modes: Upload / AI generate / Paste URL.
 // - Every input lands in a shared cropper locked to 9:16, output is
 //   re-encoded client-side to 1080x1920 JPEG before upload.
-// - Uploads go to the shop-front-hero bucket; the resulting public URL is
+// - Uploads go to the website-hero bucket; the resulting public URL is
 //   stored on the parent (via onChange) and persisted with the rest of
 //   the Website form on Save.
 import * as React from "react";
@@ -14,7 +14,7 @@ import { Image as ImageIcon, Sparkles, Upload, Link2, X, Check } from "lucide-re
 import {
   uploadHeroFromBase64,
   generateHeroFromAi,
-} from "@/lib/shop-front/hero.functions";
+} from "@/lib/website/hero.functions";
 
 const TARGET_W = 1080;
 const TARGET_H = 1920;

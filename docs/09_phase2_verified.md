@@ -2,7 +2,7 @@
 
 > **Snapshot date:** 11 June 2026
 > **Scope:** Ship a thin, end-to-end revenue loop for the **Verified** tier (£99/yr) **and** the **Pro Founding** tier (£59/mo). Studio stays as a waitlist card.
-> **Out of scope:** Studio activation, shop-front editor, bookings, AI features, real messaging, calendar sync, client portal data, real search/filter, BD migration, `/c/$slug` DB wiring, dynamic SEO at scale.
+> **Out of scope:** Studio activation, website editor, bookings, AI features, real messaging, calendar sync, client portal data, real search/filter, BD migration, `/c/$slug` DB wiring, dynamic SEO at scale.
 
 Phase 1 visuals are locked. This document drives Phase 2.0. Pre-build decisions that govern this wiring live in `docs/10_billing_phase0_decisions.md`.
 
@@ -69,7 +69,7 @@ Seed admin: `demo-admin@repsuk.org` (granted `admin` role in DB). A secondary du
 ## Outstanding for Phase 2.1+
 
 - Studio tier activation (multi-seat, facility records).
-- Shop-front editor for Pro/Studio (`/c/$slug` DB wiring).
+- Website editor for Pro/Studio (`/c/$slug` DB wiring).
 - Real bookings + payments to pros.
 - AI features (programme generation, chat, summarisation).
 - Real client portal data.

@@ -61,6 +61,7 @@ import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as InLocationRouteImport } from './routes/in.$location'
 import { Route as HelpCategoryRouteImport } from './routes/help.$category'
 import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
+import { Route as FeaturesWebsiteRouteImport } from './routes/features.website'
 import { Route as FeaturesVisibilityRouteImport } from './routes/features.visibility'
 import { Route as FeaturesShopFrontRouteImport } from './routes/features.shop-front'
 import { Route as FeaturesOperationsRouteImport } from './routes/features.operations'
@@ -412,6 +413,11 @@ const HelpCategoryRoute = HelpCategoryRouteImport.update({
 const GymsSlugRoute = GymsSlugRouteImport.update({
   id: '/gyms/$slug',
   path: '/gyms/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesWebsiteRoute = FeaturesWebsiteRouteImport.update({
+  id: '/features/website',
+  path: '/features/website',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesVisibilityRoute = FeaturesVisibilityRouteImport.update({
@@ -989,6 +995,7 @@ export interface FileRoutesByFullPath {
   '/features/operations': typeof FeaturesOperationsRoute
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
@@ -1131,6 +1138,7 @@ export interface FileRoutesByTo {
   '/features/operations': typeof FeaturesOperationsRoute
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/in/$location': typeof InLocationRouteWithChildren
   '/portal/check-ins': typeof PortalCheckInsRoute
@@ -1275,6 +1283,7 @@ export interface FileRoutesById {
   '/features/operations': typeof FeaturesOperationsRoute
   '/features/shop-front': typeof FeaturesShopFrontRoute
   '/features/visibility': typeof FeaturesVisibilityRoute
+  '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
@@ -1422,6 +1431,7 @@ export interface FileRouteTypes {
     | '/features/operations'
     | '/features/shop-front'
     | '/features/visibility'
+    | '/features/website'
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
@@ -1564,6 +1574,7 @@ export interface FileRouteTypes {
     | '/features/operations'
     | '/features/shop-front'
     | '/features/visibility'
+    | '/features/website'
     | '/gyms/$slug'
     | '/in/$location'
     | '/portal/check-ins'
@@ -1707,6 +1718,7 @@ export interface FileRouteTypes {
     | '/features/operations'
     | '/features/shop-front'
     | '/features/visibility'
+    | '/features/website'
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
@@ -1854,6 +1866,7 @@ export interface RootRouteChildren {
   FeaturesOperationsRoute: typeof FeaturesOperationsRoute
   FeaturesShopFrontRoute: typeof FeaturesShopFrontRoute
   FeaturesVisibilityRoute: typeof FeaturesVisibilityRoute
+  FeaturesWebsiteRoute: typeof FeaturesWebsiteRoute
   GymsSlugRoute: typeof GymsSlugRoute
   InLocationRoute: typeof InLocationRouteWithChildren
   PortalCheckInsRoute: typeof PortalCheckInsRoute
@@ -2256,6 +2269,13 @@ declare module '@tanstack/react-router' {
       path: '/gyms/$slug'
       fullPath: '/gyms/$slug'
       preLoaderRoute: typeof GymsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/website': {
+      id: '/features/website'
+      path: '/features/website'
+      fullPath: '/features/website'
+      preLoaderRoute: typeof FeaturesWebsiteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features/visibility': {
@@ -3223,6 +3243,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesOperationsRoute: FeaturesOperationsRoute,
   FeaturesShopFrontRoute: FeaturesShopFrontRoute,
   FeaturesVisibilityRoute: FeaturesVisibilityRoute,
+  FeaturesWebsiteRoute: FeaturesWebsiteRoute,
   GymsSlugRoute: GymsSlugRoute,
   InLocationRoute: InLocationRouteWithChildren,
   PortalCheckInsRoute: PortalCheckInsRoute,
@@ -3265,13 +3286,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

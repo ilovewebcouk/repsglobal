@@ -20,7 +20,7 @@ After months of work behind the scenes, we're getting ready to launch the next c
 
 REPS is becoming a full professional platform for the modern fitness industry — not just a register. Alongside identity-checked, qualification-verified profiles, you'll get:
 
-- A modern, client-facing shop-front for your services and packages
+- A modern, client-facing website for your services and packages
 - Enquiries, bookings, forms, waivers and payments in one place
 - Coaching tools — programmes, nutrition, check-ins, progress photos and a branded client portal
 - Reviews, retention and growth actions surfaced as a single ranked to-do list

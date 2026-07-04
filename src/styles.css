@@ -264,7 +264,7 @@
 }
 
 /* -------------------------------------------------------------
-   Coach shop-front — LIGHT theme override (scoped)
+   Coach website — LIGHT theme override (scoped)
    Applied only when a wrapper carries `data-coach-theme="light"`.
    Redefines the shared --reps-* tokens inside the scope so every
    `bg-reps-*` / `text-reps-*` / `border-reps-*` class auto-inverts.

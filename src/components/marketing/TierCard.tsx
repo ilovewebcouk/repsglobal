@@ -11,7 +11,7 @@ interface TierCardProps {
 
 /**
  * Shared tier comparison card used in marketing pillar pages
- * (`/features/visibility`, `/features/shop-front`).
+ * (`/features/visibility`, `/features/website`).
  * Visual shell is locked — pass copy via props.
  */
 export function TierCard({ badge, price, blurb, cta, highlighted }: TierCardProps) {

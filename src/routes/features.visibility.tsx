@@ -689,7 +689,7 @@ function TierComparisonSection() {
             price="£59 / month · Founding"
             blurb="Everything in Verified, plus bookings, payments, branded website, CRM and client management."
             highlighted
-            cta={{ to:"/features/shop-front", label:"See the Pro shop-front" }}
+            cta={{ to:"/features/website", label:"See the Pro website" }}
           />
         </div>
 

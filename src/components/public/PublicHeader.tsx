@@ -593,8 +593,8 @@ function ForProsMenu() {
                     to={
                       g.key === "visibility"
                         ? "/features/visibility"
-                        : g.key === "shopfront"
-                          ? "/features/shop-front"
+                        : g.key === "website"
+                          ? "/features/website"
                           : g.key === "operations"
                             ? "/features/operations"
                             : g.key === "coaching"
@@ -969,7 +969,7 @@ function MobileDrawer({
                   </Link>
                 </li>
                 <li>
-                  <Link to="/features/shop-front" onClick={onNavigate} className={mobileSubLinkClass}>
+                  <Link to="/features/website" onClick={onNavigate} className={mobileSubLinkClass}>
                     Website
                   </Link>
                 </li>

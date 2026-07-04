@@ -21,7 +21,7 @@ import {
 
 const GROUP_ROUTES = {
   visibility: "/features/visibility",
-  shopfront: "/features/shop-front",
+  website: "/features/website",
   operations: "/features/operations",
   coaching: "/features/coaching",
   ai: "/features/ai",

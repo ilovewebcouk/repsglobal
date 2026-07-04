@@ -49,7 +49,7 @@ the layer stack inline in a route file** — change the primitive instead.
 
 - `/features/operations` (operations baseline — the look this recipe was tuned to)
 - `/features/visibility`
-- `/features/shop-front`
+- `/features/website`
 - `/cpd`
 - `/specialisms`
 

@@ -1,6 +1,6 @@
 // Uploader for a Client Result proof-card photo.
 // - Upload or paste URL → crop to 4:3 → re-encode 1600×1200 JPEG → upload
-//   to the shop-front-results bucket → return the public URL to the parent.
+//   to the website-results bucket → return the public URL to the parent.
 // Mirrors the HeroImageEditor shape but locked to landscape 4:3 to match the
 // public proof card on /c/$slug.
 import * as React from "react";
@@ -9,7 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Image as ImageIcon, Upload, Link2, X, Check } from "lucide-react";
-import { uploadTransformationImageFromBase64 } from "@/lib/shop-front/transformation-image.functions";
+import { uploadTransformationImageFromBase64 } from "@/lib/website/transformation-image.functions";
 
 const TARGET_W = 1600;
 const TARGET_H = 1200;

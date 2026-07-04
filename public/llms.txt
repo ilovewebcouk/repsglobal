@@ -1,8 +1,8 @@
 # REPS
 
-> REPS is the professional standard for fitness — a verified register of personal trainers, coaches, nutritionists and instructors, plus the platform that powers their businesses (shop-front, operations, coaching, growth).
+> REPS is the professional standard for fitness — a verified register of personal trainers, coaches, nutritionists and instructors, plus the platform that powers their businesses (website, operations, coaching, growth).
 
-REPS combines two things in one product: a public-facing trust layer (verified qualifications, identity, insurance) and a complete operating platform for fitness professionals (client-facing shop-front, enquiries, bookings, payments, programming, check-ins, growth analytics).
+REPS combines two things in one product: a public-facing trust layer (verified qualifications, identity, insurance) and a complete operating platform for fitness professionals (client-facing website, enquiries, bookings, payments, programming, check-ins, growth analytics).
 
 ## Pages
 
@@ -21,7 +21,7 @@ REPS combines two things in one product: a public-facing trust layer (verified q
 ## Features
 
 - [Visibility](/features/visibility): Verified profile + discovery surface for getting found.
-- [Shop-front](/features/shop-front): Client-facing page for services, packages, enquiries and payment.
+- [Website](/features/website): Client-facing page for services, packages, enquiries and payment.
 - [Operations](/features/operations): Enquiries, bookings, forms, waivers, payments and client records.
 - [Coaching](/features/coaching): Programmes, nutrition, check-ins and the client portal.
 - [Growth](/features/growth): Conversion, retention, reviews and business performance.

@@ -64,7 +64,7 @@ const PILLARS: Array<{ label: string; body: string; to: string }> = [
   {
     label: "Website",
     body: "A client-facing page that presents your services with clarity.",
-    to: "/features/shop-front",
+    to: "/features/website",
   },
   {
     label: "Operations",

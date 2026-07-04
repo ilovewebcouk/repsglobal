@@ -37,7 +37,7 @@ const STATIC_ROUTES: SitemapEntry[] = [
   { path: "/features/growth", changefreq: "monthly", priority: "0.6" },
   { path: "/features/operations", changefreq: "monthly", priority: "0.6" },
   { path: "/features/visibility", changefreq: "monthly", priority: "0.6" },
-  { path: "/features/shop-front", changefreq: "monthly", priority: "0.6" },
+  { path: "/features/website", changefreq: "monthly", priority: "0.6" },
   { path: "/reviews", changefreq: "weekly", priority: "0.7" },
   
   { path: "/help", changefreq: "monthly", priority: "0.5" },
