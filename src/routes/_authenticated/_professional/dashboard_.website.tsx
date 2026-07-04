@@ -1602,6 +1602,8 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
     onSuccess: () => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["my-website-content"] });
+      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
     },
     onError: (e: Error) => toast.error(e.message || "Could not save"),
   });
@@ -1642,12 +1644,11 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
     });
   const onSaveResultsIntro = () => saveMut.mutate({ client_results_intro: clientResultsIntro || null });
 
-  // Listen for the page-level "Save & publish" and fan out to a single
-  // merged patch so we don't stampede the same mutation.
-  const saveAllRef = React.useRef<() => void>(() => {});
-  saveAllRef.current = () => {
+  // Register a flusher so the page-level Publish awaits our local edits
+  // (method / cities / client-results intro) before snapshotting.
+  useSaveFlusher(async () => {
     if (!data) return;
-    saveMut.mutate({
+    await saveMut.mutateAsync({
       method_name: methodName || null,
       method_intro: methodIntro || null,
       method_pillars: pillars.filter((p) => p.title.trim() && p.body.trim()),
@@ -1660,12 +1661,7 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
         online_worldwide: data.content.coaching_reach.online_worldwide ?? false,
       },
     });
-  };
-  React.useEffect(() => {
-    const h = () => saveAllRef.current();
-    window.addEventListener("reps:website:save-all", h);
-    return () => window.removeEventListener("reps:website:save-all", h);
-  }, []);
+  });
 
   if (isLoading || !data) return <PCard>Loading website content…</PCard>;
 
