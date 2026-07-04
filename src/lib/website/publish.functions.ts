@@ -247,6 +247,31 @@ function venuesEqual(a: unknown, b: unknown): boolean {
   return A.map(key).sort().every((v, i) => v === B.map(key).sort()[i]);
 }
 
+function clientResultsEqual(a: unknown, b: unknown): boolean {
+  const A = Array.isArray(a) ? a : [];
+  const B = Array.isArray(b) ? b : [];
+  if (A.length !== B.length) return false;
+  const key = (r: any) => JSON.stringify({
+    h: normText(r?.headline),
+    b: normText(r?.body),
+    so: r?.sort_order ?? 0,
+    ip: !!r?.is_published,
+  });
+  const As = A.map(key).sort();
+  const Bs = B.map(key).sort();
+  return As.every((v, i) => v === Bs[i]);
+}
+
+function socialsEqual(a: unknown, b: unknown): boolean {
+  const A = Array.isArray(a) ? a : [];
+  const B = Array.isArray(b) ? b : [];
+  if (A.length !== B.length) return false;
+  const key = (s: any) => JSON.stringify({ k: normText(s?.kind), h: normText(s?.href) });
+  const As = A.map(key).sort();
+  const Bs = B.map(key).sort();
+  return As.every((v, i) => v === Bs[i]);
+}
+
 export const getMySectionDiff = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<SectionDiff> => {
@@ -256,13 +281,15 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
 
     const empty: SectionDiff = {
       dirty: {
+        profile: false,
         basics: false,
-        method: false,
-        plans: false,
-        results: false,
-        faqs: false,
         specialisms: false,
         location: false,
+        plans: false,
+        method: false,
+        results: false,
+        faqs: false,
+        contact: false,
       },
       summary: {},
       ever_published: false,
@@ -283,12 +310,16 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
       .maybeSingle();
 
     const snap = (siteRow?.published_snapshot ?? null) as
-      | { website: any; services: any[]; transformations: any[]; faqs: any[] }
+      | {
+          website: any;
+          services: any[];
+          transformations: any[];
+          clientResults?: any[];
+          faqs: any[];
+        }
       | null;
 
     if (!snap) {
-      // Nothing published yet: everything is "dirty" only if there IS content.
-      // Keep quiet — dashboard "Draft never published" pill handles the empty case.
       return {
         ...empty,
         has_unpublished_changes: !!siteRow?.has_unpublished_changes,
@@ -304,11 +335,16 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
     const lw = live.website as any;
     const sw = snap.website as any;
 
+    const profileDirty =
+      normText(lw?.full_name) !== normText(sw?.full_name) ||
+      normText(lw?.avatar_url) !== normText(sw?.avatar_url);
+
     const basicsDirty =
       normText(lw?.tagline) !== normText(sw?.tagline) ||
       normText(lw?.subtitle) !== normText(sw?.subtitle) ||
       normText(lw?.about) !== normText(sw?.about) ||
-      normText(lw?.hero_image_url) !== normText(sw?.hero_image_url);
+      normText(lw?.hero_image_url) !== normText(sw?.hero_image_url) ||
+      normText(lw?.accent_hex) !== normText(sw?.accent_hex);
 
     const methodDirty =
       normText(lw?.method_name) !== normText(sw?.method_name) ||
@@ -316,14 +352,27 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
       !pillarsEqual(lw?.method_pillars, sw?.method_pillars);
 
     const plansDirty = !servicesEqual(live.services, snap.services);
-    const resultsDirty = !transformationsEqual(live.transformations, snap.transformations);
+
+    // Results now compares both the transformation cards AND the client-results
+    // testimonials AND the section intro. Previously only transformations were
+    // checked, so testimonials + intro edits never marked the section dirty.
+    const resultsDirty =
+      !transformationsEqual(live.transformations, snap.transformations) ||
+      !clientResultsEqual(live.clientResults, snap.clientResults) ||
+      normText(lw?.client_results_intro) !== normText(sw?.client_results_intro);
+
     const faqsDirty = !faqsEqual(live.faqs, snap.faqs);
     const specialismsDirty = !specialismsEqual(lw?.specialisms, sw?.specialisms);
     const locationDirty =
       !reachEqual(lw?.coaching_reach, sw?.coaching_reach) || !venuesEqual(lw?.venues, sw?.venues);
 
+    const contactDirty =
+      normText(lw?.contact_phone) !== normText(sw?.contact_phone) ||
+      !socialsEqual(lw?.socials, sw?.socials);
+
     const summary: SectionDiff["summary"] = {};
-    if (basicsDirty) summary.basics = "Tagline, About or hero image changed";
+    if (profileDirty) summary.profile = "Name or profile photo changed";
+    if (basicsDirty) summary.basics = "Tagline, About, hero or accent changed";
     if (methodDirty) summary.method = "Method name, intro or pillars changed";
     if (plansDirty) {
       const d = (live.services?.length ?? 0) - (snap.services?.length ?? 0);
@@ -335,13 +384,15 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
             : `${Math.abs(d)} coaching plan${Math.abs(d) === 1 ? "" : "s"} removed`;
     }
     if (resultsDirty) {
-      const d = (live.transformations?.length ?? 0) - (snap.transformations?.length ?? 0);
-      summary.results =
-        d === 0
-          ? "Client results edited"
-          : d > 0
-            ? `${d} new client result${d === 1 ? "" : "s"}`
-            : `${Math.abs(d)} client result${Math.abs(d) === 1 ? "" : "s"} removed`;
+      const dT = (live.transformations?.length ?? 0) - (snap.transformations?.length ?? 0);
+      const dC = (live.clientResults?.length ?? 0) - (snap.clientResults?.length ?? 0);
+      summary.results = dT !== 0
+        ? (dT > 0
+            ? `${dT} new client result${dT === 1 ? "" : "s"}`
+            : `${Math.abs(dT)} client result${Math.abs(dT) === 1 ? "" : "s"} removed`)
+        : dC !== 0
+          ? "Testimonials changed"
+          : "Client results edited";
     }
     if (faqsDirty) {
       const d = (live.faqs?.length ?? 0) - (snap.faqs?.length ?? 0);
@@ -354,16 +405,19 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
     }
     if (specialismsDirty) summary.specialisms = "Specialisms changed";
     if (locationDirty) summary.location = "Where you train changed";
+    if (contactDirty) summary.contact = "Phone or social links changed";
 
     return {
       dirty: {
+        profile: profileDirty,
         basics: basicsDirty,
-        method: methodDirty,
-        plans: plansDirty,
-        results: resultsDirty,
-        faqs: faqsDirty,
         specialisms: specialismsDirty,
         location: locationDirty,
+        plans: plansDirty,
+        method: methodDirty,
+        results: resultsDirty,
+        faqs: faqsDirty,
+        contact: contactDirty,
       },
       summary,
       ever_published: true,
