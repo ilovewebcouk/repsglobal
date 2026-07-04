@@ -36,7 +36,12 @@ import {
   getMyDashboardProfile,
   type DashboardProfile,
 } from "@/lib/profile/dashboard-profile.functions";
-import { profileCompleteness } from "@/lib/dashboard/profileCompleteness";
+import {
+  getMyReadiness,
+  verificationSummary,
+  type ReadinessResult,
+} from "@/lib/dashboard/readiness.functions";
+import { SECTION_ATTENTION_COPY } from "@/lib/dashboard/website-sections";
 import {
   getEnquiryStats,
   listMyEnquiries,
