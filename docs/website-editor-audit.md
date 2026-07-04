@@ -240,3 +240,22 @@ A `N/8` progress chip lives in the sidebar section-header row so trainers see co
 - DnD reorder for pillars/results (Edit-only for now).
 - Autosave in the new dialogs — explicit Save & close by design.
 - Live preview blank-state (unchanged).
+
+## Draft + Publish (phase 1)
+
+Editor writes → live rows (unchanged mutation code). Row triggers set
+`websites.has_unpublished_changes = true`. Public `/c/$slug` reads
+`websites.published_snapshot` when present; otherwise falls back to live
+rows (backwards compatible). Clicking **Publish** calls
+`publishMyWebsite`, which builds the same DTO shape as `getWebsiteBySlug`
+from live rows and stores it in `published_snapshot`. Editor iframe
+loads `/c/$slug?preview=1`, which bypasses the snapshot so the trainer
+sees draft edits.
+
+Phase 2 follow-ups (deliberately not shipped):
+- Signed preview token: `?preview=1` is currently un-signed; anyone with
+  the URL sees drafts. Fine for content preview, but harden.
+- Per-section discard changes back to last-published snapshot.
+- Per-section "dirty" dot in the sidebar (currently a single global pill).
+- Publish confirm dialog with a summary of what changed.
+- Snapshot rollback / version history.
