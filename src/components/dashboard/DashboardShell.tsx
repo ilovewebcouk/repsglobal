@@ -155,6 +155,14 @@ export type DashboardShellProps = {
   member?: DashboardShellMember;
   mainClassName?: string;
   showTopbarSearch?: boolean;
+  /**
+   * Optional: replace the default DashboardSidebar with a page-specific one.
+   * Used by the Website editor so the section nav lives in the shell, not
+   * inside the page — freeing horizontal space for the editor + preview.
+   */
+  sidebarOverride?: React.ReactNode;
+  /** Hide the topbar entirely (page renders its own header). */
+  hideTopBar?: boolean;
   children: React.ReactNode;
 };
 
@@ -172,6 +180,8 @@ export function DashboardShell({
   member,
   mainClassName,
   showTopbarSearch = true,
+  sidebarOverride,
+  hideTopBar = false,
   children,
 }: DashboardShellProps) {
   const searchPlaceholder =
@@ -188,18 +198,22 @@ export function DashboardShell({
             } as React.CSSProperties
           }
         >
-          <DashboardSidebar role={role} tier={tier} active={active} member={member} />
+          {sidebarOverride ?? (
+            <DashboardSidebar role={role} tier={tier} active={active} member={member} />
+          )}
           <SidebarInset className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-reps-ink">
             <ImpersonationBanner />
-            <TopBar
-              role={role}
-              title={title}
-              subtitle={subtitle}
-              actions={actions}
-              searchPlaceholder={searchPlaceholder}
-              search={search}
-              showSearch={showTopbarSearch}
-            />
+            {hideTopBar ? null : (
+              <TopBar
+                role={role}
+                title={title}
+                subtitle={subtitle}
+                actions={actions}
+                searchPlaceholder={searchPlaceholder}
+                search={search}
+                showSearch={showTopbarSearch}
+              />
+            )}
             <main className={cn("flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8", mainClassName)}>{children}</main>
           </SidebarInset>
         </SidebarProvider>
@@ -208,4 +222,5 @@ export function DashboardShell({
     </DashboardTooltipProvider>
   );
 }
+
 
