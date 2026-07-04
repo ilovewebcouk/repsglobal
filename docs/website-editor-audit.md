@@ -249,13 +249,21 @@ Editor writes → live rows (unchanged mutation code). Row triggers set
 rows (backwards compatible). Clicking **Publish** calls
 `publishMyWebsite`, which builds the same DTO shape as `getWebsiteBySlug`
 from live rows and stores it in `published_snapshot`. Editor iframe
-loads `/c/$slug?preview=1`, which bypasses the snapshot so the trainer
-sees draft edits.
+loads `/c/$slug?preview=<signed-token>`, which bypasses the snapshot so
+the trainer sees draft edits. Token is HMAC-SHA256 of `${slug}:${exp}`
+signed with `WEBSITE_PREVIEW_SECRET`, TTL 4h, minted server-side via
+`getMyPreviewToken`. Any un-signed / expired / cross-slug token falls
+back to the snapshot.
 
-Phase 2 follow-ups (deliberately not shipped):
-- Signed preview token: `?preview=1` is currently un-signed; anyone with
-  the URL sees drafts. Fine for content preview, but harden.
-- Per-section discard changes back to last-published snapshot.
-- Per-section "dirty" dot in the sidebar (currently a single global pill).
-- Publish confirm dialog with a summary of what changed.
-- Snapshot rollback / version history.
+Phase 2 — shipped 2026-07-04:
+- ✅ Signed preview token (`WEBSITE_PREVIEW_SECRET`, 4h TTL).
+- ✅ Per-section dirty dot in the sidebar (driven by `getMySectionDiff`).
+- ✅ Per-section "Discard to last published" (basics, method, plans,
+  results, faqs) via `discardMySectionChanges`.
+- ✅ Publish confirm dialog listing changed sections + human summary.
+
+Still deferred:
+- Snapshot rollback / version history (only the latest snapshot is kept).
+- Discard for specialisms / location / socials (writes into the pro
+  record, not the snapshot — needs its own audit trail).
+

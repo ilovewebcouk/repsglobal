@@ -1,5 +1,6 @@
 // Server functions for website (/c/$slug) + services management.
 import { createServerFn } from "@tanstack/react-start";
+import { verifyPreviewToken } from "./publish.functions";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
@@ -511,7 +512,10 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     z
       .object({
         slug: z.string().min(1).max(120),
-        preview: z.boolean().optional(),
+        // Signed preview token minted by getMyPreviewToken. Legacy boolean
+        // input is accepted but ignored — un-signed callers always get the
+        // published snapshot (safe default).
+        preview: z.union([z.string().min(1).max(400), z.boolean()]).optional(),
       })
       .parse(d),
   )
@@ -535,11 +539,13 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     );
     if (!(await isProPubliclyVisible(pro.id))) return null;
 
-    // If a published snapshot exists and this isn't an owner preview,
-    // serve the snapshot verbatim. This is the whole point of the
-    // draft/publish system: edits stay off the public page until the
-    // trainer clicks Publish.
-    if (!data.preview) {
+    // Preview gate: only a valid signed token for THIS slug bypasses the
+    // published snapshot. Anything else (missing, boolean true, expired,
+    // tampered, or minted for a different slug) falls through to the
+    // snapshot below.
+    const previewOk =
+      typeof data.preview === "string" && verifyPreviewToken(data.preview, data.slug);
+    if (!previewOk) {
       const { data: snapRow } = await supabaseAdmin
         .from("websites")
         .select("published_snapshot")
@@ -553,6 +559,8 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       // No snapshot yet → fall through to live read (backwards-compatible
       // for anyone who hasn't clicked Publish since this feature shipped).
     }
+
+
 
 
     const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([

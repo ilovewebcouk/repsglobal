@@ -31,6 +31,8 @@ type Props = {
   publishPending: boolean;
   reloadNonce: number;
   onReloadPreview: () => void;
+  /** Signed preview token minted server-side for the logged-in owner. */
+  previewToken: string | null;
   children: React.ReactNode;
 };
 
@@ -58,6 +60,7 @@ export function WebsiteEditorLayout({
   publishPending,
   reloadNonce,
   onReloadPreview,
+  previewToken,
   children,
 }: Props) {
   const [device, setDevice] = React.useState<"mobile" | "desktop">("desktop");
@@ -70,7 +73,11 @@ export function WebsiteEditorLayout({
     window.localStorage.setItem(PREVIEW_COLLAPSE_KEY, collapsed ? "1" : "0");
   }, [collapsed]);
 
-  const iframeSrc = slug ? `/c/${slug}?preview=1` : "";
+  // Only mount the iframe once we have a signed preview token — otherwise
+  // the server returns the published snapshot and the "preview" panel
+  // would silently show stale content.
+  const iframeSrc = slug && previewToken ? `/c/${slug}?preview=${encodeURIComponent(previewToken)}` : "";
+
 
   return (
     <div className="flex h-[100vh] min-h-[640px] flex-col overflow-hidden">

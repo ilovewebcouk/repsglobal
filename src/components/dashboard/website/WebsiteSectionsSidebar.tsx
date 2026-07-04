@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, ExternalLink } from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, Undo2 } from "lucide-react";
 
 import {
   Sidebar,
@@ -15,9 +15,13 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import type { WebsiteEditorSection } from "./WebsiteEditorLayout";
+
+/** Sections the server can revert to the last-published snapshot. */
+export type DiscardableSectionId = "basics" | "method" | "plans" | "results" | "faqs";
 
 type Props = {
   sections: WebsiteEditorSection[];
@@ -27,7 +31,14 @@ type Props = {
   onPublish: () => void;
   publishPending: boolean;
   publicUrl?: string;
+  /** section id → true when its live content differs from published snapshot. */
+  dirtyMap?: Record<string, boolean>;
+  /** Called when trainer clicks the per-section "Discard" undo icon. */
+  onDiscardSection?: (id: DiscardableSectionId) => void;
+  /** id of the section currently being discarded (spinner). */
+  discardingId?: string | null;
 };
+
 
 /**
  * Sidebar replacement rendered while the user is inside /dashboard/website.
@@ -46,7 +57,17 @@ export function WebsiteSectionsSidebar({
   onPublish,
   publishPending,
   publicUrl,
+  dirtyMap,
+  onDiscardSection,
+  discardingId,
 }: Props) {
+  const DISCARDABLE = new Set<DiscardableSectionId>([
+    "basics",
+    "method",
+    "plans",
+    "results",
+    "faqs",
+  ]);
   return (
     <Sidebar collapsible="icon" className="border-r border-reps-border">
       <SidebarHeader className="gap-1 px-3 pb-2 pt-4 group-data-[collapsible=icon]:px-2">
@@ -102,6 +123,10 @@ export function WebsiteSectionsSidebar({
             <SidebarMenu>
               {sections.map((s) => {
                 const isActive = s.id === activeId;
+                const sectionDirty = !!dirtyMap?.[s.id];
+                const canDiscard =
+                  sectionDirty && !!onDiscardSection && DISCARDABLE.has(s.id as DiscardableSectionId);
+                const isDiscarding = discardingId === s.id;
                 return (
                   <SidebarMenuItem key={s.id}>
                     <SidebarMenuButton
@@ -115,7 +140,45 @@ export function WebsiteSectionsSidebar({
                     >
                       <StatusDot status={s.status} />
                       <span className="truncate">{s.label}</span>
-                      <span className="ml-auto group-data-[collapsible=icon]:hidden">
+                      <span className="ml-auto flex items-center gap-1.5 group-data-[collapsible=icon]:hidden">
+                        {sectionDirty ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                aria-label="Unpublished changes in this section"
+                                className="inline-block h-1.5 w-1.5 rounded-full bg-amber-300"
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              Unpublished changes
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : null}
+                        {canDiscard ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDiscardSection?.(s.id as DiscardableSectionId);
+                                }}
+                                disabled={isDiscarding}
+                                aria-label="Discard changes in this section"
+                                className={cn(
+                                  "grid h-5 w-5 place-items-center rounded-[6px] text-white/45 transition-colors",
+                                  "hover:bg-white/[0.08] hover:text-white",
+                                  isDiscarding && "opacity-60",
+                                )}
+                              >
+                                <Undo2 className="h-3 w-3" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              Discard to last published
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : null}
                         <StatusPill status={s.status} />
                       </span>
                     </SidebarMenuButton>
@@ -126,6 +189,8 @@ export function WebsiteSectionsSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+
 
       <SidebarFooter className="gap-2 px-3 pb-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
         <div className="rounded-[12px] border border-reps-border bg-reps-panel-soft/60 p-3 group-data-[collapsible=icon]:hidden">

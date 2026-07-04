@@ -535,22 +535,23 @@ function mergeLiveIntoCoach(
 
 export const Route = createFileRoute("/c/$slug/")({
   validateSearch: (search: Record<string, unknown>) => ({
-    preview: search.preview === "1" || search.preview === 1 || search.preview === true,
+    preview: typeof search.preview === "string" ? search.preview : undefined,
   }),
   loaderDeps: ({ search }) => ({ preview: search.preview }),
   loader: async ({ params, deps }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
     if (COACHES[params.slug]) return { gated: false as const, live: null };
-    // `?preview=1` bypasses the published snapshot and reads live draft
-    // content, so the editor's iframe shows unpublished edits. NOTE: this
-    // flag is currently un-signed — signed preview tokens are a phase-2
-    // hardening pass.
+    // `?preview=<signed-token>` bypasses the published snapshot and reads
+    // live draft content, so the editor's iframe shows unpublished edits.
+    // Un-signed / tampered tokens are ignored server-side and fall back to
+    // the snapshot.
     const live = await getWebsiteBySlug({
-      data: { slug: params.slug, preview: !!deps.preview },
+      data: { slug: params.slug, preview: deps.preview },
     });
     if (!live) throw notFound();
     return { gated: false as const, live };
   },
+
 
   notFoundComponent: () => (
     <div className="flex min-h-screen items-center justify-center bg-reps-ink p-8 text-center text-white/70">
