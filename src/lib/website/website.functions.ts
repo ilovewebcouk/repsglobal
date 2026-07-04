@@ -18,6 +18,7 @@ const WebsiteUpsertSchema = z.object({
     .optional(),
   layout_variant: z.enum(["lite", "full"]).optional(),
   theme: z.enum(["dark", "light"]).optional(),
+  current_clients: z.number().int().min(0).max(20).nullable().optional(),
 });
 
 
