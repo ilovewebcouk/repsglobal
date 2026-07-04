@@ -82,15 +82,29 @@ export function SpecialismsDeliveryPanel() {
     return () => window.removeEventListener("reps:website:save-all", h);
   }, []);
 
+  const MAX = 3;
+  const atCap = specialisms.length >= MAX;
+
   return (
     <div id="specialisms" className="scroll-mt-24">
     <PPanel>
-      <div className="border-b border-reps-border px-5 py-4">
-        <h3 className="text-[14px] font-semibold text-white">Specialisms</h3>
-        <p className="mt-0.5 text-[12px] text-white/55">
-          Pick up to 3 specialisms. These power your directory card chips, search
-          filters and the enquire form's "What kind of coaching" options.
-        </p>
+      <div className="border-b border-reps-border px-5 py-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-[14px] font-semibold text-white">Specialisms</h3>
+          <p className="mt-0.5 text-[12px] text-white/55">
+            Tap a chip to add. These power your directory card chips, search
+            filters and the enquire form's "What kind of coaching" options.
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-full border px-2.5 py-1 text-[12px] font-semibold tabular-nums ${
+            atCap
+              ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+              : "border-reps-border bg-reps-panel-soft text-white/70"
+          }`}
+        >
+          {specialisms.length} of {MAX} selected
+        </span>
       </div>
 
       <div className="px-5 py-5">
@@ -101,6 +115,11 @@ export function SpecialismsDeliveryPanel() {
             values={specialisms}
             profession={data?.primary_profession ?? null}
             onChange={setSpecialisms}
+            hideCounter
+            sortSelectedFirst
+            onOverCapAttempt={() =>
+              toast.warning(`You can pick up to ${MAX} specialisms.`)
+            }
           />
         )}
       </div>
