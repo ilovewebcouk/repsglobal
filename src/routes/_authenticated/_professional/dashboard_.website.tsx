@@ -100,16 +100,33 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/w
 });
 
 function Field({ label, hint, action, children }: { label: string; hint?: string; action?: React.ReactNode; children: React.ReactNode }) {
+  // Inject a stable id into a single input/textarea/select child so the
+  // <label htmlFor> association works even when the caller didn't supply one.
+  // Callers that already set their own id keep it (we won't clobber).
+  const generatedId = React.useId();
+  let renderedChild: React.ReactNode = children;
+  let labelId: string | undefined;
+  if (React.isValidElement(children)) {
+    const existingId = (children.props as { id?: string }).id;
+    labelId = existingId ?? generatedId;
+    if (!existingId) {
+      renderedChild = React.cloneElement(children as React.ReactElement<{ id?: string }>, { id: generatedId });
+    }
+  }
   return (
     <div className="flex flex-col gap-2 border-b border-reps-border/60 px-5 py-4 last:border-b-0">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[13px] font-semibold text-white">{label}</div>
+          {labelId ? (
+            <label htmlFor={labelId} className="block text-[13px] font-semibold text-white">{label}</label>
+          ) : (
+            <div className="text-[13px] font-semibold text-white">{label}</div>
+          )}
           {hint && <p className="mt-0.5 text-[12px] text-white/55">{hint}</p>}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0">{renderedChild}</div>
     </div>
   );
 }
