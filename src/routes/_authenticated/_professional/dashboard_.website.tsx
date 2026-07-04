@@ -1613,8 +1613,9 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
 /**
  * TransformationsEditor
  * Every field in this editor maps 1:1 to what shows on the public
- * proof card at /c/$slug. A live preview on the right mirrors that
- * card so pros can see exactly what they're building.
+ * proof card at /c/$slug. The live preview iframe on the right of the
+ * page is the source of truth for how the card renders — this editor
+ * intentionally does NOT duplicate that preview inline.
  */
 function TransformationsEditor({
   items,
@@ -1625,6 +1626,33 @@ function TransformationsEditor({
   onSave: (t: Partial<TransformationDTO> & { sort_order: number; is_published: boolean }) => void;
   onDelete: (id: string) => void;
 }) {
+  const [adding, setAdding] = React.useState(false);
+
+  // Empty state: single hero CTA. The form only appears once the trainer
+  // taps "Add your first client result".
+  if (items.length === 0 && !adding) {
+    return (
+      <div className="px-5 py-8">
+        <div className="rounded-[16px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-5 py-10 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-reps-orange/15 text-reps-orange">
+            <Quote className="h-4 w-4" />
+          </div>
+          <div className="text-[14px] font-semibold text-white">No client results yet</div>
+          <p className="mx-auto mt-1 max-w-[380px] text-[12.5px] text-white/60">
+            Proof cards show a photo, a headline result and a short quote below your services on your public page.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="mt-4 inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
+          >
+            <Plus className="h-4 w-4" /> Add your first client result
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 px-5 py-5">
       {items.map((t) => (
@@ -1635,13 +1663,13 @@ function TransformationsEditor({
           onDelete={onDelete}
         />
       ))}
-      {items.length === 0 && (
-        <p className="text-[13px] text-white/55">No client results yet — add your first one below.</p>
-      )}
       <TransformationRow
         key="new"
         item={null}
-        onSave={(t) => onSave({ ...t, sort_order: items.length })}
+        onSave={(t) => {
+          onSave({ ...t, sort_order: items.length });
+          if (items.length === 0) setAdding(false);
+        }}
         onDelete={() => {}}
       />
     </div>
@@ -1649,8 +1677,8 @@ function TransformationsEditor({
 }
 
 /**
- * A single card editor. Left column = fields, right column = live
- * card preview mirroring TransformationsSection on /c/$slug.
+ * A single card editor. Full-width fields — the live preview iframe
+ * on the right of the page shows exactly how this card will render.
  * When `item` is null this is an "Add new" form; otherwise it edits in place.
  */
 function TransformationRow({
@@ -1687,7 +1715,14 @@ function TransformationRow({
     setDirty(true);
   };
 
+  const METRIC_MAX = 80;
+  const QUOTE_MAX = 600;
+  const NAME_MAX = 60;
+  const ROLE_MAX = 60;
+  const DURATION_MAX = 40;
+
   const canSave = metric.trim().length > 0 || clientFirstName.trim().length > 0;
+  const buttonDisabled = !canSave || (!isNew && !dirty);
 
   const handleSave = () => {
     onSave({
@@ -1696,7 +1731,6 @@ function TransformationRow({
       client_role: clientRole.trim() || null,
       duration_label: duration.trim() || null,
       metric: metric.trim() || null,
-      // headline column kept nullable for back-compat; not exposed in UI
       headline: null,
       quote: quote.trim() || null,
       image_url: imageUrl.trim() || null,
@@ -1713,8 +1747,6 @@ function TransformationRow({
     }
     setDirty(false);
   };
-
-  const previewMeta = [clientRole, duration].filter((s) => s.trim().length > 0).join(" · ");
 
   return (
     <div className="rounded-[16px] border border-reps-border bg-reps-panel-soft/40 p-4">
@@ -1748,110 +1780,116 @@ function TransformationRow({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 min-[1180px]:grid-cols-[1fr_320px]">
-        {/* Fields */}
-        <div className="space-y-3">
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Photo</label>
-            <div className="mt-1.5">
-              <TransformationImageEditor value={imageUrl} onChange={mark(setImageUrl)} />
-            </div>
-          </div>
+      {isNew && (
+        <div className="mb-3 text-[12px] font-semibold uppercase tracking-wide text-white/50">
+          Add a new result
+        </div>
+      )}
 
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-              Result headline
-            </label>
-            <p className="text-[11px] text-white/45">Bold line on the card, e.g. "−8kg · first unassisted pull-up".</p>
-            <div className="mt-1.5">
-              <TextInput
-                value={metric}
-                onChange={(e) => mark(setMetric)(e.target.value)}
-                placeholder="e.g. −8kg · first unassisted pull-up"
-                maxLength={80}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-              Client quote (optional)
-            </label>
-            <div className="mt-1.5">
-              <TextArea
-                value={quote}
-                onChange={(e) => mark(setQuote)(e.target.value)}
-                placeholder="A short quote from the client about their result."
-                maxLength={600}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-                Client name
-              </label>
-              <div className="mt-1.5">
-                <TextInput
-                  value={clientFirstName}
-                  onChange={(e) => mark(setClientFirstName)(e.target.value)}
-                  placeholder="e.g. Sophie L."
-                  maxLength={60}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-                Role (optional)
-              </label>
-              <div className="mt-1.5">
-                <TextInput
-                  value={clientRole}
-                  onChange={(e) => mark(setClientRole)(e.target.value)}
-                  placeholder="e.g. Marketing Director"
-                  maxLength={60}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
-                Duration (optional)
-              </label>
-              <div className="mt-1.5">
-                <TextInput
-                  value={duration}
-                  onChange={(e) => mark(setDuration)(e.target.value)}
-                  placeholder="e.g. 12 weeks"
-                  maxLength={40}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end pt-1">
-            <button
-              type="button"
-              disabled={!canSave || (!isNew && !dirty)}
-              onClick={handleSave}
-              className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
-            >
-              {isNew ? <><Plus className="h-4 w-4" /> Add result</> : <><Save className="h-4 w-4" /> Save changes</>}
-            </button>
+      <div className="space-y-3">
+        <div>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Photo</label>
+          <p className="text-[11px] text-white/45">Landscape 4:3 — face and result visible. Min 800 × 600.</p>
+          <div className="mt-1.5">
+            <TransformationImageEditor value={imageUrl} onChange={mark(setImageUrl)} />
           </div>
         </div>
 
-        {/* Live preview — mirrors TransformationsSection on /c/$slug */}
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-white/55">Preview</div>
-          <p className="mb-2 text-[11px] text-white/45">How this card looks on your public page.</p>
-          <TransformationPreviewCard
-            image={imageUrl}
-            metric={metric.trim() || "Your result headline"}
-            quote={quote.trim() || "A short quote from the client goes here."}
-            client={clientFirstName.trim() || "Client name"}
-            meta={previewMeta}
-          />
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+            Result headline
+          </label>
+          <p className="text-[11px] text-white/45">Bold line on the card, e.g. "−8kg · first unassisted pull-up".</p>
+          <div className="mt-1.5">
+            <TextInput
+              value={metric}
+              onChange={(e) => mark(setMetric)(e.target.value)}
+              placeholder="[Result headline — e.g. −8kg · first unassisted pull-up]"
+              maxLength={METRIC_MAX}
+            />
+            <FieldCounter current={metric.length} max={METRIC_MAX} />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+            Client quote (optional)
+          </label>
+          <div className="mt-1.5">
+            <TextArea
+              value={quote}
+              onChange={(e) => mark(setQuote)(e.target.value)}
+              placeholder="[Short quote from the client about their result]"
+              maxLength={QUOTE_MAX}
+            />
+            <FieldCounter current={quote.length} max={QUOTE_MAX} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+              Client name
+            </label>
+            <div className="mt-1.5">
+              <TextInput
+                value={clientFirstName}
+                onChange={(e) => mark(setClientFirstName)(e.target.value)}
+                placeholder="[First name]"
+                maxLength={NAME_MAX}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+              Role (optional)
+            </label>
+            <div className="mt-1.5">
+              <TextInput
+                value={clientRole}
+                onChange={(e) => mark(setClientRole)(e.target.value)}
+                placeholder="[e.g. Marketing Director]"
+                maxLength={ROLE_MAX}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-white/55">
+              Duration (optional)
+            </label>
+            <div className="mt-1.5">
+              <TextInput
+                value={duration}
+                onChange={(e) => mark(setDuration)(e.target.value)}
+                placeholder="[e.g. 12 weeks]"
+                maxLength={DURATION_MAX}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <p className="text-[11px] text-white/45">
+            {isNew
+              ? canSave
+                ? "Ready to add — the preview on the right refreshes after Publish."
+                : "Add a headline or client name to enable."
+              : dirty
+                ? "Unsaved changes."
+                : "Saved."}
+          </p>
+          <button
+            type="button"
+            disabled={buttonDisabled}
+            onClick={handleSave}
+            className={
+              buttonDisabled
+                ? "flex h-10 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-4 text-[13px] font-semibold text-white/40 cursor-not-allowed"
+                : "flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white hover:bg-reps-orange-hover"
+            }
+          >
+            {isNew ? <><Plus className="h-4 w-4" /> Add result</> : <><Save className="h-4 w-4" /> Save changes</>}
+          </button>
         </div>
       </div>
     </div>
