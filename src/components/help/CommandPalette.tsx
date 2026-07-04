@@ -17,7 +17,7 @@ const DASHBOARD_ACTIONS = [
   { label: "Open verification", to: "/dashboard/verification", keywords: ["id", "identity", "qualification", "insurance"] },
   { label: "Open enquiries", to: "/dashboard/enquiries", keywords: ["inbox", "messages", "leads"] },
   { label: "Open reviews", to: "/dashboard/reviews", keywords: ["rating", "feedback"] },
-  { label: "Edit profile", to: "/dashboard/profile", keywords: ["bio", "photo", "slug"] },
+  { label: "Edit website", to: "/dashboard/website", keywords: ["bio", "about", "photo", "tagline", "profile", "slug"] },
   { label: "Account settings", to: "/dashboard/settings", keywords: ["password", "email"] },
   { label: "Pricing & plans", to: "/pricing", keywords: ["billing", "verified", "pro", "studio"] },
 ] as const;
