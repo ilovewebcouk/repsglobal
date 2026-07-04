@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, ExternalLink } from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, Undo2 } from "lucide-react";
 
 import {
   Sidebar,
@@ -15,9 +15,13 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import type { WebsiteEditorSection } from "./WebsiteEditorLayout";
+
+/** Sections the server can revert to the last-published snapshot. */
+export type DiscardableSectionId = "basics" | "method" | "plans" | "results" | "faqs";
 
 type Props = {
   sections: WebsiteEditorSection[];
@@ -27,7 +31,14 @@ type Props = {
   onPublish: () => void;
   publishPending: boolean;
   publicUrl?: string;
+  /** section id → true when its live content differs from published snapshot. */
+  dirtyMap?: Record<string, boolean>;
+  /** Called when trainer clicks the per-section "Discard" undo icon. */
+  onDiscardSection?: (id: DiscardableSectionId) => void;
+  /** id of the section currently being discarded (spinner). */
+  discardingId?: string | null;
 };
+
 
 /**
  * Sidebar replacement rendered while the user is inside /dashboard/website.
