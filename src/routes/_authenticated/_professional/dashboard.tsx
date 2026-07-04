@@ -108,9 +108,10 @@ function DashboardPage() {
       member={{
         name: memberName,
         avatarUrl: data?.identity?.avatar_url,
-        headline: data?.profile?.headline,
+        headline: data?.website?.tagline ?? null,
         tierLabel,
       }}
+
       actions={
         <div className="flex items-center gap-2">
           {slug ? (
