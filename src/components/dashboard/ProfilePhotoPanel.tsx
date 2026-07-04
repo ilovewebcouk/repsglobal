@@ -471,7 +471,7 @@ export function ProfilePhotoPanel() {
                 </DashboardDialogDescription>
               </DashboardDialogHeader>
               <DashboardDialogNote>
-                Most pros prefer their real photo. Use AI only if you don't have a good headshot yet.
+                Most pros prefer their real photo. Use AI only if you don't have a good photo of yourself yet.
               </DashboardDialogNote>
               <DashboardDialogFooter>
                 <DashboardButton
