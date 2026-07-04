@@ -204,8 +204,10 @@ function WebsiteEditorPage() {
           accent_hex: null,
           layout_variant: layout,
           theme,
+          current_clients: currentClients,
         },
       }),
+
 
     onSuccess: () => {
       if (!suppressSaveToastRef.current) {
