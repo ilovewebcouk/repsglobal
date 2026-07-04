@@ -1636,7 +1636,7 @@ function WebsiteContentEditor({ activeSection }: { activeSection: string }) {
   const draftMethod = useServerFn(aiDraftMethod);
   const draftFaqs = useServerFn(aiDraftFaqs);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["my-website-content"],
     queryFn: () => fetch_(),
   });
