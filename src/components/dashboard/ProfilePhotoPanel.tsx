@@ -408,7 +408,7 @@ export function ProfilePhotoPanel() {
                 ) : null}
               </div>
               <p className="text-[11px] text-white/45">
-                Real headshot only · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
+                Real photo of you (head-and-shoulders or waist-up) · JPG or PNG · min 512 × 512 · max 4 MB · we check uploads with AI to keep the directory trustworthy
               </p>
             </div>
           </div>
