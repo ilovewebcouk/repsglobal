@@ -8,6 +8,15 @@ import { Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { findMember, type MemberMatch } from "@/lib/ops/member-finder.functions";
 
+function normaliseQuery(raw: string): string {
+  const cleaned = raw.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/^["'`\s]+|["'`\s]+$/g, "");
+  const uuid = cleaned.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  if (uuid) return uuid[0].toLowerCase();
+  const stripe = cleaned.match(/\b(cus|sub)_[A-Za-z0-9]+/);
+  if (stripe) return stripe[0];
+  return cleaned;
+}
+
 interface Props {
   placeholder?: string;
   className?: string;
