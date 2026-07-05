@@ -17,6 +17,7 @@ import {
   LifeBuoy,
   LineChart,
 
+  Mails,
   Megaphone,
   MessagesSquare,
   Settings,
