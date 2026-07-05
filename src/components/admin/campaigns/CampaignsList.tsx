@@ -58,9 +58,11 @@ function whenLabel(iso?: string | null) {
 const STATUS_CHIP: Record<string, string> = {
   queued: "bg-white/10 text-white/65",
   sent: "bg-emerald-500/15 text-emerald-300",
+  delivered: "bg-emerald-500/15 text-emerald-300",
   failed: "bg-rose-500/15 text-rose-300",
   bounced: "bg-amber-500/15 text-amber-300",
   complained: "bg-amber-500/15 text-amber-300",
+  unsubscribed: "bg-white/10 text-white/55",
   replied: "bg-reps-orange-soft text-reps-orange",
   draft: "bg-white/10 text-white/65",
   scheduled: "bg-amber-500/15 text-amber-300",
