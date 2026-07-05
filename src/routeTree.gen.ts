@@ -58,6 +58,8 @@ import { Route as PortalProfileRouteImport } from './routes/portal_.profile'
 import { Route as PortalNutritionRouteImport } from './routes/portal_.nutrition'
 import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
+import { Route as NewsletterUnsubscribeRouteImport } from './routes/newsletter.unsubscribe'
+import { Route as NewsletterConfirmRouteImport } from './routes/newsletter.confirm'
 import { Route as InLocationRouteImport } from './routes/in.$location'
 import { Route as HelpCategoryRouteImport } from './routes/help.$category'
 import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
@@ -399,6 +401,16 @@ const PortalMessagesRoute = PortalMessagesRouteImport.update({
 const PortalCheckInsRoute = PortalCheckInsRouteImport.update({
   id: '/portal_/check-ins',
   path: '/portal/check-ins',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsletterUnsubscribeRoute = NewsletterUnsubscribeRouteImport.update({
+  id: '/newsletter/unsubscribe',
+  path: '/newsletter/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsletterConfirmRoute = NewsletterConfirmRouteImport.update({
+  id: '/newsletter/confirm',
+  path: '/newsletter/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InLocationRoute = InLocationRouteImport.update({
@@ -1006,6 +1018,8 @@ export interface FileRoutesByFullPath {
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
+  '/newsletter/confirm': typeof NewsletterConfirmRoute
+  '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
@@ -1149,6 +1163,8 @@ export interface FileRoutesByTo {
   '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/in/$location': typeof InLocationRouteWithChildren
+  '/newsletter/confirm': typeof NewsletterConfirmRoute
+  '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/nutrition': typeof PortalNutritionRoute
@@ -1296,6 +1312,8 @@ export interface FileRoutesById {
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
+  '/newsletter/confirm': typeof NewsletterConfirmRoute
+  '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
   '/portal_/messages': typeof PortalMessagesRoute
   '/portal_/nutrition': typeof PortalNutritionRoute
@@ -1445,6 +1463,8 @@ export interface FileRouteTypes {
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
+    | '/newsletter/confirm'
+    | '/newsletter/unsubscribe'
     | '/portal/check-ins'
     | '/portal/messages'
     | '/portal/nutrition'
@@ -1588,6 +1608,8 @@ export interface FileRouteTypes {
     | '/features/website'
     | '/gyms/$slug'
     | '/in/$location'
+    | '/newsletter/confirm'
+    | '/newsletter/unsubscribe'
     | '/portal/check-ins'
     | '/portal/messages'
     | '/portal/nutrition'
@@ -1734,6 +1756,8 @@ export interface FileRouteTypes {
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
+    | '/newsletter/confirm'
+    | '/newsletter/unsubscribe'
     | '/portal_/check-ins'
     | '/portal_/messages'
     | '/portal_/nutrition'
@@ -1882,6 +1906,8 @@ export interface RootRouteChildren {
   FeaturesWebsiteRoute: typeof FeaturesWebsiteRoute
   GymsSlugRoute: typeof GymsSlugRoute
   InLocationRoute: typeof InLocationRouteWithChildren
+  NewsletterConfirmRoute: typeof NewsletterConfirmRoute
+  NewsletterUnsubscribeRoute: typeof NewsletterUnsubscribeRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
   PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNutritionRoute: typeof PortalNutritionRoute
@@ -2261,6 +2287,20 @@ declare module '@tanstack/react-router' {
       path: '/portal/check-ins'
       fullPath: '/portal/check-ins'
       preLoaderRoute: typeof PortalCheckInsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/newsletter/unsubscribe': {
+      id: '/newsletter/unsubscribe'
+      path: '/newsletter/unsubscribe'
+      fullPath: '/newsletter/unsubscribe'
+      preLoaderRoute: typeof NewsletterUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/newsletter/confirm': {
+      id: '/newsletter/confirm'
+      path: '/newsletter/confirm'
+      fullPath: '/newsletter/confirm'
+      preLoaderRoute: typeof NewsletterConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/in/$location': {
@@ -3276,6 +3316,8 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesWebsiteRoute: FeaturesWebsiteRoute,
   GymsSlugRoute: GymsSlugRoute,
   InLocationRoute: InLocationRouteWithChildren,
+  NewsletterConfirmRoute: NewsletterConfirmRoute,
+  NewsletterUnsubscribeRoute: NewsletterUnsubscribeRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
   PortalMessagesRoute: PortalMessagesRoute,
   PortalNutritionRoute: PortalNutritionRoute,
