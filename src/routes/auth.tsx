@@ -353,12 +353,12 @@ function LoginPage() {
 
 
             <p className="mt-6 text-center text-[13px] text-white/55">
-              Don&apos;t have an account?{" "}
+              Not a member yet?{" "}
               <Link
-                to="/signup"
+                to="/pricing"
                 className="font-semibold text-reps-orange hover:underline"
               >
-                Sign up
+                View plans
               </Link>
             </p>
           </div>
