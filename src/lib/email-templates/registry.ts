@@ -69,8 +69,10 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'chargeback-resolved-won': chargebackResolvedWon,
   'chargeback-resolved-lost': chargebackResolvedLost,
   'member-cancelled': memberCancelled,
+  'dispute-won-resubscribe': disputeWonResubscribe,
   'admin-invite': adminInvite,
 }
+
 
 
 
