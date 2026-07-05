@@ -372,9 +372,9 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             .max(500)
             .optional(),
           tiers: z
-            .array(z.enum(["free", "verified", "pro", "studio", "former"]))
+            .array(z.enum(["free", "verified", "pro", "studio", "former", "newsletter"]))
             .min(1)
-            .max(4)
+            .max(6)
             .optional(),
           subject: z.string().min(1).max(200),
           body: z.string().min(1).max(50000),
