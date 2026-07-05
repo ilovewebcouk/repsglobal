@@ -313,7 +313,7 @@ async function fetchTrustSummary(
     supabaseAdmin
       .from("verification_submissions")
       .select(
-        "status, reviewed_at, qualification, awarding_body, certificate_number, issue_date, year",
+        "status, reviewed_at, qualification, awarding_body, certificate_number, qualification_number, issue_date, year",
       )
       .eq("professional_id", professionalId),
   ]);
@@ -324,6 +324,7 @@ async function fetchTrustSummary(
     qualification: string | null;
     awarding_body: string | null;
     certificate_number: string | null;
+    qualification_number: string | null;
     issue_date: string | null;
     year: number | null;
   }>;
@@ -358,7 +359,7 @@ async function fetchTrustSummary(
       kind: "qualification",
       title: q.qualification,
       issuer: q.awarding_body ?? "Awarding body",
-      id: includeSensitiveIds ? (q.certificate_number ?? null) : null,
+      id: q.qualification_number ?? (includeSensitiveIds ? (q.certificate_number ?? null) : null),
       dateLabel,
     });
   }
