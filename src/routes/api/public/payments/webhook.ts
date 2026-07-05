@@ -645,6 +645,24 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               if (userId) {
                 const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
                 if (event.type === "customer.subscription.deleted") {
+                  // GA4 — subscription_cancelled (fire BEFORE closeMembership, which
+                  // deletes the auth user and would break follow-up lookups).
+                  try {
+                    const item = sub.items.data[0];
+                    const amount = (item?.price.unit_amount ?? 0) / 100;
+                    const currency = (item?.price.currency ?? "gbp").toUpperCase();
+                    const tier = (sub.metadata?.tier as string) ?? "verified";
+                    const period = (sub.metadata?.billing_period as string) ?? "annual";
+                    const { sendGaLifecycle } = await import("@/lib/analytics/ga-measurement-protocol.server");
+                    await sendGaLifecycle({
+                      clientId: null, userId,
+                      event: "subscription_cancelled",
+                      subscriptionId: sub.id,
+                      tier, period, value: amount, currency,
+                      cancelReason: sub.cancellation_details?.reason ?? null,
+                    });
+                  } catch (e) { console.warn("[ga4-mp] cancel dispatch failed:", e); }
+
                   await supabaseAdmin.rpc("enter_churn_stage" as never, {
                     _user_id: userId, _stage: "grace",
                     _reason: "Stripe subscription deleted",
