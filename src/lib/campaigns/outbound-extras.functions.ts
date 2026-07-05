@@ -157,14 +157,27 @@ export async function runBroadcastBatch(opts: BroadcastBatchOpts): Promise<{
   const failures: Array<{ email: string; error: string }> = [];
   let dailyLimitHit = false;
 
+  // Pre-fetch newsletter unsubscribe tokens for any confirmed subscribers in
+  // this batch, so we can auto-append a one-click unsubscribe footer to their
+  // emails (admins never have to paste it in).
+  const newsletterTokens = await fetchNewsletterUnsubTokens(
+    opts.supabaseAdmin,
+    opts.recipients.map((r) => r.email),
+  );
+  const siteUrl = (process.env.SITE_URL || "https://repsuk.org").replace(/\/$/, "");
+
   outer: for (const r of opts.recipients) {
     const messageId = buildMessageId(`campaign-${opts.campaignId}`);
-    const { html, text } = renderForRecipient({
+    const rendered = renderForRecipient({
       body: opts.body,
       format: opts.format,
       recipient: r,
       inboxLabel: opts.inboxMeta.label,
     });
+    const unsubToken = newsletterTokens.get(r.email.toLowerCase());
+    const { html, text } = unsubToken
+      ? appendNewsletterFooter(rendered, `${siteUrl}/newsletter/unsubscribe?token=${unsubToken}`)
+      : rendered;
 
     let attempt = 0;
     let lastError: string | null = null;
