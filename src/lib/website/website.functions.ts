@@ -526,7 +526,18 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       })
       .parse(d),
   )
-  .handler(async ({ data }): Promise<{ website: WebsiteDTO; services: ServiceDTO[]; transformations: WebsiteTransformationDTO[]; clientResults: WebsiteClientResultDTO[]; faqs: WebsiteFaqDTO[] } | null> => {
+  .handler(async ({ data }): Promise<{
+    website: WebsiteDTO;
+    services: ServiceDTO[];
+    transformations: WebsiteTransformationDTO[];
+    clientResults: WebsiteClientResultDTO[];
+    faqs: WebsiteFaqDTO[];
+    meta: {
+      isPlaceholderContent: boolean;
+      hasPublishedSnapshot: boolean;
+      completion: { total: number; done: number };
+    };
+  } | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: pro } = await supabaseAdmin
@@ -546,147 +557,184 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     );
     if (!(await isProPubliclyVisible(pro.id))) return null;
 
-    // Preview gate: only a valid signed token for THIS slug bypasses the
-    // published snapshot. Anything else (missing, boolean true, expired,
-    // tampered, or minted for a different slug) falls through to the
-    // snapshot below.
     const previewOk = await (async () => {
       if (typeof data.preview !== "string") return false;
       const { verifyPreviewToken } = await import("./preview-token.server");
       return verifyPreviewToken(data.preview, data.slug);
     })();
-    if (!previewOk) {
-      const { data: snapRow } = await supabaseAdmin
-        .from("websites")
-        .select("published_snapshot")
-        .eq("professional_id", pro.id)
-        .maybeSingle();
-      const snap = snapRow?.published_snapshot as
-        | { website: WebsiteDTO; services: ServiceDTO[]; transformations: WebsiteTransformationDTO[]; clientResults: WebsiteClientResultDTO[]; faqs: WebsiteFaqDTO[] }
-        | null
-        | undefined;
-      if (snap && snap.website) return snap;
-      // No snapshot yet → fall through to live read (backwards-compatible
-      // for anyone who hasn't clicked Publish since this feature shipped).
-    }
 
+    // Always check whether a snapshot exists so we can accurately flag
+    // placeholder content — even when serving live drafts as fallback.
+    const { data: snapRow } = await supabaseAdmin
+      .from("websites")
+      .select("published_snapshot, has_unpublished_changes")
+      .eq("professional_id", pro.id)
+      .maybeSingle();
+    const snap = (snapRow?.published_snapshot ?? null) as
+      | { website: WebsiteDTO; services: ServiceDTO[]; transformations: WebsiteTransformationDTO[]; clientResults: WebsiteClientResultDTO[]; faqs: WebsiteFaqDTO[] }
+      | null;
+    const hasPublishedSnapshot = !!(snap && snap.website);
+    const hasUnpublishedChanges = !!snapRow?.has_unpublished_changes;
 
-
-
-    const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
-      supabaseAdmin
-        .from("websites")
-        .select(
-          "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
-        )
-        .eq("professional_id", pro.id)
-        .maybeSingle(),
-      supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", pro.id).maybeSingle(),
-      supabaseAdmin
-        .from("services")
-        .select(
-          "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url",
-        )
-        .eq("professional_id", pro.id)
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true }),
-      supabaseAdmin
-        .from("subscriptions")
-        .select("tier, status")
-        .eq("user_id", pro.id)
-        .maybeSingle(),
-      supabaseAdmin
-        .from("website_transformations")
-        .select("id, client_first_name, client_role, duration_label, metric, headline, quote, image_url, sort_order, is_published")
-        .eq("user_id", pro.id)
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true }),
-      supabaseAdmin
-        .from("website_client_results")
-        .select("id, headline, body, review_id, sort_order, is_published")
-        .eq("user_id", pro.id)
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true }),
-      supabaseAdmin
-        .from("website_faqs")
-        .select("id, question, answer, sort_order, source")
-        .eq("user_id", pro.id)
-        .order("sort_order", { ascending: true }),
-      fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
-      fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
-      loadProfessionalGymVenues(supabaseAdmin, pro.id),
-    ]);
-
-    // Tolerant: if no websites row exists yet, synthesise defaults from the
-    // pro record so /c/$slug never 404s on a paying member.
-    const sfRow = sf ?? {
-      professional_id: pro.id,
-      tagline: null,
-      subtitle: null,
-      about: null,
-      hero_image_url: null,
-      accent_hex: null,
-      method_name: null,
-      method_intro: null,
-      method_pillars: null,
-      venues: null,
-      coaching_reach: null,
-      client_results_intro: null,
-      layout_variant: "full" as const,
-      theme: "dark" as const,
-      current_clients: null,
+    let payload: {
+      website: WebsiteDTO;
+      services: ServiceDTO[];
+      transformations: WebsiteTransformationDTO[];
+      clientResults: WebsiteClientResultDTO[];
+      faqs: WebsiteFaqDTO[];
     };
 
-    const tier =
-      subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
-        ? (subRow.tier as "verified" | "pro" | "studio")
-        : null;
+    if (!previewOk && hasPublishedSnapshot) {
+      payload = snap!;
+    } else {
+      const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
+        supabaseAdmin
+          .from("websites")
+          .select(
+            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
+          )
+          .eq("professional_id", pro.id)
+          .maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", pro.id).maybeSingle(),
+        supabaseAdmin
+          .from("services")
+          .select(
+            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url",
+          )
+          .eq("professional_id", pro.id)
+          .eq("is_published", true)
+          .order("sort_order", { ascending: true }),
+        supabaseAdmin
+          .from("subscriptions")
+          .select("tier, status")
+          .eq("user_id", pro.id)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("website_transformations")
+          .select("id, client_first_name, client_role, duration_label, metric, headline, quote, image_url, sort_order, is_published")
+          .eq("user_id", pro.id)
+          .eq("is_published", true)
+          .order("sort_order", { ascending: true }),
+        supabaseAdmin
+          .from("website_client_results")
+          .select("id, headline, body, review_id, sort_order, is_published")
+          .eq("user_id", pro.id)
+          .eq("is_published", true)
+          .order("sort_order", { ascending: true }),
+        supabaseAdmin
+          .from("website_faqs")
+          .select("id, question, answer, sort_order, source, is_published")
+          .eq("user_id", pro.id)
+          .eq("is_published", true)
+          .order("sort_order", { ascending: true }),
+        fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+        fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+        loadProfessionalGymVenues(supabaseAdmin, pro.id),
+      ]);
 
+      const sfRow = sf ?? {
+        professional_id: pro.id,
+        tagline: null,
+        subtitle: null,
+        about: null,
+        hero_image_url: null,
+        accent_hex: null,
+        method_name: null,
+        method_intro: null,
+        method_pillars: null,
+        venues: null,
+        coaching_reach: null,
+        client_results_intro: null,
+        layout_variant: "full" as const,
+        theme: "dark" as const,
+        current_clients: null,
+      };
+
+      const tier =
+        subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
+          ? (subRow.tier as "verified" | "pro" | "studio")
+          : null;
+
+      payload = {
+        website: {
+          professional_id: pro.id,
+          tagline: sfRow.tagline,
+          subtitle: sfRow.subtitle ?? null,
+          about: sfRow.about,
+          hero_image_url: sfRow.hero_image_url,
+          accent_hex: sfRow.accent_hex,
+          method_name: sfRow.method_name ?? null,
+          method_intro: sfRow.method_intro ?? null,
+          method_pillars: asPillars(sfRow.method_pillars),
+          venues: [
+            ...(gymVenues.length ? gymVenues : asVenues(sfRow.venues)),
+            ...buildTrainingBaseVenues(
+              !!(pro as { trains_at_home_studio?: boolean | null }).trains_at_home_studio,
+              !!(pro as { trains_at_clients_home?: boolean | null }).trains_at_clients_home,
+            ),
+          ],
+          coaching_reach: asReach(sfRow.coaching_reach),
+          client_results_intro: sfRow.client_results_intro ?? null,
+          layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
+          theme: (sfRow.theme as "dark" | "light") ?? "dark",
+          current_clients: (sfRow as { current_clients?: number | null }).current_clients ?? null,
+          slug: pro.slug,
+          full_name: prof?.full_name ?? null,
+          avatar_url: prof?.avatar_url ?? null,
+          headline: pro.headline,
+          primary_profession: pro.primary_profession,
+          titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
+          specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
+          city: pro.city,
+          in_person_available: !!pro.in_person_available,
+          online_available: !!pro.online_available,
+          member_since: pro.member_since ?? null,
+          coaching_since_year: coachingSinceYear,
+          tier,
+          trust,
+          socials: buildSocials(pro as any),
+        },
+        services: (services ?? []) as ServiceDTO[],
+        transformations: (transformations ?? []) as WebsiteTransformationDTO[],
+        clientResults: (clientResults ?? []) as WebsiteClientResultDTO[],
+        faqs: (faqs ?? []) as WebsiteFaqDTO[],
+      };
+    }
+
+    // Placeholder detection: a page is "placeholder" if the trainer hasn't
+    // finished authoring the essentials. Rules:
+    //  - no published snapshot yet → placeholder
+    //  - trainer has unpublished edits that change published copy → placeholder
+    //  - core content sparse (tagline/about/hero missing, or < 3 services, or
+    //    no specialisms) → placeholder
+    const w = payload.website;
+    const trimmed = (s: string | null | undefined) => (s ?? "").trim();
+    const coreEssentials = [trimmed(w.tagline), trimmed(w.about), trimmed(w.hero_image_url)];
+    const coreDone = coreEssentials.every(Boolean);
+    const enoughServices = (payload.services?.length ?? 0) >= 3;
+    const hasSpecialisms = (w.specialisms?.length ?? 0) > 0;
+    const isPlaceholderContent =
+      !hasPublishedSnapshot ||
+      hasUnpublishedChanges ||
+      !coreDone ||
+      !enoughServices ||
+      !hasSpecialisms;
+
+    // Very rough completion score for the DTO (0..5).
+    const doneCount =
+      (hasPublishedSnapshot ? 1 : 0) +
+      (coreDone ? 1 : 0) +
+      (enoughServices ? 1 : 0) +
+      (hasSpecialisms ? 1 : 0) +
+      (!hasUnpublishedChanges ? 1 : 0);
 
     return {
-      website: {
-        professional_id: pro.id,
-        tagline: sfRow.tagline,
-        subtitle: sfRow.subtitle ?? null,
-        about: sfRow.about,
-        hero_image_url: sfRow.hero_image_url,
-        accent_hex: sfRow.accent_hex,
-        method_name: sfRow.method_name ?? null,
-        method_intro: sfRow.method_intro ?? null,
-        method_pillars: asPillars(sfRow.method_pillars),
-        venues: [
-          ...(gymVenues.length ? gymVenues : asVenues(sfRow.venues)),
-          ...buildTrainingBaseVenues(
-            !!(pro as { trains_at_home_studio?: boolean | null }).trains_at_home_studio,
-            !!(pro as { trains_at_clients_home?: boolean | null }).trains_at_clients_home,
-          ),
-        ],
-        coaching_reach: asReach(sfRow.coaching_reach),
-        client_results_intro: sfRow.client_results_intro ?? null,
-        layout_variant: (sfRow.layout_variant as "lite" | "full") ?? "lite",
-        theme: (sfRow.theme as "dark" | "light") ?? "dark",
-        current_clients: (sfRow as { current_clients?: number | null }).current_clients ?? null,
-        slug: pro.slug,
-        full_name: prof?.full_name ?? null,
-        avatar_url: prof?.avatar_url ?? null,
-        headline: pro.headline,
-        primary_profession: pro.primary_profession,
-        titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
-        specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
-        city: pro.city,
-        in_person_available: !!pro.in_person_available,
-        online_available: !!pro.online_available,
-        member_since: pro.member_since ?? null,
-        coaching_since_year: coachingSinceYear,
-        tier,
-        trust,
-        socials: buildSocials(pro as any),
-
+      ...payload,
+      meta: {
+        isPlaceholderContent,
+        hasPublishedSnapshot,
+        completion: { total: 5, done: doneCount },
       },
-      services: (services ?? []) as ServiceDTO[],
-      transformations: (transformations ?? []) as WebsiteTransformationDTO[],
-      clientResults: (clientResults ?? []) as WebsiteClientResultDTO[],
-      faqs: (faqs ?? []) as WebsiteFaqDTO[],
     };
   });
 
