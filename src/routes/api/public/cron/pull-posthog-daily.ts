@@ -1,16 +1,15 @@
 // pg_cron entrypoint: nightly PostHog → Supabase rollup.
-// Auth: Supabase publishable key in `apikey` header (canonical cron pattern).
+// Auth: dedicated server-only cron token via `Authorization: Bearer <token>`.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { runPostHogDailyRollup } from "@/lib/ops/pull-posthog-daily.functions";
+import { verifyCronRequest } from "@/lib/ops/cron-auth.server";
 
 export const Route = createFileRoute("/api/public/cron/pull-posthog-daily")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
-        const provided = request.headers.get("apikey") ?? "";
-        if (!expected || provided !== expected) {
+        if (!(await verifyCronRequest(request))) {
           return new Response("Unauthorized", { status: 401 });
         }
         let date: string | undefined;
