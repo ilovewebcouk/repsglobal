@@ -70,9 +70,19 @@ export const Route = createFileRoute("/_authenticated/_professional")({
 
     const { data: sub } = await supabase
       .from("subscriptions")
-      .select("tier,status")
+      .select("tier,status,payment_standing")
       .eq("user_id", user.id)
       .maybeSingle();
+
+    // Payment-standing suspension gate: a member with a live dispute or a
+    // lost chargeback must not reach the dashboard, regardless of role.
+    if (
+      sub &&
+      (sub.payment_standing === "payment_disputed" ||
+        sub.payment_standing === "chargeback_lost")
+    ) {
+      throw redirect({ to: "/account/suspended" });
+    }
 
     const isPaid =
       !!sub &&
