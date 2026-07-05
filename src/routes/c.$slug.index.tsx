@@ -745,8 +745,19 @@ function CoachWebsitePage() {
 
   const enquireHref = "/c/$slug/enquire" as const;
 
+  const isOwnerViewing =
+    !!user && !!live?.website?.professional_id && user.id === live.website.professional_id;
+  const showPlaceholderBanner =
+    !isFixture && !previewToken && !!live?.meta?.isPlaceholderContent;
+
   return (
     <div data-coach-theme={coach.theme ?? "dark"} className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
+      {showPlaceholderBanner ? (
+        <TemplateContentBanner
+          firstName={(coach.name ?? "").split(" ")[0] || "This coach"}
+          isOwnerViewing={isOwnerViewing}
+        />
+      ) : null}
       <ChromeBar coach={coach} />
       <SectionNav />
 
