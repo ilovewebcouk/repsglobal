@@ -7,6 +7,49 @@
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/mailgun";
 const MAILGUN_DOMAIN = "repsuk.org";
+const TRACKING_HOST = "email.repsuk.org";
+
+// Cached result of the domain scheme check. Mailgun rewrites click links on
+// its edge using the domain's `web_scheme`, so if that flips back to "http"
+// every send would emit http://email.repsuk.org/... links again and Safari
+// would re-flag them as phishing. We assert once per worker process.
+let httpsSchemeCheck: Promise<void> | null = null;
+
+async function assertHttpsTracking(headers: Record<string, string>): Promise<void> {
+  if (!httpsSchemeCheck) {
+    httpsSchemeCheck = (async () => {
+      const res = await fetch(`${GATEWAY_URL}/domains/${MAILGUN_DOMAIN}`, {
+        method: "GET",
+        headers: { Authorization: headers.Authorization, "X-Connection-Api-Key": headers["X-Connection-Api-Key"] },
+      });
+      if (!res.ok) {
+        // Fail-open on transient lookup errors so a Mailgun API blip doesn't
+        // block outbound mail; retry on the next send.
+        httpsSchemeCheck = null;
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as { domain?: { web_scheme?: string } } | null;
+      const scheme = data?.domain?.web_scheme;
+      if (scheme !== "https") {
+        httpsSchemeCheck = null;
+        throw new Error(
+          `Refusing to send: Mailgun tracking domain ${TRACKING_HOST} is set to '${scheme ?? "unknown"}', expected 'https'. ` +
+            `Flip web_scheme to https for ${MAILGUN_DOMAIN} in Mailgun before retrying.`,
+        );
+      }
+    })();
+  }
+  return httpsSchemeCheck;
+}
+
+function assertNoHttpTrackingUrls(html: string, text: string): void {
+  const bad = /http:\/\/email\.repsuk\.org\//i;
+  if (bad.test(html) || bad.test(text)) {
+    throw new Error(
+      `Refusing to send: message body contains a plain http://${TRACKING_HOST}/ link. All tracking links must be https.`,
+    );
+  }
+}
 
 export interface MailgunAttachment {
   filename: string;
@@ -82,6 +125,9 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
     body = form;
     headers["Content-Type"] = "application/x-www-form-urlencoded";
   }
+
+  assertNoHttpTrackingUrls(input.html, input.text);
+  await assertHttpsTracking(headers);
 
   const res = await fetch(`${GATEWAY_URL}/${MAILGUN_DOMAIN}/messages`, {
     method: "POST",
