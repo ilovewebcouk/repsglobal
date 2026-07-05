@@ -359,7 +359,7 @@ async function fetchTrustSummary(
       kind: "qualification",
       title: q.qualification,
       issuer: q.awarding_body ?? "Awarding body",
-      id: includeSensitiveIds ? (q.certificate_number ?? null) : null,
+      id: q.qualification_number ?? (includeSensitiveIds ? (q.certificate_number ?? null) : null),
       dateLabel,
     });
   }
