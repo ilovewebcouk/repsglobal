@@ -157,14 +157,27 @@ export async function runBroadcastBatch(opts: BroadcastBatchOpts): Promise<{
   const failures: Array<{ email: string; error: string }> = [];
   let dailyLimitHit = false;
 
+  // Pre-fetch newsletter unsubscribe tokens for any confirmed subscribers in
+  // this batch, so we can auto-append a one-click unsubscribe footer to their
+  // emails (admins never have to paste it in).
+  const newsletterTokens = await fetchNewsletterUnsubTokens(
+    opts.supabaseAdmin,
+    opts.recipients.map((r) => r.email),
+  );
+  const siteUrl = (process.env.SITE_URL || "https://repsuk.org").replace(/\/$/, "");
+
   outer: for (const r of opts.recipients) {
     const messageId = buildMessageId(`campaign-${opts.campaignId}`);
-    const { html, text } = renderForRecipient({
+    const rendered = renderForRecipient({
       body: opts.body,
       format: opts.format,
       recipient: r,
       inboxLabel: opts.inboxMeta.label,
     });
+    const unsubToken = newsletterTokens.get(r.email.toLowerCase());
+    const { html, text } = unsubToken
+      ? appendNewsletterFooter(rendered, `${siteUrl}/newsletter/unsubscribe?token=${unsubToken}`)
+      : rendered;
 
     let attempt = 0;
     let lastError: string | null = null;
@@ -634,3 +647,49 @@ export const resendFailedRecipients = createServerFn({ method: "POST" })
     };
   });
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Newsletter unsubscribe footer helpers.
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function fetchNewsletterUnsubTokens(
+  supabaseAdmin: any,
+  emails: string[],
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const normalised = Array.from(
+    new Set(emails.map((e) => e.toLowerCase().trim()).filter(Boolean)),
+  );
+  if (normalised.length === 0) return map;
+  const { data, error } = await supabaseAdmin
+    .from("newsletter_subscribers")
+    .select("email, confirm_token")
+    .eq("status", "confirmed")
+    .in("email", normalised);
+  if (error || !data) return map;
+  for (const row of data as Array<{ email: string; confirm_token: string }>) {
+    if (row.email && row.confirm_token) {
+      map.set(row.email.toLowerCase().trim(), row.confirm_token);
+    }
+  }
+  return map;
+}
+
+function appendNewsletterFooter(
+  rendered: { html: string; text: string },
+  unsubUrl: string,
+): { html: string; text: string } {
+  const htmlFooter = `
+<div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#888;line-height:1.5;text-align:center;">
+  You're receiving this because you subscribed to the REPS newsletter.<br />
+  <a href="${unsubUrl}" style="color:#888;text-decoration:underline;">Unsubscribe</a>
+</div>`;
+  const textFooter = `\n\n—\nYou're receiving this because you subscribed to the REPS newsletter.\nUnsubscribe: ${unsubUrl}\n`;
+
+  // Inject the HTML footer before </body> when present, otherwise append.
+  const html = /<\/body>/i.test(rendered.html)
+    ? rendered.html.replace(/<\/body>/i, `${htmlFooter}</body>`)
+    : rendered.html + htmlFooter;
+
+  return { html, text: rendered.text + textFooter };
+}
