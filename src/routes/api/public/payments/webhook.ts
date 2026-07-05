@@ -801,6 +801,49 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             }
 
 
+            case "invoice.marked_uncollectible": {
+              // Stripe has given up on collecting after smart retries.
+              // Treat as an immediate close — same outcome as
+              // customer.subscription.deleted would produce.
+              const invoice = event.data.object as Stripe.Invoice;
+              const subRef = (invoice as unknown as { subscription?: string | Stripe.Subscription }).subscription;
+              const subId = typeof subRef === "string" ? subRef : subRef?.id;
+              if (subId) {
+                const sub = await stripe.subscriptions.retrieve(subId);
+                try {
+                  userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+                } catch (err) {
+                  if (err instanceof Error && err.message.startsWith("No REPS user found")) {
+                    userId = null;
+                    break;
+                  }
+                  throw err;
+                }
+              }
+              if (userId) {
+                try {
+                  const { _closeMembershipImpl } = await import(
+                    "@/lib/admin/close-membership.server"
+                  );
+                  await _closeMembershipImpl({
+                    user_id: userId,
+                    mode: "end_now_delete",
+                    reason: "member_request",
+                    notes: `Invoice marked uncollectible (invoice ${invoice.id})`,
+                    actor_id: "stripe_webhook",
+                  });
+                } catch (e: any) {
+                  if (!/no email on auth account/i.test(e?.message ?? "")) {
+                    console.warn(
+                      "[webhook] uncollectible close failed:",
+                      e?.message ?? e,
+                    );
+                  }
+                }
+              }
+              break;
+            }
+
             case "invoice.payment_succeeded":
             case "invoice.payment_failed": {
               const invoice = event.data.object as Stripe.Invoice;
