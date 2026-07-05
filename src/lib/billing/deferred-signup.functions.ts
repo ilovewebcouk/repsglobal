@@ -63,15 +63,15 @@ export const startDeferredCheckout = createServerFn({ method: "POST" })
         };
       }
 
-      // Stash the credentials. We deliberately store the plaintext password
-      // for ~minutes because supabase.auth.admin.createUser needs it post-pay
-      // anyway. Row is RLS-locked to service_role and auto-cleaned by
-      // cleanup_pending_signups().
+      // Stash the credentials. Password is encrypted at rest with a
+      // server-only key (never `VITE_`-prefixed); the row is RLS-locked to
+      // service_role and auto-cleaned by cleanup_pending_signups().
+      const { encryptSecret } = await import("./secret-crypto.server");
       const { data: pending, error: pendingErr } = await supabaseAdmin
         .from("pending_signups")
         .insert({
           email: data.email,
-          password: data.password,
+          password_ciphertext: encryptSecret(data.password),
           full_name: data.fullName,
           tier,
           period,
@@ -83,6 +83,7 @@ export const startDeferredCheckout = createServerFn({ method: "POST" })
         return { error: pendingErr?.message ?? "Could not start checkout" };
       }
       const pendingId = (pending as { id: string }).id;
+
 
       // Mint a fresh Stripe customer (no reps_user_id yet — we'll back-fill
       // when the webhook creates the auth user).
