@@ -118,6 +118,7 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
+import { Route as ApiPublicCronSeoIndexScanRouteImport } from './routes/api/public/cron/seo-index-scan'
 import { Route as ApiPublicCronPullPosthogDailyRouteImport } from './routes/api/public/cron/pull-posthog-daily'
 import { Route as ApiPublicConsentLogRouteImport } from './routes/api/public/consent/log'
 import { Route as ApiPublicActivitySessionEventRouteImport } from './routes/api/public/activity/session-event'
@@ -709,6 +710,12 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
     path: '/api/public/hooks/send-scheduled-campaigns',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronSeoIndexScanRoute =
+  ApiPublicCronSeoIndexScanRouteImport.update({
+    id: '/api/public/cron/seo-index-scan',
+    path: '/api/public/cron/seo-index-scan',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronPullPosthogDailyRoute =
   ApiPublicCronPullPosthogDailyRouteImport.update({
     id: '/api/public/cron/pull-posthog-daily',
@@ -1042,6 +1049,7 @@ export interface FileRoutesByFullPath {
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1181,6 +1189,7 @@ export interface FileRoutesByTo {
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1329,6 +1338,7 @@ export interface FileRoutesById {
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1475,6 +1485,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/session-event'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1614,6 +1625,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/session-event'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1761,6 +1773,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/session-event'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1882,6 +1895,7 @@ export interface RootRouteChildren {
   ApiPublicActivitySessionEventRoute: typeof ApiPublicActivitySessionEventRoute
   ApiPublicConsentLogRoute: typeof ApiPublicConsentLogRoute
   ApiPublicCronPullPosthogDailyRoute: typeof ApiPublicCronPullPosthogDailyRoute
+  ApiPublicCronSeoIndexScanRoute: typeof ApiPublicCronSeoIndexScanRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicOpsAlertDispatchRoute: typeof ApiPublicOpsAlertDispatchRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -2657,6 +2671,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/seo-index-scan': {
+      id: '/api/public/cron/seo-index-scan'
+      path: '/api/public/cron/seo-index-scan'
+      fullPath: '/api/public/cron/seo-index-scan'
+      preLoaderRoute: typeof ApiPublicCronSeoIndexScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/pull-posthog-daily': {
       id: '/api/public/cron/pull-posthog-daily'
       path: '/api/public/cron/pull-posthog-daily'
@@ -3250,6 +3271,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicActivitySessionEventRoute: ApiPublicActivitySessionEventRoute,
   ApiPublicConsentLogRoute: ApiPublicConsentLogRoute,
   ApiPublicCronPullPosthogDailyRoute: ApiPublicCronPullPosthogDailyRoute,
+  ApiPublicCronSeoIndexScanRoute: ApiPublicCronSeoIndexScanRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicOpsAlertDispatchRoute: ApiPublicOpsAlertDispatchRoute,
