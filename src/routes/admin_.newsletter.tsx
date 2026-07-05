@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   listNewsletterSubscribers,
   importNewsletterSubscribers,
+  getReachableMembersCount,
 } from "@/lib/newsletter/subscribers.functions";
 
 export const Route = createFileRoute("/admin_/newsletter")({
@@ -78,6 +79,7 @@ function AdminNewsletter() {
   const qc = useQueryClient();
 
   const listFn = useServerFn(listNewsletterSubscribers);
+  const membersFn = useServerFn(getReachableMembersCount);
 
   const listQuery = useQuery({
     queryKey: ["admin", "newsletter", "subscribers", status],
@@ -88,6 +90,12 @@ function AdminNewsletter() {
           limit: 500,
         },
       }),
+  });
+
+  const membersQuery = useQuery({
+    queryKey: ["admin", "newsletter", "reachable-members"],
+    queryFn: () => membersFn(),
+    staleTime: 5 * 60_000,
   });
 
   const rows: Subscriber[] = (listQuery.data?.rows ?? []) as Subscriber[];
@@ -154,7 +162,7 @@ function AdminNewsletter() {
       role="admin"
       active="Newsletter"
       title="Newsletter subscribers"
-      subtitle="Double opt-in list used by the Campaigns broadcast tool. Only confirmed subscribers receive newsletter sends."
+      subtitle="Public opt-in list from the newsletter signup form. Kept separate from members — members are auto-included in Campaigns broadcasts via the Core / Pro / Studio tiers."
       actions={
         <div className="flex items-center gap-2">
           <Button
@@ -206,6 +214,28 @@ function AdminNewsletter() {
             </button>
           ))}
         </div>
+
+        {/* Members context callout — the newsletter is not the only audience */}
+        <div className="rounded-[16px] border border-reps-border bg-white/[0.03] p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-[240px]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
+              Members reachable via Campaigns
+            </div>
+            <div className="mt-1 text-[24px] font-semibold text-white">
+              {membersQuery.isLoading ? "…" : (membersQuery.data?.count ?? 0)}
+            </div>
+            <div className="mt-1 text-[12px] text-white/55">
+              Every confirmed member (Core, Pro, Studio) — reached from the Campaigns tab using tier checkboxes. Not part of this newsletter list.
+            </div>
+          </div>
+          <a
+            href="/admin/campaigns"
+            className="text-[13px] text-reps-orange hover:underline shrink-0"
+          >
+            Go to Campaigns →
+          </a>
+        </div>
+
 
         <PPanel className="p-0 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border p-4">
