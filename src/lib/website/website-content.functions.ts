@@ -294,6 +294,7 @@ export const upsertClientResult = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ResultSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertOwnsRow(supabaseAdmin, "website_client_results", data.id, context.userId, "user_id");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
       .from("website_client_results")
