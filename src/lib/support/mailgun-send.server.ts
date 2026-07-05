@@ -121,6 +121,7 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
         att.filename,
       );
     }
+    appendMailgunOptions(fd, input);
     body = fd;
     // fetch sets multipart boundary automatically
   } else {
@@ -134,6 +135,7 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
     if (input.inReplyTo) form.set("h:In-Reply-To", input.inReplyTo);
     if (input.references) form.set("h:References", input.references);
     if (input.replyTo) form.set("h:Reply-To", input.replyTo);
+    appendMailgunOptions(form, input);
     body = form;
     headers["Content-Type"] = "application/x-www-form-urlencoded";
   }
