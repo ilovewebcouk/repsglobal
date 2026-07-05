@@ -254,6 +254,21 @@ export function ComposeDialog({
     setDraftId(undefined);
     setScheduleOpen(false);
     setScheduledAt("");
+    setArticleDrafts(null);
+  }
+
+  function switchFormat(next: "text" | "html") {
+    if (next === format) return;
+    if (articleDrafts) {
+      const current = format === "html" ? articleDrafts.html : articleDrafts.text;
+      const sibling = next === "html" ? articleDrafts.html : articleDrafts.text;
+      // Only auto-swap when the composer body is still the loaded draft
+      // (i.e. the admin hasn't started editing it).
+      if (body === current) {
+        setBody(sibling);
+      }
+    }
+    setFormat(next);
   }
 
   const canSend = useMemo(() => {
