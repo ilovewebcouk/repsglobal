@@ -757,3 +757,75 @@ function AttachmentPicker({
     </Field>
   );
 }
+
+function ArticleLoader({ onLoad }: { onLoad: (article: ResourceArticle) => void }) {
+  const [value, setValue] = useState<string>("");
+  const articles = useMemo(
+    () =>
+      [...RESOURCE_ARTICLES].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      ),
+    [],
+  );
+  return (
+    <Field label="Load from article">
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={value}
+          onValueChange={(v) => {
+            setValue(v);
+            const article = articles.find((a) => a.slug === v);
+            if (article) onLoad(article);
+          }}
+        >
+          <SelectTrigger className="bg-white/[0.04] border-reps-border text-white flex-1 min-w-[260px]">
+            <div className="flex items-center gap-2 text-left">
+              <Newspaper className="size-4 text-white/55" />
+              <SelectValue placeholder="Pick a resource article to auto-fill subject + body…" />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="max-h-[360px]">
+            {articles.map((a) => (
+              <SelectItem key={a.slug} value={a.slug}>
+                <span className="truncate">{a.title}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="mt-1.5 text-[11px] text-white/45">
+        Pre-fills the subject and an HTML email with the article cover, intro and a CTA back to repsuk.org. You can then edit before sending.
+      </div>
+    </Field>
+  );
+}
+
+function buildArticleSubject(article: ResourceArticle): string {
+  return article.title;
+}
+
+function buildArticleEmailHtml(article: ResourceArticle): string {
+  const url = `https://repsuk.org/resources/${article.slug}`;
+  const cover = article.cover?.startsWith("http")
+    ? article.cover
+    : `https://repsuk.org${article.cover ?? ""}`;
+  const intro =
+    article.body.find((b) => b.type === "p") as { type: "p"; text: string } | undefined;
+  const introText = intro?.text ?? article.excerpt;
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;color:#111;line-height:1.55;">
+  <p style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin:0 0 8px;">${escape(article.category)}</p>
+  <h1 style="font-size:26px;line-height:1.25;margin:0 0 12px;color:#111;">${escape(article.title)}</h1>
+  <p style="font-size:14px;color:#666;margin:0 0 20px;">${escape(article.readTime)} · ${escape(article.dateLabel)}</p>
+  ${cover ? `<img src="${cover}" alt="${escape(article.title)}" style="width:100%;height:auto;border-radius:12px;margin:0 0 24px;display:block;" />` : ""}
+  <p style="font-size:16px;margin:0 0 16px;">${escape(article.excerpt)}</p>
+  <p style="font-size:15px;margin:0 0 24px;color:#333;">${escape(introText)}</p>
+  <p style="margin:0 0 32px;">
+    <a href="${url}" style="display:inline-block;background:#E85D2F;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;font-size:15px;">Read the full article →</a>
+  </p>
+  <hr style="border:none;border-top:1px solid #eee;margin:32px 0 16px;" />
+  <p style="font-size:12px;color:#888;margin:0 0 8px;">You're receiving this because you subscribed to the REPS newsletter.</p>
+  <p style="font-size:12px;color:#888;margin:0;">REPS · <a href="https://repsuk.org" style="color:#888;">repsuk.org</a></p>
+</div>`;
+}
