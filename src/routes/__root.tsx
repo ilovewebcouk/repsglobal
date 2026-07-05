@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { LAUNCH_GATE_ENABLED, isAllowlistedPath, hasPreviewUnlock } from "@/lib/launch";
 import { useActivityBeacon } from "@/hooks/useActivityBeacon";
 import { usePublicAnalyticsBeacon } from "@/hooks/usePublicAnalyticsBeacon";
+import { useGoogleAnalytics, GA_MEASUREMENT_ID } from "@/hooks/useGoogleAnalytics";
 import { CookieBanner } from "@/components/consent/CookieBanner";
 
 import appCss from "../styles.css?url";
@@ -114,6 +115,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
     scripts: [
+      // Google Analytics 4 — loads on every page (SSR + client).
+      {
+        src: `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`,
+        async: true,
+      },
+      {
+        children: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false});`,
+      },
       {
         type: "application/ld+json",
         children: JSON.stringify({
@@ -225,6 +234,8 @@ function RootComponent() {
   useActivityBeacon();
   // Public Analytics v1 — anonymous public visitor beacon (consent-gated).
   usePublicAnalyticsBeacon();
+  // Google Analytics 4 — pageviews on every route change.
+  useGoogleAnalytics();
 
   return (
     <QueryClientProvider client={queryClient}>
