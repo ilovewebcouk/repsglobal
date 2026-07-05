@@ -529,17 +529,15 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
   );
 }
 
-type Strategy = "end_trial" | "schedule_end_period" | "cancel_now";
+type Strategy = "end_trial" | "cancel_now";
 
 const STRATEGY_TO_MODE: Record<Strategy, CloseMode> = {
   end_trial: "end_now_delete",
-  schedule_end_period: "schedule_end_period",
   cancel_now: "end_now_delete",
 };
 
 const STRATEGY_TO_REASON: Record<Strategy, CancelReason> = {
   end_trial: "admin_end_trial",
-  schedule_end_period: "admin_cancel_period_end",
   cancel_now: "admin_cancel_immediate",
 };
 
@@ -548,15 +546,10 @@ const STRATEGY_LABEL: Record<Strategy, { title: string; detail: string }> = {
     title: "End trial now",
     detail: "Stops the trial today, no charge. Profile removed, account deleted, email archived.",
   },
-  schedule_end_period: {
-    title: "Cancel at period end (keep account live)",
-    detail:
-      "Schedules Stripe to stop renewing. Profile stays live until period end, member can resume from Stripe portal. NO delete.",
-  },
   cancel_now: {
     title: "Cancel immediately and delete",
     detail:
-      "Cancels Stripe now, removes the profile, deletes the account, archives the email. No refund. Use for spam / abuse / member-requested closure.",
+      "Cancels Stripe now, removes the profile, deletes the account, archives the email. No refund. REPS does not offer a grace period.",
   },
 };
 
