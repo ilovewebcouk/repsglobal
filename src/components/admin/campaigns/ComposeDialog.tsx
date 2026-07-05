@@ -366,7 +366,7 @@ export function ComposeDialog({
             </TabsContent>
 
             <ArticleLoader
-              onLoad={(article, coverUrl) => {
+              onLoadTemplate={(article, coverUrl) => {
                 const html = buildArticleEmailHtml(article, coverUrl);
                 const text = buildArticleEmailText(article);
                 setSubject(buildArticleSubject(article));
@@ -375,7 +375,17 @@ export function ComposeDialog({
                 setArticleDrafts({ html, text, slug: article.slug });
                 toast.success(`Loaded "${article.title}"`);
               }}
+              onLoadAiDraft={(article, coverUrl, ai) => {
+                const html = buildArticleEmailHtml(article, coverUrl, ai);
+                const text = buildArticleEmailText(article, ai);
+                setSubject(ai.subject || buildArticleSubject(article));
+                setBody(html);
+                setFormat("html");
+                setArticleDrafts({ html, text, slug: article.slug });
+                toast.success("AI drafted the email");
+              }}
             />
+
 
             <Field label="Subject">
               <Input
