@@ -1,7 +1,7 @@
 /**
  * Single source of truth for the "Trust" block shown on Public Profile.
  *
- * Tier-blind — every paying member (Verified or Pro) runs the exact same
+ * Tier-blind — every paying member (Core or Pro) runs the exact same
  * three-step flow (Identity → Insurance → Qualifications) and earns the
  * same three ticks. No `subscription.tier` checks in this file.
  */

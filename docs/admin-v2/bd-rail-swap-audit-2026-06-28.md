@@ -192,7 +192,7 @@ The route `GET /api/public/hooks/legacy-renewal` at `src/routes/api/public/hooks
 |---|---|---|---|
 | `isActiveLegacyLink(l, nowIso)` | `:77` | Returns `true` if `l.access_expires_at > now`. Used for `legacy_stripe_link` rows. | Once `access_expires_at` is in the past for all rows (which is already the case for 249/390 rows), returns `false` for all. No action needed but function stays. |
 | `isActiveBdSeed(seed, nowIso)` | `:86` | Returns `true` if `seed.bd_next_due_date > now`. Used for `bd_member_seed` rows without a link. | After Phase 2, `bd_next_due_date` is the anchor date used for the native sub, so it will equal the sub's `current_period_end`. The sub arm will count the member; the bd_seed arm returns `false` (date is past). Dedupe ladder prevents double-count. |
-| `TIER_FOR_LEGACY` / `TIER_FOR_BD_SEED` | `:27,28` | Both hardcoded `"verified"` | Fine — all BD members migrate to Verified tier. |
+| `TIER_FOR_LEGACY` / `TIER_FOR_BD_SEED` | `:27,28` | Both hardcoded `"verified"` (internal key for the Core tier) | Fine — all BD members migrate to Core tier. |
 
 ### Dedupe ladder (`.ts:203`)
 

@@ -1,14 +1,15 @@
-# 09 — Phase 2.0 Verified tier (wiring scope)
+# 09 — Phase 2.0 Core tier (wiring scope)
 
 > **Snapshot date:** 11 June 2026
-> **Scope:** Ship a thin, end-to-end revenue loop for the **Verified** tier (£99/yr) **and** the **Pro Founding** tier (£59/mo). Studio stays as a waitlist card.
-> **Out of scope:** Studio activation, website editor, bookings, AI features, real messaging, calendar sync, client portal data, real search/filter, BD migration, `/c/$slug` DB wiring, dynamic SEO at scale.
+> **Scope:** Ship a thin, end-to-end revenue loop for the **Core** tier (£34/yr) **and** the **Pro Founding** tier (£59/mo). Studio stays as a waitlist card.
+> **Out of scope:** Studio activation, bookings, AI features, real messaging, calendar sync, client portal data, real search/filter, `/c/$slug` DB wiring, dynamic SEO at scale.
 
 Phase 1 visuals are locked. This document drives Phase 2.0. Pre-build decisions that govern this wiring live in `docs/10_billing_phase0_decisions.md`.
 
 ## Goal
 
-One paying Verified or Pro professional can:
+One paying Core or Pro professional can:
+
 
 1. Sign up at `/auth` (email/password, Google, or Apple)
 2. Land on `/dashboard/start` (3-step onboarding: pick tier → pay → submit credentials)

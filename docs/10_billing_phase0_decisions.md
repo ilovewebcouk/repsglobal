@@ -28,7 +28,7 @@ A brand-new Verified subscriber pays £99 today but does **not** show the Verifi
 
 ## 6. Migrated BD members: 12-month grace
 
-Members imported from BD start with **12 months of grace** at the Verified tier. If they have not supplied a current qualification certificate + insurance by month 12, they remain on the paid tier (we do not downgrade), but they lose the Verified badge and the trust-up styling until they re-submit.
+Members imported from BD start with **12 months of grace** at the Core tier. If they have not supplied a current qualification certificate + insurance by month 12, they remain on the paid tier (we do not downgrade), but they lose the Verified badge and the trust-up styling until they re-submit.
 
 ## 7. Tier vs verification are independent
 
