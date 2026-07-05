@@ -15,6 +15,8 @@ import {
   Inbox,
   LayoutDashboard,
   LifeBuoy,
+  LineChart,
+
   Megaphone,
   MessagesSquare,
   Settings,

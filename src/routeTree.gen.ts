@@ -80,6 +80,7 @@ import { Route as AdminVerificationRouteImport } from './routes/admin_.verificat
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
+import { Route as AdminSeoRouteImport } from './routes/admin_.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
@@ -511,6 +512,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSeoRoute = AdminSeoRouteImport.update({
+  id: '/admin_/seo',
+  path: '/admin/seo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
   id: '/admin_/reviews',
   path: '/admin/reviews',
@@ -642,9 +648,9 @@ const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
   getParentRoute: () => CSlugRoute,
 } as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
-  id: '/admin_/seo/legacy-redirects',
-  path: '/admin/seo/legacy-redirects',
-  getParentRoute: () => rootRouteImport,
+  id: '/legacy-redirects',
+  path: '/legacy-redirects',
+  getParentRoute: () => AdminSeoRoute,
 } as any)
 const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
   id: '/admin_/members/$userId',
@@ -977,6 +983,7 @@ export interface FileRoutesByFullPath {
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/seo': typeof AdminSeoRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
@@ -1121,6 +1128,7 @@ export interface FileRoutesByTo {
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/seo': typeof AdminSeoRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
@@ -1265,6 +1273,7 @@ export interface FileRoutesById {
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
   '/admin_/reviews': typeof AdminReviewsRoute
+  '/admin_/seo': typeof AdminSeoRouteWithChildren
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
@@ -1413,6 +1422,7 @@ export interface FileRouteTypes {
     | '/admin/professionals'
     | '/admin/reconciliation'
     | '/admin/reviews'
+    | '/admin/seo'
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
@@ -1557,6 +1567,7 @@ export interface FileRouteTypes {
     | '/admin/professionals'
     | '/admin/reconciliation'
     | '/admin/reviews'
+    | '/admin/seo'
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
@@ -1700,6 +1711,7 @@ export interface FileRouteTypes {
     | '/admin_/professionals'
     | '/admin_/reconciliation'
     | '/admin_/reviews'
+    | '/admin_/seo'
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/team'
@@ -1848,6 +1860,7 @@ export interface RootRouteChildren {
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSeoRoute: typeof AdminSeoRouteWithChildren
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
@@ -1884,7 +1897,6 @@ export interface RootRouteChildren {
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
-  AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
@@ -2405,6 +2417,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/seo': {
+      id: '/admin_/seo'
+      path: '/admin/seo'
+      fullPath: '/admin/seo'
+      preLoaderRoute: typeof AdminSeoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/reviews': {
       id: '/admin_/reviews'
       path: '/admin/reviews'
@@ -2589,10 +2608,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
-      path: '/admin/seo/legacy-redirects'
+      path: '/legacy-redirects'
       fullPath: '/admin/seo/legacy-redirects'
       preLoaderRoute: typeof AdminSeoLegacyRedirectsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminSeoRoute
     }
     '/admin_/members/$userId': {
       id: '/admin_/members/$userId'
@@ -3135,6 +3154,18 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
+interface AdminSeoRouteChildren {
+  AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
+}
+
+const AdminSeoRouteChildren: AdminSeoRouteChildren = {
+  AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
+}
+
+const AdminSeoRouteWithChildren = AdminSeoRoute._addFileChildren(
+  AdminSeoRouteChildren,
+)
+
 interface CSlugRouteChildren {
   CSlugEnquireRoute: typeof CSlugEnquireRoute
   CSlugReviewRoute: typeof CSlugReviewRoute
@@ -3223,6 +3254,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSeoRoute: AdminSeoRouteWithChildren,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
@@ -3259,7 +3291,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
-  AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
