@@ -857,6 +857,19 @@ export const upsertMyService = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.userId;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Ownership pre-check: if the caller supplied an id, verify the existing
+    // row belongs to them before upsert. Prevents cross-tenant hijack via
+    // client-supplied primary key.
+    if (data.id) {
+      const { data: existing } = await supabaseAdmin
+        .from("services")
+        .select("professional_id")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (existing && (existing as { professional_id: string }).professional_id !== userId) {
+        throw new Error("Not found");
+      }
+    }
     const patch = { ...data, professional_id: userId } as z.infer<typeof ServiceUpsertSchema> & {
       professional_id: string;
     };
