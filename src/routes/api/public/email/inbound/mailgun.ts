@@ -68,6 +68,28 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
 
         if (!sender) return new Response("Missing sender", { status: 400 });
 
+        // Newsletter / send-only address drop.
+        // Campaigns to newsletter subscribers are sent From: news@notify.repsuk.org
+        // with Reply-To pointing to the same address. Anything that lands there
+        // (unsubscribe rants, auto-responders, "who is this?", thank-yous) is
+        // pure noise — do NOT create a ticket, do NOT auto-acknowledge. Real
+        // support requests reach us via the "Contact support" link in the
+        // newsletter footer, which lands in support@.
+        const recipientLocal = (recipient.split("@")[0] ?? "").toLowerCase();
+        const recipientDomain = (recipient.split("@")[1] ?? "").toLowerCase();
+        const isNewsletterDrop =
+          recipientLocal === "news" ||
+          recipientLocal === "noreply" ||
+          recipientLocal === "no-reply" ||
+          recipientDomain === "notify.repsuk.org";
+        if (isNewsletterDrop) {
+          console.log("[support.inbound] dropped newsletter no-reply", {
+            recipient,
+            sender,
+          });
+          return Response.json({ ok: true, dropped: "newsletter no-reply" });
+        }
+
         // Loop guard: drop anything we sent ourselves. Our outbound mail uses
         // Message-Ids shaped like `<ticket-<uuid>.<tag>@repsuk.org>` and is
         // sent from one of our own support mailboxes. Without this, an admin
