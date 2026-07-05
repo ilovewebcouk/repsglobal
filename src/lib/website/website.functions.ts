@@ -358,7 +358,7 @@ async function fetchTrustSummary(
       kind: "qualification",
       title: q.qualification,
       issuer: q.awarding_body ?? "Awarding body",
-      id: q.certificate_number ?? null,
+      id: includeSensitiveIds ? (q.certificate_number ?? null) : null,
       dateLabel,
     });
   }
@@ -367,7 +367,7 @@ async function fetchTrustSummary(
       kind: "insurance",
       title: "Professional Indemnity Insurance",
       issuer: insRow.provider ?? "Insurer",
-      id: insRow.policy_number ?? null,
+      id: includeSensitiveIds ? (insRow.policy_number ?? null) : null,
       dateLabel: insRow.expiry_date
         ? `Active until ${fmtMonthYear(insRow.expiry_date) ?? insRow.expiry_date}`
         : "Active",
