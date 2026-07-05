@@ -18,6 +18,7 @@ import coverLevel4 from "@/assets/resources/choosing-level-4-specialism.jpg";
 import coverFreeVsPaidCpd from "@/assets/resources/free-vs-paid-cpd-2026.jpg";
 import coverWhatsNew from "@/assets/resources/whats-new-reps-q2-2026.jpg";
 import coverRoadmap from "@/assets/resources/reps-roadmap-next.jpg";
+import coverWebsiteEditorLaunch from "@/assets/resources/new-website-editor-launch.jpg";
 import coverLevel3RequirementsAsset from "@/assets/resources/level-3-pt-requirements.jpg.asset.json";
 const coverLevel3Requirements = coverLevel3RequirementsAsset.url;
 
@@ -1086,6 +1087,84 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
   },
 
   // ---------- NEW: Platform Updates ----------
+  {
+    slug: "introducing-the-reps-website-editor",
+    title: "Introducing the REPS website editor: your public page, in your hands",
+    excerpt:
+      "Every REPS Pro now gets a dedicated website editor — a single dashboard for your hero, services, method, transformations, FAQs and location. Here's what shipped, how it works, and what's coming next.",
+    category: "Platform Updates",
+    ...STANDARDS,
+    date: "2026-07-05",
+    dateLabel: "5 July 2026",
+    readTime: "6 min read",
+    cover: coverWebsiteEditorLaunch,
+    featured: true,
+    featuredOrder: 1,
+    body: [
+      {
+        type: "p",
+        text: "Until now, your REPS profile was something REPS built for you. From today, if you're on the Pro tier, it's something you build. The new website editor lives inside your dashboard at Dashboard → Website and gives you full control over every section of your public /c/your-name page — hero, services, foundation method, transformations, in-person venues, coaching reach, FAQs and location — without touching a template, a page builder, or a line of code.",
+      },
+      { type: "h2", text: "What's actually in the editor" },
+      {
+        type: "p",
+        text: "The editor is organised as a section rail down the left, a form panel in the middle and a live-preview iframe of your public page on the right. Each section has its own save, its own draft-vs-published state, and its own AI drafting assist where it helps. You edit in the middle, you see the change on the right, and you publish when you're ready.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Basics — tagline, subtitle, About paragraph, hero image and current-client count. AI drafting is available for the tagline, subtitle and About.",
+          "Services — up to three named programmes (Online, Hybrid, 1-to-1), each with price, duration, mode, bullet points and a single \"Most popular\" flag that pins one card as your headline offer.",
+          "Foundation Method — a three-pillar breakdown of how you actually work, with AI drafting to get a first version in under a minute.",
+          "Transformations — real client outcomes with a photo, headline result and short story. Client IDs are stripped from public snapshots so nothing sensitive leaks.",
+          "FAQs — the questions you get asked every week, published in the order that makes sense to you.",
+          "Where I train — primary postcode, gym venues from the shared REPS gym database, home / private studio and mobile toggles, and the cities you cover.",
+        ],
+      },
+      { type: "h2", text: "Draft, preview and publish — not \"live edit\"" },
+      {
+        type: "p",
+        text: "Every edit you make writes to a draft version of your page. The public /c/your-name page keeps showing your last published version to the world until you click Publish. That means you can rewrite your About paragraph on a Tuesday morning, sit with it for two days, and only push it live when you're happy. The sidebar shows a dirty dot on any section with unpublished changes, and the publish dialog lists exactly what changed since your last publish so nothing goes live by accident.",
+      },
+      { type: "h2", text: "Placeholder content stays visible" },
+      {
+        type: "p",
+        text: "If your website isn't finished yet, we don't hide your public page and we don't 404 it — we show the scaffold with a clear banner at the top telling visitors the page still contains template content, and (if you're the owner and signed in) a Finish your website CTA that drops you straight back into the editor. Incomplete beats invisible: an unfinished page still shows up in search and still lets people enquire.",
+      },
+      { type: "h2", text: "Security and data integrity, quietly" },
+      {
+        type: "p",
+        text: "Under the hood we tightened a lot of the plumbing in the same release. Every write now goes through an ownership check so no one else can touch your services, transformations, FAQs or client results. The public API no longer exposes certificate or insurance ID numbers on any profile. And any edit to your specialisms, socials, avatar, venues, cities, home-studio and mobile toggles automatically marks your website as having unpublished changes — so the sidebar and publish button always reflect reality.",
+      },
+      {
+        type: "quote",
+        text: "A public register only works when the people on it can shape the story clients see. The editor is that shape.",
+        cite: "REPS Standards Charter",
+      },
+      { type: "h2", text: "Who gets it" },
+      {
+        type: "p",
+        text: "The full editor — services, transformations, FAQs, method and shop-front layout — is a Pro-tier feature. Verified members keep their standard REPS profile card and directory listing. Studio members inherit everything Pro gets, plus multi-coach controls we're rolling out later this quarter.",
+      },
+      { type: "h2", text: "What's coming next" },
+      {
+        type: "ul",
+        items: [
+          "Section-level revert — one click to roll a single section back to the last published version, without touching the rest of the page.",
+          "Scheduled publish — set a page update to go live at a specific time (Sunday night, before a launch campaign, etc.).",
+          "More AI drafting — Method pillars, FAQ starter sets and transformation write-ups.",
+          "Cover-image library — curated backgrounds you can drop into your hero without hiring a photographer.",
+          "Analytics on the editor sidebar — page views, enquiry conversion and top-performing services next to each section.",
+        ],
+      },
+      { type: "h2", text: "Where to find it" },
+      {
+        type: "p",
+        text: "If you're on Pro, open your dashboard and click Website in the left rail. If you're on Core and want the editor, upgrading takes about two minutes and unlocks the full shop-front immediately. Feedback goes straight to the product team via the in-app feedback button — every note is read.",
+      },
+    ],
+  },
+
   {
     slug: "whats-new-reps-q2-2026",
     title: "What's new on REPS — Q2 2026",
