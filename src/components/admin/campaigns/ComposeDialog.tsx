@@ -108,6 +108,11 @@ export function ComposeDialog({
   const [draftId, setDraftId] = useState<string | undefined>(undefined);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduledAt, setScheduledAt] = useState<string>("");
+  const [articleDrafts, setArticleDrafts] = useState<{
+    html: string;
+    text: string;
+    slug: string;
+  } | null>(null);
 
   const sendFn = useServerFn(sendAdminOutbound);
   const previewFn = useServerFn(previewBroadcastCount);
