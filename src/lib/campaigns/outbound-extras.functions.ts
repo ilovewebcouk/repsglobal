@@ -40,8 +40,10 @@ async function resolveTierRecipients(
   supabaseAdmin: any,
   tiers: Tier[],
 ): Promise<Array<{ email: string; name: string | null }>> {
-  const paid = tiers.filter((t) => t !== "free");
-  const wantsFree = tiers.includes("free");
+  const wantsNewsletter = tiers.includes("newsletter");
+  const proTiers = tiers.filter((t) => t !== "newsletter");
+  const paid = proTiers.filter((t) => t !== "free");
+  const wantsFree = proTiers.includes("free");
 
   let proIds: string[] = [];
   if (paid.length > 0) {
@@ -66,35 +68,50 @@ async function resolveTierRecipients(
     proIds = [...new Set([...proIds, ...freeIds])];
   }
 
-  if (proIds.length === 0) return [];
-
-  // Fetch names from profiles
-  const { data: profiles } = await supabaseAdmin
-    .from("profiles")
-    .select("id, full_name, business_name")
-    .in("id", proIds);
-  const nameMap = new Map<string, string>();
-  for (const pf of profiles ?? []) {
-    nameMap.set(pf.id, (pf.full_name || pf.business_name || "") as string);
-  }
-
-  // Fetch emails via auth.admin
-  const emails = new Map<string, string>();
-  await Promise.all(
-    proIds.map(async (id: string) => {
-      const { data } = await supabaseAdmin.auth.admin.getUserById(id);
-      if (data?.user?.email) emails.set(id, data.user.email.toLowerCase().trim());
-    }),
-  );
-
-  const seen = new Set<string>();
   const out: Array<{ email: string; name: string | null }> = [];
-  for (const id of proIds) {
-    const email = emails.get(id);
-    if (!email || !isValidEmail(email) || seen.has(email)) continue;
-    seen.add(email);
-    out.push({ email, name: nameMap.get(id) || null });
+  const seen = new Set<string>();
+
+  if (proIds.length > 0) {
+    // Fetch names from profiles
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, business_name")
+      .in("id", proIds);
+    const nameMap = new Map<string, string>();
+    for (const pf of profiles ?? []) {
+      nameMap.set(pf.id, (pf.full_name || pf.business_name || "") as string);
+    }
+
+    // Fetch emails via auth.admin
+    const emails = new Map<string, string>();
+    await Promise.all(
+      proIds.map(async (id: string) => {
+        const { data } = await supabaseAdmin.auth.admin.getUserById(id);
+        if (data?.user?.email) emails.set(id, data.user.email.toLowerCase().trim());
+      }),
+    );
+
+    for (const id of proIds) {
+      const email = emails.get(id);
+      if (!email || !isValidEmail(email) || seen.has(email)) continue;
+      seen.add(email);
+      out.push({ email, name: nameMap.get(id) || null });
+    }
   }
+
+  if (wantsNewsletter) {
+    const { data: subs } = await supabaseAdmin
+      .from("newsletter_subscribers")
+      .select("email")
+      .eq("status", "confirmed");
+    for (const r of (subs ?? []) as any[]) {
+      const email = (r.email ?? "").toLowerCase().trim();
+      if (!email || !isValidEmail(email) || seen.has(email)) continue;
+      seen.add(email);
+      out.push({ email, name: null });
+    }
+  }
+
   return out;
 }
 

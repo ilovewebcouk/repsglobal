@@ -114,8 +114,10 @@ export async function runScheduledCampaign(campaignId: string): Promise<{
 async function resolveTierRecipients(
   tiers: string[],
 ): Promise<Array<{ email: string; name: string | null }>> {
-  const VERIFIED_TIERS = tiers.filter((t) => t !== "free");
-  const wantsFree = tiers.includes("free");
+  const wantsNewsletter = tiers.includes("newsletter");
+  const proTiers = tiers.filter((t) => t !== "newsletter");
+  const VERIFIED_TIERS = proTiers.filter((t) => t !== "free");
+  const wantsFree = proTiers.includes("free");
 
   let proSet: any[] = [];
   if (VERIFIED_TIERS.length > 0) {
@@ -152,34 +154,49 @@ async function resolveTierRecipients(
   for (const p of proSet) byId.set(p.id, p);
   proSet = [...byId.values()];
 
-  // Fetch emails via auth.admin per id (batched)
-  const emails = new Map<string, string>();
-  await Promise.all(
-    proSet.map(async (p: any) => {
-      const { data } = await supabaseAdmin.auth.admin.getUserById(p.id);
-      if (data?.user?.email) emails.set(p.id, data.user.email.toLowerCase().trim());
-    }),
-  );
-
-  // Fetch names from profiles
-  const ids = proSet.map((p: any) => p.id);
-  const { data: profiles } = await supabaseAdmin
-    .from("profiles")
-    .select("id, full_name, business_name")
-    .in("id", ids);
-  const names = new Map<string, string>();
-  for (const pf of profiles ?? []) {
-    names.set(pf.id, (pf.full_name || pf.business_name || "") as string);
-  }
-
-  const seen = new Set<string>();
   const out: Array<{ email: string; name: string | null }> = [];
-  for (const p of proSet) {
-    const email = emails.get(p.id);
-    if (!email || !EMAIL_RE.test(email) || seen.has(email)) continue;
-    seen.add(email);
-    out.push({ email, name: names.get(p.id) || null });
+  const seen = new Set<string>();
+
+  if (proSet.length > 0) {
+    const emails = new Map<string, string>();
+    await Promise.all(
+      proSet.map(async (p: any) => {
+        const { data } = await supabaseAdmin.auth.admin.getUserById(p.id);
+        if (data?.user?.email) emails.set(p.id, data.user.email.toLowerCase().trim());
+      }),
+    );
+
+    const ids = proSet.map((p: any) => p.id);
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, business_name")
+      .in("id", ids);
+    const names = new Map<string, string>();
+    for (const pf of profiles ?? []) {
+      names.set(pf.id, (pf.full_name || pf.business_name || "") as string);
+    }
+
+    for (const p of proSet) {
+      const email = emails.get(p.id);
+      if (!email || !EMAIL_RE.test(email) || seen.has(email)) continue;
+      seen.add(email);
+      out.push({ email, name: names.get(p.id) || null });
+    }
   }
+
+  if (wantsNewsletter) {
+    const { data: subs } = await supabaseAdmin
+      .from("newsletter_subscribers")
+      .select("email")
+      .eq("status", "confirmed");
+    for (const r of (subs ?? []) as any[]) {
+      const email = (r.email ?? "").toLowerCase().trim();
+      if (!email || !EMAIL_RE.test(email) || seen.has(email)) continue;
+      seen.add(email);
+      out.push({ email, name: null });
+    }
+  }
+
   return out;
 }
 
