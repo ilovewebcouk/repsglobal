@@ -185,7 +185,7 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const searchPlaceholder =
-    role === "admin" ? "Search professionals, members, leads…" : "Search…";
+    role === "admin" ? "Search by email, user ID, cus_…, sub_…" : "Search…";
 
   return (
     <DashboardTooltipProvider delayDuration={200}>
