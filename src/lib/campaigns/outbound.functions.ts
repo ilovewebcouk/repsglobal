@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Inbox = "support" | "pros" | "partners" | "press";
-type Tier = "free" | "verified" | "pro" | "studio" | "former";
+type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
   support: { email: "support@repsuk.org", name: "REPS Support", label: "Support" },
@@ -74,7 +74,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     z
       .object({
         q: z.string().max(120).optional(),
-        tier: z.enum(["free", "verified", "pro", "studio", "former"]).optional(),
+        tier: z.enum(["free", "verified", "pro", "studio", "former", "newsletter"]).optional(),
       })
       .parse(d ?? {}),
   )
@@ -190,9 +190,9 @@ export const previewBroadcastCount = createServerFn({ method: "POST" })
     z
       .object({
         tiers: z
-          .array(z.enum(["free", "verified", "pro", "studio", "former"]))
+          .array(z.enum(["free", "verified", "pro", "studio", "former", "newsletter"]))
           .min(1)
-          .max(4),
+          .max(6),
       })
       .parse(d),
   )
