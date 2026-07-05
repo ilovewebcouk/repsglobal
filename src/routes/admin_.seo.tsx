@@ -301,6 +301,7 @@ function SeoMonitorPage() {
         </PPanel>
 
         <div className="space-y-6">
+          <SitemapHealthCard />
           <PPanel className="p-6">
             <div className="flex items-center gap-2 text-white">
               <Info className="size-4 text-reps-orange" />
