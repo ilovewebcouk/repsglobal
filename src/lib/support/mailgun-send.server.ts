@@ -128,6 +128,11 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
   if (!lovableKey) throw new Error("LOVABLE_API_KEY missing");
   if (!mailgunKey) throw new Error("MAILGUN_API_KEY missing — connect Mailgun");
 
+  // Force click-tracking OFF for support emails. Mailgun's tracking cert on
+  // email.repsuk.org is not provisioned, so wrapped links fail TLS on mobile
+  // and dump users on a 404. Send unwrapped links straight to repsuk.org.
+  input = { ...input, tracking: { ...(input.tracking ?? {}), clicks: false } };
+
   const hasAttachments = (input.attachments?.length ?? 0) > 0;
 
   const headers: Record<string, string> = {
