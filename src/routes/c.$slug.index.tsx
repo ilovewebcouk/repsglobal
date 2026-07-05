@@ -1782,7 +1782,7 @@ function QualificationsSection({ coach }: { coach: Coach }) {
                   </div>
                   <div className="mt-1 text-[12px] text-reps-muted">{q.issuer}</div>
                   <div className="mt-3 flex items-center justify-between text-[11px] text-reps-muted">
-                    <span>ID: {q.id}</span>
+                    {q.id && q.id !== "—" ? <span>ID: {q.id}</span> : <span />}
                     <span>{q.issued}</span>
                   </div>
                 </li>
