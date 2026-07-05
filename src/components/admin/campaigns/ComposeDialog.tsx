@@ -345,9 +345,9 @@ export function ComposeDialog({
             </TabsContent>
 
             <ArticleLoader
-              onLoad={(article) => {
+              onLoad={(article, coverUrl) => {
                 setSubject(buildArticleSubject(article));
-                setBody(buildArticleEmailHtml(article));
+                setBody(buildArticleEmailHtml(article, coverUrl));
                 setFormat("html");
                 toast.success(`Loaded "${article.title}"`);
               }}
