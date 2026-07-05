@@ -324,6 +324,7 @@ async function fetchTrustSummary(
     qualification: string | null;
     awarding_body: string | null;
     certificate_number: string | null;
+    qualification_number: string | null;
     issue_date: string | null;
     year: number | null;
   }>;
