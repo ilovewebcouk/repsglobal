@@ -874,31 +874,124 @@ function buildArticleSubject(article: ResourceArticle): string {
   return article.title;
 }
 
+function withUtm(href: string, slug: string): string {
+  const sep = href.includes("?") ? "&" : "?";
+  return `${href}${sep}utm_source=newsletter&utm_medium=email&utm_campaign=${encodeURIComponent(slug)}`;
+}
+
+function pickArticleParagraphs(article: ResourceArticle, count: number): string[] {
+  const out: string[] = [];
+  for (const b of article.body) {
+    if (b.type !== "p") continue;
+    const text = b.text.trim();
+    if (!text) continue;
+    if (text === article.excerpt.trim()) continue;
+    out.push(text);
+    if (out.length >= count) break;
+  }
+  return out;
+}
+
+function pickArticleHeadings(article: ResourceArticle, count: number): string[] {
+  const out: string[] = [];
+  for (const b of article.body) {
+    if (b.type !== "h2") continue;
+    const text = b.text.trim();
+    if (!text) continue;
+    out.push(text);
+    if (out.length >= count) break;
+  }
+  return out;
+}
+
+function truncate(s: string, max: number): string {
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > max - 60 ? cut.slice(0, lastSpace) : cut).replace(/[.,;:!?-]+$/, "") + "…";
+}
+
+function readTimeMinutes(readTime: string): string {
+  const m = readTime.match(/\d+/);
+  return m ? `${m[0]}-min` : readTime;
+}
+
 function buildArticleEmailHtml(article: ResourceArticle, coverUrl?: string | null): string {
-  const url = `https://repsuk.org/resources/${article.slug}`;
+  const articleUrl = withUtm(`https://repsuk.org/resources/${article.slug}`, article.slug);
+  const homeUrl = withUtm("https://repsuk.org", article.slug);
   const rawCover = coverUrl ?? article.cover ?? "";
   const cover = rawCover.startsWith("http")
     ? rawCover
     : rawCover
       ? `https://repsuk.org${rawCover}`
       : "";
-  const intro =
-    article.body.find((b) => b.type === "p") as { type: "p"; text: string } | undefined;
-  const introText = intro?.text ?? article.excerpt;
+
+  const paragraphs = pickArticleParagraphs(article, 2).map((p) => truncate(p, 450));
+  const headings = pickArticleHeadings(article, 3);
+  const showTOC = headings.length >= 2;
+  const readMins = readTimeMinutes(article.readTime);
+  const preheader = truncate(article.excerpt, 110);
+
   const escape = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;color:#111;line-height:1.55;">
-  <p style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin:0 0 8px;">${escape(article.category)}</p>
-  <h1 style="font-size:26px;line-height:1.25;margin:0 0 12px;color:#111;">${escape(article.title)}</h1>
-  <p style="font-size:14px;color:#666;margin:0 0 20px;">${escape(article.readTime)} · ${escape(article.dateLabel)}</p>
-  ${cover ? `<img src="${cover}" alt="${escape(article.title)}" style="width:100%;height:auto;border-radius:12px;margin:0 0 24px;display:block;" />` : ""}
-  <p style="font-size:16px;margin:0 0 16px;">${escape(article.excerpt)}</p>
-  <p style="font-size:15px;margin:0 0 24px;color:#333;">${escape(introText)}</p>
-  <p style="margin:0 0 32px;">
-    <a href="${url}" style="display:inline-block;background:#E85D2F;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;font-size:15px;">Read the full article →</a>
+
+  return `<!--[if !mso]><!-->
+<meta name="color-scheme" content="light" />
+<meta name="supported-color-schemes" content="light" />
+<!--<![endif]-->
+<div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;color:transparent;">${escape(preheader)}</div>
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;color:#111;line-height:1.55;background:#ffffff;">
+  <div style="padding:4px 0 20px;">
+    <a href="${homeUrl}" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-weight:800;letter-spacing:0.14em;font-size:13px;color:#111;text-decoration:none;">REPS</a>
+  </div>
+  <p style="display:inline-block;font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:#E85D2F;background:#FFF3ED;border-radius:999px;padding:5px 10px;margin:0 0 14px;font-weight:600;">${escape(article.category)}</p>
+  <h1 style="font-size:26px;line-height:1.25;margin:0 0 12px;color:#111;font-weight:700;">${escape(article.title)}</h1>
+  <p style="font-size:14px;color:#666;margin:0 0 22px;">${escape(readMins)} read · ${escape(article.dateLabel)}</p>
+  ${cover ? `<img src="${cover}" alt="${escape(article.title)}" width="600" style="width:100%;max-width:600px;height:auto;border-radius:12px;margin:0 0 26px;display:block;border:0;outline:none;text-decoration:none;" />` : ""}
+  <p style="font-size:16px;margin:0 0 18px;color:#111;">${escape(article.excerpt)}</p>
+${paragraphs.map((p) => `  <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#333;">${escape(p)}</p>`).join("\n")}
+  ${
+    showTOC
+      ? `<div style="margin:24px 0 28px;padding:16px 18px;background:#FAFAF7;border:1px solid #EEE;border-radius:12px;">
+    <p style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin:0 0 10px;font-weight:600;">What's inside</p>
+    <ul style="margin:0;padding:0 0 0 18px;color:#222;font-size:14.5px;line-height:1.6;">
+${headings.map((h) => `      <li style="margin:0 0 4px;">${escape(h)}</li>`).join("\n")}
+    </ul>
+  </div>`
+      : ""
+  }
+  <p style="margin:24px 0 12px;">
+    <a href="${articleUrl}" style="display:inline-block;background:#E85D2F;color:#ffffff;text-decoration:none;padding:13px 24px;border-radius:10px;font-weight:600;font-size:15px;">Read the full ${escape(readMins)} article →</a>
   </p>
-  <hr style="border:none;border-top:1px solid #eee;margin:32px 0 16px;" />
-  <p style="font-size:12px;color:#888;margin:0 0 8px;">You're receiving this because you subscribed to the REPS newsletter.</p>
-  <p style="font-size:12px;color:#888;margin:0;">REPS · <a href="https://repsuk.org" style="color:#888;">repsuk.org</a></p>
+  <p style="margin:0 0 32px;font-size:13px;color:#888;">
+    Or <a href="${articleUrl}" style="color:#888;text-decoration:underline;">open it in your browser</a>.
+  </p>
 </div>`;
+}
+
+function buildArticleEmailText(article: ResourceArticle): string {
+  const articleUrl = withUtm(`https://repsuk.org/resources/${article.slug}`, article.slug);
+  const paragraphs = pickArticleParagraphs(article, 2).map((p) => truncate(p, 450));
+  const headings = pickArticleHeadings(article, 3);
+  const readMins = readTimeMinutes(article.readTime);
+  const lines: string[] = [];
+  lines.push(`REPS — ${article.category}`);
+  lines.push("");
+  lines.push(article.title);
+  lines.push(`${readMins} read · ${article.dateLabel}`);
+  lines.push("");
+  lines.push(article.excerpt);
+  if (paragraphs.length) {
+    lines.push("");
+    lines.push(paragraphs.join("\n\n"));
+  }
+  if (headings.length >= 2) {
+    lines.push("");
+    lines.push("What's inside:");
+    for (const h of headings) lines.push(`- ${h}`);
+  }
+  lines.push("");
+  lines.push("Read the full article:");
+  lines.push(articleUrl);
+  return lines.join("\n");
 }
