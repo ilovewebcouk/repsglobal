@@ -1162,8 +1162,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Where to find it" },
       {
         type: "p",
-        text: "If you're on Pro, open your dashboard and click Website in the left rail. If you're on Core and want the editor, upgrading takes about two minutes and unlocks the full shop-front immediately. Feedback goes straight to the product team via the in-app feedback button — every note is read.",
+        text: "Open your dashboard and click Website in the left rail — it's there on Core, Pro and Studio. Feedback goes straight to the product team via the in-app feedback button — every note is read.",
       },
+
     ],
   },
 
