@@ -1091,7 +1091,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "introducing-the-reps-website-editor",
     title: "Introducing the REPS website editor: your public page, in your hands",
     excerpt:
-      "Every REPS Pro now gets a dedicated website editor — a single dashboard for your hero, services, method, transformations, FAQs and location. Here's what shipped, how it works, and what's coming next.",
+      "Every REPS member now gets a dedicated website editor — a single dashboard for your hero, services, method, transformations, FAQs and location. Included on every tier: Core, Pro and Studio. Here's what shipped, how it works, and what's coming next.",
     category: "Platform Updates",
     ...STANDARDS,
     date: "2026-07-05",
@@ -1103,8 +1103,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "Until now, your REPS profile was something REPS built for you. From today, if you're on the Pro tier, it's something you build. The new website editor lives inside your dashboard at Dashboard → Website and gives you full control over every section of your public /c/your-name page — hero, services, foundation method, transformations, in-person venues, coaching reach, FAQs and location — without touching a template, a page builder, or a line of code.",
+        text: "Until now, your REPS profile was something REPS built for you. From today, it's something you build — on every tier. The new website editor lives inside your dashboard at Dashboard → Website and gives you full control over every section of your public /c/your-name page — hero, services, foundation method, transformations, in-person venues, coaching reach, FAQs and location — without touching a template, a page builder, or a line of code.",
       },
+
       { type: "h2", text: "What's actually in the editor" },
       {
         type: "p",
