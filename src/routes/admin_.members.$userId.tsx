@@ -157,6 +157,7 @@ function MemberPage() {
 
           <TabsContent value="overview" className="flex flex-col gap-4">
             {snap.data ? <OverviewPane snapshot={snap.data} /> : <PaneSkeleton />}
+            <PasswordResetPane data={resetInfo.data} loading={resetInfo.isLoading} />
           </TabsContent>
 
           <TabsContent value="billing" className="flex flex-col gap-4">
