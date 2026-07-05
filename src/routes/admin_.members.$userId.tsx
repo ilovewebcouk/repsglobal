@@ -571,11 +571,8 @@ function BillingActions({
   const closeFn = useServerFn(closeMembership);
 
   const hasLiveSub = status !== "canceled" && status !== "incomplete_expired";
-  const defaultStrategy: Strategy = isTrialing
-    ? "end_trial"
-    : cancelAtPeriodEnd
-      ? "cancel_now"
-      : "schedule_end_period";
+  void cancelAtPeriodEnd;
+  const defaultStrategy: Strategy = isTrialing ? "end_trial" : "cancel_now";
 
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -583,11 +580,11 @@ function BillingActions({
   const [typedName, setTypedName] = useState("");
   const [strategy, setStrategy] = useState<Strategy>(defaultStrategy);
 
-  const isDestructive = !hasLiveSub || STRATEGY_TO_MODE[strategy] !== "schedule_end_period";
+  // Every remaining strategy is destructive under the immediate-cancel policy.
+  const isDestructive = true;
 
-  // Only require the typed-name confirmation for destructive (delete) modes.
+  // Require the typed-name confirmation for every close.
   const nameMatches =
-    !isDestructive ||
     typedName.trim().toLowerCase() === (memberName ?? "").trim().toLowerCase();
 
   const reset = () => {
@@ -614,28 +611,19 @@ function BillingActions({
           notes: notes.trim() || undefined,
         },
       });
-      if (mode === "schedule_end_period") {
-        toast.success(
-          res.emailSent
-            ? "Scheduled to end at period close. Confirmation email sent."
-            : "Scheduled to end at period close.",
-        );
-        await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
-        reset();
-      } else {
-        toast.success(
-          res.emailSent
-            ? "Account closed. Confirmation email sent."
-            : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
-        );
-        await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
-        navigate({ to: "/admin/members" });
-      }
+      toast.success(
+        res.emailSent
+          ? "Account closed. Confirmation email sent."
+          : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
+      );
+      await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+      navigate({ to: "/admin/members" });
     } catch (e: any) {
       toast.error(e?.message ?? "Could not close account");
       setPending(false);
     }
   };
+
 
   return (
     <>
