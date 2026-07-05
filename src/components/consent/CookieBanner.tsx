@@ -23,6 +23,9 @@ import {
 
 export function CookieBanner() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const search = useRouterState({ select: (s) => s.location.search as Record<string, unknown> });
+  const hasPreviewToken =
+    typeof search === "object" && search !== null && "preview" in search && !!(search as any).preview;
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [customiseOpen, setCustomiseOpen] = useState(false);
@@ -31,6 +34,7 @@ export function CookieBanner() {
   useEffect(() => {
     setMounted(true);
     if (!isPublicSurface(pathname)) return;
+    if (hasPreviewToken) return;
     if (hasDecided()) return;
     if (isDntOrGpc()) {
       // Auto-record rejection, do not show banner.
@@ -38,7 +42,7 @@ export function CookieBanner() {
       return;
     }
     setVisible(true);
-  }, [pathname]);
+  }, [pathname, hasPreviewToken]);
 
   useEffect(() => {
     const listener = () => setVisible(true);
@@ -46,7 +50,8 @@ export function CookieBanner() {
     return () => window.removeEventListener("reps:open-cookie-preferences", listener);
   }, []);
 
-  if (!mounted || !visible || !isPublicSurface(pathname)) return null;
+  if (!mounted || !visible || !isPublicSurface(pathname) || hasPreviewToken) return null;
+
 
   const emitConsentChanged = (analytics: boolean) => {
     if (typeof window === "undefined") return;
