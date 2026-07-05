@@ -287,10 +287,14 @@ async function fetchCoachingSinceYear(
 }
 
 // Helper: public-safe trust summary used by both website readers.
+// `includeSensitiveIds` should ONLY be true for the owner-side reader
+// (getMyWebsite). The public reader must never expose real cert / policy
+// numbers via items[].id.
 async function fetchTrustSummary(
   supabaseAdmin: { from: (t: string) => any },
   professionalId: string,
   primaryTitleSlug: string | null,
+  includeSensitiveIds: boolean = false,
 ): Promise<WebsiteDTO["trust"]> {
   const today = new Date().toISOString().slice(0, 10);
   const [{ data: pro }, { data: ins }, { data: subs }] = await Promise.all([
