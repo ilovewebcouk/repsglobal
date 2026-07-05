@@ -162,7 +162,7 @@ function AdminNewsletter() {
       role="admin"
       active="Newsletter"
       title="Newsletter subscribers"
-      subtitle="Double opt-in list used by the Campaigns broadcast tool. Only confirmed subscribers receive newsletter sends."
+      subtitle="Public opt-in list from the newsletter signup form. Kept separate from members — members are auto-included in Campaigns broadcasts via the Core / Pro / Studio tiers."
       actions={
         <div className="flex items-center gap-2">
           <Button
