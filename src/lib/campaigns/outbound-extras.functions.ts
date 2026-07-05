@@ -310,7 +310,7 @@ export async function runBroadcastBatch(opts: BroadcastBatchOpts): Promise<{
 // ─────────────────────────────────────────────────────────────────────────────
 const draftSchema = z.object({
   id: z.string().uuid().optional(),
-  inbox: z.enum(["support", "pros", "partners", "press"]),
+  inbox: z.enum(["support", "pros", "partners", "press", "news"]),
   mode: z.enum(["direct", "broadcast"]),
   subject: z.string().max(200).default(""),
   body: z.string().max(50000).default(""),
