@@ -4101,6 +4101,129 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_index_events: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          detected_at: string
+          id: string
+          next: Json | null
+          prev: Json | null
+          severity: string
+          summary: string
+          url: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          detected_at?: string
+          id?: string
+          next?: Json | null
+          prev?: Json | null
+          severity: string
+          summary: string
+          url: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          detected_at?: string
+          id?: string
+          next?: Json | null
+          prev?: Json | null
+          severity?: string
+          summary?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      seo_index_status: {
+        Row: {
+          coverage_state: string | null
+          first_checked_at: string
+          google_canonical: string | null
+          indexing_state: string | null
+          last_changed_at: string | null
+          last_checked_at: string
+          last_crawl_time: string | null
+          page_fetch_state: string | null
+          priority: string
+          raw: Json | null
+          robots_state: string | null
+          url: string
+          user_canonical: string | null
+          verdict: string | null
+        }
+        Insert: {
+          coverage_state?: string | null
+          first_checked_at?: string
+          google_canonical?: string | null
+          indexing_state?: string | null
+          last_changed_at?: string | null
+          last_checked_at?: string
+          last_crawl_time?: string | null
+          page_fetch_state?: string | null
+          priority?: string
+          raw?: Json | null
+          robots_state?: string | null
+          url: string
+          user_canonical?: string | null
+          verdict?: string | null
+        }
+        Update: {
+          coverage_state?: string | null
+          first_checked_at?: string
+          google_canonical?: string | null
+          indexing_state?: string | null
+          last_changed_at?: string | null
+          last_checked_at?: string
+          last_crawl_time?: string | null
+          page_fetch_state?: string | null
+          priority?: string
+          raw?: Json | null
+          robots_state?: string | null
+          url?: string
+          user_canonical?: string | null
+          verdict?: string | null
+        }
+        Relationships: []
+      }
+      seo_scan_runs: {
+        Row: {
+          batch_kind: string
+          errors: number
+          finished_at: string | null
+          id: string
+          notes: string | null
+          started_at: string
+          status: string
+          urls_changed: number
+          urls_checked: number
+        }
+        Insert: {
+          batch_kind?: string
+          errors?: number
+          finished_at?: string | null
+          id?: string
+          notes?: string | null
+          started_at?: string
+          status?: string
+          urls_changed?: number
+          urls_checked?: number
+        }
+        Update: {
+          batch_kind?: string
+          errors?: number
+          finished_at?: string | null
+          id?: string
+          notes?: string | null
+          started_at?: string
+          status?: string
+          urls_changed?: number
+          urls_checked?: number
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           bullets: string[]

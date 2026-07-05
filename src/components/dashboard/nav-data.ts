@@ -15,6 +15,8 @@ import {
   Inbox,
   LayoutDashboard,
   LifeBuoy,
+  LineChart,
+
   Megaphone,
   MessagesSquare,
   Settings,
@@ -152,8 +154,10 @@ export const ADMIN_NAV = [
       { icon: Target, label: "Directory", to: "/admin/directory" },
       { icon: Building2, label: "Gyms", to: "/admin/gyms" },
       { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },
+      { icon: LineChart, label: "SEO", to: "/admin/seo" },
     ],
   },
+
   {
     title: "Support & Comms",
     items: [

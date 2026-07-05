@@ -80,6 +80,7 @@ import { Route as AdminVerificationRouteImport } from './routes/admin_.verificat
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
+import { Route as AdminSeoRouteImport } from './routes/admin_.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
@@ -118,6 +119,7 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
+import { Route as ApiPublicCronSeoIndexScanRouteImport } from './routes/api/public/cron/seo-index-scan'
 import { Route as ApiPublicCronPullPosthogDailyRouteImport } from './routes/api/public/cron/pull-posthog-daily'
 import { Route as ApiPublicConsentLogRouteImport } from './routes/api/public/consent/log'
 import { Route as ApiPublicActivitySessionEventRouteImport } from './routes/api/public/activity/session-event'
@@ -510,6 +512,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSeoRoute = AdminSeoRouteImport.update({
+  id: '/admin_/seo',
+  path: '/admin/seo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
   id: '/admin_/reviews',
   path: '/admin/reviews',
@@ -641,9 +648,9 @@ const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
   getParentRoute: () => CSlugRoute,
 } as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
-  id: '/admin_/seo/legacy-redirects',
-  path: '/admin/seo/legacy-redirects',
-  getParentRoute: () => rootRouteImport,
+  id: '/legacy-redirects',
+  path: '/legacy-redirects',
+  getParentRoute: () => AdminSeoRoute,
 } as any)
 const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
   id: '/admin_/members/$userId',
@@ -707,6 +714,12 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
   ApiPublicHooksSendScheduledCampaignsRouteImport.update({
     id: '/api/public/hooks/send-scheduled-campaigns',
     path: '/api/public/hooks/send-scheduled-campaigns',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronSeoIndexScanRoute =
+  ApiPublicCronSeoIndexScanRouteImport.update({
+    id: '/api/public/cron/seo-index-scan',
+    path: '/api/public/cron/seo-index-scan',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicCronPullPosthogDailyRoute =
@@ -970,6 +983,7 @@ export interface FileRoutesByFullPath {
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/seo': typeof AdminSeoRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
@@ -1042,6 +1056,7 @@ export interface FileRoutesByFullPath {
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1113,6 +1128,7 @@ export interface FileRoutesByTo {
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/seo': typeof AdminSeoRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
@@ -1181,6 +1197,7 @@ export interface FileRoutesByTo {
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1256,6 +1273,7 @@ export interface FileRoutesById {
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
   '/admin_/reviews': typeof AdminReviewsRoute
+  '/admin_/seo': typeof AdminSeoRouteWithChildren
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
@@ -1329,6 +1347,7 @@ export interface FileRoutesById {
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1403,6 +1422,7 @@ export interface FileRouteTypes {
     | '/admin/professionals'
     | '/admin/reconciliation'
     | '/admin/reviews'
+    | '/admin/seo'
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
@@ -1475,6 +1495,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/session-event'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1546,6 +1567,7 @@ export interface FileRouteTypes {
     | '/admin/professionals'
     | '/admin/reconciliation'
     | '/admin/reviews'
+    | '/admin/seo'
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
@@ -1614,6 +1636,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/session-event'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1688,6 +1711,7 @@ export interface FileRouteTypes {
     | '/admin_/professionals'
     | '/admin_/reconciliation'
     | '/admin_/reviews'
+    | '/admin_/seo'
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/team'
@@ -1761,6 +1785,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/session-event'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1835,6 +1860,7 @@ export interface RootRouteChildren {
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSeoRoute: typeof AdminSeoRouteWithChildren
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
@@ -1871,7 +1897,6 @@ export interface RootRouteChildren {
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
-  AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
@@ -1882,6 +1907,7 @@ export interface RootRouteChildren {
   ApiPublicActivitySessionEventRoute: typeof ApiPublicActivitySessionEventRoute
   ApiPublicConsentLogRoute: typeof ApiPublicConsentLogRoute
   ApiPublicCronPullPosthogDailyRoute: typeof ApiPublicCronPullPosthogDailyRoute
+  ApiPublicCronSeoIndexScanRoute: typeof ApiPublicCronSeoIndexScanRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicOpsAlertDispatchRoute: typeof ApiPublicOpsAlertDispatchRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -2391,6 +2417,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/seo': {
+      id: '/admin_/seo'
+      path: '/admin/seo'
+      fullPath: '/admin/seo'
+      preLoaderRoute: typeof AdminSeoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/reviews': {
       id: '/admin_/reviews'
       path: '/admin/reviews'
@@ -2575,10 +2608,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
-      path: '/admin/seo/legacy-redirects'
+      path: '/legacy-redirects'
       fullPath: '/admin/seo/legacy-redirects'
       preLoaderRoute: typeof AdminSeoLegacyRedirectsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminSeoRoute
     }
     '/admin_/members/$userId': {
       id: '/admin_/members/$userId'
@@ -2655,6 +2688,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/send-scheduled-campaigns'
       fullPath: '/api/public/hooks/send-scheduled-campaigns'
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/seo-index-scan': {
+      id: '/api/public/cron/seo-index-scan'
+      path: '/api/public/cron/seo-index-scan'
+      fullPath: '/api/public/cron/seo-index-scan'
+      preLoaderRoute: typeof ApiPublicCronSeoIndexScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/pull-posthog-daily': {
@@ -3114,6 +3154,18 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
+interface AdminSeoRouteChildren {
+  AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
+}
+
+const AdminSeoRouteChildren: AdminSeoRouteChildren = {
+  AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
+}
+
+const AdminSeoRouteWithChildren = AdminSeoRoute._addFileChildren(
+  AdminSeoRouteChildren,
+)
+
 interface CSlugRouteChildren {
   CSlugEnquireRoute: typeof CSlugEnquireRoute
   CSlugReviewRoute: typeof CSlugReviewRoute
@@ -3202,6 +3254,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSeoRoute: AdminSeoRouteWithChildren,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
@@ -3238,7 +3291,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
-  AdminSeoLegacyRedirectsRoute: AdminSeoLegacyRedirectsRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
@@ -3250,6 +3302,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicActivitySessionEventRoute: ApiPublicActivitySessionEventRoute,
   ApiPublicConsentLogRoute: ApiPublicConsentLogRoute,
   ApiPublicCronPullPosthogDailyRoute: ApiPublicCronPullPosthogDailyRoute,
+  ApiPublicCronSeoIndexScanRoute: ApiPublicCronSeoIndexScanRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicOpsAlertDispatchRoute: ApiPublicOpsAlertDispatchRoute,
