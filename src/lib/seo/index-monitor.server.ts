@@ -314,7 +314,7 @@ export async function runSeoIndexScan(
           robots_state: snap.robots_state,
           page_fetch_state: snap.page_fetch_state,
           last_crawl_time: snap.last_crawl_time,
-          raw: snap.raw,
+          raw: snap.raw as never,
         },
         { onConflict: "url" },
       );
