@@ -194,26 +194,6 @@ function AdminNewsletter() {
           ))}
         </div>
 
-        {/* Members context callout — the newsletter is not the only audience */}
-        <div className="rounded-[16px] border border-reps-border bg-white/[0.03] p-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-[240px]">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
-              Members reachable via Campaigns
-            </div>
-            <div className="mt-1 text-[24px] font-semibold text-white">
-              {membersQuery.isLoading ? "…" : (membersQuery.data?.count ?? 0)}
-            </div>
-            <div className="mt-1 text-[12px] text-white/55">
-              Every confirmed member (Core, Pro, Studio) — reached from the Campaigns tab using tier checkboxes. Not part of this newsletter list.
-            </div>
-          </div>
-          <a
-            href="/admin/campaigns"
-            className="text-[13px] text-reps-orange hover:underline shrink-0"
-          >
-            Go to Campaigns →
-          </a>
-        </div>
 
         {/* Prospects (non-members) callout — separate from newsletter opt-ins */}
         <div className="rounded-[16px] border border-reps-border bg-white/[0.03] p-4 flex flex-wrap items-center justify-between gap-3">
