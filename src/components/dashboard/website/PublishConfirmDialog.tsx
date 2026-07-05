@@ -30,6 +30,8 @@ const SECTION_LABEL: Record<DiffSection, string> = {
   faqs: "FAQs",
   specialisms: "Specialisms",
   location: "Where I train",
+  profile: "Profile photo",
+  contact: "Languages & socials",
 };
 
 /**
