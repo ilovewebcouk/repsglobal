@@ -664,6 +664,7 @@ const NAV_ITEMS = [
 
 function CoachWebsitePage() {
   const { slug } = Route.useParams();
+  const { preview: previewToken } = Route.useSearch();
   const loaderData = Route.useLoaderData();
   const fetchWebsite = useServerFn(getWebsiteBySlug);
   const fetchReviews = useServerFn(listPublicReviewsBySlug);
