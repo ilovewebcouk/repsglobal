@@ -133,7 +133,9 @@ export type DiffSection =
   | "results"
   | "faqs"
   | "specialisms"
-  | "location";
+  | "location"
+  | "profile"
+  | "contact";
 
 export type SectionDiff = {
   dirty: Record<DiffSection, boolean>;
