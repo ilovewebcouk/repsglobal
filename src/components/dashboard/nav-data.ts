@@ -17,6 +17,7 @@ import {
   LifeBuoy,
   LineChart,
 
+  Mails,
   Megaphone,
   MessagesSquare,
   Settings,
@@ -163,6 +164,7 @@ export const ADMIN_NAV = [
     items: [
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
+      { icon: Mails, label: "Newsletter", to: "/admin/newsletter" },
     ],
   },
   {
