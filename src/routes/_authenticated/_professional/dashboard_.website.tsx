@@ -731,10 +731,10 @@ function WebsiteEditorPage() {
                 <TextArea
                   value={about}
                   onChange={(e) => setAbout(e.target.value)}
-                  maxLength={4000}
+                  maxLength={800}
                   placeholder="[Tell clients who you help and how — 2–3 short paragraphs]"
                 />
-                <FieldCounter current={about.length} max={4000} />
+                <FieldCounter current={about.length} max={800} />
               </Field>
               <Field
                 label="Hero image"
