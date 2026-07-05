@@ -360,21 +360,28 @@ export async function handlePlatformDispute(
   }
 
   // Try insert first; on conflict, update and accumulate funds.
-  const { error: insertErr } = await supabaseAdmin
+  const { data: inserted, error: insertErr } = await supabaseAdmin
     .from("disputes")
     .insert({
       ...baseRow,
       funds_withdrawn_pence: fundsWithdrawn,
       funds_reinstated_pence: fundsReinstated,
-    } as never);
+    } as never)
+    .select("id")
+    .maybeSingle();
+
+  let disputeRowId: string | null =
+    (inserted as { id?: string } | null)?.id ?? null;
 
   if (insertErr && (insertErr as { code?: string }).code === "23505") {
     // Already recorded — update and bump funds counters.
     const { data: existing } = await supabaseAdmin
       .from("disputes")
-      .select("funds_withdrawn_pence, funds_reinstated_pence")
+      .select("id, funds_withdrawn_pence, funds_reinstated_pence")
       .eq("stripe_dispute_id", dispute.id)
       .maybeSingle();
+    disputeRowId =
+      (existing as { id?: string } | null)?.id ?? disputeRowId;
     const existingWithdrawn =
       (existing as { funds_withdrawn_pence?: number } | null)
         ?.funds_withdrawn_pence ?? 0;
@@ -394,25 +401,80 @@ export async function handlePlatformDispute(
   }
 
   // Business effects keyed off lifecycle stage.
-  if (userId && (stage === "opened" || stage === "lost")) {
+  if (userId && stage === "opened") {
     await suspendMemberForDispute({
       userId,
       subscriptionId,
+      disputeRowId,
       stage,
       stripe,
     });
-  }
-  if (userId && stage === "won") {
-    await liftSuspensionAfterWin(userId);
-  }
-
-  if (stage === "opened" || stage === "won" || stage === "lost") {
     await sendDisputeEmail({
       userId,
       stage,
       amountPence,
       stripeDisputeId: dispute.id,
     });
+    await insertOpsAlert("payments.dispute_opened", "high", {
+      user_id: userId,
+      dispute_id: disputeRowId,
+      stripe_dispute_id: dispute.id,
+      amount_pence: amountPence,
+      evidence_due_by: baseRow.evidence_due_by ?? null,
+    });
+  }
+
+  if (userId && stage === "lost") {
+    // Dispute lost = same outcome as an immediate member cancel: full close,
+    // auth-user delete, member-cancelled email. Skip the standalone
+    // chargeback-resolved-lost email — it's redundant with the cancel email.
+    try {
+      const { _closeMembershipImpl } = await import(
+        "@/lib/admin/close-membership.server"
+      );
+      await _closeMembershipImpl({
+        user_id: userId,
+        mode: "end_now_delete",
+        reason: "chargeback_lost",
+        notes: `Chargeback lost (dispute ${dispute.id})`,
+        actor_id: "dispute_lost",
+      });
+    } catch (e: any) {
+      if (!/no email on auth account/i.test(e?.message ?? "")) {
+        console.warn("[disputes] lost-path close failed:", e?.message ?? e);
+      }
+    }
+    await insertOpsAlert("payments.dispute_lost", "high", {
+      user_id: userId,
+      dispute_id: disputeRowId,
+      stripe_dispute_id: dispute.id,
+      amount_pence: amountPence,
+    });
+  }
+
+  if (userId && stage === "won") {
+    await liftSuspensionAfterWin(userId, dispute.id);
+    await insertOpsAlert("payments.dispute_won", "info", {
+      user_id: userId,
+      dispute_id: disputeRowId,
+      stripe_dispute_id: dispute.id,
+      amount_pence: amountPence,
+    });
+  }
+
+  if (stage === "funds_withdrawn" || stage === "funds_reinstated") {
+    await insertOpsAlert(
+      stage === "funds_withdrawn"
+        ? "payments.dispute_funds_withdrawn"
+        : "payments.dispute_funds_reinstated",
+      "info",
+      {
+        user_id: userId,
+        dispute_id: disputeRowId,
+        stripe_dispute_id: dispute.id,
+        amount_pence: amountPence,
+      },
+    );
   }
 
   // Touch payment_events.user_id for the dispute event we just processed so
