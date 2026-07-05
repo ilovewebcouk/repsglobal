@@ -652,6 +652,13 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             contentType: a.contentType,
             data: a.data,
           })),
+          tracking: { opens: true, clicks: "htmlonly" },
+          tag: `campaign:${directCampaign.id}`,
+          variables: {
+            campaign_id: directCampaign.id,
+            recipient_id: recipientIds.get(r.email.toLowerCase()) ?? "",
+            campaign: "1",
+          },
         });
 
         const { data: msg, error: mErr } = await supabaseAdmin
