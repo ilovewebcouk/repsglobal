@@ -10,7 +10,7 @@ The Coaching pillar page is the **most feature-dense page on the site** and the 
 
 ## Tier
 
-Pro (£59/mo Founding) and Studio only. Verified is excluded from every coaching-delivery row in the comparison matrix.
+Pro (£59/mo Founding) and Studio only. Core is excluded from every coaching-delivery row in the comparison matrix.
 
 ## Section order (LOCKED)
 
@@ -30,7 +30,7 @@ Hero (HeroOverlay copySide="left")
 12. Automations           — INTERACTIVE: Onboarding / Re-engage / Reminders (AutomationsMock)
 13. Templates             — 6 cards inc. Nutrition plan template + Automation template
 14. AI assist             — AiAssistMock + bullets; "drafts the first version, you coach the result"; links to /features/ai
-15. Verified vs Pro       — TierCard + 13-row matrix (every coaching row Verified=—, Pro=✓)
+15. Core vs Pro           — TierCard + 13-row matrix (every coaching row Core=—, Pro=✓)
 16. Use cases             — 6 coaching archetypes
 FAQ                       — 6 items inc. Trainerize comparison, MFP replacement, wearables, AI hype
 FinalCta
