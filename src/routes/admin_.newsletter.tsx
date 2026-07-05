@@ -16,10 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  listNewsletterSubscribers,
-  getReachableMembersCount,
-} from "@/lib/newsletter/subscribers.functions";
+import { listNewsletterSubscribers } from "@/lib/newsletter/subscribers.functions";
+
 
 export const Route = createFileRoute("/admin_/newsletter")({
   ssr: false,
@@ -66,7 +64,8 @@ function AdminNewsletter() {
   const [q, setQ] = useState("");
 
   const listFn = useServerFn(listNewsletterSubscribers);
-  const membersFn = useServerFn(getReachableMembersCount);
+
+
 
   const listQuery = useQuery({
     queryKey: ["admin", "newsletter", "subscribers", status],
@@ -79,11 +78,6 @@ function AdminNewsletter() {
       }),
   });
 
-  const membersQuery = useQuery({
-    queryKey: ["admin", "newsletter", "reachable-members"],
-    queryFn: () => membersFn(),
-    staleTime: 5 * 60_000,
-  });
 
   const rows: Subscriber[] = (listQuery.data?.rows ?? []) as Subscriber[];
   const total = listQuery.data?.total ?? 0;
@@ -194,26 +188,6 @@ function AdminNewsletter() {
           ))}
         </div>
 
-        {/* Members context callout — the newsletter is not the only audience */}
-        <div className="rounded-[16px] border border-reps-border bg-white/[0.03] p-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-[240px]">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
-              Members reachable via Campaigns
-            </div>
-            <div className="mt-1 text-[24px] font-semibold text-white">
-              {membersQuery.isLoading ? "…" : (membersQuery.data?.count ?? 0)}
-            </div>
-            <div className="mt-1 text-[12px] text-white/55">
-              Every confirmed member (Core, Pro, Studio) — reached from the Campaigns tab using tier checkboxes. Not part of this newsletter list.
-            </div>
-          </div>
-          <a
-            href="/admin/campaigns"
-            className="text-[13px] text-reps-orange hover:underline shrink-0"
-          >
-            Go to Campaigns →
-          </a>
-        </div>
 
         {/* Prospects (non-members) callout — separate from newsletter opt-ins */}
         <div className="rounded-[16px] border border-reps-border bg-white/[0.03] p-4 flex flex-wrap items-center justify-between gap-3">
