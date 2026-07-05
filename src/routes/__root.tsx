@@ -15,8 +15,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { LAUNCH_GATE_ENABLED, isAllowlistedPath, hasPreviewUnlock } from "@/lib/launch";
 import { useActivityBeacon } from "@/hooks/useActivityBeacon";
 import { usePublicAnalyticsBeacon } from "@/hooks/usePublicAnalyticsBeacon";
-import { useGoogleAnalytics, GA_MEASUREMENT_ID } from "@/hooks/useGoogleAnalytics";
+import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { CookieBanner } from "@/components/consent/CookieBanner";
+
+const GA_MEASUREMENT_ID = "G-JNSVN6QD87";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
