@@ -422,6 +422,9 @@ function WebsiteEditorPage() {
   const publishStateQuery = useQuery({
     queryKey: ["my-website-publish-state"],
     queryFn: () => fetchPublishStateFn(),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
   const publishState = publishStateQuery.data;
   const publishNowFn = useServerFn(publishMyWebsite);
@@ -444,8 +447,40 @@ function WebsiteEditorPage() {
   const sectionDiffQuery = useQuery({
     queryKey: ["my-website-section-diff"],
     queryFn: () => fetchSectionDiffFn(),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
   const sectionDiff = sectionDiffQuery.data;
+
+  // Optimistic dirty tracker. Any mutation success anywhere in the editor
+  // bumps `localDirtyBump`; publish/discard reset `publishedDirtyBaseline`
+  // to the current value. If bump > baseline we know something was edited
+  // since the last publish, even before the publish-state query refetches.
+  //
+  // Also acts as a safety net for panels whose mutations invalidate only
+  // their own domain queryKey — the mutation-cache subscription below
+  // catches every mutation success and forces publish-state + section-diff
+  // to refetch, so the DB-driven `has_unpublished_changes` flag surfaces
+  // in the UI without every mutation having to know about it.
+  const [localDirtyBump, setLocalDirtyBump] = React.useState(0);
+  const [publishedDirtyBaseline, setPublishedDirtyBaseline] = React.useState(0);
+  React.useEffect(() => {
+    const cache = qc.getMutationCache();
+    const unsub = cache.subscribe((event) => {
+      if (event.type !== "updated") return;
+      if (event.mutation.state.status !== "success") return;
+      // Ignore the publish/discard mutations themselves (they reset baseline
+      // in their own onSuccess). Everything else is a content edit.
+      const key = event.mutation.options.mutationKey?.[0];
+      if (key === "website-publish" || key === "website-discard") return;
+      setLocalDirtyBump((n) => n + 1);
+      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+    });
+    return () => unsub();
+  }, [qc]);
+
 
   // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero/current_clients).
   const basicsDirty =
@@ -457,9 +492,14 @@ function WebsiteEditorPage() {
       (currentClients ?? null) !== (sf.current_clients ?? null));
 
   // What the sidebar/publish bar considers "unpublished" — either the
-  // in-form basics haven't been saved yet, or the server tells us there's
-  // content changed since last publish.
-  const isDirty = basicsDirty || !!publishState?.has_unpublished_changes;
+  // in-form basics haven't been saved yet, the server tells us there's
+  // content changed since last publish, or we've had a mutation succeed
+  // locally since the last publish/discard (optimistic — bridges the gap
+  // before the publish-state query refetch resolves).
+  const isDirty =
+    basicsDirty ||
+    !!publishState?.has_unpublished_changes ||
+    localDirtyBump > publishedDirtyBaseline;
 
   const saveAll = React.useCallback(() => {
     return new Promise<void>((resolve, reject) => {
@@ -475,6 +515,7 @@ function WebsiteEditorPage() {
   }, [saveMutation]);
 
   const publishMut = useMutation({
+    mutationKey: ["website-publish"],
     mutationFn: async () => {
       if (basicsDirty) {
         suppressSaveToastRef.current = true;
@@ -492,6 +533,7 @@ function WebsiteEditorPage() {
       toast.success("Website published — your public page is live.");
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
       qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+      setPublishedDirtyBaseline(localDirtyBump);
       setPublishDialogOpen(false);
       setReloadNonce((n) => n + 1);
     },
@@ -511,6 +553,7 @@ function WebsiteEditorPage() {
   const discardFn = useServerFn(discardMySectionChanges);
   const [discardingId, setDiscardingId] = React.useState<string | null>(null);
   const discardMut = useMutation({
+    mutationKey: ["website-discard"],
     mutationFn: (section: "basics" | "method" | "plans" | "results" | "faqs") =>
       discardFn({ data: { section } }),
     onSuccess: (_r, section) => {
@@ -520,6 +563,7 @@ function WebsiteEditorPage() {
       qc.invalidateQueries({ queryKey: ["my-website-content"] });
       qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      setPublishedDirtyBaseline(localDirtyBump);
       setDiscardingId(null);
       setReloadNonce((n) => n + 1);
     },
