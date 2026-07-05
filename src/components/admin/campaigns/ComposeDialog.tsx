@@ -822,13 +822,29 @@ async function persistArticleCover(article: ResourceArticle): Promise<string | n
   }
 }
 
+interface AiDraft {
+  subject: string;
+  preheader: string;
+  intro: string;
+  paragraphs: string[];
+  cta: string;
+}
+
 function ArticleLoader({
-  onLoad,
+  onLoadTemplate,
+  onLoadAiDraft,
 }: {
-  onLoad: (article: ResourceArticle, coverUrl: string | null) => void;
+  onLoadTemplate: (article: ResourceArticle, coverUrl: string | null) => void;
+  onLoadAiDraft: (
+    article: ResourceArticle,
+    coverUrl: string | null,
+    ai: AiDraft,
+  ) => void;
 }) {
   const [value, setValue] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const draftFn = useServerFn(draftArticleEmail);
   const articles = useMemo(
     () =>
       [...RESOURCE_ARTICLES].sort(
@@ -836,12 +852,51 @@ function ArticleLoader({
       ),
     [],
   );
+  const selected = articles.find((a) => a.slug === value) ?? null;
+  const busy = loading || aiLoading;
+
+  async function runAiDraft() {
+    if (!selected || busy) return;
+    setAiLoading(true);
+    try {
+      const paragraphs = selected.body
+        .filter((b): b is { type: "p"; text: string } => b.type === "p")
+        .map((b) => b.text.trim())
+        .filter(Boolean)
+        .slice(0, 8);
+      const headings = selected.body
+        .filter((b): b is { type: "h2"; text: string } => b.type === "h2")
+        .map((b) => b.text.trim())
+        .filter(Boolean)
+        .slice(0, 10);
+      const [coverUrl, ai] = await Promise.all([
+        persistArticleCover(selected),
+        draftFn({
+          data: {
+            title: selected.title,
+            category: selected.category,
+            excerpt: selected.excerpt,
+            readTime: selected.readTime,
+            dateLabel: selected.dateLabel,
+            paragraphs,
+            headings,
+          },
+        }),
+      ]);
+      onLoadAiDraft(selected, coverUrl, ai as AiDraft);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "AI draft failed");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   return (
     <Field label="Load from article">
       <div className="flex flex-wrap items-center gap-2">
         <Select
           value={value}
-          disabled={loading}
+          disabled={busy}
           onValueChange={async (v) => {
             setValue(v);
             const article = articles.find((a) => a.slug === v);
@@ -849,7 +904,7 @@ function ArticleLoader({
             setLoading(true);
             try {
               const coverUrl = await persistArticleCover(article);
-              onLoad(article, coverUrl);
+              onLoadTemplate(article, coverUrl);
             } finally {
               setLoading(false);
             }
@@ -873,9 +928,24 @@ function ArticleLoader({
             ))}
           </SelectContent>
         </Select>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={!selected || busy}
+          onClick={runAiDraft}
+          className="border-reps-border bg-white/[0.04] text-white hover:bg-white/[0.08] gap-1.5"
+        >
+          {aiLoading ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Sparkles className="size-3.5 text-reps-orange" />
+          )}
+          {aiLoading ? "Drafting…" : "Draft with AI"}
+        </Button>
       </div>
       <div className="mt-1.5 text-[11px] text-white/45">
-        Pre-fills subject, a branded HTML email (cover, excerpt, 2 body paragraphs, "What's inside" and a UTM-tagged CTA) and a matching plain-text version. Cover is copied to public storage so it loads in every inbox. Toggle Plain text / HTML to switch — edits are preserved.
+        Picking an article loads a straight template (cover, excerpt, first two paragraphs, CTA). "Draft with AI" rewrites the subject and body from the article in the REPS voice. The cover image is hosted on public storage so it loads in every inbox. Toggle Plain text / HTML to switch — your edits are preserved.
       </div>
     </Field>
   );
@@ -903,18 +973,6 @@ function pickArticleParagraphs(article: ResourceArticle, count: number): string[
   return out;
 }
 
-function pickArticleHeadings(article: ResourceArticle, count: number): string[] {
-  const out: string[] = [];
-  for (const b of article.body) {
-    if (b.type !== "h2") continue;
-    const text = b.text.trim();
-    if (!text) continue;
-    out.push(text);
-    if (out.length >= count) break;
-  }
-  return out;
-}
-
 function truncate(s: string, max: number): string {
   if (s.length <= max) return s;
   const cut = s.slice(0, max);
@@ -927,9 +985,12 @@ function readTimeMinutes(readTime: string): string {
   return m ? `${m[0]}-min` : readTime;
 }
 
-function buildArticleEmailHtml(article: ResourceArticle, coverUrl?: string | null): string {
+function buildArticleEmailHtml(
+  article: ResourceArticle,
+  coverUrl?: string | null,
+  ai?: AiDraft,
+): string {
   const articleUrl = withUtm(`https://repsuk.org/resources/${article.slug}`, article.slug);
-  const homeUrl = withUtm("https://repsuk.org", article.slug);
   const rawCover = coverUrl ?? article.cover ?? "";
   const cover = rawCover.startsWith("http")
     ? rawCover
@@ -937,11 +998,15 @@ function buildArticleEmailHtml(article: ResourceArticle, coverUrl?: string | nul
       ? `https://repsuk.org${rawCover}`
       : "";
 
-  const paragraphs = pickArticleParagraphs(article, 2).map((p) => truncate(p, 450));
-  const headings = pickArticleHeadings(article, 3);
-  const showTOC = headings.length >= 2;
   const readMins = readTimeMinutes(article.readTime);
-  const preheader = truncate(article.excerpt, 110);
+
+  const bodyParagraphs = ai?.paragraphs?.length
+    ? ai.paragraphs
+    : pickArticleParagraphs(article, 2).map((p) => truncate(p, 450));
+
+  const introText = ai?.intro?.trim() || article.excerpt;
+  const preheader = truncate(ai?.preheader?.trim() || article.excerpt, 110);
+  const ctaLabel = ai?.cta?.trim() || `Read the full ${readMins} article`;
 
   const escape = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -951,28 +1016,15 @@ function buildArticleEmailHtml(article: ResourceArticle, coverUrl?: string | nul
 <meta name="supported-color-schemes" content="light" />
 <!--<![endif]-->
 <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;color:transparent;">${escape(preheader)}</div>
-<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;color:#111;line-height:1.55;background:#ffffff;">
-  <div style="padding:4px 0 20px;">
-    <a href="${homeUrl}" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-weight:800;letter-spacing:0.14em;font-size:13px;color:#111;text-decoration:none;">REPS</a>
-  </div>
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;color:#111;line-height:1.55;background:#ffffff;padding:8px 0 0;">
   <p style="display:inline-block;font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:#E85D2F;background:#FFF3ED;border-radius:999px;padding:5px 10px;margin:0 0 14px;font-weight:600;">${escape(article.category)}</p>
   <h1 style="font-size:26px;line-height:1.25;margin:0 0 12px;color:#111;font-weight:700;">${escape(article.title)}</h1>
   <p style="font-size:14px;color:#666;margin:0 0 22px;">${escape(readMins)} read · ${escape(article.dateLabel)}</p>
   ${cover ? `<img src="${cover}" alt="${escape(article.title)}" width="600" style="width:100%;max-width:600px;height:auto;border-radius:12px;margin:0 0 26px;display:block;border:0;outline:none;text-decoration:none;" />` : ""}
-  <p style="font-size:16px;margin:0 0 18px;color:#111;">${escape(article.excerpt)}</p>
-${paragraphs.map((p) => `  <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#333;">${escape(p)}</p>`).join("\n")}
-  ${
-    showTOC
-      ? `<div style="margin:24px 0 28px;padding:16px 18px;background:#FAFAF7;border:1px solid #EEE;border-radius:12px;">
-    <p style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin:0 0 10px;font-weight:600;">What's inside</p>
-    <ul style="margin:0;padding:0 0 0 18px;color:#222;font-size:14.5px;line-height:1.6;">
-${headings.map((h) => `      <li style="margin:0 0 4px;">${escape(h)}</li>`).join("\n")}
-    </ul>
-  </div>`
-      : ""
-  }
+  <p style="font-size:16px;margin:0 0 18px;color:#111;">${escape(introText)}</p>
+${bodyParagraphs.map((p) => `  <p style="font-size:15px;line-height:1.6;margin:0 0 16px;color:#333;">${escape(p)}</p>`).join("\n")}
   <p style="margin:24px 0 12px;">
-    <a href="${articleUrl}" style="display:inline-block;background:#E85D2F;color:#ffffff;text-decoration:none;padding:13px 24px;border-radius:10px;font-weight:600;font-size:15px;">Read the full ${escape(readMins)} article →</a>
+    <a href="${articleUrl}" style="display:inline-block;background:#E85D2F;color:#ffffff;text-decoration:none;padding:13px 24px;border-radius:10px;font-weight:600;font-size:15px;">${escape(ctaLabel)} →</a>
   </p>
   <p style="margin:0 0 32px;font-size:13px;color:#888;">
     Or <a href="${articleUrl}" style="color:#888;text-decoration:underline;">open it in your browser</a>.
@@ -980,29 +1032,28 @@ ${headings.map((h) => `      <li style="margin:0 0 4px;">${escape(h)}</li>`).joi
 </div>`;
 }
 
-function buildArticleEmailText(article: ResourceArticle): string {
+function buildArticleEmailText(article: ResourceArticle, ai?: AiDraft): string {
   const articleUrl = withUtm(`https://repsuk.org/resources/${article.slug}`, article.slug);
-  const paragraphs = pickArticleParagraphs(article, 2).map((p) => truncate(p, 450));
-  const headings = pickArticleHeadings(article, 3);
   const readMins = readTimeMinutes(article.readTime);
+  const introText = ai?.intro?.trim() || article.excerpt;
+  const bodyParagraphs = ai?.paragraphs?.length
+    ? ai.paragraphs
+    : pickArticleParagraphs(article, 2).map((p) => truncate(p, 450));
+  const ctaLabel = ai?.cta?.trim() || "Read the full article";
+
   const lines: string[] = [];
   lines.push(`REPS — ${article.category}`);
   lines.push("");
   lines.push(article.title);
   lines.push(`${readMins} read · ${article.dateLabel}`);
   lines.push("");
-  lines.push(article.excerpt);
-  if (paragraphs.length) {
+  lines.push(introText);
+  if (bodyParagraphs.length) {
     lines.push("");
-    lines.push(paragraphs.join("\n\n"));
-  }
-  if (headings.length >= 2) {
-    lines.push("");
-    lines.push("What's inside:");
-    for (const h of headings) lines.push(`- ${h}`);
+    lines.push(bodyParagraphs.join("\n\n"));
   }
   lines.push("");
-  lines.push("Read the full article:");
+  lines.push(`${ctaLabel}:`);
   lines.push(articleUrl);
   return lines.join("\n");
 }
