@@ -87,6 +87,7 @@ import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
+import { Route as AdminNewsletterRouteImport } from './routes/admin_.newsletter'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
@@ -549,6 +550,11 @@ const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   path: '/admin/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminNewsletterRoute = AdminNewsletterRouteImport.update({
+  id: '/admin_/newsletter',
+  path: '/admin/newsletter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   id: '/admin_/memberships',
   path: '/admin/memberships',
@@ -991,6 +997,7 @@ export interface FileRoutesByFullPath {
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
   '/admin/memberships': typeof AdminMembershipsRoute
+  '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
@@ -1138,6 +1145,7 @@ export interface FileRoutesByTo {
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
   '/admin/memberships': typeof AdminMembershipsRoute
+  '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
@@ -1285,6 +1293,7 @@ export interface FileRoutesById {
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
+  '/admin_/newsletter': typeof AdminNewsletterRoute
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
@@ -1436,6 +1445,7 @@ export interface FileRouteTypes {
     | '/admin/directory'
     | '/admin/gyms'
     | '/admin/memberships'
+    | '/admin/newsletter'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reconciliation'
@@ -1583,6 +1593,7 @@ export interface FileRouteTypes {
     | '/admin/directory'
     | '/admin/gyms'
     | '/admin/memberships'
+    | '/admin/newsletter'
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/reconciliation'
@@ -1729,6 +1740,7 @@ export interface FileRouteTypes {
     | '/admin_/directory'
     | '/admin_/gyms'
     | '/admin_/memberships'
+    | '/admin_/newsletter'
     | '/admin_/payments'
     | '/admin_/professionals'
     | '/admin_/reconciliation'
@@ -1880,6 +1892,7 @@ export interface RootRouteChildren {
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
+  AdminNewsletterRoute: typeof AdminNewsletterRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
@@ -2490,6 +2503,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/payments'
       fullPath: '/admin/payments'
       preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/newsletter': {
+      id: '/admin_/newsletter'
+      path: '/admin/newsletter'
+      fullPath: '/admin/newsletter'
+      preLoaderRoute: typeof AdminNewsletterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/memberships': {
@@ -3290,6 +3310,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
+  AdminNewsletterRoute: AdminNewsletterRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
