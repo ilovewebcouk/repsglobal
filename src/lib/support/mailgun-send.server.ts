@@ -68,6 +68,18 @@ export interface MailgunSendInput {
   references?: string | null;
   replyTo?: string;
   attachments?: MailgunAttachment[];
+  // Mailgun `o:` options (opens, clicks). Only relevant for broadcast/campaign
+  // sends — 1:1 support replies leave these off so recipients don't see
+  // wrapped tracking links in a personal conversation.
+  tracking?: {
+    opens?: boolean;
+    clicks?: boolean | "htmlonly";
+  };
+  // Mailgun `v:` custom variables. These are echoed back in event webhooks
+  // under `event-data.user-variables`, so we tag every campaign send with
+  // `campaign_id` + `recipient_id` for correlation.
+  variables?: Record<string, string>;
+  tag?: string;
 }
 
 export interface MailgunSendResult {
