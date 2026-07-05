@@ -344,6 +344,15 @@ export function ComposeDialog({
               </Field>
             </TabsContent>
 
+            <ArticleLoader
+              onLoad={(article) => {
+                setSubject(buildArticleSubject(article));
+                setBody(buildArticleEmailHtml(article));
+                setFormat("html");
+                toast.success(`Loaded "${article.title}"`);
+              }}
+            />
+
             <Field label="Subject">
               <Input
                 value={subject}
