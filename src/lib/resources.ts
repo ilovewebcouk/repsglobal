@@ -18,6 +18,7 @@ import coverLevel4 from "@/assets/resources/choosing-level-4-specialism.jpg";
 import coverFreeVsPaidCpd from "@/assets/resources/free-vs-paid-cpd-2026.jpg";
 import coverWhatsNew from "@/assets/resources/whats-new-reps-q2-2026.jpg";
 import coverRoadmap from "@/assets/resources/reps-roadmap-next.jpg";
+import coverWebsiteEditorLaunch from "@/assets/resources/new-website-editor-launch.jpg";
 import coverLevel3RequirementsAsset from "@/assets/resources/level-3-pt-requirements.jpg.asset.json";
 const coverLevel3Requirements = coverLevel3RequirementsAsset.url;
 
