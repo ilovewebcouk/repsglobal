@@ -323,6 +323,17 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
     const specialismsDirty = !specialismsEqual(lw?.specialisms, sw?.specialisms);
     const locationDirty =
       !reachEqual(lw?.coaching_reach, sw?.coaching_reach) || !venuesEqual(lw?.venues, sw?.venues);
+    const profileDirty = normText(lw?.avatar_url) !== normText(sw?.avatar_url);
+    const socialKinds = (arr: any) =>
+      (Array.isArray(arr) ? arr : [])
+        .map((s: any) => `${normText(s?.kind)}|${normText(s?.href)}`)
+        .sort()
+        .join(",");
+    const langsKey = (arr: any) =>
+      (Array.isArray(arr) ? [...arr].map(String).sort() : []).join(",");
+    const contactDirty =
+      socialKinds(lw?.socials) !== socialKinds(sw?.socials) ||
+      langsKey(lw?.languages) !== langsKey(sw?.languages);
 
     const summary: SectionDiff["summary"] = {};
     if (basicsDirty) summary.basics = "Tagline, About or hero image changed";
@@ -356,6 +367,8 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
     }
     if (specialismsDirty) summary.specialisms = "Specialisms changed";
     if (locationDirty) summary.location = "Where you train changed";
+    if (profileDirty) summary.profile = "Profile photo changed";
+    if (contactDirty) summary.contact = "Languages or social links changed";
 
     return {
       dirty: {
@@ -366,6 +379,8 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
         faqs: faqsDirty,
         specialisms: specialismsDirty,
         location: locationDirty,
+        profile: profileDirty,
+        contact: contactDirty,
       },
       summary,
       ever_published: true,
