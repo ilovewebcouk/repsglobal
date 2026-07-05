@@ -366,9 +366,12 @@ export function ComposeDialog({
 
             <ArticleLoader
               onLoad={(article, coverUrl) => {
+                const html = buildArticleEmailHtml(article, coverUrl);
+                const text = buildArticleEmailText(article);
                 setSubject(buildArticleSubject(article));
-                setBody(buildArticleEmailHtml(article, coverUrl));
+                setBody(html);
                 setFormat("html");
+                setArticleDrafts({ html, text, slug: article.slug });
                 toast.success(`Loaded "${article.title}"`);
               }}
             />
