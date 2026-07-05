@@ -430,14 +430,14 @@ function CampaignDrawer({
             <div className="grid grid-cols-4 gap-2">
               <Stat
                 icon={<Mail className="size-3.5 text-white/55" />}
-                label="Total"
-                value={campaign?.total_recipients ?? 0}
+                label="Sent"
+                value={campaign?.sent_count ?? 0}
               />
               <Stat
                 icon={<CheckCircle2 className="size-3.5 text-emerald-300" />}
-                label="Sent"
-                value={campaign?.sent_count ?? 0}
-                tone="emerald"
+                label="Delivered"
+                value={campaign?.delivered_count ?? 0}
+                tone={(campaign?.delivered_count ?? 0) > 0 ? "emerald" : undefined}
               />
               <Stat
                 icon={<AlertCircle className="size-3.5 text-rose-300" />}
@@ -450,6 +450,41 @@ function CampaignDrawer({
                 label="Replied"
                 value={q.data.repliedCount}
                 tone={q.data.repliedCount > 0 ? "orange" : undefined}
+              />
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              <Stat
+                icon={<Eye className="size-3.5 text-sky-300" />}
+                label="Opened"
+                value={campaign?.opened_count ?? 0}
+                sub={
+                  (campaign?.delivered_count ?? 0) > 0
+                    ? `${Math.round(((campaign?.opened_count ?? 0) / (campaign?.delivered_count || 1)) * 100)}%`
+                    : undefined
+                }
+              />
+              <Stat
+                icon={<MousePointerClick className="size-3.5 text-sky-300" />}
+                label="Clicked"
+                value={campaign?.clicked_count ?? 0}
+                sub={
+                  (campaign?.opened_count ?? 0) > 0
+                    ? `${Math.round(((campaign?.clicked_count ?? 0) / (campaign?.opened_count || 1)) * 100)}% CTR`
+                    : undefined
+                }
+              />
+              <Stat
+                icon={<UserMinus className="size-3.5 text-amber-300" />}
+                label="Unsubscribed"
+                value={campaign?.unsubscribed_count ?? 0}
+                tone={(campaign?.unsubscribed_count ?? 0) > 0 ? "amber" : undefined}
+              />
+              <Stat
+                icon={<AlertCircle className="size-3.5 text-amber-300" />}
+                label="Bounced"
+                value={campaign?.bounced_count ?? 0}
+                tone={(campaign?.bounced_count ?? 0) > 0 ? "amber" : undefined}
               />
             </div>
 
