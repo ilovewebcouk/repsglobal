@@ -16,10 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  listNewsletterSubscribers,
-  getReachableMembersCount,
-} from "@/lib/newsletter/subscribers.functions";
+import { listNewsletterSubscribers } from "@/lib/newsletter/subscribers.functions";
+
 
 export const Route = createFileRoute("/admin_/newsletter")({
   ssr: false,
