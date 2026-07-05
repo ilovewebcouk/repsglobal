@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, ChevronRight } from"lucide-react";
 import { PublicHeader } from"@/components/public/PublicHeader";
 import { PublicFooter } from"@/components/public/PublicFooter";
 import { getArticle, getRelated, type ResourceArticle } from"@/lib/resources";
+import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
 
 const SITE_URL = "https://repsuk.org";
 
@@ -180,6 +181,11 @@ function ArticlePage() {
             <p className="text-[13px] text-white/55">{article.authorRole}</p>
             <p className="mt-3 text-[14px] leading-relaxed text-white/70">{article.authorBio}</p>
           </div>
+        </div>
+
+        {/* Newsletter signup */}
+        <div className="mx-auto max-w-[760px] px-6 pb-16 lg:px-10">
+          <NewsletterSignup source="article" />
         </div>
       </article>
 
