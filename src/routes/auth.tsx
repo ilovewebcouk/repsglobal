@@ -330,10 +330,10 @@ function LoginPage() {
                     )}
                     {/no account found/i.test(error) && (
                       <Link
-                        to="/signup"
+                        to="/pricing"
                         className="font-semibold text-red-100 underline underline-offset-2 hover:text-white"
                       >
-                        Create account
+                        View plans
                       </Link>
                     )}
                   </AlertDescription>
