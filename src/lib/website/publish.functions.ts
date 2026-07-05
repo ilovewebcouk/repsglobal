@@ -263,6 +263,8 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
         faqs: false,
         specialisms: false,
         location: false,
+        profile: false,
+        contact: false,
       },
       summary: {},
       ever_published: false,
