@@ -95,6 +95,33 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           return Response.json({ ok: true, dropped: "self-loop" });
         }
 
+        // Auto-reply / vacation-responder guard. RFC 3834 + common vendor
+        // headers. Without this, a recipient's out-of-office bounces every
+        // campaign send into a new Pending ticket, and our acknowledgement
+        // triggers another auto-reply → infinite loop (see TKT-4988..4990).
+        const autoSubmitted = String(form.get("Auto-Submitted") || "").toLowerCase();
+        const precedence = String(form.get("Precedence") || "").toLowerCase();
+        const xAutoreply = String(form.get("X-Autoreply") || form.get("X-Autorespond") || "").trim();
+        const xAutoResponseSuppress = String(form.get("X-Auto-Response-Suppress") || "").trim();
+        const listUnsubscribe = String(form.get("List-Unsubscribe") || "").trim();
+        const isAutoReply =
+          (autoSubmitted && autoSubmitted !== "no") ||
+          precedence === "auto_reply" ||
+          precedence === "bulk" ||
+          precedence === "junk" ||
+          precedence === "list" ||
+          !!xAutoreply ||
+          !!xAutoResponseSuppress ||
+          (!!listUnsubscribe && !inReplyTo && !references);
+        if (isAutoReply) {
+          console.log("[support.inbound] dropped auto-reply", {
+            sender: senderEmailRaw,
+            autoSubmitted,
+            precedence,
+          });
+          return Response.json({ ok: true, dropped: "auto-reply" });
+        }
+
         // Try to extract sender display name from "Name <email>"
         const nameMatch = fromHeader.match(/^\s*"?([^"<]+?)"?\s*</);
         const senderName = nameMatch ? nameMatch[1].trim() : null;
