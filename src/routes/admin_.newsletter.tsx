@@ -79,6 +79,7 @@ function AdminNewsletter() {
   const qc = useQueryClient();
 
   const listFn = useServerFn(listNewsletterSubscribers);
+  const membersFn = useServerFn(getReachableMembersCount);
 
   const listQuery = useQuery({
     queryKey: ["admin", "newsletter", "subscribers", status],
@@ -89,6 +90,12 @@ function AdminNewsletter() {
           limit: 500,
         },
       }),
+  });
+
+  const membersQuery = useQuery({
+    queryKey: ["admin", "newsletter", "reachable-members"],
+    queryFn: () => membersFn(),
+    staleTime: 5 * 60_000,
   });
 
   const rows: Subscriber[] = (listQuery.data?.rows ?? []) as Subscriber[];
