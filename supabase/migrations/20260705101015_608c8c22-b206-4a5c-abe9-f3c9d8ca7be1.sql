@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.list_prospect_tags() FROM PUBLIC, anon;
