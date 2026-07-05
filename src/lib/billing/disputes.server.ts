@@ -285,18 +285,18 @@ async function sendDisputeEmail(opts: {
       .toString()
       .split(" ")[0] || null;
 
-  let templateName: string | null = null;
-  if (opts.stage === "opened") templateName = "chargeback-received";
-  else if (opts.stage === "won") templateName = "chargeback-resolved-won";
-  else if (opts.stage === "lost") templateName = "chargeback-resolved-lost";
-  if (!templateName) return;
+  // Only "opened" fires a member-facing dispute email now. "won" is handled
+  // by liftSuspensionAfterWin (dispute-won-resubscribe email). "lost" is
+  // handled via _closeMembershipImpl in handlePlatformDispute (member-cancelled
+  // email). This function is retained for the opened case only.
+  if (opts.stage !== "opened") return;
 
   try {
     const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
     await sendTransactionalEmailServer({
-      templateName,
+      templateName: "chargeback-received",
       recipientEmail: email,
-      idempotencyKey: `${templateName}:${opts.stripeDisputeId}`,
+      idempotencyKey: `chargeback-received:${opts.stripeDisputeId}`,
       templateData: {
         proName,
         amount: `£${(opts.amountPence / 100).toFixed(2)}`,
