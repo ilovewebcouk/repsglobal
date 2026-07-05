@@ -310,7 +310,8 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
       normText(lw?.tagline) !== normText(sw?.tagline) ||
       normText(lw?.subtitle) !== normText(sw?.subtitle) ||
       normText(lw?.about) !== normText(sw?.about) ||
-      normText(lw?.hero_image_url) !== normText(sw?.hero_image_url);
+      normText(lw?.hero_image_url) !== normText(sw?.hero_image_url) ||
+      (lw?.current_clients ?? null) !== (sw?.current_clients ?? null);
 
     const methodDirty =
       normText(lw?.method_name) !== normText(sw?.method_name) ||
@@ -336,7 +337,7 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
       langsKey(lw?.languages) !== langsKey(sw?.languages);
 
     const summary: SectionDiff["summary"] = {};
-    if (basicsDirty) summary.basics = "Tagline, About or hero image changed";
+    if (basicsDirty) summary.basics = "Tagline, About, hero image or currently-coaching count changed";
     if (methodDirty) summary.method = "Method name, intro or pillars changed";
     if (plansDirty) {
       const d = (live.services?.length ?? 0) - (snap.services?.length ?? 0);
@@ -420,6 +421,7 @@ export const discardMySectionChanges = createServerFn({ method: "POST" })
           subtitle: w.subtitle ?? null,
           about: w.about ?? null,
           hero_image_url: w.hero_image_url ?? null,
+          current_clients: w.current_clients ?? null,
         })
         .eq("professional_id", userId);
       if (error) throw error;
