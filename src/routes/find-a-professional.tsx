@@ -64,33 +64,43 @@ export const Route = createFileRoute("/find-a-professional")({
         ? ((raw[k] as string).slice(0, 120))
         : undefined;
     const pageRaw = Number(raw.page);
-    const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
-    const sortRaw =
+    const pageVal = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
+    const page = pageVal === 1 ? undefined : pageVal;
+    const sortVal: ResultsBarSort =
       typeof raw.sort === "string" && VALID_SORTS.has(raw.sort as ResultsBarSort)
         ? (raw.sort as ResultsBarSort)
-        : ("recommended" as ResultsBarSort);
-    const modeRaw =
+        : "recommended";
+    const sort = sortVal === "recommended" ? undefined : sortVal;
+    const modeVal: ResultsBarMode =
       typeof raw.mode === "string" && VALID_MODES.has(raw.mode as ResultsBarMode)
         ? (raw.mode as ResultsBarMode)
-        : ("any" as ResultsBarMode);
+        : "any";
+    const mode = modeVal === "any" ? undefined : modeVal;
     const ratingRaw = Number(raw.min_rating);
-    const min_rating =
+    const ratingVal =
       Number.isFinite(ratingRaw) && ratingRaw >= 0 && ratingRaw <= 5
         ? Math.floor(ratingRaw)
         : 0;
+    const min_rating = ratingVal === 0 ? undefined : ratingVal;
     const radiusRaw = Number(raw.radius_mi);
-    const radius_mi =
+    const radiusVal =
       Number.isFinite(radiusRaw) && radiusRaw >= 0 && radiusRaw <= 200
         ? Math.floor(radiusRaw)
         : 0;
-    const viewRaw =
+    const radius_mi = radiusVal === 0 ? undefined : radiusVal;
+    const viewVal: ResultsBarView =
       typeof raw.view === "string" && VALID_VIEWS.has(raw.view as ResultsBarView)
         ? (raw.view as ResultsBarView)
-        : ("list" as ResultsBarView);
+        : "list";
+    const view = viewVal === "list" ? undefined : viewVal;
     const verified =
-      raw.verified === true || raw.verified === "1" || raw.verified === "true";
+      raw.verified === true || raw.verified === "1" || raw.verified === "true"
+        ? true
+        : undefined;
     const featured =
-      raw.featured === true || raw.featured === "1" || raw.featured === "true";
+      raw.featured === true || raw.featured === "1" || raw.featured === "true"
+        ? true
+        : undefined;
     return {
       venue,
       city: str("city"),
@@ -98,15 +108,16 @@ export const Route = createFileRoute("/find-a-professional")({
       specialism: str("specialism"),
       q: str("q"),
       page,
-      sort: sortRaw,
-      mode: modeRaw,
+      sort,
+      mode,
       verified,
       featured,
       min_rating,
       radius_mi,
-      view: viewRaw,
+      view,
     };
   },
+
   head: () => ({
     meta: [
       { title: "Find a Professional — REPS" },
