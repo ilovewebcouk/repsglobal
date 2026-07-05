@@ -3,8 +3,8 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { Check, Loader2, X } from "lucide-react";
-import { PublicHeader } from "@/components/PublicHeader";
-import { PublicFooter } from "@/components/PublicFooter";
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { PublicFooter } from "@/components/public/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { unsubscribeFromNewsletter } from "@/lib/newsletter/subscribers.functions";
 
