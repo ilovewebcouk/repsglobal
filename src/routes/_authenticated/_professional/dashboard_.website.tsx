@@ -515,6 +515,7 @@ function WebsiteEditorPage() {
   }, [saveMutation]);
 
   const publishMut = useMutation({
+    mutationKey: ["website-publish"],
     mutationFn: async () => {
       if (basicsDirty) {
         suppressSaveToastRef.current = true;
@@ -532,6 +533,7 @@ function WebsiteEditorPage() {
       toast.success("Website published — your public page is live.");
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
       qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+      setPublishedDirtyBaseline(localDirtyBump);
       setPublishDialogOpen(false);
       setReloadNonce((n) => n + 1);
     },
