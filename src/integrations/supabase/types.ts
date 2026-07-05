@@ -3291,6 +3291,8 @@ export type Database = {
           timezone: string
           trains_at_clients_home: boolean
           trains_at_home_studio: boolean
+          unpublished_at: string | null
+          unpublished_reason: string | null
           updated_at: string
           value_prop: string | null
           verification: Database["public"]["Enums"]["verification_status"]
@@ -3344,6 +3346,8 @@ export type Database = {
           timezone?: string
           trains_at_clients_home?: boolean
           trains_at_home_studio?: boolean
+          unpublished_at?: string | null
+          unpublished_reason?: string | null
           updated_at?: string
           value_prop?: string | null
           verification?: Database["public"]["Enums"]["verification_status"]
@@ -3397,6 +3401,8 @@ export type Database = {
           timezone?: string
           trains_at_clients_home?: boolean
           trains_at_home_studio?: boolean
+          unpublished_at?: string | null
+          unpublished_reason?: string | null
           updated_at?: string
           value_prop?: string | null
           verification?: Database["public"]["Enums"]["verification_status"]
@@ -4473,6 +4479,7 @@ export type Database = {
           closed_by_actor: string | null
           created_at: string
           current_period_end: string | null
+          dispute_id: string | null
           environment: string
           id: string
           is_founding: boolean
@@ -4498,6 +4505,7 @@ export type Database = {
           closed_by_actor?: string | null
           created_at?: string
           current_period_end?: string | null
+          dispute_id?: string | null
           environment?: string
           id?: string
           is_founding?: boolean
@@ -4523,6 +4531,7 @@ export type Database = {
           closed_by_actor?: string | null
           created_at?: string
           current_period_end?: string | null
+          dispute_id?: string | null
           environment?: string
           id?: string
           is_founding?: boolean
@@ -4537,7 +4546,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_attachments: {
         Row: {
