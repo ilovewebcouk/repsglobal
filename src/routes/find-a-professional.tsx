@@ -230,23 +230,23 @@ const testimonials = [
 const PAGE_SIZE = 24;
 
 function DirectoryPage() {
-  const {
-    venue: venueFilter,
-    city,
-    profession,
-    specialism,
-    q,
-    page,
-    sort,
-    mode,
-    verified,
-    featured,
-    min_rating,
-    radius_mi,
-    view,
-  } = Route.useSearch();
+  const rawSearch = Route.useSearch();
+  const venueFilter = rawSearch.venue;
+  const city = rawSearch.city;
+  const profession = rawSearch.profession;
+  const specialism = rawSearch.specialism;
+  const q = rawSearch.q;
+  const page = rawSearch.page ?? 1;
+  const sort: ResultsBarSort = rawSearch.sort ?? "recommended";
+  const mode: ResultsBarMode = rawSearch.mode ?? "any";
+  const verified = rawSearch.verified ?? false;
+  const featured = rawSearch.featured ?? false;
+  const min_rating = rawSearch.min_rating ?? 0;
+  const radius_mi = rawSearch.radius_mi ?? 0;
+  const view: ResultsBarView = rawSearch.view ?? "list";
   const navigate = Route.useNavigate();
   const activeVenue = VENUES.find((v) => v.slug === venueFilter);
+
 
   // Map mode → server boolean filters (preserves existing search.functions API).
   const serverFilters = {
