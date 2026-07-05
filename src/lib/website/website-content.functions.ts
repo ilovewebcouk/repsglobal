@@ -336,6 +336,7 @@ export const upsertFaq = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => FaqSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertOwnsRow(supabaseAdmin, "website_faqs", data.id, context.userId, "user_id");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
       .from("website_faqs")
