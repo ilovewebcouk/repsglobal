@@ -1,63 +1,47 @@
-## Goal
+## What's actually happening
 
-Two additions to `/admin/seo`, both driven by the Google Search Console connector that already powers the daily URL Inspection scan:
+That UUID `3d8ffa68-f4b2-46b2-bdac-d06b48fbf445` **is** you — `cruz.pt@icloud.com` (admin + professional + has profile). Nothing in the finder filters admins out:
 
-1. Show that Google is actually fetching your sitemap.
-2. Give you a one-click way to push a priority URL into Google's "request indexing" queue.
+- `ops_find_member` (Postgres RPC): UUID branch just does `WHERE u.id = q::uuid` against `auth.users`. No role filter. Tested — it returns the row.
+- `findMember` server fn: passes the string through, admin-gated only for who can call it.
+- `MemberFinder` component: on a single match, navigates straight to `/admin/members/$userId` (route exists).
 
-No changes to the daily scan, the events table, or any user-facing pages.
+So "No matches" almost certainly means the string sent to the RPC didn't match the UUID regex `^[0-9a-f]{8}-[0-9a-f]{4}-…{12}$` — i.e. the paste from Google Analytics included something extra (a label like `User ID`, quotes, a trailing tab/newline, a zero-width space, or GA's `.` separators). Client-side we only `trim()`, so anything else breaks the branch and it falls through to the "partial name" search, which returns nothing.
 
-## 1. Sitemap health panel
+## Fix
 
-New card on `/admin/seo`, sits next to "Recent scans".
+Make the top-bar finder resilient to noisy pastes. One small change to `src/components/ops/MemberFinder.tsx`:
 
-Calls GSC once per view:
+Before calling `find({ data: { q: v } })`, normalise `v`:
 
-```
-GET /webmasters/v3/sites/https%3A%2F%2Frepsuk.org%2F/sitemaps/https%3A%2F%2Frepsuk.org%2Fsitemap.xml
-```
+1. Strip zero-width chars, wrapping quotes, and surrounding whitespace.
+2. Try to **extract** an embedded UUID with a regex — if the pasted blob contains a UUID anywhere in it, use just the UUID.
+3. Also extract embedded `cus_…` / `sub_…` handles the same way.
+4. Fall back to the raw trimmed string otherwise.
 
-Displays:
-- **Status pill** — green "Submitted & healthy" / amber "Warnings" / red "Errors" / grey "Not submitted"
-- **Last downloaded** — e.g. "6 hours ago" (from `lastDownloaded`)
-- **URLs Google saw** — `contents[0].submitted` / `indexed` counts
-- **Errors / warnings** — surfaced only when non-zero
-- **Resubmit button** — `PUT` the same path; refreshes on success
-
-If GSC returns 404 (sitemap not registered on the property), the card shows a one-time "Register sitemap with Google" button which does the `PUT` and then re-fetches.
-
-Runs in a new server fn `getSitemapHealth` / `resubmitSitemap` under `src/lib/seo/sitemap-health.functions.ts` (admin-only via `has_role`), using the same `GSC_GATEWAY` + `LOVABLE_API_KEY` + `GOOGLE_SEARCH_CONSOLE_API_KEY` pattern already in `index-monitor.server.ts`.
-
-## 2. "Request indexing" helper on open events
-
-Realistic constraint: **Google's public Indexing API only accepts JobPosting / BroadcastEvent** — it won't index generic landing pages via API. The reliable path is GSC's URL Inspection UI, which has a "Request indexing" button and a ~10/day quota per property.
-
-So each Open Event row gains a small **"Open in GSC →"** action:
-
-```
-https://search.google.com/search-console/inspect
-  ?resource_id=https%3A%2F%2Frepsuk.org%2F
-  &id=<encoded full URL>
+```ts
+function normaliseQuery(raw: string): string {
+  const cleaned = raw.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/^["'`\s]+|["'`\s]+$/g, "");
+  const uuid = cleaned.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  if (uuid) return uuid[0].toLowerCase();
+  const stripe = cleaned.match(/\b(cus|sub)_[A-Za-z0-9]+/);
+  if (stripe) return stripe[0];
+  return cleaned;
+}
 ```
 
-Opens the URL Inspection view in a new tab, pre-loaded on that exact URL. You click "Request indexing" there. No API call, no quota risk, works today.
+Use it in both `go()` and the `onChange` isn't touched — user still sees what they pasted, we just send the cleaned value.
 
-Optional secondary action on the same row: **"Re-check now"** — calls the existing `inspectUrl` server fn from `index-monitor.server.ts` for just that one URL and refreshes its verdict without waiting for the next daily scan.
+## Also update the empty-state toast
 
-## Files
+`toast.info("No matches")` gives no clue why. Change it to `"No matches for '<sent query>'"` so next time you can see exactly what got sent to the DB — makes future "why didn't this find X" trivial to diagnose.
 
-- **New** `src/lib/seo/sitemap-health.functions.ts` — `getSitemapHealth`, `resubmitSitemap`, `recheckUrl` server fns (admin-gated).
-- **Edit** `src/routes/admin_.seo.tsx` — add `<SitemapHealthCard />` next to Recent Scans; add "Open in GSC" + "Re-check" buttons to each open-event row.
-- **New** `src/components/admin/seo/SitemapHealthCard.tsx` — the card UI.
-- No DB migration, no new secrets, no cron changes.
+## What this does NOT change
 
-## Out of scope
+- No RPC changes, no schema changes, no admin filter (there isn't one).
+- Compose-dialog recipient search is a different code path (only returns rows that exist in `professionals`) — out of scope for this fix.
+- If GA is actually giving you a Google Analytics *client ID* (format `1234567890.1234567890`), that's not a Supabase user_id and no search can find it. This fix only helps when GA has captured our real `user_id`.
 
-- Bulk "request indexing" (no API supports it for generic pages).
-- Automatic sitemap resubmission on route changes.
-- Redesigning the SEO page.
-- Any change to the scan cadence or event classification.
+## Files touched
 
-## Explanation for you (non-technical)
-
-The panel proves Google is fetching your sitemap and shows when it last did. The per-row button jumps straight into Google's own indexing tool for that URL — that's the only supported way to nudge Google to look at a specific page sooner. Everything else on this screen (28 warnings) will resolve on its own as Google works through the site; the panel just gives you visibility while it does.
+- `src/components/ops/MemberFinder.tsx` — add `normaliseQuery`, call it in `go()`, expand the toast message.

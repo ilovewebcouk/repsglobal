@@ -33,13 +33,13 @@ export function MemberFinder({
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function go(query?: string) {
-    const v = (query ?? q).trim();
+    const v = normaliseQuery(query ?? q);
     if (!v) return;
     setBusy(true);
     try {
       const rows = await find({ data: { q: v } });
       if (rows.length === 0) {
-        toast.info("No matches");
+        toast.info(`No matches for "${v}"`);
         setMatches([]);
       } else if (rows.length === 1) {
         setMatches([]);
