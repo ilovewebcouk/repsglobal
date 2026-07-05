@@ -307,6 +307,20 @@ async function runBroadcastBatch(opts: BatchOpts) {
   let failed = 0;
   let dailyLimitHit = false;
 
+  // Preload recipient row ids so each Mailgun send carries a stable
+  // `v:recipient_id` variable — the event webhook uses it to attribute
+  // opens / clicks / unsubscribes back to the row without email casing.
+  const recipientIds = new Map<string, string>();
+  {
+    const { data: rows } = await supabaseAdmin
+      .from("outbound_campaign_recipients")
+      .select("id, email")
+      .eq("campaign_id", opts.campaignId);
+    for (const row of (rows ?? []) as Array<{ id: string; email: string }>) {
+      recipientIds.set(row.email.toLowerCase(), row.id);
+    }
+  }
+
   outer: for (const r of opts.recipients) {
     const messageId = buildMessageId(`campaign-${opts.campaignId}`);
     const { html, text } = wrapAndRender({
@@ -333,6 +347,13 @@ async function runBroadcastBatch(opts: BatchOpts) {
             contentType: a.contentType,
             data: a.data,
           })),
+          tracking: { opens: true, clicks: "htmlonly" },
+          tag: `campaign:${opts.campaignId}`,
+          variables: {
+            campaign_id: opts.campaignId,
+            recipient_id: recipientIds.get(r.email.toLowerCase()) ?? "",
+            campaign: "1",
+          },
         });
         await supabaseAdmin
           .from("outbound_campaign_recipients")
