@@ -48,36 +48,24 @@ async function sendCancellationEmail(opts: {
   userId: string;
 }): Promise<{ ok: boolean; error?: string }> {
   try {
-    const React = await import("react");
-    const { render } = await import("@react-email/components");
-    const { TEMPLATES } = await import("@/lib/email-templates/registry");
-    const tmpl = TEMPLATES["member-cancelled"];
-    if (!tmpl) return { ok: true };
-    const props = {
-      proName: opts.fullName ?? undefined,
-      reasonLabel: REASON_LABEL[opts.reason],
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const element = React.createElement(tmpl.component as any, props);
-    const html = await render(element);
-    const text = await render(element, { plainText: true });
-    const subject =
-      typeof tmpl.subject === "function" ? tmpl.subject(props) : tmpl.subject;
-    const { sendViaMailgun } = await import("@/lib/email/mailgun.server");
-    const sendRes = await sendViaMailgun({
-      to: opts.to,
-      subject,
-      html,
-      text,
+    const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+    const dayBucket = Math.floor(Date.now() / 86_400_000);
+    const result = await sendTransactionalEmailServer({
       templateName: "member-cancelled",
-      idempotencyKey: `member-cancelled-${opts.userId}-${Date.now()}`,
+      recipientEmail: opts.to,
+      idempotencyKey: `member-cancelled-${opts.userId}-${dayBucket}`,
+      templateData: {
+        proName: opts.fullName ?? undefined,
+        reasonLabel: REASON_LABEL[opts.reason],
+      },
     });
-    return { ok: sendRes.ok, error: sendRes.error };
+    return { ok: result.success !== false };
   } catch (e: any) {
     console.warn("[closeMembership] email failed", e);
     return { ok: false, error: e?.message ?? String(e) };
   }
 }
+
 
 export async function _closeMembershipImpl(
   input: CloseMembershipInput,
