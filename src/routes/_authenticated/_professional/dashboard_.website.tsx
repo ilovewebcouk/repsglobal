@@ -553,6 +553,7 @@ function WebsiteEditorPage() {
   const discardFn = useServerFn(discardMySectionChanges);
   const [discardingId, setDiscardingId] = React.useState<string | null>(null);
   const discardMut = useMutation({
+    mutationKey: ["website-discard"],
     mutationFn: (section: "basics" | "method" | "plans" | "results" | "faqs") =>
       discardFn({ data: { section } }),
     onSuccess: (_r, section) => {
@@ -562,6 +563,7 @@ function WebsiteEditorPage() {
       qc.invalidateQueries({ queryKey: ["my-website-content"] });
       qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
       qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      setPublishedDirtyBaseline(localDirtyBump);
       setDiscardingId(null);
       setReloadNonce((n) => n + 1);
     },
