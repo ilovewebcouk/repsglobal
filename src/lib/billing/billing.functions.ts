@@ -16,6 +16,10 @@ const checkoutInput = z
     tier: z.enum(["verified", "pro"]),
     period: z.enum(["monthly", "annual"]),
     environment: z.enum(["sandbox", "live"]),
+    // GA4 client_id from the browser's _ga cookie — carried into Stripe
+    // metadata so the webhook can attribute the server-side `purchase` event
+    // (via Measurement Protocol) to the same visitor session.
+    gaClientId: z.string().max(64).nullable().optional(),
   })
   .superRefine((value, ctx) => {
     if (!getCheckoutOffer(value.tier, value.period)) {
@@ -88,6 +92,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
               billing_period: period,
               is_founding: String(offer.founding),
               environment,
+              ...(data.gaClientId ? { ga_client_id: data.gaClientId } : {}),
             },
           },
           metadata: {
@@ -95,6 +100,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
             tier,
             billing_period: period,
             environment,
+            ...(data.gaClientId ? { ga_client_id: data.gaClientId } : {}),
           },
         });
 

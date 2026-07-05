@@ -583,6 +583,29 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 } catch (e) {
                   console.warn("[email] purchase confirmation failed:", e);
                 }
+                // GA4 Measurement Protocol — server-side purchase event.
+                // Idempotent enough for GA (transaction_id dedupes) and never
+                // blocks the webhook response.
+                try {
+                  const item = sub.items.data[0];
+                  const amount = (item?.price.unit_amount ?? 0) / 100;
+                  const currency = (item?.price.currency ?? "gbp").toUpperCase();
+                  const tier = (sub.metadata?.tier as string) ?? "verified";
+                  const period = (sub.metadata?.billing_period as string) ?? "annual";
+                  const gaClientId = (sub.metadata?.ga_client_id as string) ?? (session.metadata?.ga_client_id as string) ?? null;
+                  const { sendGaPurchase } = await import("@/lib/analytics/ga-measurement-protocol.server");
+                  await sendGaPurchase({
+                    clientId: gaClientId,
+                    userId,
+                    transactionId: sub.id,
+                    value: amount,
+                    currency,
+                    tier,
+                    period,
+                  });
+                } catch (e) {
+                  console.warn("[ga4-mp] purchase dispatch failed:", e);
+                }
                 // BD setup-link / reactivation token consumption was retired
                 // when the legacy modules were archived in Phase 7.
 
