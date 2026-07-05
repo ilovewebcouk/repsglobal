@@ -164,6 +164,7 @@ export const ADMIN_NAV = [
     items: [
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
+      { icon: Mails, label: "Newsletter", to: "/admin/newsletter" },
     ],
   },
   {
