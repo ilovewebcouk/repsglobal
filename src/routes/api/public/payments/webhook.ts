@@ -401,7 +401,7 @@ async function handlePlatformChargeRefunded(charge: Stripe.Charge, env: StripeEn
   // Find the most recent subscription for this customer in this env.
   const { data: sub } = await supabaseAdmin
     .from("subscriptions")
-    .select("id, user_id, metadata, status")
+    .select("id, user_id, metadata, status, stripe_subscription_id")
     .eq("stripe_customer_id", customerId)
     .eq("environment", env)
     .order("updated_at", { ascending: false })
@@ -435,6 +435,25 @@ async function handlePlatformChargeRefunded(charge: Stripe.Charge, env: StripeEn
   console.log(
     `[payments-webhook] platform refund recorded: sub=${(sub as { id: string }).id} amount=${refunded} full=${isFull}`,
   );
+
+  // GA4 — refund event (nets revenue in Monetization reports).
+  try {
+    const currency = ((charge as unknown as { currency?: string }).currency ?? "gbp").toUpperCase();
+    const meta = (prev ?? {}) as Record<string, unknown>;
+    const { sendGaRefund } = await import("@/lib/analytics/ga-measurement-protocol.server");
+    await sendGaRefund({
+      clientId: (meta.ga_client_id as string) ?? null,
+      userId: (sub as { user_id?: string | null }).user_id ?? null,
+      transactionId: (sub as { stripe_subscription_id?: string | null }).stripe_subscription_id ?? charge.id,
+      value: refunded / 100,
+      currency,
+      tier: (meta.tier as string) ?? null,
+      period: (meta.billing_period as string) ?? null,
+      isFull,
+    });
+  } catch (e) {
+    console.warn("[ga4-mp] refund dispatch failed:", e);
+  }
 }
 
 async function handleConnectDispute(dispute: Stripe.Dispute, eventType: string): Promise<void> {
@@ -583,7 +602,8 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 } catch (e) {
                   console.warn("[email] purchase confirmation failed:", e);
                 }
-                // GA4 Measurement Protocol — server-side purchase event.
+                // GA4 Measurement Protocol — server-side purchase +
+                // subscription_started (and trial_started if applicable).
                 // Idempotent enough for GA (transaction_id dedupes) and never
                 // blocks the webhook response.
                 try {
@@ -593,19 +613,22 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   const tier = (sub.metadata?.tier as string) ?? "verified";
                   const period = (sub.metadata?.billing_period as string) ?? "annual";
                   const gaClientId = (sub.metadata?.ga_client_id as string) ?? (session.metadata?.ga_client_id as string) ?? null;
-                  const { sendGaPurchase } = await import("@/lib/analytics/ga-measurement-protocol.server");
-                  await sendGaPurchase({
-                    clientId: gaClientId,
-                    userId,
+                  const ga = await import("@/lib/analytics/ga-measurement-protocol.server");
+                  await ga.sendGaPurchase({
+                    clientId: gaClientId, userId,
                     transactionId: sub.id,
-                    value: amount,
-                    currency,
-                    tier,
-                    period,
+                    value: amount, currency, tier, period,
+                  });
+                  await ga.sendGaLifecycle({
+                    clientId: gaClientId, userId,
+                    event: sub.status === "trialing" ? "trial_started" : "subscription_started",
+                    subscriptionId: sub.id,
+                    tier, period, value: amount, currency,
                   });
                 } catch (e) {
                   console.warn("[ga4-mp] purchase dispatch failed:", e);
                 }
+
                 // BD setup-link / reactivation token consumption was retired
                 // when the legacy modules were archived in Phase 7.
 
@@ -641,6 +664,24 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               if (userId) {
                 const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
                 if (event.type === "customer.subscription.deleted") {
+                  // GA4 — subscription_cancelled (fire BEFORE closeMembership, which
+                  // deletes the auth user and would break follow-up lookups).
+                  try {
+                    const item = sub.items.data[0];
+                    const amount = (item?.price.unit_amount ?? 0) / 100;
+                    const currency = (item?.price.currency ?? "gbp").toUpperCase();
+                    const tier = (sub.metadata?.tier as string) ?? "verified";
+                    const period = (sub.metadata?.billing_period as string) ?? "annual";
+                    const { sendGaLifecycle } = await import("@/lib/analytics/ga-measurement-protocol.server");
+                    await sendGaLifecycle({
+                      clientId: null, userId,
+                      event: "subscription_cancelled",
+                      subscriptionId: sub.id,
+                      tier, period, value: amount, currency,
+                      cancelReason: sub.cancellation_details?.reason ?? null,
+                    });
+                  } catch (e) { console.warn("[ga4-mp] cancel dispatch failed:", e); }
+
                   await supabaseAdmin.rpc("enter_churn_stage" as never, {
                     _user_id: userId, _stage: "grace",
                     _reason: "Stripe subscription deleted",
@@ -737,6 +778,40 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 const sub = await stripe.subscriptions.retrieve(subId);
                 userId = await upsertSubscriptionFromStripe(sub, stripe, env);
               }
+              // GA4 lifecycle for renewals + payment failures.
+              if (userId) {
+                try {
+                  const billingReason = (invoice as unknown as { billing_reason?: string }).billing_reason ?? null;
+                  const invAmt = ((invoice as unknown as { amount_paid?: number; amount_due?: number }).amount_paid
+                    ?? (invoice as unknown as { amount_due?: number }).amount_due ?? 0) / 100;
+                  const invCurrency = ((invoice as unknown as { currency?: string }).currency ?? "gbp").toUpperCase();
+                  let gaTier = "verified"; let gaPeriod = "annual";
+                  if (subId) {
+                    const s = await stripe.subscriptions.retrieve(subId);
+                    gaTier = (s.metadata?.tier as string) ?? gaTier;
+                    gaPeriod = (s.metadata?.billing_period as string) ?? gaPeriod;
+                  }
+                  const { sendGaLifecycle } = await import("@/lib/analytics/ga-measurement-protocol.server");
+                  if (event.type === "invoice.payment_succeeded" && billingReason === "subscription_cycle") {
+                    await sendGaLifecycle({
+                      clientId: null, userId,
+                      event: "subscription_renewed",
+                      subscriptionId: subId ?? invoice.id ?? "unknown",
+                      tier: gaTier, period: gaPeriod,
+                      value: invAmt, currency: invCurrency,
+                    });
+                  } else if (event.type === "invoice.payment_failed") {
+                    await sendGaLifecycle({
+                      clientId: null, userId,
+                      event: "payment_failed",
+                      subscriptionId: subId ?? invoice.id ?? "unknown",
+                      tier: gaTier, period: gaPeriod,
+                      value: invAmt, currency: invCurrency,
+                    });
+                  }
+                } catch (e) { console.warn("[ga4-mp] invoice lifecycle dispatch failed:", e); }
+              }
+
               if (userId && event.type === "invoice.payment_failed") {
                 const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
                 await supabaseAdmin.rpc("enter_churn_stage" as never, {
@@ -754,6 +829,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     const { data: profile } = await supabaseAdmin
                       .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                     const graceEnd = new Date(Date.now() + 14 * 86400000);
+
                     const invAmt = ((invoice as unknown as { amount_due?: number }).amount_due ?? 0) / 100;
                     const invAmount = invAmt > 0 ? `£${invAmt.toFixed(invAmt % 1 === 0 ? 0 : 2)}` : "£34";
                     const invTier = subId

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Check, Star, Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -9,22 +9,72 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { startCheckoutRedirect } from "@/lib/billing/startCheckout";
+import { trackGaEvent } from "@/hooks/useGoogleAnalytics";
 import {
   PLANS,
   type Billing,
   type PlanTierKey,
 } from "./pricing-data";
 
+// Client-side plan-value map — only used for GA4 ecommerce events (view_item_list
+// / select_item). The source of truth for what is actually charged is the
+// Stripe price resolved server-side in the checkout function.
+const GA_PLAN_VALUE: Record<string, number> = {
+  verified_annual: 34,
+  pro_monthly: 59,
+  pro_annual: 590,
+};
+
+
 export function PricingPlans() {
   const [billing, setBilling] = useState<Billing>("annual");
   const [checkoutTier, setCheckoutTier] = useState<PlanTierKey | null>(null);
   const navigate = useNavigate();
 
+  // GA4 ecommerce funnel — step 1: pricing tiers rendered.
+  useEffect(() => {
+    trackGaEvent("view_item_list", {
+      item_list_id: "pricing_plans",
+      item_list_name: "Pricing plans",
+      items: PLANS.filter((p) => !p.waitlist).map((p) => {
+        const key = p.tierKey === "verified" ? "verified_annual" : `${p.tierKey}_${billing}`;
+        return {
+          item_id: key,
+          item_name: p.tier,
+          item_category: p.tierKey,
+          item_variant: p.tierKey === "verified" ? "annual" : billing,
+          price: GA_PLAN_VALUE[key] ?? 0,
+          quantity: 1,
+        };
+      }),
+    });
+  }, [billing]);
+
   async function handlePaidCta(tierKey: "verified" | "pro") {
     const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;
     // Public URL slug: "core" for the Core tier (internal key: "verified"), "pro" otherwise.
     const urlTier = tierKey === "verified" ? "core" : tierKey;
+
+    // GA4 ecommerce funnel — step 2: a specific plan was chosen.
+    const gaKey = `${tierKey === "verified" ? "verified" : tierKey}_${checkoutPeriod}`;
+    const gaValue = GA_PLAN_VALUE[gaKey] ?? 0;
+    trackGaEvent("select_item", {
+      item_list_id: "pricing_plans",
+      item_list_name: "Pricing plans",
+      items: [
+        {
+          item_id: gaKey,
+          item_name: tierKey === "pro" ? "REPS Pro" : "REPS Core",
+          item_category: tierKey,
+          item_variant: checkoutPeriod,
+          price: gaValue,
+          quantity: 1,
+        },
+      ],
+    });
+
     setCheckoutTier(tierKey);
+
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
