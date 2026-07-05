@@ -492,9 +492,14 @@ function WebsiteEditorPage() {
       (currentClients ?? null) !== (sf.current_clients ?? null));
 
   // What the sidebar/publish bar considers "unpublished" — either the
-  // in-form basics haven't been saved yet, or the server tells us there's
-  // content changed since last publish.
-  const isDirty = basicsDirty || !!publishState?.has_unpublished_changes;
+  // in-form basics haven't been saved yet, the server tells us there's
+  // content changed since last publish, or we've had a mutation succeed
+  // locally since the last publish/discard (optimistic — bridges the gap
+  // before the publish-state query refetch resolves).
+  const isDirty =
+    basicsDirty ||
+    !!publishState?.has_unpublished_changes ||
+    localDirtyBump > publishedDirtyBaseline;
 
   const saveAll = React.useCallback(() => {
     return new Promise<void>((resolve, reject) => {
