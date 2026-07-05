@@ -548,16 +548,19 @@ function Stat({
   label,
   value,
   tone,
+  sub,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
-  tone?: "emerald" | "rose" | "orange";
+  tone?: "emerald" | "rose" | "orange" | "amber";
+  sub?: string;
 }) {
   const tones: Record<string, string> = {
     emerald: "text-emerald-300",
     rose: "text-rose-300",
     orange: "text-reps-orange",
+    amber: "text-amber-300",
   };
   return (
     <div className="rounded-[16px] border border-reps-border bg-white/[0.02] p-3">
@@ -572,6 +575,9 @@ function Stat({
       >
         {value}
       </div>
+      {sub ? (
+        <div className="mt-0.5 text-[10.5px] text-white/45 tabular-nums">{sub}</div>
+      ) : null}
     </div>
   );
 }
