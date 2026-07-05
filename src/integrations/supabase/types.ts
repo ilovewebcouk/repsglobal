@@ -2965,7 +2965,7 @@ export type Database = {
           environment: string
           full_name: string
           id: string
-          password: string
+          password_ciphertext: string
           period: string
           stripe_customer_id: string | null
           stripe_session_id: string | null
@@ -2978,7 +2978,7 @@ export type Database = {
           environment: string
           full_name: string
           id?: string
-          password: string
+          password_ciphertext: string
           period: string
           stripe_customer_id?: string | null
           stripe_session_id?: string | null
@@ -2991,7 +2991,7 @@ export type Database = {
           environment?: string
           full_name?: string
           id?: string
-          password?: string
+          password_ciphertext?: string
           period?: string
           stripe_customer_id?: string | null
           stripe_session_id?: string | null
