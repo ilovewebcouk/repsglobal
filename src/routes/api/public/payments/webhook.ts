@@ -401,7 +401,7 @@ async function handlePlatformChargeRefunded(charge: Stripe.Charge, env: StripeEn
   // Find the most recent subscription for this customer in this env.
   const { data: sub } = await supabaseAdmin
     .from("subscriptions")
-    .select("id, user_id, metadata, status")
+    .select("id, user_id, metadata, status, stripe_subscription_id")
     .eq("stripe_customer_id", customerId)
     .eq("environment", env)
     .order("updated_at", { ascending: false })
