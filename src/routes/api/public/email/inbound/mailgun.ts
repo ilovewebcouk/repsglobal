@@ -102,6 +102,7 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
           "press@repsuk.org",
           "no-reply@repsuk.org",
           "noreply@repsuk.org",
+          "news@notify.repsuk.org",
         ]);
         const senderEmailRaw = (
           sender.match(/<([^>]+)>/)?.[1] ?? sender
