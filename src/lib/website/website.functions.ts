@@ -734,7 +734,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
 
     const [coachingSinceYear, trust, gymVenues] = await Promise.all([
       fetchCoachingSinceYear(supabaseAdmin, userId, pro.primary_title_slug ?? null),
-      fetchTrustSummary(supabaseAdmin, userId, pro.primary_title_slug ?? null),
+      fetchTrustSummary(supabaseAdmin, userId, pro.primary_title_slug ?? null, true),
       loadProfessionalGymVenues(supabaseAdmin, userId),
     ]);
 
