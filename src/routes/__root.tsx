@@ -192,7 +192,10 @@ function RootShell({ children }: { children: ReactNode }) {
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false});`,
+            // Consent Mode v2 — deny everything by default, then read the
+            // first-party consent cookie set by our banner and upgrade
+            // analytics_storage synchronously before the first hit fires.
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});try{var m=document.cookie.split('; ').find(function(r){return r.indexOf('reps.consent.v1=')===0});if(m){var v=JSON.parse(decodeURIComponent(m.split('=')[1]));if(v&&v.analytics===true){gtag('consent','update',{analytics_storage:'granted'});}}}catch(e){}gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false,anonymize_ip:true});`,
           }}
         />
       </head>
@@ -215,10 +218,15 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      // GA4 — bind user_id + logged_in user_property on every auth transition.
+      import("@/hooks/useGoogleAnalytics").then(({ setGaUser, trackGaEvent }) => {
+        setGaUser(session?.user?.id ?? null);
+        if (event === "SIGNED_IN") trackGaEvent("login", { method: "supabase" });
+      });
       // Fire-and-forget welcome email on confirmed sign-in. Idempotent server-side
       // via `welcome-signup:${userId}` key in email_send_log.
       if (event === "SIGNED_IN") {
@@ -227,7 +235,16 @@ function RootComponent() {
           .catch(() => {});
       }
     });
-    return () => subscription.unsubscribe();
+    // GA4 Consent Mode v2 — react to banner decisions in real time.
+    const onConsent = (e: Event) => {
+      const analytics = (e as CustomEvent<{ analytics: boolean }>).detail?.analytics === true;
+      import("@/hooks/useGoogleAnalytics").then(({ setGaConsent }) => setGaConsent(analytics));
+    };
+    window.addEventListener("reps:consent-changed", onConsent);
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("reps:consent-changed", onConsent);
+    };
   }, [router, queryClient]);
 
   // Admin Activity v1 — privacy-safe operational beacon (logged-in only).
