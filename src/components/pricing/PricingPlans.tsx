@@ -22,7 +22,7 @@ export function PricingPlans() {
 
   async function handlePaidCta(tierKey: "verified" | "pro") {
     const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;
-    // Public URL slug: "core" for the Verified/Core tier, "pro" otherwise.
+    // Public URL slug: "core" for the Core tier (internal key: "verified"), "pro" otherwise.
     const urlTier = tierKey === "verified" ? "core" : tierKey;
     setCheckoutTier(tierKey);
     try {

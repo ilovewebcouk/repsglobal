@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * REPS tier wordmarks (Verified / Pro / Studio).
+ * REPS tier wordmarks (Core / Pro / Studio).
+
  * Path data lifted from the source Adobe Illustrator SVGs, normalised to
  * `fill="currentColor"` so they re-colour via Tailwind text classes.
  * Size by setting a height class (e.g. `h-[18px]`); width is preserved by viewBox.
@@ -49,7 +50,7 @@ const TIERS: Record<
   },
   verified: {
     viewBox: "0 0 179.72 21.62",
-    label: "REPS Verified",
+    label: "REPS Core",
     paths: [
       "M0,21.29V.92h8.34c1.53,0,2.85.28,3.96.83,1.11.55,1.97,1.33,2.56,2.34.6,1.01.9,2.21.9,3.6s-.31,2.59-.92,3.58c-.61.99-1.48,1.74-2.61,2.25-1.13.51-2.47.77-4.03.77H2.88v-3.81h4.44c.76,0,1.39-.1,1.89-.3.51-.2.89-.51,1.15-.92s.39-.93.39-1.56-.13-1.17-.39-1.59c-.26-.42-.65-.74-1.16-.95-.51-.21-1.14-.32-1.9-.32h-2.49v16.46H0ZM11.18,21.29l-4.96-9.31h5.17l5.09,9.31h-5.29Z",
       "M19.24,21.29V.92h14.14v3.94h-9.31v4.21h8.57v3.86h-8.57v4.43h9.3v3.94h-14.12Z",
