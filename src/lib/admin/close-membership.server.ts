@@ -256,7 +256,7 @@ export async function _closeMembershipImpl(
         last_tier: lastTier,
         stripe_subs_cancelled: cancelled,
         reason: input.reason,
-        mode: input.mode,
+        mode: effectiveMode,
         actor: input.actor_id,
       },
       _reason: input.notes ?? input.reason,
@@ -265,9 +265,11 @@ export async function _closeMembershipImpl(
     console.warn("[closeMembership] audit log failed", e);
   }
 
+  await insertCancelOpsAlert(input.user_id, input.reason, email, input.actor_id);
+
   return {
     ok: true,
-    mode: input.mode,
+    mode: effectiveMode,
     cancelled,
     emailSent: emailRes.ok,
     emailError: emailRes.error,
