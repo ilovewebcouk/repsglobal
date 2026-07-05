@@ -13,20 +13,30 @@ export async function ensureUserFromPendingSignup(
 
   const { data: row, error } = await supabaseAdmin
     .from("pending_signups")
-    .select("id, email, password, full_name, tier, period, stripe_customer_id, consumed_at")
+    .select("id, email, password_ciphertext, full_name, tier, period, stripe_customer_id, consumed_at")
     .eq("id", pendingId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!row) throw new Error(`pending_signup ${pendingId} not found`);
 
-  const r = row as {
+  const raw = row as unknown as {
     email: string;
-    password: string;
+    password_ciphertext: string;
     full_name: string;
     tier: string;
     period: string;
     stripe_customer_id: string | null;
   };
+  const { decryptSecret } = await import("./secret-crypto.server");
+  const r = {
+    email: raw.email,
+    password: decryptSecret(raw.password_ciphertext),
+    full_name: raw.full_name,
+    tier: raw.tier,
+    period: raw.period,
+    stripe_customer_id: raw.stripe_customer_id,
+  };
+
 
   // If an auth user with this email already exists (webhook ran first, or
   // a race produced a second insert attempt), return it.
