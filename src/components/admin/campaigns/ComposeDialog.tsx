@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Calendar, FileText, Loader2, Paperclip, Search, Send, X } from "lucide-react";
+import { Calendar, FileText, Loader2, Newspaper, Paperclip, Search, Send, X } from "lucide-react";
+import { RESOURCE_ARTICLES, type ResourceArticle } from "@/lib/resources";
 import {
   Dialog,
   DialogContent,
