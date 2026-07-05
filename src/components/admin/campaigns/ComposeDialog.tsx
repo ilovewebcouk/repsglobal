@@ -401,7 +401,7 @@ export function ComposeDialog({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormat("html")}
+                    onClick={() => switchFormat("html")}
                     className={`rounded-[6px] px-3 py-1 transition ${
                       format === "html"
                         ? "bg-reps-orange text-white"
