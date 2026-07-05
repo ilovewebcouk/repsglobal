@@ -13,6 +13,9 @@ import {
   Calendar,
   Send,
   Loader2,
+  Eye,
+  MousePointerClick,
+  UserMinus,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
