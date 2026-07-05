@@ -215,7 +215,7 @@ export const Route = createFileRoute("/api/public/email/events/mailgun")({
 
           await supabaseAdmin
             .from("outbound_campaign_recipients")
-            .update(merged)
+            .update(merged as never)
             .eq("id", row.id);
 
           // Roll-up campaign counters (unique recipients per event type).
@@ -228,7 +228,7 @@ export const Route = createFileRoute("/api/public/email/events/mailgun")({
             const cur = (c as any)?.[col] ?? 0;
             await supabaseAdmin
               .from("outbound_campaigns")
-              .update({ [col]: cur + 1 })
+              .update({ [col]: cur + 1 } as never)
               .eq("id", row.campaign_id);
           };
 
@@ -242,40 +242,29 @@ export const Route = createFileRoute("/api/public/email/events/mailgun")({
 
         // Unsubscribe: also add to suppression list so future campaign sends
         // skip this address (defence-in-depth; Mailgun already suppresses).
-        if (eventName === "unsubscribed" && recipient) {
+        const suppress = async (reason: string) => {
+          if (!recipient) return;
           await supabaseAdmin
             .from("suppressed_emails")
             .upsert(
               {
                 email: recipient,
-                reason: "unsubscribed",
-                source: "mailgun_webhook",
-              },
+                reason,
+                metadata: { source: "mailgun_webhook", event: eventName },
+              } as never,
               { onConflict: "email" },
             );
-        }
+        };
+        if (eventName === "unsubscribed") await suppress("unsubscribed");
         if (
           (eventName === "failed" ||
             eventName === "permanent_fail" ||
             eventName === "rejected") &&
-          severity === "permanent" &&
-          recipient
+          severity === "permanent"
         ) {
-          await supabaseAdmin
-            .from("suppressed_emails")
-            .upsert(
-              { email: recipient, reason: "bounced", source: "mailgun_webhook" },
-              { onConflict: "email" },
-            );
+          await suppress("bounced");
         }
-        if (eventName === "complained" && recipient) {
-          await supabaseAdmin
-            .from("suppressed_emails")
-            .upsert(
-              { email: recipient, reason: "complained", source: "mailgun_webhook" },
-              { onConflict: "email" },
-            );
-        }
+        if (eventName === "complained") await suppress("complained");
 
         return new Response("ok", { status: 200 });
       },
