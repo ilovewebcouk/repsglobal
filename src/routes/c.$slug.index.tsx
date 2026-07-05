@@ -1964,7 +1964,7 @@ function XGlyph({ className }: { className?: string }) {
 
 function FooterMark() {
   return (
-    <footer className="border-t border-reps-border bg-reps-ink">
+    <footer className="border-t border-reps-border bg-reps-ink pb-[88px] lg:pb-0">
       <div className="mx-auto flex max-w-[1320px] flex-col items-center justify-between gap-3 px-6 py-6 text-[12.5px] text-reps-muted sm:flex-row lg:px-10">
         <Link to="/" className="inline-flex items-center gap-2 text-reps-text-soft">
           <RepsWordmark className="h-3.5 w-auto text-reps-text-soft" />
