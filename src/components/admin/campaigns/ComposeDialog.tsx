@@ -358,9 +358,30 @@ export function ComposeDialog({
                   })}
                 </div>
                 <div className="mt-2 text-[12px] text-white/55">
-                  {previewQuery.isLoading
-                    ? "Counting recipients…"
-                    : `Will send to ${broadcastCount} ${broadcastCount === 1 ? "trainer" : "trainers"}`}
+                  {previewQuery.isLoading ? (
+                    "Counting recipients…"
+                  ) : (
+                    (() => {
+                      const byTier = (previewQuery.data?.byTier ?? {}) as Partial<Record<Tier, number>>;
+                      const newsletterOnly =
+                        tiers.length === 1 && tiers[0] === "newsletter";
+                      const headline = newsletterOnly
+                        ? `Will send to ${byTier.newsletter ?? 0} confirmed newsletter ${(byTier.newsletter ?? 0) === 1 ? "subscriber" : "subscribers"}`
+                        : `Will send to ${broadcastCount} ${broadcastCount === 1 ? "recipient" : "recipients"}`;
+                      const parts = TIERS
+                        .filter((t) => tiers.includes(t.value) && (byTier[t.value] ?? 0) > 0)
+                        .map((t) => `${t.label} ${byTier[t.value]}`);
+                      const showBreakdown = !newsletterOnly && tiers.length > 1 && parts.length > 0;
+                      return (
+                        <>
+                          <div>{headline}</div>
+                          {showBreakdown && (
+                            <div className="mt-1 text-white/45">{parts.join(" · ")}</div>
+                          )}
+                        </>
+                      );
+                    })()
+                  )}
                 </div>
               </Field>
             </TabsContent>

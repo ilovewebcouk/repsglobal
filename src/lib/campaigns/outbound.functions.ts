@@ -200,8 +200,18 @@ export const previewBroadcastCount = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Per-tier counts (small dataset — one resolver call per selected tier).
+    const byTier: Partial<Record<Tier, number>> = {};
+    await Promise.all(
+      data.tiers.map(async (t) => {
+        const rs = await resolveTierRecipients(supabaseAdmin, [t]);
+        byTier[t] = rs.length;
+      }),
+    );
+
+    // Deduped union across all selected tiers.
     const recipients = await resolveTierRecipients(supabaseAdmin, data.tiers);
-    return { count: recipients.length };
+    return { count: recipients.length, byTier };
   });
 
 async function resolveTierRecipients(
