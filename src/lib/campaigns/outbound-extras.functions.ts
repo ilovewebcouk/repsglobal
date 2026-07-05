@@ -11,7 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type Inbox = "support" | "pros" | "partners" | "press";
+type Inbox = "support" | "pros" | "partners" | "press" | "news";
 type Tier = "free" | "verified" | "pro" | "studio" | "newsletter" | "prospects";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
@@ -19,6 +19,7 @@ const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> 
   pros: { email: "pros@repsuk.org", name: "REPS Pros", label: "Pros" },
   partners: { email: "partners@repsuk.org", name: "REPS Partners", label: "Partners" },
   press: { email: "press@repsuk.org", name: "REPS Press", label: "Press" },
+  news: { email: "news@notify.repsuk.org", name: "REPS Updates", label: "Newsletter (send-only)" },
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
