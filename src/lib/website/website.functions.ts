@@ -586,7 +586,18 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     };
 
     if (!previewOk && hasPublishedSnapshot) {
-      payload = snap!;
+      const [liveTrust, liveCoachingSinceYear] = await Promise.all([
+        fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+        fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+      ]);
+      payload = {
+        ...snap!,
+        website: {
+          ...snap!.website,
+          trust: liveTrust,
+          coaching_since_year: liveCoachingSinceYear ?? snap!.website.coaching_since_year,
+        },
+      };
     } else {
       const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
         supabaseAdmin
