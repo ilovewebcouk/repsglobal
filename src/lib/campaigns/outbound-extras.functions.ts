@@ -725,12 +725,14 @@ function appendNewsletterFooter(
   rendered: { html: string; text: string },
   unsubUrl: string,
 ): { html: string; text: string } {
+  const contactUrl = "https://repsuk.org/contact";
   const htmlFooter = `
 <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#888;line-height:1.5;text-align:center;">
   You're receiving this because you subscribed to the REPS newsletter.<br />
+  This is a send-only address — need help? <a href="${contactUrl}" style="color:#888;text-decoration:underline;">Contact support</a>.<br />
   <a href="${unsubUrl}" style="color:#888;text-decoration:underline;">Unsubscribe</a>
 </div>`;
-  const textFooter = `\n\n—\nYou're receiving this because you subscribed to the REPS newsletter.\nUnsubscribe: ${unsubUrl}\n`;
+  const textFooter = `\n\n—\nYou're receiving this because you subscribed to the REPS newsletter.\nThis is a send-only address — need help? Contact support: ${contactUrl}\nUnsubscribe: ${unsubUrl}\n`;
 
   // Inject the HTML footer before </body> when present, otherwise append.
   const html = /<\/body>/i.test(rendered.html)
