@@ -35,6 +35,7 @@ import {
   saveCampaignDraft,
   scheduleCampaign,
 } from "@/lib/campaigns/outbound-extras.functions";
+import { draftArticleEmail } from "@/lib/campaigns/article-ai-draft.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
 type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter";
