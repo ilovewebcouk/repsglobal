@@ -583,7 +583,8 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 } catch (e) {
                   console.warn("[email] purchase confirmation failed:", e);
                 }
-                // GA4 Measurement Protocol — server-side purchase event.
+                // GA4 Measurement Protocol — server-side purchase +
+                // subscription_started (and trial_started if applicable).
                 // Idempotent enough for GA (transaction_id dedupes) and never
                 // blocks the webhook response.
                 try {
@@ -593,19 +594,22 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   const tier = (sub.metadata?.tier as string) ?? "verified";
                   const period = (sub.metadata?.billing_period as string) ?? "annual";
                   const gaClientId = (sub.metadata?.ga_client_id as string) ?? (session.metadata?.ga_client_id as string) ?? null;
-                  const { sendGaPurchase } = await import("@/lib/analytics/ga-measurement-protocol.server");
-                  await sendGaPurchase({
-                    clientId: gaClientId,
-                    userId,
+                  const ga = await import("@/lib/analytics/ga-measurement-protocol.server");
+                  await ga.sendGaPurchase({
+                    clientId: gaClientId, userId,
                     transactionId: sub.id,
-                    value: amount,
-                    currency,
-                    tier,
-                    period,
+                    value: amount, currency, tier, period,
+                  });
+                  await ga.sendGaLifecycle({
+                    clientId: gaClientId, userId,
+                    event: sub.status === "trialing" ? "trial_started" : "subscription_started",
+                    subscriptionId: sub.id,
+                    tier, period, value: amount, currency,
                   });
                 } catch (e) {
                   console.warn("[ga4-mp] purchase dispatch failed:", e);
                 }
+
                 // BD setup-link / reactivation token consumption was retired
                 // when the legacy modules were archived in Phase 7.
 
