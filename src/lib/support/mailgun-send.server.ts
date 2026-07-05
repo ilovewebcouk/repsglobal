@@ -51,6 +51,41 @@ function assertNoHttpTrackingUrls(html: string, text: string): void {
   }
 }
 
+// Applies Mailgun `o:tracking-*`, `v:*` and `o:tag` fields onto whichever
+// body carrier we're using (FormData for attachments, URLSearchParams
+// otherwise). Kept in one place so the two send bodies stay in sync.
+function appendMailgunOptions(
+  target: FormData | URLSearchParams,
+  input: MailgunSendInput,
+): void {
+  const set = (k: string, v: string) => {
+    if (target instanceof FormData) target.append(k, v);
+    else target.set(k, v);
+  };
+  if (input.tracking) {
+    set("o:tracking", "yes");
+    if (input.tracking.opens !== undefined) {
+      set("o:tracking-opens", input.tracking.opens ? "yes" : "no");
+    }
+    if (input.tracking.clicks !== undefined) {
+      set(
+        "o:tracking-clicks",
+        input.tracking.clicks === "htmlonly"
+          ? "htmlonly"
+          : input.tracking.clicks
+            ? "yes"
+            : "no",
+      );
+    }
+  }
+  if (input.tag) set("o:tag", input.tag);
+  if (input.variables) {
+    for (const [k, v] of Object.entries(input.variables)) {
+      if (v !== undefined && v !== null) set(`v:${k}`, String(v));
+    }
+  }
+}
+
 export interface MailgunAttachment {
   filename: string;
   contentType: string;
