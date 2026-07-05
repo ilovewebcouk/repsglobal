@@ -322,6 +322,8 @@ async function insertOpsAlert(
   } catch (err) {
     console.warn(`[ops_alerts] insert ${kind} failed:`, err);
   }
+}
+
 
 /**
  * Entry point for the Stripe webhook. Handles platform (non-Connect) dispute
