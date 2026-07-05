@@ -228,11 +228,30 @@ const TransformationSchema = z.object({
   is_published: z.boolean().default(true),
 });
 
+async function assertOwnsRow(
+  supabaseAdmin: { from: (t: string) => any },
+  table: string,
+  id: string | undefined,
+  userId: string,
+  ownerCol: "user_id" | "professional_id",
+): Promise<void> {
+  if (!id) return;
+  const { data: existing } = await supabaseAdmin
+    .from(table)
+    .select(ownerCol)
+    .eq("id", id)
+    .maybeSingle();
+  if (existing && (existing as Record<string, string>)[ownerCol] !== userId) {
+    throw new Error("Not found");
+  }
+}
+
 export const upsertTransformation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => TransformationSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertOwnsRow(supabaseAdmin, "website_transformations", data.id, context.userId, "user_id");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
       .from("website_transformations")
