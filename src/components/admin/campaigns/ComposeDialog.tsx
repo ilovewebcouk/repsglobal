@@ -345,9 +345,9 @@ export function ComposeDialog({
             </TabsContent>
 
             <ArticleLoader
-              onLoad={(article) => {
+              onLoad={(article, coverUrl) => {
                 setSubject(buildArticleSubject(article));
-                setBody(buildArticleEmailHtml(article));
+                setBody(buildArticleEmailHtml(article, coverUrl));
                 setFormat("html");
                 toast.success(`Loaded "${article.title}"`);
               }}
@@ -758,8 +758,43 @@ function AttachmentPicker({
   );
 }
 
-function ArticleLoader({ onLoad }: { onLoad: (article: ResourceArticle) => void }) {
+async function persistArticleCover(article: ResourceArticle): Promise<string | null> {
+  const raw = article.cover;
+  if (!raw) return null;
+  // Already an absolute public URL (e.g. Lovable Assets CDN) — use as-is.
+  if (/^https?:\/\//i.test(raw)) return raw;
+  try {
+    const absolute = new URL(raw, window.location.origin).toString();
+    const res = await fetch(absolute);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+    const path = `articles/${article.slug}.${ext}`;
+    const { error } = await supabase.storage
+      .from("campaign-media")
+      .upload(path, blob, {
+        contentType: blob.type || "image/jpeg",
+        upsert: true,
+        cacheControl: "31536000",
+      });
+    if (error && !/exists/i.test(error.message)) {
+      console.warn("cover upload failed", error);
+    }
+    const { data } = supabase.storage.from("campaign-media").getPublicUrl(path);
+    return data.publicUrl ?? null;
+  } catch (err) {
+    console.warn("cover persist failed", err);
+    return null;
+  }
+}
+
+function ArticleLoader({
+  onLoad,
+}: {
+  onLoad: (article: ResourceArticle, coverUrl: string | null) => void;
+}) {
   const [value, setValue] = useState<string>("");
+  const [loading, setLoading] = useState(false);
   const articles = useMemo(
     () =>
       [...RESOURCE_ARTICLES].sort(
@@ -772,15 +807,27 @@ function ArticleLoader({ onLoad }: { onLoad: (article: ResourceArticle) => void 
       <div className="flex flex-wrap items-center gap-2">
         <Select
           value={value}
-          onValueChange={(v) => {
+          disabled={loading}
+          onValueChange={async (v) => {
             setValue(v);
             const article = articles.find((a) => a.slug === v);
-            if (article) onLoad(article);
+            if (!article) return;
+            setLoading(true);
+            try {
+              const coverUrl = await persistArticleCover(article);
+              onLoad(article, coverUrl);
+            } finally {
+              setLoading(false);
+            }
           }}
         >
           <SelectTrigger className="bg-white/[0.04] border-reps-border text-white flex-1 min-w-[260px]">
             <div className="flex items-center gap-2 text-left">
-              <Newspaper className="size-4 text-white/55" />
+              {loading ? (
+                <Loader2 className="size-4 text-white/55 animate-spin" />
+              ) : (
+                <Newspaper className="size-4 text-white/55" />
+              )}
               <SelectValue placeholder="Pick a resource article to auto-fill subject + body…" />
             </div>
           </SelectTrigger>
@@ -794,7 +841,7 @@ function ArticleLoader({ onLoad }: { onLoad: (article: ResourceArticle) => void 
         </Select>
       </div>
       <div className="mt-1.5 text-[11px] text-white/45">
-        Pre-fills the subject and an HTML email with the article cover, intro and a CTA back to repsuk.org. You can then edit before sending.
+        Pre-fills the subject and an HTML email with the article cover, intro and a CTA back to repsuk.org. The cover image is copied to public storage so it loads in every inbox. You can edit before sending.
       </div>
     </Field>
   );
@@ -804,11 +851,14 @@ function buildArticleSubject(article: ResourceArticle): string {
   return article.title;
 }
 
-function buildArticleEmailHtml(article: ResourceArticle): string {
+function buildArticleEmailHtml(article: ResourceArticle, coverUrl?: string | null): string {
   const url = `https://repsuk.org/resources/${article.slug}`;
-  const cover = article.cover?.startsWith("http")
-    ? article.cover
-    : `https://repsuk.org${article.cover ?? ""}`;
+  const rawCover = coverUrl ?? article.cover ?? "";
+  const cover = rawCover.startsWith("http")
+    ? rawCover
+    : rawCover
+      ? `https://repsuk.org${rawCover}`
+      : "";
   const intro =
     article.body.find((b) => b.type === "p") as { type: "p"; text: string } | undefined;
   const introText = intro?.text ?? article.excerpt;
