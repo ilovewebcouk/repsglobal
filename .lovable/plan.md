@@ -1,66 +1,63 @@
-## Prospects: cold contacts as a separate audience
+## Goal
 
-Keep Newsletter strictly for public opt-ins. Add a third audience — **Prospects** — for CSV-imported cold contacts (people you want to invite to sign up). They get their own admin page, their own Campaigns tier, and auto-convert when they sign up as members.
+Two additions to `/admin/seo`, both driven by the Google Search Console connector that already powers the daily URL Inspection scan:
 
-### 1. Database
+1. Show that Google is actually fetching your sitemap.
+2. Give you a one-click way to push a priority URL into Google's "request indexing" queue.
 
-New table `public.prospect_contacts`:
-- `email` (citext, unique)
-- `full_name` (text, nullable)
-- `list_tag` (text, nullable) — e.g. "gym-owners-london", "2024-expo-leads"
-- `source_note` (text, nullable) — where the list came from
-- `status` (enum: `active` | `converted` | `unsubscribed` | `bounced`)
-- `converted_user_id` (uuid, nullable, FK auth.users)
-- `imported_at`, `imported_by` (admin), `created_at`, `updated_at`
+No changes to the daily scan, the events table, or any user-facing pages.
 
-RLS: admin-only read/write via `has_role(auth.uid(), 'admin')`. Service role full access for server functions. No anon, no authenticated grants.
+## 1. Sitemap health panel
 
-Update `handle_new_user` trigger: when a new auth user's email matches an active prospect, set `status='converted'` and `converted_user_id`.
+New card on `/admin/seo`, sits next to "Recent scans".
 
-Add index on `lower(email)` and on `(status, list_tag)`.
+Calls GSC once per view:
 
-### 2. Move CSV import off the Newsletter page
+```
+GET /webmasters/v3/sites/https%3A%2F%2Frepsuk.org%2F/sitemaps/https%3A%2F%2Frepsuk.org%2Fsitemap.xml
+```
 
-- Remove the "Import CSV" control from `/admin/newsletter`.
-- Replace with a small link: **"Cold list of non-members? Import to Prospects →"** pointing to `/admin/prospects`.
-- Newsletter page stays strictly public opt-ins.
+Displays:
+- **Status pill** — green "Submitted & healthy" / amber "Warnings" / red "Errors" / grey "Not submitted"
+- **Last downloaded** — e.g. "6 hours ago" (from `lastDownloaded`)
+- **URLs Google saw** — `contents[0].submitted` / `indexed` counts
+- **Errors / warnings** — surfaced only when non-zero
+- **Resubmit button** — `PUT` the same path; refreshes on success
 
-### 3. New admin page `/admin/prospects`
+If GSC returns 404 (sitemap not registered on the property), the card shows a one-time "Register sitemap with Google" button which does the `PUT` and then re-fetches.
 
-- Header count + "Members reachable via Campaigns" style callout
-- Filters: status, list_tag, search by email/name
-- Table: email, name, tag, status, imported date, converted badge if applicable
-- Actions: Import CSV (with required `list_tag` + optional `source_note`), Export CSV, delete row, delete entire tag, mark unsubscribed
-- Import behaviour: dedupe on email; skip emails that already exist as members (log skipped count); skip emails on `suppressed_emails`
+Runs in a new server fn `getSitemapHealth` / `resubmitSitemap` under `src/lib/seo/sitemap-health.functions.ts` (admin-only via `has_role`), using the same `GSC_GATEWAY` + `LOVABLE_API_KEY` + `GOOGLE_SEARCH_CONSOLE_API_KEY` pattern already in `index-monitor.server.ts`.
 
-### 4. Campaigns: new "Prospects" tier
+## 2. "Request indexing" helper on open events
 
-In `src/lib/campaigns/outbound.functions.ts`, `ComposeDialog.tsx`, scheduled runner, and webhook handlers:
-- Add `'prospects'` to the `Tier` union alongside `core | pro | studio | former | newsletter`
-- Recipient resolution for `prospects`: select `prospect_contacts` where `status='active'`, optional `list_tag` filter, exclude anyone whose email now matches a confirmed member (`auth.users.email_confirmed_at IS NOT NULL`), exclude `suppressed_emails`
-- ComposeDialog: add a Prospects checkbox with an optional list-tag multi-select shown when Prospects is ticked
-- When Prospects is selected, show an amber banner: *"Cold outreach — keep to a signup-focused message and no more than one per contact per month."*
-- Unsubscribe link on Prospects sends flips `prospect_contacts.status='unsubscribed'` (in addition to existing `suppressed_emails` insert)
-- Live recipient preview count already added in the composer — extend it to include Prospects when selected
+Realistic constraint: **Google's public Indexing API only accepts JobPosting / BroadcastEvent** — it won't index generic landing pages via API. The reliable path is GSC's URL Inspection UI, which has a "Request indexing" button and a ~10/day quota per property.
 
-### 5. Auto-convert on signup
+So each Open Event row gains a small **"Open in GSC →"** action:
 
-Extend `handle_new_user` (or a small AFTER INSERT trigger on `auth.users`) to look up `prospect_contacts` by lowercased email and set `status='converted'`, `converted_user_id=NEW.id`. Prospects excluded from future Prospects-tier sends automatically.
+```
+https://search.google.com/search-console/inspect
+  ?resource_id=https%3A%2F%2Frepsuk.org%2F
+  &id=<encoded full URL>
+```
 
-### Out of scope (intentionally)
+Opens the URL Inspection view in a new tab, pre-loaded on that exact URL. You click "Request indexing" there. No API call, no quota risk, works today.
 
-- No merging prospects into the Newsletter list
-- No public opt-in form for Prospects (they're cold contacts, not subscribers)
-- No changes to Core/Pro/Studio/Former/Newsletter tiers beyond adding Prospects alongside them
-- No bulk email-verification service integration (can be added later)
+Optional secondary action on the same row: **"Re-check now"** — calls the existing `inspectUrl` server fn from `index-monitor.server.ts` for just that one URL and refreshes its verdict without waiting for the next daily scan.
 
-### Files touched
+## Files
 
-- New migration: `prospect_contacts` table + policies + grants + trigger update
-- New: `src/lib/prospects/prospects.functions.ts` (list, import, export, delete, delete-tag, unsubscribe, counts)
-- New: `src/routes/admin_.prospects.tsx`
-- New: `src/components/admin/prospects/ImportCsvDialog.tsx`
-- Edit: `src/routes/admin_.newsletter.tsx` (remove CSV import, add link)
-- Edit: `src/lib/campaigns/outbound.functions.ts` (Tier union, resolver, unsubscribe handler)
-- Edit: `src/components/admin/campaigns/ComposeDialog.tsx` (Prospects checkbox + tag filter + banner + preview count)
-- Edit: admin nav to add Prospects link
+- **New** `src/lib/seo/sitemap-health.functions.ts` — `getSitemapHealth`, `resubmitSitemap`, `recheckUrl` server fns (admin-gated).
+- **Edit** `src/routes/admin_.seo.tsx` — add `<SitemapHealthCard />` next to Recent Scans; add "Open in GSC" + "Re-check" buttons to each open-event row.
+- **New** `src/components/admin/seo/SitemapHealthCard.tsx` — the card UI.
+- No DB migration, no new secrets, no cron changes.
+
+## Out of scope
+
+- Bulk "request indexing" (no API supports it for generic pages).
+- Automatic sitemap resubmission on route changes.
+- Redesigning the SEO page.
+- Any change to the scan cadence or event classification.
+
+## Explanation for you (non-technical)
+
+The panel proves Google is fetching your sitemap and shows when it last did. The per-row button jumps straight into Google's own indexing tool for that URL — that's the only supported way to nudge Google to look at a specific page sooner. Everything else on this screen (28 warnings) will resolve on its own as Google works through the site; the panel just gives you visibility while it does.
