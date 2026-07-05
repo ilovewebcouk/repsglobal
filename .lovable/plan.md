@@ -1,47 +1,42 @@
-## What's actually happening
+## Goal
+As the admin types in the top-bar Member Finder, show a live dropdown of matching members (by UID, email, Stripe `cus_…`/`sub_…`, BD id, or name) so they can click the right one instead of always hitting Enter.
 
-That UUID `3d8ffa68-f4b2-46b2-bdac-d06b48fbf445` **is** you — `cruz.pt@icloud.com` (admin + professional + has profile). Nothing in the finder filters admins out:
+## Approach
+Reuse the existing `findMember` server fn (already admin-gated, already returns ranked `MemberMatch[]`). No backend/RPC changes needed — it already supports partial email and name matches, so it works fine as an autocomplete source.
 
-- `ops_find_member` (Postgres RPC): UUID branch just does `WHERE u.id = q::uuid` against `auth.users`. No role filter. Tested — it returns the row.
-- `findMember` server fn: passes the string through, admin-gated only for who can call it.
-- `MemberFinder` component: on a single match, navigates straight to `/admin/members/$userId` (route exists).
+## Changes
 
-So "No matches" almost certainly means the string sent to the RPC didn't match the UUID regex `^[0-9a-f]{8}-[0-9a-f]{4}-…{12}$` — i.e. the paste from Google Analytics included something extra (a label like `User ID`, quotes, a trailing tab/newline, a zero-width space, or GA's `.` separators). Client-side we only `trim()`, so anything else breaks the branch and it falls through to the "partial name" search, which returns nothing.
+**`src/components/ops/MemberFinder.tsx`** (only file touched)
 
-## Fix
+1. Add a debounced effect on `q`:
+   - Trigger 250ms after the last keystroke.
+   - Skip if the normalised query is < 2 chars (avoids firing on a single letter and hammering the RPC).
+   - Cancel in-flight results if the query changed while loading (track a request id / abort marker so stale responses don't overwrite fresher ones).
+   - Show a subtle loading state in the existing spinner slot while suggestions load.
 
-Make the top-bar finder resilient to noisy pastes. One small change to `src/components/ops/MemberFinder.tsx`:
+2. Render suggestions in the existing dropdown:
+   - Reuse the current `matches` dropdown markup — same styling, same click-to-navigate behaviour, same `match_kind` badge.
+   - Cap to first 8 rows to keep the list scannable.
+   - Add keyboard nav: ↑/↓ to move highlight, Enter to open the highlighted row (falls back to current `go()` behaviour when nothing is highlighted), Esc to close.
 
-Before calling `find({ data: { q: v } })`, normalise `v`:
+3. Preserve current behaviour:
+   - Enter with no highlight still calls `go()` (single-match auto-navigate, "No matches" toast on empty).
+   - ⌘K focus shortcut untouched.
+   - Both `topbar` and `default` variants get the same autocomplete (shared logic).
+   - Clicking outside closes the dropdown (add a click-away listener on the wrapper).
 
-1. Strip zero-width chars, wrapping quotes, and surrounding whitespace.
-2. Try to **extract** an embedded UUID with a regex — if the pasted blob contains a UUID anywhere in it, use just the UUID.
-3. Also extract embedded `cus_…` / `sub_…` handles the same way.
-4. Fall back to the raw trimmed string otherwise.
+4. Small UX polish:
+   - Highlighted row uses `bg-reps-panel/60` (matches existing hover).
+   - When the user pastes a full UUID or `cus_…`, still show the dropdown briefly then auto-navigate on exact single match — do NOT skip the dropdown, so admins can visually confirm before jumping.
 
-```ts
-function normaliseQuery(raw: string): string {
-  const cleaned = raw.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/^["'`\s]+|["'`\s]+$/g, "");
-  const uuid = cleaned.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-  if (uuid) return uuid[0].toLowerCase();
-  const stripe = cleaned.match(/\b(cus|sub)_[A-Za-z0-9]+/);
-  if (stripe) return stripe[0];
-  return cleaned;
-}
-```
+## Out of scope
+- No changes to `findMember` server fn, `ops_find_member` RPC, or DB.
+- No new caching layer — the RPC is fast enough and debouncing already limits calls. Can add later if load becomes an issue.
+- No changes to the "Members reachable via Campaigns" area or any other admin surface.
 
-Use it in both `go()` and the `onChange` isn't touched — user still sees what they pasted, we just send the cleaned value.
-
-## Also update the empty-state toast
-
-`toast.info("No matches")` gives no clue why. Change it to `"No matches for '<sent query>'"` so next time you can see exactly what got sent to the DB — makes future "why didn't this find X" trivial to diagnose.
-
-## What this does NOT change
-
-- No RPC changes, no schema changes, no admin filter (there isn't one).
-- Compose-dialog recipient search is a different code path (only returns rows that exist in `professionals`) — out of scope for this fix.
-- If GA is actually giving you a Google Analytics *client ID* (format `1234567890.1234567890`), that's not a Supabase user_id and no search can find it. This fix only helps when GA has captured our real `user_id`.
-
-## Files touched
-
-- `src/components/ops/MemberFinder.tsx` — add `normaliseQuery`, call it in `go()`, expand the toast message.
+## Verification
+- Type `dem` → dropdown shows the demo user + other partial email matches.
+- Type/paste `3d8ffa68-f4b2-46b2-bdac-d06b48fbf445` → single match appears, click to open.
+- Paste a `cus_…` from Stripe → matching member appears.
+- ↑/↓/Enter/Esc keyboard nav works.
+- Enter with empty dropdown still runs the classic search + toast.
