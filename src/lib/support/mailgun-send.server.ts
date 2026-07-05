@@ -51,6 +51,41 @@ function assertNoHttpTrackingUrls(html: string, text: string): void {
   }
 }
 
+// Applies Mailgun `o:tracking-*`, `v:*` and `o:tag` fields onto whichever
+// body carrier we're using (FormData for attachments, URLSearchParams
+// otherwise). Kept in one place so the two send bodies stay in sync.
+function appendMailgunOptions(
+  target: FormData | URLSearchParams,
+  input: MailgunSendInput,
+): void {
+  const set = (k: string, v: string) => {
+    if (target instanceof FormData) target.append(k, v);
+    else target.set(k, v);
+  };
+  if (input.tracking) {
+    set("o:tracking", "yes");
+    if (input.tracking.opens !== undefined) {
+      set("o:tracking-opens", input.tracking.opens ? "yes" : "no");
+    }
+    if (input.tracking.clicks !== undefined) {
+      set(
+        "o:tracking-clicks",
+        input.tracking.clicks === "htmlonly"
+          ? "htmlonly"
+          : input.tracking.clicks
+            ? "yes"
+            : "no",
+      );
+    }
+  }
+  if (input.tag) set("o:tag", input.tag);
+  if (input.variables) {
+    for (const [k, v] of Object.entries(input.variables)) {
+      if (v !== undefined && v !== null) set(`v:${k}`, String(v));
+    }
+  }
+}
+
 export interface MailgunAttachment {
   filename: string;
   contentType: string;
@@ -68,6 +103,18 @@ export interface MailgunSendInput {
   references?: string | null;
   replyTo?: string;
   attachments?: MailgunAttachment[];
+  // Mailgun `o:` options (opens, clicks). Only relevant for broadcast/campaign
+  // sends — 1:1 support replies leave these off so recipients don't see
+  // wrapped tracking links in a personal conversation.
+  tracking?: {
+    opens?: boolean;
+    clicks?: boolean | "htmlonly";
+  };
+  // Mailgun `v:` custom variables. These are echoed back in event webhooks
+  // under `event-data.user-variables`, so we tag every campaign send with
+  // `campaign_id` + `recipient_id` for correlation.
+  variables?: Record<string, string>;
+  tag?: string;
 }
 
 export interface MailgunSendResult {
@@ -109,6 +156,7 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
         att.filename,
       );
     }
+    appendMailgunOptions(fd, input);
     body = fd;
     // fetch sets multipart boundary automatically
   } else {
@@ -122,6 +170,7 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
     if (input.inReplyTo) form.set("h:In-Reply-To", input.inReplyTo);
     if (input.references) form.set("h:References", input.references);
     if (input.replyTo) form.set("h:Reply-To", input.replyTo);
+    appendMailgunOptions(form, input);
     body = form;
     headers["Content-Type"] = "application/x-www-form-urlencoded";
   }

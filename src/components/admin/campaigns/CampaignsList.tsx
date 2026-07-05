@@ -13,6 +13,9 @@ import {
   Calendar,
   Send,
   Loader2,
+  Eye,
+  MousePointerClick,
+  UserMinus,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
@@ -55,9 +58,11 @@ function whenLabel(iso?: string | null) {
 const STATUS_CHIP: Record<string, string> = {
   queued: "bg-white/10 text-white/65",
   sent: "bg-emerald-500/15 text-emerald-300",
+  delivered: "bg-emerald-500/15 text-emerald-300",
   failed: "bg-rose-500/15 text-rose-300",
   bounced: "bg-amber-500/15 text-amber-300",
   complained: "bg-amber-500/15 text-amber-300",
+  unsubscribed: "bg-white/10 text-white/55",
   replied: "bg-reps-orange-soft text-reps-orange",
   draft: "bg-white/10 text-white/65",
   scheduled: "bg-amber-500/15 text-amber-300",
@@ -425,14 +430,14 @@ function CampaignDrawer({
             <div className="grid grid-cols-4 gap-2">
               <Stat
                 icon={<Mail className="size-3.5 text-white/55" />}
-                label="Total"
-                value={campaign?.total_recipients ?? 0}
+                label="Sent"
+                value={campaign?.sent_count ?? 0}
               />
               <Stat
                 icon={<CheckCircle2 className="size-3.5 text-emerald-300" />}
-                label="Sent"
-                value={campaign?.sent_count ?? 0}
-                tone="emerald"
+                label="Delivered"
+                value={campaign?.delivered_count ?? 0}
+                tone={(campaign?.delivered_count ?? 0) > 0 ? "emerald" : undefined}
               />
               <Stat
                 icon={<AlertCircle className="size-3.5 text-rose-300" />}
@@ -445,6 +450,41 @@ function CampaignDrawer({
                 label="Replied"
                 value={q.data.repliedCount}
                 tone={q.data.repliedCount > 0 ? "orange" : undefined}
+              />
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              <Stat
+                icon={<Eye className="size-3.5 text-sky-300" />}
+                label="Opened"
+                value={campaign?.opened_count ?? 0}
+                sub={
+                  (campaign?.delivered_count ?? 0) > 0
+                    ? `${Math.round(((campaign?.opened_count ?? 0) / (campaign?.delivered_count || 1)) * 100)}%`
+                    : undefined
+                }
+              />
+              <Stat
+                icon={<MousePointerClick className="size-3.5 text-sky-300" />}
+                label="Clicked"
+                value={campaign?.clicked_count ?? 0}
+                sub={
+                  (campaign?.opened_count ?? 0) > 0
+                    ? `${Math.round(((campaign?.clicked_count ?? 0) / (campaign?.opened_count || 1)) * 100)}% CTR`
+                    : undefined
+                }
+              />
+              <Stat
+                icon={<UserMinus className="size-3.5 text-amber-300" />}
+                label="Unsubscribed"
+                value={campaign?.unsubscribed_count ?? 0}
+                tone={(campaign?.unsubscribed_count ?? 0) > 0 ? "amber" : undefined}
+              />
+              <Stat
+                icon={<AlertCircle className="size-3.5 text-amber-300" />}
+                label="Bounced"
+                value={campaign?.bounced_count ?? 0}
+                tone={(campaign?.bounced_count ?? 0) > 0 ? "amber" : undefined}
               />
             </div>
 
@@ -485,13 +525,33 @@ function CampaignDrawer({
                         </div>
                       ) : null}
                     </div>
-                    <span
-                      className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
-                        STATUS_CHIP[r.status] ?? STATUS_CHIP.queued
-                      }`}
-                    >
-                      {r.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {r.opened_at ? (
+                        <Eye
+                          className="size-3.5 text-sky-300"
+                          aria-label={`Opened${(r.open_count ?? 0) > 1 ? ` ${r.open_count}×` : ""}`}
+                        />
+                      ) : null}
+                      {r.first_clicked_at ? (
+                        <MousePointerClick
+                          className="size-3.5 text-sky-300"
+                          aria-label={`Clicked${(r.click_count ?? 0) > 1 ? ` ${r.click_count}×` : ""}`}
+                        />
+                      ) : null}
+                      {r.unsubscribed_at ? (
+                        <UserMinus
+                          className="size-3.5 text-amber-300"
+                          aria-label="Unsubscribed"
+                        />
+                      ) : null}
+                      <span
+                        className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
+                          STATUS_CHIP[r.status] ?? STATUS_CHIP.queued
+                        }`}
+                      >
+                        {r.status}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -508,16 +568,19 @@ function Stat({
   label,
   value,
   tone,
+  sub,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
-  tone?: "emerald" | "rose" | "orange";
+  tone?: "emerald" | "rose" | "orange" | "amber";
+  sub?: string;
 }) {
   const tones: Record<string, string> = {
     emerald: "text-emerald-300",
     rose: "text-rose-300",
     orange: "text-reps-orange",
+    amber: "text-amber-300",
   };
   return (
     <div className="rounded-[16px] border border-reps-border bg-white/[0.02] p-3">
@@ -532,6 +595,9 @@ function Stat({
       >
         {value}
       </div>
+      {sub ? (
+        <div className="mt-0.5 text-[10.5px] text-white/45 tabular-nums">{sub}</div>
+      ) : null}
     </div>
   );
 }

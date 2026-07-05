@@ -593,6 +593,20 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       if (rErr) throw new Error(`recipient insert failed: ${rErr.message}`);
     }
 
+    // Load the inserted rows so we can pass a stable `recipient_id` into
+    // Mailgun's custom variables — the event webhook correlates opens /
+    // clicks / unsubscribes / bounces back to the row via that id.
+    const recipientIds = new Map<string, string>();
+    {
+      const { data: rows } = await supabaseAdmin
+        .from("outbound_campaign_recipients")
+        .select("id, email")
+        .eq("campaign_id", directCampaign.id);
+      for (const row of (rows ?? []) as Array<{ id: string; email: string }>) {
+        recipientIds.set(row.email.toLowerCase(), row.id);
+      }
+    }
+
     let sent = 0;
     const failures: Array<{ email: string; error: string }> = [];
 
@@ -638,6 +652,13 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             contentType: a.contentType,
             data: a.data,
           })),
+          tracking: { opens: true, clicks: "htmlonly" },
+          tag: `campaign:${directCampaign.id}`,
+          variables: {
+            campaign_id: directCampaign.id,
+            recipient_id: recipientIds.get(r.email.toLowerCase()) ?? "",
+            campaign: "1",
+          },
         });
 
         const { data: msg, error: mErr } = await supabaseAdmin

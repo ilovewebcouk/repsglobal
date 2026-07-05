@@ -2657,43 +2657,73 @@ export type Database = {
       }
       outbound_campaign_recipients: {
         Row: {
+          bounced_at: string | null
           campaign_id: string
+          click_count: number
+          complained_at: string | null
           created_at: string
+          delivered_at: string | null
           email: string
           error_message: string | null
+          first_clicked_at: string | null
           id: string
+          last_clicked_at: string | null
+          last_clicked_url: string | null
           mailgun_message_id: string | null
           name: string | null
+          open_count: number
+          opened_at: string | null
           replied_at: string | null
           reply_ticket_id: string | null
           sent_at: string | null
           status: Database["public"]["Enums"]["campaign_recipient_status"]
+          unsubscribed_at: string | null
         }
         Insert: {
+          bounced_at?: string | null
           campaign_id: string
+          click_count?: number
+          complained_at?: string | null
           created_at?: string
+          delivered_at?: string | null
           email: string
           error_message?: string | null
+          first_clicked_at?: string | null
           id?: string
+          last_clicked_at?: string | null
+          last_clicked_url?: string | null
           mailgun_message_id?: string | null
           name?: string | null
+          open_count?: number
+          opened_at?: string | null
           replied_at?: string | null
           reply_ticket_id?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["campaign_recipient_status"]
+          unsubscribed_at?: string | null
         }
         Update: {
+          bounced_at?: string | null
           campaign_id?: string
+          click_count?: number
+          complained_at?: string | null
           created_at?: string
+          delivered_at?: string | null
           email?: string
           error_message?: string | null
+          first_clicked_at?: string | null
           id?: string
+          last_clicked_at?: string | null
+          last_clicked_url?: string | null
           mailgun_message_id?: string | null
           name?: string | null
+          open_count?: number
+          opened_at?: string | null
           replied_at?: string | null
           reply_ticket_id?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["campaign_recipient_status"]
+          unsubscribed_at?: string | null
         }
         Relationships: [
           {
@@ -2717,8 +2747,12 @@ export type Database = {
           attachments: Json
           body_html: string | null
           body_text: string
+          bounced_count: number
+          clicked_count: number
+          complained_count: number
           created_at: string
           created_by: string | null
+          delivered_count: number
           direct_recipients: Json
           failed_count: number
           format: string
@@ -2726,6 +2760,7 @@ export type Database = {
           inbox: string
           last_error: string | null
           mode: string | null
+          opened_count: number
           scheduled_at: string | null
           sent_at: string | null
           sent_count: number
@@ -2733,13 +2768,18 @@ export type Database = {
           subject: string
           tiers: string[]
           total_recipients: number
+          unsubscribed_count: number
         }
         Insert: {
           attachments?: Json
           body_html?: string | null
           body_text: string
+          bounced_count?: number
+          clicked_count?: number
+          complained_count?: number
           created_at?: string
           created_by?: string | null
+          delivered_count?: number
           direct_recipients?: Json
           failed_count?: number
           format?: string
@@ -2747,6 +2787,7 @@ export type Database = {
           inbox: string
           last_error?: string | null
           mode?: string | null
+          opened_count?: number
           scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number
@@ -2754,13 +2795,18 @@ export type Database = {
           subject: string
           tiers?: string[]
           total_recipients?: number
+          unsubscribed_count?: number
         }
         Update: {
           attachments?: Json
           body_html?: string | null
           body_text?: string
+          bounced_count?: number
+          clicked_count?: number
+          complained_count?: number
           created_at?: string
           created_by?: string | null
+          delivered_count?: number
           direct_recipients?: Json
           failed_count?: number
           format?: string
@@ -2768,6 +2814,7 @@ export type Database = {
           inbox?: string
           last_error?: string | null
           mode?: string | null
+          opened_count?: number
           scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number
@@ -2775,6 +2822,7 @@ export type Database = {
           subject?: string
           tiers?: string[]
           total_recipients?: number
+          unsubscribed_count?: number
         }
         Relationships: []
       }
@@ -5932,10 +5980,12 @@ export type Database = {
       campaign_recipient_status:
         | "queued"
         | "sent"
+        | "delivered"
         | "failed"
         | "bounced"
         | "complained"
         | "replied"
+        | "unsubscribed"
       churn_stage:
         | "active"
         | "at_risk"
@@ -6149,10 +6199,12 @@ export const Constants = {
       campaign_recipient_status: [
         "queued",
         "sent",
+        "delivered",
         "failed",
         "bounced",
         "complained",
         "replied",
+        "unsubscribed",
       ],
       churn_stage: [
         "active",
