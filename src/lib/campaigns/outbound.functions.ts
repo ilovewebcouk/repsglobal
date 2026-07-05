@@ -757,11 +757,15 @@ function applyMergeTags(
   });
 }
 
+const EMAIL_FONT_STACK =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const REPS_ORANGE = "#E85D2F";
+
 function inlineFormat(s: string): string {
   let out = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   out = out.replace(
     /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g,
-    '<a href="$1" style="color:#0f172a;text-decoration:underline;">$1</a>',
+    `<a href="$1" style="color:${REPS_ORANGE};text-decoration:underline;">$1</a>`,
   );
   return out;
 }
@@ -780,11 +784,11 @@ function textToHtml(text: string): string {
         .map((l) => `<li style="margin:0 0 6px 0;">${inlineFormat(l)}</li>`)
         .join("");
       out.push(
-        `<ul style="margin:0 0 14px 20px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${items}</ul>`,
+        `<ul style="margin:0 0 14px 20px;padding:0;font-family:${EMAIL_FONT_STACK};font-size:16px;line-height:1.6;color:#0f172a;">${items}</ul>`,
       );
     } else {
       out.push(
-        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${inlineFormat(
+        `<p style="margin:0 0 14px 0;font-family:${EMAIL_FONT_STACK};font-size:16px;line-height:1.6;color:#0f172a;">${inlineFormat(
           raw.replace(/\n/g, "<br/>"),
         )}</p>`,
       );
