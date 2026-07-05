@@ -126,6 +126,9 @@ export async function sendViaMailgun(input: MailgunSendInput): Promise<MailgunSe
     headers["Content-Type"] = "application/x-www-form-urlencoded";
   }
 
+  assertNoHttpTrackingUrls(input.html, input.text);
+  await assertHttpsTracking(headers);
+
   const res = await fetch(`${GATEWAY_URL}/${MAILGUN_DOMAIN}/messages`, {
     method: "POST",
     headers,
