@@ -864,7 +864,7 @@ function ArticleLoader({
         </Select>
       </div>
       <div className="mt-1.5 text-[11px] text-white/45">
-        Pre-fills the subject and an HTML email with the article cover, intro and a CTA back to repsuk.org. The cover image is copied to public storage so it loads in every inbox. You can edit before sending.
+        Pre-fills subject, a branded HTML email (cover, excerpt, 2 body paragraphs, "What's inside" and a UTM-tagged CTA) and a matching plain-text version. Cover is copied to public storage so it loads in every inbox. Toggle Plain text / HTML to switch — edits are preserved.
       </div>
     </Field>
   );
