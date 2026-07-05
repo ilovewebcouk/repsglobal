@@ -313,7 +313,7 @@ async function fetchTrustSummary(
     supabaseAdmin
       .from("verification_submissions")
       .select(
-        "status, reviewed_at, qualification, awarding_body, certificate_number, issue_date, year",
+        "status, reviewed_at, qualification, awarding_body, certificate_number, qualification_number, issue_date, year",
       )
       .eq("professional_id", professionalId),
   ]);
