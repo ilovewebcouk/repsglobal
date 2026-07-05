@@ -529,17 +529,15 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
   );
 }
 
-type Strategy = "end_trial" | "schedule_end_period" | "cancel_now";
+type Strategy = "end_trial" | "cancel_now";
 
 const STRATEGY_TO_MODE: Record<Strategy, CloseMode> = {
   end_trial: "end_now_delete",
-  schedule_end_period: "schedule_end_period",
   cancel_now: "end_now_delete",
 };
 
 const STRATEGY_TO_REASON: Record<Strategy, CancelReason> = {
   end_trial: "admin_end_trial",
-  schedule_end_period: "admin_cancel_period_end",
   cancel_now: "admin_cancel_immediate",
 };
 
@@ -548,15 +546,10 @@ const STRATEGY_LABEL: Record<Strategy, { title: string; detail: string }> = {
     title: "End trial now",
     detail: "Stops the trial today, no charge. Profile removed, account deleted, email archived.",
   },
-  schedule_end_period: {
-    title: "Cancel at period end (keep account live)",
-    detail:
-      "Schedules Stripe to stop renewing. Profile stays live until period end, member can resume from Stripe portal. NO delete.",
-  },
   cancel_now: {
     title: "Cancel immediately and delete",
     detail:
-      "Cancels Stripe now, removes the profile, deletes the account, archives the email. No refund. Use for spam / abuse / member-requested closure.",
+      "Cancels Stripe now, removes the profile, deletes the account, archives the email. No refund. REPS does not offer a grace period.",
   },
 };
 
@@ -578,11 +571,8 @@ function BillingActions({
   const closeFn = useServerFn(closeMembership);
 
   const hasLiveSub = status !== "canceled" && status !== "incomplete_expired";
-  const defaultStrategy: Strategy = isTrialing
-    ? "end_trial"
-    : cancelAtPeriodEnd
-      ? "cancel_now"
-      : "schedule_end_period";
+  void cancelAtPeriodEnd;
+  const defaultStrategy: Strategy = isTrialing ? "end_trial" : "cancel_now";
 
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -590,11 +580,11 @@ function BillingActions({
   const [typedName, setTypedName] = useState("");
   const [strategy, setStrategy] = useState<Strategy>(defaultStrategy);
 
-  const isDestructive = !hasLiveSub || STRATEGY_TO_MODE[strategy] !== "schedule_end_period";
+  // Every remaining strategy is destructive under the immediate-cancel policy.
+  const isDestructive = true;
 
-  // Only require the typed-name confirmation for destructive (delete) modes.
+  // Require the typed-name confirmation for every close.
   const nameMatches =
-    !isDestructive ||
     typedName.trim().toLowerCase() === (memberName ?? "").trim().toLowerCase();
 
   const reset = () => {
@@ -621,28 +611,19 @@ function BillingActions({
           notes: notes.trim() || undefined,
         },
       });
-      if (mode === "schedule_end_period") {
-        toast.success(
-          res.emailSent
-            ? "Scheduled to end at period close. Confirmation email sent."
-            : "Scheduled to end at period close.",
-        );
-        await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
-        reset();
-      } else {
-        toast.success(
-          res.emailSent
-            ? "Account closed. Confirmation email sent."
-            : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
-        );
-        await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
-        navigate({ to: "/admin/members" });
-      }
+      toast.success(
+        res.emailSent
+          ? "Account closed. Confirmation email sent."
+          : `Account closed. (Email skipped${res.emailError ? `: ${res.emailError}` : ""})`,
+      );
+      await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+      navigate({ to: "/admin/members" });
     } catch (e: any) {
       toast.error(e?.message ?? "Could not close account");
       setPending(false);
     }
   };
+
 
   return (
     <>
@@ -672,15 +653,11 @@ function BillingActions({
       <AlertDialog open={open} onOpenChange={(o) => !o && !pending && reset()}>
         <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {isDestructive ? "Close this member's account?" : "Schedule cancellation?"}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Close this member's account?</AlertDialogTitle>
             <AlertDialogDescription>
               {!hasLiveSub
                 ? "Subscription is already cancelled. This removes the profile, sends a confirmation email, and archives the email. This can't be undone."
-                : STRATEGY_TO_MODE[strategy] === "schedule_end_period"
-                  ? "Stripe will stop renewing at the current period end. The profile stays live, the member keeps access, and they can resume from the Stripe portal. The account is NOT deleted."
-                  : "Choose how to wind down the Stripe subscription. The profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone."}
+                : "This cancels Stripe immediately, removes the profile, deletes the account, and archives the email. No refund. REPS does not offer a grace period. This can't be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -693,9 +670,7 @@ function BillingActions({
                   onValueChange={(v) => setStrategy(v as Strategy)}
                   className="mt-2 flex flex-col gap-2"
                 >
-                  {(
-                    ["end_trial", "schedule_end_period", "cancel_now"] as Strategy[]
-                  )
+                  {(["end_trial", "cancel_now"] as Strategy[])
                     .filter((s) => (s === "end_trial" ? isTrialing : true))
                     .map((s) => (
                       <label

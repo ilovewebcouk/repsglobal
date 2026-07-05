@@ -81,6 +81,42 @@ const HUMANISERS: Record<string, (ctx: Ctx) => HumanisedAlert> = {
     href: "/admin/billing",
     cta: "Open Billing Health",
   }),
+  "payments.member_cancelled": (ctx) => ({
+    label: "Member account closed",
+    summary: `A member's account has been closed (${String(ctx.reason ?? "unknown reason")}). Stripe cancelled, profile hidden, auth user deleted.`,
+    href: "/admin/members",
+    cta: "Open Members",
+  }),
+  "payments.dispute_opened": (ctx) => ({
+    label: "Payment dispute opened",
+    summary: `A cardholder has disputed a payment (£${(n(ctx, "amount_pence") / 100).toFixed(2)}). Account suspended, profile hidden, login blocked pending outcome.`,
+    href: "/admin/billing/disputes",
+    cta: "Open Disputes",
+  }),
+  "payments.dispute_lost": (ctx) => ({
+    label: "Payment dispute lost",
+    summary: `A payment dispute was lost (£${(n(ctx, "amount_pence") / 100).toFixed(2)}). Account has been fully closed and the member notified.`,
+    href: "/admin/billing/disputes",
+    cta: "Open Disputes",
+  }),
+  "payments.dispute_won": (ctx) => ({
+    label: "Payment dispute won",
+    summary: `A payment dispute was won (£${(n(ctx, "amount_pence") / 100).toFixed(2)}). Account unbanned, resubscribe email sent — member must pick a plan to relist.`,
+    href: "/admin/billing/disputes",
+    cta: "Open Disputes",
+  }),
+  "payments.dispute_funds_withdrawn": (ctx) => ({
+    label: "Dispute funds withdrawn",
+    summary: `Stripe has withdrawn £${(n(ctx, "amount_pence") / 100).toFixed(2)} from the account pending dispute outcome.`,
+    href: "/admin/billing/disputes",
+    cta: "Open Disputes",
+  }),
+  "payments.dispute_funds_reinstated": (ctx) => ({
+    label: "Dispute funds reinstated",
+    summary: `Stripe has returned £${(n(ctx, "amount_pence") / 100).toFixed(2)} to the account.`,
+    href: "/admin/billing/disputes",
+    cta: "Open Disputes",
+  }),
   "test.notification": () => ({
     label: "Test alert",
     summary: "Manual test alert sent from the Alerts page. Safe to acknowledge.",

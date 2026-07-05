@@ -36,7 +36,9 @@ import { template as chargebackReceived } from './chargeback-received'
 import { template as chargebackResolvedWon } from './chargeback-resolved-won'
 import { template as chargebackResolvedLost } from './chargeback-resolved-lost'
 import { template as memberCancelled } from './member-cancelled'
+import { template as disputeWonResubscribe } from './dispute-won-resubscribe'
 import { template as adminInvite } from './admin-invite'
+
 
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
@@ -67,8 +69,10 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'chargeback-resolved-won': chargebackResolvedWon,
   'chargeback-resolved-lost': chargebackResolvedLost,
   'member-cancelled': memberCancelled,
+  'dispute-won-resubscribe': disputeWonResubscribe,
   'admin-invite': adminInvite,
 }
+
 
 
 

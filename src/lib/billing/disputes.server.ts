@@ -125,9 +125,14 @@ async function resolveUserForDispute(
   };
 }
 
+// Effectively-permanent auth ban duration (Supabase requires an interval).
+// 100 years is treated as "banned until an admin lifts it".
+const DISPUTE_AUTH_BAN_DURATION = "876000h";
+
 async function suspendMemberForDispute(opts: {
   userId: string;
   subscriptionId: string | null;
+  disputeRowId: string | null;
   stage: DisputeLifecycleStage;
   stripe: Stripe;
 }): Promise<void> {
@@ -136,15 +141,17 @@ async function suspendMemberForDispute(opts: {
   const standing =
     opts.stage === "lost" ? "chargeback_lost" : "payment_disputed";
 
-  // Flip standing on every live subscription for this user — they should not
-  // count as an active paying member while disputed.
+  // 1. Flip standing (and link to dispute) on every live subscription for
+  // this user — they should not count as an active paying member.
+  const subUpdate: Record<string, unknown> = { payment_standing: standing };
+  if (opts.disputeRowId) subUpdate.dispute_id = opts.disputeRowId;
   await supabaseAdmin
     .from("subscriptions")
-    .update({ payment_standing: standing } as never)
+    .update(subUpdate as never)
     .eq("user_id", opts.userId)
     .eq("environment", "live");
 
-  // Cancel the related Stripe subscription so no further charges run.
+  // 2. Cancel the related Stripe subscription so no further charges run.
   if (opts.subscriptionId) {
     try {
       await opts.stripe.subscriptions.cancel(opts.subscriptionId, {
@@ -162,20 +169,99 @@ async function suspendMemberForDispute(opts: {
       } as never)
       .eq("stripe_subscription_id", opts.subscriptionId);
   }
+
+  // 3. Hide the public professional profile — chargeback = presumed-bad-actor
+  // until proven otherwise; the profile must not remain live.
+  try {
+    await supabaseAdmin
+      .from("professionals")
+      .update({
+        is_published: false,
+        unpublished_reason: "dispute_suspended",
+        unpublished_at: new Date().toISOString(),
+        suspended_at: new Date().toISOString(),
+        suspension_reason: "payment_dispute",
+      } as never)
+      .eq("id", opts.userId);
+  } catch (err) {
+    console.warn("[disputes] profile hide failed:", err);
+  }
+
+  // 4. Ban the auth user so any active session is killed and new logins are
+  // rejected until an admin lifts the ban (dispute won path lifts it).
+  try {
+    await supabaseAdmin.auth.admin.updateUserById(opts.userId, {
+      ban_duration: DISPUTE_AUTH_BAN_DURATION,
+    } as never);
+  } catch (err) {
+    console.warn("[disputes] auth ban failed:", err);
+  }
 }
 
-async function liftSuspensionAfterWin(userId: string): Promise<void> {
+async function liftSuspensionAfterWin(
+  userId: string,
+  disputeStripeId: string,
+): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // Mark standing as chargeback_won so admin sees the outcome, but do NOT
   // automatically reinstate the cancelled subscription — the member must
-  // resubscribe explicitly. has_active_paid_membership() treats anything
-  // != 'ok' as suspended, so this is intentional.
+  // resubscribe explicitly.
   await supabaseAdmin
     .from("subscriptions")
     .update({ payment_standing: "chargeback_won" } as never)
     .eq("user_id", userId)
     .eq("environment", "live")
     .eq("payment_standing", "payment_disputed");
+
+  // Lift the auth ban so they can log in and resubscribe.
+  try {
+    await supabaseAdmin.auth.admin.updateUserById(userId, {
+      ban_duration: "none",
+    } as never);
+  } catch (err) {
+    console.warn("[disputes] auth unban failed:", err);
+  }
+
+  // Clear the professional suspension flags. Profile stays unpublished — they
+  // must resubscribe to relist — but the dispute-specific flags are gone so
+  // support/admin sees a clean record.
+  try {
+    await supabaseAdmin
+      .from("professionals")
+      .update({
+        suspended_at: null,
+        suspension_reason: null,
+      } as never)
+      .eq("id", userId);
+  } catch (err) {
+    console.warn("[disputes] profile suspension clear failed:", err);
+  }
+
+  // Send resubscribe email with a link back to /pricing.
+  try {
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const email = authUser?.user?.email;
+    if (email) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("display_name, full_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const proName =
+        ((profile?.display_name ?? profile?.full_name ?? "") as string)
+          .toString()
+          .split(" ")[0] || null;
+      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+      await sendTransactionalEmailServer({
+        templateName: "dispute-won-resubscribe",
+        recipientEmail: email,
+        idempotencyKey: `dispute-won-resubscribe:${disputeStripeId}`,
+        templateData: { proName },
+      });
+    }
+  } catch (err) {
+    console.warn("[disputes] resubscribe email failed:", err);
+  }
 }
 
 async function sendDisputeEmail(opts: {
@@ -199,18 +285,18 @@ async function sendDisputeEmail(opts: {
       .toString()
       .split(" ")[0] || null;
 
-  let templateName: string | null = null;
-  if (opts.stage === "opened") templateName = "chargeback-received";
-  else if (opts.stage === "won") templateName = "chargeback-resolved-won";
-  else if (opts.stage === "lost") templateName = "chargeback-resolved-lost";
-  if (!templateName) return;
+  // Only "opened" fires a member-facing dispute email now. "won" is handled
+  // by liftSuspensionAfterWin (dispute-won-resubscribe email). "lost" is
+  // handled via _closeMembershipImpl in handlePlatformDispute (member-cancelled
+  // email). This function is retained for the opened case only.
+  if (opts.stage !== "opened") return;
 
   try {
     const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
     await sendTransactionalEmailServer({
-      templateName,
+      templateName: "chargeback-received",
       recipientEmail: email,
-      idempotencyKey: `${templateName}:${opts.stripeDisputeId}`,
+      idempotencyKey: `chargeback-received:${opts.stripeDisputeId}`,
       templateData: {
         proName,
         amount: `£${(opts.amountPence / 100).toFixed(2)}`,
@@ -220,6 +306,24 @@ async function sendDisputeEmail(opts: {
     console.warn("[disputes] email send failed:", err);
   }
 }
+
+async function insertOpsAlert(
+  kind: string,
+  severity: "info" | "warn" | "high" | "critical",
+  context: Record<string, unknown>,
+): Promise<void> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("ops_alerts").insert({
+      kind,
+      severity,
+      context: context as never,
+    } as never);
+  } catch (err) {
+    console.warn(`[ops_alerts] insert ${kind} failed:`, err);
+  }
+}
+
 
 /**
  * Entry point for the Stripe webhook. Handles platform (non-Connect) dispute
@@ -274,21 +378,28 @@ export async function handlePlatformDispute(
   }
 
   // Try insert first; on conflict, update and accumulate funds.
-  const { error: insertErr } = await supabaseAdmin
+  const { data: inserted, error: insertErr } = await supabaseAdmin
     .from("disputes")
     .insert({
       ...baseRow,
       funds_withdrawn_pence: fundsWithdrawn,
       funds_reinstated_pence: fundsReinstated,
-    } as never);
+    } as never)
+    .select("id")
+    .maybeSingle();
+
+  let disputeRowId: string | null =
+    (inserted as { id?: string } | null)?.id ?? null;
 
   if (insertErr && (insertErr as { code?: string }).code === "23505") {
     // Already recorded — update and bump funds counters.
     const { data: existing } = await supabaseAdmin
       .from("disputes")
-      .select("funds_withdrawn_pence, funds_reinstated_pence")
+      .select("id, funds_withdrawn_pence, funds_reinstated_pence")
       .eq("stripe_dispute_id", dispute.id)
       .maybeSingle();
+    disputeRowId =
+      (existing as { id?: string } | null)?.id ?? disputeRowId;
     const existingWithdrawn =
       (existing as { funds_withdrawn_pence?: number } | null)
         ?.funds_withdrawn_pence ?? 0;
@@ -308,25 +419,80 @@ export async function handlePlatformDispute(
   }
 
   // Business effects keyed off lifecycle stage.
-  if (userId && (stage === "opened" || stage === "lost")) {
+  if (userId && stage === "opened") {
     await suspendMemberForDispute({
       userId,
       subscriptionId,
+      disputeRowId,
       stage,
       stripe,
     });
-  }
-  if (userId && stage === "won") {
-    await liftSuspensionAfterWin(userId);
-  }
-
-  if (stage === "opened" || stage === "won" || stage === "lost") {
     await sendDisputeEmail({
       userId,
       stage,
       amountPence,
       stripeDisputeId: dispute.id,
     });
+    await insertOpsAlert("payments.dispute_opened", "high", {
+      user_id: userId,
+      dispute_id: disputeRowId,
+      stripe_dispute_id: dispute.id,
+      amount_pence: amountPence,
+      evidence_due_by: baseRow.evidence_due_by ?? null,
+    });
+  }
+
+  if (userId && stage === "lost") {
+    // Dispute lost = same outcome as an immediate member cancel: full close,
+    // auth-user delete, member-cancelled email. Skip the standalone
+    // chargeback-resolved-lost email — it's redundant with the cancel email.
+    try {
+      const { _closeMembershipImpl } = await import(
+        "@/lib/admin/close-membership.server"
+      );
+      await _closeMembershipImpl({
+        user_id: userId,
+        mode: "end_now_delete",
+        reason: "chargeback_lost",
+        notes: `Chargeback lost (dispute ${dispute.id})`,
+        actor_id: "dispute_lost",
+      });
+    } catch (e: any) {
+      if (!/no email on auth account/i.test(e?.message ?? "")) {
+        console.warn("[disputes] lost-path close failed:", e?.message ?? e);
+      }
+    }
+    await insertOpsAlert("payments.dispute_lost", "high", {
+      user_id: userId,
+      dispute_id: disputeRowId,
+      stripe_dispute_id: dispute.id,
+      amount_pence: amountPence,
+    });
+  }
+
+  if (userId && stage === "won") {
+    await liftSuspensionAfterWin(userId, dispute.id);
+    await insertOpsAlert("payments.dispute_won", "info", {
+      user_id: userId,
+      dispute_id: disputeRowId,
+      stripe_dispute_id: dispute.id,
+      amount_pence: amountPence,
+    });
+  }
+
+  if (stage === "funds_withdrawn" || stage === "funds_reinstated") {
+    await insertOpsAlert(
+      stage === "funds_withdrawn"
+        ? "payments.dispute_funds_withdrawn"
+        : "payments.dispute_funds_reinstated",
+      "info",
+      {
+        user_id: userId,
+        dispute_id: disputeRowId,
+        stripe_dispute_id: dispute.id,
+        amount_pence: amountPence,
+      },
+    );
   }
 
   // Touch payment_events.user_id for the dispute event we just processed so

@@ -549,6 +549,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
+      .is("suspended_at", null)
       .maybeSingle();
     if (!pro) return null;
 
