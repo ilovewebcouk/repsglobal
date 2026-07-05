@@ -525,13 +525,33 @@ function CampaignDrawer({
                         </div>
                       ) : null}
                     </div>
-                    <span
-                      className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
-                        STATUS_CHIP[r.status] ?? STATUS_CHIP.queued
-                      }`}
-                    >
-                      {r.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {r.opened_at ? (
+                        <Eye
+                          className="size-3.5 text-sky-300"
+                          aria-label={`Opened${(r.open_count ?? 0) > 1 ? ` ${r.open_count}×` : ""}`}
+                        />
+                      ) : null}
+                      {r.first_clicked_at ? (
+                        <MousePointerClick
+                          className="size-3.5 text-sky-300"
+                          aria-label={`Clicked${(r.click_count ?? 0) > 1 ? ` ${r.click_count}×` : ""}`}
+                        />
+                      ) : null}
+                      {r.unsubscribed_at ? (
+                        <UserMinus
+                          className="size-3.5 text-amber-300"
+                          aria-label="Unsubscribed"
+                        />
+                      ) : null}
+                      <span
+                        className={`inline-flex h-5 items-center rounded-full px-2 text-[10.5px] font-semibold capitalize ${
+                          STATUS_CHIP[r.status] ?? STATUS_CHIP.queued
+                        }`}
+                      >
+                        {r.status}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
