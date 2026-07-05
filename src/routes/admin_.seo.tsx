@@ -143,7 +143,7 @@ function SeoMonitorPage() {
       actions={
         <div className="flex items-center gap-2">
           <Button
-            variant="secondary"
+            variant="subtle"
             size="sm"
             onClick={() => scanMut.mutate(false)}
             disabled={scanMut.isPending}
@@ -198,7 +198,7 @@ function SeoMonitorPage() {
             </div>
             {selected.size > 0 && (
               <Button
-                variant="secondary"
+                variant="subtle"
                 size="sm"
                 onClick={() => ackMut.mutate(Array.from(selected))}
                 disabled={ackMut.isPending}
