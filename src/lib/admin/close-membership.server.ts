@@ -123,74 +123,34 @@ export async function _closeMembershipImpl(
   const fullName =
     (profile as any)?.full_name ?? (profile as any)?.display_name ?? null;
 
-  /* ─── Mode A: schedule_end_period (non-destructive) ─── */
-  if (input.mode === "schedule_end_period") {
-    const live =
-      (subs ?? []).find(
-        (r: any) =>
-          r.stripe_subscription_id &&
-          ["active", "trialing", "past_due"].includes(r.status),
-      ) ?? (subs ?? [])[0];
-    if (!live?.stripe_subscription_id) {
-      throw new Error("No Stripe subscription on file");
-    }
-    const env = (live.environment === "live" ? "live" : "sandbox") as StripeEnv;
-    const { createStripeClient } = await import("@/lib/billing/stripe.server");
-    const stripe = createStripeClient(env);
-    await stripe.subscriptions.update(live.stripe_subscription_id, {
-      cancel_at_period_end: true,
-    });
+  /* ─── Policy escalation: schedule_end_period is no longer supported ───
+   * REPS cancels immediately with no grace period. Any legacy caller (older
+   * admin UI or a Stripe portal misconfiguration) that requests period-end
+   * scheduling is silently escalated to immediate close + delete. */
+  const effectiveMode: CloseMode =
+    input.mode === "schedule_end_period" ? "end_now_delete" : input.mode;
 
-    // Mirror back so /admin/billing reflects the schedule immediately.
-    const { getMirrorSubscription } = await import("@/lib/billing/stripe-mirror.server");
-    const mirror = await getMirrorSubscription(live.stripe_subscription_id, env);
-    if (mirror) {
-      await supabaseAdmin
-        .from("subscriptions")
-        .update({
-          status: mirror.status as any,
-          cancel_at_period_end: mirror.cancel_at_period_end,
-          current_period_end: mirror.current_period_end,
-          updated_at: new Date().toISOString(),
-        } as never)
-        .eq("id", live.id);
-    }
-
-    const emailRes = await sendCancellationEmail({
-      to: email,
-      fullName,
-      reason: input.reason,
-      userId: input.user_id,
-    });
-
-    try {
-      await supabaseAdmin.rpc("log_admin_action", {
-        _actor_id: input.actor_id.startsWith("admin:")
-          ? input.actor_id.slice(6)
-          : null,
-        _action: "member.schedule_cancel",
-        _target_table: "subscriptions",
-        _target_id: input.user_id,
-        _reason: input.notes ?? input.reason,
-      } as never);
-    } catch {
-      /* best-effort */
-    }
-
-    return {
-      ok: true,
-      mode: input.mode,
-      cancelled: 0,
-      emailSent: emailRes.ok,
-      emailError: emailRes.error,
-    };
+  /* ─── Hide the public profile FIRST ───
+   * Do this before Stripe/auth-delete steps so the profile disappears even
+   * if a later step fails and Stripe retries the webhook. */
+  try {
+    await supabaseAdmin
+      .from("professionals")
+      .update({
+        is_published: false,
+        unpublished_reason: "membership_closed",
+        unpublished_at: new Date().toISOString(),
+      } as never)
+      .eq("id", input.user_id);
+  } catch (e) {
+    console.warn("[closeMembership] profile hide failed", e);
   }
 
-  /* ─── Mode B + C: end_now_delete / delete_only ─── */
+  /* ─── end_now_delete / delete_only ─── */
 
   const { createStripeClient } = await import("@/lib/billing/stripe.server");
   let cancelled = 0;
-  if (input.mode === "end_now_delete") {
+  if (effectiveMode === "end_now_delete") {
     for (const s of (subs ?? []) as any[]) {
       if (!s.stripe_subscription_id) continue;
       try {
@@ -208,6 +168,7 @@ export async function _closeMembershipImpl(
       }
     }
   }
+
 
   // Stamp retention columns onto every related subscription row BEFORE the
   // auth-user delete so cancellation history survives the SET NULL cascade.
