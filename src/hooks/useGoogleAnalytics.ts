@@ -28,12 +28,15 @@ export function setGaConsent(analyticsGranted: boolean): void {
   });
 }
 
-/** Bind (or unbind) the signed-in user + a `logged_in` user property. */
+/** Bind (or unbind) the signed-in user + a `logged_in` user property.
+ * Uses `gtag('set', ...)` so the user_id sticks on every subsequent event
+ * without re-running `config` (which would reset tag state). */
 export function setGaUser(userId: string | null): void {
-  gtag("set", "user_properties", { logged_in: userId ? "true" : "false" });
-  gtag("config", GA_MEASUREMENT_ID, {
-    user_id: userId ?? undefined,
-    send_page_view: false,
+  // Persist user_id on all future events (or clear it on sign-out).
+  gtag("set", { user_id: userId ?? null });
+  gtag("set", "user_properties", {
+    logged_in: userId ? "true" : "false",
+    ...(userId ? { user_uid: userId } : {}),
   });
 }
 
