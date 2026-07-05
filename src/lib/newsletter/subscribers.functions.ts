@@ -212,6 +212,29 @@ export const listNewsletterSubscribers = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ADMIN: count members reachable via Campaigns (confirmed pros, all tiers).
+// This is not the newsletter audience — it's what a "send to all members"
+// broadcast would reach. Shown as context on the newsletter admin page.
+// ─────────────────────────────────────────────────────────────────────────────
+export const getReachableMembersCount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await (supabaseAdmin as any).rpc(
+      "count_confirmed_professionals",
+      { _only_published: false },
+    );
+    if (error) throw new Error(error.message);
+    return { count: Number(data ?? 0) };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
 // ADMIN: import a batch of pre-confirmed subscribers (e.g. legacy list)
 // ─────────────────────────────────────────────────────────────────────────────
 export const importNewsletterSubscribers = createServerFn({ method: "POST" })
