@@ -368,3 +368,71 @@ export async function runSeoIndexScan(
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
+
+/**
+ * Re-inspect a single URL now, upsert its status, and record an event if the
+ * verdict changed. Used by the admin "Re-check" action.
+ */
+export async function recheckOneUrl(url: string): Promise<
+  | { ok: true; changed: boolean; verdict: string | null; coverage_state: string | null }
+  | { ok: false; error: string }
+> {
+  const snap = await inspectUrl(url);
+  if ("error" in snap) return { ok: false, error: snap.error };
+
+  const { data: prevRow } = await supabaseAdmin
+    .from("seo_index_status")
+    .select(
+      "verdict, coverage_state, indexing_state, google_canonical, user_canonical, robots_state, page_fetch_state",
+    )
+    .eq("url", url)
+    .maybeSingle();
+
+  const event = diffToEvent(prevRow as StoredRow | null, snap);
+  const now = new Date().toISOString();
+  const priority = classifyPriority(url);
+
+  await supabaseAdmin.from("seo_index_status").upsert(
+    {
+      url,
+      priority,
+      last_checked_at: now,
+      last_changed_at: event ? now : (prevRow ? undefined : now),
+      verdict: snap.verdict,
+      coverage_state: snap.coverage_state,
+      indexing_state: snap.indexing_state,
+      google_canonical: snap.google_canonical,
+      user_canonical: snap.user_canonical,
+      robots_state: snap.robots_state,
+      page_fetch_state: snap.page_fetch_state,
+      last_crawl_time: snap.last_crawl_time,
+      raw: snap.raw as never,
+    },
+    { onConflict: "url" },
+  );
+
+  if (event) {
+    await supabaseAdmin.from("seo_index_events").insert({
+      url,
+      severity: event.severity,
+      summary: event.summary,
+      prev: prevRow ?? null,
+      next: {
+        verdict: snap.verdict,
+        coverage_state: snap.coverage_state,
+        indexing_state: snap.indexing_state,
+        google_canonical: snap.google_canonical,
+        user_canonical: snap.user_canonical,
+        robots_state: snap.robots_state,
+        page_fetch_state: snap.page_fetch_state,
+      },
+    });
+  }
+
+  return {
+    ok: true,
+    changed: Boolean(event),
+    verdict: snap.verdict,
+    coverage_state: snap.coverage_state,
+  };
+}
