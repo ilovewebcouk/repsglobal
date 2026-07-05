@@ -1,64 +1,105 @@
-# Newsletter → scoped into existing Campaigns
+## What the current template does well
 
-Everything runs through the current `/admin/campaigns` composer and Mailgun pipeline. No parallel system, no separate UI.
+- Cover image with orange glow (nice, brand-consistent).
+- Clear H1 + category eyebrow + read time / date meta.
+- Single orange CTA back to the full article.
+- Rich REPS sign-off + unsubscribe are already auto-appended by the newsletter footer, so we don't need to duplicate that.
 
-## What changes
+## What's holding it back
 
-### 1. New audience: "Newsletter subscribers"
-Adds a fifth audience alongside `free / verified / pro / studio / former`:
-- `newsletter` — anyone who confirmed opt-in via the public signup form, minus anyone unsubscribed or suppressed.
+1. **No inbox preview text** — Apple/Gmail preview just shows the H1. A hidden preheader would double the "why open me?" signal.
+2. **Only the very first paragraph is used** — the email feels thin vs the article. We can pull the excerpt + first 2 real body paragraphs (skipping cover-only blocks) so it reads like a genuine editorial send.
+3. **No section teaser / "what's inside"** — a 3-bullet TOC built from the article's `h2` blocks gives readers a reason to click.
+4. **Meta line is generic** — "6 min read · 5 July 2026". Better: "6-min read for personal trainers" (using `audience` if present) or a small category chip.
+5. **CTA wording is weak** — "Read the full article →" is fine; "Read the full 6-minute article →" is stronger and lets people self-select.
+6. **No secondary link** — one text link under the button ("Or open in your browser") catches Outlook/dark-mode users where the button renders oddly.
+7. **No plain-text version** — currently only HTML goes out. Spam filters and Apple Mail Privacy weight plain-text alternatives; the composer already supports a `text` format we can populate.
+8. **No UTM tags** — we can't tell in GA which sends drive traffic. Add `?utm_source=newsletter&utm_medium=email&utm_campaign=<slug>` to every link.
+9. **Cover image lacks width/height** — some clients (Outlook, Gmail app) reflow badly without explicit dimensions. Add `width="600"` and a max-width style.
+10. **No small REPS wordmark at top** — the auto-appended footer has full branding, but readers scanning the top of the mail see no logo. A tiny wordmark line above the eyebrow ties it to the site.
+11. **Dark-mode colours** — `color:#111` on `#fff` is fine, but Apple Mail auto-inverts. Add `color-scheme: light` + `supported-color-schemes` meta to lock it, so the orange CTA stays legible.
+12. **Cover glow is a client-side CSS effect** — the screenshot shows it because the composite is baked into the JPG. Nothing to change, just note it.
 
-Wired into the same `resolveTierRecipients()` used by broadcast + scheduled sends, so all existing behaviour (tracking, resend-failed, scheduling, per-recipient status) applies automatically.
+## Proposed new template
 
-### 2. Public double opt-in signup
-- Small `<NewsletterSignup />` form (email + consent checkbox) placed at the bottom of article pages under `/resources/*` and optionally the site footer.
-- Submitting sends a Mailgun confirmation email with a one-click confirm link (`/newsletter/confirm?token=…`). Only after confirming does the address become sendable.
-- Confirmation page shows success / already-confirmed / expired states.
-- Reuses the existing `/email/unsubscribe` token flow so subscribers can unsubscribe from any campaign footer — single source of truth for opt-out.
+Rebuilt `buildArticleEmailHtml` (still a pure HTML string, still fully editable in the composer before sending):
 
-### 3. Composer additions (minor)
-- Audience picker gets a "Newsletter subscribers" chip (broadcast mode only).
-- Optional "Load from article" button: pick a published article from `src/lib/resources.ts`, and the composer pre-fills subject (article title), preheader (excerpt), and body (hero image + intro + CTA button back to the full article on repsuk.org). You still edit before sending.
-- No new send path — uses the existing Mailgun send, throttling, tracking, and failed-resend flow.
+```text
+┌───────────────────────────────────────┐
+│  REPS  (small wordmark, muted)        │
+│                                       │
+│  PLATFORM UPDATES     ← category chip │
+│  Introducing the REPS website editor  │
+│  6-min read for members · 5 Jul 2026  │
+│                                       │
+│  [ cover image, 600w, rounded ]       │
+│                                       │
+│  Excerpt paragraph (16px, darker)     │
+│                                       │
+│  First real body paragraph (15px)     │
+│  Second real body paragraph (15px)    │
+│                                       │
+│  What's inside                        │
+│   • Section H2 one                    │
+│   • Section H2 two                    │
+│   • Section H2 three                  │
+│                                       │
+│  [ Read the full 6-min article → ]    │
+│  Or open in your browser              │
+└───────────────────────────────────────┘
+(auto-appended REPS footer + unsubscribe)
+```
 
-### 4. Compliance basics
-- Consent timestamp + source URL captured on signup.
-- Suppression list (existing `suppressed_emails`) checked before send — already handled by the current pipeline.
-- CAN-SPAM/UK-GDPR: physical address + unsubscribe link auto-appended to any campaign sent to the `newsletter` audience (small footer partial in the email renderer).
+### Content rules
+- **Preheader**: hidden `<div>` with `article.excerpt` truncated to ~110 chars.
+- **Category**: rendered as a subtle pill, not just uppercase text.
+- **Body paragraphs**: first 2 items in `article.body` where `type === 'p'`, skipping empty ones. Cap each at ~450 chars, add "…" if truncated.
+- **What's inside**: first 3 `h2` blocks; hide the whole block if fewer than 2 exist.
+- **Links**: helper `withUtm(href)` appends `utm_source=newsletter&utm_medium=email&utm_campaign=<slug>`.
+- **Escape everything** the same way as today.
 
-## Technical details
+### Plain-text sibling
+Add `buildArticleEmailText(article)` returning:
 
-**New table** `public.newsletter_subscribers`:
-- `id uuid pk`, `email citext unique`, `status text` (`pending|confirmed|unsubscribed|bounced`), `confirm_token uuid`, `confirmed_at`, `unsubscribed_at`, `source_url`, `source` (`article|footer|admin_import`), `created_at`, `ip inet`, `user_agent text`.
-- Grants: `service_role` all; no `anon` or `authenticated` — all writes/reads go through server functions.
-- RLS enabled, admin-only SELECT policy via `has_role`.
+```text
+REPS — Platform updates
 
-**Server functions** (`src/lib/newsletter/subscribers.functions.ts`):
-- `subscribeToNewsletter({ email, sourceUrl })` — public, rate-limited by IP, inserts `pending` row, sends confirm email via existing `mailgun-send.server`.
-- `confirmNewsletterSubscription({ token })` — public, flips to `confirmed`.
-- Admin: `listNewsletterSubscribers`, `importNewsletterSubscribers` (CSV paste, confirmed status, for existing manual list).
+Introducing the REPS website editor: your public page, in your hands
+6-min read · 5 July 2026
 
-**Audience resolver update** (`src/lib/campaigns/outbound.functions.ts` + `outbound-extras.functions.ts` + `scheduled-runner.server.ts`):
-- Extend `Tier` type to include `"newsletter"`.
-- In `resolveTierRecipients()`, add a branch that selects `email, null as name` from `newsletter_subscribers where status = 'confirmed'`.
-- Extend the Zod enums in both `.functions.ts` files.
+<excerpt>
 
-**Composer** (`src/components/admin/campaigns/ComposeDialog.tsx`):
-- Add "Newsletter subscribers" chip in the audience row.
-- Add "Load from article" secondary action → dialog listing `resources.ts` articles → prefills subject/body.
-- Body renderer for article emails: reusable `src/lib/campaigns/article-email.tsx` returning `{ text, html }` for Mailgun.
+<first body paragraph>
 
-**Public routes**:
-- `src/routes/newsletter.confirm.tsx` — confirmation landing.
-- Signup form component mounted inside existing `<ResourceArticle />` layout.
+What's inside:
+- Section one
+- Section two
+- Section three
 
-**Migration**:
-Single migration creating the table, grants, RLS, admin SELECT policy, and an index on `(status)` and `lower(email)`.
+Read the full article:
+https://repsuk.org/resources/<slug>?utm_source=newsletter&utm_medium=email&utm_campaign=<slug>
+```
 
-## Out of scope (flagged for a follow-up if you want)
-- Segmented sends within newsletter (e.g. by article topic interest).
-- Open/click analytics dashboard specific to newsletter (existing per-recipient status is enough for v1).
-- Auto-send on article publish (v1 stays manual — you press Send from the composer).
+The composer already carries a `format` state (`text`/`html`) and a single `body` field. Keep behaviour: `Load from article` sets `format` to `html` and fills the HTML body. Also stash the plain-text version so, if the admin toggles to Plain text before sending, they see the text fallback instead of a stripped-down HTML dump.
 
-## Answer to your immediate need
-Once merged, sending the Website Editor article as a newsletter = open `/admin/campaigns` → New campaign → audience "Newsletter subscribers" → "Load from article" → pick "Introducing the REPs Website Editor" → review → Send. Same tracking, resend-failed, and scheduling as today's campaigns.
+### Cover image robustness
+- Keep the persist-to-storage step already in place.
+- Add `width="600"` and `style="width:100%;max-width:600px;height:auto;"`.
+- If `coverUrl` resolves to `null`, skip the `<img>` cleanly (no broken icon).
+
+## Files to touch
+
+- `src/components/admin/campaigns/ComposeDialog.tsx`
+  - Rewrite `buildArticleEmailHtml` per the layout above.
+  - Add `buildArticleEmailText` and a `withUtm` helper.
+  - Update the `onLoad` handler to also seed the text sibling.
+  - Widen the tooltip copy under the article picker.
+
+No backend, no schema, no template registry changes. Storage bucket and unsubscribe footer stay as they are.
+
+## Out of scope (call out, don't build)
+
+- Author bylines — no `author` field on `ResourceArticle` yet.
+- "Related articles" block — would need editorial curation.
+- A/B subject lines — belongs in the campaign runner, not the composer.
+- Migrating this to a React Email template — overkill while it's an editable admin composer body.
