@@ -17,7 +17,7 @@ export type UpgradePanelProps = {
 };
 
 /**
- * Full-bleed dashboard upgrade panel shown when a Verified-tier trainer hits
+ * Full-bleed dashboard upgrade panel shown when a Core-tier trainer hits
  * a Pro-only route. Preserves the URL; sidebar stays mounted around it.
  */
 export function UpgradePanel({

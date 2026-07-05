@@ -237,7 +237,7 @@ export function PillarPage({
               Built for fitness pros, not generic SaaS.
             </h2>
             <p className="mx-auto mt-3 max-w-[560px] text-[15.5px] text-white/70">
-              Start with Verified or Pro. Every feature in your tier is included — no paid add-ons.
+              Start with Core or Pro. Every feature in your tier is included — no paid add-ons.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Link

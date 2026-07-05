@@ -682,12 +682,13 @@ function TierComparisonSection() {
             badge="Core"
             price="£34 / year"
             blurb="For professionals who want a trusted public register profile and enquiry inbox."
-            cta={{ to:"/pricing", label:"Start with Verified" }}
+            cta={{ to:"/pricing", label:"Start with Core" }}
           />
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus bookings, payments, branded website, CRM and client management."
+            blurb="Everything in Core, plus bookings, payments, branded website, CRM and client management."
+
             highlighted
             cta={{ to:"/features/website", label:"See the Pro website" }}
           />

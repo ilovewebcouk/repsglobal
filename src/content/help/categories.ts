@@ -4,7 +4,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   {
     slug: "getting-started",
     title: "Getting started",
-    description: "Create your account, choose Verified, and go live in under an hour.",
+    description: "Create your account, choose Core, and go live in under an hour.",
     icon: "Rocket",
     order: 1,
   },

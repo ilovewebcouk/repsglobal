@@ -8,7 +8,7 @@ Campaigns lives at `/admin/campaigns` as its own admin section (NOT inside Suppo
 ## v1 shipped (current)
 - Sidebar entry "Campaigns" under Admin → Platform group, Megaphone icon.
 - Page shows: New campaign button (top-right), CampaignsList table (subject / inbox / recipients / sent / failed / when), CampaignDrawer for detail.
-- ComposeDialog supports: Direct (search a trainer by name/email) and Broadcast (tier picker: Verified / Pro / Studio).
+- ComposeDialog supports: Direct (search a trainer by name/email) and Broadcast (tier picker: Core / Pro / Studio).
 - Files: `src/routes/admin_.campaigns.tsx`, `src/components/admin/campaigns/{ComposeDialog,CampaignsList}.tsx`, `src/lib/campaigns/{outbound,campaigns}.functions.ts`.
 - DB: `outbound_campaigns` + `outbound_campaign_recipients` (already existed).
 
@@ -16,11 +16,12 @@ Campaigns lives at `/admin/campaigns` as its own admin section (NOT inside Suppo
 - Templates library (welcome / renewal nudge / re-engagement / tier upsell).
 - AI compose — generate subject + body from a brief via Lovable AI Gateway.
 - Scheduling: `scheduled_at` on `outbound_campaigns` + pg_cron → `/api/public/hooks/send-scheduled-campaigns`.
-- Saved segments (e.g. "Verified, last login >30d").
+- Saved segments (e.g. "Core, last login >30d").
 - Open/click analytics via Mailgun webhook → per-campaign stats.
-- Trigger-based automations (e.g. "7 days after Verified renewal lapses").
+- Trigger-based automations (e.g. "7 days after Core renewal lapses").
 
 ## Hard rules
 - Campaigns UI must NEVER live inside `/admin/support`. They are different jobs.
-- Free tier doesn't exist — broadcast tier picker is Verified / Pro / Studio only.
+- Free tier doesn't exist — broadcast tier picker is Core / Pro / Studio only.
+
 - Recipient resolution: `resolveTierRecipients` and `searchTrainers` must fetch profile names via a separate `profiles.in('id', ids)` query — there is NO FK between `public.professionals` and `public.profiles`.

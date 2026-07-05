@@ -777,7 +777,7 @@ Example KPI values:
 - 34 active clients
 - 87% adherence
 - 92 professional score
-- Verified Pro active
+- Core / Pro active
 - 8 actions suggested
 
 ### 15.5 AI Business Insight Panel

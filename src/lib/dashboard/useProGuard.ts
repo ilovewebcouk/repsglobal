@@ -5,12 +5,13 @@ import { toast } from "sonner";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 
 /**
- * Redirects Verified-tier trainers off Pro-only dashboard routes.
+ * Redirects Core-tier trainers off Pro-only dashboard routes.
  *
- * Verified is intentionally minimal: badge + credentials + directory listing
- * + email-only enquiries. Pro-only editor pages (website, services,
- * enquiries inbox, reviews, etc.) call this hook at the top of their
- * component to bounce Verified users back to /dashboard with an upgrade toast.
+ * Core is intentionally minimal: badge + credentials + directory listing
+ * + email-only enquiries. Pro-only editor pages (services, enquiries inbox,
+ * reviews, etc.) call this hook at the top of their component to bounce
+ * Core users back to /dashboard with an upgrade toast.
+
  *
  * Returns `true` while the redirect is in flight so the caller can render
  * `null` and avoid flashing the Pro UI for one frame.

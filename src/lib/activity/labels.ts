@@ -37,8 +37,9 @@ export function countryDisplay(cc: string | null | undefined): {
 
 /**
  * Convert internal subscription tier + status to a user-safe label.
- * Amendment 4: never surface "verified", "trialing", "free trial", "migrated",
- * "BD" or "legacy" as tier names in Activity surfaces.
+ * Amendment 4: never surface "verified" (internal key for the Core tier), "trialing",
+ * "free trial", "migrated", "BD" or "legacy" as tier names in Activity surfaces.
+
  */
 export function tierLabel(tier: string | null | undefined, status?: string | null): string | null {
   if (!tier) return null;

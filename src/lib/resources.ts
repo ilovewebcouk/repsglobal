@@ -1091,7 +1091,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     slug: "introducing-the-reps-website-editor",
     title: "Introducing the REPS website editor: your public page, in your hands",
     excerpt:
-      "Every REPS Pro now gets a dedicated website editor — a single dashboard for your hero, services, method, transformations, FAQs and location. Here's what shipped, how it works, and what's coming next.",
+      "Every REPS member now gets a dedicated website editor — a single dashboard for your hero, services, method, transformations, FAQs and location. Included on every tier: Core, Pro and Studio. Here's what shipped, how it works, and what's coming next.",
     category: "Platform Updates",
     ...STANDARDS,
     date: "2026-07-05",
@@ -1103,8 +1103,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     body: [
       {
         type: "p",
-        text: "Until now, your REPS profile was something REPS built for you. From today, if you're on the Pro tier, it's something you build. The new website editor lives inside your dashboard at Dashboard → Website and gives you full control over every section of your public /c/your-name page — hero, services, foundation method, transformations, in-person venues, coaching reach, FAQs and location — without touching a template, a page builder, or a line of code.",
+        text: "Until now, your REPS profile was something REPS built for you. From today, it's something you build — on every tier. The new website editor lives inside your dashboard at Dashboard → Website and gives you full control over every section of your public /c/your-name page — hero, services, foundation method, transformations, in-person venues, coaching reach, FAQs and location — without touching a template, a page builder, or a line of code.",
       },
+
       { type: "h2", text: "What's actually in the editor" },
       {
         type: "p",
@@ -1144,8 +1145,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Who gets it" },
       {
         type: "p",
-        text: "The full editor — services, transformations, FAQs, method and shop-front layout — is a Pro-tier feature. Verified members keep their standard REPS profile card and directory listing. Studio members inherit everything Pro gets, plus multi-coach controls we're rolling out later this quarter.",
+        text: "Everyone. The full editor — services, transformations, FAQs, method and shop-front layout — is included on every REPS tier: Core, Pro and Studio. There is no upgrade wall on the editor itself; every member can shape their public /c/your-name page from day one. Studio members additionally inherit the multi-coach controls we're rolling out later this quarter.",
       },
+
       { type: "h2", text: "What's coming next" },
       {
         type: "ul",
@@ -1160,8 +1162,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Where to find it" },
       {
         type: "p",
-        text: "If you're on Pro, open your dashboard and click Website in the left rail. If you're on Core and want the editor, upgrading takes about two minutes and unlocks the full shop-front immediately. Feedback goes straight to the product team via the in-app feedback button — every note is read.",
+        text: "Open your dashboard and click Website in the left rail — it's there on Core, Pro and Studio. Feedback goes straight to the product team via the in-app feedback button — every note is read.",
       },
+
     ],
   },
 

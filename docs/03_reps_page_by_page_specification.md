@@ -1013,7 +1013,7 @@ Status cards:
 
 - Insurance: Active
 - CPD: Up to date
-- Membership: Verified Pro
+- Membership: Core / Pro
 - Profile completion: 96%
 
 This section reinforces that REPs is a professional platform, not only a public listing.
@@ -1280,7 +1280,7 @@ Mobile layout:
 Top:
 
 - REPs wordmark.
-- Membership badge: Verified Pro.
+- Membership badge: Core / Pro.
 
 Navigation is grouped into four labelled sections. Group headers use small uppercase muted labels; section dividers are 1px `--reps-border`.
 
@@ -1455,7 +1455,7 @@ Value:
 
 Trend:
 
-**Verified Pro active**
+**Core / Pro active**
 
 Mini detail:
 

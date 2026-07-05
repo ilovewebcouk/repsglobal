@@ -160,7 +160,7 @@ const UPGRADE_BY_PATH: Record<string, UpgradeCopy> = {
       "Auto-reminders",
     ],
   },
-  // /dashboard/reviews removed — Reviews is a Verified-tier feature now.
+  // /dashboard/reviews removed — Reviews is a Core-tier feature now.
   "/dashboard/reports": {
     active: "Reports",
     title: "Reports",

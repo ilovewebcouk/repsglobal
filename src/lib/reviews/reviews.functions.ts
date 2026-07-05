@@ -173,7 +173,7 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
   );
 
 // =====================================================================
-// KPIs / breakdown for the Verified-tier dashboard
+// KPIs / breakdown for the Core-tier dashboard
 // =====================================================================
 
 export type ReviewKpis = {

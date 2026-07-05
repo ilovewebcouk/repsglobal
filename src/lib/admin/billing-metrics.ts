@@ -2,11 +2,12 @@
 // Pure utility — no server-fn imports, safe to use anywhere.
 //
 // Tier ladder (locked):
-//   Verified — £34 / year (annual ONLY, no monthly option)
+//   Core     — £34 / year (annual ONLY, no monthly option) — internal key: "verified"
 //   Pro      — £59 / month
 //   Studio   — £149 / month
 //
-// Never display a monthly equivalent for Verified in the UI.
+// Never display a monthly equivalent for Core in the UI.
+
 
 export type Tier = "verified" | "pro" | "studio";
 export type BillingPeriod = "monthly" | "annual";

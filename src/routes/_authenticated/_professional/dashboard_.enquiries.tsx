@@ -178,7 +178,7 @@ function EnquiriesInboxPage() {
           />
         </div>
 
-        {/* Upgrade nudge — replies stay in the user's own email on Verified.
+        {/* Upgrade nudge — replies stay in the user's own email on Core.
             Pro unlocks AI drafts, follow-ups and pipeline in-app. */}
         <div className="flex flex-col items-start gap-3 rounded-[16px] border border-reps-orange-border bg-reps-orange-soft/40 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
@@ -190,10 +190,11 @@ function EnquiriesInboxPage() {
                 Reply faster with AI drafts, follow-ups and a pipeline
               </p>
               <p className="mt-0.5 text-[12px] text-white/65">
-                Verified sends enquiries to your inbox so you reply from your own email.
+                Core sends enquiries to your inbox so you reply from your own email.
                 Pro adds AI-drafted replies, lead scoring and a full pipeline inside REPS.
               </p>
             </div>
+
           </div>
           <Button asChild className="h-9 shrink-0 gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover">
             <Link to="/contact">

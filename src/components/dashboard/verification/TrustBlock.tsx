@@ -1,8 +1,9 @@
 /**
  * Trust surfaces for the canonical "verification" flow on /dashboard/profile.
  *
- * Tier-blind: identical UI and behaviour for every paying member (Verified
+ * Tier-blind: identical UI and behaviour for every paying member (Core
  * or Pro). Three exports:
+
  *
  *   - `TrustStatusStrip`     slim 3-tick status strip (Identity / Insurance /
  *                            Qualifications). Qualifications is read-only and

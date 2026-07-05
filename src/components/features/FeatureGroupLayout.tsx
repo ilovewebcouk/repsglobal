@@ -273,7 +273,7 @@ export function FeatureGroupLayout({
               Built for fitness pros, not generic SaaS.
             </h2>
             <p className="mx-auto mt-3 max-w-[520px] text-[15px] text-white/70">
-              Start with Verified or Pro. Founding pricing on Pro locked for life — before public launch.
+              Start with Core or Pro. Founding pricing on Pro locked for life — before public launch.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
