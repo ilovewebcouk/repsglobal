@@ -31,11 +31,50 @@ export function PricingPlans() {
   const [checkoutTier, setCheckoutTier] = useState<PlanTierKey | null>(null);
   const navigate = useNavigate();
 
+  // GA4 ecommerce funnel — step 1: pricing tiers rendered.
+  useEffect(() => {
+    trackGaEvent("view_item_list", {
+      item_list_id: "pricing_plans",
+      item_list_name: "Pricing plans",
+      items: PLANS.filter((p) => !p.waitlist).map((p) => {
+        const key = p.tierKey === "verified" ? "verified_annual" : `${p.tierKey}_${billing}`;
+        return {
+          item_id: key,
+          item_name: p.tier,
+          item_category: p.tierKey,
+          item_variant: p.tierKey === "verified" ? "annual" : billing,
+          price: GA_PLAN_VALUE[key] ?? 0,
+          quantity: 1,
+        };
+      }),
+    });
+  }, [billing]);
+
   async function handlePaidCta(tierKey: "verified" | "pro") {
     const checkoutPeriod = tierKey === "verified" ? "annual" as const : billing;
     // Public URL slug: "core" for the Core tier (internal key: "verified"), "pro" otherwise.
     const urlTier = tierKey === "verified" ? "core" : tierKey;
+
+    // GA4 ecommerce funnel — step 2: a specific plan was chosen.
+    const gaKey = `${tierKey === "verified" ? "verified" : tierKey}_${checkoutPeriod}`;
+    const gaValue = GA_PLAN_VALUE[gaKey] ?? 0;
+    trackGaEvent("select_item", {
+      item_list_id: "pricing_plans",
+      item_list_name: "Pricing plans",
+      items: [
+        {
+          item_id: gaKey,
+          item_name: tierKey === "pro" ? "REPS Pro" : "REPS Core",
+          item_category: tierKey,
+          item_variant: checkoutPeriod,
+          price: gaValue,
+          quantity: 1,
+        },
+      ],
+    });
+
     setCheckoutTier(tierKey);
+
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
