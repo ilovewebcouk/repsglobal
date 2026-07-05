@@ -6,7 +6,7 @@ type Inbox = "support" | "pros" | "partners" | "press";
 type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
-  support: { email: "support@repsuk.org", name: "REPS Support", label: "Support" },
+  support: { email: "support@repsuk.org", name: "REPS", label: "Support" },
   pros: { email: "pros@repsuk.org", name: "REPS Pros", label: "Pros" },
   partners: { email: "partners@repsuk.org", name: "REPS Partners", label: "Partners" },
   press: { email: "press@repsuk.org", name: "REPS Press", label: "Press" },
