@@ -41,10 +41,11 @@ export type SeoEventRow = {
   detected_at: string;
   severity: "error" | "warn" | "info";
   summary: string;
-  prev: unknown;
-  next: unknown;
+  prev: Record<string, string | null> | null;
+  next: Record<string, string | null> | null;
   acknowledged_at: string | null;
 };
+
 
 export type SeoScanRunRow = {
   id: string;
