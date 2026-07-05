@@ -64,7 +64,8 @@ function AdminNewsletter() {
   const [q, setQ] = useState("");
 
   const listFn = useServerFn(listNewsletterSubscribers);
-  const membersFn = useServerFn(getReachableMembersCount);
+
+
 
   const listQuery = useQuery({
     queryKey: ["admin", "newsletter", "subscribers", status],
