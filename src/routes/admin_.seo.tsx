@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Info, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Info, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
+import { SitemapHealthCard } from "@/components/admin/seo/SitemapHealthCard";
 import {
   acknowledgeSeoEvents,
   listSeoEvents,
@@ -17,6 +18,7 @@ import {
   type SeoEventRow,
   type SeoStatusRow,
 } from "@/lib/seo/index-monitor.functions";
+import { recheckSeoUrl } from "@/lib/seo/sitemap-health.functions";
 
 export const Route = createFileRoute("/admin_/seo")({
   head: () => ({
