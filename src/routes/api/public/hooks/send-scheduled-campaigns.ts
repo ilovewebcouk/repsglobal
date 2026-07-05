@@ -3,27 +3,21 @@
 // status='scheduled' → 'sending' atomic flip inside sendCampaignNow.
 //
 // Auth: this lives under /api/public/* which bypasses session auth on
-// published deploys. We require a dedicated server-only CRON_SECRET
-// (never `VITE_`-prefixed) passed as `Authorization: Bearer <secret>`.
-// pg_cron passes it from the SQL definition stored in the database.
+// published deploys. We require a dedicated server-only cron token
+// (stored in public.cron_secrets and read via supabaseAdmin) passed as
+// `Authorization: Bearer <token>`. pg_cron sends it from its scheduled SQL.
 
 import { createFileRoute } from "@tanstack/react-router";
-
-function authorized(request: Request): boolean {
-  const expected = process.env.CRON_SECRET;
-  if (!expected) return false;
-  const header = request.headers.get("authorization") ?? "";
-  const provided = header.startsWith("Bearer ") ? header.slice(7) : "";
-  return provided === expected;
-}
+import { verifyCronRequest } from "@/lib/ops/cron-auth.server";
 
 export const Route = createFileRoute("/api/public/hooks/send-scheduled-campaigns")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!authorized(request)) {
+        if (!(await verifyCronRequest(request))) {
           return new Response("Unauthorized", { status: 401 });
         }
+
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
