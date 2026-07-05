@@ -653,15 +653,11 @@ function BillingActions({
       <AlertDialog open={open} onOpenChange={(o) => !o && !pending && reset()}>
         <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {isDestructive ? "Close this member's account?" : "Schedule cancellation?"}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Close this member's account?</AlertDialogTitle>
             <AlertDialogDescription>
               {!hasLiveSub
                 ? "Subscription is already cancelled. This removes the profile, sends a confirmation email, and archives the email. This can't be undone."
-                : STRATEGY_TO_MODE[strategy] === "schedule_end_period"
-                  ? "Stripe will stop renewing at the current period end. The profile stays live, the member keeps access, and they can resume from the Stripe portal. The account is NOT deleted."
-                  : "Choose how to wind down the Stripe subscription. The profile is removed, a confirmation email is sent, and the email is archived in the mailing list. This can't be undone."}
+                : "This cancels Stripe immediately, removes the profile, deletes the account, and archives the email. No refund. REPS does not offer a grace period. This can't be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -674,9 +670,7 @@ function BillingActions({
                   onValueChange={(v) => setStrategy(v as Strategy)}
                   className="mt-2 flex flex-col gap-2"
                 >
-                  {(
-                    ["end_trial", "schedule_end_period", "cancel_now"] as Strategy[]
-                  )
+                  {(["end_trial", "cancel_now"] as Strategy[])
                     .filter((s) => (s === "end_trial" ? isTrialing : true))
                     .map((s) => (
                       <label
