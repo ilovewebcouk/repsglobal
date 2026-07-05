@@ -672,7 +672,7 @@ function CoachWebsitePage() {
 
   // Fixture coach pages (james-wilson) are admin-only mock-up references —
   // gated client-side so SSR always renders a neutral skeleton.
-  const { isAdmin, isLoading: authLoading } = useSessionUser();
+  const { user, isAdmin, isLoading: authLoading } = useSessionUser();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => {
     setMounted(true);
