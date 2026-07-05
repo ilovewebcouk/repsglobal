@@ -40,9 +40,12 @@ export const startImpersonation = createServerFn({ method: 'POST' })
     const fwd = request?.headers.get('x-forwarded-for') ?? null;
     const ip = fwd ? fwd.split(',')[0].trim() : null;
 
-    // session_token is NOT NULL on the table; fill with a uuid even though
-    // we no longer use it for lookup (kept for audit trail).
-    const token = crypto.randomUUID() + '.' + crypto.randomUUID();
+    // session_token is NOT NULL on the table and unused for lookup — we
+    // keep only a SHA-256 hash so a compromised admin session cannot lift
+    // a replayable value from the audit row.
+    const { createHash, randomBytes } = await import('node:crypto');
+    const token = createHash('sha256').update(randomBytes(32)).digest('hex');
+
 
     const { error } = await supabaseAdmin
       .from('admin_impersonation_sessions')
