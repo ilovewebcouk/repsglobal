@@ -101,28 +101,24 @@ export const endMemberTrialNow = createServerFn({ method: "POST" })
 
 /* ─────────────── Cancel at period end (toggle) ─────────────── */
 
+/* ─────────────── Cancel at period end (RETIRED) ───────────────
+ * REPS policy is immediate termination with no grace period. This entry
+ * point is kept as a hard-failing stub so any older admin UI wired to it
+ * surfaces an obvious error instead of silently reintroducing a grace
+ * period. Use `closeMembership` with mode `end_now_delete` instead. */
 export const setMemberCancelAtPeriodEnd = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { user_id: string; cancel: boolean }) => {
     if (!d?.user_id) throw new Error("user_id required");
     return { user_id: d.user_id, cancel: !!d.cancel };
   })
-  .handler(async ({ data, context }) => {
+  .handler(async ({ context }) => {
     await assertAdmin(context);
-    const { stripe_subscription_id, env, rowId } = await resolveActiveSub(data.user_id);
-    const { createStripeClient } = await import("@/lib/billing/stripe.server");
-    const stripe = createStripeClient(env);
-    await stripe.subscriptions.update(stripe_subscription_id, {
-      cancel_at_period_end: data.cancel,
-    });
-    await mirrorBackToLocal(rowId, stripe_subscription_id, env);
-    await logAction(
-      context,
-      data.cancel ? "member.schedule_cancel" : "member.resume_subscription",
-      data.user_id,
+    throw new Error(
+      "Scheduled cancellation is retired. Use 'Cancel immediately and delete' instead — REPS terminates memberships on cancel with no grace period.",
     );
-    return { ok: true };
   });
+
 
 /* ─────────────── Cancel immediately (no delete) ─────────────── */
 
