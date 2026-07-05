@@ -63,7 +63,7 @@ function friendlyAuthError(message: string): string {
     return "Too many attempts. Please wait a minute and try again.";
   }
   if (m.includes("user not found")) {
-    return "No account found for that email. Want to sign up instead?";
+    return "No account found for that email. View our plans to become a member.";
   }
   if (m.includes("network") || m.includes("fetch")) {
     return "Connection issue — check your internet and try again.";
@@ -330,10 +330,10 @@ function LoginPage() {
                     )}
                     {/no account found/i.test(error) && (
                       <Link
-                        to="/signup"
+                        to="/pricing"
                         className="font-semibold text-red-100 underline underline-offset-2 hover:text-white"
                       >
-                        Create account
+                        View plans
                       </Link>
                     )}
                   </AlertDescription>
@@ -353,12 +353,12 @@ function LoginPage() {
 
 
             <p className="mt-6 text-center text-[13px] text-white/55">
-              Don&apos;t have an account?{" "}
+              Not a member yet?{" "}
               <Link
-                to="/signup"
+                to="/pricing"
                 className="font-semibold text-reps-orange hover:underline"
               >
-                Sign up
+                View plans
               </Link>
             </p>
           </div>
