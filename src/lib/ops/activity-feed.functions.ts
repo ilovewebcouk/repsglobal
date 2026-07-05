@@ -230,13 +230,13 @@ export const getActivityFeed = createServerFn({ method: "POST" })
       safeFetch("email", async () => {
         const { data, error } = await supabaseAdmin
           .from("email_send_log")
-          .select("id, recipient_email, template_name, status, created_at")
+          .select("id, recipient_email, template_name, status, created_at, error_message")
           .gte("created_at", since)
-          .eq("status", "failed")
+          .in("status", ["failed", "dlq"])
           .order("created_at", { ascending: false })
           .limit(cap);
         if (error) throw error;
-        return (data ?? []) as Array<{ id: string; recipient_email: string; template_name: string; status: string; created_at: string }>;
+        return (data ?? []) as Array<{ id: string; recipient_email: string; template_name: string; status: string; created_at: string; error_message: string | null }>;
       }, bag),
     ]);
 
@@ -406,13 +406,14 @@ export const getActivityFeed = createServerFn({ method: "POST" })
     }
 
     for (const r of emails) {
+      const label = r.status === "dlq" ? "Email dead-lettered" : "Email failed";
       events.push({
         id: `email:${r.id}`,
         ts: r.created_at,
         source: "email",
         type: `email_${r.status}`,
         severity: "warning",
-        summary: `Email failed: ${r.template_name} → ${r.recipient_email}`,
+        summary: `${label}: ${r.template_name} → ${r.recipient_email}`,
       });
     }
 
