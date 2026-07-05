@@ -390,7 +390,7 @@ export function ComposeDialog({
                 <div className="inline-flex rounded-[8px] border border-reps-border bg-white/[0.04] p-0.5 text-[12px]">
                   <button
                     type="button"
-                    onClick={() => setFormat("text")}
+                    onClick={() => switchFormat("text")}
                     className={`rounded-[6px] px-3 py-1 transition ${
                       format === "text"
                         ? "bg-reps-orange text-white"
