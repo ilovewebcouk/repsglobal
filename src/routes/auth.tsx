@@ -63,7 +63,7 @@ function friendlyAuthError(message: string): string {
     return "Too many attempts. Please wait a minute and try again.";
   }
   if (m.includes("user not found")) {
-    return "No account found for that email. Want to sign up instead?";
+    return "No account found for that email. View our plans to become a member.";
   }
   if (m.includes("network") || m.includes("fetch")) {
     return "Connection issue — check your internet and try again.";
