@@ -269,6 +269,30 @@ function SeoMonitorPage() {
                       <span className="text-[11px] text-white/45">{relTime(e.detected_at)}</span>
                     </div>
                     <div className="mt-1 text-[12px] text-white/75">{e.summary}</div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <a
+                        href={`https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent("https://repsuk.org/")}&id=${encodeURIComponent(e.url)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel/60 px-2 py-1 text-[11px] font-semibold text-white/80 transition hover:text-white"
+                        title="Opens Google Search Console URL Inspection. Click 'Request indexing' there (~10/day quota)."
+                      >
+                        <ExternalLink className="size-3" /> Request indexing in GSC
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => recheckMut.mutate(e.url)}
+                        disabled={recheckingUrl === e.url}
+                        className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel/60 px-2 py-1 text-[11px] font-semibold text-white/80 transition hover:text-white disabled:opacity-60"
+                      >
+                        {recheckingUrl === e.url ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          <RefreshCw className="size-3" />
+                        )}
+                        Re-check now
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
