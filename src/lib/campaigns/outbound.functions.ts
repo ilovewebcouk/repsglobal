@@ -650,6 +650,10 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
 
     for (const r of recipients) {
       try {
+        // Campaign sends create a ticket for reply-threading, but archive it
+        // immediately (status=closed, deleted_at=now). Pending is reserved
+        // for real human replies. The inbound webhook un-archives on reply.
+        const nowIso = new Date().toISOString();
         const { data: ticket, error: tErr } = await supabaseAdmin
           .from("support_tickets")
           .insert({
@@ -659,7 +663,8 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             priority: "normal",
             source: "admin",
             inbox: data.inbox,
-            status: "pending",
+            status: "closed",
+            deleted_at: nowIso,
             tags: ["outbound"],
             sla_due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           })

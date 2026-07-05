@@ -210,7 +210,19 @@ export const Route = createFileRoute("/api/public/email/inbound/mailgun")({
             // Spam parent → drop the inbound entirely.
             return Response.json({ ok: true, dropped: "spam" });
           }
-          if (
+          if (campaignRecipientId && existing) {
+            // Campaign ticket is archived on send. First real reply un-archives
+            // it and lifts it into the inbox as Open — no new ticket spawned.
+            await supabaseAdmin
+              .from("support_tickets")
+              .update({
+                status: "open",
+                deleted_at: null,
+                solved_at: null,
+                last_message_at: new Date().toISOString(),
+              } as never)
+              .eq("id", ticketId);
+          } else if (
             existing &&
             (existing.deleted_at !== null || existing.status === "closed")
           ) {
