@@ -12,7 +12,7 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
 }
 
 const CAMPAIGN_COLS =
-  "id, inbox, subject, total_recipients, sent_count, failed_count, tiers, created_at, sent_at, created_by, status, mode, format, scheduled_at, last_error";
+  "id, inbox, subject, total_recipients, sent_count, failed_count, delivered_count, opened_count, clicked_count, unsubscribed_count, bounced_count, complained_count, tiers, created_at, sent_at, created_by, status, mode, format, scheduled_at, last_error";
 
 const listSchema = z
   .object({
@@ -52,7 +52,7 @@ export const getCampaign = createServerFn({ method: "POST" })
       context.supabase
         .from("outbound_campaign_recipients")
         .select(
-          "id, email, name, status, sent_at, replied_at, error_message, reply_ticket_id",
+          "id, email, name, status, sent_at, delivered_at, opened_at, open_count, first_clicked_at, last_clicked_at, click_count, last_clicked_url, unsubscribed_at, bounced_at, complained_at, replied_at, error_message, reply_ticket_id",
         )
         .eq("campaign_id", data.id)
         .order("status", { ascending: true })
@@ -63,6 +63,7 @@ export const getCampaign = createServerFn({ method: "POST" })
     if (r.error) throw new Error(r.error.message);
     if (!c.data) throw new Error("Campaign not found");
 
-    const replied = (r.data ?? []).filter((row: any) => row.status === "replied").length;
-    return { campaign: c.data, recipients: r.data ?? [], repliedCount: replied };
+    const rows = (r.data ?? []) as any[];
+    const replied = rows.filter((row) => row.status === "replied").length;
+    return { campaign: c.data, recipients: rows, repliedCount: replied };
   });
