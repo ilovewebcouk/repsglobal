@@ -97,6 +97,7 @@ import { Route as AdminChurnRouteImport } from './routes/admin_.churn'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AdminBillingRouteImport } from './routes/admin_.billing'
 import { Route as AdminActivityRouteImport } from './routes/admin_.activity'
+import { Route as AccountSuspendedRouteImport } from './routes/account.suspended'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
@@ -604,6 +605,11 @@ const AdminActivityRoute = AdminActivityRouteImport.update({
   path: '/admin/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountSuspendedRoute = AccountSuspendedRouteImport.update({
+  id: '/account/suspended',
+  path: '/account/suspended',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedProfessionalRouteRoute =
   AuthenticatedProfessionalRouteRouteImport.update({
     id: '/_professional',
@@ -1014,6 +1020,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/account/suspended': typeof AccountSuspendedRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -1166,6 +1173,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/account/suspended': typeof AccountSuspendedRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -1318,6 +1326,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
+  '/account/suspended': typeof AccountSuspendedRoute
   '/admin_/activity': typeof AdminActivityRoute
   '/admin_/billing': typeof AdminBillingRouteWithChildren
   '/admin_/campaigns': typeof AdminCampaignsRoute
@@ -1474,6 +1483,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/account/suspended'
     | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
@@ -1626,6 +1636,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/account/suspended'
     | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
@@ -1777,6 +1788,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/verify-email'
     | '/_authenticated/_professional'
+    | '/account/suspended'
     | '/admin_/activity'
     | '/admin_/billing'
     | '/admin_/campaigns'
@@ -1933,6 +1945,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  AccountSuspendedRoute: typeof AccountSuspendedRoute
   AdminActivityRoute: typeof AdminActivityRoute
   AdminBillingRoute: typeof AdminBillingRouteWithChildren
   AdminCampaignsRoute: typeof AdminCampaignsRoute
@@ -2626,6 +2639,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/activity'
       fullPath: '/admin/activity'
       preLoaderRoute: typeof AdminActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/suspended': {
+      id: '/account/suspended'
+      path: '/account/suspended'
+      fullPath: '/account/suspended'
+      preLoaderRoute: typeof AccountSuspendedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_professional': {
@@ -3383,6 +3403,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  AccountSuspendedRoute: AccountSuspendedRoute,
   AdminActivityRoute: AdminActivityRoute,
   AdminBillingRoute: AdminBillingRouteWithChildren,
   AdminCampaignsRoute: AdminCampaignsRoute,
