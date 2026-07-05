@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
-import { Download, Loader2, Search, Upload, X } from "lucide-react";
+import { Download, Loader2, Search } from "lucide-react";
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PPanel } from "@/components/dashboard/primitives";
@@ -18,17 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import {
   listNewsletterSubscribers,
-  importNewsletterSubscribers,
   getReachableMembersCount,
 } from "@/lib/newsletter/subscribers.functions";
 
@@ -75,8 +64,6 @@ const STATUS_META: Record<
 function AdminNewsletter() {
   const [status, setStatus] = useState<Status | "all">("all");
   const [q, setQ] = useState("");
-  const [importOpen, setImportOpen] = useState(false);
-  const qc = useQueryClient();
 
   const listFn = useServerFn(listNewsletterSubscribers);
   const membersFn = useServerFn(getReachableMembersCount);
@@ -175,14 +162,6 @@ function AdminNewsletter() {
             <Download className="size-4" />
             Export CSV
           </Button>
-          <Button
-            size="sm"
-            onClick={() => setImportOpen(true)}
-            className="bg-reps-orange text-white hover:bg-reps-orange/90"
-          >
-            <Upload className="size-4" />
-            Import CSV
-          </Button>
         </div>
       }
     >
@@ -235,6 +214,25 @@ function AdminNewsletter() {
             Go to Campaigns →
           </a>
         </div>
+
+        {/* Prospects (non-members) callout — separate from newsletter opt-ins */}
+        <div className="rounded-[16px] border border-reps-border bg-white/[0.03] p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-[240px]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
+              Cold list of non-members?
+            </div>
+            <div className="mt-1 text-[13px] text-white/75">
+              Import CSVs of gym owners, expo leads or outreach lists into <strong className="text-white">Prospects</strong> — kept separate from newsletter opt-ins and safe for cold outreach.
+            </div>
+          </div>
+          <a
+            href="/admin/prospects"
+            className="text-[13px] text-reps-orange hover:underline shrink-0"
+          >
+            Import to Prospects →
+          </a>
+        </div>
+
 
 
         <PPanel className="p-0 overflow-hidden">
@@ -329,16 +327,6 @@ function AdminNewsletter() {
           )}
         </PPanel>
       </div>
-
-      <ImportDialog
-        open={importOpen}
-        onOpenChange={setImportOpen}
-        onDone={() => {
-          void qc.invalidateQueries({
-            queryKey: ["admin", "newsletter", "subscribers"],
-          });
-        }}
-      />
     </DashboardShell>
   );
 }
@@ -355,140 +343,3 @@ function formatDate(iso: string): string {
   }
 }
 
-function ImportDialog({
-  open,
-  onOpenChange,
-  onDone,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  onDone: () => void;
-}) {
-  const [text, setText] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
-  const importFn = useServerFn(importNewsletterSubscribers);
-
-  const emails = useMemo(() => {
-    const found = text
-      .split(/[\s,;]+/g)
-      .map((s) => s.trim().toLowerCase())
-      .filter((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s));
-    return Array.from(new Set(found));
-  }, [text]);
-
-  const importMutation = useMutation({
-    mutationFn: async () => {
-      if (emails.length === 0) throw new Error("No valid emails detected");
-      // Batch to 500 at a time (server caps at 2000, but we stay polite)
-      let inserted = 0;
-      let skipped = 0;
-      for (let i = 0; i < emails.length; i += 500) {
-        const chunk = emails.slice(i, i + 500);
-        const res = await importFn({ data: { emails: chunk } });
-        inserted += res.inserted;
-        skipped += res.skipped;
-      }
-      return { inserted, skipped };
-    },
-    onSuccess: (res) => {
-      toast.success(
-        `Imported ${res.inserted} subscriber${res.inserted === 1 ? "" : "s"}`,
-        res.skipped > 0
-          ? { description: `Skipped ${res.skipped} duplicate${res.skipped === 1 ? "" : "s"}` }
-          : undefined,
-      );
-      setText("");
-      onDone();
-      onOpenChange(false);
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Import failed");
-    },
-  });
-
-  async function onFile(files: FileList | null) {
-    const file = files?.[0];
-    if (!file) return;
-    const raw = await file.text();
-    // Strip CSV headers / other cols — the parser only keeps valid emails.
-    setText((prev) => (prev.trim() ? `${prev}\n${raw}` : raw));
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl bg-reps-panel border-reps-border text-white">
-        <DialogHeader>
-          <DialogTitle className="text-white">Import newsletter subscribers</DialogTitle>
-          <DialogDescription className="text-[12.5px] text-white/55">
-            Paste emails or upload a CSV. Imported addresses are marked{" "}
-            <strong className="text-white/80">confirmed</strong> — only use for lists that already opted in.
-            Duplicates and existing addresses are skipped safely.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-3">
-          <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-[10px] border border-dashed border-reps-border bg-white/[0.03] px-3 py-2 text-[12.5px] text-white/75 hover:bg-white/[0.06]">
-            <Upload className="size-4" />
-            Upload CSV or TXT
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv,.txt,text/csv,text/plain"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files)}
-            />
-          </label>
-
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={10}
-            placeholder="one@example.com, two@example.com&#10;three@example.com"
-            className="bg-white/[0.04] border-reps-border text-white font-mono text-[12.5px]"
-          />
-
-          <div className="flex items-center justify-between text-[12px] text-white/55">
-            <div>
-              {emails.length > 0
-                ? `${emails.length} valid email${emails.length === 1 ? "" : "s"} detected`
-                : "No valid emails yet"}
-            </div>
-            {text ? (
-              <button
-                type="button"
-                onClick={() => setText("")}
-                className="inline-flex items-center gap-1 text-white/55 hover:text-white"
-              >
-                <X className="size-3" /> Clear
-              </button>
-            ) : null}
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={importMutation.isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => importMutation.mutate()}
-            disabled={emails.length === 0 || importMutation.isPending}
-            className="bg-reps-orange text-white hover:bg-reps-orange/90"
-          >
-            {importMutation.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <>
-                <Upload className="size-4" />
-                Import {emails.length > 0 ? `(${emails.length})` : ""}
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}

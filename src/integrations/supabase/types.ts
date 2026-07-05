@@ -2761,6 +2761,7 @@ export type Database = {
           last_error: string | null
           mode: string | null
           opened_count: number
+          prospect_tags: string[]
           scheduled_at: string | null
           sent_at: string | null
           sent_count: number
@@ -2788,6 +2789,7 @@ export type Database = {
           last_error?: string | null
           mode?: string | null
           opened_count?: number
+          prospect_tags?: string[]
           scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number
@@ -2815,6 +2817,7 @@ export type Database = {
           last_error?: string | null
           mode?: string | null
           opened_count?: number
+          prospect_tags?: string[]
           scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number
@@ -3508,6 +3511,51 @@ export type Database = {
             referencedColumns: ["professional_id"]
           },
         ]
+      }
+      prospect_contacts: {
+        Row: {
+          converted_user_id: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          imported_at: string
+          imported_by: string | null
+          list_tag: string | null
+          source_note: string | null
+          status: Database["public"]["Enums"]["prospect_status"]
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          converted_user_id?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          imported_at?: string
+          imported_by?: string | null
+          list_tag?: string | null
+          source_note?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"]
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          converted_user_id?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          imported_at?: string
+          imported_by?: string | null
+          list_tag?: string | null
+          source_note?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"]
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       proxy_ingest_diagnostics: {
         Row: {
@@ -5754,6 +5802,13 @@ export type Database = {
           ticket_number: string
         }[]
       }
+      list_prospect_tags: {
+        Args: never
+        Returns: {
+          count: number
+          list_tag: string
+        }[]
+      }
       list_publicly_visible_pro_ids: {
         Args: never
         Returns: {
@@ -6017,6 +6072,7 @@ export type Database = {
         | "admin_end_trial"
         | "admin_delete"
         | "member_request"
+      prospect_status: "active" | "converted" | "unsubscribed" | "bounced"
       renewal_token_purpose: "card_needed" | "payment_failed" | "reactivate"
       reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
       roster_status: "prospect" | "confirmed" | "active" | "archived"
@@ -6241,6 +6297,7 @@ export const Constants = {
         "admin_delete",
         "member_request",
       ],
+      prospect_status: ["active", "converted", "unsubscribed", "bounced"],
       renewal_token_purpose: ["card_needed", "payment_failed", "reactivate"],
       reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],
       roster_status: ["prospect", "confirmed", "active", "archived"],

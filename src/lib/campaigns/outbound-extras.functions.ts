@@ -12,7 +12,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Inbox = "support" | "pros" | "partners" | "press";
-type Tier = "free" | "verified" | "pro" | "studio" | "newsletter";
+type Tier = "free" | "verified" | "pro" | "studio" | "newsletter" | "prospects";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
   support: { email: "support@repsuk.org", name: "REPS", label: "Support" },
@@ -39,9 +39,11 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
 async function resolveTierRecipients(
   supabaseAdmin: any,
   tiers: Tier[],
+  opts?: { prospectTags?: string[] },
 ): Promise<Array<{ email: string; name: string | null }>> {
   const wantsNewsletter = tiers.includes("newsletter");
-  const proTiers = tiers.filter((t) => t !== "newsletter");
+  const wantsProspects = tiers.includes("prospects");
+  const proTiers = tiers.filter((t) => t !== "newsletter" && t !== "prospects");
   const paid = proTiers.filter((t) => t !== "free");
   const wantsFree = proTiers.includes("free");
 
@@ -109,6 +111,23 @@ async function resolveTierRecipients(
       if (!email || !isValidEmail(email) || seen.has(email)) continue;
       seen.add(email);
       out.push({ email, name: null });
+    }
+  }
+
+  if (wantsProspects) {
+    let pQ = supabaseAdmin
+      .from("prospect_contacts")
+      .select("email, full_name, list_tag")
+      .eq("status", "active");
+    if (opts?.prospectTags && opts.prospectTags.length > 0) {
+      pQ = pQ.in("list_tag", opts.prospectTags);
+    }
+    const { data: pRows } = await pQ;
+    for (const r of (pRows ?? []) as any[]) {
+      const email = (r.email ?? "").toLowerCase().trim();
+      if (!email || !isValidEmail(email) || seen.has(email)) continue;
+      seen.add(email);
+      out.push({ email, name: (r.full_name as string) || null });
     }
   }
 
@@ -299,7 +318,8 @@ const draftSchema = z.object({
     .array(z.object({ email: z.string(), name: z.string().nullable().optional() }))
     .max(500)
     .optional(),
-  tiers: z.array(z.enum(["free", "verified", "pro", "studio", "newsletter"])).max(5).optional(),
+  tiers: z.array(z.enum(["free", "verified", "pro", "studio", "newsletter", "prospects"])).max(6).optional(),
+  prospectTags: z.array(z.string().max(120)).max(50).optional(),
   attachments: z
     .array(
       z.object({
@@ -327,6 +347,7 @@ export const saveCampaignDraft = createServerFn({ method: "POST" })
       body_text: data.body,
       format: data.format,
       tiers: data.mode === "broadcast" ? data.tiers ?? [] : [],
+      prospect_tags: data.mode === "broadcast" ? data.prospectTags ?? [] : [],
       direct_recipients: data.mode === "direct" ? data.recipients ?? [] : [],
       attachments: (data.attachments ?? []).map((a) => ({
         filename: a.filename,
@@ -460,7 +481,7 @@ export const sendCampaignNow = createServerFn({ method: "POST" })
     const { data: c, error } = await supabaseAdmin
       .from("outbound_campaigns")
       .select(
-        "id, inbox, mode, subject, body_text, format, tiers, direct_recipients, attachments, status",
+        "id, inbox, mode, subject, body_text, format, tiers, prospect_tags, direct_recipients, attachments, status",
       )
       .eq("id", data.id)
       .maybeSingle();
@@ -488,7 +509,9 @@ export const sendCampaignNow = createServerFn({ method: "POST" })
         .eq("id", c.id);
       throw new Error("Pick at least one tier before sending");
     }
-    const recipients = await resolveTierRecipients(supabaseAdmin, c.tiers as Tier[]);
+    const recipients = await resolveTierRecipients(supabaseAdmin, c.tiers as Tier[], {
+      prospectTags: (c.prospect_tags as string[]) ?? [],
+    });
 
     if (recipients.length === 0) {
       await supabaseAdmin

@@ -36,9 +36,10 @@ import {
   scheduleCampaign,
 } from "@/lib/campaigns/outbound-extras.functions";
 import { draftArticleEmail } from "@/lib/campaigns/article-ai-draft.functions";
+import { listProspectTags } from "@/lib/prospects/prospects.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press";
-type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter";
+type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter" | "prospects";
 
 interface Recipient {
   email: string;
@@ -69,6 +70,7 @@ const TIERS: { value: Tier; label: string }[] = [
   { value: "studio", label: "Studio" },
   { value: "former", label: "Former members" },
   { value: "newsletter", label: "Newsletter subscribers" },
+  { value: "prospects", label: "Prospects (cold contacts)" },
 ];
 
 export interface ComposeInitialDraft {
@@ -80,6 +82,7 @@ export interface ComposeInitialDraft {
   format: "text" | "html";
   recipients?: Recipient[];
   tiers?: Tier[];
+  prospectTags?: string[];
   attachments?: UploadedAttachment[];
   scheduledAt?: string | null;
 }
@@ -104,6 +107,7 @@ export function ComposeDialog({
   const [format, setFormat] = useState<"text" | "html">("text");
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [tiers, setTiers] = useState<Tier[]>(["verified"]);
+  const [prospectTags, setProspectTags] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [confirming, setConfirming] = useState(false);
   const [draftId, setDraftId] = useState<string | undefined>(undefined);
@@ -119,6 +123,7 @@ export function ComposeDialog({
   const previewFn = useServerFn(previewBroadcastCount);
   const saveDraftFn = useServerFn(saveCampaignDraft);
   const scheduleFn = useServerFn(scheduleCampaign);
+  const listTagsFn = useServerFn(listProspectTags);
 
   // Load an existing draft when the dialog opens with one
   useEffect(() => {
@@ -132,6 +137,7 @@ export function ComposeDialog({
       setFormat(initialDraft.format ?? "text");
       setRecipients(initialDraft.recipients ?? []);
       setTiers(initialDraft.tiers ?? ["verified"]);
+      setProspectTags(initialDraft.prospectTags ?? []);
       setAttachments(initialDraft.attachments ?? []);
       setScheduledAt(initialDraft.scheduledAt ?? "");
     } else {
@@ -142,9 +148,16 @@ export function ComposeDialog({
   }, [open, initialDraft]);
 
   const previewQuery = useQuery({
-    queryKey: ["admin", "outbound", "preview", tiers],
-    queryFn: () => previewFn({ data: { tiers } }),
+    queryKey: ["admin", "outbound", "preview", tiers, prospectTags],
+    queryFn: () => previewFn({ data: { tiers, prospectTags: prospectTags.length ? prospectTags : undefined } }),
     enabled: open && mode === "broadcast" && tiers.length > 0,
+  });
+
+  const prospectTagsQuery = useQuery({
+    queryKey: ["admin", "prospects", "tags"],
+    queryFn: () => listTagsFn(),
+    enabled: open && mode === "broadcast" && tiers.includes("prospects"),
+    staleTime: 60_000,
   });
 
   const sendMutation = useMutation({
@@ -158,6 +171,7 @@ export function ComposeDialog({
           format,
           recipients: mode === "direct" ? recipients.map((r) => ({ email: r.email, name: r.name })) : undefined,
           tiers: mode === "broadcast" ? tiers : undefined,
+          prospectTags: mode === "broadcast" && tiers.includes("prospects") && prospectTags.length > 0 ? prospectTags : undefined,
           attachments,
         },
       });
@@ -201,6 +215,7 @@ export function ComposeDialog({
           format,
           recipients: mode === "direct" ? recipients.map((r) => ({ email: r.email, name: r.name ?? null })) : undefined,
           tiers: mode === "broadcast" ? tiers : undefined,
+          prospectTags: mode === "broadcast" && tiers.includes("prospects") && prospectTags.length > 0 ? prospectTags : undefined,
           attachments,
         },
       });
@@ -229,6 +244,7 @@ export function ComposeDialog({
           format,
           recipients: mode === "direct" ? recipients.map((r) => ({ email: r.email, name: r.name ?? null })) : undefined,
           tiers: mode === "broadcast" ? tiers : undefined,
+          prospectTags: mode === "broadcast" && tiers.includes("prospects") && prospectTags.length > 0 ? prospectTags : undefined,
           attachments,
         },
       });
@@ -250,6 +266,7 @@ export function ComposeDialog({
     setBody("");
     setFormat("text");
     setRecipients([]);
+    setProspectTags([]);
     setAttachments([]);
     setConfirming(false);
     setDraftId(undefined);
@@ -357,6 +374,72 @@ export function ComposeDialog({
                     );
                   })}
                 </div>
+
+                {tiers.includes("prospects") ? (
+                  <div className="mt-3 grid gap-3">
+                    <div className="rounded-[10px] border border-amber-400/30 bg-amber-500/10 p-3 text-[12px] text-amber-100/90">
+                      <strong className="text-amber-200">Cold outreach.</strong>{" "}
+                      Keep the message signup-focused, and don't hit the same
+                      contact more than once a month. Unsubscribes are honoured
+                      automatically.
+                    </div>
+                    <div>
+                      <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
+                        Filter by list tag {prospectTags.length > 0 && `(${prospectTags.length})`}
+                      </div>
+                      {prospectTagsQuery.isLoading ? (
+                        <div className="text-[12px] text-white/50">Loading tags…</div>
+                      ) : (prospectTagsQuery.data?.tags?.length ?? 0) === 0 ? (
+                        <div className="text-[12px] text-white/50">
+                          No prospects yet.{" "}
+                          <a href="/admin/prospects" className="text-reps-orange hover:underline">
+                            Import a CSV →
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {(prospectTagsQuery.data?.tags ?? []).map((t) => {
+                            const active = prospectTags.includes(t.list_tag);
+                            return (
+                              <button
+                                key={t.list_tag}
+                                type="button"
+                                onClick={() =>
+                                  setProspectTags((prev) =>
+                                    prev.includes(t.list_tag)
+                                      ? prev.filter((x) => x !== t.list_tag)
+                                      : [...prev, t.list_tag],
+                                  )
+                                }
+                                className={`rounded-full border px-2.5 py-1 text-[11.5px] transition ${
+                                  active
+                                    ? "border-reps-orange bg-reps-orange/20 text-white"
+                                    : "border-reps-border bg-white/[0.03] text-white/70 hover:text-white"
+                                }`}
+                              >
+                                {t.list_tag}{" "}
+                                <span className="text-white/40">· {t.count}</span>
+                              </button>
+                            );
+                          })}
+                          {prospectTags.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setProspectTags([])}
+                              className="rounded-full border border-reps-border bg-white/[0.03] px-2.5 py-1 text-[11.5px] text-white/55 hover:text-white"
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <div className="mt-1 text-[11px] text-white/40">
+                        Leave empty to send to every active prospect. Members and unsubscribers are excluded automatically.
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="mt-2 text-[12px] text-white/55">
                   {previewQuery.isLoading ? (
                     "Counting recipients…"

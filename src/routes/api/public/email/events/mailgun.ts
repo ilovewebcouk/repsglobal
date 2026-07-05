@@ -254,6 +254,17 @@ export const Route = createFileRoute("/api/public/email/events/mailgun")({
               } as never,
               { onConflict: "email" },
             );
+          // Mirror status onto prospects table if this address is a prospect.
+          if (reason === "unsubscribed" || reason === "bounced") {
+            await supabaseAdmin
+              .from("prospect_contacts")
+              .update({
+                status: reason === "bounced" ? "bounced" : "unsubscribed",
+                unsubscribed_at:
+                  reason === "unsubscribed" ? new Date().toISOString() : null,
+              })
+              .eq("email", recipient);
+          }
         };
         if (eventName === "unsubscribed") await suppress("unsubscribed");
         if (

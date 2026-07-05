@@ -28,7 +28,7 @@ export async function runScheduledCampaign(campaignId: string): Promise<{
   const { data: c, error } = await supabaseAdmin
     .from("outbound_campaigns")
     .select(
-      "id, inbox, mode, subject, body_text, format, tiers, attachments",
+      "id, inbox, mode, subject, body_text, format, tiers, prospect_tags, attachments",
     )
     .eq("id", campaignId)
     .maybeSingle();
@@ -45,7 +45,10 @@ export async function runScheduledCampaign(campaignId: string): Promise<{
   }
 
   // Resolve recipients per current tier membership
-  const recipients = await resolveTierRecipients(c.tiers as string[]);
+  const recipients = await resolveTierRecipients(
+    c.tiers as string[],
+    (c.prospect_tags as string[]) ?? [],
+  );
   if (recipients.length === 0) throw new Error("No valid recipients matched");
 
   // Replace prior recipient rows
@@ -113,9 +116,11 @@ export async function runScheduledCampaign(campaignId: string): Promise<{
 // ─── recipient resolution (mirror of outbound.functions.ts) ──────────────────
 async function resolveTierRecipients(
   tiers: string[],
+  prospectTags: string[] = [],
 ): Promise<Array<{ email: string; name: string | null }>> {
   const wantsNewsletter = tiers.includes("newsletter");
-  const proTiers = tiers.filter((t) => t !== "newsletter");
+  const wantsProspects = tiers.includes("prospects");
+  const proTiers = tiers.filter((t) => t !== "newsletter" && t !== "prospects");
   const VERIFIED_TIERS = proTiers.filter((t) => t !== "free");
   const wantsFree = proTiers.includes("free");
 
@@ -194,6 +199,23 @@ async function resolveTierRecipients(
       if (!email || !EMAIL_RE.test(email) || seen.has(email)) continue;
       seen.add(email);
       out.push({ email, name: null });
+    }
+  }
+
+  if (wantsProspects) {
+    let pQ = supabaseAdmin
+      .from("prospect_contacts")
+      .select("email, full_name, list_tag")
+      .eq("status", "active");
+    if (prospectTags.length > 0) {
+      pQ = pQ.in("list_tag", prospectTags);
+    }
+    const { data: pRows } = await pQ;
+    for (const r of (pRows ?? []) as any[]) {
+      const email = (r.email ?? "").toLowerCase().trim();
+      if (!email || !EMAIL_RE.test(email) || seen.has(email)) continue;
+      seen.add(email);
+      out.push({ email, name: (r.full_name as string) || null });
     }
   }
 

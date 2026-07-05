@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Inbox = "support" | "pros" | "partners" | "press";
-type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter";
+type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter" | "prospects";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
   support: { email: "support@repsuk.org", name: "REPS", label: "Support" },
@@ -74,7 +74,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     z
       .object({
         q: z.string().max(120).optional(),
-        tier: z.enum(["free", "verified", "pro", "studio", "former", "newsletter"]).optional(),
+        tier: z.enum(["free", "verified", "pro", "studio", "former", "newsletter", "prospects"]).optional(),
       })
       .parse(d ?? {}),
   )
@@ -186,13 +186,14 @@ export const searchTrainers = createServerFn({ method: "POST" })
 // ─────────────────────────────────────────────────────────────────────────────
 export const previewBroadcastCount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { tiers: Tier[] }) =>
+  .inputValidator((d: { tiers: Tier[]; prospectTags?: string[] }) =>
     z
       .object({
         tiers: z
-          .array(z.enum(["free", "verified", "pro", "studio", "former", "newsletter"]))
+          .array(z.enum(["free", "verified", "pro", "studio", "former", "newsletter", "prospects"]))
           .min(1)
-          .max(6),
+          .max(7),
+        prospectTags: z.array(z.string().max(120)).max(50).optional(),
       })
       .parse(d),
   )
@@ -200,27 +201,31 @@ export const previewBroadcastCount = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    const tagOpts = { prospectTags: data.prospectTags };
+
     // Per-tier counts (small dataset — one resolver call per selected tier).
     const byTier: Partial<Record<Tier, number>> = {};
     await Promise.all(
       data.tiers.map(async (t) => {
-        const rs = await resolveTierRecipients(supabaseAdmin, [t]);
+        const rs = await resolveTierRecipients(supabaseAdmin, [t], tagOpts);
         byTier[t] = rs.length;
       }),
     );
 
     // Deduped union across all selected tiers.
-    const recipients = await resolveTierRecipients(supabaseAdmin, data.tiers);
+    const recipients = await resolveTierRecipients(supabaseAdmin, data.tiers, tagOpts);
     return { count: recipients.length, byTier };
   });
 
 async function resolveTierRecipients(
   supabaseAdmin: any,
   tiers: Tier[],
+  opts?: { prospectTags?: string[] },
 ): Promise<Array<{ userId: string; email: string; name: string }>> {
   const wantFormer = tiers.includes("former");
   const wantNewsletter = tiers.includes("newsletter");
-  const liveTiers = tiers.filter((t) => t !== "former" && t !== "newsletter");
+  const wantProspects = tiers.includes("prospects");
+  const liveTiers = tiers.filter((t) => t !== "former" && t !== "newsletter" && t !== "prospects");
   const wantFree = liveTiers.includes("free");
   const paidTiers = liveTiers.filter((t) => t !== "free");
 
@@ -339,6 +344,26 @@ async function resolveTierRecipients(
     combined.push(...news);
   }
 
+  if (wantProspects) {
+    let pQuery = supabaseAdmin
+      .from("prospect_contacts")
+      .select("id, email, full_name, list_tag")
+      .eq("status", "active");
+    if (opts?.prospectTags && opts.prospectTags.length > 0) {
+      pQuery = pQuery.in("list_tag", opts.prospectTags);
+    }
+    const { data: pRows } = await pQuery;
+    const seen = new Set(combined.map((r) => r.email));
+    const pros = ((pRows ?? []) as any[])
+      .map((r) => ({
+        userId: `prospect:${r.id}`,
+        email: (r.email ?? "").toLowerCase().trim(),
+        name: (r.full_name ?? "") as string,
+      }))
+      .filter((r) => r.email && isValidEmail(r.email) && !seen.has(r.email));
+    combined.push(...pros);
+  }
+
   return combined;
 }
 
@@ -357,6 +382,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       recipients?: Array<{ email: string; name?: string | null }>;
       // broadcast mode
       tiers?: Tier[];
+      prospectTags?: string[];
       subject: string;
       body: string;
       format?: "text" | "html";
@@ -382,10 +408,11 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
             .max(500)
             .optional(),
           tiers: z
-            .array(z.enum(["free", "verified", "pro", "studio", "former", "newsletter"]))
+            .array(z.enum(["free", "verified", "pro", "studio", "former", "newsletter", "prospects"]))
             .min(1)
-            .max(6)
+            .max(7)
             .optional(),
+          prospectTags: z.array(z.string().max(120)).max(50).optional(),
           subject: z.string().min(1).max(200),
           body: z.string().min(1).max(50000),
           format: z.enum(["text", "html"]).optional().default("text"),
@@ -429,7 +456,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
       if (!data.tiers || data.tiers.length === 0) {
         throw new Error("Pick at least one tier for broadcast");
       }
-      const resolved = await resolveTierRecipients(supabaseAdmin, data.tiers);
+      const resolved = await resolveTierRecipients(supabaseAdmin, data.tiers, { prospectTags: data.prospectTags });
       for (const r of resolved) {
         if (!isValidEmail(r.email)) {
           skipped.push({ email: r.email, reason: "Invalid email format" });
@@ -498,6 +525,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
           created_by: context.userId,
           total_recipients: recipients.length,
           tiers: data.tiers ?? [],
+          prospect_tags: data.prospectTags ?? [],
           mode: "broadcast",
           format: fmt,
           status: "sending",

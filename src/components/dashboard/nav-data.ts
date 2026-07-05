@@ -25,6 +25,7 @@ import {
   Star,
   Store,
   Target,
+  Send,
   UserCheck,
   UserCircle,
   Users,
@@ -165,6 +166,7 @@ export const ADMIN_NAV = [
       { icon: LifeBuoy, label: "Support", to: "/admin/support" },
       { icon: Megaphone, label: "Campaigns", to: "/admin/campaigns" },
       { icon: Mails, label: "Newsletter", to: "/admin/newsletter" },
+      { icon: Send, label: "Prospects", to: "/admin/prospects" },
     ],
   },
   {
