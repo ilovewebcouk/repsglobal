@@ -1,42 +1,40 @@
-## Goal
-As the admin types in the top-bar Member Finder, show a live dropdown of matching members (by UID, email, Stripe `cus_…`/`sub_…`, BD id, or name) so they can click the right one instead of always hitting Enter.
+## Audit findings — Simon Cumming password reset
 
-## Approach
-Reuse the existing `findMember` server fn (already admin-gated, already returns ranked `MemberMatch[]`). No backend/RPC changes needed — it already supports partial email and name matches, so it works fine as an autocomplete source.
+I checked what actually happened when you triggered the reset for `simon.cumming@gmail.com`:
 
-## Changes
+- **Supabase Auth accepted the request.** `auth.users.recovery_sent_at` is stamped `2026-07-05 13:28:52 UTC`. So the call from `/forgot-password` worked — the request reached Auth.
+- **No row exists in `email_send_log`** for any password-reset / recovery / magiclink / signup template — for Simon or anyone else. The only `simon.cumming` rows are old marketing/legacy sends (`relaunch-announcement`, `legacy-conversion-confirmation`).
+- **No auth email webhook is scaffolded.** There is no file at `src/routes/lovable/email/auth/webhook.ts`. Domain status confirms it: `notify.repsuk.org` is verified, but under the domain report it says *"No authentication emails yet"*.
+- **No Member 360 activity for password resets** exists either — nothing in the admin member page reads `recovery_sent_at` or an auth event, so support has no visibility.
 
-**`src/components/ops/MemberFinder.tsx`** (only file touched)
+### What this means
 
-1. Add a debounced effect on `q`:
-   - Trigger 250ms after the last keystroke.
-   - Skip if the normalised query is < 2 chars (avoids firing on a single letter and hammering the RPC).
-   - Cancel in-flight results if the query changed while loading (track a request id / abort marker so stale responses don't overwrite fresher ones).
-   - Show a subtle loading state in the existing spinner slot while suggestions load.
+Auth emails (recovery, magic link, signup confirm, invite, email change, reauth) are currently going through **Supabase's default built-in email path**, not through your Mailgun-backed `notify.repsuk.org` queue. That path has very tight built-in rate limits (a few per hour, project-wide) and doesn't use your verified sender — so:
 
-2. Render suggestions in the existing dropdown:
-   - Reuse the current `matches` dropdown markup — same styling, same click-to-navigate behaviour, same `match_kind` badge.
-   - Cap to first 8 rows to keep the list scannable.
-   - Add keyboard nav: ↑/↓ to move highlight, Enter to open the highlighted row (falls back to current `go()` behaviour when nothing is highlighted), Esc to close.
+- Emails frequently silently fail to be delivered.
+- Nothing lands in `email_send_log`, so we can't tell whether they left the platform.
+- Support can't see anything in Member 360.
 
-3. Preserve current behaviour:
-   - Enter with no highlight still calls `go()` (single-match auto-navigate, "No matches" toast on empty).
-   - ⌘K focus shortcut untouched.
-   - Both `topbar` and `default` variants get the same autocomplete (shared logic).
-   - Clicking outside closes the dropdown (add a click-away listener on the wrapper).
+That matches Simon's report exactly: request accepted, no email arrives, no trace anywhere.
 
-4. Small UX polish:
-   - Highlighted row uses `bg-reps-panel/60` (matches existing hover).
-   - When the user pastes a full UUID or `cus_…`, still show the dropdown briefly then auto-navigate on exact single match — do NOT skip the dropdown, so admins can visually confirm before jumping.
+The `/forgot-password` page code itself is fine — no bug there.
 
-## Out of scope
-- No changes to `findMember` server fn, `ops_find_member` RPC, or DB.
-- No new caching layer — the RPC is fast enough and debouncing already limits calls. Can add later if load becomes an issue.
-- No changes to the "Members reachable via Campaigns" area or any other admin surface.
+### Plan
 
-## Verification
-- Type `dem` → dropdown shows the demo user + other partial email matches.
-- Type/paste `3d8ffa68-f4b2-46b2-bdac-d06b48fbf445` → single match appears, click to open.
-- Paste a `cus_…` from Stripe → matching member appears.
-- ↑/↓/Enter/Esc keyboard nav works.
-- Enter with empty dropdown still runs the classic search + toast.
+1. **Scaffold the Lovable auth email templates + webhook** (`email_domain--scaffold_auth_email_templates`). This creates `src/routes/lovable/email/auth/webhook.ts` plus the six auth templates (signup, magiclink, recovery, invite, email_change, reauthentication), and switches Supabase's Auth Hook to enqueue into `auth_emails`. From then on every recovery send:
+   - Goes out from `notify.repsuk.org` via your Mailgun setup (no more Supabase 2-per-hour rate cap).
+   - Writes a row to `email_send_log` (`template_name = 'recovery'`, status transitions `pending → sent`/`failed`/`dlq`).
+2. **Brand the scaffolded templates** to match the REPs dark look (background stays `#ffffff` per platform rule), so the recovery email doesn't look generic.
+3. **Add password-reset visibility to Member 360** (`/admin/members/$userId`):
+   - Show "Last password reset requested" from `auth.users.recovery_sent_at` (via a SECURITY DEFINER RPC — we can't read `auth.users` directly from the client).
+   - Show the last few recovery send attempts from `email_send_log` where `recipient_email = member.email AND template_name = 'recovery'` (status + timestamp + error_message).
+   - This gives support a one-glance answer to "did they request it / did it send / why did it fail".
+4. **Retry Simon's reset** once the webhook is live and confirm a `recovery` row lands in `email_send_log` with `status = 'sent'`.
+
+### Out of scope (calling out on purpose)
+
+- Not touching the `/forgot-password` UI — it's working correctly.
+- Not touching the newsletter no-reply work from the previous turn.
+- Not addressing the pre-existing `welcome-signup` DLQ backlog (336 rows) — separate issue; happy to do it next if you want.
+
+Approve and I'll run the scaffold, brand the templates, wire the Member 360 panel, and re-test on Simon's account.
