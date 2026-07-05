@@ -406,13 +406,14 @@ export const getActivityFeed = createServerFn({ method: "POST" })
     }
 
     for (const r of emails) {
+      const label = r.status === "dlq" ? "Email dead-lettered" : "Email failed";
       events.push({
         id: `email:${r.id}`,
         ts: r.created_at,
         source: "email",
         type: `email_${r.status}`,
         severity: "warning",
-        summary: `Email failed: ${r.template_name} → ${r.recipient_email}`,
+        summary: `${label}: ${r.template_name} → ${r.recipient_email}`,
       });
     }
 
