@@ -189,23 +189,6 @@ function AdminNewsletter() {
         </div>
 
 
-        {/* Prospects (non-members) callout — separate from newsletter opt-ins */}
-        <div className="rounded-[16px] border border-reps-border bg-white/[0.03] p-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-[240px]">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/55">
-              Cold list of non-members?
-            </div>
-            <div className="mt-1 text-[13px] text-white/75">
-              Import CSVs of gym owners, expo leads or outreach lists into <strong className="text-white">Prospects</strong> — kept separate from newsletter opt-ins and safe for cold outreach.
-            </div>
-          </div>
-          <a
-            href="/admin/prospects"
-            className="text-[13px] text-reps-orange hover:underline shrink-0"
-          >
-            Import to Prospects →
-          </a>
-        </div>
 
 
 
