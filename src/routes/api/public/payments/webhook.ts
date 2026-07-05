@@ -759,6 +759,40 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 const sub = await stripe.subscriptions.retrieve(subId);
                 userId = await upsertSubscriptionFromStripe(sub, stripe, env);
               }
+              // GA4 lifecycle for renewals + payment failures.
+              if (userId) {
+                try {
+                  const billingReason = (invoice as unknown as { billing_reason?: string }).billing_reason ?? null;
+                  const invAmt = ((invoice as unknown as { amount_paid?: number; amount_due?: number }).amount_paid
+                    ?? (invoice as unknown as { amount_due?: number }).amount_due ?? 0) / 100;
+                  const invCurrency = ((invoice as unknown as { currency?: string }).currency ?? "gbp").toUpperCase();
+                  let gaTier = "verified"; let gaPeriod = "annual";
+                  if (subId) {
+                    const s = await stripe.subscriptions.retrieve(subId);
+                    gaTier = (s.metadata?.tier as string) ?? gaTier;
+                    gaPeriod = (s.metadata?.billing_period as string) ?? gaPeriod;
+                  }
+                  const { sendGaLifecycle } = await import("@/lib/analytics/ga-measurement-protocol.server");
+                  if (event.type === "invoice.payment_succeeded" && billingReason === "subscription_cycle") {
+                    await sendGaLifecycle({
+                      clientId: null, userId,
+                      event: "subscription_renewed",
+                      subscriptionId: subId ?? invoice.id ?? "unknown",
+                      tier: gaTier, period: gaPeriod,
+                      value: invAmt, currency: invCurrency,
+                    });
+                  } else if (event.type === "invoice.payment_failed") {
+                    await sendGaLifecycle({
+                      clientId: null, userId,
+                      event: "payment_failed",
+                      subscriptionId: subId ?? invoice.id ?? "unknown",
+                      tier: gaTier, period: gaPeriod,
+                      value: invAmt, currency: invCurrency,
+                    });
+                  }
+                } catch (e) { console.warn("[ga4-mp] invoice lifecycle dispatch failed:", e); }
+              }
+
               if (userId && event.type === "invoice.payment_failed") {
                 const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
                 await supabaseAdmin.rpc("enter_churn_stage" as never, {
@@ -776,6 +810,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     const { data: profile } = await supabaseAdmin
                       .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                     const graceEnd = new Date(Date.now() + 14 * 86400000);
+
                     const invAmt = ((invoice as unknown as { amount_due?: number }).amount_due ?? 0) / 100;
                     const invAmount = invAmt > 0 ? `£${invAmt.toFixed(invAmt % 1 === 0 ? 0 : 2)}` : "£34";
                     const invTier = subId
