@@ -401,7 +401,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
     }) =>
       z
         .object({
-          inbox: z.enum(["support", "pros", "partners", "press"]),
+          inbox: z.enum(["support", "pros", "partners", "press", "news"]),
           mode: z.enum(["direct", "broadcast"]),
           recipients: z
             .array(
