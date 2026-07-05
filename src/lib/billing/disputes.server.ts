@@ -125,9 +125,14 @@ async function resolveUserForDispute(
   };
 }
 
+// Effectively-permanent auth ban duration (Supabase requires an interval).
+// 100 years is treated as "banned until an admin lifts it".
+const DISPUTE_AUTH_BAN_DURATION = "876000h";
+
 async function suspendMemberForDispute(opts: {
   userId: string;
   subscriptionId: string | null;
+  disputeRowId: string | null;
   stage: DisputeLifecycleStage;
   stripe: Stripe;
 }): Promise<void> {
@@ -136,15 +141,17 @@ async function suspendMemberForDispute(opts: {
   const standing =
     opts.stage === "lost" ? "chargeback_lost" : "payment_disputed";
 
-  // Flip standing on every live subscription for this user — they should not
-  // count as an active paying member while disputed.
+  // 1. Flip standing (and link to dispute) on every live subscription for
+  // this user — they should not count as an active paying member.
+  const subUpdate: Record<string, unknown> = { payment_standing: standing };
+  if (opts.disputeRowId) subUpdate.dispute_id = opts.disputeRowId;
   await supabaseAdmin
     .from("subscriptions")
-    .update({ payment_standing: standing } as never)
+    .update(subUpdate as never)
     .eq("user_id", opts.userId)
     .eq("environment", "live");
 
-  // Cancel the related Stripe subscription so no further charges run.
+  // 2. Cancel the related Stripe subscription so no further charges run.
   if (opts.subscriptionId) {
     try {
       await opts.stripe.subscriptions.cancel(opts.subscriptionId, {
@@ -162,20 +169,99 @@ async function suspendMemberForDispute(opts: {
       } as never)
       .eq("stripe_subscription_id", opts.subscriptionId);
   }
+
+  // 3. Hide the public professional profile — chargeback = presumed-bad-actor
+  // until proven otherwise; the profile must not remain live.
+  try {
+    await supabaseAdmin
+      .from("professionals")
+      .update({
+        is_published: false,
+        unpublished_reason: "dispute_suspended",
+        unpublished_at: new Date().toISOString(),
+        suspended_at: new Date().toISOString(),
+        suspension_reason: "payment_dispute",
+      } as never)
+      .eq("id", opts.userId);
+  } catch (err) {
+    console.warn("[disputes] profile hide failed:", err);
+  }
+
+  // 4. Ban the auth user so any active session is killed and new logins are
+  // rejected until an admin lifts the ban (dispute won path lifts it).
+  try {
+    await supabaseAdmin.auth.admin.updateUserById(opts.userId, {
+      ban_duration: DISPUTE_AUTH_BAN_DURATION,
+    } as never);
+  } catch (err) {
+    console.warn("[disputes] auth ban failed:", err);
+  }
 }
 
-async function liftSuspensionAfterWin(userId: string): Promise<void> {
+async function liftSuspensionAfterWin(
+  userId: string,
+  disputeStripeId: string,
+): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // Mark standing as chargeback_won so admin sees the outcome, but do NOT
   // automatically reinstate the cancelled subscription — the member must
-  // resubscribe explicitly. has_active_paid_membership() treats anything
-  // != 'ok' as suspended, so this is intentional.
+  // resubscribe explicitly.
   await supabaseAdmin
     .from("subscriptions")
     .update({ payment_standing: "chargeback_won" } as never)
     .eq("user_id", userId)
     .eq("environment", "live")
     .eq("payment_standing", "payment_disputed");
+
+  // Lift the auth ban so they can log in and resubscribe.
+  try {
+    await supabaseAdmin.auth.admin.updateUserById(userId, {
+      ban_duration: "none",
+    } as never);
+  } catch (err) {
+    console.warn("[disputes] auth unban failed:", err);
+  }
+
+  // Clear the professional suspension flags. Profile stays unpublished — they
+  // must resubscribe to relist — but the dispute-specific flags are gone so
+  // support/admin sees a clean record.
+  try {
+    await supabaseAdmin
+      .from("professionals")
+      .update({
+        suspended_at: null,
+        suspension_reason: null,
+      } as never)
+      .eq("id", userId);
+  } catch (err) {
+    console.warn("[disputes] profile suspension clear failed:", err);
+  }
+
+  // Send resubscribe email with a link back to /pricing.
+  try {
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const email = authUser?.user?.email;
+    if (email) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("display_name, full_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const proName =
+        ((profile?.display_name ?? profile?.full_name ?? "") as string)
+          .toString()
+          .split(" ")[0] || null;
+      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+      await sendTransactionalEmailServer({
+        templateName: "dispute-won-resubscribe",
+        recipientEmail: email,
+        idempotencyKey: `dispute-won-resubscribe:${disputeStripeId}`,
+        templateData: { proName },
+      });
+    }
+  } catch (err) {
+    console.warn("[disputes] resubscribe email failed:", err);
+  }
 }
 
 async function sendDisputeEmail(opts: {
