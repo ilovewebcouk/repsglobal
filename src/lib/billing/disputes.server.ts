@@ -307,6 +307,22 @@ async function sendDisputeEmail(opts: {
   }
 }
 
+async function insertOpsAlert(
+  kind: string,
+  severity: "info" | "warn" | "high" | "critical",
+  context: Record<string, unknown>,
+): Promise<void> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("ops_alerts").insert({
+      kind,
+      severity,
+      context: context as never,
+    } as never);
+  } catch (err) {
+    console.warn(`[ops_alerts] insert ${kind} failed:`, err);
+  }
+
 /**
  * Entry point for the Stripe webhook. Handles platform (non-Connect) dispute
  * events end-to-end: records the dispute, suspends the member, cancels their
