@@ -131,6 +131,20 @@ function SeoMonitorPage() {
     },
   });
 
+  const recheckFn = useServerFn(recheckSeoUrl);
+  const [recheckingUrl, setRecheckingUrl] = useState<string | null>(null);
+  const recheckMut = useMutation({
+    mutationFn: (url: string) => {
+      setRecheckingUrl(url);
+      return recheckFn({ data: { url } });
+    },
+    onSettled: () => setRecheckingUrl(null),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["seo-events"] });
+      qc.invalidateQueries({ queryKey: ["seo-status"] });
+    },
+  });
+
   const openCount = events.data?.rows.length ?? 0;
   const errorCount = events.data?.rows.filter((e) => e.severity === "error").length ?? 0;
   const warnCount = events.data?.rows.filter((e) => e.severity === "warn").length ?? 0;
