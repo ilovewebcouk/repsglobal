@@ -5,6 +5,9 @@
 
 type StripeEnv = "live" | "sandbox";
 
+// `schedule_end_period` is retained in the type union for back-compat with
+// older admin UI code paths, but the implementation now escalates it to
+// immediate close. REPS policy: cancel = immediate termination, no grace.
 export type CloseMode = "schedule_end_period" | "end_now_delete" | "delete_only";
 
 export type CancelReason =
@@ -17,11 +20,11 @@ export type CancelReason =
 
 const REASON_LABEL: Record<CancelReason, string> = {
   admin_cancel_immediate: "cancelled by admin",
-  admin_cancel_period_end: "scheduled to end at period close",
+  admin_cancel_period_end: "cancelled by admin",
   admin_end_trial: "trial ended by admin",
   admin_delete: "removed by admin",
   member_request: "at your request",
-  chargeback_lost: "closed due to a payment dispute",
+  chargeback_lost: "closed following a payment dispute",
 };
 
 export interface CloseMembershipInput {
@@ -39,6 +42,24 @@ export interface CloseMembershipResult {
   cancelled: number;
   emailSent: boolean;
   emailError?: string;
+}
+
+async function insertCancelOpsAlert(
+  userId: string,
+  reason: CancelReason,
+  email: string | null,
+  actor: string,
+): Promise<void> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("ops_alerts").insert({
+      kind: "payments.member_cancelled",
+      severity: reason === "chargeback_lost" ? "high" : "info",
+      context: { user_id: userId, reason, email, actor } as never,
+    } as never);
+  } catch (err) {
+    console.warn("[closeMembership] ops alert insert failed:", err);
+  }
 }
 
 async function sendCancellationEmail(opts: {
