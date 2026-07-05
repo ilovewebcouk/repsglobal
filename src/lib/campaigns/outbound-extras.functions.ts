@@ -166,6 +166,21 @@ export async function runBroadcastBatch(opts: BroadcastBatchOpts): Promise<{
   );
   const siteUrl = (process.env.SITE_URL || "https://repsuk.org").replace(/\/$/, "");
 
+  // Preload recipient row ids so we can tag each Mailgun send with a stable
+  // `v:recipient_id` variable — the event webhook uses it to route opens /
+  // clicks / unsubscribes / bounces back to the exact row without depending
+  // on email casing.
+  const recipientIds = new Map<string, string>();
+  {
+    const { data: rows } = await opts.supabaseAdmin
+      .from("outbound_campaign_recipients")
+      .select("id, email")
+      .eq("campaign_id", opts.campaignId);
+    for (const row of (rows ?? []) as Array<{ id: string; email: string }>) {
+      recipientIds.set(row.email.toLowerCase(), row.id);
+    }
+  }
+
   outer: for (const r of opts.recipients) {
     const messageId = buildMessageId(`campaign-${opts.campaignId}`);
     const rendered = renderForRecipient({
@@ -196,6 +211,13 @@ export async function runBroadcastBatch(opts: BroadcastBatchOpts): Promise<{
             contentType: a.contentType,
             data: a.data,
           })),
+          tracking: { opens: true, clicks: "htmlonly" },
+          tag: `campaign:${opts.campaignId}`,
+          variables: {
+            campaign_id: opts.campaignId,
+            recipient_id: recipientIds.get(r.email.toLowerCase()) ?? "",
+            campaign: "1",
+          },
         });
         await opts.supabaseAdmin
           .from("outbound_campaign_recipients")
