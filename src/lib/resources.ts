@@ -1145,8 +1145,9 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       { type: "h2", text: "Who gets it" },
       {
         type: "p",
-        text: "The full editor — services, transformations, FAQs, method and shop-front layout — is a Pro-tier feature. Verified members keep their standard REPS profile card and directory listing. Studio members inherit everything Pro gets, plus multi-coach controls we're rolling out later this quarter.",
+        text: "Everyone. The full editor — services, transformations, FAQs, method and shop-front layout — is included on every REPS tier: Core, Pro and Studio. There is no upgrade wall on the editor itself; every member can shape their public /c/your-name page from day one. Studio members additionally inherit the multi-coach controls we're rolling out later this quarter.",
       },
+
       { type: "h2", text: "What's coming next" },
       {
         type: "ul",
