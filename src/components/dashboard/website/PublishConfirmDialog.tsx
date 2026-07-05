@@ -58,7 +58,7 @@ export function PublishConfirmDialog({
           </AlertDialogTitle>
           <AlertDialogDescription className="text-white/60">
             {everPublished
-              ? "Your public page will update immediately. Anything not listed here stays exactly as it is."
+              ? "Your public page will republish immediately. Any changes to your profile photo, specialisms, location, languages or social links will also go live at this point."
               : "This will make your public page live at your REPS URL."}
           </AlertDialogDescription>
         </AlertDialogHeader>
