@@ -38,7 +38,7 @@ import {
 import { draftArticleEmail } from "@/lib/campaigns/article-ai-draft.functions";
 import { listProspectTags } from "@/lib/prospects/prospects.functions";
 
-type Inbox = "support" | "pros" | "partners" | "press";
+type Inbox = "support" | "pros" | "partners" | "press" | "news";
 type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter" | "prospects";
 
 interface Recipient {
@@ -61,6 +61,7 @@ const INBOXES: { value: Inbox; label: string; email: string }[] = [
   { value: "pros", label: "Pros", email: "pros@repsuk.org" },
   { value: "partners", label: "Partners", email: "partners@repsuk.org" },
   { value: "press", label: "Press", email: "press@repsuk.org" },
+  { value: "news", label: "Newsletter (send-only)", email: "news@notify.repsuk.org" },
 ];
 
 const TIERS: { value: Tier; label: string }[] = [

@@ -11,7 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type Inbox = "support" | "pros" | "partners" | "press";
+type Inbox = "support" | "pros" | "partners" | "press" | "news";
 type Tier = "free" | "verified" | "pro" | "studio" | "newsletter" | "prospects";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
@@ -19,6 +19,7 @@ const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> 
   pros: { email: "pros@repsuk.org", name: "REPS Pros", label: "Pros" },
   partners: { email: "partners@repsuk.org", name: "REPS Partners", label: "Partners" },
   press: { email: "press@repsuk.org", name: "REPS Press", label: "Press" },
+  news: { email: "news@notify.repsuk.org", name: "REPS Updates", label: "Newsletter (send-only)" },
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -309,7 +310,7 @@ export async function runBroadcastBatch(opts: BroadcastBatchOpts): Promise<{
 // ─────────────────────────────────────────────────────────────────────────────
 const draftSchema = z.object({
   id: z.string().uuid().optional(),
-  inbox: z.enum(["support", "pros", "partners", "press"]),
+  inbox: z.enum(["support", "pros", "partners", "press", "news"]),
   mode: z.enum(["direct", "broadcast"]),
   subject: z.string().max(200).default(""),
   body: z.string().max(50000).default(""),
@@ -724,12 +725,14 @@ function appendNewsletterFooter(
   rendered: { html: string; text: string },
   unsubUrl: string,
 ): { html: string; text: string } {
+  const contactUrl = "https://repsuk.org/contact";
   const htmlFooter = `
 <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#888;line-height:1.5;text-align:center;">
   You're receiving this because you subscribed to the REPS newsletter.<br />
+  This is a send-only address — need help? <a href="${contactUrl}" style="color:#888;text-decoration:underline;">Contact support</a>.<br />
   <a href="${unsubUrl}" style="color:#888;text-decoration:underline;">Unsubscribe</a>
 </div>`;
-  const textFooter = `\n\n—\nYou're receiving this because you subscribed to the REPS newsletter.\nUnsubscribe: ${unsubUrl}\n`;
+  const textFooter = `\n\n—\nYou're receiving this because you subscribed to the REPS newsletter.\nThis is a send-only address — need help? Contact support: ${contactUrl}\nUnsubscribe: ${unsubUrl}\n`;
 
   // Inject the HTML footer before </body> when present, otherwise append.
   const html = /<\/body>/i.test(rendered.html)

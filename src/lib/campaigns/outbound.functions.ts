@@ -2,14 +2,19 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type Inbox = "support" | "pros" | "partners" | "press";
+type Inbox = "support" | "pros" | "partners" | "press" | "news";
 type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter" | "prospects";
 
+// The "news" inbox is a send-only address for newsletter / campaign blasts.
+// Inbound mail to news@notify.repsuk.org is dropped by the Mailgun webhook
+// (see src/routes/api/public/email/inbound/mailgun.ts) — do NOT reuse it for
+// anything that needs replies.
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
   support: { email: "support@repsuk.org", name: "REPS", label: "Support" },
   pros: { email: "pros@repsuk.org", name: "REPS Pros", label: "Pros" },
   partners: { email: "partners@repsuk.org", name: "REPS Partners", label: "Partners" },
   press: { email: "press@repsuk.org", name: "REPS Press", label: "Press" },
+  news: { email: "news@notify.repsuk.org", name: "REPS Updates", label: "Newsletter (send-only)" },
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -396,7 +401,7 @@ export const sendAdminOutbound = createServerFn({ method: "POST" })
     }) =>
       z
         .object({
-          inbox: z.enum(["support", "pros", "partners", "press"]),
+          inbox: z.enum(["support", "pros", "partners", "press", "news"]),
           mode: z.enum(["direct", "broadcast"]),
           recipients: z
             .array(

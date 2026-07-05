@@ -18,7 +18,7 @@ const ComposeSearch = z.object({
   compose: z.union([z.literal("1"), z.literal("true")]).optional(),
   to: z.string().email().optional(),
   name: z.string().optional(),
-  inbox: z.enum(["support", "pros", "partners", "press"]).optional(),
+  inbox: z.enum(["support", "pros", "partners", "press", "news"]).optional(),
 });
 
 export const Route = createFileRoute("/admin_/campaigns")({
