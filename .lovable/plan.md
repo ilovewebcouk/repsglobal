@@ -1,59 +1,60 @@
-## Diagnosis
+# Fix article + sweep "Verified tier" → "Core tier"
 
-The database triggers we added last turn do correctly flip `websites.has_unpublished_changes = true` when you edit `professionals` fields (specialisms, socials, `trains_at_home_studio`, `trains_at_clients_home`), `professional_locations` (postcode/cities), `professional_gyms`, `profiles.avatar_url`, `services`, `website_transformations`, `website_client_results`, `website_faqs`.
+## Scope guardrail (critical)
 
-The UI does NOT reflect that because the "All changes published" pill reads from the React Query `["my-website-publish-state"]` query, and it is only invalidated in three places today:
+Two meanings of "verified" exist in the repo. Only ONE gets renamed:
 
-1. `saveMutation` (basics/tagline/subtitle/about/hero) — invalidates it.
-2. `publishMut` and `discardMut` — invalidate it.
-3. A `useEffect` in `dashboard_.website.tsx:545` that fires when `contentQuery.dataUpdatedAt` or the `website` fetcher's `updatedAt` changes.
+| Meaning | Example | Action |
+| --- | --- | --- |
+| **Plan/tier name** ("Verified tier", "Verified plan", "Verified members get…", "Included on Verified+") | pricing, compare pages, dashboard gating copy, emails, memory | **Rename to "Core"** |
+| **Trust concept** — a professional who has passed ID / insurance / credential checks | `verification.functions.ts`, `/verify` flow, "verified professional" badge on the register, trust chips, `email_confirmed_at` copy, DB columns | **KEEP unchanged** |
 
-Every other mutation only invalidates its own domain query and never touches the publish-state or section-diff caches. So the DB row is dirty, but the browser never re-fetches it. Impacted mutations we've already spotted:
+A member on the Core tier is still a "verified professional" on the register. That badge/label/flow does not change.
 
-- `trainingBaseMut` (Home / private studio, Client's home / mobile toggles) — invalidates only `["my-dashboard-profile"]`.
-- `postcodeMut` (primary postcode) — invalidates only `["my-primary-location"]`.
-- Cities-you-cover save (in `WhereITrainPanel`) — same pattern.
-- `GymPicker` add/remove — invalidates only `["my-professional-gyms"]`.
-- Profile-side edits routed through this editor (avatar, socials, specialisms, languages, phone) — invalidate only their own queries.
-- `reorderServicesMut` / `deleteServiceMut` / `upsertServiceMut` — some invalidate `contentQuery` (which retriggers the effect), some don't; `section-diff` is never invalidated directly.
+## Step 1 — Fix the resource article
 
-Same class of bug affects the "Unpublished changes since last publish" banner, the sidebar per-section dot, and the publish dialog's changed-section list — they all read `publish-state` + `section-diff` and are stale.
+File: `src/lib/resources.ts`, article slug `introducing-the-reps-website-editor`.
 
-Nothing needs to change in the migration; the fix is purely front-end cache invalidation.
+- Remove every claim that the website editor is "Pro-only" / "Pro tier and above" / etc.
+- Replace every "Verified tier" reference with "Core tier".
+- Add one explicit line stating it's included on every REPs tier — Core, Pro and Studio.
+- No other content changes. Hero image, structure, tone all stay.
 
-## Plan
+## Step 2 — Spawn a read-only subagent for the sweep
 
-Front-end only. No schema, no server-fn signature changes.
+Delegate the audit to a background `spawn_agent` task. Its job: produce a categorised find-list, NOT edit anything.
 
-1. **Add a shared invalidator hook** at `src/lib/website/useMarkWebsiteDirty.ts`:
-   - `useMarkWebsiteDirty()` returns a function that invalidates `["my-website-publish-state"]`, `["my-website-section-diff"]`, and (optionally) forces a refetch of `["my-dashboard-website-full"]`.
-   - Also bumps a lightweight `["my-website-local-dirty"]` counter set to a monotonic value so the pill can flip to "Unpublished changes" optimistically, before the server round-trip completes.
+Subagent brief:
+- Search all of `src/`, `docs/`, and memory index for the word "verified" / "Verified" / "verification" (case-insensitive).
+- For each hit, classify as **TIER-NAME** (must change) or **TRUST-CONCEPT** (must NOT change) using context around the line.
+- Return a table grouped by file, with line numbers, the current phrase, and the proposed replacement (or "KEEP").
+- Explicitly flag any ambiguous case for me to decide.
 
-2. **Wire it into every mutation** in the editor that hits a trigger-covered table. Concretely append it to `onSuccess` of:
-   - `dashboard_.website.tsx`: `saveMutation`, `upsertServiceMut`, `reorderServicesMut`, `deleteServiceMut`, `trainingBaseMut`, `postcodeMut`, plus any other panel-local mutations in the same file (draftTagline/draftAbout only if they write; skip pure-preview drafts).
-   - `WhereITrainPanel` / cities save + `GymPicker` add/remove (both live in this route file today per grep — same list).
-   - `PillarEditDialog`, `ResultEditDialog`, `FaqEditDialog` save/delete handlers — call the invalidator on success.
-   - Any specialisms/languages/socials/phone/avatar editor invoked from the website page — trace and add. Where the editor lives outside `/dashboard/website` (e.g. shared profile editor), only wire it when called from this route by passing an `onSaved` callback prop; do NOT globally alter the profile editor's own invalidation.
+Files it must NOT touch under any circumstance:
+- `src/integrations/supabase/**` (auto-gen)
+- `src/routeTree.gen.ts`
+- Anything under `src/mockups/legacy-admin/**` (archived)
+- DB column names, RPC names, function file names (those stay)
 
-3. **Harden the queries themselves** so a missed call site can't leave the pill wrong for long:
-   - `["my-website-publish-state"]` and `["my-website-section-diff"]`: set `staleTime: 0`, `refetchOnWindowFocus: true`, `refetchOnMount: "always"`.
-   - Keep the existing effect at `dashboard_.website.tsx:545` but broaden its deps to include the local-dirty counter from step 1.
+## Step 3 — Apply the tier-name renames
 
-4. **Isolate `isDirty`** so the pill/publish CTA flip immediately:
-   - `const isDirty = basicsDirty || !!publishState?.has_unpublished_changes || localDirtyCount > lastPublishedDirtyCount;`
-   - Reset the local counter inside `publishMut.onSuccess` and `discardMut.onSuccess`.
+Once the subagent returns its list, I apply the TIER-NAME changes in a single batched pass:
 
-5. **Verification pass** (no code):
-   - Toggle Home / private studio → pill flips to "Unpublished changes" within one paint.
-   - Toggle Client's home / mobile → same.
-   - Add a city → same.
-   - Add/remove a gym → same.
-   - Edit socials / specialisms / avatar / phone from anywhere reachable from this editor → same.
-   - Publish → pill returns to "All changes published"; discard → same.
-   - Refresh the page mid-edit → publish-state fetched from DB now shows dirty (already correct via triggers).
+- **User-facing copy** — pricing page, compare pages, dashboard upsell copy, feature-gate messages, marketing pillars, resource articles, emails.
+- **Memory files** — `mem://index.md` (Core rules mention "Verified tier"), `mem://phase/2.0-verified-scope` (rename to reflect Core naming, or add a top-note stating tier = Core), any other memory that says "Verified tier".
+- **Docs** — `docs/09_phase2_verified.md`, `docs/10_billing_phase0_decisions.md`, admin-v2 docs where the tier is named.
 
-## Out of scope
+Every TRUST-CONCEPT hit stays untouched.
 
-- Any change to migrations, triggers, RLS or server functions.
-- Rewriting the profile editor's own cache keys.
-- Snapshot / section-diff shape changes beyond invalidation.
+## Step 4 — Verify
+
+- Re-run the same rg sweep, confirm no remaining "Verified tier" / "Verified plan" / "Verified members" / "on Verified+" phrases outside archived mockups.
+- Spot-check pricing page, /features/shop-front, /for-professionals, dashboard upsell strings, and the fixed resource article render.
+- Confirm the verification badge on `/pro/$slug` and `/c/$slug` still says "Verified professional" (unchanged).
+
+## What I will NOT do
+
+- Rename any file, function, RPC, DB column, route, or type containing the word "verification" / "verified".
+- Change the "Verified professional" badge or the `/verify` onboarding flow.
+- Touch anything in `src/mockups/`, `src/integrations/supabase/`, or the generated route tree.
+- Change any other content in the resource article beyond the two edits above.
