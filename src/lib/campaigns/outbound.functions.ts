@@ -757,11 +757,15 @@ function applyMergeTags(
   });
 }
 
+const EMAIL_FONT_STACK =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const REPS_ORANGE = "#E85D2F";
+
 function inlineFormat(s: string): string {
   let out = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   out = out.replace(
     /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g,
-    '<a href="$1" style="color:#0f172a;text-decoration:underline;">$1</a>',
+    `<a href="$1" style="color:${REPS_ORANGE};text-decoration:underline;">$1</a>`,
   );
   return out;
 }
@@ -780,11 +784,11 @@ function textToHtml(text: string): string {
         .map((l) => `<li style="margin:0 0 6px 0;">${inlineFormat(l)}</li>`)
         .join("");
       out.push(
-        `<ul style="margin:0 0 14px 20px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${items}</ul>`,
+        `<ul style="margin:0 0 14px 20px;padding:0;font-family:${EMAIL_FONT_STACK};font-size:16px;line-height:1.6;color:#0f172a;">${items}</ul>`,
       );
     } else {
       out.push(
-        `<p style="margin:0 0 14px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#0f172a;">${inlineFormat(
+        `<p style="margin:0 0 14px 0;font-family:${EMAIL_FONT_STACK};font-size:16px;line-height:1.6;color:#0f172a;">${inlineFormat(
           raw.replace(/\n/g, "<br/>"),
         )}</p>`,
       );
@@ -851,22 +855,19 @@ function wrapEmail(innerHtml: string, inboxLabel: string): string {
       }
     </style>
   </head>
-  <body style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#0f172a;-webkit-text-size-adjust:100%;">
+  <body style="margin:0;padding:0;background:#f4f5f7;font-family:${EMAIL_FONT_STACK};color:#0f172a;-webkit-text-size-adjust:100%;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">REPs — the global register of exercise professionals.</div>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="reps-shell" style="background:#f4f5f7;padding:32px 16px;">
       <tr><td align="center">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="reps-card" style="width:100%;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
+          <tr><td style="padding:0;line-height:0;font-size:0;background:${REPS_ORANGE};height:3px;">&nbsp;</td></tr>
           <tr><td class="reps-head" style="padding:24px 32px 8px 32px;border-bottom:1px solid #f1f2f4;">
             ${REPS_WORDMARK_SVG(22)}
           </td></tr>
-          <tr><td class="reps-pad reps-body" style="padding:28px 32px 8px 32px;">
+          <tr><td class="reps-pad reps-body" style="padding:28px 32px 8px 32px;font-family:${EMAIL_FONT_STACK};">
             ${innerHtml}
           </td></tr>
-          <tr><td class="reps-foot" style="padding:24px 32px 28px 32px;border-top:1px solid #f1f2f4;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;"><tr>
-              <td style="vertical-align:middle;padding-right:12px;">${REPS_WORDMARK_SVG(18)}</td>
-              <td style="vertical-align:middle;border-left:1px solid #cbd5e1;padding-left:12px;font-family:Arial,Helvetica,sans-serif;font-size:11.5px;line-height:1.35;color:#475569;letter-spacing:0.02em;text-transform:uppercase;">The Register of<br/>Exercise Professionals</td>
-            </tr></table>
+          <tr><td class="reps-foot" style="padding:24px 32px 28px 32px;border-top:1px solid #f1f2f4;font-family:${EMAIL_FONT_STACK};">
             <p style="margin:0 0 8px 0;font-size:14px;line-height:1.55;color:#475569;">The professional platform for the modern fitness industry.</p>
             <p style="margin:0 0 14px 0;font-size:14px;line-height:1.55;color:#64748b;">Reply directly to this email — it goes straight to the ${escapeHtml(inboxLabel)} team.</p>
             <p class="reps-foot-meta" style="margin:0 0 6px 0;font-size:13px;line-height:1.55;color:#64748b;">
