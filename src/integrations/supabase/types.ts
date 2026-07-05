@@ -5560,6 +5560,19 @@ export type Database = {
         Returns: string
       }
       accept_client_invite: { Args: { _token_hash: string }; Returns: string }
+      admin_get_recovery_email_log: {
+        Args: { _email: string; _limit?: number }
+        Returns: {
+          created_at: string
+          error_message: string
+          id: string
+          status: string
+        }[]
+      }
+      admin_get_recovery_sent_at: {
+        Args: { _user_id: string }
+        Returns: string
+      }
       admin_moderate_review:
         | {
             Args: { _action: string; _note?: string; _review_id: string }

@@ -45,6 +45,7 @@ import { getMemberSessions, type MemberSessionRow } from "@/lib/admin/member-ses
 import { DntGpcBadge } from "@/components/admin/DntGpcBadge";
 
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
+import { getMemberPasswordResetInfo, type PasswordResetInfo } from "@/lib/admin/password-reset.functions";
 import {
   closeMembership,
   type CancelReason,
@@ -118,6 +119,13 @@ function MemberPage() {
     staleTime: 30_000,
   });
 
+  const getReset = useServerFn(getMemberPasswordResetInfo);
+  const resetInfo = useQuery({
+    queryKey: ["admin-member-password-reset", userId],
+    queryFn: () => getReset({ data: { user_id: userId } }),
+    staleTime: 30_000,
+  });
+
   return (
     <DashboardShell role="admin" active="Professionals" title="Member 360" subtitle="One workbench for every member action.">
       <div className="flex flex-col gap-6 p-6">
@@ -149,6 +157,7 @@ function MemberPage() {
 
           <TabsContent value="overview" className="flex flex-col gap-4">
             {snap.data ? <OverviewPane snapshot={snap.data} /> : <PaneSkeleton />}
+            <PasswordResetPane data={resetInfo.data} loading={resetInfo.isLoading} />
           </TabsContent>
 
           <TabsContent value="billing" className="flex flex-col gap-4">
@@ -771,6 +780,92 @@ function BillingActions({
     </>
   );
 }
+
+/* ───────────────────────── Password reset ───────────────────────── */
+
+const STATUS_STYLES: Record<string, string> = {
+  sent: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+  pending: "border-amber-400/30 bg-amber-500/10 text-amber-200",
+  failed: "border-rose-400/30 bg-rose-500/10 text-rose-200",
+  dlq: "border-rose-400/30 bg-rose-500/10 text-rose-200",
+  suppressed: "border-white/10 bg-white/5 text-white/70",
+};
+
+function fmtDateTimeGB(iso: string | null | undefined) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("en-GB", {
+    day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+}
+
+function PasswordResetPane({ data, loading }: { data: PasswordResetInfo | undefined; loading: boolean }) {
+  return (
+    <section className={PANEL}>
+      <PanelHeader
+        title="Password reset"
+        description="Whether the member has requested a reset and whether the email actually left the platform."
+      />
+      <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
+        <div className="grid gap-2.5 md:grid-cols-2">
+          <div className="flex flex-col gap-1 rounded-[12px] border border-reps-border/60 bg-reps-panel/60 px-3 py-2.5">
+            <span className={LABEL}>Last reset requested</span>
+            <span className="text-sm font-medium text-white">
+              {loading ? "…" : fmtDateTimeGB(data?.recovery_sent_at)}
+            </span>
+            <span className="text-[11px] text-white/45">from Supabase auth (recovery_sent_at)</span>
+          </div>
+          <div className="flex flex-col gap-1 rounded-[12px] border border-reps-border/60 bg-reps-panel/60 px-3 py-2.5">
+            <span className={LABEL}>Recent send attempts</span>
+            <span className="text-sm font-medium text-white">
+              {loading ? "…" : (data?.attempts.length ?? 0)}
+            </span>
+            <span className="text-[11px] text-white/45">from email_send_log · template = recovery</span>
+          </div>
+        </div>
+
+        {!loading && data && data.attempts.length === 0 && (
+          <div className="rounded-[12px] border border-reps-border bg-reps-panel/40 px-4 py-3 text-sm text-white/70">
+            No recovery emails have been dispatched via the queue for this address.
+            {data.recovery_sent_at
+              ? " Supabase recorded a reset request but no queue attempt landed — check the auth webhook."
+              : " No reset request has been recorded either."}
+          </div>
+        )}
+
+        {data && data.attempts.length > 0 && (
+          <ol className="flex flex-col gap-2">
+            {data.attempts.map((a) => (
+              <li
+                key={a.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-reps-border/60 bg-reps-panel/40 px-3 py-2"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-[8px] border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide",
+                      STATUS_STYLES[a.status] ?? "border-white/10 bg-white/5 text-white/70",
+                    )}
+                  >
+                    {a.status}
+                  </span>
+                  <span className="text-[12.5px] tabular-nums text-white/70">
+                    {fmtDateTimeGB(a.created_at)}
+                  </span>
+                </div>
+                {a.error_message && (
+                  <span className="max-w-full text-[11.5px] text-rose-200 md:max-w-[60%]">
+                    {a.error_message}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+    </section>
+  );
+}
+
 
 
 function VerificationPane({ snapshot }: { snapshot: Member360Snapshot }) {
