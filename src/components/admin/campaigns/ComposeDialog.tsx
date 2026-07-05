@@ -851,11 +851,14 @@ function buildArticleSubject(article: ResourceArticle): string {
   return article.title;
 }
 
-function buildArticleEmailHtml(article: ResourceArticle): string {
+function buildArticleEmailHtml(article: ResourceArticle, coverUrl?: string | null): string {
   const url = `https://repsuk.org/resources/${article.slug}`;
-  const cover = article.cover?.startsWith("http")
-    ? article.cover
-    : `https://repsuk.org${article.cover ?? ""}`;
+  const rawCover = coverUrl ?? article.cover ?? "";
+  const cover = rawCover.startsWith("http")
+    ? rawCover
+    : rawCover
+      ? `https://repsuk.org${rawCover}`
+      : "";
   const intro =
     article.body.find((b) => b.type === "p") as { type: "p"; text: string } | undefined;
   const introText = intro?.text ?? article.excerpt;
