@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Check, Star, Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -9,11 +9,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { startCheckoutRedirect } from "@/lib/billing/startCheckout";
+import { trackGaEvent } from "@/hooks/useGoogleAnalytics";
 import {
   PLANS,
   type Billing,
   type PlanTierKey,
 } from "./pricing-data";
+
+// Client-side plan-value map — only used for GA4 ecommerce events (view_item_list
+// / select_item). The source of truth for what is actually charged is the
+// Stripe price resolved server-side in the checkout function.
+const GA_PLAN_VALUE: Record<string, number> = {
+  verified_annual: 34,
+  pro_monthly: 59,
+  pro_annual: 590,
+};
+
 
 export function PricingPlans() {
   const [billing, setBilling] = useState<Billing>("annual");
