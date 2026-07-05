@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   listNewsletterSubscribers,
   importNewsletterSubscribers,
+  getReachableMembersCount,
 } from "@/lib/newsletter/subscribers.functions";
 
 export const Route = createFileRoute("/admin_/newsletter")({
