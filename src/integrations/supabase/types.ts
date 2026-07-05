@@ -2520,6 +2520,51 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          confirm_token: string
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          ip: unknown
+          source: string
+          source_url: string | null
+          status: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          ip?: unknown
+          source?: string
+          source_url?: string | null
+          status?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          ip?: unknown
+          source?: string
+          source_url?: string | null
+          status?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           created_at: string
