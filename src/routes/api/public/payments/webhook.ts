@@ -435,6 +435,25 @@ async function handlePlatformChargeRefunded(charge: Stripe.Charge, env: StripeEn
   console.log(
     `[payments-webhook] platform refund recorded: sub=${(sub as { id: string }).id} amount=${refunded} full=${isFull}`,
   );
+
+  // GA4 — refund event (nets revenue in Monetization reports).
+  try {
+    const currency = ((charge as unknown as { currency?: string }).currency ?? "gbp").toUpperCase();
+    const meta = (prev ?? {}) as Record<string, unknown>;
+    const { sendGaRefund } = await import("@/lib/analytics/ga-measurement-protocol.server");
+    await sendGaRefund({
+      clientId: (meta.ga_client_id as string) ?? null,
+      userId: (sub as { user_id?: string | null }).user_id ?? null,
+      transactionId: (sub as { stripe_subscription_id?: string | null }).stripe_subscription_id ?? charge.id,
+      value: refunded / 100,
+      currency,
+      tier: (meta.tier as string) ?? null,
+      period: (meta.billing_period as string) ?? null,
+      isFull,
+    });
+  } catch (e) {
+    console.warn("[ga4-mp] refund dispatch failed:", e);
+  }
 }
 
 async function handleConnectDispute(dispute: Stripe.Dispute, eventType: string): Promise<void> {
