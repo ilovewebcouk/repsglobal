@@ -1,105 +1,54 @@
-## What the current template does well
+## Goal
 
-- Cover image with orange glow (nice, brand-consistent).
-- Clear H1 + category eyebrow + read time / date meta.
-- Single orange CTA back to the full article.
-- Rich REPS sign-off + unsubscribe are already auto-appended by the newsletter footer, so we don't need to duplicate that.
+In the Broadcast composer, show the exact number of **confirmed newsletter subscribers** that will be targeted — alongside a per-tier breakdown — instead of the current single "Will send to N trainers" line.
 
-## What's holding it back
+## Current state
 
-1. **No inbox preview text** — Apple/Gmail preview just shows the H1. A hidden preheader would double the "why open me?" signal.
-2. **Only the very first paragraph is used** — the email feels thin vs the article. We can pull the excerpt + first 2 real body paragraphs (skipping cover-only blocks) so it reads like a genuine editorial send.
-3. **No section teaser / "what's inside"** — a 3-bullet TOC built from the article's `h2` blocks gives readers a reason to click.
-4. **Meta line is generic** — "6 min read · 5 July 2026". Better: "6-min read for personal trainers" (using `audience` if present) or a small category chip.
-5. **CTA wording is weak** — "Read the full article →" is fine; "Read the full 6-minute article →" is stronger and lets people self-select.
-6. **No secondary link** — one text link under the button ("Or open in your browser") catches Outlook/dark-mode users where the button renders oddly.
-7. **No plain-text version** — currently only HTML goes out. Spam filters and Apple Mail Privacy weight plain-text alternatives; the composer already supports a `text` format we can populate.
-8. **No UTM tags** — we can't tell in GA which sends drive traffic. Add `?utm_source=newsletter&utm_medium=email&utm_campaign=<slug>` to every link.
-9. **Cover image lacks width/height** — some clients (Outlook, Gmail app) reflow badly without explicit dimensions. Add `width="600"` and a max-width style.
-10. **No small REPS wordmark at top** — the auto-appended footer has full branding, but readers scanning the top of the mail see no logo. A tiny wordmark line above the eyebrow ties it to the site.
-11. **Dark-mode colours** — `color:#111` on `#fff` is fine, but Apple Mail auto-inverts. Add `color-scheme: light` + `supported-color-schemes` meta to lock it, so the orange CTA stays legible.
-12. **Cover glow is a client-side CSS effect** — the screenshot shows it because the composite is baked into the JPG. Nothing to change, just note it.
+- `previewBroadcastCount` (`src/lib/campaigns/outbound.functions.ts`) resolves every selected tier through `resolveTierRecipients`, deduplicates by email, and returns just `{ count }`.
+- The composer (`src/components/admin/campaigns/ComposeDialog.tsx`, line ~361) renders one line: `Will send to N trainers` — which is misleading when the Newsletter tier is selected (subscribers aren't trainers), and hides how the total is composed when multiple tiers are ticked.
 
-## Proposed new template
+## Change
 
-Rebuilt `buildArticleEmailHtml` (still a pure HTML string, still fully editable in the composer before sending):
+### 1. Server: return a breakdown
 
-```text
-┌───────────────────────────────────────┐
-│  REPS  (small wordmark, muted)        │
-│                                       │
-│  PLATFORM UPDATES     ← category chip │
-│  Introducing the REPS website editor  │
-│  6-min read for members · 5 Jul 2026  │
-│                                       │
-│  [ cover image, 600w, rounded ]       │
-│                                       │
-│  Excerpt paragraph (16px, darker)     │
-│                                       │
-│  First real body paragraph (15px)     │
-│  Second real body paragraph (15px)    │
-│                                       │
-│  What's inside                        │
-│   • Section H2 one                    │
-│   • Section H2 two                    │
-│   • Section H2 three                  │
-│                                       │
-│  [ Read the full 6-min article → ]    │
-│  Or open in your browser              │
-└───────────────────────────────────────┘
-(auto-appended REPS footer + unsubscribe)
+Update `previewBroadcastCount` to return:
+
+```
+{
+  count: number,          // deduped total (unchanged)
+  byTier: {
+    free?: number,
+    verified?: number,
+    pro?: number,
+    studio?: number,
+    former?: number,
+    newsletter?: number,  // confirmed subscribers only
+  }
+}
 ```
 
-### Content rules
-- **Preheader**: hidden `<div>` with `article.excerpt` truncated to ~110 chars.
-- **Category**: rendered as a subtle pill, not just uppercase text.
-- **Body paragraphs**: first 2 items in `article.body` where `type === 'p'`, skipping empty ones. Cap each at ~450 chars, add "…" if truncated.
-- **What's inside**: first 3 `h2` blocks; hide the whole block if fewer than 2 exist.
-- **Links**: helper `withUtm(href)` appends `utm_source=newsletter&utm_medium=email&utm_campaign=<slug>`.
-- **Escape everything** the same way as today.
+Implementation: run the existing tier resolvers once per selected tier (small dataset today; same helpers already used inside `resolveTierRecipients`), count each, then also compute the deduped union for `count`. Newsletter count comes from `newsletter_subscribers` where `status = 'confirmed'` (matching the existing sender behaviour — pending/unsubscribed/bounced are excluded).
 
-### Plain-text sibling
-Add `buildArticleEmailText(article)` returning:
+No change to send-time behaviour; this is preview-only.
 
-```text
-REPS — Platform updates
+### 2. Composer UI
 
-Introducing the REPS website editor: your public page, in your hands
-6-min read · 5 July 2026
+Replace the single line under the tier checkboxes with:
 
-<excerpt>
+- A headline: **"Will send to N recipients"** (neutral wording, not "trainers").
+- A small breakdown row underneath, only for ticked tiers with a non-zero count, e.g.:
+  `Verified 12 · Pro 4 · Newsletter 318`
+- When Newsletter is the only ticked tier, headline reads **"Will send to 318 confirmed newsletter subscribers"**.
+- Loading state unchanged (`Counting recipients…`).
 
-<first body paragraph>
+No changes to send logic, tier options, or the direct-recipients mode.
 
-What's inside:
-- Section one
-- Section two
-- Section three
+## Files touched
 
-Read the full article:
-https://repsuk.org/resources/<slug>?utm_source=newsletter&utm_medium=email&utm_campaign=<slug>
-```
+- `src/lib/campaigns/outbound.functions.ts` — extend `previewBroadcastCount` return shape.
+- `src/components/admin/campaigns/ComposeDialog.tsx` — render breakdown; adjust copy.
 
-The composer already carries a `format` state (`text`/`html`) and a single `body` field. Keep behaviour: `Load from article` sets `format` to `html` and fills the HTML body. Also stash the plain-text version so, if the admin toggles to Plain text before sending, they see the text fallback instead of a stripped-down HTML dump.
+## Out of scope
 
-### Cover image robustness
-- Keep the persist-to-storage step already in place.
-- Add `width="600"` and `style="width:100%;max-width:600px;height:auto;"`.
-- If `coverUrl` resolves to `null`, skip the `<img>` cleanly (no broken icon).
-
-## Files to touch
-
-- `src/components/admin/campaigns/ComposeDialog.tsx`
-  - Rewrite `buildArticleEmailHtml` per the layout above.
-  - Add `buildArticleEmailText` and a `withUtm` helper.
-  - Update the `onLoad` handler to also seed the text sibling.
-  - Widen the tooltip copy under the article picker.
-
-No backend, no schema, no template registry changes. Storage bucket and unsubscribe footer stay as they are.
-
-## Out of scope (call out, don't build)
-
-- Author bylines — no `author` field on `ResourceArticle` yet.
-- "Related articles" block — would need editorial curation.
-- A/B subject lines — belongs in the campaign runner, not the composer.
-- Migrating this to a React Email template — overkill while it's an editable admin composer body.
+- Auto-adding members to the newsletter list and single opt-in (previous request) — will handle separately.
+- Any change to campaign sending, tracking, or the Newsletter admin tab.
