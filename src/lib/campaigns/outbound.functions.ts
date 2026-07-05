@@ -209,7 +209,8 @@ async function resolveTierRecipients(
   tiers: Tier[],
 ): Promise<Array<{ userId: string; email: string; name: string }>> {
   const wantFormer = tiers.includes("former");
-  const liveTiers = tiers.filter((t) => t !== "former");
+  const wantNewsletter = tiers.includes("newsletter");
+  const liveTiers = tiers.filter((t) => t !== "former" && t !== "newsletter");
   const wantFree = liveTiers.includes("free");
   const paidTiers = liveTiers.filter((t) => t !== "free");
 
@@ -291,24 +292,44 @@ async function resolveTierRecipients(
     })
     .filter((r) => r.email && isValidEmail(r.email));
 
-  if (!wantFormer) return live;
+  const combined = [...live];
 
-  // Former members live in `mailing_list_contacts` (populated by the
-  // cancel-and-delete flow). We use `former_user_id` as a stable userId so
-  // dedupe + downstream send logic don't choke on null ids.
-  const { data: formerRows } = await supabaseAdmin
-    .from("mailing_list_contacts")
-    .select("email, full_name, former_user_id")
-    .eq("marketing_opt_in", true);
-  const seen = new Set(live.map((r) => r.email));
-  const former = ((formerRows ?? []) as any[])
-    .map((r) => ({
-      userId: r.former_user_id ?? `former:${r.email}`,
-      email: (r.email ?? "").toLowerCase().trim(),
-      name: r.full_name ?? "",
-    }))
-    .filter((r) => r.email && isValidEmail(r.email) && !seen.has(r.email));
-  return [...live, ...former];
+  if (wantFormer) {
+    // Former members live in `mailing_list_contacts` (populated by the
+    // cancel-and-delete flow). We use `former_user_id` as a stable userId so
+    // dedupe + downstream send logic don't choke on null ids.
+    const { data: formerRows } = await supabaseAdmin
+      .from("mailing_list_contacts")
+      .select("email, full_name, former_user_id")
+      .eq("marketing_opt_in", true);
+    const seen = new Set(combined.map((r) => r.email));
+    const former = ((formerRows ?? []) as any[])
+      .map((r) => ({
+        userId: r.former_user_id ?? `former:${r.email}`,
+        email: (r.email ?? "").toLowerCase().trim(),
+        name: r.full_name ?? "",
+      }))
+      .filter((r) => r.email && isValidEmail(r.email) && !seen.has(r.email));
+    combined.push(...former);
+  }
+
+  if (wantNewsletter) {
+    const { data: subs } = await supabaseAdmin
+      .from("newsletter_subscribers")
+      .select("id, email")
+      .eq("status", "confirmed");
+    const seen = new Set(combined.map((r) => r.email));
+    const news = ((subs ?? []) as any[])
+      .map((r) => ({
+        userId: `newsletter:${r.id}`,
+        email: (r.email ?? "").toLowerCase().trim(),
+        name: "",
+      }))
+      .filter((r) => r.email && isValidEmail(r.email) && !seen.has(r.email));
+    combined.push(...news);
+  }
+
+  return combined;
 }
 
 
