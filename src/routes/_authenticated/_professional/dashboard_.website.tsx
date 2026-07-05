@@ -422,6 +422,9 @@ function WebsiteEditorPage() {
   const publishStateQuery = useQuery({
     queryKey: ["my-website-publish-state"],
     queryFn: () => fetchPublishStateFn(),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
   const publishState = publishStateQuery.data;
   const publishNowFn = useServerFn(publishMyWebsite);
@@ -444,8 +447,40 @@ function WebsiteEditorPage() {
   const sectionDiffQuery = useQuery({
     queryKey: ["my-website-section-diff"],
     queryFn: () => fetchSectionDiffFn(),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
   const sectionDiff = sectionDiffQuery.data;
+
+  // Optimistic dirty tracker. Any mutation success anywhere in the editor
+  // bumps `localDirtyBump`; publish/discard reset `publishedDirtyBaseline`
+  // to the current value. If bump > baseline we know something was edited
+  // since the last publish, even before the publish-state query refetches.
+  //
+  // Also acts as a safety net for panels whose mutations invalidate only
+  // their own domain queryKey — the mutation-cache subscription below
+  // catches every mutation success and forces publish-state + section-diff
+  // to refetch, so the DB-driven `has_unpublished_changes` flag surfaces
+  // in the UI without every mutation having to know about it.
+  const [localDirtyBump, setLocalDirtyBump] = React.useState(0);
+  const [publishedDirtyBaseline, setPublishedDirtyBaseline] = React.useState(0);
+  React.useEffect(() => {
+    const cache = qc.getMutationCache();
+    const unsub = cache.subscribe((event) => {
+      if (event.type !== "updated") return;
+      if (event.mutation.state.status !== "success") return;
+      // Ignore the publish/discard mutations themselves (they reset baseline
+      // in their own onSuccess). Everything else is a content edit.
+      const key = event.mutation.options.mutationKey?.[0];
+      if (key === "website-publish" || key === "website-discard") return;
+      setLocalDirtyBump((n) => n + 1);
+      qc.invalidateQueries({ queryKey: ["my-website-publish-state"] });
+      qc.invalidateQueries({ queryKey: ["my-website-section-diff"] });
+    });
+    return () => unsub();
+  }, [qc]);
+
 
   // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero/current_clients).
   const basicsDirty =
