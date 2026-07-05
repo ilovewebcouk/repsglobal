@@ -421,6 +421,7 @@ export const discardMySectionChanges = createServerFn({ method: "POST" })
           subtitle: w.subtitle ?? null,
           about: w.about ?? null,
           hero_image_url: w.hero_image_url ?? null,
+          current_clients: w.current_clients ?? null,
         })
         .eq("professional_id", userId);
       if (error) throw error;
