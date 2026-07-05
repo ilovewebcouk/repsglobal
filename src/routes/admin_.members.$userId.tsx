@@ -119,6 +119,13 @@ function MemberPage() {
     staleTime: 30_000,
   });
 
+  const getReset = useServerFn(getMemberPasswordResetInfo);
+  const resetInfo = useQuery({
+    queryKey: ["admin-member-password-reset", userId],
+    queryFn: () => getReset({ data: { user_id: userId } }),
+    staleTime: 30_000,
+  });
+
   return (
     <DashboardShell role="admin" active="Professionals" title="Member 360" subtitle="One workbench for every member action.">
       <div className="flex flex-col gap-6 p-6">
