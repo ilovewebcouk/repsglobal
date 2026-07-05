@@ -79,11 +79,6 @@ function AdminNewsletter() {
       }),
   });
 
-  const membersQuery = useQuery({
-    queryKey: ["admin", "newsletter", "reachable-members"],
-    queryFn: () => membersFn(),
-    staleTime: 5 * 60_000,
-  });
 
   const rows: Subscriber[] = (listQuery.data?.rows ?? []) as Subscriber[];
   const total = listQuery.data?.total ?? 0;
