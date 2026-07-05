@@ -337,7 +337,7 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
       langsKey(lw?.languages) !== langsKey(sw?.languages);
 
     const summary: SectionDiff["summary"] = {};
-    if (basicsDirty) summary.basics = "Tagline, About or hero image changed";
+    if (basicsDirty) summary.basics = "Tagline, About, hero image or currently-coaching count changed";
     if (methodDirty) summary.method = "Method name, intro or pillars changed";
     if (plansDirty) {
       const d = (live.services?.length ?? 0) - (snap.services?.length ?? 0);
