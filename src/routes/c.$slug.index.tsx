@@ -664,6 +664,7 @@ const NAV_ITEMS = [
 
 function CoachWebsitePage() {
   const { slug } = Route.useParams();
+  const { preview: previewToken } = Route.useSearch();
   const loaderData = Route.useLoaderData();
   const fetchWebsite = useServerFn(getWebsiteBySlug);
   const fetchReviews = useServerFn(listPublicReviewsBySlug);
@@ -671,7 +672,7 @@ function CoachWebsitePage() {
 
   // Fixture coach pages (james-wilson) are admin-only mock-up references —
   // gated client-side so SSR always renders a neutral skeleton.
-  const { isAdmin, isLoading: authLoading } = useSessionUser();
+  const { user, isAdmin, isLoading: authLoading } = useSessionUser();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => {
     setMounted(true);
@@ -744,8 +745,19 @@ function CoachWebsitePage() {
 
   const enquireHref = "/c/$slug/enquire" as const;
 
+  const isOwnerViewing =
+    !!user && !!live?.website?.professional_id && user.id === live.website.professional_id;
+  const showPlaceholderBanner =
+    !isFixture && !previewToken && !!live?.meta?.isPlaceholderContent;
+
   return (
     <div data-coach-theme={coach.theme ?? "dark"} className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
+      {showPlaceholderBanner ? (
+        <TemplateContentBanner
+          firstName={(coach.name ?? "").split(" ")[0] || "This coach"}
+          isOwnerViewing={isOwnerViewing}
+        />
+      ) : null}
       <ChromeBar coach={coach} />
       <SectionNav />
 
@@ -763,6 +775,41 @@ function CoachWebsitePage() {
       <FooterMark />
 
       <StickyMobileBar coach={coach} slug={slug} enquireHref={enquireHref} />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Template-content banner                                            */
+/* ------------------------------------------------------------------ */
+
+function TemplateContentBanner({
+  firstName,
+  isOwnerViewing,
+}: {
+  firstName: string;
+  isOwnerViewing: boolean;
+}) {
+  return (
+    <div className="border-b border-amber-400/20 bg-amber-500/10 text-amber-100">
+      <div className="mx-auto flex max-w-[1320px] flex-col gap-2 px-6 py-3 text-[13px] leading-snug sm:flex-row sm:items-center sm:justify-between lg:px-10">
+        <p className="flex items-start gap-2">
+          <Sparkles className="mt-[2px] h-4 w-4 shrink-0 text-amber-300" aria-hidden />
+          <span>
+            <span className="font-semibold text-amber-50">Some content on this page is still template placeholder text and imagery.</span>{" "}
+            <span className="text-amber-100/85">{firstName} is finishing their REPS profile.</span>
+          </span>
+        </p>
+        {isOwnerViewing ? (
+          <Link
+            to="/dashboard/website"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-[8px] bg-amber-400 px-3 py-1.5 text-[12.5px] font-semibold text-amber-950 transition-colors hover:bg-amber-300"
+          >
+            Finish your website
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        ) : null}
+      </div>
     </div>
   );
 }

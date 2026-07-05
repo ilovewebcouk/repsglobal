@@ -4995,6 +4995,7 @@ export type Database = {
           answer: string
           created_at: string
           id: string
+          is_published: boolean
           question: string
           sort_order: number
           source: string
@@ -5005,6 +5006,7 @@ export type Database = {
           answer: string
           created_at?: string
           id?: string
+          is_published?: boolean
           question: string
           sort_order?: number
           source?: string
@@ -5015,6 +5017,7 @@ export type Database = {
           answer?: string
           created_at?: string
           id?: string
+          is_published?: boolean
           question?: string
           sort_order?: number
           source?: string
@@ -5569,6 +5572,10 @@ export type Database = {
         Returns: undefined
       }
       mark_verification_notifications_read: { Args: never; Returns: number }
+      mark_website_dirty_for_pro: {
+        Args: { _pro_id: string }
+        Returns: undefined
+      }
       mint_renewal_token: {
         Args: {
           _intended_tier?: string
