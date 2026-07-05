@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Info, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Info, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
+import { SitemapHealthCard } from "@/components/admin/seo/SitemapHealthCard";
 import {
   acknowledgeSeoEvents,
   listSeoEvents,
@@ -17,6 +18,7 @@ import {
   type SeoEventRow,
   type SeoStatusRow,
 } from "@/lib/seo/index-monitor.functions";
+import { recheckSeoUrl } from "@/lib/seo/sitemap-health.functions";
 
 export const Route = createFileRoute("/admin_/seo")({
   head: () => ({
@@ -126,6 +128,20 @@ function SeoMonitorPage() {
       qc.invalidateQueries({ queryKey: ["seo-events"] });
       qc.invalidateQueries({ queryKey: ["seo-status"] });
       qc.invalidateQueries({ queryKey: ["seo-runs"] });
+    },
+  });
+
+  const recheckFn = useServerFn(recheckSeoUrl);
+  const [recheckingUrl, setRecheckingUrl] = useState<string | null>(null);
+  const recheckMut = useMutation({
+    mutationFn: (url: string) => {
+      setRecheckingUrl(url);
+      return recheckFn({ data: { url } });
+    },
+    onSettled: () => setRecheckingUrl(null),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["seo-events"] });
+      qc.invalidateQueries({ queryKey: ["seo-status"] });
     },
   });
 
@@ -253,6 +269,30 @@ function SeoMonitorPage() {
                       <span className="text-[11px] text-white/45">{relTime(e.detected_at)}</span>
                     </div>
                     <div className="mt-1 text-[12px] text-white/75">{e.summary}</div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <a
+                        href={`https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent("https://repsuk.org/")}&id=${encodeURIComponent(e.url)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel/60 px-2 py-1 text-[11px] font-semibold text-white/80 transition hover:text-white"
+                        title="Opens Google Search Console URL Inspection. Click 'Request indexing' there (~10/day quota)."
+                      >
+                        <ExternalLink className="size-3" /> Request indexing in GSC
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => recheckMut.mutate(e.url)}
+                        disabled={recheckingUrl === e.url}
+                        className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-reps-panel/60 px-2 py-1 text-[11px] font-semibold text-white/80 transition hover:text-white disabled:opacity-60"
+                      >
+                        {recheckingUrl === e.url ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          <RefreshCw className="size-3" />
+                        )}
+                        Re-check now
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
@@ -261,6 +301,7 @@ function SeoMonitorPage() {
         </PPanel>
 
         <div className="space-y-6">
+          <SitemapHealthCard />
           <PPanel className="p-6">
             <div className="flex items-center gap-2 text-white">
               <Info className="size-4 text-reps-orange" />
