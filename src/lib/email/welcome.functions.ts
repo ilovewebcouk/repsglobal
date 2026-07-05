@@ -18,6 +18,17 @@ export const sendWelcomeEmailServerFn = createServerFn({ method: "POST" })
       // Confirmed email only
       if (!authUser?.user?.email_confirmed_at) return { sent: false, reason: "unconfirmed" as const };
 
+      // Idempotency: skip if we've ever enqueued/sent this template to this recipient.
+      const { data: prior } = await supabaseAdmin
+        .from("email_send_log")
+        .select("id")
+        .eq("template_name", "welcome-signup")
+        .ilike("recipient_email", email)
+        .in("status", ["sent", "pending"])
+        .limit(1)
+        .maybeSingle();
+      if (prior) return { sent: false, reason: "already_sent" as const };
+
       const { data: profile } = await supabaseAdmin
         .from("profiles")
         .select("display_name, full_name")
