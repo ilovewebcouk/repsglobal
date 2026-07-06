@@ -195,17 +195,27 @@ export function PublicHeader({
             >
               <NavigationMenu.List className="flex items-center gap-7">
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(active.find)}>
-                    Find a Professional
-                    <ChevronDown
-                      aria-hidden="true"
-                      className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
-                    />
-                    <ActiveDot show={active.find} />
-                  </NavigationMenu.Trigger>
-                  <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
-                    <FindMenu />
-                  </NavigationMenu.Content>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/find-a-professional"
+                      className={cn(triggerClass(active.findCoach), "px-1 py-1")}
+                    >
+                      Find a Coach
+                      <ActiveDot show={active.findCoach} />
+                    </Link>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/find-a-training-provider"
+                      className={cn(triggerClass(active.findProvider), "px-1 py-1")}
+                    >
+                      Find a Training Provider
+                      <ActiveDot show={active.findProvider} />
+                    </Link>
+                  </NavigationMenu.Link>
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
