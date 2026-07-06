@@ -32,27 +32,59 @@ const CADENCE: Record<OnboardingStage, number[]> = {
   complete: [0],
 };
 
-const TEMPLATE_KEYS: Record<OnboardingStage, string[]> = {
-  not_signed_in: [
-    "onboarding-log-in-1",
-    "onboarding-log-in-2",
-    "onboarding-log-in-3",
-    "onboarding-log-in-4",
-    "onboarding-log-in-5",
-  ],
-  verify_incomplete: [
-    "onboarding-verify-1",
-    "onboarding-verify-2",
-    "onboarding-verify-3",
-    "onboarding-verify-4",
-  ],
-  website_unpublished: [
-    "onboarding-website-1",
-    "onboarding-website-2",
-    "onboarding-website-3",
-  ],
-  complete: ["onboarding-complete"],
+// Anyone whose auth account was confirmed before this cutoff is a "legacy"
+// member (existed before the platform relaunch) and receives the log-in copy
+// that references the rebuild + password reset. Anyone confirmed on or after
+// this cutoff signed up on the new platform and receives welcome/sign-in copy.
+const LEGACY_COHORT_CUTOFF_ISO = "2026-07-06T00:00:00Z";
+
+type Cohort = "legacy" | "signup";
+
+const TEMPLATE_KEYS: Record<Cohort, Record<OnboardingStage, string[]>> = {
+  legacy: {
+    not_signed_in: [
+      "onboarding-log-in-1",
+      "onboarding-log-in-2",
+      "onboarding-log-in-3",
+      "onboarding-log-in-4",
+      "onboarding-log-in-5",
+    ],
+    verify_incomplete: [
+      "onboarding-verify-1",
+      "onboarding-verify-2",
+      "onboarding-verify-3",
+      "onboarding-verify-4",
+    ],
+    website_unpublished: [
+      "onboarding-website-1",
+      "onboarding-website-2",
+      "onboarding-website-3",
+    ],
+    complete: ["onboarding-complete"],
+  },
+  signup: {
+    not_signed_in: [
+      "onboarding-signup-log-in-1",
+      "onboarding-signup-log-in-2",
+      "onboarding-signup-log-in-3",
+      "onboarding-signup-log-in-4",
+      "onboarding-signup-log-in-5",
+    ],
+    verify_incomplete: [
+      "onboarding-signup-verify-1",
+      "onboarding-verify-2",
+      "onboarding-verify-3",
+      "onboarding-verify-4",
+    ],
+    website_unpublished: [
+      "onboarding-website-1",
+      "onboarding-website-2",
+      "onboarding-website-3",
+    ],
+    complete: ["onboarding-complete"],
+  },
 };
+
 
 interface Candidate {
   userId: string;
@@ -85,15 +117,23 @@ async function resolveCandidates(): Promise<Candidate[]> {
   if (error) throw error;
   if (!pros?.length) return [];
 
-  // Fetch auth users (email + last_sign_in_at) in one call to filter admins/demo.
+  // Fetch auth users (email + confirmed_at) in one call to filter admins/demo
+  // and to compute cohort (legacy vs new-signup) per user.
   const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.listUsers({
     page: 1,
     perPage: 1000,
   });
   if (authErr) throw authErr;
   const emailByUser = new Map<string, string>();
+  const cohortByUser = new Map<string, Cohort>();
+  const cutoffMs = new Date(LEGACY_COHORT_CUTOFF_ISO).getTime();
   for (const u of authData.users) {
     if (u.email) emailByUser.set(u.id, u.email);
+    const confirmedAt = (u as { confirmed_at?: string | null }).confirmed_at
+      ?? (u as { email_confirmed_at?: string | null }).email_confirmed_at
+      ?? null;
+    const confirmedMs = confirmedAt ? new Date(confirmedAt).getTime() : Number.POSITIVE_INFINITY;
+    cohortByUser.set(u.id, confirmedMs < cutoffMs ? "legacy" : "signup");
   }
 
   // Existing sends in the last 24h (global cap) and per-stage step history.
@@ -141,7 +181,8 @@ async function resolveCandidates(): Promise<Candidate[]> {
     const stage = row.stage as OnboardingStage;
     const stageEnteredAt = row.stage_entered_at ?? new Date(0).toISOString();
     const cadence = CADENCE[stage];
-    const templates = TEMPLATE_KEYS[stage];
+    const cohort = cohortByUser.get(userId) ?? "signup";
+    const templates = TEMPLATE_KEYS[cohort][stage];
     const currentMaxStep = stepsByUserStage.get(`${userId}:${stage}`) ?? 0;
     const nextStep = currentMaxStep + 1;
     if (nextStep > cadence.length) continue; // cap reached

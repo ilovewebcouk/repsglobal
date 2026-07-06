@@ -51,6 +51,12 @@ import { template as onboardingWebsite1 } from './onboarding/website-1'
 import { template as onboardingWebsite2 } from './onboarding/website-2'
 import { template as onboardingWebsite3 } from './onboarding/website-3'
 import { template as onboardingComplete } from './onboarding/complete'
+import { template as onboardingSignupLogIn1 } from './onboarding/signup-log-in-1'
+import { template as onboardingSignupLogIn2 } from './onboarding/signup-log-in-2'
+import { template as onboardingSignupLogIn3 } from './onboarding/signup-log-in-3'
+import { template as onboardingSignupLogIn4 } from './onboarding/signup-log-in-4'
+import { template as onboardingSignupLogIn5 } from './onboarding/signup-log-in-5'
+import { template as onboardingSignupVerify1 } from './onboarding/signup-verify-1'
 
 
 
@@ -97,6 +103,12 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'onboarding-website-2': onboardingWebsite2,
   'onboarding-website-3': onboardingWebsite3,
   'onboarding-complete': onboardingComplete,
+  'onboarding-signup-log-in-1': onboardingSignupLogIn1,
+  'onboarding-signup-log-in-2': onboardingSignupLogIn2,
+  'onboarding-signup-log-in-3': onboardingSignupLogIn3,
+  'onboarding-signup-log-in-4': onboardingSignupLogIn4,
+  'onboarding-signup-log-in-5': onboardingSignupLogIn5,
+  'onboarding-signup-verify-1': onboardingSignupVerify1,
 }
 
 
