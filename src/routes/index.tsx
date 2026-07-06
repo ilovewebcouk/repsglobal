@@ -10,7 +10,6 @@ import {
   ArrowRight,
   Award,
   Calendar,
-  ChevronLeft,
   ChevronRight,
   Dumbbell,
   Globe,
