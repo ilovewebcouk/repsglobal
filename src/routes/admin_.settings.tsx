@@ -113,6 +113,9 @@ function AdminSettings() {
           <MaintenanceCard />
           <RelaunchTestCard />
           <RelaunchBroadcastCard />
+          <OnboardingDripCard />
+
+
 
         </div>
       </div>
