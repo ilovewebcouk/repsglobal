@@ -111,6 +111,7 @@ import { Route as CSlugIndexRouteImport } from './routes/c.$slug.index'
 import { Route as VerifyProviderMembershipIdRouteImport } from './routes/verify.provider.$membershipId'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
+import { Route as ProvidersSlugReviewRouteImport } from './routes/providers.$slug.review'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -689,6 +690,11 @@ const UCpdSessionIdRoute = UCpdSessionIdRouteImport.update({
   path: '/u/cpd/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProvidersSlugReviewRoute = ProvidersSlugReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => ProvidersSlugRoute,
+} as any)
 const ProSlugReviewRoute = ProSlugReviewRouteImport.update({
   id: '/review',
   path: '/review',
@@ -1167,6 +1173,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/providers/$slug/review': typeof ProvidersSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
@@ -1327,6 +1334,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/providers/$slug/review': typeof ProvidersSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
@@ -1495,6 +1503,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/providers/$slug/review': typeof ProvidersSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
@@ -1662,6 +1671,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/providers/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
@@ -1822,6 +1832,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/providers/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
@@ -1989,6 +2000,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/providers/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
@@ -2884,6 +2896,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UCpdSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/providers/$slug/review': {
+      id: '/providers/$slug/review'
+      path: '/review'
+      fullPath: '/providers/$slug/review'
+      preLoaderRoute: typeof ProvidersSlugReviewRouteImport
+      parentRoute: typeof ProvidersSlugRoute
+    }
     '/pro/$slug/review': {
       id: '/pro/$slug/review'
       path: '/review'
@@ -3605,10 +3624,12 @@ const ProSlugRouteWithChildren =
   ProSlugRoute._addFileChildren(ProSlugRouteChildren)
 
 interface ProvidersSlugRouteChildren {
+  ProvidersSlugReviewRoute: typeof ProvidersSlugReviewRoute
   ProvidersSlugIndexRoute: typeof ProvidersSlugIndexRoute
 }
 
 const ProvidersSlugRouteChildren: ProvidersSlugRouteChildren = {
+  ProvidersSlugReviewRoute: ProvidersSlugReviewRoute,
   ProvidersSlugIndexRoute: ProvidersSlugIndexRoute,
 }
 
