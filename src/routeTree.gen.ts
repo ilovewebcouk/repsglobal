@@ -88,6 +88,7 @@ import { Route as AdminSeoRouteImport } from './routes/admin_.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProspectsRouteImport } from './routes/admin_.prospects'
+import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminNewsletterRouteImport } from './routes/admin_.newsletter'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
@@ -568,6 +569,11 @@ const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
 const AdminProspectsRoute = AdminProspectsRouteImport.update({
   id: '/admin_/prospects',
   path: '/admin/prospects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProfessionalsRoute = AdminProfessionalsRouteImport.update({
+  id: '/admin_/professionals',
+  path: '/admin/professionals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
@@ -1099,6 +1105,7 @@ export interface FileRoutesByFullPath {
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -1262,6 +1269,7 @@ export interface FileRoutesByTo {
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -1424,6 +1432,7 @@ export interface FileRoutesById {
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/newsletter': typeof AdminNewsletterRoute
   '/admin_/payments': typeof AdminPaymentsRoute
+  '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/prospects': typeof AdminProspectsRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
   '/admin_/reviews': typeof AdminReviewsRoute
@@ -1591,6 +1600,7 @@ export interface FileRouteTypes {
     | '/admin/memberships'
     | '/admin/newsletter'
     | '/admin/payments'
+    | '/admin/professionals'
     | '/admin/prospects'
     | '/admin/reconciliation'
     | '/admin/reviews'
@@ -1754,6 +1764,7 @@ export interface FileRouteTypes {
     | '/admin/memberships'
     | '/admin/newsletter'
     | '/admin/payments'
+    | '/admin/professionals'
     | '/admin/prospects'
     | '/admin/reconciliation'
     | '/admin/reviews'
@@ -1915,6 +1926,7 @@ export interface FileRouteTypes {
     | '/admin_/memberships'
     | '/admin_/newsletter'
     | '/admin_/payments'
+    | '/admin_/professionals'
     | '/admin_/prospects'
     | '/admin_/reconciliation'
     | '/admin_/reviews'
@@ -2082,6 +2094,7 @@ export interface RootRouteChildren {
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminNewsletterRoute: typeof AdminNewsletterRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminProspectsRoute: typeof AdminProspectsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
@@ -2704,6 +2717,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/prospects'
       fullPath: '/admin/prospects'
       preLoaderRoute: typeof AdminProspectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/professionals': {
+      id: '/admin_/professionals'
+      path: '/admin/professionals'
+      fullPath: '/admin/professionals'
+      preLoaderRoute: typeof AdminProfessionalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/payments': {
@@ -3643,6 +3663,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminNewsletterRoute: AdminNewsletterRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminProspectsRoute: AdminProspectsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReviewsRoute: AdminReviewsRoute,
