@@ -72,6 +72,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'member-cancelled': memberCancelled,
   'dispute-won-resubscribe': disputeWonResubscribe,
   'admin-invite': adminInvite,
+  'new-reps-rollout': newRepsRollout,
 }
 
 
