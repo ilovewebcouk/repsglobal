@@ -422,6 +422,16 @@ export type ServiceDTO = {
   bullets: string[];
   cta_label: string | null;
   image_url: string | null;
+  // Course fields (organisation account_type). All optional / null for
+  // individual coach services (which are `service_kind = 'session'|'package'`).
+  service_kind: "session" | "package" | "course" | "programme" | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  seats_total: number | null;
+  seats_taken: number | null;
+  venue: string | null;
+  qualification_level: string | null;
+  awarding_body: string | null;
 };
 
 type ServiceRow = ServiceDTO;
