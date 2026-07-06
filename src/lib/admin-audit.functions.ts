@@ -6,8 +6,8 @@ const logAdminActionSchema = z.object({
   action: z.string().min(1),
   targetTable: z.string().optional(),
   targetId: z.string().uuid().optional(),
-  beforeState: z.record(z.unknown()).optional(),
-  afterState: z.record(z.unknown()).optional(),
+  beforeState: z.record(z.string(), z.unknown()).optional(),
+  afterState: z.record(z.string(), z.unknown()).optional(),
   reason: z.string().optional(),
 });
 

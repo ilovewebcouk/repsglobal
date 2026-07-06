@@ -21,6 +21,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
 import { Route as HelpRouteImport } from './routes/help'
@@ -98,6 +99,8 @@ import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AdminBillingRouteImport } from './routes/admin_.billing'
 import { Route as AdminActivityRouteImport } from './routes/admin_.activity'
 import { Route as AccountSuspendedRouteImport } from './routes/account.suspended'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
@@ -116,6 +119,8 @@ import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -223,6 +228,11 @@ const PricingRoute = PricingRouteImport.update({
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
@@ -610,6 +620,18 @@ const AccountSuspendedRoute = AccountSuspendedRouteImport.update({
   path: '/account/suspended',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedProfessionalRouteRoute =
   AuthenticatedProfessionalRouteRouteImport.update({
     id: '/_professional',
@@ -702,6 +724,17 @@ const AuthenticatedProfessionalDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedProfessionalProRouteRoute =
   AuthenticatedProfessionalProRouteRouteImport.update({
     id: '/_pro',
@@ -1008,6 +1041,7 @@ export interface FileRoutesByFullPath {
   '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/mcp': typeof McpRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1020,6 +1054,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/suspended': typeof AccountSuspendedRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
@@ -1075,6 +1111,8 @@ export interface FileRoutesByFullPath {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
@@ -1161,6 +1199,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/mcp': typeof McpRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1173,6 +1212,8 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/suspended': typeof AccountSuspendedRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
@@ -1225,6 +1266,8 @@ export interface FileRoutesByTo {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/help': typeof HelpIndexRoute
   '/resources': typeof ResourcesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
@@ -1313,6 +1356,7 @@ export interface FileRoutesById {
   '/help': typeof HelpRouteWithChildren
   '/home-legacy': typeof HomeLegacyRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/mcp': typeof McpRoute
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1326,6 +1370,8 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/suspended': typeof AccountSuspendedRoute
   '/admin_/activity': typeof AdminActivityRoute
   '/admin_/billing': typeof AdminBillingRouteWithChildren
@@ -1382,6 +1428,8 @@ export interface FileRoutesById {
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
@@ -1471,6 +1519,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/home-legacy'
     | '/how-it-works'
+    | '/mcp'
     | '/portal'
     | '/pricing'
     | '/privacy'
@@ -1483,6 +1532,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/account/suspended'
     | '/admin/activity'
     | '/admin/billing'
@@ -1538,6 +1589,8 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/help/'
     | '/resources/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
@@ -1624,6 +1677,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/home-legacy'
     | '/how-it-works'
+    | '/mcp'
     | '/portal'
     | '/pricing'
     | '/privacy'
@@ -1636,6 +1690,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/verify-email'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/account/suspended'
     | '/admin/activity'
     | '/admin/billing'
@@ -1688,6 +1744,8 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/help'
     | '/resources'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
@@ -1775,6 +1833,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/home-legacy'
     | '/how-it-works'
+    | '/mcp'
     | '/portal'
     | '/pricing'
     | '/privacy'
@@ -1788,6 +1847,8 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/verify-email'
     | '/_authenticated/_professional'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/account/suspended'
     | '/admin_/activity'
     | '/admin_/billing'
@@ -1844,6 +1905,8 @@ export interface FileRouteTypes {
     | '/help/'
     | '/resources/'
     | '/_authenticated/_professional/_pro'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members/$userId'
@@ -1933,6 +1996,7 @@ export interface RootRouteChildren {
   HelpRoute: typeof HelpRouteWithChildren
   HomeLegacyRoute: typeof HomeLegacyRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  McpRoute: typeof McpRoute
   PortalRoute: typeof PortalRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1945,6 +2009,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AccountSuspendedRoute: typeof AccountSuspendedRoute
   AdminActivityRoute: typeof AdminActivityRoute
   AdminBillingRoute: typeof AdminBillingRouteWithChildren
@@ -1998,6 +2064,8 @@ export interface RootRouteChildren {
   RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -2107,6 +2175,13 @@ declare module '@tanstack/react-router' {
       path: '/portal'
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -2648,6 +2723,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountSuspendedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_professional': {
       id: '/_authenticated/_professional'
       path: ''
@@ -2773,6 +2862,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_professional/_pro': {
       id: '/_authenticated/_professional/_pro'
@@ -3391,6 +3494,7 @@ const rootRouteChildren: RootRouteChildren = {
   HelpRoute: HelpRouteWithChildren,
   HomeLegacyRoute: HomeLegacyRoute,
   HowItWorksRoute: HowItWorksRoute,
+  McpRoute: McpRoute,
   PortalRoute: PortalRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
@@ -3403,6 +3507,9 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AccountSuspendedRoute: AccountSuspendedRoute,
   AdminActivityRoute: AdminActivityRoute,
   AdminBillingRoute: AdminBillingRouteWithChildren,
@@ -3456,6 +3563,8 @@ const rootRouteChildren: RootRouteChildren = {
   RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
@@ -3485,3 +3594,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

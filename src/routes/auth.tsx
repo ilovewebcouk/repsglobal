@@ -15,8 +15,18 @@ type AuthSearch = {
   // URL slug "core" (legacy "verified" accepted and normalized for back-compat).
   tier?: "core" | "pro";
   period?: "monthly" | "annual";
-  next?: "checkout";
+  next?: "checkout" | string;
 };
+
+// Only accept same-origin relative paths for `next`, to prevent open-redirects.
+function safeNextPath(raw: unknown): string | undefined {
+  if (typeof raw !== "string" || raw.length === 0) return undefined;
+  if (raw === "checkout") return "checkout";
+  // Must be a relative path starting with a single "/", not "//" or a scheme.
+  if (!raw.startsWith("/") || raw.startsWith("//")) return undefined;
+  if (/^\/[a-z]+:/i.test(raw)) return undefined;
+  return raw;
+}
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -25,7 +35,7 @@ export const Route = createFileRoute("/auth")({
     const tier = raw === "core" || raw === "pro" ? raw : undefined;
     const period =
       search.period === "monthly" || search.period === "annual" ? search.period : undefined;
-    const next = search.next === "checkout" ? "checkout" : undefined;
+    const next = safeNextPath(search.next);
     return { tier, period, next };
   },
   head: () => ({
@@ -154,6 +164,11 @@ function LoginPage() {
           const internalTier = search.tier === "core" ? "verified" : search.tier;
           await startCheckoutRedirect(internalTier, search.period);
           return; // browser is navigating to Stripe
+        }
+        // Honor arbitrary same-origin `next` (e.g. OAuth consent URL for MCP).
+        if (typeof search.next === "string" && search.next.startsWith("/")) {
+          window.location.href = search.next;
+          return;
         }
         const to = await redirectAfterAuth(data.user.id);
         navigate({ to, replace: true });

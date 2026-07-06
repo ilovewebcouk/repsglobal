@@ -27,7 +27,7 @@ const BodySchema = z.object({
   referrer: z.string().max(500).optional(),
   device: z.string().max(32).optional(),
   browser: z.string().max(64).optional(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 function hashIp(ip: string): string {
