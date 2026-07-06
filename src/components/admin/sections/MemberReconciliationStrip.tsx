@@ -73,7 +73,7 @@ export function MemberReconciliationStrip({
                 label="Active Professionals"
                 sub="All confirmed pros, including Free"
                 value={activePros}
-                to="/admin/professionals"
+                to="/admin/members"
               />
             ) : null}
             {proGap > 0 ? (
@@ -81,7 +81,7 @@ export function MemberReconciliationStrip({
                 label="Free / non-paying professionals"
                 sub="No active Stripe, legacy or BD paid window"
                 value={proGap}
-                to="/admin/professionals"
+                to="/admin/members"
                 search={{ plan: "free" }}
                 muted
               />
@@ -91,7 +91,7 @@ export function MemberReconciliationStrip({
                 label="Paid Professionals"
                 sub="Professionals with active paid entitlement"
                 value={paidPros}
-                to="/admin/professionals"
+                to="/admin/members"
                 search={{ plan: "paid" }}
                 muted
               />

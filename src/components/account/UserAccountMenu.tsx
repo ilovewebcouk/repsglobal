@@ -46,7 +46,7 @@ function itemsForRole(role: AccountRole): Item[] {
     case "admin":
       return [
         { to: "/admin", label: "Admin console", icon: ShieldCheck },
-        { to: "/admin/professionals", label: "Professionals", icon: Users },
+        { to: "/admin/members", label: "Professionals", icon: Users },
         { to: "/admin/verification", label: "Verification", icon: BadgeCheck },
         { to: "/admin/memberships", label: "Memberships", icon: CreditCard },
         { to: "/admin/settings", label: "Settings", icon: Settings },

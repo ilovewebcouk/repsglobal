@@ -55,7 +55,7 @@ export const Route = createFileRoute("/_authenticated/_professional")({
         // fall through to professional/role flow
       }
       if (!isProfessional) {
-        throw redirect({ to: "/admin/professionals" });
+        throw redirect({ to: "/admin/members" });
       }
     }
 
