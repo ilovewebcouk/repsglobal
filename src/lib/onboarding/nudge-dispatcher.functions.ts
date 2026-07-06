@@ -181,7 +181,8 @@ async function resolveCandidates(): Promise<Candidate[]> {
     const stage = row.stage as OnboardingStage;
     const stageEnteredAt = row.stage_entered_at ?? new Date(0).toISOString();
     const cadence = CADENCE[stage];
-    const templates = TEMPLATE_KEYS[stage];
+    const cohort = cohortByUser.get(userId) ?? "signup";
+    const templates = TEMPLATE_KEYS[cohort][stage];
     const currentMaxStep = stepsByUserStage.get(`${userId}:${stage}`) ?? 0;
     const nextStep = currentMaxStep + 1;
     if (nextStep > cadence.length) continue; // cap reached
