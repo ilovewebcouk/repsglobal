@@ -429,6 +429,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         profession: p.primary_profession ? (PROFESSION_LABEL[p.primary_profession] ?? p.primary_profession) : null,
         professionSlug: p.primary_profession ?? null,
         plan: billing.plan,
+        accountType: ((p as { account_type?: string | null }).account_type as 'individual' | 'organisation' | null) ?? null,
         planMrrPence: billing.planMrrPence,
         status,
         billingState: billing.billingState,
