@@ -116,6 +116,7 @@ import {
   type AdminProSort,
   type SortDir,
   type AdminProFilters,
+  type AdminProSegment,
 } from "@/lib/admin/professionals.functions";
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
@@ -164,11 +165,10 @@ const PROFESSION_OPTIONS = [
 
 // "Free" is intentionally absent — every active REPs member must be on a
 // paid Stripe sub. Legacy free / BD-window accounts are deleted, not filtered.
-const PLAN_OPTIONS: { value: 'verified' | 'pro' | 'studio' | 'training_provider'; label: string }[] = [
+const PLAN_OPTIONS: { value: 'verified' | 'pro' | 'studio'; label: string }[] = [
   { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
-  { value: "training_provider", label: "Training Provider" },
 ];
 
 const STATUS_LABEL: Record<AdminProRow["status"], string> = {
@@ -240,6 +240,7 @@ function useDebounced<T>(value: T, ms = 250): T {
 
 function AdminProfessionalsPage() {
   const searchParams = Route.useSearch();
+  const [segment, setSegment] = React.useState<AdminProSegment>("professionals");
   const [tab, setTab] = React.useState<AdminProTab>("all");
   const [page, setPage] = React.useState(1);
   const [search, setSearch] = React.useState("");
@@ -265,7 +266,7 @@ function AdminProfessionalsPage() {
   const debouncedSearch = useDebounced(search, 300);
   const pageSize = 25;
 
-  React.useEffect(() => { setPage(1); }, [tab, debouncedSearch, sort, dir, filters]);
+  React.useEffect(() => { setPage(1); }, [segment, tab, debouncedSearch, sort, dir, filters]);
 
 
   const kpisFn = useServerFn(getAdminProfessionalsKpis);
@@ -278,8 +279,8 @@ function AdminProfessionalsPage() {
   });
 
   const listQ = useQuery({
-    queryKey: ["admin-pros-list", tab, page, debouncedSearch, sort, dir, filters],
-    queryFn: () => listFn({ data: { tab, page, pageSize, q: debouncedSearch, sort, dir, filters } }),
+    queryKey: ["admin-pros-list", segment, tab, page, debouncedSearch, sort, dir, filters],
+    queryFn: () => listFn({ data: { segment, tab, page, pageSize, q: debouncedSearch, sort, dir, filters } }),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
@@ -383,6 +384,29 @@ function AdminProfessionalsPage() {
       </div>
 
       <PPanel className="mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-3">
+          <div className="inline-flex rounded-full border border-reps-border bg-reps-ink/40 p-1">
+            {([
+              { value: "professionals", label: "Professionals" },
+              { value: "providers", label: "Training Providers" },
+            ] as const).map((s) => {
+              const active = s.value === segment;
+              return (
+                <button
+                  key={s.value}
+                  onClick={() => setSegment(s.value)}
+                  className={
+                    active
+                      ? "h-8 rounded-full bg-reps-orange px-4 text-[12px] font-semibold text-white"
+                      : "h-8 rounded-full px-4 text-[12px] font-medium text-white/65 hover:text-white"
+                  }
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
             {TABS.map((t) => {
@@ -433,14 +457,28 @@ function AdminProfessionalsPage() {
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-reps-border text-left text-[11px] uppercase tracking-wider text-white/45">
-                <th className="px-5 py-3 font-semibold">Professional</th>
-                <th className="px-3 py-3 font-semibold">Profession</th>
-                <th className="px-3 py-3 font-semibold">Plan</th>
-                <th className="px-3 py-3 font-semibold">Status</th>
-                <th className="px-3 py-3 font-semibold">Lifetime value</th>
-                <th className="px-3 py-3 font-semibold">Renewal date</th>
-                <th className="px-3 py-3 font-semibold">Plan MRR</th>
-                <th className="px-3 py-3 font-semibold">Joined</th>
+                <th className="px-5 py-3 font-semibold">{segment === "providers" ? "Provider" : "Professional"}</th>
+                {segment === "providers" ? (
+                  <>
+                    <th className="px-3 py-3 font-semibold">Location</th>
+                    <th className="px-3 py-3 font-semibold">Courses</th>
+                    <th className="px-3 py-3 font-semibold">Verified pros</th>
+                    <th className="px-3 py-3 font-semibold">Plan</th>
+                    <th className="px-3 py-3 font-semibold">Status</th>
+                    <th className="px-3 py-3 font-semibold">Renewal date</th>
+                    <th className="px-3 py-3 font-semibold">Joined</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="px-3 py-3 font-semibold">Profession</th>
+                    <th className="px-3 py-3 font-semibold">Plan</th>
+                    <th className="px-3 py-3 font-semibold">Status</th>
+                    <th className="px-3 py-3 font-semibold">Lifetime value</th>
+                    <th className="px-3 py-3 font-semibold">Renewal date</th>
+                    <th className="px-3 py-3 font-semibold">Plan MRR</th>
+                    <th className="px-3 py-3 font-semibold">Joined</th>
+                  </>
+                )}
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -448,9 +486,9 @@ function AdminProfessionalsPage() {
               {listQ.isLoading && !listQ.data ? (
                 <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">Loading…</td></tr>
               ) : rows.length === 0 ? (
-                <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">No professionals match.</td></tr>
+                <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">No {segment === "providers" ? "training providers" : "professionals"} match.</td></tr>
               ) : rows.map((r) => (
-                <ProRow key={r.id} row={r} />
+                <ProRow key={r.id} row={r} segment={segment} />
               ))}
             </tbody>
           </table>
@@ -522,11 +560,11 @@ function FiltersSheet({
   const [draft, setDraft] = React.useState<AdminProFilters>(value);
   React.useEffect(() => { if (open) setDraft(value); }, [open, value]);
 
-  function togglePlan(p: "free" | "verified" | "pro" | "studio" | "training_provider") {
+  function togglePlan(p: "verified" | "pro" | "studio") {
     setDraft(d => {
       const set = new Set(d.plans ?? []);
       if (set.has(p)) set.delete(p); else set.add(p);
-      return { ...d, plans: Array.from(set) };
+      return { ...d, plans: Array.from(set) as AdminProFilters['plans'] };
     });
   }
   function toggleProf(p: string) {

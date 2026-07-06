@@ -45,6 +45,10 @@ export type AdminProRow = {
   renewalDateSource: 'stripe' | 'bd' | null;
   isTrial: boolean;
   trialDaysLeft: number | null;
+  // Provider-segment extras (null for individuals).
+  location: string | null;
+  coursesCount: number | null;
+  verifiedProsLinked: number | null;
 };
 
 
@@ -217,11 +221,14 @@ export type AdminProFilters = {
   hasAvatar?: boolean;
 };
 
+export type AdminProSegment = 'professionals' | 'providers';
+
 export const listAdminProfessionals = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: {
     q?: string; tab?: AdminProTab; page?: number; pageSize?: number;
     sort?: AdminProSort; dir?: SortDir; filters?: AdminProFilters;
+    segment?: AdminProSegment;
   }) => ({
     q: (d.q ?? '').trim(),
     tab: (d.tab ?? 'all') as AdminProTab,
@@ -230,6 +237,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     sort: (d.sort ?? 'joined') as AdminProSort,
     dir: (d.dir ?? 'desc') as SortDir,
     filters: d.filters ?? {},
+    segment: (d.segment ?? 'professionals') as AdminProSegment,
   }))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
@@ -254,6 +262,13 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       query = query.eq('is_demo', true);
     } else {
       query = query.eq('is_demo', false);
+    }
+
+    // Segment split: providers = organisations, professionals = everyone else.
+    if (data.segment === 'providers') {
+      query = query.eq('account_type', 'organisation');
+    } else {
+      query = query.or('account_type.is.null,account_type.neq.organisation');
     }
 
     switch (data.tab) {
@@ -349,6 +364,22 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
           .not('bd_next_due_date', 'is', null)),
       fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
+
+    // Provider-only: course counts by organisation_id. Cheap 1-shot fetch.
+    const coursesCountByOrg = new Map<string, number>();
+    if (data.segment === 'providers') {
+      const orgIds = prosFiltered.filter(p => p.account_type === 'organisation').map(p => p.id);
+      if (orgIds.length) {
+        const { data: courseRows } = await supabaseAdmin
+          .from('courses')
+          .select('organisation_id')
+          .in('organisation_id', orgIds);
+        for (const r of (courseRows ?? []) as Array<{ organisation_id: string | null }>) {
+          if (!r.organisation_id) continue;
+          coursesCountByOrg.set(r.organisation_id, (coursesCountByOrg.get(r.organisation_id) ?? 0) + 1);
+        }
+      }
+    }
     const bdDueMap = new Map<string, string>();
     for (const r of bdSeedData) {
       if (r.claimed_user_id && r.bd_next_due_date) bdDueMap.set(r.claimed_user_id, r.bd_next_due_date);
@@ -446,6 +477,9 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         renewalDateSource: billing.renewalDateSource,
         isTrial: billing.isTrial,
         trialDaysLeft: billing.trialDaysLeft,
+        location: p.city ?? null,
+        coursesCount: p.account_type === 'organisation' ? (coursesCountByOrg.get(p.id) ?? 0) : null,
+        verifiedProsLinked: null,
       };
     });
 
