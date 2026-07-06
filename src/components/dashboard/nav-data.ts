@@ -157,6 +157,8 @@ export const ADMIN_NAV = [
       { icon: Building2, label: "Gyms", to: "/admin/gyms" },
       { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },
       { icon: Briefcase, label: "Training Providers", to: "/admin/training-providers" },
+      { icon: Star, label: "Provider Reviews", to: "/admin/training-providers/reviews" },
+
       { icon: LineChart, label: "SEO", to: "/admin/seo" },
     ],
   },

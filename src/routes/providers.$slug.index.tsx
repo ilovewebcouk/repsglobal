@@ -413,14 +413,14 @@ function ProviderWebsitePage() {
 
           <div className="mt-8">
             <Link
-              to="/providers/$slug"
+              to="/providers/$slug/review"
               params={{ slug: org.slug }}
-              hash="reviews"
-              className="text-sm text-white/60 hover:text-reps-orange"
+              className="inline-flex items-center gap-2 rounded-[10px] bg-reps-orange hover:bg-reps-orange-hover text-white px-4 py-2 text-sm font-medium"
             >
-              Reviewed a course here? Leave a review →
+              <Star className="h-4 w-4" /> Write a review
             </Link>
           </div>
+
         </div>
       </section>
 

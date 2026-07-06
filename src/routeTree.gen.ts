@@ -111,6 +111,7 @@ import { Route as CSlugIndexRouteImport } from './routes/c.$slug.index'
 import { Route as VerifyProviderMembershipIdRouteImport } from './routes/verify.provider.$membershipId'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
+import { Route as ProvidersSlugReviewRouteImport } from './routes/providers.$slug.review'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -119,6 +120,7 @@ import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$s
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as CSlugReviewRouteImport } from './routes/c.$slug.review'
 import { Route as CSlugEnquireRouteImport } from './routes/c.$slug.enquire'
+import { Route as AdminTrainingProvidersReviewsRouteImport } from './routes/admin_.training-providers.reviews'
 import { Route as AdminTrainingProvidersIdRouteImport } from './routes/admin_.training-providers.$id'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
@@ -127,6 +129,7 @@ import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
+import { Route as ReviewsProviderVerifyTokenRouteImport } from './routes/reviews.provider.verify.$token'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -689,6 +692,11 @@ const UCpdSessionIdRoute = UCpdSessionIdRouteImport.update({
   path: '/u/cpd/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProvidersSlugReviewRoute = ProvidersSlugReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => ProvidersSlugRoute,
+} as any)
 const ProSlugReviewRoute = ProSlugReviewRouteImport.update({
   id: '/review',
   path: '/review',
@@ -729,6 +737,12 @@ const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
   path: '/enquire',
   getParentRoute: () => CSlugRoute,
 } as any)
+const AdminTrainingProvidersReviewsRoute =
+  AdminTrainingProvidersReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => AdminTrainingProvidersRoute,
+  } as any)
 const AdminTrainingProvidersIdRoute =
   AdminTrainingProvidersIdRouteImport.update({
     id: '/$id',
@@ -772,6 +786,12 @@ const AuthenticatedProfessionalProRouteRoute =
   AuthenticatedProfessionalProRouteRouteImport.update({
     id: '/_pro',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
+const ReviewsProviderVerifyTokenRoute =
+  ReviewsProviderVerifyTokenRouteImport.update({
+    id: '/provider/verify/$token',
+    path: '/provider/verify/$token',
+    getParentRoute: () => ReviewsRoute,
   } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
@@ -1085,7 +1105,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -1159,6 +1179,7 @@ export interface FileRoutesByFullPath {
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/admin/training-providers/$id': typeof AdminTrainingProvidersIdRoute
+  '/admin/training-providers/reviews': typeof AdminTrainingProvidersReviewsRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
@@ -1167,6 +1188,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/providers/$slug/review': typeof ProvidersSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
@@ -1203,6 +1225,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/reviews/provider/verify/$token': typeof ReviewsProviderVerifyTokenRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1249,7 +1272,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -1319,6 +1342,7 @@ export interface FileRoutesByTo {
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/admin/training-providers/$id': typeof AdminTrainingProvidersIdRoute
+  '/admin/training-providers/reviews': typeof AdminTrainingProvidersReviewsRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
@@ -1327,6 +1351,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/providers/$slug/review': typeof ProvidersSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
@@ -1362,6 +1387,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/reviews/provider/verify/$token': typeof ReviewsProviderVerifyTokenRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1411,7 +1437,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -1487,6 +1513,7 @@ export interface FileRoutesById {
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/admin_/training-providers/$id': typeof AdminTrainingProvidersIdRoute
+  '/admin_/training-providers/reviews': typeof AdminTrainingProvidersReviewsRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
@@ -1495,6 +1522,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/providers/$slug/review': typeof ProvidersSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
@@ -1531,6 +1559,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/reviews/provider/verify/$token': typeof ReviewsProviderVerifyTokenRoute
   '/_authenticated/_professional/_pro/dashboard_/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/_authenticated/_professional/_pro/dashboard_/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/_authenticated/_professional/_pro/dashboard_/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1654,6 +1683,7 @@ export interface FileRouteTypes {
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
     | '/admin/training-providers/$id'
+    | '/admin/training-providers/reviews'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
     | '/checkout/credits/return'
@@ -1662,6 +1692,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/providers/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
@@ -1698,6 +1729,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/reviews/provider/verify/$token'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -1814,6 +1846,7 @@ export interface FileRouteTypes {
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
     | '/admin/training-providers/$id'
+    | '/admin/training-providers/reviews'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
     | '/checkout/credits/return'
@@ -1822,6 +1855,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/providers/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
@@ -1857,6 +1891,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/reviews/provider/verify/$token'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -1981,6 +2016,7 @@ export interface FileRouteTypes {
     | '/admin_/members/$userId'
     | '/admin_/seo/legacy-redirects'
     | '/admin_/training-providers/$id'
+    | '/admin_/training-providers/reviews'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
     | '/checkout/credits/return'
@@ -1989,6 +2025,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/providers/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
@@ -2025,6 +2062,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/reviews/provider/verify/$token'
     | '/_authenticated/_professional/_pro/dashboard_/bookings'
     | '/_authenticated/_professional/_pro/dashboard_/business'
     | '/_authenticated/_professional/_pro/dashboard_/calendar'
@@ -2074,7 +2112,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ReviewsRoute: typeof ReviewsRoute
+  ReviewsRoute: typeof ReviewsRouteWithChildren
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpecialismsRoute: typeof SpecialismsRoute
@@ -2884,6 +2922,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UCpdSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/providers/$slug/review': {
+      id: '/providers/$slug/review'
+      path: '/review'
+      fullPath: '/providers/$slug/review'
+      preLoaderRoute: typeof ProvidersSlugReviewRouteImport
+      parentRoute: typeof ProvidersSlugRoute
+    }
     '/pro/$slug/review': {
       id: '/pro/$slug/review'
       path: '/review'
@@ -2940,6 +2985,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CSlugEnquireRouteImport
       parentRoute: typeof CSlugRoute
     }
+    '/admin_/training-providers/reviews': {
+      id: '/admin_/training-providers/reviews'
+      path: '/reviews'
+      fullPath: '/admin/training-providers/reviews'
+      preLoaderRoute: typeof AdminTrainingProvidersReviewsRouteImport
+      parentRoute: typeof AdminTrainingProvidersRoute
+    }
     '/admin_/training-providers/$id': {
       id: '/admin_/training-providers/$id'
       path: '/$id'
@@ -2995,6 +3047,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedProfessionalProRouteRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
+    '/reviews/provider/verify/$token': {
+      id: '/reviews/provider/verify/$token'
+      path: '/provider/verify/$token'
+      fullPath: '/reviews/provider/verify/$token'
+      preLoaderRoute: typeof ReviewsProviderVerifyTokenRouteImport
+      parentRoute: typeof ReviewsRoute
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -3525,6 +3584,17 @@ const HelpRouteChildren: HelpRouteChildren = {
 
 const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
 
+interface ReviewsRouteChildren {
+  ReviewsProviderVerifyTokenRoute: typeof ReviewsProviderVerifyTokenRoute
+}
+
+const ReviewsRouteChildren: ReviewsRouteChildren = {
+  ReviewsProviderVerifyTokenRoute: ReviewsProviderVerifyTokenRoute,
+}
+
+const ReviewsRouteWithChildren =
+  ReviewsRoute._addFileChildren(ReviewsRouteChildren)
+
 interface AdminBillingRouteChildren {
   AdminBillingDisputesDisputeIdRoute: typeof AdminBillingDisputesDisputeIdRoute
 }
@@ -3551,11 +3621,13 @@ const AdminSeoRouteWithChildren = AdminSeoRoute._addFileChildren(
 
 interface AdminTrainingProvidersRouteChildren {
   AdminTrainingProvidersIdRoute: typeof AdminTrainingProvidersIdRoute
+  AdminTrainingProvidersReviewsRoute: typeof AdminTrainingProvidersReviewsRoute
 }
 
 const AdminTrainingProvidersRouteChildren: AdminTrainingProvidersRouteChildren =
   {
     AdminTrainingProvidersIdRoute: AdminTrainingProvidersIdRoute,
+    AdminTrainingProvidersReviewsRoute: AdminTrainingProvidersReviewsRoute,
   }
 
 const AdminTrainingProvidersRouteWithChildren =
@@ -3605,10 +3677,12 @@ const ProSlugRouteWithChildren =
   ProSlugRoute._addFileChildren(ProSlugRouteChildren)
 
 interface ProvidersSlugRouteChildren {
+  ProvidersSlugReviewRoute: typeof ProvidersSlugReviewRoute
   ProvidersSlugIndexRoute: typeof ProvidersSlugIndexRoute
 }
 
 const ProvidersSlugRouteChildren: ProvidersSlugRouteChildren = {
+  ProvidersSlugReviewRoute: ProvidersSlugReviewRoute,
   ProvidersSlugIndexRoute: ProvidersSlugIndexRoute,
 }
 
@@ -3644,7 +3718,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ReviewsRoute: ReviewsRoute,
+  ReviewsRoute: ReviewsRouteWithChildren,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpecialismsRoute: SpecialismsRoute,
