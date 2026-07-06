@@ -162,33 +162,8 @@ const PROFESSION_LABEL_HOME: Record<string, string> = {
   "fitness-instructor": "Fitness Instructor",
 };
 
-type HomeFeaturedCard = {
-  name: string;
-  role: string;
-  location: string;
-  rating: number;
-  reviews: number;
-  mode: string;
-  image: string;
-  online?: boolean;
-  slug?: string;
-  identityStatus?: string | null;
-  verification?: string | null;
-  tier?: "studio" | "pro" | "verified" | "free" | null;
-};
-
-
-const FALLBACK_FEATURED: HomeFeaturedCard[] = [
-  { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
-  { name: "Sophie Williams", role: "Pilates Instructor", location: "Manchester", rating: 5.0, reviews: 96, mode: "In-person & Online", image: proSophie },
-  { name: "Daniel Roberts", role: "Strength Coach", location: "Birmingham", rating: 4.9, reviews: 74, mode: "In-person", image: proDaniel },
-  { name: "Laura Mitchell", role: "Nutritionist", location: "Online", rating: 5.0, reviews: 112, mode: "Online", image: proLaura, online: true },
-];
-
-const FALLBACK_IMGS = [proJames, proSophie, proDaniel, proLaura];
-
-function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard {
-  const mode =
+function rowToNewestCoach(r: NewestCoachRow): NewestCoach {
+  const mode: NewestCoach["mode"] =
     r.in_person_available && r.online_available
       ? "In-person & Online"
       : r.online_available
@@ -204,32 +179,24 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
   return {
     name: r.full_name,
     role,
-    location: r.city ?? (r.online_available ? "Online" : "—"),
-    rating: r.rating_avg ?? 5.0,
-    reviews: r.review_count,
+    city: r.city ?? (r.online_available ? "Online" : "—"),
     mode,
-    image: r.avatar_url ?? fallbackImg,
-    online: !r.in_person_available && Boolean(r.online_available),
+    image: r.avatar_url,
     slug: r.slug,
-    identityStatus: r.identity_status,
-    verification: r.verification,
-    tier: r.tier,
+    rating: r.rating_avg,
+    reviews: r.review_count,
   };
 }
 
 function HomeV2() {
-  const { data: featuredResult } = useQuery({
-    queryKey: ["home-featured-rail"],
-    queryFn: () => getFeaturedPros({ data: { scope: "global", limit: 4 } }),
-    staleTime: 60 * 60_000, // rotation only changes once per day
+  const { data: newestResult } = useQuery({
+    queryKey: ["home-newest-coaches"],
+    queryFn: () => getNewestCoaches({ data: { limit: 4 } }),
+    staleTime: 5 * 60_000,
   });
-  const liveFeatured = featuredResult?.pros ?? [];
-  // Pros without a real avatar are never featured — no demo image substitutes.
-  const featuredCards: HomeFeaturedCard[] = liveFeatured
-    .filter((r) => !!r.avatar_url)
-    .slice(0, 4)
-    .map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]));
-  const hasFeatured = featuredCards.length > 0;
+  const newestCoaches: NewestCoach[] = (newestResult?.pros ?? []).map(rowToNewestCoach);
+  const hasNewest = newestCoaches.length > 0;
+
 
   return (
     <div className="min-h-screen bg-reps-ivory">
