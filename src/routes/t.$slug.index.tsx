@@ -131,8 +131,8 @@ function ProviderProfilePage() {
   });
 
   const reviews = reviewsData?.reviews ?? [];
-  const ratingAvg = reviewsData?.summary?.average ?? 0;
-  const ratingCount = reviewsData?.summary?.count ?? 0;
+  const ratingAvg = reviewsData?.average ?? 0;
+  const ratingCount = reviewsData?.count ?? 0;
 
   const providerName = sf.full_name?.trim() || "Training Provider";
   const tagline = sf.tagline?.trim() || `${providerName} — REPS Verified Training Provider`;
