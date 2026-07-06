@@ -296,21 +296,20 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ FEATURED PROFESSIONALS — product first ============ */}
-      {hasFeatured && (
+      {/* ============ NEWEST COACHES — just joined ============ */}
+      {hasNewest && (
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Hand-picked</span>
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Just joined</span>
               <h2 className="mt-1 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
-                Featured REPS Professionals
+                Newest coaches on REPS
               </h2>
             </div>
             <div className="flex items-center gap-4">
               <Link
                 to="/find-a-professional"
-                search={{ featured: true }}
                 className="text-[14px] font-medium text-reps-charcoal underline-offset-4 hover:underline"
               >
                 View all
@@ -327,35 +326,17 @@ function HomeV2() {
           </div>
 
           <div className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
-            {featuredCards.map((p) => {
-              const mode: FeaturedPro["mode"] =
-                p.mode === "Online" || p.mode === "In-person" || p.mode === "In-person & Online"
-                  ? (p.mode as FeaturedPro["mode"])
-                  : "In-person";
-              const pro: FeaturedPro = {
-                name: p.name,
-                role: p.role,
-                city: p.location,
-                rating: p.rating,
-                reviews: p.reviews,
-                mode,
-                tags: [],
-                image: p.image,
-                identityStatus: p.identityStatus ?? null,
-                verification: p.verification ?? null,
-                tier: p.tier ?? null,
-              };
-              return (
-                <div key={p.name} className="w-[78%] shrink-0 snap-center sm:w-auto">
-                  <FeaturedProCard pro={pro} />
-                </div>
-              );
-            })}
+            {newestCoaches.map((pro) => (
+              <div key={pro.slug} className="w-[78%] shrink-0 snap-center sm:w-auto">
+                <NewestCoachCard pro={pro} />
+              </div>
+            ))}
           </div>
 
         </div>
       </section>
       )}
+
 
       {/* ============ EXPLORE BY SPECIALISM ============ */}
       <section className="bg-reps-ivory">
