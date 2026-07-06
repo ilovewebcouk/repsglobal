@@ -88,10 +88,10 @@ import { Route as AdminSeoRouteImport } from './routes/admin_.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProspectsRouteImport } from './routes/admin_.prospects'
-import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
 import { Route as AdminNewsletterRouteImport } from './routes/admin_.newsletter'
 import { Route as AdminMembershipsRouteImport } from './routes/admin_.memberships'
+import { Route as AdminMembersRouteImport } from './routes/admin_.members'
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
@@ -570,11 +570,6 @@ const AdminProspectsRoute = AdminProspectsRouteImport.update({
   path: '/admin/prospects',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminProfessionalsRoute = AdminProfessionalsRouteImport.update({
-  id: '/admin_/professionals',
-  path: '/admin/professionals',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/admin_/payments',
   path: '/admin/payments',
@@ -588,6 +583,11 @@ const AdminNewsletterRoute = AdminNewsletterRouteImport.update({
 const AdminMembershipsRoute = AdminMembershipsRouteImport.update({
   id: '/admin_/memberships',
   path: '/admin/memberships',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMembersRoute = AdminMembersRouteImport.update({
+  id: '/admin_/members',
+  path: '/admin/members',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminGymsRoute = AdminGymsRouteImport.update({
@@ -733,9 +733,9 @@ const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   getParentRoute: () => AdminSeoRoute,
 } as any)
 const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
-  id: '/admin_/members/$userId',
-  path: '/admin/members/$userId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => AdminMembersRoute,
 } as any)
 const AuthenticatedDashboardDesignKitRoute =
   AuthenticatedDashboardDesignKitRouteImport.update({
@@ -1095,10 +1095,10 @@ export interface FileRoutesByFullPath {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
+  '/admin/members': typeof AdminMembersRouteWithChildren
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
-  '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -1258,10 +1258,10 @@ export interface FileRoutesByTo {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
+  '/admin/members': typeof AdminMembersRouteWithChildren
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
-  '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -1420,10 +1420,10 @@ export interface FileRoutesById {
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
+  '/admin_/members': typeof AdminMembersRouteWithChildren
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/newsletter': typeof AdminNewsletterRoute
   '/admin_/payments': typeof AdminPaymentsRoute
-  '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/prospects': typeof AdminProspectsRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
   '/admin_/reviews': typeof AdminReviewsRoute
@@ -1587,10 +1587,10 @@ export interface FileRouteTypes {
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
+    | '/admin/members'
     | '/admin/memberships'
     | '/admin/newsletter'
     | '/admin/payments'
-    | '/admin/professionals'
     | '/admin/prospects'
     | '/admin/reconciliation'
     | '/admin/reviews'
@@ -1750,10 +1750,10 @@ export interface FileRouteTypes {
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
+    | '/admin/members'
     | '/admin/memberships'
     | '/admin/newsletter'
     | '/admin/payments'
-    | '/admin/professionals'
     | '/admin/prospects'
     | '/admin/reconciliation'
     | '/admin/reviews'
@@ -1911,10 +1911,10 @@ export interface FileRouteTypes {
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/gyms'
+    | '/admin_/members'
     | '/admin_/memberships'
     | '/admin_/newsletter'
     | '/admin_/payments'
-    | '/admin_/professionals'
     | '/admin_/prospects'
     | '/admin_/reconciliation'
     | '/admin_/reviews'
@@ -2078,10 +2078,10 @@ export interface RootRouteChildren {
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
+  AdminMembersRoute: typeof AdminMembersRouteWithChildren
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminNewsletterRoute: typeof AdminNewsletterRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
-  AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminProspectsRoute: typeof AdminProspectsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
@@ -2126,7 +2126,6 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
-  AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
@@ -2707,13 +2706,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProspectsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/professionals': {
-      id: '/admin_/professionals'
-      path: '/admin/professionals'
-      fullPath: '/admin/professionals'
-      preLoaderRoute: typeof AdminProfessionalsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin_/payments': {
       id: '/admin_/payments'
       path: '/admin/payments'
@@ -2733,6 +2725,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/memberships'
       fullPath: '/admin/memberships'
       preLoaderRoute: typeof AdminMembershipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/members': {
+      id: '/admin_/members'
+      path: '/admin/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AdminMembersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/gyms': {
@@ -2933,10 +2932,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin_/members/$userId': {
       id: '/admin_/members/$userId'
-      path: '/admin/members/$userId'
+      path: '/$userId'
       fullPath: '/admin/members/$userId'
       preLoaderRoute: typeof AdminMembersUserIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminMembersRoute
     }
     '/_authenticated/dashboard_/design-kit': {
       id: '/_authenticated/dashboard_/design-kit'
@@ -3514,6 +3513,18 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
+interface AdminMembersRouteChildren {
+  AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
+}
+
+const AdminMembersRouteChildren: AdminMembersRouteChildren = {
+  AdminMembersUserIdRoute: AdminMembersUserIdRoute,
+}
+
+const AdminMembersRouteWithChildren = AdminMembersRoute._addFileChildren(
+  AdminMembersRouteChildren,
+)
+
 interface AdminSeoRouteChildren {
   AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
 }
@@ -3628,10 +3639,10 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
+  AdminMembersRoute: AdminMembersRouteWithChildren,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminNewsletterRoute: AdminNewsletterRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
-  AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminProspectsRoute: AdminProspectsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReviewsRoute: AdminReviewsRoute,
@@ -3676,7 +3687,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
-  AdminMembersUserIdRoute: AdminMembersUserIdRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,

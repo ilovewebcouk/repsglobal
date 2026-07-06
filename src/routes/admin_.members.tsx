@@ -122,7 +122,7 @@ import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
 
 type ProfessionalsSearch = { plan?: "free" | "paid" };
 
-export const Route = createFileRoute("/admin_/professionals")({
+export const Route = createFileRoute("/admin_/members")({
   head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
@@ -339,7 +339,7 @@ function AdminProfessionalsPage() {
       role="admin"
       active="Professionals"
       title="Professionals"
-      subtitle="Manage the full register of REPS professionals."
+      subtitle="The full register of REPS members — professionals and training providers."
       search={dashSearch}
       actions={<InviteButton />}
     >
