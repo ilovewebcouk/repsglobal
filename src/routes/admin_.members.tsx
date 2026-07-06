@@ -394,7 +394,7 @@ function AdminProfessionalsPage() {
               return (
                 <button
                   key={s.value}
-                  onClick={() => setSegment(s.value)}
+                  onClick={() => { setSegment(s.value); if (s.value === "providers") setTab("all"); }}
                   className={
                     active
                       ? "h-8 rounded-full bg-reps-orange px-4 text-[12px] font-semibold text-white"
@@ -406,31 +406,40 @@ function AdminProfessionalsPage() {
               );
             })}
           </div>
+          {segment === "providers" ? (
+            <div className="flex items-center gap-2">
+              <SortControl sort={sort} dir={dir} onChange={(s, d) => { setSort(s); setDir(d); }} />
+              <FiltersSheet value={filters} onChange={setFilters} count={activeFilterCount} />
+            </div>
+          ) : null}
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {TABS.map((t) => {
-              const active = t.value === tab;
-              return (
-                <button
-                  key={t.value}
-                  onClick={() => setTab(t.value)}
-                  className={
-                    active
-                      ? "h-8 rounded-full bg-reps-orange-soft px-3 text-[12px] font-semibold text-reps-orange"
-                      : "h-8 rounded-full border border-reps-border px-3 text-[12px] font-medium text-white/65 hover:text-white"
-                  }
-                >
-                  {t.label}
-                </button>
-              );
-            })}
+        {segment === "professionals" ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {TABS.map((t) => {
+                const active = t.value === tab;
+                return (
+                  <button
+                    key={t.value}
+                    onClick={() => setTab(t.value)}
+                    className={
+                      active
+                        ? "h-8 rounded-full bg-reps-orange-soft px-3 text-[12px] font-semibold text-reps-orange"
+                        : "h-8 rounded-full border border-reps-border px-3 text-[12px] font-medium text-white/65 hover:text-white"
+                    }
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex items-center gap-2">
+              <SortControl sort={sort} dir={dir} onChange={(s, d) => { setSort(s); setDir(d); }} />
+              <FiltersSheet value={filters} onChange={setFilters} count={activeFilterCount} />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <SortControl sort={sort} dir={dir} onChange={(s, d) => { setSort(s); setDir(d); }} />
-            <FiltersSheet value={filters} onChange={setFilters} count={activeFilterCount} />
-          </div>
-        </div>
+        ) : null}
+
 
         {activeFilterCount > 0 ? (
           <div className="flex flex-wrap items-center gap-2 border-b border-reps-border px-5 py-3">
