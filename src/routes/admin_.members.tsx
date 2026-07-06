@@ -164,10 +164,11 @@ const PROFESSION_OPTIONS = [
 
 // "Free" is intentionally absent — every active REPs member must be on a
 // paid Stripe sub. Legacy free / BD-window accounts are deleted, not filtered.
-const PLAN_OPTIONS: { value: "verified" | "pro" | "studio"; label: string }[] = [
+const PLAN_OPTIONS: { value: 'verified' | 'pro' | 'studio' | 'training_provider'; label: string }[] = [
   { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
+  { value: "training_provider", label: "Training Provider" },
 ];
 
 const STATUS_LABEL: Record<AdminProRow["status"], string> = {
