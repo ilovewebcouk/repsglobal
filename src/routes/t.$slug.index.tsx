@@ -50,6 +50,15 @@ import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import coachJamesCoaching from "@/assets/coach-james-coaching.jpg";
+import diverseLogo from "@/assets/diverse-logo.svg.asset.json";
+import origymLogo from "@/assets/origym-logo.webp.asset.json";
+
+/** Demo-only: map seeded provider slugs to a logo asset so the hero can
+ *  showcase the "upload your logo" slot before the editor upload lands. */
+const DEMO_PROVIDER_LOGOS: Record<string, string> = {
+  "northline-fitness-academy": diverseLogo.url,
+  "forge-strength-institute": origymLogo.url,
+};
 
 /* ------------------------------------------------------------------ */
 /* Mock data                                                          */
@@ -122,6 +131,9 @@ type Coach = {
   modes: ("In-person" | "Online")[];
   specialisms: string[];
   tiers: Tier[];
+  /** Provider logo shown in the hero. Null / undefined = fall back to
+   *  the Verified · Insured · Location chip row. */
+  logoUrl?: string | null;
   venues: {
     name: string;
     city: string;
@@ -531,6 +543,7 @@ function mergeLiveIntoCoach(
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
     socials: sf.socials.length ? sf.socials : base.socials,
     currentClients: sf.current_clients,
+    logoUrl: DEMO_PROVIDER_LOGOS[sf.slug] ?? base.logoUrl ?? null,
   };
 
 }
@@ -899,22 +912,32 @@ function HeroSection({
         <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
           {/* Copy */}
           <div className="flex flex-col">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="secondary"
-                className="rounded-full bg-reps-green/15 text-reps-green ring-1 ring-reps-green/30 hover:bg-reps-green/15"
-              >
-                <BadgeCheck className="h-3 w-3 mr-1" />
-                REPS Verified · Insured
-              </Badge>
-              <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted">
-                <MapPin className="h-3.5 w-3.5" />
-                {coach.city}
-              </span>
-            </div>
+            {coach.logoUrl ? (
+              <div className="flex items-center">
+                <img
+                  src={coach.logoUrl}
+                  alt={`${coach.name} logo`}
+                  className="h-16 w-auto max-w-[280px] object-contain object-left lg:h-20"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="rounded-full bg-reps-green/15 text-reps-green ring-1 ring-reps-green/30 hover:bg-reps-green/15"
+                >
+                  <BadgeCheck className="h-3 w-3 mr-1" />
+                  REPS Verified · Insured
+                </Badge>
+                <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {coach.city}
+                </span>
+              </div>
+            )}
 
             <div className="mt-6 text-[12px] font-semibold uppercase tracking-[0.22em] text-reps-muted">
-              {coach.name} — {coach.role}
+              {coach.name}
             </div>
 
             <h1 className="mt-3 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.015em] text-reps-text lg:text-[64px]">
