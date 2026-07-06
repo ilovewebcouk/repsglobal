@@ -116,6 +116,7 @@ import {
   type AdminProSort,
   type SortDir,
   type AdminProFilters,
+  type AdminProSegment,
 } from "@/lib/admin/professionals.functions";
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
@@ -164,11 +165,10 @@ const PROFESSION_OPTIONS = [
 
 // "Free" is intentionally absent — every active REPs member must be on a
 // paid Stripe sub. Legacy free / BD-window accounts are deleted, not filtered.
-const PLAN_OPTIONS: { value: 'verified' | 'pro' | 'studio' | 'training_provider'; label: string }[] = [
+const PLAN_OPTIONS: { value: 'verified' | 'pro' | 'studio'; label: string }[] = [
   { value: "verified", label: "Core" },
   { value: "pro", label: "Pro" },
   { value: "studio", label: "Studio" },
-  { value: "training_provider", label: "Training Provider" },
 ];
 
 const STATUS_LABEL: Record<AdminProRow["status"], string> = {
@@ -240,6 +240,7 @@ function useDebounced<T>(value: T, ms = 250): T {
 
 function AdminProfessionalsPage() {
   const searchParams = Route.useSearch();
+  const [segment, setSegment] = React.useState<AdminProSegment>("professionals");
   const [tab, setTab] = React.useState<AdminProTab>("all");
   const [page, setPage] = React.useState(1);
   const [search, setSearch] = React.useState("");
@@ -265,7 +266,7 @@ function AdminProfessionalsPage() {
   const debouncedSearch = useDebounced(search, 300);
   const pageSize = 25;
 
-  React.useEffect(() => { setPage(1); }, [tab, debouncedSearch, sort, dir, filters]);
+  React.useEffect(() => { setPage(1); }, [segment, tab, debouncedSearch, sort, dir, filters]);
 
 
   const kpisFn = useServerFn(getAdminProfessionalsKpis);
@@ -278,8 +279,8 @@ function AdminProfessionalsPage() {
   });
 
   const listQ = useQuery({
-    queryKey: ["admin-pros-list", tab, page, debouncedSearch, sort, dir, filters],
-    queryFn: () => listFn({ data: { tab, page, pageSize, q: debouncedSearch, sort, dir, filters } }),
+    queryKey: ["admin-pros-list", segment, tab, page, debouncedSearch, sort, dir, filters],
+    queryFn: () => listFn({ data: { segment, tab, page, pageSize, q: debouncedSearch, sort, dir, filters } }),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
@@ -383,6 +384,29 @@ function AdminProfessionalsPage() {
       </div>
 
       <PPanel className="mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-3">
+          <div className="inline-flex rounded-full border border-reps-border bg-reps-ink/40 p-1">
+            {([
+              { value: "professionals", label: "Professionals" },
+              { value: "providers", label: "Training Providers" },
+            ] as const).map((s) => {
+              const active = s.value === segment;
+              return (
+                <button
+                  key={s.value}
+                  onClick={() => setSegment(s.value)}
+                  className={
+                    active
+                      ? "h-8 rounded-full bg-reps-orange px-4 text-[12px] font-semibold text-white"
+                      : "h-8 rounded-full px-4 text-[12px] font-medium text-white/65 hover:text-white"
+                  }
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-reps-border px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
             {TABS.map((t) => {
@@ -433,14 +457,28 @@ function AdminProfessionalsPage() {
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-reps-border text-left text-[11px] uppercase tracking-wider text-white/45">
-                <th className="px-5 py-3 font-semibold">Professional</th>
-                <th className="px-3 py-3 font-semibold">Profession</th>
-                <th className="px-3 py-3 font-semibold">Plan</th>
-                <th className="px-3 py-3 font-semibold">Status</th>
-                <th className="px-3 py-3 font-semibold">Lifetime value</th>
-                <th className="px-3 py-3 font-semibold">Renewal date</th>
-                <th className="px-3 py-3 font-semibold">Plan MRR</th>
-                <th className="px-3 py-3 font-semibold">Joined</th>
+                <th className="px-5 py-3 font-semibold">{segment === "providers" ? "Provider" : "Professional"}</th>
+                {segment === "providers" ? (
+                  <>
+                    <th className="px-3 py-3 font-semibold">Location</th>
+                    <th className="px-3 py-3 font-semibold">Courses</th>
+                    <th className="px-3 py-3 font-semibold">Verified pros</th>
+                    <th className="px-3 py-3 font-semibold">Plan</th>
+                    <th className="px-3 py-3 font-semibold">Status</th>
+                    <th className="px-3 py-3 font-semibold">Renewal date</th>
+                    <th className="px-3 py-3 font-semibold">Joined</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="px-3 py-3 font-semibold">Profession</th>
+                    <th className="px-3 py-3 font-semibold">Plan</th>
+                    <th className="px-3 py-3 font-semibold">Status</th>
+                    <th className="px-3 py-3 font-semibold">Lifetime value</th>
+                    <th className="px-3 py-3 font-semibold">Renewal date</th>
+                    <th className="px-3 py-3 font-semibold">Plan MRR</th>
+                    <th className="px-3 py-3 font-semibold">Joined</th>
+                  </>
+                )}
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -448,9 +486,9 @@ function AdminProfessionalsPage() {
               {listQ.isLoading && !listQ.data ? (
                 <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">Loading…</td></tr>
               ) : rows.length === 0 ? (
-                <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">No professionals match.</td></tr>
+                <tr><td colSpan={9} className="px-5 py-10 text-center text-white/55">No {segment === "providers" ? "training providers" : "professionals"} match.</td></tr>
               ) : rows.map((r) => (
-                <ProRow key={r.id} row={r} />
+                <ProRow key={r.id} row={r} segment={segment} />
               ))}
             </tbody>
           </table>
@@ -522,11 +560,11 @@ function FiltersSheet({
   const [draft, setDraft] = React.useState<AdminProFilters>(value);
   React.useEffect(() => { if (open) setDraft(value); }, [open, value]);
 
-  function togglePlan(p: "free" | "verified" | "pro" | "studio" | "training_provider") {
+  function togglePlan(p: "verified" | "pro" | "studio") {
     setDraft(d => {
       const set = new Set(d.plans ?? []);
       if (set.has(p)) set.delete(p); else set.add(p);
-      return { ...d, plans: Array.from(set) };
+      return { ...d, plans: Array.from(set) as AdminProFilters['plans'] };
     });
   }
   function toggleProf(p: string) {
@@ -717,7 +755,7 @@ function InviteButton() {
 
 // ---------- Row ----------
 
-function ProRow({ row }: { row: AdminProRow }) {
+function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const startFn = useServerFn(startImpersonation);
@@ -783,62 +821,104 @@ function ProRow({ row }: { row: AdminProRow }) {
           </div>
         </div>
       </td>
-      
-      <td className="px-3 py-3">
-        {row.profession ? (
-          <span className="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/75">
-            {row.profession}
-          </span>
-        ) : <span className="text-white/45">—</span>}
-      </td>
-      <td className="px-3 py-3">
-        {row.isTrial ? (
-          <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
-            Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
-          </span>
-        ) : (
-          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.accountType === 'organisation' ? 'training_provider' : row.plan)}`}>
-            {row.accountType === 'organisation' ? PLAN_LABEL.training_provider : PLAN_LABEL[row.plan]}
-          </span>
-        )}
-      </td>
-      <td className="px-3 py-3">
-        <div className="flex flex-wrap items-center gap-1">
-          {row.billingState !== "ok" && (
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}
-              title={
-                row.billingState === "payment_failed"
-                  ? "Stripe subscription is past due / unpaid — recovery in progress."
-                  : "BD renewal date has arrived; awaiting nightly renewal cron."
-              }
-            >
-              {BILLING_LABEL[row.billingState]}
-            </span>
-          )}
-          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
-            {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
-            {STATUS_LABEL[row.status]}
-          </span>
-        </div>
-      </td>
 
-      <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
-      <td className="px-3 py-3 text-white/75">
-        <span className="inline-flex items-center gap-1.5">
-          {renewalLabel(row.renewalDate)}
-          {row.renewalDateSource === "bd" && row.renewalDate && (
-            <span
-              className="rounded-[6px] border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/55"
-              title="Imported renewal date — will switch to Stripe once a subscription is created"
-            >
-              Imported
+      {segment === "providers" ? (
+        <>
+          <td className="px-3 py-3 text-white/75">{row.location ?? <span className="text-white/45">—</span>}</td>
+          <td className="px-3 py-3 text-white/75 tabular-nums">{row.coursesCount ?? 0}</td>
+          <td className="px-3 py-3 text-white/45">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help underline decoration-dotted underline-offset-2">—</span>
+              </TooltipTrigger>
+              <TooltipContent side="top">Wired once course + pro-link tables land</TooltipContent>
+            </Tooltip>
+          </td>
+          <td className="px-3 py-3">
+            {row.isTrial ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
+                Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
+              </span>
+            ) : (
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass('training_provider')}`}>
+                {PLAN_LABEL.training_provider}
+              </span>
+            )}
+          </td>
+          <td className="px-3 py-3">
+            <div className="flex flex-wrap items-center gap-1">
+              {row.billingState !== "ok" && (
+                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}>
+                  {BILLING_LABEL[row.billingState]}
+                </span>
+              )}
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
+                {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
+                {STATUS_LABEL[row.status]}
+              </span>
+            </div>
+          </td>
+          <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
+          <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
+        </>
+      ) : (
+        <>
+          <td className="px-3 py-3">
+            {row.profession ? (
+              <span className="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/75">
+                {row.profession}
+              </span>
+            ) : <span className="text-white/45">—</span>}
+          </td>
+          <td className="px-3 py-3">
+            {row.isTrial ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
+                Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
+              </span>
+            ) : (
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.plan)}`}>
+                {PLAN_LABEL[row.plan]}
+              </span>
+            )}
+          </td>
+          <td className="px-3 py-3">
+            <div className="flex flex-wrap items-center gap-1">
+              {row.billingState !== "ok" && (
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}
+                  title={
+                    row.billingState === "payment_failed"
+                      ? "Stripe subscription is past due / unpaid — recovery in progress."
+                      : "BD renewal date has arrived; awaiting nightly renewal cron."
+                  }
+                >
+                  {BILLING_LABEL[row.billingState]}
+                </span>
+              )}
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
+                {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
+                {STATUS_LABEL[row.status]}
+              </span>
+            </div>
+          </td>
+          <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
+          <td className="px-3 py-3 text-white/75">
+            <span className="inline-flex items-center gap-1.5">
+              {renewalLabel(row.renewalDate)}
+              {row.renewalDateSource === "bd" && row.renewalDate && (
+                <span
+                  className="rounded-[6px] border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/55"
+                  title="Imported renewal date — will switch to Stripe once a subscription is created"
+                >
+                  Imported
+                </span>
+              )}
             </span>
-          )}
-        </span>
-      </td>
-      <td className="px-3 py-3 text-white/75">{gbp(row.planMrrPence)}</td>
-      <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
+          </td>
+          <td className="px-3 py-3 text-white/75">{gbp(row.planMrrPence)}</td>
+          <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
+        </>
+      )}
       <td className="px-5 py-3 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
