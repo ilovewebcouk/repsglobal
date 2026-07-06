@@ -111,7 +111,9 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'onboarding-signup-log-in-4': onboardingSignupLogIn4,
   'onboarding-signup-log-in-5': onboardingSignupLogIn5,
   'onboarding-signup-verify-1': onboardingSignupVerify1,
+  'provider-review-verify': providerReviewVerify,
 }
+
 
 
 
