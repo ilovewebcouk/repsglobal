@@ -81,7 +81,6 @@ import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
-import { Route as AdminTrainingProvidersRouteImport } from './routes/admin_.training-providers'
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
@@ -108,6 +107,7 @@ import { Route as ProvidersSlugIndexRouteImport } from './routes/providers.$slug
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
 import { Route as CSlugIndexRouteImport } from './routes/c.$slug.index'
+import { Route as AdminTrainingProvidersIndexRouteImport } from './routes/admin_.training-providers.index'
 import { Route as VerifyProviderMembershipIdRouteImport } from './routes/verify.provider.$membershipId'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
@@ -539,11 +539,6 @@ const AdminVerificationRoute = AdminVerificationRouteImport.update({
   path: '/admin/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminTrainingProvidersRoute = AdminTrainingProvidersRouteImport.update({
-  id: '/admin_/training-providers',
-  path: '/admin/training-providers',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminTeamRoute = AdminTeamRouteImport.update({
   id: '/admin_/team',
   path: '/admin/team',
@@ -676,6 +671,12 @@ const CSlugIndexRoute = CSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CSlugRoute,
 } as any)
+const AdminTrainingProvidersIndexRoute =
+  AdminTrainingProvidersIndexRouteImport.update({
+    id: '/admin_/training-providers/',
+    path: '/admin/training-providers/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const VerifyProviderMembershipIdRoute =
   VerifyProviderMembershipIdRouteImport.update({
     id: '/verify/provider/$membershipId',
@@ -739,15 +740,15 @@ const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
 } as any)
 const AdminTrainingProvidersReviewsRoute =
   AdminTrainingProvidersReviewsRouteImport.update({
-    id: '/reviews',
-    path: '/reviews',
-    getParentRoute: () => AdminTrainingProvidersRoute,
+    id: '/admin_/training-providers/reviews',
+    path: '/admin/training-providers/reviews',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AdminTrainingProvidersIdRoute =
   AdminTrainingProvidersIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AdminTrainingProvidersRoute,
+    id: '/admin_/training-providers/$id',
+    path: '/admin/training-providers/$id',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   id: '/legacy-redirects',
@@ -1134,7 +1135,6 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
-  '/admin/training-providers': typeof AdminTrainingProvidersRouteWithChildren
   '/admin/verification': typeof AdminVerificationRoute
   '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
@@ -1192,6 +1192,7 @@ export interface FileRoutesByFullPath {
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
+  '/admin/training-providers/': typeof AdminTrainingProvidersIndexRoute
   '/c/$slug/': typeof CSlugIndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
@@ -1301,7 +1302,6 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
-  '/admin/training-providers': typeof AdminTrainingProvidersRouteWithChildren
   '/admin/verification': typeof AdminVerificationRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -1355,6 +1355,7 @@ export interface FileRoutesByTo {
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
+  '/admin/training-providers': typeof AdminTrainingProvidersIndexRoute
   '/c/$slug': typeof CSlugIndexRoute
   '/help/$category': typeof HelpCategoryIndexRoute
   '/pro/$slug': typeof ProSlugIndexRoute
@@ -1467,7 +1468,6 @@ export interface FileRoutesById {
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
-  '/admin_/training-providers': typeof AdminTrainingProvidersRouteWithChildren
   '/admin_/verification': typeof AdminVerificationRoute
   '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
@@ -1526,6 +1526,7 @@ export interface FileRoutesById {
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/verify/provider/$membershipId': typeof VerifyProviderMembershipIdRoute
+  '/admin_/training-providers/': typeof AdminTrainingProvidersIndexRoute
   '/c/$slug/': typeof CSlugIndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
@@ -1638,7 +1639,6 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
-    | '/admin/training-providers'
     | '/admin/verification'
     | '/c/$slug'
     | '/checkout/return'
@@ -1696,6 +1696,7 @@ export interface FileRouteTypes {
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
+    | '/admin/training-providers/'
     | '/c/$slug/'
     | '/help/$category/'
     | '/pro/$slug/'
@@ -1805,7 +1806,6 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
-    | '/admin/training-providers'
     | '/admin/verification'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
@@ -1859,6 +1859,7 @@ export interface FileRouteTypes {
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
+    | '/admin/training-providers'
     | '/c/$slug'
     | '/help/$category'
     | '/pro/$slug'
@@ -1970,7 +1971,6 @@ export interface FileRouteTypes {
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/team'
-    | '/admin_/training-providers'
     | '/admin_/verification'
     | '/c/$slug'
     | '/checkout/return'
@@ -2029,6 +2029,7 @@ export interface FileRouteTypes {
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/verify/provider/$membershipId'
+    | '/admin_/training-providers/'
     | '/c/$slug/'
     | '/help/$category/'
     | '/pro/$slug/'
@@ -2141,7 +2142,6 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
-  AdminTrainingProvidersRoute: typeof AdminTrainingProvidersRouteWithChildren
   AdminVerificationRoute: typeof AdminVerificationRoute
   CSlugRoute: typeof CSlugRouteWithChildren
   CheckoutReturnRoute: typeof CheckoutReturnRoute
@@ -2180,11 +2180,14 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
+  AdminTrainingProvidersIdRoute: typeof AdminTrainingProvidersIdRoute
+  AdminTrainingProvidersReviewsRoute: typeof AdminTrainingProvidersReviewsRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
   UInsuranceSessionIdRoute: typeof UInsuranceSessionIdRoute
   VerifyProviderMembershipIdRoute: typeof VerifyProviderMembershipIdRoute
+  AdminTrainingProvidersIndexRoute: typeof AdminTrainingProvidersIndexRoute
   ApiPublicASplatRoute: typeof ApiPublicASplatRoute
   ApiPublicActivityAuthEventRoute: typeof ApiPublicActivityAuthEventRoute
   ApiPublicActivityPublicConversionRoute: typeof ApiPublicActivityPublicConversionRoute
@@ -2712,13 +2715,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVerificationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/training-providers': {
-      id: '/admin_/training-providers'
-      path: '/admin/training-providers'
-      fullPath: '/admin/training-providers'
-      preLoaderRoute: typeof AdminTrainingProvidersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin_/team': {
       id: '/admin_/team'
       path: '/admin/team'
@@ -2901,6 +2897,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CSlugIndexRouteImport
       parentRoute: typeof CSlugRoute
     }
+    '/admin_/training-providers/': {
+      id: '/admin_/training-providers/'
+      path: '/admin/training-providers'
+      fullPath: '/admin/training-providers/'
+      preLoaderRoute: typeof AdminTrainingProvidersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verify/provider/$membershipId': {
       id: '/verify/provider/$membershipId'
       path: '/verify/provider/$membershipId'
@@ -2987,17 +2990,17 @@ declare module '@tanstack/react-router' {
     }
     '/admin_/training-providers/reviews': {
       id: '/admin_/training-providers/reviews'
-      path: '/reviews'
+      path: '/admin/training-providers/reviews'
       fullPath: '/admin/training-providers/reviews'
       preLoaderRoute: typeof AdminTrainingProvidersReviewsRouteImport
-      parentRoute: typeof AdminTrainingProvidersRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin_/training-providers/$id': {
       id: '/admin_/training-providers/$id'
-      path: '/$id'
+      path: '/admin/training-providers/$id'
       fullPath: '/admin/training-providers/$id'
       preLoaderRoute: typeof AdminTrainingProvidersIdRouteImport
-      parentRoute: typeof AdminTrainingProvidersRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
@@ -3619,22 +3622,6 @@ const AdminSeoRouteWithChildren = AdminSeoRoute._addFileChildren(
   AdminSeoRouteChildren,
 )
 
-interface AdminTrainingProvidersRouteChildren {
-  AdminTrainingProvidersIdRoute: typeof AdminTrainingProvidersIdRoute
-  AdminTrainingProvidersReviewsRoute: typeof AdminTrainingProvidersReviewsRoute
-}
-
-const AdminTrainingProvidersRouteChildren: AdminTrainingProvidersRouteChildren =
-  {
-    AdminTrainingProvidersIdRoute: AdminTrainingProvidersIdRoute,
-    AdminTrainingProvidersReviewsRoute: AdminTrainingProvidersReviewsRoute,
-  }
-
-const AdminTrainingProvidersRouteWithChildren =
-  AdminTrainingProvidersRoute._addFileChildren(
-    AdminTrainingProvidersRouteChildren,
-  )
-
 interface CSlugRouteChildren {
   CSlugEnquireRoute: typeof CSlugEnquireRoute
   CSlugReviewRoute: typeof CSlugReviewRoute
@@ -3748,7 +3735,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
-  AdminTrainingProvidersRoute: AdminTrainingProvidersRouteWithChildren,
   AdminVerificationRoute: AdminVerificationRoute,
   CSlugRoute: CSlugRouteWithChildren,
   CheckoutReturnRoute: CheckoutReturnRoute,
@@ -3787,11 +3773,14 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
+  AdminTrainingProvidersIdRoute: AdminTrainingProvidersIdRoute,
+  AdminTrainingProvidersReviewsRoute: AdminTrainingProvidersReviewsRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
   UInsuranceSessionIdRoute: UInsuranceSessionIdRoute,
   VerifyProviderMembershipIdRoute: VerifyProviderMembershipIdRoute,
+  AdminTrainingProvidersIndexRoute: AdminTrainingProvidersIndexRoute,
   ApiPublicASplatRoute: ApiPublicASplatRoute,
   ApiPublicActivityAuthEventRoute: ApiPublicActivityAuthEventRoute,
   ApiPublicActivityPublicConversionRoute:

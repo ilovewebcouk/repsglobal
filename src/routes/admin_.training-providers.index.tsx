@@ -32,7 +32,7 @@ import {
   createOrganisationFromStripe,
 } from "@/lib/training-providers.functions";
 
-export const Route = createFileRoute("/admin_/training-providers")({
+export const Route = createFileRoute("/admin_/training-providers/")({
   head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
