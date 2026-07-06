@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { heroAvatarsQueryOptions, type HeroAvatar } from "@/lib/directory/hero.functions";
-import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
+import { getNewestCoaches, type NewestCoachRow } from "@/lib/directory/newest.functions";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 import {
   Activity,
@@ -23,7 +23,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
+import { NewestCoachCard, type NewestCoach } from "@/components/public/NewestCoachCard";
 
 
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -162,33 +162,8 @@ const PROFESSION_LABEL_HOME: Record<string, string> = {
   "fitness-instructor": "Fitness Instructor",
 };
 
-type HomeFeaturedCard = {
-  name: string;
-  role: string;
-  location: string;
-  rating: number;
-  reviews: number;
-  mode: string;
-  image: string;
-  online?: boolean;
-  slug?: string;
-  identityStatus?: string | null;
-  verification?: string | null;
-  tier?: "studio" | "pro" | "verified" | "free" | null;
-};
-
-
-const FALLBACK_FEATURED: HomeFeaturedCard[] = [
-  { name: "James Carter", role: "Personal Trainer", location: "London", rating: 5.0, reviews: 128, mode: "In-person & Online", image: proJames },
-  { name: "Sophie Williams", role: "Pilates Instructor", location: "Manchester", rating: 5.0, reviews: 96, mode: "In-person & Online", image: proSophie },
-  { name: "Daniel Roberts", role: "Strength Coach", location: "Birmingham", rating: 4.9, reviews: 74, mode: "In-person", image: proDaniel },
-  { name: "Laura Mitchell", role: "Nutritionist", location: "Online", rating: 5.0, reviews: 112, mode: "Online", image: proLaura, online: true },
-];
-
-const FALLBACK_IMGS = [proJames, proSophie, proDaniel, proLaura];
-
-function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard {
-  const mode =
+function rowToNewestCoach(r: NewestCoachRow): NewestCoach {
+  const mode: NewestCoach["mode"] =
     r.in_person_available && r.online_available
       ? "In-person & Online"
       : r.online_available
@@ -204,32 +179,24 @@ function rowToHomeCard(r: FeaturedProRow, fallbackImg: string): HomeFeaturedCard
   return {
     name: r.full_name,
     role,
-    location: r.city ?? (r.online_available ? "Online" : "—"),
-    rating: r.rating_avg ?? 5.0,
-    reviews: r.review_count,
+    city: r.city ?? (r.online_available ? "Online" : "—"),
     mode,
-    image: r.avatar_url ?? fallbackImg,
-    online: !r.in_person_available && Boolean(r.online_available),
+    image: r.avatar_url,
     slug: r.slug,
-    identityStatus: r.identity_status,
-    verification: r.verification,
-    tier: r.tier,
+    rating: r.rating_avg,
+    reviews: r.review_count,
   };
 }
 
 function HomeV2() {
-  const { data: featuredResult } = useQuery({
-    queryKey: ["home-featured-rail"],
-    queryFn: () => getFeaturedPros({ data: { scope: "global", limit: 4 } }),
-    staleTime: 60 * 60_000, // rotation only changes once per day
+  const { data: newestResult } = useQuery({
+    queryKey: ["home-newest-coaches"],
+    queryFn: () => getNewestCoaches({ data: { limit: 4 } }),
+    staleTime: 5 * 60_000,
   });
-  const liveFeatured = featuredResult?.pros ?? [];
-  // Pros without a real avatar are never featured — no demo image substitutes.
-  const featuredCards: HomeFeaturedCard[] = liveFeatured
-    .filter((r) => !!r.avatar_url)
-    .slice(0, 4)
-    .map((r, i) => rowToHomeCard(r, FALLBACK_IMGS[i % FALLBACK_IMGS.length]));
-  const hasFeatured = featuredCards.length > 0;
+  const newestCoaches: NewestCoach[] = (newestResult?.pros ?? []).map(rowToNewestCoach);
+  const hasNewest = newestCoaches.length > 0;
+
 
   return (
     <div className="min-h-screen bg-reps-ivory">
@@ -329,21 +296,21 @@ function HomeV2() {
         </div>
       </section>
 
-      {/* ============ FEATURED PROFESSIONALS — product first ============ */}
-      {hasFeatured && (
+      {/* ============ NEWEST COACHES — just joined ============ */}
+      {hasNewest && (
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Hand-picked</span>
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Just joined</span>
               <h2 className="mt-1 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
-                Featured REPS Professionals
+                Newest coaches on REPS
               </h2>
             </div>
             <div className="flex items-center gap-4">
               <Link
                 to="/find-a-professional"
-                search={{ featured: true }}
+                search={{ page: 1, sort: "nearest" }}
                 className="text-[14px] font-medium text-reps-charcoal underline-offset-4 hover:underline"
               >
                 View all
@@ -360,35 +327,17 @@ function HomeV2() {
           </div>
 
           <div className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
-            {featuredCards.map((p) => {
-              const mode: FeaturedPro["mode"] =
-                p.mode === "Online" || p.mode === "In-person" || p.mode === "In-person & Online"
-                  ? (p.mode as FeaturedPro["mode"])
-                  : "In-person";
-              const pro: FeaturedPro = {
-                name: p.name,
-                role: p.role,
-                city: p.location,
-                rating: p.rating,
-                reviews: p.reviews,
-                mode,
-                tags: [],
-                image: p.image,
-                identityStatus: p.identityStatus ?? null,
-                verification: p.verification ?? null,
-                tier: p.tier ?? null,
-              };
-              return (
-                <div key={p.name} className="w-[78%] shrink-0 snap-center sm:w-auto">
-                  <FeaturedProCard pro={pro} />
-                </div>
-              );
-            })}
+            {newestCoaches.map((pro) => (
+              <div key={pro.slug} className="w-[78%] shrink-0 snap-center sm:w-auto">
+                <NewestCoachCard pro={pro} />
+              </div>
+            ))}
           </div>
 
         </div>
       </section>
       )}
+
 
       {/* ============ EXPLORE BY SPECIALISM ============ */}
       <section className="bg-reps-ivory">
