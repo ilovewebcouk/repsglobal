@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { heroAvatarsQueryOptions, type HeroAvatar } from "@/lib/directory/hero.functions";
-import { getFeaturedPros, type FeaturedProRow } from "@/lib/directory/featured.functions";
+import { getNewestCoaches, type NewestCoachRow } from "@/lib/directory/newest.functions";
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 import {
   Activity,
@@ -23,7 +23,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import { FeaturedProCard, type FeaturedPro } from "@/components/public/FeaturedProCard";
+import { NewestCoachCard, type NewestCoach } from "@/components/public/NewestCoachCard";
 
 
 import { PublicHeader } from "@/components/public/PublicHeader";
