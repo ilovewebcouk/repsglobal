@@ -720,6 +720,18 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
           tier,
+          account_type:
+            ((pro as { account_type?: string | null }).account_type === "organisation"
+              ? "organisation"
+              : "individual") as "individual" | "organisation",
+          legal_entity_name:
+            (pro as { legal_entity_name?: string | null }).legal_entity_name ?? null,
+          staff_count: (pro as { staff_count?: number | null }).staff_count ?? null,
+          awarding_bodies: Array.isArray(
+            (pro as { awarding_bodies?: string[] | null }).awarding_bodies,
+          )
+            ? ((pro as { awarding_bodies?: string[] | null }).awarding_bodies as string[])
+            : [],
           trust,
           socials: buildSocials(pro as any),
         },
