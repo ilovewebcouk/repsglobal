@@ -619,8 +619,9 @@ export const verifyProviderReviewEmail = createServerFn({ method: "POST" })
 
 export const listAdminProviderReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { status?: string } | undefined) => ({
+  .inputValidator((d: { status?: string; organisationId?: string } | undefined) => ({
     status: d?.status ?? "all",
+    organisationId: d?.organisationId ?? null,
   }))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
@@ -634,6 +635,9 @@ export const listAdminProviderReviews = createServerFn({ method: "GET" })
       .limit(200);
     if (data.status && data.status !== "all") {
       q = q.eq("status", data.status as any);
+    }
+    if (data.organisationId) {
+      q = q.eq("organisation_id", data.organisationId);
     }
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
