@@ -337,8 +337,8 @@ function AdminProfessionalsPage() {
   return (
     <DashboardShell
       role="admin"
-      active="Professionals"
-      title="Professionals"
+      active="Members"
+      title="Members"
       subtitle="The full register of REPS members — professionals and training providers."
       search={dashSearch}
       actions={<InviteButton />}
