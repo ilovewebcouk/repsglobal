@@ -9,8 +9,6 @@ import { backfillPrimaryLocations } from "@/lib/profile/location.functions";
 import { listAdminAuditLog, type AuditLogRow } from "@/lib/admin-audit-list.functions";
 import { sendRelaunchTestEmail } from "@/lib/admin/send-relaunch-test.functions";
 import { getRelaunchBroadcastStatus, previewRelaunchAudience, sendRelaunchBroadcast } from "@/lib/admin/send-relaunch-broadcast.functions";
-import { sendNewRepsRolloutTestEmail } from "@/lib/admin/send-new-reps-rollout-test.functions";
-import { getNewRepsRolloutStatus, previewNewRepsRolloutAudience, sendNewRepsRolloutBroadcast } from "@/lib/admin/send-new-reps-rollout-broadcast.functions";
 import { TimeAgo } from "@/components/verification/TimeAgo";
 import { toast } from "sonner";
 
@@ -114,8 +112,7 @@ function AdminSettings() {
           <MaintenanceCard />
           <RelaunchTestCard />
           <RelaunchBroadcastCard />
-          <NewRepsRolloutTestCard />
-          <NewRepsRolloutBroadcastCard />
+
         </div>
       </div>
 
