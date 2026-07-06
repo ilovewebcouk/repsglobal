@@ -1,4 +1,4 @@
-import { Laptop, MapPin, Star } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export type NewestCoach = {
   name: string;
@@ -12,13 +12,19 @@ export type NewestCoach = {
 };
 
 /**
- * Card for the home "Newest coaches on REPS" rail. Deliberately stripped:
- * no Verified pill (they haven't verified yet) and no Save button (the
- * intent is discovery, not shortlist-building).
+ * Face-first tile for the home "Newest coaches" wall.
+ * Deliberately stripped so 16 units read as a wall of real people, not
+ * a spec sheet: no Verified pill, no Save, no rating chip, no CTA button.
+ * The whole tile is the link.
  */
 export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
+  const meta = [pro.role, pro.city].filter(Boolean).join(" · ");
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white">
+    <Link
+      to="/c/$slug"
+      params={{ slug: pro.slug }}
+      className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-reps-stone bg-reps-warm-white transition-transform duration-200 hover:-translate-y-0.5"
+    >
       <div className="relative">
         <img
           src={pro.image}
@@ -27,31 +33,12 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
           loading="lazy"
         />
       </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="font-display text-[16px] font-bold leading-tight text-reps-charcoal">{pro.name}</h3>
-            <p className="text-[12px] text-reps-muted-light">{pro.role}</p>
-          </div>
-          {pro.reviews > 0 && pro.rating !== null && (
-            <div className="flex shrink-0 items-center gap-1 text-[12px]">
-              <Star className="h-3.5 w-3.5 fill-reps-orange text-reps-orange" />
-              <span className="font-semibold text-reps-orange">{pro.rating.toFixed(1)}</span>
-              <span className="text-reps-muted-light">({pro.reviews})</span>
-            </div>
-          )}
-        </div>
-        <div className="mt-2 flex items-center gap-3 text-[11.5px] text-reps-muted-light">
-          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {pro.city}</span>
-          <span className="flex items-center gap-1"><Laptop className="h-3 w-3" /> {pro.mode === "In-person & Online" ? "Hybrid" : pro.mode}</span>
-        </div>
-        <a
-          href={`/c/${pro.slug}`}
-          className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-[10px] bg-reps-orange text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
-        >
-          View profile
-        </a>
+      <div className="flex flex-1 flex-col px-3 py-2.5">
+        <h3 className="truncate font-display text-[15px] font-bold leading-tight text-reps-charcoal">
+          {pro.name}
+        </h3>
+        <p className="mt-0.5 truncate text-[12px] text-reps-muted-light">{meta}</p>
       </div>
-    </article>
+    </Link>
   );
 }
