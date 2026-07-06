@@ -31,7 +31,7 @@ export const getMyAccountType = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("professionals")
       .select("account_type")
-      .eq("user_id", context.userId)
+      .eq("id", context.userId)
       .maybeSingle();
     if (error) throw error;
     return { accountType: (data?.account_type as string | null) ?? null };
