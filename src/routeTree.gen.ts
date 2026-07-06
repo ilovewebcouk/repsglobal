@@ -120,6 +120,7 @@ import { Route as HelpCategorySlugRouteImport } from './routes/help.$category.$s
 import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.credits.return'
 import { Route as CSlugReviewRouteImport } from './routes/c.$slug.review'
 import { Route as CSlugEnquireRouteImport } from './routes/c.$slug.enquire'
+import { Route as AdminTrainingProvidersReviewsRouteImport } from './routes/admin_.training-providers.reviews'
 import { Route as AdminTrainingProvidersIdRouteImport } from './routes/admin_.training-providers.$id'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
@@ -736,6 +737,12 @@ const CSlugEnquireRoute = CSlugEnquireRouteImport.update({
   path: '/enquire',
   getParentRoute: () => CSlugRoute,
 } as any)
+const AdminTrainingProvidersReviewsRoute =
+  AdminTrainingProvidersReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => AdminTrainingProvidersRoute,
+  } as any)
 const AdminTrainingProvidersIdRoute =
   AdminTrainingProvidersIdRouteImport.update({
     id: '/$id',
@@ -1172,6 +1179,7 @@ export interface FileRoutesByFullPath {
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/admin/training-providers/$id': typeof AdminTrainingProvidersIdRoute
+  '/admin/training-providers/reviews': typeof AdminTrainingProvidersReviewsRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
@@ -1334,6 +1342,7 @@ export interface FileRoutesByTo {
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/admin/training-providers/$id': typeof AdminTrainingProvidersIdRoute
+  '/admin/training-providers/reviews': typeof AdminTrainingProvidersReviewsRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
@@ -1504,6 +1513,7 @@ export interface FileRoutesById {
   '/admin_/members/$userId': typeof AdminMembersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/admin_/training-providers/$id': typeof AdminTrainingProvidersIdRoute
+  '/admin_/training-providers/reviews': typeof AdminTrainingProvidersReviewsRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
   '/checkout/credits/return': typeof CheckoutCreditsReturnRoute
@@ -1673,6 +1683,7 @@ export interface FileRouteTypes {
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
     | '/admin/training-providers/$id'
+    | '/admin/training-providers/reviews'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
     | '/checkout/credits/return'
@@ -1835,6 +1846,7 @@ export interface FileRouteTypes {
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
     | '/admin/training-providers/$id'
+    | '/admin/training-providers/reviews'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
     | '/checkout/credits/return'
@@ -2004,6 +2016,7 @@ export interface FileRouteTypes {
     | '/admin_/members/$userId'
     | '/admin_/seo/legacy-redirects'
     | '/admin_/training-providers/$id'
+    | '/admin_/training-providers/reviews'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
     | '/checkout/credits/return'
@@ -2972,6 +2985,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CSlugEnquireRouteImport
       parentRoute: typeof CSlugRoute
     }
+    '/admin_/training-providers/reviews': {
+      id: '/admin_/training-providers/reviews'
+      path: '/reviews'
+      fullPath: '/admin/training-providers/reviews'
+      preLoaderRoute: typeof AdminTrainingProvidersReviewsRouteImport
+      parentRoute: typeof AdminTrainingProvidersRoute
+    }
     '/admin_/training-providers/$id': {
       id: '/admin_/training-providers/$id'
       path: '/$id'
@@ -3601,11 +3621,13 @@ const AdminSeoRouteWithChildren = AdminSeoRoute._addFileChildren(
 
 interface AdminTrainingProvidersRouteChildren {
   AdminTrainingProvidersIdRoute: typeof AdminTrainingProvidersIdRoute
+  AdminTrainingProvidersReviewsRoute: typeof AdminTrainingProvidersReviewsRoute
 }
 
 const AdminTrainingProvidersRouteChildren: AdminTrainingProvidersRouteChildren =
   {
     AdminTrainingProvidersIdRoute: AdminTrainingProvidersIdRoute,
+    AdminTrainingProvidersReviewsRoute: AdminTrainingProvidersReviewsRoute,
   }
 
 const AdminTrainingProvidersRouteWithChildren =
