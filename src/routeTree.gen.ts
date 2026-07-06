@@ -131,6 +131,7 @@ import { Route as ApiPublicSupportContactFormRouteImport } from './routes/api/pu
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/public/ops/alert-dispatch'
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
+import { Route as ApiPublicHooksOnboardingNudgeCronRouteImport } from './routes/api/public/hooks/onboarding-nudge-cron'
 import { Route as ApiPublicCronSeoIndexScanRouteImport } from './routes/api/public/cron/seo-index-scan'
 import { Route as ApiPublicCronPullPosthogDailyRouteImport } from './routes/api/public/cron/pull-posthog-daily'
 import { Route as ApiPublicConsentLogRouteImport } from './routes/api/public/consent/log'
@@ -792,6 +793,12 @@ const ApiPublicHooksSendScheduledCampaignsRoute =
     path: '/api/public/hooks/send-scheduled-campaigns',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksOnboardingNudgeCronRoute =
+  ApiPublicHooksOnboardingNudgeCronRouteImport.update({
+    id: '/api/public/hooks/onboarding-nudge-cron',
+    path: '/api/public/hooks/onboarding-nudge-cron',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronSeoIndexScanRoute =
   ApiPublicCronSeoIndexScanRouteImport.update({
     id: '/api/public/cron/seo-index-scan',
@@ -1149,6 +1156,7 @@ export interface FileRoutesByFullPath {
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
+  '/api/public/hooks/onboarding-nudge-cron': typeof ApiPublicHooksOnboardingNudgeCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1303,6 +1311,7 @@ export interface FileRoutesByTo {
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
+  '/api/public/hooks/onboarding-nudge-cron': typeof ApiPublicHooksOnboardingNudgeCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1466,6 +1475,7 @@ export interface FileRoutesById {
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
+  '/api/public/hooks/onboarding-nudge-cron': typeof ApiPublicHooksOnboardingNudgeCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
   '/api/public/ops/alert-dispatch': typeof ApiPublicOpsAlertDispatchRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -1627,6 +1637,7 @@ export interface FileRouteTypes {
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
     | '/api/public/cron/seo-index-scan'
+    | '/api/public/hooks/onboarding-nudge-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1781,6 +1792,7 @@ export interface FileRouteTypes {
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
     | '/api/public/cron/seo-index-scan'
+    | '/api/public/hooks/onboarding-nudge-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -1943,6 +1955,7 @@ export interface FileRouteTypes {
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
     | '/api/public/cron/seo-index-scan'
+    | '/api/public/hooks/onboarding-nudge-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
     | '/api/public/ops/alert-dispatch'
     | '/api/public/payments/webhook'
@@ -2078,6 +2091,7 @@ export interface RootRouteChildren {
   ApiPublicConsentLogRoute: typeof ApiPublicConsentLogRoute
   ApiPublicCronPullPosthogDailyRoute: typeof ApiPublicCronPullPosthogDailyRoute
   ApiPublicCronSeoIndexScanRoute: typeof ApiPublicCronSeoIndexScanRoute
+  ApiPublicHooksOnboardingNudgeCronRoute: typeof ApiPublicHooksOnboardingNudgeCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
   ApiPublicOpsAlertDispatchRoute: typeof ApiPublicOpsAlertDispatchRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -2947,6 +2961,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendScheduledCampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/onboarding-nudge-cron': {
+      id: '/api/public/hooks/onboarding-nudge-cron'
+      path: '/api/public/hooks/onboarding-nudge-cron'
+      fullPath: '/api/public/hooks/onboarding-nudge-cron'
+      preLoaderRoute: typeof ApiPublicHooksOnboardingNudgeCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/seo-index-scan': {
       id: '/api/public/cron/seo-index-scan'
       path: '/api/public/cron/seo-index-scan'
@@ -3578,6 +3599,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicConsentLogRoute: ApiPublicConsentLogRoute,
   ApiPublicCronPullPosthogDailyRoute: ApiPublicCronPullPosthogDailyRoute,
   ApiPublicCronSeoIndexScanRoute: ApiPublicCronSeoIndexScanRoute,
+  ApiPublicHooksOnboardingNudgeCronRoute:
+    ApiPublicHooksOnboardingNudgeCronRoute,
   ApiPublicHooksSendScheduledCampaignsRoute:
     ApiPublicHooksSendScheduledCampaignsRoute,
   ApiPublicOpsAlertDispatchRoute: ApiPublicOpsAlertDispatchRoute,

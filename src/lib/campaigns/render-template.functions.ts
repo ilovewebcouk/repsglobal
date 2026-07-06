@@ -21,7 +21,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  */
 export const BROADCAST_TEMPLATE_KEYS = [
   "relaunch-announcement",
-  "new-reps-rollout",
 ] as const;
 
 export type BroadcastTemplateKey = (typeof BROADCAST_TEMPLATE_KEYS)[number];
@@ -77,11 +76,5 @@ export const BROADCAST_TEMPLATE_CHOICES: Array<{
     key: "relaunch-announcement",
     label: "Relaunch announcement",
     description: "The new REPS is here — introductory relaunch email.",
-  },
-  {
-    key: "new-reps-rollout",
-    label: "New REPS rollout — log in & unlock website",
-    description:
-      "Prompts members to log in (via forgot-password) and unlock their trainer website.",
   },
 ];
