@@ -37,34 +37,61 @@ export const listPublicProviders = createServerFn({ method: "GET" })
     let qb = supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, full_name, city, tagline, avatar_url, in_person_available, online_available, account_type",
+        "id, slug, city, headline, in_person_available, online_available",
         { count: "exact" },
       )
       .in("id", visibleIds)
       .eq("account_type", "organisation");
 
-    if (data.q) qb = qb.ilike("full_name", `%${data.q}%`);
     if (data.city) qb = qb.ilike("city", `%${data.city}%`);
     if (data.mode === "in_person") qb = qb.eq("in_person_available", true);
     if (data.mode === "online") qb = qb.eq("online_available", true);
     if (data.mode === "blended")
       qb = qb.eq("in_person_available", true).eq("online_available", true);
 
-    qb = qb.order("full_name", { ascending: true }).limit(data.limit ?? 40);
+    qb = qb.limit(data.limit ?? 60);
 
-    const { data: rows, error, count } = await qb;
+    const { data: proRows, error, count } = await qb;
     if (error) throw new Error(error.message);
 
-    const mapped: ProviderCard[] = (rows ?? []).map((r) => ({
-      id: r.id as string,
-      slug: r.slug as string,
-      name: (r.full_name as string | null)?.trim() || "Training Provider",
-      city: (r.city as string | null) ?? null,
-      tagline: (r.tagline as string | null) ?? null,
-      avatar_url: (r.avatar_url as string | null) ?? null,
-      in_person_available: Boolean(r.in_person_available),
-      online_available: Boolean(r.online_available),
-    }));
+    const ids = (proRows ?? []).map((r) => r.id as string);
+    let profilesById: Record<string, { name: string | null; avatar: string | null }> = {};
+    if (ids.length > 0) {
+      const { data: profRows } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, business_name, display_name, avatar_url")
+        .in("id", ids);
+      for (const p of profRows ?? []) {
+        profilesById[p.id as string] = {
+          name:
+            ((p as { business_name?: string | null }).business_name ?? null) ||
+            ((p as { display_name?: string | null }).display_name ?? null) ||
+            ((p as { full_name?: string | null }).full_name ?? null),
+          avatar: (p as { avatar_url?: string | null }).avatar_url ?? null,
+        };
+      }
+    }
 
-    return { rows: mapped, total: count ?? mapped.length };
+    let rows: ProviderCard[] = (proRows ?? []).map((r) => {
+      const prof = profilesById[r.id as string] ?? { name: null, avatar: null };
+      return {
+        id: r.id as string,
+        slug: (r.slug as string | null) ?? "",
+        name: prof.name?.trim() || "Training Provider",
+        city: (r.city as string | null) ?? null,
+        tagline: (r.headline as string | null) ?? null,
+        avatar_url: prof.avatar,
+        in_person_available: Boolean(r.in_person_available),
+        online_available: Boolean(r.online_available),
+      };
+    }).filter((r) => r.slug);
+
+    if (data.q) {
+      const needle = data.q.toLowerCase();
+      rows = rows.filter((r) => r.name.toLowerCase().includes(needle));
+    }
+
+    rows.sort((a, b) => a.name.localeCompare(b.name));
+
+    return { rows, total: count ?? rows.length };
   });
