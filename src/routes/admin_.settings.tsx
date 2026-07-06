@@ -540,4 +540,232 @@ function maskEmail(e: string): string {
   return `${head}@${d}`;
 }
 
+function NewRepsRolloutTestCard() {
+  const run = useServerFn(sendNewRepsRolloutTestEmail);
+  const [email, setEmail] = useState("cruz.pt@icloud.com");
+  const [busy, setBusy] = useState(false);
+
+  async function send() {
+    setBusy(true);
+    try {
+      await run({ data: { recipientEmail: email } });
+      toast.success(`New REPS rollout email queued to ${email}. Should land within a minute.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Send failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <PCard>
+      <h3 className="font-display text-[14px] font-semibold text-white">New REPS rollout — test</h3>
+      <p className="mt-2 text-[12px] text-white/55">
+        Send the "log in &amp; unlock your trainer website" email to a single address to QA before the bulk run.
+      </p>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="mt-3 w-full rounded-[8px] border border-reps-border bg-reps-ink px-3 py-2 text-[13px] text-white outline-none focus:border-reps-orange/60"
+      />
+      <Button size="sm" onClick={send} disabled={busy || !email} className="mt-3">
+        {busy ? "Sending…" : "Send test"}
+      </Button>
+    </PCard>
+  );
+}
+
+function NewRepsRolloutBroadcastCard() {
+  const preview = useServerFn(previewNewRepsRolloutAudience);
+  const broadcast = useServerFn(sendNewRepsRolloutBroadcast);
+  const status = useServerFn(getNewRepsRolloutStatus);
+  const [audience, setAudience] = useState<{
+    total: number;
+    bySource: Record<string, number>;
+    sample: string[];
+  } | null>(null);
+  const [snapshot, setSnapshot] = useState<{
+    total: number;
+    alreadySent: number;
+    remaining: number;
+    lastSentAt: string | null;
+    broadcastTag: string;
+  } | null>(null);
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{
+    total: number;
+    queued: number;
+    sent?: number;
+    alreadySent?: number;
+    skipped: number;
+    failed: number;
+    remaining?: number;
+    paused?: boolean;
+    retryAt?: string | null;
+    pauseReason?: string | null;
+    firstErrors: Array<{ email: string; error: string }>;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    status()
+      .then((s) => { if (!cancelled) setSnapshot(s); })
+      .catch(() => { /* surfaces via refresh button */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function refreshStatus() {
+    setBusy(true);
+    try { setSnapshot(await status()); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Status check failed"); }
+    finally { setBusy(false); }
+  }
+
+  async function runPreview() {
+    setBusy(true);
+    setResult(null);
+    try {
+      const r = await preview();
+      setAudience(r);
+      setConfirm("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Preview failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runBroadcast() {
+    if (!audience) return;
+    setBusy(true);
+    try {
+      const r = await broadcast({ data: { confirmToken: confirm } });
+      setResult(r);
+      if (r.paused) {
+        toast.info(`Sent ${r.sent ?? 0} new emails. ${r.remaining ?? 0} still remaining.`);
+      } else {
+        toast.success(`Sent ${r.queued} of ${r.total}.`);
+      }
+      try { setSnapshot(await status()); } catch { /* ignore */ }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Broadcast failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const expectedToken = audience ? `SEND-${audience.total}` : "";
+  const tokenOk = audience !== null && confirm === expectedToken;
+
+  return (
+    <PCard>
+      <h3 className="font-display text-[14px] font-semibold text-white">New REPS rollout — broadcast</h3>
+      <p className="mt-2 text-[12px] text-white/55">
+        Sends the "log in &amp; unlock your trainer website" email to every member (same audience as relaunch:
+        confirmed accounts + BD-seed members, minus admins, demo and suppressed). Per-recipient idempotency
+        prevents duplicates. Uses its own broadcast tag so it can't collide with the relaunch send.
+      </p>
+
+      {snapshot ? (
+        <div className="mt-3 rounded-[10px] border border-reps-border bg-reps-ink p-3 text-[12px] text-white/85">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <span><strong className="text-white">{snapshot.alreadySent.toLocaleString()}</strong> sent</span>
+            <span className="text-white/55">·</span>
+            <span><strong className={snapshot.remaining > 0 ? "text-amber-200" : "text-emerald-200"}>{snapshot.remaining.toLocaleString()}</strong> remaining</span>
+            <span className="text-white/55">·</span>
+            <span className="text-white/55">{snapshot.total.toLocaleString()} total audience</span>
+          </div>
+          {snapshot.lastSentAt ? (
+            <div className="mt-1 text-white/55">
+              Last send accepted by Mailgun: {new Date(snapshot.lastSentAt).toLocaleString("en-GB")}
+            </div>
+          ) : null}
+          {snapshot.remaining === 0 ? (
+            <div className="mt-2 text-emerald-200">All members have been sent the rollout email.</div>
+          ) : (
+            <div className="mt-2 text-amber-100/90">
+              You can resume sending — the next run will send up to 75 new emails and skip anyone already sent.
+            </div>
+          )}
+          <Button size="sm" variant="ghost" onClick={refreshStatus} disabled={busy} className="mt-2 px-0 text-reps-orange hover:text-reps-orange">
+            Refresh status
+          </Button>
+        </div>
+      ) : null}
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={runPreview} disabled={busy}>
+          {busy && !audience ? "Resolving…" : audience ? "Re-count audience" : "Dry-run — count audience"}
+        </Button>
+        {snapshot && snapshot.remaining > 0 && audience ? (
+          <span className="text-[11px] text-white/55 self-center">
+            Type <code className="text-reps-orange">{expectedToken}</code> below to resume.
+          </span>
+        ) : null}
+      </div>
+
+      {audience ? (
+        <div className="mt-4 space-y-3 rounded-[10px] border border-reps-border bg-reps-ink p-3 text-[12px] text-white/80">
+          <div>
+            <span className="font-semibold text-white">{audience.total.toLocaleString()}</span> recipients
+            <span className="text-white/55">
+              {" "}· {Object.entries(audience.bySource)
+                .map(([k, v]) => `${v} ${k.replace("_", " ")}`)
+                .join(" · ")}
+            </span>
+          </div>
+          <div className="text-white/55">
+            Sample: {audience.sample.map((e) => maskEmail(e)).join(", ") || "—"}
+          </div>
+
+          <div className="border-t border-reps-border pt-3">
+            <label className="block text-[11px] uppercase tracking-[0.06em] text-white/55">
+              To send, type <code className="text-reps-orange">{expectedToken}</code>
+            </label>
+            <input
+              type="text"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder={expectedToken}
+              className="mt-2 w-full rounded-[8px] border border-reps-border bg-reps-panel px-3 py-2 text-[13px] text-white outline-none focus:border-reps-orange/60"
+            />
+            <Button
+              size="sm"
+              onClick={runBroadcast}
+              disabled={busy || !tokenOk}
+              className="mt-3"
+            >
+              {busy ? "Enqueuing…" : `Send to ${audience.total.toLocaleString()} members`}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {result ? (
+        <div className={`mt-3 rounded-[10px] border p-3 text-[12px] ${result.paused ? "border-amber-400/30 bg-amber-500/10 text-amber-100" : "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"}`}>
+          Sent <strong>{result.queued}</strong> of {result.total}
+          {typeof result.sent === "number" ? <> · new this run {result.sent}</> : null}
+          {typeof result.alreadySent === "number" ? <> · already sent {result.alreadySent}</> : null}
+          {typeof result.remaining === "number" ? <> · remaining {result.remaining}</> : null}
+          <> · skipped {result.skipped} · failed {result.failed}.</>
+          {result.pauseReason ? <p className="mt-2">{result.pauseReason}</p> : null}
+          {result.failed > 0 || result.paused ? (
+            <ul className={`mt-2 list-disc pl-4 ${result.paused ? "text-amber-100/80" : "text-emerald-200/80"}`}>
+              {result.firstErrors.map((e) => (
+                <li key={e.email}>
+                  {maskEmail(e.email)} — {e.error}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </PCard>
+  );
+}
+
+
 
