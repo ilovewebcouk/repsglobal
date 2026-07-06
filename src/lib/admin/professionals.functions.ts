@@ -461,7 +461,11 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     // Plan & hasAvatar filters (post-join).
     if (data.filters.plans?.length) {
       const set = new Set(data.filters.plans);
-      rows = rows.filter(r => set.has(r.plan));
+      const wantsTP = set.has('training_provider');
+      rows = rows.filter(r => {
+        if (wantsTP && r.accountType === 'organisation') return true;
+        return set.has(r.plan) && r.accountType !== 'organisation';
+      });
     }
     if (data.filters.hasAvatar === true) rows = rows.filter(r => !!r.avatarUrl);
     if (data.filters.hasAvatar === false) rows = rows.filter(r => !r.avatarUrl);
