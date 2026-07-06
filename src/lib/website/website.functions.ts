@@ -561,8 +561,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
-
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin, account_type, legal_entity_name, staff_count, awarding_bodies",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
