@@ -77,10 +77,4 @@ export const BROADCAST_TEMPLATE_CHOICES: Array<{
     label: "Relaunch announcement",
     description: "The new REPS is here — introductory relaunch email.",
   },
-  {
-    key: "new-reps-rollout",
-    label: "New REPS rollout — log in & unlock website",
-    description:
-      "Prompts members to log in (via forgot-password) and unlock their trainer website.",
-  },
 ];
