@@ -21,7 +21,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  */
 export const BROADCAST_TEMPLATE_KEYS = [
   "relaunch-announcement",
-  "new-reps-rollout",
 ] as const;
 
 export type BroadcastTemplateKey = (typeof BROADCAST_TEMPLATE_KEYS)[number];

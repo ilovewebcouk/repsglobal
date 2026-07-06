@@ -38,7 +38,19 @@ import { template as chargebackResolvedLost } from './chargeback-resolved-lost'
 import { template as memberCancelled } from './member-cancelled'
 import { template as disputeWonResubscribe } from './dispute-won-resubscribe'
 import { template as adminInvite } from './admin-invite'
-import { template as newRepsRollout } from './new-reps-rollout'
+import { template as onboardingLogIn1 } from './onboarding/log-in-1'
+import { template as onboardingLogIn2 } from './onboarding/log-in-2'
+import { template as onboardingLogIn3 } from './onboarding/log-in-3'
+import { template as onboardingLogIn4 } from './onboarding/log-in-4'
+import { template as onboardingLogIn5 } from './onboarding/log-in-5'
+import { template as onboardingVerify1 } from './onboarding/verify-1'
+import { template as onboardingVerify2 } from './onboarding/verify-2'
+import { template as onboardingVerify3 } from './onboarding/verify-3'
+import { template as onboardingVerify4 } from './onboarding/verify-4'
+import { template as onboardingWebsite1 } from './onboarding/website-1'
+import { template as onboardingWebsite2 } from './onboarding/website-2'
+import { template as onboardingWebsite3 } from './onboarding/website-3'
+import { template as onboardingComplete } from './onboarding/complete'
 
 
 
@@ -72,7 +84,19 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'member-cancelled': memberCancelled,
   'dispute-won-resubscribe': disputeWonResubscribe,
   'admin-invite': adminInvite,
-  'new-reps-rollout': newRepsRollout,
+  'onboarding-log-in-1': onboardingLogIn1,
+  'onboarding-log-in-2': onboardingLogIn2,
+  'onboarding-log-in-3': onboardingLogIn3,
+  'onboarding-log-in-4': onboardingLogIn4,
+  'onboarding-log-in-5': onboardingLogIn5,
+  'onboarding-verify-1': onboardingVerify1,
+  'onboarding-verify-2': onboardingVerify2,
+  'onboarding-verify-3': onboardingVerify3,
+  'onboarding-verify-4': onboardingVerify4,
+  'onboarding-website-1': onboardingWebsite1,
+  'onboarding-website-2': onboardingWebsite2,
+  'onboarding-website-3': onboardingWebsite3,
+  'onboarding-complete': onboardingComplete,
 }
 
 
