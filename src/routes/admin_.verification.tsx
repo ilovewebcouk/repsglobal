@@ -318,7 +318,8 @@ function AdminVerificationPage() {
 
       {topTab === "identity" ? (
         <div className="mt-4">
-          <AdminIdentityTab signUrl={signUrl} adminOverride={adminOverrideIdentity} />
+          <AdminIdentityTab signUrl={signUrl} />
+
         </div>
       ) : topTab === "insurance" ? (
         <div className="mt-4">
