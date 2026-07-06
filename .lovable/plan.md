@@ -1,141 +1,99 @@
+# Unify Training Providers into the Professionals model
 
-# Training-provider variant of `/c/$slug`
+Blast radius is small (~6 code files reference the org/provider tables, plus 9 provider routes). No live data. Clean slate is the right call.
 
-Reuse the entire coach-website shell (dark theme, REPs orange, Space Grotesk/DM Sans, sticky sub-nav, radius map, hero overlay, verified card pattern, section rhythm) but swap the sections that don't apply to a training organisation. Individual coach page stays completely untouched.
+## The core move
 
-## The move
-
-At the top of `src/routes/c.$slug.index.tsx`, branch on `account_type`:
-
-```text
-loader → getPublicProfileBySlug({ slug })
-component:
-  if profile.account_type === 'organisation'  → <CoachWebsiteOrg data={...} />
-  else                                        → existing CoachWebsite (unchanged)
-```
-
-Two components, one route, one loader, one URL space, one SEO surface. The locked individual mock stays byte-for-byte identical.
-
-## Section map — org variant
-
-Same full-width band rhythm as the coach page. Sticky sub-nav labels change.
+A training provider becomes **a professional with `account_type = 'organisation'`**. Everything reuses the professional shell.
 
 ```text
-1. Hero              — Org logo (square, not circular) + name + "Training provider" chip
-                       + city + awarding-body chips + staff count + Verified card
-                       Primary CTA: "See upcoming courses"  Secondary: "Talk to us"
-                       Voice: "We train the next generation of coaches in Manchester."
-2. Sub-nav (sticky)  — Courses · Accreditation · Tutors · Outcomes · About · FAQ
-3. Courses           — Grid of course cards from `services` where service_kind='course'.
-                       Each card: qualification level chip, title, awarding body, next
-                       cohort date, seats left, price, "Enquire" CTA → /c/$slug/enquire
-                       ?course=<id>. "Most enrolled" glow badge on flagship course
-                       (mirrors "Most popular" treatment on coach services).
-4. Accreditation     — Awarding-body row (logos or name chips from `awarding_bodies[]`)
-                       + Ofqual-regulated line + company reg number + "Verified by REPS"
-                       trust panel (same visual as coach's verified card, org-worded).
-                       NEVER name CIMSPA — per mem://content/banned-orgs.
-5. How we teach      — Org replacement for "The Foundation Method". 3-column: delivery
-                       format (in-person / blended / online), assessment approach,
-                       tutor-to-learner ratio. Institutional voice.
-6. Tutors            — Staff strip. Named principal tutors with headshots + credentials.
-                       (Phase 2 wires real data; Phase 1 pulls from `staff_count` +
-                       placeholder tutor list until we add a `professional_members`
-                       table.)
-7. Outcomes          — Replaces "Real numbers from real people". Alumni pass rate,
-                       total qualified, cohorts run, employer partners. Neutral stats,
-                       no first-person testimonial voice.
-8. Alumni voices     — Replaces "In their words". Third-person quote treatment
-                       ("Ella J., Level 3 PT, class of 2025") — same card shape as
-                       coach testimonials, different attribution style.
-9. Verified by REPS  — Existing verified trust band, org-worded.
-10. FAQ              — Org-specific questions (funding, entry requirements, tutor
-                        contact time, assessment schedule). Reuses `MarketingFaq`.
-11. FinalCta         — "Ready to qualify?" → primary "See next cohort", secondary
-                        "Talk to admissions".
+professionals
+├── account_type: 'individual'  →  personal trainer, coach, nutritionist    (Core / Pro)
+└── account_type: 'organisation' → training provider, academy, gym group    (Studio)
 ```
 
-## What we drop from the coach page
+One entity, one table, one profile template, one dashboard, one admin workbench, one review system, one enquire flow, one search index.
 
-- "I take 20 clients. I write 20 programmes." personal-throughput block
-- "Coaching reach" (online + in-person split panel)
-- "In-person venues" (gyms list) — replaced by campus/venue if org has one
-- First-person "About me" — replaced by institutional "About the academy"
-- Any language that presumes a single practitioner ("my method", "my journey")
+## Schema changes (single migration)
 
-## What we ADD to the schema surface only
+**Extend `professionals`:**
+- `account_type text not null default 'individual'` — `'individual' | 'organisation'`
+- `legal_entity_name text` — company name (orgs only)
+- `company_registration text` — Companies House / equivalent (orgs only)
+- `staff_count int` — number of tutors/trainers (orgs only)
+- `awarding_bodies text[]` — accreditation partners (orgs only)
+- Existing `display_name`, `bio`, `slug`, `avatar_url`, `verification_status`, `location`, `services` all reused.
 
-No new tables. All copy comes from fields already extended on `professionals`:
-- `account_type`, `legal_entity_name`, `company_registration`, `staff_count`,
-  `awarding_bodies[]`
-- `services.service_kind`, `starts_at`, `seats_total`, `seats_taken`,
-  `qualification_level`, `awarding_body`
+**Extend `services`** to cover courses:
+- `service_kind text default 'session'` — `'session' | 'package' | 'course' | 'programme'`
+- `starts_at timestamptz`, `ends_at timestamptz`, `seats_total int`, `seats_taken int`, `venue text`, `qualification_level text`, `awarding_body text` (nullable, only used by course-kind services)
 
-If a field is missing on the demo orgs, seed it in a follow-up migration. Do **not** add real course dates / seats now — Phase 2.1 will wire booking.
+**Drop entirely:**
+- `organisations`
+- `organisation_users` → replaced by extending `professional_staff` (or a new `professional_members` join for org accounts)
+- `provider_reviews` → merge into `reviews` with a `subject_kind` if needed (likely not — `reviews.professional_id` already works)
+- `provider_review_requests` → merge into `review_requests`
+- `provider_review_evidence`, `provider_review_flags` → merge into equivalents on `reviews`
 
-## Enquire flow
+**Auth-user link:** unchanged. Owner of an organisation account is still one `auth.users` row pointing at one `professionals` row; add a `professional_members` table later only if we need multi-user access to a single org account.
 
-Reuse `/c/$slug/enquire` unchanged. Add a single optional query param `?course=<id>`
-that pre-selects a course in the form's "What are you enquiring about?" field. If
-`account_type === 'organisation'`, the form's copy swaps: "Ask about a course /
-book a cohort call / enquire about bespoke training." Same shadcn primitives,
-same radius map, same submit path.
+## Route changes
 
-## SEO / head
+**Delete:**
+- `providers.$slug.tsx` / `.index.tsx` / `.review.tsx`
+- `verify.provider.$membershipId.tsx`
+- `reviews.provider.verify.$token.tsx`
+- `admin_.training-providers.*` (4 files)
 
-- `<title>`: `{legal_entity_name || display_name} — Level 2–4 training in {city} | REPS`
-  (drop the "personal-trainer" fallback which is currently showing on Northline)
-- Description: `"Ofqual-regulated fitness qualifications delivered by {name} in {city}. Awarding bodies: {awarding_bodies.join(', ')}. Verified on REPS."`
-- `og:image`: same coach-page OG treatment, org logo composited instead of headshot
-- JSON-LD: `EducationalOrganization` schema (not `Person`)
+**Reuse (no new routes needed):**
+- Public profile: `/c/$slug` — renders orgs and individuals from the same template, with an `account_type`-aware header (org logo + "Training provider" label, staff count, awarding bodies) and services block that switches between "Coaching packages" and "Upcoming courses" based on `service_kind`.
+- Admin: `/admin/professionals/$id` — Member 360 workbench already handles both.
+- Reviews: existing `/r/$token` + reviews tab already work per professional.
+- Enquire: `/pro/$slug/enquire` — same form, org-aware copy.
+- Directory: `/find` returns both, with an `account_type` facet ("Coaches" / "Training providers" / "All").
 
-## Files touched
+**Optional vanity redirect:** `/providers/:slug → /c/:slug` (301) via `legacy_redirects` so any external links keep working.
 
-```text
-src/routes/c.$slug.index.tsx                              — add account_type branch
-src/components/pro-v2/CoachWebsiteOrg.tsx                 — new, org variant shell
-src/components/pro-v2/org/OrgHero.tsx                     — new
-src/components/pro-v2/org/CourseGrid.tsx                  — new
-src/components/pro-v2/org/AccreditationBand.tsx           — new
-src/components/pro-v2/org/HowWeTeach.tsx                  — new
-src/components/pro-v2/org/TutorsStrip.tsx                 — new
-src/components/pro-v2/org/OutcomesStats.tsx               — new
-src/components/pro-v2/org/AlumniVoices.tsx                — new
-src/components/pro-v2/org/OrgFaq.tsx                      — thin wrapper on MarketingFaq
-src/lib/profile/public-profile.functions.ts               — select account_type,
-                                                             legal_entity_name,
-                                                             company_registration,
-                                                             staff_count,
-                                                             awarding_bodies, and
-                                                             services.service_kind etc
-src/routes/c.$slug.enquire.tsx                            — read ?course= param,
-                                                             swap org-mode copy when
-                                                             account_type='organisation'
-supabase/migrations/<ts>_seed_org_courses.sql             — flesh out demo orgs with
-                                                             realistic course rows
-                                                             (dates, seats, awarding
-                                                             body, price) so the
-                                                             template has real data
-                                                             to render against
-```
+## Code changes
 
-## Locked constraints applied
+- Delete `src/lib/training-providers.functions.ts` — its list/detail/review functions collapse into existing `professionals.functions.ts` and `reviews.functions.ts`.
+- Update `/c/$slug` component to branch on `account_type` for: header labels, verification chips (individual = ID+insurance+quals; org = company reg + awarding-body accreditation), services section title, "About" copy.
+- Update `/find` filters, city pages, profession pages to include org accounts under the right specialism/category.
+- Update `src/lib/billing.ts` — Studio £149 becomes the tier gate for `account_type = 'organisation'` at signup.
+- Update `src/components/dashboard/nav-data.ts` — remove standalone "Training providers" admin section; add an "Account type" filter on `/admin/professionals`.
+- Update nav-data.ts pricing/marketing to describe Studio as "for training providers, gyms, academies".
 
-- Dark shell + REPs orange only (no navy variant, no secondary accent hue)
-- Space Grotesk display / DM Sans body — same as coach page
-- Radius map: pill / 22 / 18 / 16 / 12 / 10 — never `rounded-xl/2xl/3xl`
-- Emerald only for status semantics (verified, seats-remaining chip if we add one)
-- Institutional "we" voice throughout — no "I"
-- No booking commission language, no "flat plan", no CIMSPA name
-- HeroOverlay primitive for hero wash — not hand-rolled
+## Signup flow
 
-## Out of scope (this pass)
+Signup picks account type up front:
+- **Individual** → Core (£34/yr) or Pro (£59/mo) → normal pro onboarding.
+- **Organisation** → Studio (£149/mo) → org onboarding (legal name, company reg, awarding bodies, staff invites).
 
-- Real seat management / booking (Phase 2.1)
-- Multi-user org logins / tutor-authored pages (`professional_members`)
-- OG image composite generator for orgs (use existing coach OG for now, fix in polish pass)
-- Editorial serif or academy-navy variants — rejected in taste pin
+Same auth, same tables, different fields collected.
 
-## Fallback if the variant reads wrong
+## Migration sequence (one atomic push)
 
-If, after seeing it built, the org variant feels like it's diverged too far from the register's visual family, the escape hatch is to fold `CoachWebsiteOrg` back into the individual template as an `account_type`-aware branch inside a single file. Keeping it as a sibling component now makes that reversal a 20-line diff, not a rebuild.
+1. Write the SQL migration: extend `professionals` + `services`, drop the 6 provider/org tables, add redirect rows.
+2. Rebuild `/c/$slug` to render both account types.
+3. Delete the 9 provider routes and `training-providers.functions.ts`.
+4. Add `account_type` filter/facet to `/find` + `/admin/professionals`.
+5. Update Studio tier wiring in `billing.ts` and signup.
+6. Optional: seed 2–3 demo org professionals so we can eyeball the unified template.
+
+## What we keep from the current provider work
+
+Nothing structural, but the *content model* we defined (awarding bodies, courses, tutor count, verification steps for orgs) transfers directly into the new columns on `professionals`/`services`. Not wasted.
+
+## What this fixes
+
+- One admin workbench, not two.
+- One reviews module, not two.
+- One directory, not two.
+- Search returns "Level 3 PT course in Manchester" and "Manchester-based Level 3 PT" from the same query.
+- Studio becomes a real tier, not a separate product line.
+
+## Out of scope for this pass
+
+- Multi-user org accounts (staff logins under one org). Add `professional_members` later when a real customer asks.
+- Course booking with seat management. `services.seats_total/taken` columns land now; the booking flow ships in Phase 2.1.
+- Migrating the old admin invite tooling — will refresh in the same pass since org invites now go through the same pipeline as pro invites.

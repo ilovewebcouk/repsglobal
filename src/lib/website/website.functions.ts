@@ -61,13 +61,6 @@ export type WebsiteDTO = {
   coaching_since_year: number | null;
   // Subscription tier of the pro (so callers can gate Pro-only surfaces).
   tier: "verified" | "pro" | "studio" | null;
-  // Individual coach vs training-organisation account. Drives the public
-  // template branch in /c/$slug — orgs render CoachWebsiteOrg with course-led
-  // sections instead of the first-person coach template.
-  account_type: "individual" | "organisation";
-  legal_entity_name: string | null;
-  staff_count: number | null;
-  awarding_bodies: string[];
   // Trust block (public-safe summary).
   trust: {
     isVerified: boolean;
@@ -422,16 +415,6 @@ export type ServiceDTO = {
   bullets: string[];
   cta_label: string | null;
   image_url: string | null;
-  // Course fields (organisation account_type). All optional / null for
-  // individual coach services (which are `service_kind = 'session'|'package'`).
-  service_kind: "session" | "package" | "course" | "programme" | null;
-  starts_at: string | null;
-  ends_at: string | null;
-  seats_total: number | null;
-  seats_taken: number | null;
-  venue: string | null;
-  qualification_level: string | null;
-  awarding_body: string | null;
 };
 
 type ServiceRow = ServiceDTO;
@@ -561,7 +544,8 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin, account_type, legal_entity_name, staff_count, awarding_bodies",
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
@@ -628,7 +612,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("services")
           .select(
-            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url, service_kind, starts_at, ends_at, seats_total, seats_taken, venue, qualification_level, awarding_body",
+            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url",
           )
           .eq("professional_id", pro.id)
           .eq("is_published", true)
@@ -720,18 +704,6 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
           tier,
-          account_type:
-            ((pro as { account_type?: string | null }).account_type === "organisation"
-              ? "organisation"
-              : "individual") as "individual" | "organisation",
-          legal_entity_name:
-            (pro as { legal_entity_name?: string | null }).legal_entity_name ?? null,
-          staff_count: (pro as { staff_count?: number | null }).staff_count ?? null,
-          awarding_bodies: Array.isArray(
-            (pro as { awarding_bodies?: string[] | null }).awarding_bodies,
-          )
-            ? ((pro as { awarding_bodies?: string[] | null }).awarding_bodies as string[])
-            : [],
           trust,
           socials: buildSocials(pro as any),
         },
@@ -793,7 +765,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin, account_type, legal_entity_name, staff_count, awarding_bodies",
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
       )
           .eq("id", userId)
           .maybeSingle(),
@@ -808,7 +780,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("services")
           .select(
-            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url, service_kind, starts_at, ends_at, seats_total, seats_taken, venue, qualification_level, awarding_body",
+            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url",
           )
           .eq("professional_id", userId)
           .order("sort_order", { ascending: true }),
@@ -886,18 +858,6 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
           tier,
-          account_type:
-            ((pro as { account_type?: string | null }).account_type === "organisation"
-              ? "organisation"
-              : "individual") as "individual" | "organisation",
-          legal_entity_name:
-            (pro as { legal_entity_name?: string | null }).legal_entity_name ?? null,
-          staff_count: (pro as { staff_count?: number | null }).staff_count ?? null,
-          awarding_bodies: Array.isArray(
-            (pro as { awarding_bodies?: string[] | null }).awarding_bodies,
-          )
-            ? ((pro as { awarding_bodies?: string[] | null }).awarding_bodies as string[])
-            : [],
           trust,
           socials: buildSocials(pro as any),
         }

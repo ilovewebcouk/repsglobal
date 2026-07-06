@@ -54,12 +54,6 @@ import { Monogram } from "@/components/directory/Monogram";
 /* ------------------------------------------------------------------ */
 
 export const Route = createFileRoute("/c/$slug/enquire")({
-  // Optional `?course=<id>` pre-selects an org training-provider course in
-  // the enquiry form (used by CoachWebsiteOrg course cards). Ignored on
-  // individual coach enquiries.
-  validateSearch: (search: Record<string, unknown>) => ({
-    course: typeof search.course === "string" ? search.course : undefined,
-  }),
   head: ({ params }) => ({
     meta: [
       { title: `Send an enquiry — REPS` },
