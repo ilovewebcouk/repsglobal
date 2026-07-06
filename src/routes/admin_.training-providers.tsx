@@ -90,20 +90,29 @@ function AdminTrainingProvidersPage() {
       title="Training providers"
       subtitle="REPs-accredited training organisations, their accredited courses and reviews."
       actions={
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="rounded-[10px] bg-reps-orange hover:bg-reps-orange-hover text-white shadow-none">
-              <Plus className="mr-1.5 h-4 w-4" /> Add provider
-            </Button>
-          </DialogTrigger>
-          <CreateFromStripeDialog
-            onDone={() => {
-              qc.invalidateQueries({ queryKey: ["admin", "training-providers"] });
-              setOpen(false);
-            }}
-          />
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/admin/training-providers/reviews"
+            className="rounded-[10px] border border-white/15 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 px-3 py-2 text-sm inline-flex items-center gap-1.5"
+          >
+            <Star className="h-4 w-4" /> Reviews queue
+          </Link>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="rounded-[10px] bg-reps-orange hover:bg-reps-orange-hover text-white shadow-none">
+                <Plus className="mr-1.5 h-4 w-4" /> Add provider
+              </Button>
+            </DialogTrigger>
+            <CreateFromStripeDialog
+              onDone={() => {
+                qc.invalidateQueries({ queryKey: ["admin", "training-providers"] });
+                setOpen(false);
+              }}
+            />
+          </Dialog>
+        </div>
       }
+
     >
       <div className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
