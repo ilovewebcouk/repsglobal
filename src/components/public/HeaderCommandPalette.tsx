@@ -39,7 +39,13 @@ export function HeaderCommandPalette({
             onSelect={() => go(() => navigate({ to: "/find-a-professional" }))}
           >
             <Search />
-            <span>Browse all professionals</span>
+            <span>Find a coach</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => go(() => navigate({ to: "/find-a-training-provider" }))}
+          >
+            <Search />
+            <span>Find a training provider</span>
           </CommandItem>
           <CommandItem onSelect={() => go(() => navigate({ to: "/resources" }))}>
             <BookOpen />
