@@ -797,8 +797,8 @@ function ProRow({ row }: { row: AdminProRow }) {
             Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
           </span>
         ) : (
-          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.plan)}`}>
-            {PLAN_LABEL[row.plan]}
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.accountType === 'organisation' ? 'training_provider' : row.plan)}`}>
+            {row.accountType === 'organisation' ? PLAN_LABEL.training_provider : PLAN_LABEL[row.plan]}
           </span>
         )}
       </td>
