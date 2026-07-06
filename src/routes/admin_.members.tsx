@@ -200,15 +200,16 @@ function billingClass(b: Exclude<AdminProRow["billingState"], "ok">) {
 }
 
 
-const PLAN_LABEL: Record<AdminProRow["plan"], string> = {
-  free: "Free", verified: "Core", pro: "Pro", studio: "Studio",
+const PLAN_LABEL: Record<AdminProRow["plan"] | 'training_provider', string> = {
+  free: "Free", verified: "Core", pro: "Pro", studio: "Studio", training_provider: "Training Provider",
 };
 
-function planClass(p: AdminProRow["plan"]) {
+function planClass(p: AdminProRow["plan"] | 'training_provider') {
   switch (p) {
     case "verified": return "bg-emerald-500/15 text-emerald-300";
     case "pro":      return "bg-reps-orange-soft text-reps-orange";
     case "studio":   return "bg-violet-500/15 text-violet-300";
+    case "training_provider": return "bg-sky-500/15 text-sky-300";
     case "free":     return "bg-white/10 text-white/65";
   }
 }
