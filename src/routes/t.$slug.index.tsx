@@ -323,7 +323,7 @@ function ProviderProfilePage() {
               <div className="mt-4 space-y-3 text-[14px] leading-[1.65] text-black/72">
                 {(sf.about?.split(/\n\n+/).filter(Boolean) ?? [
                   `${providerName} is a REPS Verified training provider. Full provider profile — including course catalogue, tutors and accreditation — will appear here once the provider completes onboarding.`,
-                ]).map((p, i) => (
+                ]).map((p: string, i: number) => (
                   <p key={i}>{p}</p>
                 ))}
               </div>
