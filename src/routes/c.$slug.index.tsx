@@ -50,6 +50,7 @@ import proSophie from "@/assets/pro-sophie.jpg";
 import proDaniel from "@/assets/pro-daniel.jpg";
 import proLaura from "@/assets/pro-laura.jpg";
 import coachJamesCoaching from "@/assets/coach-james-coaching.jpg";
+import CoachWebsiteOrg from "@/components/pro-v2/CoachWebsiteOrg";
 
 /* ------------------------------------------------------------------ */
 /* Mock data                                                          */
