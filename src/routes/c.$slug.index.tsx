@@ -828,17 +828,19 @@ function ChromeBar({ coach }: { coach: Coach }) {
           <span className="text-[13px] font-semibold text-reps-text">{coach.name}</span>
         </Link>
         <div className="hidden items-center gap-4 md:flex">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
-                <BadgeCheck className="h-3 w-3" />
-                Verified on REPS
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              ID, insurance and qualifications independently verified by REPS.
-            </TooltipContent>
-          </Tooltip>
+          {coach.trust?.isVerified ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-green/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-green ring-1 ring-reps-green/30">
+                  <BadgeCheck className="h-3 w-3" />
+                  Verified on REPS
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                ID, insurance and qualifications independently verified by REPS.
+              </TooltipContent>
+            </Tooltip>
+          ) : null}
           <Link
             to="/auth"
             className="text-[13px] font-medium text-reps-muted transition-colors hover:text-reps-text"
@@ -846,6 +848,7 @@ function ChromeBar({ coach }: { coach: Coach }) {
             Client login
           </Link>
         </div>
+
       </div>
     </header>
   );
