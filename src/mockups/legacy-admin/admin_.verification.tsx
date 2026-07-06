@@ -45,10 +45,10 @@ import {
   revokeQualification,
   sendVerificationReminder,
 } from "@/lib/verification/verification.functions";
-import {
-  listIdentityChecks,
-  adminOverrideIdentity,
-} from "@/lib/verification/identity.functions";
+import { listIdentityChecks } from "@/lib/verification/identity.functions";
+// Legacy mockup — Stripe Identity is now source of truth; manual override retired.
+const adminOverrideIdentity = (() => { throw new Error("Manual identity override is retired"); }) as unknown as ((args: { data: { identity_id: string; decision: string; reason: string } }) => Promise<{ ok: true }>);
+
 import { getDocSignedUrl } from "@/lib/verification/insurance.functions";
 import { runCrossChecks, evaluateGates, type CheckStatus } from "@/lib/verification/cross-checks";
 import { buildAwardingBodyVerifyLinks } from "@/lib/verification/awarding-body-verify";
