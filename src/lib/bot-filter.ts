@@ -8,7 +8,7 @@ import { createMiddleware } from "@tanstack/react-start";
  *   2. Block obvious scraper / abusive UAs with a cacheable 403.
  *   3. On marketing routes only, block high-abuse countries (CN, RU, KP)
  *      that aren't good bots. Auth, dashboard, API, Stripe, /lovable
- *      and webhook paths are always exempt.
+ *      MCP/OAuth discovery and webhook paths are always exempt.
  *   4. Per-IP rate limit on heavy marketing routes (in-memory, per
  *      worker isolate — not a true distributed limit, but enough to
  *      break a single-IP scraper).
@@ -81,6 +81,9 @@ const HIGH_ABUSE_COUNTRIES = new Set(["CN", "RU", "KP"]);
 const EXEMPT_PATH_PREFIXES = [
   "/api/",
   "/lovable/",
+  "/.lovable/oauth/",
+  "/.mcp/",
+  "/.well-known/oauth-protected-resource",
   "/auth",
   "/dashboard",
   "/admin",
@@ -92,6 +95,7 @@ const EXEMPT_PATH_PREFIXES = [
   "/sitemap",
   "/robots",
   "/llms",
+  "/mcp",
 ];
 
 // Marketing surfaces that the scraper farm targets. Geo + rate limit
