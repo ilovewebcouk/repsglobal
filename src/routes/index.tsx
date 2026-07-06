@@ -10,7 +10,6 @@ import {
   ArrowRight,
   Award,
   Calendar,
-  ChevronLeft,
   ChevronRight,
   Dumbbell,
   Globe,
@@ -190,8 +189,8 @@ function rowToNewestCoach(r: NewestCoachRow): NewestCoach {
 
 function HomeV2() {
   const { data: newestResult } = useQuery({
-    queryKey: ["home-newest-coaches"],
-    queryFn: () => getNewestCoaches({ data: { limit: 4 } }),
+    queryKey: ["home-newest-coaches", 16],
+    queryFn: () => getNewestCoaches({ data: { limit: 16 } }),
     staleTime: 5 * 60_000,
   });
   const newestCoaches: NewestCoach[] = (newestResult?.pros ?? []).map(rowToNewestCoach);
@@ -309,30 +308,18 @@ function HomeV2() {
                 Newest coaches on REPS
               </h2>
             </div>
-            <div className="flex items-center gap-4">
-              <Link
-                to="/find-a-professional"
-                search={{ page: 1, sort: "nearest" }}
-                className="text-[14px] font-medium text-reps-charcoal underline-offset-4 hover:underline"
-              >
-                View all
-              </Link>
-              <div className="hidden gap-2 sm:flex">
-                <button type="button" aria-label="Previous" className="flex h-9 w-9 items-center justify-center rounded-full border border-reps-stone bg-reps-ivory text-reps-charcoal shadow-none transition-colors hover:bg-reps-warm-white">
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button type="button" aria-label="Next" className="flex h-9 w-9 items-center justify-center rounded-full border border-reps-stone bg-reps-ivory text-reps-charcoal shadow-none transition-colors hover:bg-reps-warm-white">
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+            <Link
+              to="/find-a-professional"
+              search={{ page: 1, sort: "nearest" }}
+              className="text-[14px] font-medium text-reps-charcoal underline-offset-4 hover:underline"
+            >
+              View all
+            </Link>
           </div>
 
-          <div className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             {newestCoaches.map((pro) => (
-              <div key={pro.slug} className="w-[78%] shrink-0 snap-center sm:w-auto">
-                <NewestCoachCard pro={pro} />
-              </div>
+              <NewestCoachCard key={pro.slug} pro={pro} />
             ))}
           </div>
 

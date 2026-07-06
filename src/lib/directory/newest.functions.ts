@@ -11,7 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const InputSchema = z.object({
-  limit: z.number().int().min(1).max(24).default(4),
+  limit: z.number().int().min(1).max(24).default(16),
 });
 
 export type NewestCoachRow = {
@@ -46,7 +46,7 @@ export const getNewestCoaches = createServerFn({ method: "GET" })
       .or("account_type.is.null,account_type.eq.individual")
       .not("slug", "is", null)
       .order("created_at", { ascending: false, nullsFirst: false })
-      .limit(60);
+      .limit(120);
 
     if (error || !prosRaw || prosRaw.length === 0) return { pros: [] };
 
