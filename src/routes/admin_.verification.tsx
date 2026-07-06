@@ -1239,9 +1239,8 @@ function AdminIdentityTab({ signUrl }: { signUrl: unknown }) {
         </div>
       </div>
 
-      <p className="mt-3 rounded-[8px] border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/55">
-        Stripe Identity manages every outcome automatically — this view is read-only. Open a row in Stripe to inspect the check.
-      </p>
+
+
 
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-left text-[12px]">
