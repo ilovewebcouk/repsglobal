@@ -43,6 +43,7 @@ import { useAdminVerificationPending } from "@/hooks/useAdminVerificationPending
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getTrustState } from "@/lib/verification/trust.functions";
+import { getMyAccountType } from "@/lib/website/account-type.functions";
 import { getEnquiryStats } from "@/lib/enquiries/enquiries.functions";
 import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
 import { initialsFromName } from "@/lib/initials";
@@ -283,9 +284,22 @@ function useIsFullyVerified(): { ready: boolean; verified: boolean } {
   return { ready: !isLoading, verified: (data?.completedCount ?? 0) === 3 };
 }
 
+function useIsOrganisation(): boolean {
+  const { user } = useSessionUser();
+  const fetchAcctType = useServerFn(getMyAccountType);
+  const { data } = useQuery({
+    queryKey: ["my-account-type"],
+    queryFn: () => fetchAcctType(),
+    staleTime: 5 * 60_000,
+    enabled: !!user,
+  });
+  return data?.accountType === "organisation";
+}
+
 function NavSectionGroup({ group, active }: { group: NavGroup; active: DashboardActive }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { ready, verified } = useIsFullyVerified();
+  const isOrganisation = useIsOrganisation();
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
@@ -298,10 +312,11 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
             // guarantees every `active` value corresponds to a nav item).
             const isActive = pathname === item.to || item.label === active;
 
-            // Website is gated behind the 3-pillar trust gate. Until we know
-            // the trust state, render normally — flipping to locked after
-            // hydration is fine and avoids a flash of "locked" for verified pros.
-            if (item.label === "Website" && ready && !verified) {
+            // Website is gated behind the 3-pillar trust gate for individual
+            // pros. Training providers (account_type = 'organisation') get
+            // Website unlocked by default — their website is part of the
+            // provider directory offering, not a Verified-tier reward.
+            if (item.label === "Website" && ready && !verified && !isOrganisation) {
               return (
                 <WebsiteLockedMenuItem
                   key={`${group.title}:${item.label}`}
@@ -310,6 +325,7 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
                 />
               );
             }
+
 
             const Icon = item.icon;
             const badge = <ItemBadge item={item} />;

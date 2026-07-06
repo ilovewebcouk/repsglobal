@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Lightweight lookup of a professional's account_type by slug.
@@ -18,3 +19,21 @@ export const getAccountTypeBySlug = createServerFn({ method: "GET" })
     if (error) throw error;
     return { accountType: (row?.account_type as string | null) ?? null };
   });
+
+/**
+ * Current user's account_type. Used by the dashboard sidebar to unlock
+ * organisation-only features (e.g. the training-provider website editor
+ * is not gated behind the 3-pillar trust flow).
+ */
+export const getMyAccountType = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("professionals")
+      .select("account_type")
+      .eq("id", context.userId)
+      .maybeSingle();
+    if (error) throw error;
+    return { accountType: (data?.account_type as string | null) ?? null };
+  });
+
