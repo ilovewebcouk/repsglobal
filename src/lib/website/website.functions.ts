@@ -808,7 +808,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("services")
           .select(
-            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url",
+            "id, professional_id, title, description, price_pence, price_label, price_unit, duration_minutes, mode, sort_order, is_published, is_featured, bullets, cta_label, image_url, service_kind, starts_at, ends_at, seats_total, seats_taken, venue, qualification_level, awarding_body",
           )
           .eq("professional_id", userId)
           .order("sort_order", { ascending: true }),
