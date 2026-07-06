@@ -527,8 +527,8 @@ function BillingTab({ data }: { data: SettingsBundle }) {
         </Row>
 
         <Row
-          label="Card & invoices"
-          hint="Update your card, view receipts, or cancel — all in our secure billing portal."
+          label="Card, invoices & cancellation"
+          hint="Opens Stripe, our secure billing provider, in a new tab. Update your card, download receipts, or cancel your membership from there."
         >
           <ManageBillingButton
             label="Open billing portal"
@@ -536,6 +536,15 @@ function BillingTab({ data }: { data: SettingsBundle }) {
             className="inline-flex h-9 shrink-0 items-center rounded-[10px] border border-reps-border bg-reps-panel px-3 text-[12px] font-semibold text-white/80 hover:bg-reps-panel hover:text-white"
           />
         </Row>
+
+        {sub.tier !== "free" ? (
+          <Row
+            label="Cancelling your membership"
+            hint="Cancellations take effect immediately — your profile is unpublished, your account is closed, and any remaining time on the current billing period is not refunded. Cancel from the billing portal above."
+          >
+            <span className="text-[12px] text-white/50">Immediate & non-refundable</span>
+          </Row>
+        ) : null}
 
         {sub.tier !== "free" ? null : (
           <Row label="Get listed">
