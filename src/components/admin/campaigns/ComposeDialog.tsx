@@ -496,6 +496,18 @@ export function ComposeDialog({
               }}
             />
 
+            <TemplateLoader
+              onLoaded={(t) => {
+                setSubject(t.subject);
+                setBody(t.html);
+                setFormat("html");
+                setArticleDrafts(null);
+                toast.success(`Loaded "${t.displayName}"`);
+              }}
+            />
+
+
+
 
             <Field label="Subject">
               <Input
