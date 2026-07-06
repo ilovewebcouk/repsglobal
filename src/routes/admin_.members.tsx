@@ -755,7 +755,7 @@ function InviteButton() {
 
 // ---------- Row ----------
 
-function ProRow({ row }: { row: AdminProRow }) {
+function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const startFn = useServerFn(startImpersonation);
