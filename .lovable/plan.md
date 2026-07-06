@@ -1,60 +1,51 @@
-# Nav restructure + provider directory + review button
+# Provider hero: cover image + logo badge
 
-## 1. Top nav (PublicHeader)
+## What changes
+On `/t/$slug` (`src/routes/t.$slug.index.tsx`), the square media slot next to the H1 becomes a **cover photo with the provider's logo overlaid as a badge** — instead of a lonely logo on a white square.
 
-New left → right order:
+Ratio stays the same (aspect-square, `rounded-[18px]`, 280px column at md+) so the page layout doesn't shift.
 
-1. **Find a coach** → `/find-a-professional` (plain link, no mega-menu)
-2. **Find a training provider** → `/find-a-training-provider` (plain link)
-3. **For professionals** → `/for-professionals` (unchanged)
-4. **Resources** → `/resources` (unchanged)
-5. **About** → `/about` (unchanged)
+## Visual spec
 
-Changes:
-- Retire the "Find a professional" mega-menu (goals / professions / cities columns) in favour of two direct links. The mega-menu content is preserved on the `/find-a-professional` page itself, so nothing is lost.
-- Update `HeaderCommandPalette` "Quick actions" to list both directories.
-- Update `PublicFooter` "Discover" column to match.
-- Mobile sheet: same two entries at the top of the discovery group.
+```text
+┌──────────────────────┐
+│                      │  ← cover image (object-cover, full bleed)
+│                      │
+│                      │
+│  ┌──────┐            │  ← logo badge, bottom-left
+│  │ LOGO │            │     56×56, white card, rounded-[12px],
+│  └──────┘            │     border border-black/8, shadow-sm,
+└──────────────────────┘     inner p-2, object-contain, m-3
+```
 
-## 2. `/find-a-training-provider` route (new)
+- Cover: `object-cover`, subtle bottom-to-top black/20 → transparent gradient so the badge always reads.
+- Logo badge: white rounded card, 56–64px, `object-contain` inside, `p-2`, bottom-left corner with `m-3`.
+- Fallback (no cover): soft branded gradient panel (`bg-gradient-to-br from-reps-warm-white to-[#efece4]`) with the logo centred at ~35% size. No more bare `Building2` icon on a white square.
+- Fallback (no logo either): keep the current `Building2` icon.
 
-Mirror the coach directory layout for consistency:
+## Data source
 
-- File: `src/routes/find-a-training-provider.tsx`
-- Reuses the same shell, hero, filter rail, and card grid primitives as `/find-a-professional`, swapped to provider data.
-- Data: server fn `listPublicProviders` that reads `professionals` where `account_type = 'organisation'` (published + verified), returning name, slug, logo, city, delivery mode, course count, verified-pros count.
-- Cards link to `/t/$slug`.
-- Filters (v1): search by name, city, delivery mode (in-person / online / blended). Advanced filters (accreditation, course category) stubbed for a later pass.
-- Empty state respected when zero providers match.
-- SEO: unique `head()` — title "Find a REPS-verified training provider", description, og:title/description.
-- Follows locked marketing tokens (radii, emerald-for-status only, no hardcoded colors, shared marketing primitives).
+Training providers don't have a dedicated `cover_image_url` field yet, and adding one is a separate scope. For the two demo providers, use a small `DEMO_PROVIDER_COVERS` map alongside the existing `DEMO_PROVIDER_LOGOS`:
 
-## 3. `/t/$slug` header buttons
+- `northline-fitness-academy` → generate one cover image (training studio / classroom scene)
+- `forge-strength-institute` → generate one cover image (strength gym / coaching floor)
 
-- Replace the secondary **Save profile** button with **Write a review** (Star icon), routed to `/t/$slug/review` (route already exists).
-- Save profile action removed from this page entirely — it can return later as an account feature.
-- Primary **Enquire now** button unchanged.
-- No other layout changes to the profile page.
+Both generated at 1200×1200 (matches the square slot cleanly), saved to `src/assets/providers/` and externalised via `lovable-assets`.
 
-## 4. Files touched
+Later, when a real `cover_image_url` column is added to `professionals`, the resolution order becomes: `sf.cover_image_url ?? DEMO_PROVIDER_COVERS[slug] ?? null`. Out of scope for this pass.
 
-- `src/components/public/PublicHeader.tsx` — nav items + mega-menu removal
-- `src/components/public/HeaderCommandPalette.tsx` — Quick actions
-- `src/components/public/PublicFooter.tsx` — Discover column
-- `src/components/public/nav-config.ts` — trim unused mega-menu exports if now dead
-- `src/routes/find-a-training-provider.tsx` — new route
-- `src/lib/directory/providers.functions.ts` — new `listPublicProviders` server fn (public read via publishable Data API client, RLS-safe)
-- `src/routes/t.$slug.index.tsx` — swap header button to Write a review linking to `/t/$slug/review`
+## Files touched
+- `src/routes/t.$slug.index.tsx` — replace the media slot markup (lines ~196–209), add `DEMO_PROVIDER_COVERS` map.
+- `src/assets/providers/northline-cover.jpg.asset.json` (new, via `lovable-assets`)
+- `src/assets/providers/forge-cover.jpg.asset.json` (new, via `lovable-assets`)
 
-## 5. Out of scope
+## Not doing (explicit)
+- No schema change / no new `cover_image_url` column.
+- No changes to the coach profile (`/pro/$slug`).
+- No editor UI for uploading a provider cover — that's a Verified-settings task.
+- No change to the JSON-LD `logo` field (still `sf.avatar_url`).
 
-- No changes to `/find-a-professional` internals.
-- No new tables; providers already exist as `professionals` rows with `account_type = 'organisation'`.
-- No changes to `/c/$slug` (locked) or other locked marketing pages.
-- Save-to-account functionality is deferred; only the button on `/t/$slug` is removed.
-
-## 6. Verification
-
-- `tsgo --noEmit` for typecheck.
-- `scripts/check-nav-links.mjs` to confirm every nav `to=` resolves to a real route (both new link and coach link).
-- Manual smoke: visit `/`, open nav, navigate to `/find-a-training-provider` and `/find-a-professional`, confirm command palette + footer updated, confirm `/t/$slug` shows Write a review and routes to `/t/$slug/review`.
+## Verify
+- Visit `/t/forge-strength-institute` and `/t/northline-fitness-academy`: cover fills the square, logo badge sits bottom-left, name/breadcrumb layout unchanged.
+- Visit a provider slug with no demo cover: gradient fallback + centred logo, no layout shift.
+- `bunx tsgo --noEmit` clean.
