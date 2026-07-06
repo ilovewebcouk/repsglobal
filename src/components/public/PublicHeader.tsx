@@ -83,12 +83,15 @@ function useActive() {
   return {
     pathname,
     isHome: pathname === "/",
-    find:
+    findCoach:
       pathname.startsWith("/find-a-professional") ||
       pathname.startsWith("/professions") ||
       pathname.startsWith("/in/") ||
       pathname.startsWith("/c/") || pathname.startsWith("/pro/") ||
       pathname.startsWith("/how-it-works"),
+    findProvider:
+      pathname.startsWith("/find-a-training-provider") ||
+      pathname.startsWith("/t/"),
     resources:
       pathname === "/resources" || pathname.startsWith("/resources/"),
     pros:
@@ -192,17 +195,27 @@ export function PublicHeader({
             >
               <NavigationMenu.List className="flex items-center gap-7">
                 <NavigationMenu.Item>
-                  <NavigationMenu.Trigger className={triggerClass(active.find)}>
-                    Find a Professional
-                    <ChevronDown
-                      aria-hidden="true"
-                      className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
-                    />
-                    <ActiveDot show={active.find} />
-                  </NavigationMenu.Trigger>
-                  <NavigationMenu.Content className="absolute left-0 top-full pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0">
-                    <FindMenu />
-                  </NavigationMenu.Content>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/find-a-professional"
+                      className={cn(triggerClass(active.findCoach), "px-1 py-1")}
+                    >
+                      Find a Coach
+                      <ActiveDot show={active.findCoach} />
+                    </Link>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/find-a-training-provider"
+                      className={cn(triggerClass(active.findProvider), "px-1 py-1")}
+                    >
+                      Find a Training Provider
+                      <ActiveDot show={active.findProvider} />
+                    </Link>
+                  </NavigationMenu.Link>
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
@@ -881,67 +894,21 @@ function MobileDrawer({
 
 
         <Accordion type="multiple" className="space-y-1">
-          <AccordionItem value="find" className="border-0">
-            <AccordionTrigger
-              className={cn(
-                "rounded-[10px] px-3 py-3 text-[15px] font-medium hover:no-underline [&>svg]:text-white/60",
-                active.find ? "text-white" : "text-white/85 hover:text-white",
-              )}
-            >
-              Find a Professional
-            </AccordionTrigger>
-            <AccordionContent className="pb-2">
-              <div className="flex flex-col gap-3 px-1">
-                <Link
-                  to="/find-a-professional"
-                  onClick={onNavigate}
-                  className={cn(mobileSubLinkClass, "font-semibold text-white")}
-                >
-                  Browse all professionals
-                </Link>
-                <div className="border-t border-reps-border" />
+          <Link
+            to="/find-a-professional"
+            onClick={onNavigate}
+            className={mobileLinkClass(active.findCoach)}
+          >
+            Find a Coach
+          </Link>
+          <Link
+            to="/find-a-training-provider"
+            onClick={onNavigate}
+            className={mobileLinkClass(active.findProvider)}
+          >
+            Find a Training Provider
+          </Link>
 
-                <div>
-                  <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-                    Top professions
-                  </p>
-                  <ul className="flex flex-col">
-                    {TOP_PROFESSIONS.map((p) => (
-                      <li key={p.slug}>
-                        <Link
-                          to="/professions/$profession"
-                          params={{ profession: p.slug }}
-                          onClick={onNavigate}
-                          className={mobileSubLinkClass}
-                        >
-                          {p.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-                    Top cities
-                  </p>
-                  <ul className="flex flex-col">
-                    {TOP_LOCATIONS.map((l) => (
-                      <li key={l.slug}>
-                        <Link
-                          to="/in/$location"
-                          params={{ location: l.slug }}
-                          onClick={onNavigate}
-                          className={mobileSubLinkClass}
-                        >
-                          {l.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
 
           <AccordionItem value="pros" className="border-0">
             <AccordionTrigger

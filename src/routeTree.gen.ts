@@ -27,6 +27,7 @@ import { Route as HomeLegacyRouteImport } from './routes/home-legacy'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
+import { Route as FindATrainingProviderRouteImport } from './routes/find-a-training-provider'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as DashboardDemoRouteImport } from './routes/dashboard-demo'
 import { Route as CpdV2RouteImport } from './routes/cpd-v2'
@@ -264,6 +265,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
   id: '/for-professionals',
   path: '/for-professionals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FindATrainingProviderRoute = FindATrainingProviderRouteImport.update({
+  id: '/find-a-training-provider',
+  path: '/find-a-training-provider',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
@@ -1073,6 +1079,7 @@ export interface FileRoutesByFullPath {
   '/cpd-v2': typeof CpdV2Route
   '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/find-a-training-provider': typeof FindATrainingProviderRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRouteWithChildren
@@ -1238,6 +1245,7 @@ export interface FileRoutesByTo {
   '/cpd-v2': typeof CpdV2Route
   '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/find-a-training-provider': typeof FindATrainingProviderRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/home-legacy': typeof HomeLegacyRoute
@@ -1399,6 +1407,7 @@ export interface FileRoutesById {
   '/cpd-v2': typeof CpdV2Route
   '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
+  '/find-a-training-provider': typeof FindATrainingProviderRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRouteWithChildren
@@ -1568,6 +1577,7 @@ export interface FileRouteTypes {
     | '/cpd-v2'
     | '/dashboard-demo'
     | '/find-a-professional'
+    | '/find-a-training-provider'
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
@@ -1733,6 +1743,7 @@ export interface FileRouteTypes {
     | '/cpd-v2'
     | '/dashboard-demo'
     | '/find-a-professional'
+    | '/find-a-training-provider'
     | '/for-professionals'
     | '/forgot-password'
     | '/home-legacy'
@@ -1893,6 +1904,7 @@ export interface FileRouteTypes {
     | '/cpd-v2'
     | '/dashboard-demo'
     | '/find-a-professional'
+    | '/find-a-training-provider'
     | '/for-professionals'
     | '/forgot-password'
     | '/help'
@@ -2062,6 +2074,7 @@ export interface RootRouteChildren {
   CpdV2Route: typeof CpdV2Route
   DashboardDemoRoute: typeof DashboardDemoRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
+  FindATrainingProviderRoute: typeof FindATrainingProviderRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HelpRoute: typeof HelpRouteWithChildren
@@ -2290,6 +2303,13 @@ declare module '@tanstack/react-router' {
       path: '/for-professionals'
       fullPath: '/for-professionals'
       preLoaderRoute: typeof ForProfessionalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/find-a-training-provider': {
+      id: '/find-a-training-provider'
+      path: '/find-a-training-provider'
+      fullPath: '/find-a-training-provider'
+      preLoaderRoute: typeof FindATrainingProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/find-a-professional': {
@@ -3630,6 +3650,7 @@ const rootRouteChildren: RootRouteChildren = {
   CpdV2Route: CpdV2Route,
   DashboardDemoRoute: DashboardDemoRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
+  FindATrainingProviderRoute: FindATrainingProviderRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HelpRoute: HelpRouteWithChildren,
