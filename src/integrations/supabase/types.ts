@@ -2634,6 +2634,30 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_nudges: {
+        Row: {
+          message_id: string | null
+          sent_at: string
+          stage: string
+          step: number
+          user_id: string
+        }
+        Insert: {
+          message_id?: string | null
+          sent_at?: string
+          stage: string
+          step: number
+          user_id: string
+        }
+        Update: {
+          message_id?: string | null
+          sent_at?: string
+          stage?: string
+          step?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       ops_alerts: {
         Row: {
           ack_at: string | null
@@ -6007,6 +6031,13 @@ export type Database = {
       refresh_pro_quality_score: {
         Args: { _pro_id: string }
         Returns: undefined
+      }
+      resolve_onboarding_stage: {
+        Args: { _user_id: string }
+        Returns: {
+          stage: string
+          stage_entered_at: string
+        }[]
       }
       run_monthly_credit_refills: { Args: never; Returns: number }
       search_profiles_by_id_prefix: {
