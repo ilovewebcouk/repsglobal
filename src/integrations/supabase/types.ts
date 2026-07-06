@@ -1080,6 +1080,124 @@ export type Database = {
           },
         ]
       }
+      course_accreditation_files: {
+        Row: {
+          course_id: string
+          created_at: string
+          file_kind: string
+          file_name: string
+          file_path: string
+          id: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          file_kind?: string
+          file_name: string
+          file_path: string
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          file_kind?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_accreditation_files_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          accredited_at: string | null
+          accredited_by: string | null
+          created_at: string
+          delivery_mode:
+            | Database["public"]["Enums"]["course_delivery_mode"]
+            | null
+          description_md: string | null
+          duration_hours: number | null
+          expires_at: string | null
+          external_url: string | null
+          id: string
+          level: string | null
+          organisation_id: string
+          price_from: number | null
+          reps_course_id: string | null
+          slug: string
+          status: Database["public"]["Enums"]["course_status"]
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          accredited_at?: string | null
+          accredited_by?: string | null
+          created_at?: string
+          delivery_mode?:
+            | Database["public"]["Enums"]["course_delivery_mode"]
+            | null
+          description_md?: string | null
+          duration_hours?: number | null
+          expires_at?: string | null
+          external_url?: string | null
+          id?: string
+          level?: string | null
+          organisation_id: string
+          price_from?: number | null
+          reps_course_id?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["course_status"]
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          accredited_at?: string | null
+          accredited_by?: string | null
+          created_at?: string
+          delivery_mode?:
+            | Database["public"]["Enums"]["course_delivery_mode"]
+            | null
+          description_md?: string | null
+          duration_hours?: number | null
+          expires_at?: string | null
+          external_url?: string | null
+          id?: string
+          level?: string | null
+          organisation_id?: string
+          price_from?: number | null
+          reps_course_id?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["course_status"]
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_transactions: {
         Row: {
           action: string
@@ -2700,6 +2818,121 @@ export type Database = {
         }
         Relationships: []
       }
+      organisation_users: {
+        Row: {
+          created_at: string
+          id: string
+          organisation_id: string
+          role: Database["public"]["Enums"]["organisation_user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organisation_id: string
+          role?: Database["public"]["Enums"]["organisation_user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organisation_id?: string
+          role?: Database["public"]["Enums"]["organisation_user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisation_users_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organisations: {
+        Row: {
+          about_md: string | null
+          city: string | null
+          companies_house_number: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          country: string | null
+          cover_url: string | null
+          created_at: string
+          id: string
+          legal_name: string | null
+          logo_url: string | null
+          membership_number: string | null
+          name: string
+          published_at: string | null
+          slug: string
+          status: Database["public"]["Enums"]["organisation_status"]
+          stripe_customer_id: string | null
+          subscription_id: string | null
+          updated_at: string
+          verified_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          about_md?: string | null
+          city?: string | null
+          companies_house_number?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          legal_name?: string | null
+          logo_url?: string | null
+          membership_number?: string | null
+          name: string
+          published_at?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["organisation_status"]
+          stripe_customer_id?: string | null
+          subscription_id?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          about_md?: string | null
+          city?: string | null
+          companies_house_number?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          legal_name?: string | null
+          logo_url?: string | null
+          membership_number?: string | null
+          name?: string
+          published_at?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["organisation_status"]
+          stripe_customer_id?: string | null
+          subscription_id?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisations_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outbound_campaign_recipients: {
         Row: {
           bounced_at: string | null
@@ -3608,6 +3841,239 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_review_evidence: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          review_id: string
+          submitted_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          review_id: string
+          submitted_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          review_id?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_review_evidence_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "provider_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_review_flags: {
+        Row: {
+          created_at: string
+          flagged_by: string | null
+          id: string
+          notes: string | null
+          reason: string
+          review_id: string
+        }
+        Insert: {
+          created_at?: string
+          flagged_by?: string | null
+          id?: string
+          notes?: string | null
+          reason: string
+          review_id: string
+        }
+        Update: {
+          created_at?: string
+          flagged_by?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_review_flags_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "provider_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_review_requests: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          organisation_id: string
+          sent_at: string
+          student_email: string
+          student_name: string | null
+          token_hash: string
+          updated_at: string
+          used_at: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          organisation_id: string
+          sent_at?: string
+          student_email: string
+          student_name?: string | null
+          token_hash: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          organisation_id?: string
+          sent_at?: string
+          student_email?: string
+          student_name?: string | null
+          token_hash?: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_review_requests_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_review_requests_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_reviews: {
+        Row: {
+          asn: string | null
+          author_display_name: string
+          author_email_hash: string
+          author_ip_hash: string | null
+          body: string
+          course_id: string | null
+          created_at: string
+          email_verification_token_hash: string | null
+          email_verified_at: string | null
+          evidence_deadline_at: string | null
+          evidence_requested_at: string | null
+          flagged_at: string | null
+          id: string
+          invite_request_id: string | null
+          moderated_by: string | null
+          organisation_id: string
+          rating: number
+          removed_at: string | null
+          removed_reason: string | null
+          status: Database["public"]["Enums"]["provider_review_status"]
+          title: string | null
+          updated_at: string
+          user_agent_hash: string | null
+          verification_source: Database["public"]["Enums"]["provider_review_source"]
+        }
+        Insert: {
+          asn?: string | null
+          author_display_name: string
+          author_email_hash: string
+          author_ip_hash?: string | null
+          body: string
+          course_id?: string | null
+          created_at?: string
+          email_verification_token_hash?: string | null
+          email_verified_at?: string | null
+          evidence_deadline_at?: string | null
+          evidence_requested_at?: string | null
+          flagged_at?: string | null
+          id?: string
+          invite_request_id?: string | null
+          moderated_by?: string | null
+          organisation_id: string
+          rating: number
+          removed_at?: string | null
+          removed_reason?: string | null
+          status?: Database["public"]["Enums"]["provider_review_status"]
+          title?: string | null
+          updated_at?: string
+          user_agent_hash?: string | null
+          verification_source?: Database["public"]["Enums"]["provider_review_source"]
+        }
+        Update: {
+          asn?: string | null
+          author_display_name?: string
+          author_email_hash?: string
+          author_ip_hash?: string | null
+          body?: string
+          course_id?: string | null
+          created_at?: string
+          email_verification_token_hash?: string | null
+          email_verified_at?: string | null
+          evidence_deadline_at?: string | null
+          evidence_requested_at?: string | null
+          flagged_at?: string | null
+          id?: string
+          invite_request_id?: string | null
+          moderated_by?: string | null
+          organisation_id?: string
+          rating?: number
+          removed_at?: string | null
+          removed_reason?: string | null
+          status?: Database["public"]["Enums"]["provider_review_status"]
+          title?: string | null
+          updated_at?: string
+          user_agent_hash?: string | null
+          verification_source?: Database["public"]["Enums"]["provider_review_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_reviews_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_reviews_invite_request_id_fkey"
+            columns: ["invite_request_id"]
+            isOneToOne: false
+            referencedRelation: "provider_review_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_reviews_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proxy_ingest_diagnostics: {
         Row: {
           attempted: boolean | null
@@ -4509,6 +4975,8 @@ export type Database = {
           is_founding: boolean
           metadata: Json | null
           migrated_from_bd: boolean
+          owner_id: string | null
+          owner_type: Database["public"]["Enums"]["subscription_owner_type"]
           payment_standing: string
           status: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id: string | null
@@ -4535,6 +5003,8 @@ export type Database = {
           is_founding?: boolean
           metadata?: Json | null
           migrated_from_bd?: boolean
+          owner_id?: string | null
+          owner_type?: Database["public"]["Enums"]["subscription_owner_type"]
           payment_standing?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
@@ -4561,6 +5031,8 @@ export type Database = {
           is_founding?: boolean
           metadata?: Json | null
           migrated_from_bd?: boolean
+          owner_id?: string | null
+          owner_type?: Database["public"]["Enums"]["subscription_owner_type"]
           payment_standing?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
@@ -5859,6 +6331,10 @@ export type Database = {
         Returns: boolean
       }
       is_in_payment_dispute: { Args: { _user_id: string }; Returns: boolean }
+      is_organisation_member: {
+        Args: { _organisation_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_pro_fully_verified: { Args: { _pro_id: string }; Returns: boolean }
       is_pro_hidden_by_churn: { Args: { _user_id: string }; Returns: boolean }
       is_pro_publicly_visible: { Args: { _pro_id: string }; Returns: boolean }
@@ -6131,6 +6607,8 @@ export type Database = {
         | "recovered"
         | "dormant"
       coach_client_status: "active" | "paused" | "ended"
+      course_delivery_mode: "in-person" | "online" | "hybrid"
+      course_status: "pending" | "accredited" | "rejected" | "expired"
       invite_status: "pending" | "accepted" | "expired" | "revoked"
       invite_trigger_reason:
         | "confirmed"
@@ -6154,11 +6632,21 @@ export type Database = {
         | "admin_end_trial"
         | "admin_delete"
         | "member_request"
+      organisation_status: "draft" | "active" | "suspended" | "cancelled"
+      organisation_user_role: "owner" | "manager"
       prospect_status: "active" | "converted" | "unsubscribed" | "bounced"
+      provider_review_source: "open" | "verified"
+      provider_review_status:
+        | "pending_email"
+        | "published"
+        | "flagged"
+        | "evidence_requested"
+        | "removed"
       renewal_token_purpose: "card_needed" | "payment_failed" | "reactivate"
       reps_level: "Level_2" | "Level_3" | "Level_4" | "Level_5"
       roster_status: "prospect" | "confirmed" | "active" | "archived"
       sex_at_birth: "female" | "male" | "prefer_not_to_say"
+      subscription_owner_type: "user" | "organisation"
       subscription_status:
         | "trialing"
         | "active"
@@ -6168,7 +6656,12 @@ export type Database = {
         | "incomplete"
         | "incomplete_expired"
         | "paused"
-      subscription_tier: "free" | "pro" | "verified" | "studio"
+      subscription_tier:
+        | "free"
+        | "pro"
+        | "verified"
+        | "studio"
+        | "training_provider"
       support_msg_direction: "inbound" | "outbound" | "internal_note"
       support_priority: "urgent" | "high" | "normal" | "low"
       support_source: "email" | "web" | "admin" | "api" | "contact_form"
@@ -6353,6 +6846,8 @@ export const Constants = {
         "dormant",
       ],
       coach_client_status: ["active", "paused", "ended"],
+      course_delivery_mode: ["in-person", "online", "hybrid"],
+      course_status: ["pending", "accredited", "rejected", "expired"],
       invite_status: ["pending", "accepted", "expired", "revoked"],
       invite_trigger_reason: [
         "confirmed",
@@ -6379,11 +6874,22 @@ export const Constants = {
         "admin_delete",
         "member_request",
       ],
+      organisation_status: ["draft", "active", "suspended", "cancelled"],
+      organisation_user_role: ["owner", "manager"],
       prospect_status: ["active", "converted", "unsubscribed", "bounced"],
+      provider_review_source: ["open", "verified"],
+      provider_review_status: [
+        "pending_email",
+        "published",
+        "flagged",
+        "evidence_requested",
+        "removed",
+      ],
       renewal_token_purpose: ["card_needed", "payment_failed", "reactivate"],
       reps_level: ["Level_2", "Level_3", "Level_4", "Level_5"],
       roster_status: ["prospect", "confirmed", "active", "archived"],
       sex_at_birth: ["female", "male", "prefer_not_to_say"],
+      subscription_owner_type: ["user", "organisation"],
       subscription_status: [
         "trialing",
         "active",
@@ -6394,7 +6900,13 @@ export const Constants = {
         "incomplete_expired",
         "paused",
       ],
-      subscription_tier: ["free", "pro", "verified", "studio"],
+      subscription_tier: [
+        "free",
+        "pro",
+        "verified",
+        "studio",
+        "training_provider",
+      ],
       support_msg_direction: ["inbound", "outbound", "internal_note"],
       support_priority: ["urgent", "high", "normal", "low"],
       support_source: ["email", "web", "admin", "api", "contact_form"],

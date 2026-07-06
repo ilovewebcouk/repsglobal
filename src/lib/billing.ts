@@ -155,3 +155,39 @@ export function creditPackForPriceId(priceId: string): CreditPack | null {
   }
   return null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Training-provider (organisation) membership                         */
+/* ------------------------------------------------------------------ */
+/**
+ * Training providers are billed as organisations, not individual members.
+ * Phase 1 attaches an existing Stripe customer via admin; there is no
+ * self-serve checkout yet. Kept here so pricing + Stripe lookup keys have
+ * one source of truth.
+ */
+export type OrgTierKey = "training_provider";
+
+export interface OrgTierConfig {
+  key: OrgTierKey;
+  label: string;
+  priceLabel: string;
+  intervalLabel: string;
+  stripePriceLookupKey: string;
+  stripeProductId: string;
+  amountPence: number;
+  blurb: string;
+}
+
+export const ORG_TIERS: Record<OrgTierKey, OrgTierConfig> = {
+  training_provider: {
+    key: "training_provider",
+    label: "REPs-accredited Training Provider",
+    priceLabel: "£499",
+    intervalLabel: "per year",
+    stripePriceLookupKey: "training_provider_annual",
+    stripeProductId: "training_provider",
+    amountPence: 49900,
+    blurb:
+      "Public provider website, accredited-course listings, verified reviews, and REPs-accredited badges for every approved course.",
+  },
+};

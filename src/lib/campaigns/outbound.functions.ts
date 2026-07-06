@@ -154,7 +154,11 @@ export const searchTrainers = createServerFn({ method: "POST" })
         .select("user_id, tier, status")
         .in("user_id", ids)
         .in("status", ["active", "trialing", "past_due"]);
-      for (const s of subs ?? []) if (s.user_id) tierMap.set(s.user_id, s.tier);
+      for (const s of subs ?? []) {
+        if (!s.user_id) continue;
+        if (s.tier === "training_provider") continue; // org-owned subs are not part of pro campaigns
+        tierMap.set(s.user_id, s.tier as Tier);
+      }
     }
 
     const missingEmailIds = ids.filter((id: string) => !emailById.has(id));
