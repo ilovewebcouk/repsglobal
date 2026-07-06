@@ -541,7 +541,7 @@ function ProviderProfilePage() {
                     {reviews.slice(0, 1).map((r) => (
                       <div key={r.id}>
                         <p className="text-[13px] font-semibold text-black">
-                          {r.reviewer_name ?? "Learner"}
+                          {r.client_name ?? "Learner"}
                         </p>
                         <p className="mt-1 text-[13.5px] leading-[1.6] text-black/72">
                           "{r.body}"
