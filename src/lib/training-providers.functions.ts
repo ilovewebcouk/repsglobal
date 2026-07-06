@@ -446,3 +446,269 @@ export const getPublicProviderByMembershipNumber = createServerFn({ method: "GET
       .maybeSingle();
     return org;
   });
+
+/* ────────────────── Reviews: public submit + verify + admin moderation ────────────────── */
+
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { getRequest } from "@tanstack/react-start/server";
+
+function hashEmail(email: string): string {
+  return createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
+}
+function hashToken(t: string): string {
+  return createHash("sha256").update(t).digest("hex");
+}
+function hashString(s: string): string {
+  return createHash("sha256").update(s).digest("hex").slice(0, 32);
+}
+function newToken(): string {
+  return randomBytes(24).toString("base64url");
+}
+
+export const submitProviderReview = createServerFn({ method: "POST" })
+  .inputValidator((d: {
+    slug: string;
+    rating: number;
+    title?: string;
+    body: string;
+    author_display_name: string;
+    author_email: string;
+    course_id?: string | null;
+  }) => {
+    if (!d?.slug) throw new Error("slug required");
+    const rating = Number(d.rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error("Rating must be 1–5");
+    const body = (d.body ?? "").trim();
+    if (body.length < 40) throw new Error("Review must be at least 40 characters");
+    if (body.length > 4000) throw new Error("Review too long (max 4000 chars)");
+    const name = (d.author_display_name ?? "").trim();
+    if (name.length < 2) throw new Error("Display name required");
+    const email = (d.author_email ?? "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Valid email required");
+    return {
+      slug: d.slug,
+      rating,
+      title: (d.title ?? "").trim().slice(0, 120) || null,
+      body,
+      author_display_name: name.slice(0, 80),
+      author_email: email,
+      course_id: d.course_id ?? null,
+    };
+  })
+  .handler(async ({ data }) => {
+    const sb = publicSupabase();
+    const { data: org, error: orgErr } = await sb
+      .from("organisations")
+      .select("id, name, slug, status, published_at")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (orgErr) throw new Error(orgErr.message);
+    if (!org || org.status !== "active" || !org.published_at) {
+      throw new Error("Provider not accepting reviews");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const emailHash = hashEmail(data.author_email);
+    // rate-limit: max 1 pending or 3 total per email per org in 90d
+    const since = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString();
+    const { count: recent } = await supabaseAdmin
+      .from("provider_reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("organisation_id", org.id)
+      .eq("author_email_hash", emailHash)
+      .gte("created_at", since);
+    if ((recent ?? 0) >= 3) {
+      throw new Error("You've already reviewed this provider recently.");
+    }
+
+    // request metadata
+    let ipHash: string | null = null;
+    let uaHash: string | null = null;
+    try {
+      const req = getRequest();
+      const ip =
+        req.headers.get("cf-connecting-ip") ||
+        req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+        req.headers.get("x-real-ip") ||
+        null;
+      if (ip) ipHash = hashString(ip);
+      const ua = req.headers.get("user-agent");
+      if (ua) uaHash = hashString(ua);
+    } catch {}
+
+    const token = newToken();
+    const tokenHash = hashToken(token);
+
+    const { data: inserted, error } = await supabaseAdmin
+      .from("provider_reviews")
+      .insert({
+        organisation_id: org.id,
+        course_id: data.course_id,
+        rating: data.rating,
+        title: data.title,
+        body: data.body,
+        author_display_name: data.author_display_name,
+        author_email_hash: emailHash,
+        author_ip_hash: ipHash,
+        user_agent_hash: uaHash,
+        verification_source: "open" as const,
+        status: "pending_email" as const,
+        email_verification_token_hash: tokenHash,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+
+    // fire-and-log verification email
+    const base = process.env.PUBLIC_SITE_URL || "https://repsuk.org";
+    const verifyUrl = `${base}/reviews/provider/verify/${token}`;
+    try {
+      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+      await sendTransactionalEmailServer({
+        templateName: "provider-review-verify",
+        recipientEmail: data.author_email,
+        idempotencyKey: `prov-review-verify-${inserted.id}`,
+        templateData: {
+          providerName: org.name,
+          verifyUrl,
+          rating: data.rating,
+        },
+      });
+    } catch (e) {
+      console.error("[submitProviderReview] email send failed", e);
+    }
+
+    return { ok: true, reviewId: inserted.id };
+  });
+
+export const verifyProviderReviewEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string }) => {
+    if (!d?.token) throw new Error("token required");
+    return { token: d.token };
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const tokenHash = hashToken(data.token);
+    const { data: review } = await supabaseAdmin
+      .from("provider_reviews")
+      .select("id, status, organisation_id, email_verified_at")
+      .eq("email_verification_token_hash", tokenHash)
+      .maybeSingle();
+    if (!review) return { ok: false, reason: "invalid" as const };
+    if (review.status !== "pending_email" && !review.email_verified_at) {
+      return { ok: false, reason: "invalid" as const };
+    }
+    if (review.email_verified_at) {
+      return { ok: true, alreadyVerified: true, reviewId: review.id, organisationId: review.organisation_id };
+    }
+
+    // Publish immediately (Trustpilot model). Admin can flag/remove later.
+    const { error } = await supabaseAdmin
+      .from("provider_reviews")
+      .update({
+        email_verified_at: new Date().toISOString(),
+        status: "published" as const,
+        email_verification_token_hash: null,
+      })
+      .eq("id", review.id);
+    if (error) throw new Error(error.message);
+
+    return { ok: true, alreadyVerified: false, reviewId: review.id, organisationId: review.organisation_id };
+  });
+
+export const listAdminProviderReviews = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { status?: string } | undefined) => ({
+    status: d?.status ?? "all",
+  }))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin
+      .from("provider_reviews")
+      .select(
+        "id, organisation_id, rating, title, body, author_display_name, verification_source, status, created_at, flagged_at, evidence_requested_at, removed_at, removed_reason, email_verified_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (data.status && data.status !== "all") {
+      q = q.eq("status", data.status as any);
+    }
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+
+    const orgIds = Array.from(new Set((rows ?? []).map((r) => r.organisation_id)));
+    let orgs: Record<string, { name: string; slug: string }> = {};
+    if (orgIds.length) {
+      const { data: os } = await supabaseAdmin
+        .from("organisations")
+        .select("id, name, slug")
+        .in("id", orgIds);
+      for (const o of os ?? []) orgs[o.id] = { name: o.name, slug: o.slug };
+    }
+    return (rows ?? []).map((r) => ({ ...r, organisation: orgs[r.organisation_id] ?? null }));
+  });
+
+export const moderateProviderReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: {
+    reviewId: string;
+    action: "flag" | "request_evidence" | "remove" | "restore";
+    reason?: string;
+    notes?: string;
+  }) => {
+    if (!d?.reviewId) throw new Error("reviewId required");
+    if (!["flag", "request_evidence", "remove", "restore"].includes(d.action)) {
+      throw new Error("invalid action");
+    }
+    return {
+      reviewId: d.reviewId,
+      action: d.action,
+      reason: (d.reason ?? "").trim() || null,
+      notes: (d.notes ?? "").trim() || null,
+    };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const now = new Date().toISOString();
+    let patch: Record<string, unknown> = { moderated_by: context.userId };
+
+    if (data.action === "flag") {
+      patch.status = "flagged";
+      patch.flagged_at = now;
+    } else if (data.action === "request_evidence") {
+      patch.status = "evidence_requested";
+      patch.evidence_requested_at = now;
+      patch.evidence_deadline_at = new Date(Date.now() + 14 * 24 * 3600 * 1000).toISOString();
+    } else if (data.action === "remove") {
+      patch.status = "removed";
+      patch.removed_at = now;
+      patch.removed_reason = data.reason;
+    } else if (data.action === "restore") {
+      patch.status = "published";
+      patch.removed_at = null;
+      patch.flagged_at = null;
+      patch.evidence_requested_at = null;
+      patch.evidence_deadline_at = null;
+      patch.removed_reason = null;
+    }
+
+    const { error } = await supabaseAdmin
+      .from("provider_reviews")
+      .update(patch as any)
+      .eq("id", data.reviewId);
+    if (error) throw new Error(error.message);
+
+    if (data.action !== "restore") {
+      await supabaseAdmin.from("provider_review_flags").insert({
+        review_id: data.reviewId,
+        flagged_by: context.userId,
+        reason: data.reason ?? data.action,
+        notes: data.notes,
+      });
+    }
+    return { ok: true };
+  });
