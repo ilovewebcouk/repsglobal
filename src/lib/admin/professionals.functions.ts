@@ -18,6 +18,7 @@ export type AdminProRow = {
   profession: string | null;
   professionSlug: string | null;
   plan: 'free' | 'verified' | 'pro' | 'studio';
+  accountType: 'individual' | 'organisation' | null;
   planMrrPence: number;
   status: 'verified' | 'pending' | 'flagged' | 'suspended';
   /**
@@ -211,7 +212,7 @@ export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | '
 export type SortDir = 'asc' | 'desc';
 
 export type AdminProFilters = {
-  plans?: ('free' | 'verified' | 'pro' | 'studio')[];
+  plans?: ('free' | 'verified' | 'pro' | 'studio' | 'training_provider')[];
   professions?: string[];
   hasAvatar?: boolean;
 };
@@ -244,7 +245,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     let query = supabaseAdmin
       .from('professionals')
       .select(
-        'id, slug, city, primary_profession, verification, is_published, created_at, member_since, suspended_at, suspension_reason, is_demo',
+        'id, slug, city, primary_profession, verification, is_published, created_at, member_since, suspended_at, suspension_reason, is_demo, account_type',
         { count: 'exact' }
       );
 
@@ -428,6 +429,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         profession: p.primary_profession ? (PROFESSION_LABEL[p.primary_profession] ?? p.primary_profession) : null,
         professionSlug: p.primary_profession ?? null,
         plan: billing.plan,
+        accountType: ((p as { account_type?: string | null }).account_type as 'individual' | 'organisation' | null) ?? null,
         planMrrPence: billing.planMrrPence,
         status,
         billingState: billing.billingState,
@@ -459,7 +461,11 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     // Plan & hasAvatar filters (post-join).
     if (data.filters.plans?.length) {
       const set = new Set(data.filters.plans);
-      rows = rows.filter(r => set.has(r.plan));
+      const wantsTP = set.has('training_provider');
+      rows = rows.filter(r => {
+        if (wantsTP && r.accountType === 'organisation') return true;
+        return set.has(r.plan) && r.accountType !== 'organisation';
+      });
     }
     if (data.filters.hasAvatar === true) rows = rows.filter(r => !!r.avatarUrl);
     if (data.filters.hasAvatar === false) rows = rows.filter(r => !r.avatarUrl);

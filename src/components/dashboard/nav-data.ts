@@ -138,7 +138,7 @@ export const ADMIN_NAV = [
   {
     title: "Members & Pros",
     items: [
-      { icon: Users, label: "Professionals", to: "/admin/professionals" },
+      { icon: Users, label: "Members", to: "/admin/members" },
       { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
       { icon: Star, label: "Reviews", to: "/admin/reviews" },
     ],

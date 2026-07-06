@@ -89,7 +89,7 @@ function AdminDirectory() {
           <div className="flex items-center justify-between">
             <h2 className="font-display text-[16px] font-semibold text-white">Listings needing attention</h2>
             <Link
-              to="/admin/professionals"
+              to="/admin/members"
               className="text-[12px] font-semibold text-reps-orange hover:underline"
             >
               View all

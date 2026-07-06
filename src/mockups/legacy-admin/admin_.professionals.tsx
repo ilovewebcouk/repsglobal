@@ -119,7 +119,7 @@ function statusClass(s: string) {
 function AdminProfessionalsPage() {
   return (
     <DashboardShell role="admin"
-      active="Professionals"
+      active="Members"
       title="Professionals"
       subtitle="Manage the full register of REPS professionals."
       actions={

@@ -47,7 +47,7 @@ export function ImpersonationBanner() {
           onClick={async () => {
             await stopFn();
             await qc.invalidateQueries();
-            navigate({ to: '/admin/professionals' });
+            navigate({ to: '/admin/members' });
           }}
           className="flex h-7 items-center gap-1.5 rounded-[8px] bg-white/15 px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
         >
