@@ -67,8 +67,9 @@ export const listIdentityChecks = createServerFn({ method: "POST" })
     const { data: rows, error } = await supabaseAdmin
       .from("identity_documents")
       .select(
-        "id, professional_id, doc_type, name_on_doc, dob_on_doc, status, vendor, stripe_status, stripe_reason, admin_note, created_at, reviewed_at, environment",
+        "id, professional_id, doc_type, name_on_doc, dob_on_doc, status, vendor, stripe_vs_id, stripe_status, stripe_reason, admin_note, created_at, reviewed_at, environment",
       )
+
       .in("status", data.statuses as never)
       .order("created_at", { ascending: false })
       .limit(500);
