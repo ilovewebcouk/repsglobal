@@ -522,7 +522,7 @@ function FiltersSheet({
   const [draft, setDraft] = React.useState<AdminProFilters>(value);
   React.useEffect(() => { if (open) setDraft(value); }, [open, value]);
 
-  function togglePlan(p: "free" | "verified" | "pro" | "studio") {
+  function togglePlan(p: "free" | "verified" | "pro" | "studio" | "training_provider") {
     setDraft(d => {
       const set = new Set(d.plans ?? []);
       if (set.has(p)) set.delete(p); else set.add(p);
