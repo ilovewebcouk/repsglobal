@@ -245,7 +245,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     let query = supabaseAdmin
       .from('professionals')
       .select(
-        'id, slug, city, primary_profession, verification, is_published, created_at, member_since, suspended_at, suspension_reason, is_demo',
+        'id, slug, city, primary_profession, verification, is_published, created_at, member_since, suspended_at, suspension_reason, is_demo, account_type',
         { count: 'exact' }
       );
 
