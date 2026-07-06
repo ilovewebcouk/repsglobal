@@ -821,62 +821,104 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
           </div>
         </div>
       </td>
-      
-      <td className="px-3 py-3">
-        {row.profession ? (
-          <span className="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/75">
-            {row.profession}
-          </span>
-        ) : <span className="text-white/45">—</span>}
-      </td>
-      <td className="px-3 py-3">
-        {row.isTrial ? (
-          <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
-            Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
-          </span>
-        ) : (
-          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.accountType === 'organisation' ? 'training_provider' : row.plan)}`}>
-            {row.accountType === 'organisation' ? PLAN_LABEL.training_provider : PLAN_LABEL[row.plan]}
-          </span>
-        )}
-      </td>
-      <td className="px-3 py-3">
-        <div className="flex flex-wrap items-center gap-1">
-          {row.billingState !== "ok" && (
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}
-              title={
-                row.billingState === "payment_failed"
-                  ? "Stripe subscription is past due / unpaid — recovery in progress."
-                  : "BD renewal date has arrived; awaiting nightly renewal cron."
-              }
-            >
-              {BILLING_LABEL[row.billingState]}
-            </span>
-          )}
-          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
-            {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
-            {STATUS_LABEL[row.status]}
-          </span>
-        </div>
-      </td>
 
-      <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
-      <td className="px-3 py-3 text-white/75">
-        <span className="inline-flex items-center gap-1.5">
-          {renewalLabel(row.renewalDate)}
-          {row.renewalDateSource === "bd" && row.renewalDate && (
-            <span
-              className="rounded-[6px] border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/55"
-              title="Imported renewal date — will switch to Stripe once a subscription is created"
-            >
-              Imported
+      {segment === "providers" ? (
+        <>
+          <td className="px-3 py-3 text-white/75">{row.location ?? <span className="text-white/45">—</span>}</td>
+          <td className="px-3 py-3 text-white/75 tabular-nums">{row.coursesCount ?? 0}</td>
+          <td className="px-3 py-3 text-white/45">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help underline decoration-dotted underline-offset-2">—</span>
+              </TooltipTrigger>
+              <TooltipContent side="top">Wired once course + pro-link tables land</TooltipContent>
+            </Tooltip>
+          </td>
+          <td className="px-3 py-3">
+            {row.isTrial ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
+                Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
+              </span>
+            ) : (
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass('training_provider')}`}>
+                {PLAN_LABEL.training_provider}
+              </span>
+            )}
+          </td>
+          <td className="px-3 py-3">
+            <div className="flex flex-wrap items-center gap-1">
+              {row.billingState !== "ok" && (
+                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}>
+                  {BILLING_LABEL[row.billingState]}
+                </span>
+              )}
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
+                {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
+                {STATUS_LABEL[row.status]}
+              </span>
+            </div>
+          </td>
+          <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
+          <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
+        </>
+      ) : (
+        <>
+          <td className="px-3 py-3">
+            {row.profession ? (
+              <span className="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/75">
+                {row.profession}
+              </span>
+            ) : <span className="text-white/45">—</span>}
+          </td>
+          <td className="px-3 py-3">
+            {row.isTrial ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
+                Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
+              </span>
+            ) : (
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass(row.plan)}`}>
+                {PLAN_LABEL[row.plan]}
+              </span>
+            )}
+          </td>
+          <td className="px-3 py-3">
+            <div className="flex flex-wrap items-center gap-1">
+              {row.billingState !== "ok" && (
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}
+                  title={
+                    row.billingState === "payment_failed"
+                      ? "Stripe subscription is past due / unpaid — recovery in progress."
+                      : "BD renewal date has arrived; awaiting nightly renewal cron."
+                  }
+                >
+                  {BILLING_LABEL[row.billingState]}
+                </span>
+              )}
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
+                {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
+                {STATUS_LABEL[row.status]}
+              </span>
+            </div>
+          </td>
+          <td className="px-3 py-3 text-white/75">{row.lifetimeValuePence ? gbp(row.lifetimeValuePence) : "—"}</td>
+          <td className="px-3 py-3 text-white/75">
+            <span className="inline-flex items-center gap-1.5">
+              {renewalLabel(row.renewalDate)}
+              {row.renewalDateSource === "bd" && row.renewalDate && (
+                <span
+                  className="rounded-[6px] border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/55"
+                  title="Imported renewal date — will switch to Stripe once a subscription is created"
+                >
+                  Imported
+                </span>
+              )}
             </span>
-          )}
-        </span>
-      </td>
-      <td className="px-3 py-3 text-white/75">{gbp(row.planMrrPence)}</td>
-      <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
+          </td>
+          <td className="px-3 py-3 text-white/75">{gbp(row.planMrrPence)}</td>
+          <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
+        </>
+      )}
       <td className="px-5 py-3 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
