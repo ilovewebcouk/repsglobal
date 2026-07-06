@@ -38,6 +38,7 @@ import { template as chargebackResolvedLost } from './chargeback-resolved-lost'
 import { template as memberCancelled } from './member-cancelled'
 import { template as disputeWonResubscribe } from './dispute-won-resubscribe'
 import { template as adminInvite } from './admin-invite'
+import { template as newRepsRollout } from './new-reps-rollout'
 
 
 
@@ -71,6 +72,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'member-cancelled': memberCancelled,
   'dispute-won-resubscribe': disputeWonResubscribe,
   'admin-invite': adminInvite,
+  'new-reps-rollout': newRepsRollout,
 }
 
 
