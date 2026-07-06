@@ -543,7 +543,7 @@ function mergeLiveIntoCoach(
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
     socials: sf.socials.length ? sf.socials : base.socials,
     currentClients: sf.current_clients,
-    logoUrl: DEMO_PROVIDER_LOGOS[sf.slug] ?? base.logoUrl ?? null,
+    logoUrl: (sf.slug ? DEMO_PROVIDER_LOGOS[sf.slug] : undefined) ?? base.logoUrl ?? null,
   };
 
 }
