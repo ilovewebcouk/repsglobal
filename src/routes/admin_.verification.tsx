@@ -54,10 +54,8 @@ import {
   revokeQualification,
   sendVerificationReminder,
 } from "@/lib/verification/verification.functions";
-import {
-  listIdentityChecks,
-  adminOverrideIdentity,
-} from "@/lib/verification/identity.functions";
+import { listIdentityChecks } from "@/lib/verification/identity.functions";
+
 import {
   getDocSignedUrl,
   listInsurancePolicies,
