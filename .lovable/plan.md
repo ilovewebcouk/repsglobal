@@ -1,60 +1,60 @@
-## Goal
+# Nav restructure + provider directory + review button
 
-Replace the current dark provider-website template at `/t/$slug` with the locked light directory-profile layout shown in the screenshot (the same visual system as `/c/$slug` for coaches, but tailored to Training Providers). Retire the current template entirely — provider public pages become directory profiles.
+## 1. Top nav (PublicHeader)
 
-## Reference layout (from screenshot)
+New left → right order:
 
-Top → bottom, all on the light `bg-reps-cream` surface used by the professional profile:
+1. **Find a coach** → `/find-a-professional` (plain link, no mega-menu)
+2. **Find a training provider** → `/find-a-training-provider` (plain link)
+3. **For professionals** → `/for-professionals` (unchanged)
+4. **Resources** → `/resources` (unchanged)
+5. **About** → `/about` (unchanged)
 
-1. Breadcrumbs: Home › Find a Professional › **Training Providers** › [Provider]
-2. Hero row: square logo/photo (left) + name, tagline, location + rating pill, delivery chip ("In-person / Online / Blended"), 1-line quote, **Enquire Now** + **Save profile**
-3. 4-tile trust strip: REPS Verified · Accreditations Checked · Professional Indemnity · CPD tracking (Coming soon)
-4. Sticky in-page nav: About · Courses · Verified Pros · Reviews · Accreditations · Locations
-5. Main grid (2/3 + 1/3):
-   - Left: About (with quote block + long copy + 3 stat tiles: Years established / Learners trained / Verified since)
-   - Middle: **Courses & Pricing** cards (title, one-line, price + format chip: In-person / Online / Blended)
-   - Right column: **Verified Professionals Trained** (count + small avatar grid, link to filtered directory) + **Locations & Delivery** (primary centre with map + "View on map", secondary centres listed, "Also delivers online")
-6. Row: **Accreditations & Recognition** (awarding bodies + Ofqual status chips) + **Trust & Assurance** (Identity Verified / Accreditations Approved / Professional Indemnity + "View full verification →")
-7. Row: **What Learners Say** (5.0 summary + histogram + featured review) + **FAQs** (list, "View all FAQs →")
-8. Full-width band: "Ready to train with [Provider]?" + Send Enquiry / Save
-9. Global stats strip (25,000+ verified pros / 50,000+ reviews / 120+ countries / 1M+ sessions / 100% verified) — reuse existing component from `/c/$slug`
-10. Standard footer
+Changes:
+- Retire the "Find a professional" mega-menu (goals / professions / cities columns) in favour of two direct links. The mega-menu content is preserved on the `/find-a-professional` page itself, so nothing is lost.
+- Update `HeaderCommandPalette` "Quick actions" to list both directories.
+- Update `PublicFooter` "Discover" column to match.
+- Mobile sheet: same two entries at the top of the discovery group.
 
-## Files
+## 2. `/find-a-training-provider` route (new)
 
-- **Rewrite** `src/routes/t.$slug.index.tsx` — new light directory-profile component. Model closely on `src/routes/c.$slug.index.tsx` for header, breadcrumbs, sticky nav, trust strip, review block, FAQ block, CTA band, stats strip, and footer — so a Training Provider profile reads as a sibling of a Coach profile, not a foreign template.
-- **Keep** `src/routes/t.$slug.tsx` (layout Outlet) unchanged.
-- **Keep** `src/routes/t.$slug.enquire.tsx` and `t.$slug.review.tsx` — their entry point (the CTAs) still lands here.
-- **No new tables.** Provider data reads from existing `professionals` row where `account_type = 'organisation'`. Provider-specific fields (courses, verified pros linked, accreditations, secondary locations) render from tables that already exist (`courses`, `professional_locations`, `identity_documents` for accreditation files) — when a table is empty for that provider, show a graceful empty state (e.g. "No courses listed yet") rather than hiding the section.
+Mirror the coach directory layout for consistency:
 
-## Section → data source
+- File: `src/routes/find-a-training-provider.tsx`
+- Reuses the same shell, hero, filter rail, and card grid primitives as `/find-a-professional`, swapped to provider data.
+- Data: server fn `listPublicProviders` that reads `professionals` where `account_type = 'organisation'` (published + verified), returning name, slug, logo, city, delivery mode, course count, verified-pros count.
+- Cards link to `/t/$slug`.
+- Filters (v1): search by name, city, delivery mode (in-person / online / blended). Advanced filters (accreditation, course category) stubbed for a later pass.
+- Empty state respected when zero providers match.
+- SEO: unique `head()` — title "Find a REPS-verified training provider", description, og:title/description.
+- Follows locked marketing tokens (radii, emerald-for-status only, no hardcoded colors, shared marketing primitives).
 
-| Section | Source |
-|---|---|
-| Hero + trust strip | `professionals` + `verification_submissions` (existing) |
-| Courses & Pricing | `courses` (title, price_pence, format, duration_weeks) |
-| Verified Professionals Trained | count from `professionals` where linked provider = this org (fallback: 0-state "Verified pros trained will appear here once linked.") |
-| Accreditations & Recognition | `course_accreditation_files` + hand-list of awarding bodies on the provider row (empty-state slot per banned-orgs memory) |
-| Trust & Assurance | Existing `verification_submissions` panel from `/c/` |
-| Locations & Delivery | `professional_locations` (primary + secondaries) + `delivery_mode` chips |
-| Reviews | `reviews` via existing `listPublicReviewsBySlug` |
-| FAQs | `website_faqs` (already exists) |
+## 3. `/t/$slug` header buttons
 
-## Compliance (auto-enforced against the audit script)
+- Replace the secondary **Save profile** button with **Write a review** (Star icon), routed to `/t/$slug/review` (route already exists).
+- Save profile action removed from this page entirely — it can return later as an account feature.
+- Primary **Enquire now** button unchanged.
+- No other layout changes to the profile page.
 
-- Light surfaces + `bg-reps-cream` backdrop, brand-orange CTAs only, emerald ONLY for verified/status chips.
-- Radii: hero image 18px, cards 16px, panels 22px, pills full, buttons 10px, inputs 12px. No `rounded-xl/2xl/3xl`, no 14/20/28/32px.
-- Uses shared marketing/coach primitives where available (`FeaturedProCard` for the "Verified pros trained" avatar tiles, existing stats strip component, existing trust panel, `MarketingFaq` or the `/c/` FAQ block).
-- Head metadata per route: title `[Provider] — REPS Verified Training Provider`, description from tagline, canonical + og:url self-refer to `https://repsuk.org/t/{slug}`, `og:type: organization`, JSON-LD `EducationalOrganization`.
-- No new copy that violates locked language rules (no "UK", no "shopfront", no CIMSPA, no BD-migration terms).
+## 4. Files touched
 
-## Out of scope
+- `src/components/public/PublicHeader.tsx` — nav items + mega-menu removal
+- `src/components/public/HeaderCommandPalette.tsx` — Quick actions
+- `src/components/public/PublicFooter.tsx` — Discover column
+- `src/components/public/nav-config.ts` — trim unused mega-menu exports if now dead
+- `src/routes/find-a-training-provider.tsx` — new route
+- `src/lib/directory/providers.functions.ts` — new `listPublicProviders` server fn (public read via publishable Data API client, RLS-safe)
+- `src/routes/t.$slug.index.tsx` — swap header button to Write a review linking to `/t/$slug/review`
 
-- No schema changes.
-- No changes to `/t/$slug/enquire`, `/t/$slug/review`, admin surfaces, or the Members admin split shipped last turn.
-- No changes to `/c/$slug` (locked coach website).
-- Long-form editorial copy is placeholder-safe; a real editorial pass is a separate task per the core memory.
+## 5. Out of scope
 
-## Post-flight
+- No changes to `/find-a-professional` internals.
+- No new tables; providers already exist as `professionals` rows with `account_type = 'organisation'`.
+- No changes to `/c/$slug` (locked) or other locked marketing pages.
+- Save-to-account functionality is deferred; only the button on `/t/$slug` is removed.
 
-Run `bash knowledge://skill/reps-build-compliance/scripts/audit.sh` and `tsgo --noEmit` before handing back; both must exit 0.
+## 6. Verification
+
+- `tsgo --noEmit` for typecheck.
+- `scripts/check-nav-links.mjs` to confirm every nav `to=` resolves to a real route (both new link and coach link).
+- Manual smoke: visit `/`, open nav, navigate to `/find-a-training-provider` and `/find-a-professional`, confirm command palette + footer updated, confirm `/t/$slug` shows Write a review and routes to `/t/$slug/review`.
