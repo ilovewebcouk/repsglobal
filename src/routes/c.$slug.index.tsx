@@ -720,6 +720,22 @@ function CoachWebsitePage() {
       </div>
     );
   }
+
+  // ── Training-provider branch ────────────────────────────────────────
+  // Orgs get the CoachWebsiteOrg variant: same shell / tokens, but course-
+  // led sections and institutional voice instead of the first-person coach
+  // template. Individual coach mock below stays byte-for-byte untouched.
+  if (!isFixture && live?.website?.account_type === "organisation") {
+    return (
+      <CoachWebsiteOrg
+        slug={slug}
+        website={live.website}
+        services={live.services}
+        faqs={live.faqs}
+      />
+    );
+  }
+
   let coach = live
     ? mergeLiveIntoCoach(
         baseCoach ?? COACHES["james-wilson"],
