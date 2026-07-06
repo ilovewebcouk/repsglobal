@@ -37,6 +37,11 @@ import {
 } from "@/lib/campaigns/outbound-extras.functions";
 import { draftArticleEmail } from "@/lib/campaigns/article-ai-draft.functions";
 import { listProspectTags } from "@/lib/prospects/prospects.functions";
+import {
+  renderRegistryTemplate,
+  BROADCAST_TEMPLATE_CHOICES,
+  type BroadcastTemplateKey,
+} from "@/lib/campaigns/render-template.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press" | "news";
 type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter" | "prospects";
