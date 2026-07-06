@@ -967,7 +967,7 @@ function HeroSection({
                 href="#services"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel/40 px-6 text-[14px] font-semibold text-reps-text transition-colors hover:bg-reps-panel"
               >
-                See plans & pricing
+                See courses
                 <ArrowRight className="h-4 w-4" />
               </a>
             </div>
