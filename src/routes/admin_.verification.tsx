@@ -1169,31 +1169,18 @@ function SubCheckChip({ ok, label }: { ok: boolean; label: string }) {
 /* Identity tab — admin index of all identity_documents                       */
 /* -------------------------------------------------------------------------- */
 
-type IdentityStatus = "pending" | "approved" | "rejected" | "needs_more_info" | "expired";
+type IdentityStatus = "pending" | "approved" | "rejected";
 
 const IDENTITY_STATUS_LABEL: Record<IdentityStatus, string> = {
   pending: "Pending",
   approved: "Approved",
   rejected: "Rejected",
-  needs_more_info: "More info",
-  expired: "Expired",
 };
 
-function AdminIdentityTab({
-  signUrl,
-  adminOverride,
-}: {
-  signUrl: unknown;
-  adminOverride: typeof adminOverrideIdentity;
-}) {
-  const qc = useQueryClient();
+function AdminIdentityTab({ signUrl }: { signUrl: unknown }) {
   const fetchIdentities = useServerFn(listIdentityChecks);
-  const override = useServerFn(adminOverride);
   const [status, setStatus] = useState<IdentityStatus>("pending");
   const [search, setSearch] = useState("");
-  const [overrideTarget, setOverrideTarget] = useState<{ id: string; decision: "approved" | "rejected" | "needs_more_info" } | null>(null);
-  const [overrideReason, setOverrideReason] = useState("");
-  const [overrideBusy, setOverrideBusy] = useState(false);
 
   const query = useQuery({
     queryKey: ["admin-identity-checks", status],
@@ -1209,6 +1196,7 @@ function AdminIdentityTab({
       name_on_doc: string | null;
       status: string;
       vendor: string | null;
+      stripe_vs_id?: string | null;
       stripe_status: string | null;
       stripe_reason: string | null;
       admin_note: string | null;
@@ -1224,31 +1212,11 @@ function AdminIdentityTab({
     );
   }, [query.data, search]);
 
-  const doOverride = (id: string, decision: "approved" | "rejected" | "needs_more_info") => {
-    setOverrideReason("");
-    setOverrideTarget({ id, decision });
-  };
-
-  const submitOverride = async () => {
-    if (!overrideTarget || overrideReason.trim().length < 8) return;
-    setOverrideBusy(true);
-    try {
-      await override({ data: { identity_id: overrideTarget.id, decision: overrideTarget.decision, reason: overrideReason.trim() } });
-      qc.invalidateQueries({ queryKey: ["admin-identity-checks"] });
-      setOverrideTarget(null);
-      setOverrideReason("");
-    } catch (e) {
-      alert(e instanceof Error ? e.message : "Override failed");
-    } finally {
-      setOverrideBusy(false);
-    }
-  };
-
   return (
     <PPanel className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-1">
-          {(["pending", "approved", "needs_more_info", "rejected", "expired"] as IdentityStatus[]).map((s) => (
+          {(["pending", "approved", "rejected"] as IdentityStatus[]).map((s) => (
             <button
               key={s}
               onClick={() => setStatus(s)}
@@ -1272,8 +1240,7 @@ function AdminIdentityTab({
       </div>
 
       <p className="mt-3 rounded-[8px] border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/55">
-        Identity checks confirm who the person is. They do <span className="text-white/80">not</span> grant
-        professional titles — those come from approved qualifications.
+        Stripe Identity manages every outcome automatically — this view is read-only. Open a row in Stripe to inspect the check.
       </p>
 
       <div className="mt-4 overflow-x-auto">
@@ -1282,10 +1249,10 @@ function AdminIdentityTab({
             <tr>
               <th className="pb-2 pr-3">Person</th>
               <th className="pb-2 pr-3">Name on doc</th>
-              <th className="pb-2 pr-3">Vendor</th>
+              <th className="pb-2 pr-3">Stripe status</th>
               <th className="pb-2 pr-3">Status</th>
               <th className="pb-2 pr-3">Submitted</th>
-              <th className="pb-2">Actions</th>
+              <th className="pb-2">Stripe</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-reps-border text-white/80">
@@ -1299,14 +1266,14 @@ function AdminIdentityTab({
               <tr key={r.id}>
                 <td className="py-2 pr-3 font-semibold text-white">{r.profile_name || "—"}</td>
                 <td className="py-2 pr-3">{r.name_on_doc || "—"}</td>
-                <td className="py-2 pr-3 text-white/60">{r.vendor ?? "manual"}{r.stripe_status ? ` · ${r.stripe_status}` : ""}</td>
+                <td className="py-2 pr-3 text-white/60">{r.stripe_status ?? (r.vendor ?? "—")}</td>
                 <td className="py-2 pr-3">
                   <Badge
                     variant="neutral"
                     className={
                       r.status === "approved"
                         ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                        : r.status === "rejected" || r.status === "expired"
+                        : r.status === "rejected"
                           ? "border-red-400/30 bg-red-500/15 text-red-300"
                           : "border-amber-400/30 bg-amber-500/15 text-amber-300"
                     }
@@ -1319,17 +1286,18 @@ function AdminIdentityTab({
                 </td>
                 <td className="py-2 pr-3 text-white/55" title={absoluteDateTime(r.created_at)}>{new Date(r.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
                 <td className="py-2">
-                  <div className="flex flex-wrap gap-1">
-                    {r.status !== "approved" && (
-                      <Button size="sm" variant="ghost" onClick={() => doOverride(r.id, "approved")}>Approve</Button>
-                    )}
-                    {r.status !== "rejected" && (
-                      <Button size="sm" variant="ghost" onClick={() => doOverride(r.id, "rejected")}>Reject</Button>
-                    )}
-                    {r.status !== "needs_more_info" && (
-                      <Button size="sm" variant="ghost" onClick={() => doOverride(r.id, "needs_more_info")}>Needs info</Button>
-                    )}
-                  </div>
+                  {r.stripe_vs_id ? (
+                    <a
+                      href={`https://dashboard.stripe.com/identity/verification-sessions/${r.stripe_vs_id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] font-semibold text-reps-orange hover:underline"
+                    >
+                      Open ↗
+                    </a>
+                  ) : (
+                    <span className="text-[11px] text-white/40">—</span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -1338,40 +1306,10 @@ function AdminIdentityTab({
       </div>
       {/* signUrl prop intentionally accepted for future per-row doc preview */}
       <span className="hidden">{typeof signUrl}</span>
-      <Dialog open={!!overrideTarget} onOpenChange={(o) => { if (!o) { setOverrideTarget(null); setOverrideReason(""); } }}>
-        <DialogContent className="border-reps-border bg-reps-ink text-white">
-          <DialogHeader>
-            <DialogTitle>
-              Mark identity check as &ldquo;{overrideTarget?.decision === "needs_more_info" ? "needs more info" : overrideTarget?.decision}&rdquo;
-            </DialogTitle>
-            <DialogDescription className="text-white/65">
-              Reason is recorded permanently in the audit log.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            placeholder="Reason (min 8 chars)"
-            value={overrideReason}
-            onChange={(e) => setOverrideReason(e.target.value)}
-            rows={3}
-          />
-          <DialogFooter>
-            <Button variant="ghost" size="sm" disabled={overrideBusy} onClick={() => setOverrideTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              disabled={overrideBusy || overrideReason.trim().length < 8}
-              onClick={submitOverride}
-              className="bg-reps-orange text-white hover:bg-reps-orange-hover"
-            >
-              {overrideBusy ? <Loader2 className="size-3.5 animate-spin" /> : "Confirm"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </PPanel>
   );
 }
+
 
 /* -------------------------------------------------------------------------- */
 /* Admin · Insurance review tab                                               */
