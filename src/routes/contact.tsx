@@ -76,7 +76,7 @@ const QUICK_ANSWERS = [
     icon: GraduationCap,
     title: "For training providers",
     body: "Course recognition, bulk verification for graduates, partnership and integrations.",
-    href: "/for-training-providers",
+    href: "/for-professionals",
     cta: "Provider enquiries",
   },
 ] as const;
