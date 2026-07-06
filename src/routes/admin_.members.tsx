@@ -394,7 +394,7 @@ function AdminProfessionalsPage() {
               return (
                 <button
                   key={s.value}
-                  onClick={() => setSegment(s.value)}
+                  onClick={() => { setSegment(s.value); if (s.value === "providers") setTab("all"); }}
                   className={
                     active
                       ? "h-8 rounded-full bg-reps-orange px-4 text-[12px] font-semibold text-white"
