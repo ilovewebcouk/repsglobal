@@ -41,28 +41,23 @@ export const getIdentityForPro = createServerFn({ method: "POST" })
     return row;
   });
 
-const IDENTITY_STATUSES = [
-  "pending",
-  "approved",
-  "rejected",
-  "needs_more_info",
-  "expired",
-] as const;
+const IDENTITY_STATUSES = ["pending", "approved", "rejected"] as const;
 
 /**
- * Admin index of all identity_documents rows. Used by the Identity tab of
- * the admin Verification page so admins can see Stripe Identity outcomes,
- * pending checks, and historical decisions in one place.
+ * Admin index of identity_documents rows. Read-only surface for the
+ * Identity tab of admin Verification — Stripe Identity is the sole source
+ * of truth for outcomes; admins cannot mutate these rows.
  */
 export const listIdentityChecks = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) =>
     z
       .object({
-        statuses: z.array(z.enum(IDENTITY_STATUSES)).min(1).max(5),
+        statuses: z.array(z.enum(IDENTITY_STATUSES)).min(1).max(3),
       })
       .parse(d),
   )
+
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
