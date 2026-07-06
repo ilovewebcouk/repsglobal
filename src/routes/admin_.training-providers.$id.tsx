@@ -15,7 +15,6 @@ import {
   FileSearch,
   RotateCcw,
   Copy,
-  Building2,
 } from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
