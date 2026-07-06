@@ -212,7 +212,7 @@ export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | '
 export type SortDir = 'asc' | 'desc';
 
 export type AdminProFilters = {
-  plans?: ('free' | 'verified' | 'pro' | 'studio')[];
+  plans?: ('free' | 'verified' | 'pro' | 'studio' | 'training_provider')[];
   professions?: string[];
   hasAvatar?: boolean;
 };
