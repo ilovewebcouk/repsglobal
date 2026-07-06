@@ -595,20 +595,30 @@ export const Route = createFileRoute("/c/$slug/")({
       };
     }
 
-    const name = sf.full_name?.trim() || "REPS Professional";
+    const isOrg = sf.account_type === "organisation";
+    const name = isOrg
+      ? sf.legal_entity_name?.trim() || sf.full_name?.trim() || "Training provider"
+      : sf.full_name?.trim() || "REPS Professional";
     const titleLabel = sf.titles?.length
       ? sf.titles.join(" & ")
       : sf.primary_profession || "Personal Trainer";
     const cityPart = sf.city ? ` in ${sf.city}` : "";
-    const pageTitle = `${name} — ${titleLabel}${cityPart} | REPS`;
+    const pageTitle = isOrg
+      ? `${name} — training provider${cityPart} | REPS`
+      : `${name} — ${titleLabel}${cityPart} | REPS`;
 
     const bioSnippet = (sf.tagline || sf.subtitle || sf.about || "")
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 110);
-    const description = bioSnippet
-      ? `Book ${name}, a verified ${titleLabel.toLowerCase()}${cityPart}. ${bioSnippet}${bioSnippet.length === 110 ? "…" : ""} Verified on the REPS register.`
-      : `Book ${name}, a verified ${titleLabel.toLowerCase()}${cityPart}. Verified on the REPS register.`;
+    const bodies = (sf.awarding_bodies ?? []).slice(0, 3).join(", ");
+    const description = isOrg
+      ? bioSnippet
+        ? `${name} — verified training provider${cityPart}. ${bioSnippet}${bioSnippet.length === 110 ? "…" : ""}${bodies ? ` Awarding bodies: ${bodies}.` : ""} Verified on the REPS register.`
+        : `${name} — verified training provider${cityPart}. Ofqual-regulated qualifications${bodies ? ` from ${bodies}` : ""}. Verified on the REPS register.`
+      : bioSnippet
+        ? `Book ${name}, a verified ${titleLabel.toLowerCase()}${cityPart}. ${bioSnippet}${bioSnippet.length === 110 ? "…" : ""} Verified on the REPS register.`
+        : `Book ${name}, a verified ${titleLabel.toLowerCase()}${cityPart}. Verified on the REPS register.`;
 
     const ogImage = sf.hero_image_url || sf.avatar_url || undefined;
 
@@ -618,7 +628,7 @@ export const Route = createFileRoute("/c/$slug/")({
       { property: "og:title", content: pageTitle },
       { property: "og:description", content: description.slice(0, 300) },
       { property: "og:url", content: canonical },
-      { property: "og:type", content: "profile" },
+      { property: "og:type", content: isOrg ? "website" : "profile" },
       { name: "twitter:title", content: pageTitle },
       { name: "twitter:description", content: description.slice(0, 200) },
     ];
@@ -627,22 +637,36 @@ export const Route = createFileRoute("/c/$slug/")({
       meta.push({ name: "twitter:image", content: ogImage });
     }
 
-    const personJsonLd: Record<string, unknown> = {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      name,
-      url: canonical,
-      jobTitle: titleLabel,
-      ...(ogImage ? { image: ogImage } : {}),
-      ...(sf.city ? { address: { "@type": "PostalAddress", addressLocality: sf.city } } : {}),
-      ...(sf.tagline ? { description: sf.tagline } : {}),
-    };
+    const jsonLd: Record<string, unknown> = isOrg
+      ? {
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          name,
+          url: canonical,
+          ...(ogImage ? { image: ogImage } : {}),
+          ...(sf.city
+            ? { address: { "@type": "PostalAddress", addressLocality: sf.city } }
+            : {}),
+          ...(sf.tagline ? { description: sf.tagline } : {}),
+        }
+      : {
+          "@context": "https://schema.org",
+          "@type": "Person",
+          name,
+          url: canonical,
+          jobTitle: titleLabel,
+          ...(ogImage ? { image: ogImage } : {}),
+          ...(sf.city
+            ? { address: { "@type": "PostalAddress", addressLocality: sf.city } }
+            : {}),
+          ...(sf.tagline ? { description: sf.tagline } : {}),
+        };
 
     return {
       meta,
       links: [{ rel: "canonical", href: canonical }],
       scripts: [
-        { type: "application/ld+json", children: JSON.stringify(personJsonLd) },
+        { type: "application/ld+json", children: JSON.stringify(jsonLd) },
       ],
     };
   },
