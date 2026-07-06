@@ -1,99 +1,44 @@
-# Unify Training Providers into the Professionals model
+## Goal
+Split training-provider websites off from the trainer template. Providers render at `/t/$slug`; trainers stay on `/c/$slug` and go back to their pre-provider copy.
 
-Blast radius is small (~6 code files reference the org/provider tables, plus 9 provider routes). No live data. Clean slate is the right call.
+## Scope
+Provider demo slugs (from seed migration, `account_type = 'organisation'`):
+- `northline-fitness-academy`
+- `forge-strength-institute`
 
-## The core move
+Everything else (`jordon-gumbley`, `james-wilson`, all `individual` accounts) stays on `/c/$slug` and is not touched.
 
-A training provider becomes **a professional with `account_type = 'organisation'`**. Everything reuses the professional shell.
+## Steps
 
-```text
-professionals
-├── account_type: 'individual'  →  personal trainer, coach, nutritionist    (Core / Pro)
-└── account_type: 'organisation' → training provider, academy, gym group    (Studio)
-```
+**1. Revert trainer-side changes**
+- `src/routes/c.$slug.index.tsx` line 970: `View courses` → back to `See plans & pricing`.
+- No other reverts needed — the earlier logo uploads (`src/assets/diverse-logo.*`, `origym-logo.*`) were never wired into any component, so they're inert. Leave them for reuse on `/t/`.
 
-One entity, one table, one profile template, one dashboard, one admin workbench, one review system, one enquire flow, one search index.
+**2. Fork the route to `/t/$slug`**
+Copy the three coach route files as-is, only changing the `createFileRoute` path:
+- `c.$slug.tsx` → `t.$slug.tsx` (`/t/$slug`)
+- `c.$slug.index.tsx` → `t.$slug.index.tsx` (`/t/$slug/`)
+- `c.$slug.enquire.tsx` → `t.$slug.enquire.tsx` (`/t/$slug/enquire`)
+- `c.$slug.review.tsx` → `t.$slug.review.tsx` (`/t/$slug/review`)
 
-## Schema changes (single migration)
+Inside the copies, retarget every internal `<Link to="/c/$slug/…">` and `useNavigate({ to: "/c/…" })` to `/t/…`. Keep loader, data shape, and layout identical for now — this is a pure fork so we can diverge freely without touching trainer pages.
 
-**Extend `professionals`:**
-- `account_type text not null default 'individual'` — `'individual' | 'organisation'`
-- `legal_entity_name text` — company name (orgs only)
-- `company_registration text` — Companies House / equivalent (orgs only)
-- `staff_count int` — number of tutors/trainers (orgs only)
-- `awarding_bodies text[]` — accreditation partners (orgs only)
-- Existing `display_name`, `bio`, `slug`, `avatar_url`, `verification_status`, `location`, `services` all reused.
+**3. Redirect providers from `/c/` to `/t/`**
+In `c.$slug.tsx` (layout route), after the loader resolves the professional, if `account_type === 'organisation'` throw a `redirect({ to: '/t/$slug', params: { slug } })`. This future-proofs any old provider link (email, social, cached) and guarantees providers can only ever be seen on `/t/`.
 
-**Extend `services`** to cover courses:
-- `service_kind text default 'session'` — `'session' | 'package' | 'course' | 'programme'`
-- `starts_at timestamptz`, `ends_at timestamptz`, `seats_total int`, `seats_taken int`, `venue text`, `qualification_level text`, `awarding_body text` (nullable, only used by course-kind services)
+**4. Point demo/internal links at `/t/`**
+Search for hard-coded `/c/northline-fitness-academy` and `/c/forge-strength-institute` references (admin demo lists, docs, seed READMEs) and switch them to `/t/…`. The `getWebsiteBySlug` loader itself is slug-based and doesn't need to change.
 
-**Drop entirely:**
-- `organisations`
-- `organisation_users` → replaced by extending `professional_staff` (or a new `professional_members` join for org accounts)
-- `provider_reviews` → merge into `reviews` with a `subject_kind` if needed (likely not — `reviews.professional_id` already works)
-- `provider_review_requests` → merge into `review_requests`
-- `provider_review_evidence`, `provider_review_flags` → merge into equivalents on `reviews`
+**5. Diverge on `/t/` (next turn, not this plan)**
+Once the fork is live, the provider-specific edits we discussed — logo upload replacing the Verified/Insured/Location badge row, name-only eyebrow, editable H1, "View courses" CTA, courses-first section order — all happen only in `t.$slug.index.tsx`. Trainer pages stay locked to the current design.
 
-**Auth-user link:** unchanged. Owner of an organisation account is still one `auth.users` row pointing at one `professionals` row; add a `professional_members` table later only if we need multi-user access to a single org account.
+## Technical notes
+- Route path convention: filenames use dots (`t.$slug.index.tsx`), `createFileRoute` strings use slashes (`/t/$slug/`). `routeTree.gen.ts` is auto-generated — don't touch.
+- The layout redirect uses `throw redirect(...)` from `@tanstack/react-router` inside `beforeLoad` (runs before render, avoids a flash of the trainer page).
+- `head()` metadata on `/t/` stays noindex for now (matches `/c/` fixture behaviour) since these are demo pages.
+- No DB migration needed — `account_type` already distinguishes org vs individual.
 
-## Route changes
-
-**Delete:**
-- `providers.$slug.tsx` / `.index.tsx` / `.review.tsx`
-- `verify.provider.$membershipId.tsx`
-- `reviews.provider.verify.$token.tsx`
-- `admin_.training-providers.*` (4 files)
-
-**Reuse (no new routes needed):**
-- Public profile: `/c/$slug` — renders orgs and individuals from the same template, with an `account_type`-aware header (org logo + "Training provider" label, staff count, awarding bodies) and services block that switches between "Coaching packages" and "Upcoming courses" based on `service_kind`.
-- Admin: `/admin/professionals/$id` — Member 360 workbench already handles both.
-- Reviews: existing `/r/$token` + reviews tab already work per professional.
-- Enquire: `/pro/$slug/enquire` — same form, org-aware copy.
-- Directory: `/find` returns both, with an `account_type` facet ("Coaches" / "Training providers" / "All").
-
-**Optional vanity redirect:** `/providers/:slug → /c/:slug` (301) via `legacy_redirects` so any external links keep working.
-
-## Code changes
-
-- Delete `src/lib/training-providers.functions.ts` — its list/detail/review functions collapse into existing `professionals.functions.ts` and `reviews.functions.ts`.
-- Update `/c/$slug` component to branch on `account_type` for: header labels, verification chips (individual = ID+insurance+quals; org = company reg + awarding-body accreditation), services section title, "About" copy.
-- Update `/find` filters, city pages, profession pages to include org accounts under the right specialism/category.
-- Update `src/lib/billing.ts` — Studio £149 becomes the tier gate for `account_type = 'organisation'` at signup.
-- Update `src/components/dashboard/nav-data.ts` — remove standalone "Training providers" admin section; add an "Account type" filter on `/admin/professionals`.
-- Update nav-data.ts pricing/marketing to describe Studio as "for training providers, gyms, academies".
-
-## Signup flow
-
-Signup picks account type up front:
-- **Individual** → Core (£34/yr) or Pro (£59/mo) → normal pro onboarding.
-- **Organisation** → Studio (£149/mo) → org onboarding (legal name, company reg, awarding bodies, staff invites).
-
-Same auth, same tables, different fields collected.
-
-## Migration sequence (one atomic push)
-
-1. Write the SQL migration: extend `professionals` + `services`, drop the 6 provider/org tables, add redirect rows.
-2. Rebuild `/c/$slug` to render both account types.
-3. Delete the 9 provider routes and `training-providers.functions.ts`.
-4. Add `account_type` filter/facet to `/find` + `/admin/professionals`.
-5. Update Studio tier wiring in `billing.ts` and signup.
-6. Optional: seed 2–3 demo org professionals so we can eyeball the unified template.
-
-## What we keep from the current provider work
-
-Nothing structural, but the *content model* we defined (awarding bodies, courses, tutor count, verification steps for orgs) transfers directly into the new columns on `professionals`/`services`. Not wasted.
-
-## What this fixes
-
-- One admin workbench, not two.
-- One reviews module, not two.
-- One directory, not two.
-- Search returns "Level 3 PT course in Manchester" and "Manchester-based Level 3 PT" from the same query.
-- Studio becomes a real tier, not a separate product line.
-
-## Out of scope for this pass
-
-- Multi-user org accounts (staff logins under one org). Add `professional_members` later when a real customer asks.
-- Course booking with seat management. `services.seats_total/taken` columns land now; the booking flow ships in Phase 2.1.
-- Migrating the old admin invite tooling — will refresh in the same pass since org invites now go through the same pipeline as pro invites.
+## Out of scope
+- Any visual redesign of the provider page. This plan only relocates it.
+- Changes to `/c/` beyond the one-line CTA revert.
+- Renaming, removing, or reseeding demo data.

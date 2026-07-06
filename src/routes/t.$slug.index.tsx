@@ -536,7 +536,7 @@ function mergeLiveIntoCoach(
 }
 
 
-export const Route = createFileRoute("/c/$slug/")({
+export const Route = createFileRoute("/t/$slug/")({
   validateSearch: (search: Record<string, unknown>) => ({
     preview: typeof search.preview === "string" ? search.preview : undefined,
   }),
@@ -743,7 +743,7 @@ function CoachWebsitePage() {
     ["--accent-color" as string]: accent,
   } as React.CSSProperties;
 
-  const enquireHref = "/c/$slug/enquire" as const;
+  const enquireHref = "/t/$slug/enquire" as const;
 
   const isOwnerViewing =
     !!user && !!live?.website?.professional_id && user.id === live.website.professional_id;
@@ -882,7 +882,7 @@ function HeroSection({
   slug,
 }: {
   coach: Coach;
-  enquireHref: "/c/$slug/enquire";
+  enquireHref: "/t/$slug/enquire";
   slug: string;
 }) {
   return (
@@ -1116,7 +1116,7 @@ function ServicesSection({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/c/$slug/enquire";
+  enquireHref: "/t/$slug/enquire";
 }) {
   return (
     <section id="services" className="scroll-mt-28 bg-reps-ink">
@@ -1155,7 +1155,7 @@ function TierCard({
 }: {
   tier: Tier;
   slug: string;
-  enquireHref: "/c/$slug/enquire";
+  enquireHref: "/t/$slug/enquire";
 }) {
   const isHighlight = !!tier.highlight;
   return (
@@ -1843,7 +1843,7 @@ function ContactSection({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/c/$slug/enquire";
+  enquireHref: "/t/$slug/enquire";
 }) {
   return (
     <section id="contact" className="scroll-mt-28 bg-reps-ink">
@@ -1994,7 +1994,7 @@ function StickyMobileBar({
 }: {
   coach: Coach;
   slug: string;
-  enquireHref: "/c/$slug/enquire";
+  enquireHref: "/t/$slug/enquire";
 }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-reps-border bg-reps-ink/95 px-4 py-3 backdrop-blur lg:hidden">

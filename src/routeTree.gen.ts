@@ -46,6 +46,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as HelpIndexRouteImport } from './routes/help.index'
+import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as RenewCancelledRouteImport } from './routes/renew.cancelled'
 import { Route as RenewTokenRouteImport } from './routes/renew.$token'
@@ -102,11 +103,14 @@ import { Route as AccountSuspendedRouteImport } from './routes/account.suspended
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedProfessionalRouteRouteImport } from './routes/_authenticated/_professional/route'
+import { Route as TSlugIndexRouteImport } from './routes/t.$slug.index'
 import { Route as ProSlugIndexRouteImport } from './routes/pro.$slug.index'
 import { Route as HelpCategoryIndexRouteImport } from './routes/help.$category.index'
 import { Route as CSlugIndexRouteImport } from './routes/c.$slug.index'
 import { Route as UInsuranceSessionIdRouteImport } from './routes/u.insurance.$sessionId'
 import { Route as UCpdSessionIdRouteImport } from './routes/u.cpd.$sessionId'
+import { Route as TSlugReviewRouteImport } from './routes/t.$slug.review'
+import { Route as TSlugEnquireRouteImport } from './routes/t.$slug.enquire'
 import { Route as ProSlugReviewRouteImport } from './routes/pro.$slug.review'
 import { Route as ProSlugEnquireRouteImport } from './routes/pro.$slug.enquire'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -354,6 +358,11 @@ const HelpIndexRoute = HelpIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => HelpRoute,
+} as any)
+const TSlugRoute = TSlugRouteImport.update({
+  id: '/t/$slug',
+  path: '/t/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
   id: '/resources/$slug',
@@ -638,6 +647,11 @@ const AuthenticatedProfessionalRouteRoute =
     id: '/_professional',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const TSlugIndexRoute = TSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TSlugRoute,
+} as any)
 const ProSlugIndexRoute = ProSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -662,6 +676,16 @@ const UCpdSessionIdRoute = UCpdSessionIdRouteImport.update({
   id: '/u/cpd/$sessionId',
   path: '/u/cpd/$sessionId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TSlugReviewRoute = TSlugReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => TSlugRoute,
+} as any)
+const TSlugEnquireRoute = TSlugEnquireRouteImport.update({
+  id: '/enquire',
+  path: '/enquire',
+  getParentRoute: () => TSlugRoute,
 } as any)
 const ProSlugReviewRoute = ProSlugReviewRouteImport.update({
   id: '/review',
@@ -1116,6 +1140,7 @@ export interface FileRoutesByFullPath {
   '/renew/$token': typeof RenewTokenRoute
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/t/$slug': typeof TSlugRouteWithChildren
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -1132,11 +1157,14 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/t/$slug/enquire': typeof TSlugEnquireRoute
+  '/t/$slug/review': typeof TSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/c/$slug/': typeof CSlugIndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/t/$slug/': typeof TSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
@@ -1288,11 +1316,14 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/t/$slug/enquire': typeof TSlugEnquireRoute
+  '/t/$slug/review': typeof TSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/c/$slug': typeof CSlugIndexRoute
   '/help/$category': typeof HelpCategoryIndexRoute
   '/pro/$slug': typeof ProSlugIndexRoute
+  '/t/$slug': typeof TSlugIndexRoute
   '/checkout/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
@@ -1434,6 +1465,7 @@ export interface FileRoutesById {
   '/renew/$token': typeof RenewTokenRoute
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/t/$slug': typeof TSlugRouteWithChildren
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
@@ -1451,11 +1483,14 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/pro/$slug/enquire': typeof ProSlugEnquireRoute
   '/pro/$slug/review': typeof ProSlugReviewRoute
+  '/t/$slug/enquire': typeof TSlugEnquireRoute
+  '/t/$slug/review': typeof TSlugReviewRoute
   '/u/cpd/$sessionId': typeof UCpdSessionIdRoute
   '/u/insurance/$sessionId': typeof UInsuranceSessionIdRoute
   '/c/$slug/': typeof CSlugIndexRoute
   '/help/$category/': typeof HelpCategoryIndexRoute
   '/pro/$slug/': typeof ProSlugIndexRoute
+  '/t/$slug/': typeof TSlugIndexRoute
   '/_authenticated/_professional/checkout_/credits': typeof AuthenticatedProfessionalCheckoutCreditsRoute
   '/_authenticated/_professional/dashboard/syncing': typeof AuthenticatedProfessionalDashboardSyncingRoute
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
@@ -1597,6 +1632,7 @@ export interface FileRouteTypes {
     | '/renew/$token'
     | '/renew/cancelled'
     | '/resources/$slug'
+    | '/t/$slug'
     | '/help/'
     | '/resources/'
     | '/.lovable/oauth/consent'
@@ -1613,11 +1649,14 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/t/$slug/enquire'
+    | '/t/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/c/$slug/'
     | '/help/$category/'
     | '/pro/$slug/'
+    | '/t/$slug/'
     | '/checkout/credits'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
@@ -1769,11 +1808,14 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/t/$slug/enquire'
+    | '/t/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/c/$slug'
     | '/help/$category'
     | '/pro/$slug'
+    | '/t/$slug'
     | '/checkout/credits'
     | '/dashboard/syncing'
     | '/dashboard/cpd'
@@ -1914,6 +1956,7 @@ export interface FileRouteTypes {
     | '/renew/$token'
     | '/renew/cancelled'
     | '/resources/$slug'
+    | '/t/$slug'
     | '/help/'
     | '/resources/'
     | '/_authenticated/_professional/_pro'
@@ -1931,11 +1974,14 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/pro/$slug/enquire'
     | '/pro/$slug/review'
+    | '/t/$slug/enquire'
+    | '/t/$slug/review'
     | '/u/cpd/$sessionId'
     | '/u/insurance/$sessionId'
     | '/c/$slug/'
     | '/help/$category/'
     | '/pro/$slug/'
+    | '/t/$slug/'
     | '/_authenticated/_professional/checkout_/credits'
     | '/_authenticated/_professional/dashboard/syncing'
     | '/_authenticated/_professional/dashboard_/cpd'
@@ -2076,6 +2122,7 @@ export interface RootRouteChildren {
   RenewTokenRoute: typeof RenewTokenRoute
   RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
+  TSlugRoute: typeof TSlugRouteWithChildren
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -2365,6 +2412,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/help/'
       preLoaderRoute: typeof HelpIndexRouteImport
       parentRoute: typeof HelpRoute
+    }
+    '/t/$slug': {
+      id: '/t/$slug'
+      path: '/t/$slug'
+      fullPath: '/t/$slug'
+      preLoaderRoute: typeof TSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/resources/$slug': {
       id: '/resources/$slug'
@@ -2758,6 +2812,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/t/$slug/': {
+      id: '/t/$slug/'
+      path: '/'
+      fullPath: '/t/$slug/'
+      preLoaderRoute: typeof TSlugIndexRouteImport
+      parentRoute: typeof TSlugRoute
+    }
     '/pro/$slug/': {
       id: '/pro/$slug/'
       path: '/'
@@ -2792,6 +2853,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/u/cpd/$sessionId'
       preLoaderRoute: typeof UCpdSessionIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/t/$slug/review': {
+      id: '/t/$slug/review'
+      path: '/review'
+      fullPath: '/t/$slug/review'
+      preLoaderRoute: typeof TSlugReviewRouteImport
+      parentRoute: typeof TSlugRoute
+    }
+    '/t/$slug/enquire': {
+      id: '/t/$slug/enquire'
+      path: '/enquire'
+      fullPath: '/t/$slug/enquire'
+      preLoaderRoute: typeof TSlugEnquireRouteImport
+      parentRoute: typeof TSlugRoute
     }
     '/pro/$slug/review': {
       id: '/pro/$slug/review'
@@ -3492,6 +3567,20 @@ const ProSlugRouteChildren: ProSlugRouteChildren = {
 const ProSlugRouteWithChildren =
   ProSlugRoute._addFileChildren(ProSlugRouteChildren)
 
+interface TSlugRouteChildren {
+  TSlugEnquireRoute: typeof TSlugEnquireRoute
+  TSlugReviewRoute: typeof TSlugReviewRoute
+  TSlugIndexRoute: typeof TSlugIndexRoute
+}
+
+const TSlugRouteChildren: TSlugRouteChildren = {
+  TSlugEnquireRoute: TSlugEnquireRoute,
+  TSlugReviewRoute: TSlugReviewRoute,
+  TSlugIndexRoute: TSlugIndexRoute,
+}
+
+const TSlugRouteWithChildren = TSlugRoute._addFileChildren(TSlugRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -3583,6 +3672,7 @@ const rootRouteChildren: RootRouteChildren = {
   RenewTokenRoute: RenewTokenRoute,
   RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
+  TSlugRoute: TSlugRouteWithChildren,
   ResourcesIndexRoute: ResourcesIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
