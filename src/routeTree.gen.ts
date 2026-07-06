@@ -128,6 +128,7 @@ import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedProfessionalProRouteRouteImport } from './routes/_authenticated/_professional/_pro/route'
+import { Route as ReviewsProviderVerifyTokenRouteImport } from './routes/reviews.provider.verify.$token'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -779,6 +780,12 @@ const AuthenticatedProfessionalProRouteRoute =
     id: '/_pro',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const ReviewsProviderVerifyTokenRoute =
+  ReviewsProviderVerifyTokenRouteImport.update({
+    id: '/provider/verify/$token',
+    path: '/provider/verify/$token',
+    getParentRoute: () => ReviewsRoute,
+  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -1091,7 +1098,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -1210,6 +1217,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/reviews/provider/verify/$token': typeof ReviewsProviderVerifyTokenRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1256,7 +1264,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -1370,6 +1378,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/reviews/provider/verify/$token': typeof ReviewsProviderVerifyTokenRoute
   '/dashboard/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/dashboard/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/dashboard/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1419,7 +1428,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/specialisms': typeof SpecialismsRoute
@@ -1540,6 +1549,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/reviews/provider/verify/$token': typeof ReviewsProviderVerifyTokenRoute
   '/_authenticated/_professional/_pro/dashboard_/bookings': typeof AuthenticatedProfessionalProDashboardBookingsRoute
   '/_authenticated/_professional/_pro/dashboard_/business': typeof AuthenticatedProfessionalProDashboardBusinessRoute
   '/_authenticated/_professional/_pro/dashboard_/calendar': typeof AuthenticatedProfessionalProDashboardCalendarRoute
@@ -1708,6 +1718,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/reviews/provider/verify/$token'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -1868,6 +1879,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/reviews/provider/verify/$token'
     | '/dashboard/bookings'
     | '/dashboard/business'
     | '/dashboard/calendar'
@@ -2037,6 +2049,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/reviews/provider/verify/$token'
     | '/_authenticated/_professional/_pro/dashboard_/bookings'
     | '/_authenticated/_professional/_pro/dashboard_/business'
     | '/_authenticated/_professional/_pro/dashboard_/calendar'
@@ -2086,7 +2099,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ReviewsRoute: typeof ReviewsRoute
+  ReviewsRoute: typeof ReviewsRouteWithChildren
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpecialismsRoute: typeof SpecialismsRoute
@@ -3015,6 +3028,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalProRouteRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/reviews/provider/verify/$token': {
+      id: '/reviews/provider/verify/$token'
+      path: '/provider/verify/$token'
+      fullPath: '/reviews/provider/verify/$token'
+      preLoaderRoute: typeof ReviewsProviderVerifyTokenRouteImport
+      parentRoute: typeof ReviewsRoute
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -3544,6 +3564,17 @@ const HelpRouteChildren: HelpRouteChildren = {
 
 const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
 
+interface ReviewsRouteChildren {
+  ReviewsProviderVerifyTokenRoute: typeof ReviewsProviderVerifyTokenRoute
+}
+
+const ReviewsRouteChildren: ReviewsRouteChildren = {
+  ReviewsProviderVerifyTokenRoute: ReviewsProviderVerifyTokenRoute,
+}
+
+const ReviewsRouteWithChildren =
+  ReviewsRoute._addFileChildren(ReviewsRouteChildren)
+
 interface AdminBillingRouteChildren {
   AdminBillingDisputesDisputeIdRoute: typeof AdminBillingDisputesDisputeIdRoute
 }
@@ -3665,7 +3696,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ReviewsRoute: ReviewsRoute,
+  ReviewsRoute: ReviewsRouteWithChildren,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpecialismsRoute: SpecialismsRoute,
