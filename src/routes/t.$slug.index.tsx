@@ -28,10 +28,17 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import diverseLogo from "@/assets/diverse-logo.svg.asset.json";
 import origymLogo from "@/assets/origym-logo.webp.asset.json";
+import forgeCover from "@/assets/providers/forge-cover.jpg.asset.json";
+import northlineCover from "@/assets/providers/northline-cover.jpg.asset.json";
 
 const DEMO_PROVIDER_LOGOS: Record<string, string> = {
   "northline-fitness-academy": diverseLogo.url,
   "forge-strength-institute": origymLogo.url,
+};
+
+const DEMO_PROVIDER_COVERS: Record<string, string> = {
+  "northline-fitness-academy": northlineCover.url,
+  "forge-strength-institute": forgeCover.url,
 };
 
 /* -------------------------------------------------------------------- */
@@ -193,17 +200,46 @@ function ProviderProfilePage() {
         {/* Hero */}
         <section className="mx-auto max-w-[1180px] px-4 pt-6 lg:px-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr] lg:gap-8">
-            <div className="relative aspect-square w-full overflow-hidden rounded-[18px] border border-black/10 bg-white">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt={`${providerName} logo`}
-                  className="h-full w-full object-contain p-8"
-                  loading="eager"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-[#f2f1ec]">
-                  <Building2 className="h-16 w-16 text-black/25" strokeWidth={1.5} />
+            <div className="relative aspect-square w-full overflow-hidden rounded-[18px] border border-black/10 bg-gradient-to-br from-reps-warm-white to-[#efece4]">
+              {(() => {
+                const coverUrl = DEMO_PROVIDER_COVERS[slug] ?? null;
+                if (coverUrl) {
+                  return (
+                    <>
+                      <img
+                        src={coverUrl}
+                        alt={`${providerName} cover`}
+                        className="h-full w-full object-cover"
+                        loading="eager"
+                      />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/45 to-transparent" />
+                    </>
+                  );
+                }
+                if (logoUrl) {
+                  return (
+                    <img
+                      src={logoUrl}
+                      alt={`${providerName} logo`}
+                      className="h-full w-full object-contain p-10"
+                      loading="eager"
+                    />
+                  );
+                }
+                return (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Building2 className="h-16 w-16 text-black/25" strokeWidth={1.5} />
+                  </div>
+                );
+              })()}
+              {logoUrl && DEMO_PROVIDER_COVERS[slug] && (
+                <div className="absolute bottom-3 left-3 flex h-14 w-14 items-center justify-center rounded-[12px] border border-black/10 bg-white p-2 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.25)]">
+                  <img
+                    src={logoUrl}
+                    alt={`${providerName} logo`}
+                    className="h-full w-full object-contain"
+                    loading="eager"
+                  />
                 </div>
               )}
             </div>
