@@ -37,6 +37,11 @@ import {
 } from "@/lib/campaigns/outbound-extras.functions";
 import { draftArticleEmail } from "@/lib/campaigns/article-ai-draft.functions";
 import { listProspectTags } from "@/lib/prospects/prospects.functions";
+import {
+  renderRegistryTemplate,
+  BROADCAST_TEMPLATE_CHOICES,
+  type BroadcastTemplateKey,
+} from "@/lib/campaigns/render-template.functions";
 
 type Inbox = "support" | "pros" | "partners" | "press" | "news";
 type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter" | "prospects";
@@ -491,6 +496,18 @@ export function ComposeDialog({
               }}
             />
 
+            <TemplateLoader
+              onLoaded={(t) => {
+                setSubject(t.subject);
+                setBody(t.html);
+                setFormat("html");
+                setArticleDrafts(null);
+                toast.success(`Loaded "${t.displayName}"`);
+              }}
+            />
+
+
+
 
             <Field label="Subject">
               <Input
@@ -926,6 +943,77 @@ async function persistArticleCover(article: ResourceArticle): Promise<string | n
     return null;
   }
 }
+
+interface LoadedTemplate {
+  templateKey: BroadcastTemplateKey;
+  displayName: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+function TemplateLoader({
+  onLoaded,
+}: {
+  onLoaded: (t: LoadedTemplate) => void;
+}) {
+  const renderFn = useServerFn(renderRegistryTemplate);
+  const [value, setValue] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <Field label="Load from email template">
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={value}
+          disabled={loading}
+          onValueChange={async (v) => {
+            setValue(v);
+            setLoading(true);
+            try {
+              const t = await renderFn({
+                data: { templateKey: v as BroadcastTemplateKey },
+              });
+              onLoaded(t as LoadedTemplate);
+            } catch (err) {
+              toast.error(
+                err instanceof Error ? err.message : "Template load failed",
+              );
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
+          <SelectTrigger className="bg-white/[0.04] border-reps-border text-white flex-1 min-w-[260px]">
+            <div className="flex items-center gap-2 text-left">
+              {loading ? (
+                <Loader2 className="size-4 text-white/55 animate-spin" />
+              ) : (
+                <FileText className="size-4 text-white/55" />
+              )}
+              <SelectValue placeholder="Pick a pre-built announcement template…" />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="max-h-[360px]">
+            {BROADCAST_TEMPLATE_CHOICES.map((c) => (
+              <SelectItem key={c.key} value={c.key}>
+                <span className="truncate">{c.label}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="mt-1.5 text-[11px] text-white/45">
+        Only one-off announcement templates are listed here. Lifecycle emails
+        (verification reminders, insurance renewal, renewal-card-needed,
+        winback) are sent automatically by the backend and must not be sent
+        manually.
+      </div>
+    </Field>
+  );
+}
+
+
 
 interface AiDraft {
   subject: string;
