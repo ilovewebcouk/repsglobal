@@ -10,6 +10,7 @@ import { listAdminAuditLog, type AuditLogRow } from "@/lib/admin-audit-list.func
 import { sendRelaunchTestEmail } from "@/lib/admin/send-relaunch-test.functions";
 import { getRelaunchBroadcastStatus, previewRelaunchAudience, sendRelaunchBroadcast } from "@/lib/admin/send-relaunch-broadcast.functions";
 import { TimeAgo } from "@/components/verification/TimeAgo";
+import { OnboardingDripCard } from "@/components/admin/onboarding-drip-card";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin_/settings")({
