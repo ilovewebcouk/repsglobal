@@ -149,7 +149,7 @@ const submitInput = z.object({
   holder_name: z.string().max(160).nullable().optional(),
   file_sha256: z.string().length(64),
   doc_paths: z.array(z.string().min(1)).min(1).max(5),
-  ai_extraction: z.record(z.unknown()).nullable().optional(),
+  ai_extraction: z.record(z.string(), z.unknown()).nullable().optional(),
   trust_badges: z.array(z.string()).nullable().optional(),
 });
 
