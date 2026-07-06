@@ -1,54 +1,63 @@
-## Goal
+You're right — most of the 59 are baseline noise, but there are real fixes hiding in there. Here's what the events actually contain and what I'd do.
 
-Identity verification is fully delegated to Stripe Identity. Admins should observe outcomes only — no manual approve / reject / needs-more-info / expire actions in the Identity tab of `/admin/verification`.
+## What's in the 59 warnings
 
-## Audit findings
+Grouped by summary (from `seo_index_events` where `acknowledged_at IS NULL`):
 
-**Current admin surface (`src/routes/admin_.verification.tsx`, Identity tab):**
-- Status filter pills: Pending, Approved, More info, Rejected, Expired.
-- Per-row action buttons: **Approve**, **Reject**, **Needs info** — call `adminOverrideIdentity`.
-- Override dialog captures a reason and writes to `identity_documents.admin_note`, sets `status`, and mirrors onto `professionals.identity_status` / `identity_verified_at` / `identity_verified_name`.
+| Count | Severity | Meaning |
+|---|---|---|
+| 17 | warn | First check: Crawled - currently not indexed |
+| 11 | warn | First check: Discovered - currently not indexed |
+| 11 | warn | **First check: Excluded by 'noindex' tag** |
+| 9  | warn | First check: URL is unknown to Google |
+| 4+3 | warn | Coverage churn: unknown ↔ discovered |
+| 3  | warn | **Coverage changed → Soft 404** |
+| 1  | warn | **First check: Not found (404)** |
+| 3+1 | info | Now indexed (good news) |
 
-**Server (`src/lib/verification/identity.functions.ts`):**
-- `adminOverrideIdentity` server fn — manual decision writer.
-- `listIdentityChecks` — accepts all 5 statuses.
-- `myIdentity` / `getIdentityForPro` — read-only, keep.
+The bulk (~40) are baseline "First check" snapshots + normal Google churn — not real bugs, just the scanner recording what Google shows. But 15 of them are actionable.
 
-**Stripe path (`src/lib/verification/stripe-identity.functions.ts` + webhook):**
-- `createStripeIdentitySession` creates the session.
-- A Stripe webhook (`identity.verification_session.*`) already updates `identity_documents.stripe_status` / `status` and propagates to `professionals.identity_status`. This is the only path that should mutate identity state.
+## Actionable — needs fixing
 
-**Legacy `needs_more_info` / `expired` / manual `rejected`:** only reachable through `adminOverrideIdentity`. Stripe emits `verified`, `requires_input`, `processing`, `canceled` — mapped to `approved` / `pending` in the mirror. There is no Stripe-driven `expired` or `needs_more_info`.
+**1. Pages marked `noindex` that should be indexed (8 URLs)**
+   - `/specialisms`, `/for-professionals`, `/cpd`, `/how-it-works`, `/find-a-professional`, `/help`, `/resources`, `/comparison-methodology`
+   - These are LOCKED marketing pillar pages — they should be in Google. I'll audit each route's `head()` and remove the `noindex` meta / X-Robots tag.
+   - `/privacy`, `/terms`, `/cookies` — noindex is defensible for legal pages; leave as-is unless you want them indexed.
 
-## Changes
+**2. Broken URL (1)**
+   - `/standards` returns 404. Either create the page or add a 301 redirect to the right destination (likely `/specialisms` or `/for-professionals`). I'll check what used to be there.
 
-### 1. Admin UI — `src/routes/admin_.verification.tsx` (Identity tab only)
-- **Remove** filter pills: `needs_more_info`, `expired`. Keep: **Pending**, **Approved**, **Rejected** (rejected = Stripe `requires_input` finalised as unverifiable, kept for visibility).
-- **Remove** the Actions column entirely (Approve / Reject / Needs info buttons).
-- **Remove** the override `Dialog`, `overrideTarget` / `overrideReason` / `overrideBusy` state, `submitOverride`, `doOverride`, and the `useServerFn(adminOverride)` wiring.
-- **Remove** the `adminOverride` prop from `AdminIdentityTab` and its call site.
-- Add a short helper line under the filter row: "Stripe Identity manages every outcome automatically — this view is read-only."
-- Keep the Stripe dashboard deep-link (already present on the qualifications-side identity block via `stripe_vs_id`).
-- Add a "Open in Stripe" link per row (via `stripe_vs_id`) so admins can inspect the check in Stripe when needed.
+**3. Soft 404 city pages (3)**
+   - `/in/newport`, `/in/leicester`, `/in/canterbury` — Google thinks these render an empty state. Likely no pros in those cities so the page reads as content-less. Options: (a) add fallback copy + nearby-cities section so there's real content, (b) return `noindex` when 0 pros, or (c) 301 to a regional hub. Preferred: (a) — improves UX and SEO.
 
-### 2. Server — `src/lib/verification/identity.functions.ts`
-- **Delete** `adminOverrideIdentity` export and its Zod schema.
-- **Narrow** `listIdentityChecks` input to `z.enum(["pending", "approved", "rejected"])`.
-- Keep `myIdentity` and `getIdentityForPro` unchanged.
+## Noise — safe to auto-acknowledge
 
-### 3. Imports
-- Drop `adminOverrideIdentity` import in `admin_.verification.tsx`.
-- Drop now-unused `Dialog*`, `Textarea` imports if no longer referenced in the file (verify before removal — they're also used by other tabs).
+The remaining ~44 are:
+- All "First check: *" baseline entries (once resolved via the actions above, or simply informational)
+- Coverage state churn between "unknown ↔ discovered" (normal Google timing)
+- All "info: Now indexed" (good news)
 
-## Out of scope
+I'll bulk-acknowledge these in one SQL update so your queue reflects only real work.
 
-- Stripe webhook handler (already the source of truth — no changes needed).
-- Qualifications and Insurance tabs (unchanged).
-- `identity_documents` schema — historical `needs_more_info` / `expired` rows remain readable; they just won't appear under the trimmed filter set. No migration needed.
-- Trainer-facing verification page (already Stripe-driven).
+## Re: "you have the GSC API"
 
-## Verification
+I do — but GSC's URL Inspection API is **read-only** (it tells you Google's view). The Indexing API can *submit* URLs for re-crawl but is officially limited to JobPosting / BroadcastEvent schemas; using it for regular pages is against Google's ToS and they ignore it. The correct fix is: repair the pages, submit sitemaps (already automated), then let Google re-crawl. I can trigger a fresh URL Inspection scan afterwards to confirm the state flipped.
 
-- Typecheck passes after removing `adminOverrideIdentity` references.
-- Identity tab renders with 3 filters and no action buttons.
-- Stripe webhook still moves rows from Pending → Approved without admin involvement.
+## Plan of work
+
+1. Audit the 8 pillar pages and remove unwanted `noindex` (frontend head() only).
+2. Handle `/standards` — check if it should exist; if not, add a redirect in `src/routes/`.
+3. Fix soft-404 city pages — add empty-state content + nearby cities to `/in/$location`.
+4. Bulk-ack the noise events with a SQL update stamping `acknowledged_at` for all rows matching the "First check", "unknown↔discovered", and "Now indexed" patterns.
+5. Trigger a fresh GSC URL Inspection scan on the fixed URLs so the tab clears.
+
+## Technical notes
+
+- Files touched (frontend only, respecting locked pages — head() metadata isn't part of the visual lock):
+  - `src/routes/specialisms.tsx`, `for-professionals.tsx`, `cpd.tsx`, `how-it-works.tsx`, `find-a-professional.tsx`, `help.tsx`, `resources.tsx`, `comparison-methodology.tsx` — remove `meta name="robots" content="noindex"` from `head()`.
+  - `src/routes/in.$location.tsx` — add empty-state content block when `pros.length === 0`.
+  - New `src/routes/standards.tsx` OR redirect entry (TBD after checking).
+- One SQL statement via `supabase--insert` to acknowledge noise events.
+- No backend/schema changes.
+
+Want me to proceed with all of this, or just the noindex fixes first?
