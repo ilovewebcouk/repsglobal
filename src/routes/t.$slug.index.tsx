@@ -185,11 +185,7 @@ function ProviderProfilePage() {
               </li>
               <li aria-hidden><ChevronRight className="h-3.5 w-3.5" strokeWidth={2} /></li>
               <li>
-                <Link to="/find-a-professional" className="hover:text-black">Find a Professional</Link>
-              </li>
-              <li aria-hidden><ChevronRight className="h-3.5 w-3.5" strokeWidth={2} /></li>
-              <li>
-                <Link to="/find-a-professional" className="hover:text-black">Training Providers</Link>
+                <Link to="/find-a-training-provider" className="hover:text-black">Training Providers</Link>
               </li>
               <li aria-hidden><ChevronRight className="h-3.5 w-3.5" strokeWidth={2} /></li>
               <li aria-current="page" className="text-black font-medium">{providerName}</li>
