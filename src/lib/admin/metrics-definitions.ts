@@ -29,6 +29,7 @@ export const TIER_RENEWAL_PENCE: Record<string, number> = {
   verified: 3400,
   pro: 5900,
   studio: 14900,
+  training_provider: 49900,
 };
 
 export const LEGACY_AMOUNT_PENCE = TIER_RENEWAL_PENCE.verified;
