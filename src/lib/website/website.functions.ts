@@ -61,6 +61,13 @@ export type WebsiteDTO = {
   coaching_since_year: number | null;
   // Subscription tier of the pro (so callers can gate Pro-only surfaces).
   tier: "verified" | "pro" | "studio" | null;
+  // Individual coach vs training-organisation account. Drives the public
+  // template branch in /c/$slug — orgs render CoachWebsiteOrg with course-led
+  // sections instead of the first-person coach template.
+  account_type: "individual" | "organisation";
+  legal_entity_name: string | null;
+  staff_count: number | null;
+  awarding_bodies: string[];
   // Trust block (public-safe summary).
   trust: {
     isVerified: boolean;
