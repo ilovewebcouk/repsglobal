@@ -16,6 +16,7 @@ export type ProviderCard = {
   name: string;
   city: string | null;
   tagline: string | null;
+  registered_address: string | null;
   avatar_url: string | null;
   hero_image_url: string | null;
   in_person_available: boolean;
