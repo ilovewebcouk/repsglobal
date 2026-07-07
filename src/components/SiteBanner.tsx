@@ -21,7 +21,7 @@ export function SiteBanner() {
           to="/pricing"
           className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-0.5 text-[12px] font-semibold text-white transition-colors hover:bg-white/25"
         >
-          See plans
+          Join today
           <ArrowRight className="h-3 w-3" aria-hidden />
         </Link>
       </div>
