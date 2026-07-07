@@ -17,7 +17,7 @@ export type AdminProRow = {
   
   profession: string | null;
   professionSlug: string | null;
-  plan: 'free' | 'verified' | 'pro' | 'studio';
+  plan: 'free' | 'verified' | 'pro' | 'studio' | 'training_provider';
   accountType: 'individual' | 'organisation' | null;
   planMrrPence: number;
   status: 'verified' | 'pending' | 'flagged' | 'suspended';
