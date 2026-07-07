@@ -673,7 +673,7 @@ function TierComparisonSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Core vs Pro"
-          heading="Verified makes you visible. Pro turns visibility into a working business."
+          heading="Core makes you visible. Pro turns visibility into a working business."
           lede="Visibility is included in every tier. Pro layers on the tools that convert an enquiry into a paying client."
         />
 
