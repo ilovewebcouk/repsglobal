@@ -808,19 +808,30 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Request a review</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-display text-[18px] font-bold text-white">Request a review</DialogTitle>
+          <DialogDescription className="text-[13px] leading-relaxed text-white/65">
             We'll email each past learner a one-click link to leave a review on your REPS provider profile. Links expire after 90 days.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={mode} onValueChange={(v) => setMode(v as "single" | "csv")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="single">Single</TabsTrigger>
-            <TabsTrigger value="csv">CSV upload</TabsTrigger>
+          <TabsList className="grid h-10 w-full grid-cols-2 rounded-[10px] bg-reps-ink/60 p-1">
+            <TabsTrigger
+              value="single"
+              className="h-8 rounded-[8px] text-[12.5px] font-semibold text-white/65 data-[state=active]:bg-reps-panel data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              Single
+            </TabsTrigger>
+            <TabsTrigger
+              value="csv"
+              className="h-8 rounded-[8px] text-[12.5px] font-semibold text-white/65 data-[state=active]:bg-reps-panel data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              CSV upload
+            </TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="single" className="mt-4">
             <form
@@ -831,7 +842,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
               }}
             >
               <div>
-                <Label htmlFor="rr-email">Learner email</Label>
+                <Label htmlFor="rr-email" className="text-[12px] font-semibold text-white/70">Learner email</Label>
                 <Input
                   id="rr-email"
                   type="email"
@@ -839,11 +850,11 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="learner@example.com"
-                  className="mt-1.5"
+                  className="mt-1.5 border-reps-border bg-reps-ink/60 text-white placeholder:text-white/35"
                 />
               </div>
               <div>
-                <Label htmlFor="rr-name">
+                <Label htmlFor="rr-name" className="text-[12px] font-semibold text-white/70">
                   Learner name <span className="text-white/45">(optional)</span>
                 </Label>
                 <Input
@@ -852,7 +863,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Jane Smith"
                   maxLength={120}
-                  className="mt-1.5"
+                  className="mt-1.5 border-reps-border bg-reps-ink/60 text-white placeholder:text-white/35"
                 />
               </div>
               <DialogFooter>
@@ -860,10 +871,11 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
-                  className="rounded-[10px]"
+                  className="rounded-[10px] border-reps-border bg-transparent text-white/80 hover:bg-reps-panel-soft hover:text-white"
                 >
                   Cancel
                 </Button>
+
                 <Button
                   type="submit"
                   disabled={createSingle.isPending || !email.trim()}
@@ -890,7 +902,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                 </button>
               </div>
 
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-4 py-8 text-center hover:bg-reps-panel-soft/60">
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border bg-reps-ink/50 px-4 py-8 text-center hover:bg-reps-ink/70">
                 <Upload className="h-5 w-5 text-white/65" />
                 <span className="text-[13px] font-semibold text-white">
                   {csvFileName ?? "Choose CSV file"}
@@ -946,7 +958,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
-                  className="rounded-[10px]"
+                  className="rounded-[10px] border-reps-border bg-transparent text-white/80 hover:bg-reps-panel-soft hover:text-white"
                 >
                   Cancel
                 </Button>

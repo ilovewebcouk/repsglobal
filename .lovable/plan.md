@@ -1,54 +1,47 @@
 ## Goal
-Give training providers a bulk-friendly Request-a-Review dialog: a single-entry form (email + optional name) AND a CSV upload for many past learners at once. Trainer flow is untouched.
+The provider "Request a review" dialog currently renders in the shadcn light theme (`bg-background` = cream) against the dark REPS dashboard. Repaint just this dialog in the dark REPS palette so it matches every other panel on `/dashboard/reviews`. Trainer dialog is not touched.
 
-## Scope
-- Provider-only UI change (organisation ReviewsPage).
-- One new server function that batches through the existing `review_requests` insert + email pipeline.
-- No schema changes, no RLS changes, trainer `dashboard_.reviews.tsx` and its `RequestReviewDialog` unchanged.
+## What's wrong now
+- `DialogContent` inherits `bg-background` + light text.
+- The CSV drop-zone reads as a grey slab because `bg-reps-panel-soft/40` on a cream sheet looks washed out.
+- Tab strip uses the default light shadcn `TabsList`.
 
-## Files to create
+## Changes (single file)
 
-1. **`src/lib/reviews/reviews.functions.ts`** — add `createReviewRequestsBulk`
-   - Auth: same `requireSupabaseAuthWithImpersonation` middleware as `createReviewRequest`.
-   - Input: `{ entries: Array<{ client_email, client_name? }> }`, capped at 200 rows per call, emails validated + lowercased + de-duplicated within the batch.
-   - Logic: mirrors `createReviewRequest` per row:
-     - Resolves the caller's `professionals` row once.
-     - Loops rows: generate token, insert into `review_requests` (`status: 'sent'`, 90-day expiry), fire the same `review-request` transactional email.
-     - Per-row try/catch so one bad email doesn't abort the batch.
-   - Returns `{ sent: number, failed: Array<{ email, reason }> }`.
-   - No new tables, no policy changes — same `review_requests` rows the single fn writes.
+**`src/components/dashboard/organisation/ReviewsPage.tsx` — `RequestReviewDialog` only**
 
-## Files to edit
+1. `DialogContent`
+   - Add classes: `bg-reps-panel text-white border-reps-border sm:max-w-lg`.
+   - Also style the close (X) button state via a scoped tweak: keep default position, ensure the icon reads on dark — no code change to `dialog.tsx`, just visual test.
 
-2. **`src/components/dashboard/organisation/ReviewsPage.tsx`** — replace the existing `RequestReviewDialog` used inside this file with a provider-specific version:
-   - Two tabs inside the same dialog: **Single** and **CSV upload**.
-     - **Single** tab: identical to current (email required, name optional). Note: today's dialog also has "service" — provider CSV won't have it, so I'll drop the service field in the provider dialog to keep the two tabs consistent. (Trainer dialog keeps service.)
-     - **CSV upload** tab:
-       - File input accepts `.csv` (client-side parse, no upload to storage).
-       - Simple parser: split lines, skip header if row 1 is `email,name` (case-insensitive), otherwise treat every row as data.
-       - Preview table (first 10 rows + total count + invalid-row count).
-       - Skips blank rows and rows where the email column fails a basic email regex; shows them under an "Invalid rows will be skipped: N" hint.
-       - "Download template" link — a Blob-generated `review-requests-template.csv` with `email,name` header + one example row. No file added to the repo.
-   - Copy uses "past learner(s)" instead of "past client(s)" (provider context).
-   - Submit calls `createReviewRequestsBulk`; on success shows `Sent N requests${failed ? `, ${failed} failed` : ""}` toast and invalidates `["my-review-requests"]`.
-   - Both the "Request a review" header button and the panel-level "Send another" button open the same new dialog.
+2. `DialogHeader` copy
+   - `DialogTitle`: `text-white font-display text-[18px]`.
+   - `DialogDescription`: `text-white/65 text-[13px] leading-relaxed`.
 
-## Files NOT changed
-- `src/routes/_authenticated/_professional/dashboard_.reviews.tsx` (trainer route + its `RequestReviewDialog`) — no changes.
-- `src/lib/reviews/reviews.functions.ts` existing exports — untouched; only a new export is added.
-- Email template `review-request` — reused as-is.
-- Database schema, RLS, migrations — untouched.
+3. `TabsList` (Single / CSV upload)
+   - `bg-reps-ink/60 p-1 h-10 rounded-[10px]`
+   - `TabsTrigger`: `h-8 rounded-[8px] text-[12.5px] font-semibold text-white/65 data-[state=active]:bg-reps-panel data-[state=active]:text-white data-[state=active]:shadow-none`
 
-## UX details
-- CSV parse is pure client-side JS (no new npm dep). Handles quoted values with a small tolerant parser (`"Smith, Jane"` type cases).
-- Max 200 rows per submission enforced client-side + server-side (matches server cap).
-- Duplicate emails within a single CSV are de-duped before send (keeps the first name).
-- Emails already in `review_requests` for this provider aren't specially handled — the server just inserts a fresh request, same as current single-send behaviour.
+4. Single-tab form
+   - `Label`: add `text-white/70 text-[12px] font-semibold` (matches other dashboard forms).
+   - `Input`: rely on existing shadcn input dark styling (already used elsewhere on this page in the search field).
+   - Cancel `Button variant="outline"`: `border-reps-border bg-transparent text-white/80 hover:text-white`.
+
+5. CSV-tab
+   - Info row: `text-white/70` on the meta line, keep `Template` button styles.
+   - Dropzone label: replace current classes with
+     `flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border bg-reps-ink/50 hover:bg-reps-ink/70 px-4 py-8 text-center` (dark, not the grey slab).
+   - Preview panel: `bg-reps-ink/60 border-reps-border` (already there — keep) but ensure row text is `text-white` / `text-white/60`.
+   - Cancel button same treatment as (4).
+
+6. No changes to:
+   - Trainer file `src/routes/_authenticated/_professional/dashboard_.reviews.tsx`
+   - `src/components/ui/dialog.tsx` (base primitive stays theme-neutral)
+   - Server functions or CSV parsing logic
+   - Trainer-side styling anywhere
 
 ## Verification
-1. Trainer at `/dashboard/reviews` sees the exact same "Request a review" dialog as before (email + name + service).
-2. Provider at `/dashboard/reviews` sees the new tabbed dialog (Single | CSV upload).
-3. Single tab works end-to-end (creates one `review_requests` row + email).
-4. CSV upload with a 3-row file creates 3 rows + 3 emails; toast shows "Sent 3 requests"; the Sent requests panel refreshes.
-5. Invalid CSV rows are counted and skipped, not sent.
-6. Typecheck passes.
+1. Open `/dashboard/reviews` as a training provider → click "Request a review" → dialog renders dark (matches the KPI cards / Sent-requests panel).
+2. Both tabs are legible; CSV drop-zone is a dashed dark tile, not a grey block.
+3. Trainer `/dashboard/reviews` dialog is visually unchanged.
+4. Typecheck passes.
