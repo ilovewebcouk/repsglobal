@@ -358,6 +358,104 @@ export const createReviewRequest = createServerFn({ method: "POST" })
     return { id: row.id, token: row.token };
   });
 
+const CreateRequestsBulkSchema = z.object({
+  entries: z
+    .array(
+      z.object({
+        client_email: z.string().email().max(254),
+        client_name: z.string().trim().min(1).max(120).optional(),
+      }),
+    )
+    .min(1)
+    .max(200),
+});
+
+export const createReviewRequestsBulk = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) => CreateRequestsBulkSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: pro } = await supabaseAdmin
+      .from("professionals")
+      .select("id, slug")
+      .eq("id", context.userId)
+      .maybeSingle();
+    if (!pro) throw new Error("No professional profile found");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("full_name, display_name")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const proName =
+      profile?.display_name || profile?.full_name || "Your provider";
+
+    // De-dupe within batch (keep first name for a given email).
+    const seen = new Set<string>();
+    const rows = [] as Array<{ client_email: string; client_name?: string }>;
+    for (const e of data.entries) {
+      const email = e.client_email.toLowerCase().trim();
+      if (seen.has(email)) continue;
+      seen.add(email);
+      rows.push({ client_email: email, client_name: e.client_name });
+    }
+
+    let sent = 0;
+    const failed: Array<{ email: string; reason: string }> = [];
+    const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+
+    for (const entry of rows) {
+      try {
+        const token = generateReviewToken();
+        const now = new Date();
+        const expires = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+        const { data: row, error } = await supabaseAdmin
+          .from("review_requests")
+          .insert({
+            professional_id: pro.id,
+            client_email: entry.client_email,
+            client_name: entry.client_name ?? null,
+            service_label: null,
+            token,
+            status: "sent",
+            sent_at: now.toISOString(),
+            expires_at: expires.toISOString(),
+          })
+          .select("id, token")
+          .single();
+        if (error) throw error;
+
+        const reviewUrl = `https://repsuk.org/r/${row.token}`;
+        try {
+          await sendTransactionalEmailServer({
+            templateName: "review-request",
+            recipientEmail: entry.client_email,
+            idempotencyKey: `review-request:${row.id}`,
+            templateData: {
+              proName,
+              reviewUrl,
+              serviceLabel: null,
+              clientName: entry.client_name,
+            },
+          });
+        } catch (e) {
+          console.error("[createReviewRequestsBulk] email failed", e);
+        }
+        sent++;
+      } catch (e) {
+        failed.push({
+          email: entry.client_email,
+          reason: e instanceof Error ? e.message : "Unknown error",
+        });
+      }
+    }
+
+    return { sent, failed };
+  });
+
+
 export const listMyReviewRequests = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<ReviewRequestRow[]> => {

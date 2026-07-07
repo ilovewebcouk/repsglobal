@@ -15,6 +15,9 @@ import {
   Clock,
   XCircle,
   ShieldAlert,
+  Upload,
+  Download,
+  FileText,
 } from "lucide-react";
 
 
@@ -36,6 +39,7 @@ import {
 import {
   clearReviewReply,
   createReviewRequest,
+  createReviewRequestsBulk,
   flagReview,
   getMyReviewKpis,
   listMyReviewRequests,
@@ -647,110 +651,324 @@ function HeaderActions() {
   );
 }
 
+type CsvRow = { client_email: string; client_name?: string };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        cur += ch;
+      }
+    } else {
+      if (ch === '"') inQuotes = true;
+      else if (ch === ",") {
+        out.push(cur);
+        cur = "";
+      } else cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map((s) => s.trim());
+}
+
+function parseCsv(text: string): { valid: CsvRow[]; invalid: number } {
+  const lines = text
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .filter((l) => l.trim() !== "");
+  if (lines.length === 0) return { valid: [], invalid: 0 };
+
+  let startIdx = 0;
+  const firstCols = parseCsvLine(lines[0]).map((s) => s.toLowerCase());
+  if (firstCols[0] === "email" || firstCols[0] === "client_email") {
+    startIdx = 1;
+  }
+
+  const valid: CsvRow[] = [];
+  let invalid = 0;
+  const seen = new Set<string>();
+  for (let i = startIdx; i < lines.length; i++) {
+    const cols = parseCsvLine(lines[i]);
+    const email = (cols[0] ?? "").toLowerCase().trim();
+    const name = (cols[1] ?? "").trim();
+    if (!email || !EMAIL_RE.test(email)) {
+      invalid++;
+      continue;
+    }
+    if (seen.has(email)) continue;
+    seen.add(email);
+    valid.push({
+      client_email: email,
+      client_name: name ? name.slice(0, 120) : undefined,
+    });
+  }
+  return { valid, invalid };
+}
+
 function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
   const qc = useQueryClient();
   const [open, setOpen] = React.useState(false);
+  const [mode, setMode] = React.useState<"single" | "csv">("single");
+
+  // Single
   const [email, setEmail] = React.useState("");
   const [name, setName] = React.useState("");
-  const [service, setService] = React.useState("");
 
-  const create = useMutation({
+  // CSV
+  const [csvRows, setCsvRows] = React.useState<CsvRow[]>([]);
+  const [csvInvalid, setCsvInvalid] = React.useState(0);
+  const [csvFileName, setCsvFileName] = React.useState<string | null>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  function reset() {
+    setEmail("");
+    setName("");
+    setCsvRows([]);
+    setCsvInvalid(0);
+    setCsvFileName(null);
+    if (fileRef.current) fileRef.current.value = "";
+    setMode("single");
+  }
+
+  const createSingle = useMutation({
     mutationFn: () =>
       createReviewRequest({
         data: {
           client_email: email.trim(),
           client_name: name.trim() || undefined,
-          service_label: service.trim() || undefined,
         },
       }),
     onSuccess: () => {
       toast.success("Review request emailed");
       qc.invalidateQueries({ queryKey: ["my-review-requests"] });
       setOpen(false);
-      setEmail("");
-      setName("");
-      setService("");
+      reset();
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't send request"),
   });
 
+  const createBulk = useMutation({
+    mutationFn: () =>
+      createReviewRequestsBulk({ data: { entries: csvRows } }),
+    onSuccess: (res) => {
+      const failedN = res.failed?.length ?? 0;
+      toast.success(
+        `Sent ${res.sent} request${res.sent === 1 ? "" : "s"}${
+          failedN > 0 ? `, ${failedN} failed` : ""
+        }`,
+      );
+      qc.invalidateQueries({ queryKey: ["my-review-requests"] });
+      setOpen(false);
+      reset();
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Couldn't send requests"),
+  });
+
+  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvFileName(file.name);
+    const text = await file.text();
+    const { valid, invalid } = parseCsv(text);
+    const capped = valid.slice(0, 200);
+    const overflowInvalid = invalid + (valid.length - capped.length);
+    setCsvRows(capped);
+    setCsvInvalid(overflowInvalid);
+  }
+
+  function downloadTemplate() {
+    const csv = "email,name\nlearner@example.com,Jane Smith\n";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "review-requests-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) reset();
+      }}
+    >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Request a review</DialogTitle>
           <DialogDescription>
-            We'll email this person a one-click link to leave a review on your REPS profile. Links expire after 90 days.
+            We'll email each past learner a one-click link to leave a review on your REPS provider profile. Links expire after 90 days.
           </DialogDescription>
         </DialogHeader>
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!create.isPending && email.trim()) create.mutate();
-          }}
-        >
-          <div>
-            <Label htmlFor="rr-email">Client email</Label>
-            <Input
-              id="rr-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="client@example.com"
-              className="mt-1.5"
-            />
-          </div>
-          <div>
-            <Label htmlFor="rr-name">
-              Client name <span className="text-white/45">(optional)</span>
-            </Label>
-            <Input
-              id="rr-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Jane Smith"
-              maxLength={120}
-              className="mt-1.5"
-            />
-          </div>
-          <div>
-            <Label htmlFor="rr-service">
-              What was the service? <span className="text-white/45">(optional)</span>
-            </Label>
-            <Input
-              id="rr-service"
-              value={service}
-              onChange={(e) => setService(e.target.value)}
-              placeholder="1:1 Strength Coaching"
-              maxLength={120}
-              className="mt-1.5"
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="rounded-[10px]"
+
+        <Tabs value={mode} onValueChange={(v) => setMode(v as "single" | "csv")}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="single">Single</TabsTrigger>
+            <TabsTrigger value="csv">CSV upload</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="single" className="mt-4">
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!createSingle.isPending && email.trim()) createSingle.mutate();
+              }}
             >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={create.isPending || !email.trim()}
-              className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
-            >
-              {create.isPending ? "Sending…" : "Send request"}
-            </Button>
-          </DialogFooter>
-        </form>
+              <div>
+                <Label htmlFor="rr-email">Learner email</Label>
+                <Input
+                  id="rr-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="learner@example.com"
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor="rr-name">
+                  Learner name <span className="text-white/45">(optional)</span>
+                </Label>
+                <Input
+                  id="rr-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Jane Smith"
+                  maxLength={120}
+                  className="mt-1.5"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                  className="rounded-[10px]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createSingle.isPending || !email.trim()}
+                  className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
+                >
+                  {createSingle.isPending ? "Sending…" : "Send request"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="csv" className="mt-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[12px] text-white/65">
+                  Columns: <code className="text-white/85">email, name</code> · max 200 rows per upload.
+                </p>
+                <button
+                  type="button"
+                  onClick={downloadTemplate}
+                  className="flex h-8 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12px] font-semibold text-white/80 hover:text-white"
+                >
+                  <Download className="h-3.5 w-3.5" /> Template
+                </button>
+              </div>
+
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-4 py-8 text-center hover:bg-reps-panel-soft/60">
+                <Upload className="h-5 w-5 text-white/65" />
+                <span className="text-[13px] font-semibold text-white">
+                  {csvFileName ?? "Choose CSV file"}
+                </span>
+                <span className="text-[11.5px] text-white/55">
+                  .csv up to 200 rows
+                </span>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={onFileChange}
+                />
+              </label>
+
+              {csvRows.length > 0 && (
+                <div className="rounded-[12px] border border-reps-border bg-reps-ink/60">
+                  <div className="flex items-center justify-between border-b border-reps-border px-3 py-2">
+                    <div className="flex items-center gap-2 text-[12px] text-white/80">
+                      <FileText className="h-3.5 w-3.5" />
+                      <span className="font-semibold">{csvRows.length}</span>
+                      <span className="text-white/55">valid row{csvRows.length === 1 ? "" : "s"}</span>
+                      {csvInvalid > 0 && (
+                        <span className="text-amber-300">· {csvInvalid} skipped</span>
+                      )}
+                    </div>
+                  </div>
+                  <ul className="max-h-[180px] divide-y divide-reps-border/60 overflow-y-auto">
+                    {csvRows.slice(0, 10).map((r) => (
+                      <li key={r.client_email} className="flex items-center justify-between gap-3 px-3 py-2 text-[12px]">
+                        <span className="truncate text-white">{r.client_email}</span>
+                        <span className="truncate text-white/55">{r.client_name ?? "—"}</span>
+                      </li>
+                    ))}
+                    {csvRows.length > 10 && (
+                      <li className="px-3 py-2 text-[11.5px] text-white/55">
+                        …and {csvRows.length - 10} more
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {csvRows.length === 0 && csvInvalid > 0 && (
+                <p className="text-[12px] text-amber-300">
+                  No valid rows found. {csvInvalid} row{csvInvalid === 1 ? "" : "s"} skipped (missing or invalid email).
+                </p>
+              )}
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                  className="rounded-[10px]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => createBulk.mutate()}
+                  disabled={createBulk.isPending || csvRows.length === 0}
+                  className="rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover"
+                >
+                  {createBulk.isPending
+                    ? "Sending…"
+                    : `Send ${csvRows.length || ""} request${csvRows.length === 1 ? "" : "s"}`}
+                </Button>
+              </DialogFooter>
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
 }
+
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, { label: string; Icon: typeof Clock; tone: string }> = {
