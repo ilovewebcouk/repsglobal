@@ -298,7 +298,7 @@ function HomeV2() {
       {hasNewest && (
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="mb-10 flex items-end justify-between gap-4 border-b border-reps-charcoal/5 pb-6">
+          <div className="mb-10 flex items-end justify-between gap-4">
             <div>
               <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">NEW TO REPS</span>
               <h2 className="mt-1 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
