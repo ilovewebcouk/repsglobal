@@ -95,9 +95,27 @@ export const listPublicProviders = createServerFn({ method: "GET" })
       }
     }
 
+    const reviewAggById = new Map<string, { count: number; sum: number }>();
+    if (ids.length > 0) {
+      const { data: reviewRows } = await supabaseAdmin
+        .from("reviews")
+        .select("professional_id, rating, status")
+        .in("professional_id", ids)
+        .eq("status", "published");
+      for (const rv of reviewRows ?? []) {
+        const pid = (rv as { professional_id?: string | null }).professional_id;
+        if (!pid) continue;
+        const prev = reviewAggById.get(pid) ?? { count: 0, sum: 0 };
+        prev.count += 1;
+        prev.sum += Number((rv as { rating?: number | null }).rating) || 0;
+        reviewAggById.set(pid, prev);
+      }
+    }
+
     let rows: ProviderCard[] = (proRows ?? []).map((r) => {
       const prof = profilesById[r.id as string] ?? { name: null, avatar: null };
       const slug = (r.slug as string | null) ?? "";
+      const agg = reviewAggById.get(r.id as string);
       return {
         id: r.id as string,
         slug,
@@ -109,6 +127,8 @@ export const listPublicProviders = createServerFn({ method: "GET" })
           heroById[r.id as string] ?? DEMO_PROVIDER_COVERS[slug] ?? null,
         in_person_available: Boolean(r.in_person_available),
         online_available: Boolean(r.online_available),
+        rating_avg: agg && agg.count > 0 ? agg.sum / agg.count : null,
+        review_count: agg?.count ?? 0,
       };
     }).filter((r) => r.slug);
 
