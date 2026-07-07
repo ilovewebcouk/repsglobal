@@ -55,7 +55,7 @@ import {
   type SessionRow,
   type ActivityEvent,
 } from "@/lib/settings/settings.functions";
-import { ProviderSettingsPage } from "@/components/dashboard/provider/SettingsPage";
+import { ProviderSettingsPage } from "@/components/dashboard/organisation/SettingsPage";
 
 
 
