@@ -55,6 +55,8 @@ import {
   type SessionRow,
   type ActivityEvent,
 } from "@/lib/settings/settings.functions";
+import { ProviderSettingsPage } from "@/components/dashboard/provider/SettingsPage";
+
 
 
 type TabKey = "account" | "notifications" | "billing" | "payments" | "credits" | "security" | "activity" | "privacy";
