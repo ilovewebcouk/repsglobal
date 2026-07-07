@@ -852,7 +852,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus the full Operations workspace — pipeline, bookings, forms, payments, client records, tasks and follow-ups."
+            blurb="Everything in Core, plus the full Operations workspace — pipeline, bookings, forms, payments, client records, tasks and follow-ups."
             highlighted
             cta={{ to:"/pricing", label:"See Pro pricing" }}
           />
