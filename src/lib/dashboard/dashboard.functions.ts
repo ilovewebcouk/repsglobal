@@ -11,7 +11,7 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
         supabase
           .from("professionals")
           .select(
-            "slug, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status, reps_level, cert_uploaded_at, insurance_valid_until, dbs_valid_until",
+            "slug, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status, reps_level, cert_uploaded_at, insurance_valid_until, dbs_valid_until, account_type",
           )
           .eq("id", userId)
           .maybeSingle(),
