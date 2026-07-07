@@ -136,6 +136,12 @@ export const TRAINING_PROVIDER_NAV = [
     ],
   },
   {
+    title: "Reputation",
+    items: [
+      { icon: Star, label: "Reviews", to: "/dashboard/reviews" },
+    ],
+  },
+  {
     title: "Help",
     items: [
       { icon: LifeBuoy, label: "Support", to: "/dashboard/support" },

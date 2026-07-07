@@ -1,5 +1,4 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -34,8 +33,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
-import { ProviderReviewsPage } from "@/components/dashboard/organisation/ReviewsPage";
 import {
   clearReviewReply,
   createReviewRequest,
@@ -48,29 +45,6 @@ import {
   type ReviewDTO,
   type ReviewRequestRow,
 } from "@/lib/reviews/reviews.functions";
-
-
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/reviews")({
-  head: () => ({
-    meta: [
-      { title: "Reviews — REPS Professional" },
-      { name: "description", content: "Public reviews, rating breakdown and request-a-review for your REPS profile." },
-      { property: "og:title", content: "Reviews — REPS Professional" },
-      { property: "og:description", content: "Reviews and response composer." },
-      { property: "og:url", content: "/dashboard/reviews" },
-    ],
-    links: [{ rel: "canonical", href: "/dashboard/reviews" }],
-  }),
-  component: ReviewsDispatcher,
-});
-
-function ReviewsDispatcher() {
-  const tier = useTrainerTier();
-  if (tier === "training_provider") {
-    return <ProviderReviewsPage />;
-  }
-  return <ReviewsPage />;
-}
 
 function Stars({ n, size = "sm" }: { n: number; size?: "sm" | "lg" }) {
   const s = size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5";
@@ -121,13 +95,10 @@ function TabCount({ n, active }: { n: number; active: boolean }) {
   );
 }
 
-function ReviewsPage() {
+export function ProviderReviewsPage() {
   const qc = useQueryClient();
-  const tier = useTrainerTier();
-  const shellTier = (tier === "verified" || tier === "pro" || tier === "studio" ? tier : "verified") as
-    | "verified"
-    | "pro"
-    | "studio";
+  const shellTier = "training_provider" as const;
+
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["my-reviews"],
@@ -294,7 +265,7 @@ function ReviewsPage() {
       tier={shellTier}
       active="Reviews"
       title="Reviews"
-      subtitle="Your public reviews, rating breakdown and review requests."
+      subtitle="Reviews from learners on your provider profile and review requests."
       actions={<HeaderActions />}
     >
       {/* KPIs */}
