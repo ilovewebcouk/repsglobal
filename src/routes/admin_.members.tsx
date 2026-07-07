@@ -1031,6 +1031,19 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="bg-reps-border" />
+            <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+              QA
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={(e) => { e.preventDefault(); setTpM.mutate(); }}
+              disabled={setTpM.isPending || row.plan === "training_provider"}
+              className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white"
+            >
+              {setTpM.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <GraduationCap className="h-4 w-4" />}
+              {row.plan === "training_provider" ? "Already Training Provider" : "Set plan → Training Provider"}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-reps-border" />
             <DropdownMenuItem asChild className="cursor-pointer rounded-[6px] text-white/60 focus:bg-white/5 focus:text-white">
               <Link to="/admin/members/$userId" params={{ userId: row.id }}>
                 <CreditCard className="h-4 w-4" /> Billing & deletion (Member 360)
