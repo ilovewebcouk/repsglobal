@@ -842,7 +842,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
               }}
             >
               <div>
-                <Label htmlFor="rr-email">Learner email</Label>
+                <Label htmlFor="rr-email" className="text-[12px] font-semibold text-white/70">Learner email</Label>
                 <Input
                   id="rr-email"
                   type="email"
@@ -850,11 +850,11 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="learner@example.com"
-                  className="mt-1.5"
+                  className="mt-1.5 border-reps-border bg-reps-ink/60 text-white placeholder:text-white/35"
                 />
               </div>
               <div>
-                <Label htmlFor="rr-name">
+                <Label htmlFor="rr-name" className="text-[12px] font-semibold text-white/70">
                   Learner name <span className="text-white/45">(optional)</span>
                 </Label>
                 <Input
@@ -863,7 +863,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Jane Smith"
                   maxLength={120}
-                  className="mt-1.5"
+                  className="mt-1.5 border-reps-border bg-reps-ink/60 text-white placeholder:text-white/35"
                 />
               </div>
               <DialogFooter>
@@ -871,10 +871,11 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
-                  className="rounded-[10px]"
+                  className="rounded-[10px] border-reps-border bg-transparent text-white/80 hover:bg-reps-panel-soft hover:text-white"
                 >
                   Cancel
                 </Button>
+
                 <Button
                   type="submit"
                   disabled={createSingle.isPending || !email.trim()}
