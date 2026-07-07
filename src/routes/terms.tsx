@@ -91,7 +91,7 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           <strong>Subscription</strong> — any paid plan offered by REPs
-          (currently Verified, Pro and Studio tiers).
+          (currently Core, Pro and Studio tiers).
         </li>
         <li>
           <strong>Content</strong> — any text, image, video, audio, review,
