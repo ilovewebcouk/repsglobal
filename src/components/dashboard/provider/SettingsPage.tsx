@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link , getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
+
+const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/settings");
   getMySettings,
   updateMyAccount,
   updateMyNotificationPrefs,
@@ -70,27 +72,11 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
   { key: "privacy", label: "Privacy & data", icon: EyeOff },
 ];
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/settings")({
-  validateSearch: (s: Record<string, unknown>) => {
-    const raw = typeof s.tab === "string" ? (s.tab as TabKey) : "account";
-    const tab: TabKey = TABS.some((t) => t.key === raw) ? raw : "account";
-    return { tab };
-  },
-  head: () => ({
-    meta: [
-      { title: "Settings — REPS Professional" },
-      { name: "description", content: "Account, notifications, billing, security and privacy." },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
-    links: [{ rel: "canonical", href: "/dashboard/settings" }],
-  }),
-  component: SettingsPage,
-});
 
-function SettingsPage() {
+export function ProviderSettingsPage() {
   const tier = useTrainerTier();
-  const { tab } = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const { tab } = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
   const fetchSettings = useServerFn(getMySettings);
 
   const { data, isLoading } = useQuery({

@@ -13,7 +13,7 @@
  */
 
 import * as React from "react";
-import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
+import { Link, useRouter, useSearch , getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -28,27 +28,13 @@ import {
 } from "@/components/dashboard/verification/TrustBlock";
 import { NameProfessionCard } from "@/components/dashboard/verification/NameProfessionCard";
 import {
+
+const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/verification");
   VerifiedBadge,
   tierFromCounts,
   tierLabel,
 } from "@/components/verification/VerifiedBadge";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/verification")({
-  head: () => ({
-    meta: [
-      { title: "Verification — REPS Professional" },
-      {
-        name: "description",
-        content:
-          "Earn your REPS credential. Three independent checks — identity, insurance, qualifications — each one earns a visible trust layer.",
-      },
-    ],
-  }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
-  }),
-  component: VerificationPage,
-});
 
 function useStripeIdentityReturn() {
   const qc = useQueryClient();
@@ -73,7 +59,7 @@ function useStripeIdentityReturn() {
   }, [search.stripe_identity]);
 }
 
-function VerificationPage() {
+export function ProviderVerificationPage() {
   useStripeIdentityReturn();
   const tier = useTrainerTier();
   const fetchTrust = useServerFn(getTrustState);
