@@ -54,7 +54,7 @@ export function ProviderDashboardHome() {
   React.useEffect(() => {
     if (billing === "success") {
       syncMutation.mutate();
-      navigate({ search: { billing: undefined }, replace: true });
+      navigate({ search: { billing: undefined } as any, replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [billing]);
