@@ -84,17 +84,23 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/s
     ],
     links: [{ rel: "canonical", href: "/dashboard/settings" }],
   }),
-  component: SettingsPage,
+  component: RootSettingsPage,
 });
 
 import { ProviderSettingsPage } from "@/components/dashboard/provider/SettingsPage";
 
-function SettingsPage() {
+function RootSettingsPage() {
   const tier = useTrainerTier();
   if (tier === "training_provider") return <ProviderSettingsPage />;
+  return <SettingsPage />;
+}
+
+function SettingsPage() {
+  const tier = useTrainerTier();
   const { tab } = Route.useSearch();
   const navigate = Route.useNavigate();
   const fetchSettings = useServerFn(getMySettings);
+
 
 
   const { data, isLoading } = useQuery({
