@@ -961,7 +961,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus the full Growth layer — dashboard, conversion, retention, reviews, referrals, reactivation and AI growth recommendations."
+            blurb="Everything in Core, plus the full Growth layer — dashboard, conversion, retention, reviews, referrals, reactivation and AI growth recommendations."
             highlighted
             cta={{ to: "/pricing", label: "See Pro pricing" }}
           />
