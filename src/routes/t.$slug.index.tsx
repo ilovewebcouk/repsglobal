@@ -547,12 +547,13 @@ function ProviderProfilePage() {
                   sub="Verified learner reviews will appear here."
                 />
               ) : (
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[180px_1fr]">
+                <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-[260px_1fr]">
                   <div>
-                    <p className="font-display text-[36px] font-bold leading-none text-black">
+                    <p className="font-display text-[40px] font-bold leading-none text-black">
                       {ratingAvg.toFixed(1)}
+                      <span className="ml-1 text-[16px] font-semibold text-black/45">/ 5</span>
                     </p>
-                    <div className="mt-1 flex gap-0.5" aria-hidden>
+                    <div className="mt-1.5 flex gap-0.5" aria-hidden>
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
@@ -561,12 +562,37 @@ function ProviderProfilePage() {
                               ? "h-4 w-4 fill-[#FF7A00] text-[#FF7A00]"
                               : "h-4 w-4 text-black/20"
                           }
+                          strokeWidth={0}
                         />
                       ))}
                     </div>
-                    <p className="mt-1 text-[12px] text-black/55">
+                    <p className="mt-1.5 text-[12px] text-black/55">
                       Based on {ratingCount} {ratingCount === 1 ? "review" : "reviews"}
                     </p>
+                    <div className="mt-4 space-y-1.5">
+                      {[5, 4, 3, 2, 1].map((stars) => {
+                        const c = reviews.filter((r) => r.rating === stars).length;
+                        const pct = ratingCount === 0 ? 0 : Math.round((c / ratingCount) * 100);
+                        return (
+                          <div
+                            key={stars}
+                            className="grid grid-cols-[36px_1fr_54px] items-center gap-2 text-[12px] text-black/60"
+                          >
+                            <span className="font-semibold text-black/70">{stars} ★</span>
+                            <div className="h-2 overflow-hidden rounded-full bg-black/[0.08]">
+                              <div
+                                className="h-full rounded-full bg-[#FF7A00]"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="text-right tabular-nums">
+                              {pct}%{" "}
+                              <span className="text-black/40">({c})</span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {reviews.slice(0, 1).map((r) => (
@@ -581,6 +607,7 @@ function ProviderProfilePage() {
                     ))}
                   </div>
                 </div>
+
               )}
             </article>
 

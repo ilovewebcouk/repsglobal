@@ -1,55 +1,37 @@
 ## Goal
+Redesign the "What Learners Say" summary on `/t/$slug` into a Trustpilot-style rating breakdown: big score, star row, review count, and a 5-row histogram (5★ → 1★) with progress bars and percentages.
 
-Add a small, trust-focused review stat to the training-provider directory card without changing the card's shape or layout weight.
+## Scope
+Purely presentational — no schema changes, no server-fn changes. `listPublicReviewsBySlug` already returns the full published `reviews[]` with `rating`, so the distribution is computed client-side.
 
-## What changes
+## Changes
 
-### 1. Extend the server function
+**File: `src/routes/t.$slug.index.tsx`** — replace the summary block inside the `#reviews` article (currently lines ~550-583).
 
-`src/lib/directory/providers.functions.ts`
+New layout on the left column of the summary grid:
 
-- Add `rating_avg: number | null` and `review_count: number` to `ProviderCard`.
-- After the profile/website fetches, run one extra parallel query:
-  ```
-  supabaseAdmin.from("reviews")
-    .select("professional_id, rating, status")
-    .in("professional_id", ids)
-    .eq("status", "published")
-  ```
-- Aggregate in-memory into `{ count, sum }` per provider (same pattern used by `featured.functions.ts` line 202–208).
-- Populate `rating_avg = sum / count` (or `null` when count = 0) and `review_count` on each row.
+```text
+ 4.8            ← 40px display bold
+ ★ ★ ★ ★ ★    ← 5 stars, filled to Math.round(avg)
+ Based on 24 reviews · REPS Verified
 
-### 2. Render on the card
+ 5 ★  ████████████████████░  82%   (20)
+ 4 ★  ███░░░░░░░░░░░░░░░░░  12%    (3)
+ 3 ★  █░░░░░░░░░░░░░░░░░░░   4%    (1)
+ 2 ★  ░░░░░░░░░░░░░░░░░░░░   0%    (0)
+ 1 ★  ░░░░░░░░░░░░░░░░░░░░   4%    (1)
+```
 
-`src/routes/find-a-training-provider.tsx` → `ProviderCardTile`
-
-Add one inline chip to the existing meta row (same row as city + delivery — the card grows by zero pixels):
-
-- **Has reviews:** `★ 4.8 · 24 reviews` — star in REPS orange (`#FF7A00`), rating in bold black, count in muted black/60.
-- **No reviews:** `★ New` — muted star + muted "New" label. Chosen deliberately over hiding, because on a trust page a missing signal is itself information.
-
-Placement (left → right on the meta row): `★ rating · N` · `📍 City` · `👥 Delivery`. If the row wraps on narrow columns, the review stat wraps first — it's the newest, least-critical piece.
-
-### 3. No layout changes
-
-- Card radius, hero aspect, logo chip, body padding, min-height — all unchanged.
-- No new sections. Just one extra `<span>` on the existing meta flex row.
-- Skeleton height unchanged.
-
-## Technical notes
-
-- Reviews query joins the batch of provider IDs we already have — one extra round-trip, ~10ms.
-- `rating_avg` formatted with `.toFixed(1)` so it always reads `4.0`, never `4`.
-- Star icon: `Star` from `lucide-react` (already common in the codebase); filled orange for real ratings, hollow muted for "New".
+Details:
+- Grid changes from `md:grid-cols-[180px_1fr]` to `md:grid-cols-[240px_1fr]` so the histogram sits on the left and the featured review excerpt stays on the right (unchanged).
+- Compute `dist = [5,4,3,2,1].map(s => ({ stars: s, count: reviews.filter(r => r.rating === s).length }))` once with `React.useMemo`.
+- Percentage = `count === 0 ? 0 : Math.round((c / ratingCount) * 100)`.
+- Bar row: `<div class="h-2 rounded-full bg-black/8"><div class="h-full rounded-full bg-[#FF7A00]" style={{width: pct+'%'}} /></div>`, brand orange fill, muted track.
+- Row layout: `grid grid-cols-[42px_1fr_44px]` → label (`5 ★`) · bar · pct (right-aligned).
+- Keep the empty state (`No reviews yet`) unchanged.
+- Keep the existing single featured review excerpt on the right — this change only replaces the summary column.
 
 ## Out of scope
-
-- The `/t/$slug` page (already has its own review section).
-- Coach cards.
-- Any change to review-collection flow.
-
-## Acceptance
-
-- Forge and Northline tiles show `★ New` (accurate — zero published reviews).
-- If we later publish reviews for either provider, the tile automatically shows `★ 4.8 · 24 reviews` (or whatever the aggregate is) with no code change.
-- Card visual weight and layout unchanged in the default (populated) state.
+- No changes to `reviews.functions.ts` — distribution is derived from already-returned rows.
+- No changes to the provider directory card (bottom-right star chip already in place).
+- No "See all reviews" list page — the existing "See all N reviews" button stays as-is.
