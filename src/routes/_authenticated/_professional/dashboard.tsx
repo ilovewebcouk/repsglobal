@@ -86,7 +86,8 @@ function DashboardPage() {
   const insuranceExpiringDays =
     insuranceDays !== null && insuranceDays >= 0 ? insuranceDays : null;
 
-  const isOrganisation = data?.accountType === "organisation";
+  const isOrganisation =
+    data?.accountType === "organisation" || tier === "training_provider";
   const tierLabel = isOrganisation
     ? "Training provider"
     : hasPaidTier
