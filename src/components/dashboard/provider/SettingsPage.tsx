@@ -71,6 +71,8 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
   { key: "privacy", label: "Privacy & data", icon: EyeOff },
 ];
 
+const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/settings");
+
 
 export function ProviderSettingsPage() {
   const tier = useTrainerTier();
