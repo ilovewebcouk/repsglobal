@@ -122,7 +122,7 @@ import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.cre
 import { Route as CSlugReviewRouteImport } from './routes/c.$slug.review'
 import { Route as CSlugEnquireRouteImport } from './routes/c.$slug.enquire'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
-import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members.$userId'
+import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members_.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -745,9 +745,9 @@ const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   getParentRoute: () => AdminSeoRoute,
 } as any)
 const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
-  id: '/$userId',
-  path: '/$userId',
-  getParentRoute: () => AdminMembersRoute,
+  id: '/admin_/members_/$userId',
+  path: '/admin/members/$userId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardDesignKitRoute =
   AuthenticatedDashboardDesignKitRouteImport.update({
@@ -1108,7 +1108,7 @@ export interface FileRoutesByFullPath {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
-  '/admin/members': typeof AdminMembersRouteWithChildren
+  '/admin/members': typeof AdminMembersRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -1273,7 +1273,7 @@ export interface FileRoutesByTo {
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
-  '/admin/members': typeof AdminMembersRouteWithChildren
+  '/admin/members': typeof AdminMembersRoute
   '/admin/memberships': typeof AdminMembershipsRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -1437,7 +1437,7 @@ export interface FileRoutesById {
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
-  '/admin_/members': typeof AdminMembersRouteWithChildren
+  '/admin_/members': typeof AdminMembersRoute
   '/admin_/memberships': typeof AdminMembershipsRoute
   '/admin_/newsletter': typeof AdminNewsletterRoute
   '/admin_/payments': typeof AdminPaymentsRoute
@@ -1491,7 +1491,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
-  '/admin_/members/$userId': typeof AdminMembersUserIdRoute
+  '/admin_/members_/$userId': typeof AdminMembersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
@@ -1988,7 +1988,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
-    | '/admin_/members/$userId'
+    | '/admin_/members_/$userId'
     | '/admin_/seo/legacy-redirects'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
@@ -2103,7 +2103,7 @@ export interface RootRouteChildren {
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
-  AdminMembersRoute: typeof AdminMembersRouteWithChildren
+  AdminMembersRoute: typeof AdminMembersRoute
   AdminMembershipsRoute: typeof AdminMembershipsRoute
   AdminNewsletterRoute: typeof AdminNewsletterRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
@@ -2152,6 +2152,7 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   UCpdSessionIdRoute: typeof UCpdSessionIdRoute
@@ -2970,12 +2971,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSeoLegacyRedirectsRouteImport
       parentRoute: typeof AdminSeoRoute
     }
-    '/admin_/members/$userId': {
-      id: '/admin_/members/$userId'
-      path: '/$userId'
+    '/admin_/members_/$userId': {
+      id: '/admin_/members_/$userId'
+      path: '/admin/members/$userId'
       fullPath: '/admin/members/$userId'
       preLoaderRoute: typeof AdminMembersUserIdRouteImport
-      parentRoute: typeof AdminMembersRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard_/design-kit': {
       id: '/_authenticated/dashboard_/design-kit'
@@ -3553,18 +3554,6 @@ const AdminBillingRouteWithChildren = AdminBillingRoute._addFileChildren(
   AdminBillingRouteChildren,
 )
 
-interface AdminMembersRouteChildren {
-  AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
-}
-
-const AdminMembersRouteChildren: AdminMembersRouteChildren = {
-  AdminMembersUserIdRoute: AdminMembersUserIdRoute,
-}
-
-const AdminMembersRouteWithChildren = AdminMembersRoute._addFileChildren(
-  AdminMembersRouteChildren,
-)
-
 interface AdminSeoRouteChildren {
   AdminSeoLegacyRedirectsRoute: typeof AdminSeoLegacyRedirectsRoute
 }
@@ -3680,7 +3669,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
-  AdminMembersRoute: AdminMembersRouteWithChildren,
+  AdminMembersRoute: AdminMembersRoute,
   AdminMembershipsRoute: AdminMembershipsRoute,
   AdminNewsletterRoute: AdminNewsletterRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
@@ -3729,6 +3718,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  AdminMembersUserIdRoute: AdminMembersUserIdRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   UCpdSessionIdRoute: UCpdSessionIdRoute,
