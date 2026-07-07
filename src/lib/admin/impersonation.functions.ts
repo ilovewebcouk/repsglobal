@@ -135,10 +135,12 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
     ]);
 
     const liveStatuses = ['active', 'trialing', 'past_due', 'unpaid'];
-    const tier: 'verified' | 'pro' | 'studio' =
+    const paidTiers = ['verified', 'pro', 'studio', 'training_provider'] as const;
+    type ImpersonationTier = (typeof paidTiers)[number];
+    const tier: ImpersonationTier =
       sub && liveStatuses.includes(sub.status as string) &&
-      (sub.tier === 'verified' || sub.tier === 'pro' || sub.tier === 'studio')
-        ? (sub.tier as 'verified' | 'pro' | 'studio')
+      paidTiers.includes(sub.tier as ImpersonationTier)
+        ? (sub.tier as ImpersonationTier)
         : 'verified';
 
     return {

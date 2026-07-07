@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Filter,
   Flag,
+  GraduationCap,
   Loader2,
   MoreHorizontal,
   Pause,
@@ -119,6 +120,7 @@ import {
   type AdminProSegment,
 } from "@/lib/admin/professionals.functions";
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
+import { setTrainingProviderPlan } from "@/lib/admin/set-training-provider-plan.functions";
 import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
 
 type ProfessionalsSearch = { plan?: "free" | "paid" };
@@ -770,6 +772,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
   const startFn = useServerFn(startImpersonation);
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
+  const setTpFn = useServerFn(setTrainingProviderPlan);
   const [busy, setBusy] = React.useState(false);
   const [suspendOpen, setSuspendOpen] = React.useState(false);
 
@@ -803,6 +806,16 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
       toast.success(vars.suspended ? `Suspended — ${row.name} notified by email` : `${row.name} reinstated`);
       qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
       setSuspendOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const setTpM = useMutation({
+    mutationFn: () => setTpFn({ data: { professional_id: row.id } }),
+    onSuccess: () => {
+      toast.success(`${row.name} set to Training Provider plan`);
+      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
+      qc.invalidateQueries({ queryKey: ["impersonation-status"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -1015,6 +1028,19 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
               className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white"
             >
               <Flag className="h-4 w-4" /> {isFlagged ? "Clear flag" : "Mark as flagged"}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-reps-border" />
+            <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+              QA
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={(e) => { e.preventDefault(); setTpM.mutate(); }}
+              disabled={setTpM.isPending || row.plan === "training_provider"}
+              className="cursor-pointer rounded-[6px] focus:bg-white/5 focus:text-white"
+            >
+              {setTpM.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <GraduationCap className="h-4 w-4" />}
+              {row.plan === "training_provider" ? "Already Training Provider" : "Set plan → Training Provider"}
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="bg-reps-border" />

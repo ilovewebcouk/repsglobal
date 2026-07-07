@@ -34,7 +34,13 @@ export function useEffectiveIdentity(): EffectiveIdentity {
 
   if (data?.active) {
     const tierLabel =
-      data.tier === "pro" ? "Pro" : data.tier === "studio" ? "Studio" : "Core";
+      data.tier === "pro"
+        ? "Pro"
+        : data.tier === "studio"
+          ? "Studio"
+          : data.tier === "training_provider"
+            ? "Training provider"
+            : "Core";
     return {
       name: data.name,
       email: data.email ?? null,

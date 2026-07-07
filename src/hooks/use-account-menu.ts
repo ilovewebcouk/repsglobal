@@ -4,8 +4,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionUser, type SessionUser } from "@/hooks/use-session-user";
 
-export type AccountRole = "admin" | "pro" | "studio" | "verified" | "client" | "guest";
-export type AccountTier = "verified" | "pro" | "studio" | null;
+export type AccountRole = "admin" | "pro" | "studio" | "verified" | "training_provider" | "client" | "guest";
+export type AccountTier = "verified" | "pro" | "studio" | "training_provider" | null;
 
 export type AccountContext = {
   user: SessionUser | null;
@@ -31,6 +31,8 @@ function labelForRole(role: AccountRole): string {
       return "Pro";
     case "verified":
       return "Core";
+    case "training_provider":
+      return "Training provider";
     case "client":
       return "Client";
     default:
@@ -101,7 +103,7 @@ export function useAccountMenu(): AccountContext {
   const LIVE = ["active", "trialing", "past_due", "unpaid"];
   const sub = subQuery.data;
   const tier: AccountTier =
-    sub && LIVE.includes(sub.status) && ["verified", "pro", "studio"].includes(sub.tier)
+    sub && LIVE.includes(sub.status) && ["verified", "pro", "studio", "training_provider"].includes(sub.tier)
       ? (sub.tier as AccountTier)
       : null;
 
