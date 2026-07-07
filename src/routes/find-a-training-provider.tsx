@@ -246,7 +246,21 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
         {row.tagline ? (
           <p className="line-clamp-2 text-[13px] text-black/60">{row.tagline}</p>
         ) : null}
-        <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 text-[12.5px] text-black/60">
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[12.5px] text-black/60">
+          {row.rating_avg != null && row.review_count > 0 ? (
+            <span className="inline-flex items-center gap-1">
+              <Star className="h-3.5 w-3.5 fill-[#FF7A00] text-[#FF7A00]" strokeWidth={0} />
+              <span className="font-semibold text-black">{row.rating_avg.toFixed(1)}</span>
+              <span className="text-black/55">
+                · {row.review_count} {row.review_count === 1 ? "review" : "reviews"}
+              </span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-black/45">
+              <Star className="h-3.5 w-3.5" strokeWidth={2} />
+              New
+            </span>
+          )}
           {row.city ? (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
