@@ -649,7 +649,7 @@ function ProviderProfilePage() {
                 <Link
                   to="/t/$slug/review"
                   params={{ slug }}
-                  className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-black/15 bg-white px-4 text-[13px] font-semibold text-black transition-colors hover:border-black/30"
+                  className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-primary bg-primary px-4 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-reps-orange-hover"
                 >
                   <Star className="h-3.5 w-3.5" strokeWidth={2} />
                   Write a review
