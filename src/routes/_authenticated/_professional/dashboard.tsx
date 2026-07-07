@@ -29,17 +29,25 @@ import {
   useHubData,
 } from "@/components/dashboard/hub";
 import { DashboardVerificationBanner } from "@/components/dashboard/DashboardVerificationBanner";
+import { ProviderDashboardHome } from "@/components/dashboard/provider/DashboardHome";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard")({
   validateSearch: (raw: Record<string, unknown>) => ({
     billing: typeof raw.billing === "string" ? raw.billing : undefined,
   }),
   head: () => ({ meta: [{ title: "Dashboard — REPS" }] }),
-  component: DashboardPage,
+  component: RootDashboardPage,
 });
+
+function RootDashboardPage() {
+  const tier = useTrainerTier();
+  if (tier === "training_provider") return <ProviderDashboardHome />;
+  return <DashboardPage />;
+}
 
 function DashboardPage() {
   const tier = useTrainerTier();
+
   const fetchStatus = useServerFn(getDashboardStatus);
   const syncSub = useServerFn(syncMySubscription);
   const qc = useQueryClient();
