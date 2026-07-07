@@ -76,7 +76,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
     const heroById: Record<string, string | null> = {};
     if (ids.length > 0) {
       const { data: siteRows } = await supabaseAdmin
-        .from("professional_websites")
+        .from("websites")
         .select("professional_id, hero_image_url")
         .in("professional_id", ids);
       for (const s of siteRows ?? []) {
