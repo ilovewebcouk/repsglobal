@@ -27,6 +27,7 @@ import {
   MessageCircle,
   Quote,
   Route as RouteIcon,
+  Shield,
   ShieldCheck,
   Sparkles,
   Star,
@@ -911,7 +912,15 @@ function HeroSection({
                   <BadgeCheck className="h-3 w-3 mr-1" />
                   REPS Verified · Insured
                 </Badge>
-              ) : null}
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className="rounded-full bg-white/[0.06] text-reps-muted ring-1 ring-white/12 hover:bg-white/[0.06]"
+                >
+                  <Shield className="h-3 w-3 mr-1" />
+                  Unverified
+                </Badge>
+              )}
               <span className="inline-flex items-center gap-1.5 text-[13px] text-reps-muted">
                 <MapPin className="h-3.5 w-3.5" />
                 {coach.city}
