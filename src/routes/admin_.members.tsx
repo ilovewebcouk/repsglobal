@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Filter,
   Flag,
+  GraduationCap,
   Loader2,
   MoreHorizontal,
   Pause,
