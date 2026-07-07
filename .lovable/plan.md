@@ -1,54 +1,57 @@
-# Homepage "Newest coaches" — from 4 to a 16-card wall of faces
+## Goal
 
-Replace the current 4-card rail with a 16-card, 4×4 face-first grid. Keep the section slot and eyebrow; rebuild the card and drop the pagination arrows (they don't fit a static grid).
+Sweep public-facing copy so the tier is called **Core** everywhere. "Verified" stays only where it refers to the verification **status/badge** (identity + insurance + qualifications check), never as a plan name.
 
-## Card redesign (face-first)
+## What to change (tier-name usages only)
 
-`src/components/public/NewestCoachCard.tsx` rewritten to prioritise the photo and shrink the meta so 16 units read as a wall, not a spec sheet.
+**`src/routes/terms.tsx`**
+- L94: "currently Verified, Pro and Studio tiers" → "currently Core, Pro and Studio tiers".
+- L242: "Verified at £34 per year, Pro Founding at £59 per month" → "Core at £34 per year, Pro Founding at £59 per month".
 
-- Whole card is a single `<Link to="/c/$slug">` — no "View profile" button.
-- Square avatar fills the top, unchanged aspect (`aspect-square`, `object-cover object-top`).
-- Below the photo: two lines only.
-  - Line 1: **Name** — `font-display text-[15px] font-bold`, truncated.
-  - Line 2: **Skill · City** joined by a middle dot — `text-[12px] text-reps-muted-light`, truncated.
-- **Remove** from this variant: Star/rating chip, delivery-mode (Laptop icon), Verified pill, Save button, "View profile" CTA button.
-- Hover: subtle lift only (`hover:-translate-y-0.5 transition-transform`), no scale of the photo (keeps the grid feeling calm at 16 units).
-- Radius stays 18px per the locked radius system.
-- Padding shrinks from `p-4` to `px-3 py-2.5` so the meta reads as a caption under the photo, not a body block.
+**`src/routes/comparison-methodology.tsx`**
+- L107: "3-tier ladder (Verified, Pro, Studio)" → "3-tier ladder (Core, Pro, Studio)".
 
-The old shape (rating chip + delivery mode + CTA) is retained visually nowhere else, so no other consumer breaks — this component is only used on the homepage rail.
+**`src/routes/features.visibility.tsx`**
+- L154 FAQ answer: "No. Verified gives you the full public profile..." → "No. Core gives you the full public profile...".
+- L158 FAQ answer: "Verified profiles are public, indexable pages..." → "Core profiles are public, indexable pages..." (tier context — contrasts with Pro).
+- L676 heading: "Verified makes you visible. Pro turns visibility into a working business." → "Core makes you visible. Pro turns visibility into a working business."
 
-## Data change
+**`src/routes/features.website.tsx`**
+- L759 Pro card blurb: "Everything in Verified, plus a branded Website..." → "Everything in Core, plus a branded Website...".
 
-`src/lib/directory/newest.functions.ts` — bump `limit` default and cap:
-- `z.number().int().min(1).max(24).default(16)` (was `.default(4).max(12)` — need to check and widen).
-- Ordering + filter unchanged (published, non-demo, individual/null, has `avatar_url`, newest first).
-- Filter stays loose per your answer — no profession/city gate, no logo-vs-face heuristic.
+**`src/routes/features.operations.tsx`**
+- L243 FAQ: "Is Operations included in Verified or only Pro?" → "Is Operations included in Core or only Pro?"
+- L855 Pro card blurb: "Everything in Verified, plus the full Operations workspace..." → "Everything in Core, plus...".
 
-`src/routes/index.tsx` — `useQuery` call passes `limit: 16`, `queryKey` bumped to `["home-newest-coaches", 16]`.
+**`src/routes/features.growth.tsx`**
+- L170 FAQ: "Is Growth included in Verified or only Pro?" → "Is Growth included in Core or only Pro?"
+- L964 Pro card blurb: "Everything in Verified, plus the full Growth layer..." → "Everything in Core, plus...".
 
-## Section rewrite (`src/routes/index.tsx`, ~L301–341)
+**`src/routes/features.coaching.tsx`**
+- L979 Pro card blurb: "Everything in Verified, plus the full Coaching workspace..." → "Everything in Core, plus...".
 
-- Keep the eyebrow "Just joined" + H2 "Newest coaches on REPS".
-- Keep "View all" link.
-- **Remove** the left/right chevron pagination buttons — meaningless for a static grid.
-- Replace the responsive rail (`flex snap-x ... sm:grid sm:grid-cols-2 lg:grid-cols-4`) with a proper dense grid:
-  - Mobile: `grid-cols-2 gap-3`
-  - `sm`: `grid-cols-3 gap-4`
-  - `lg`: `grid-cols-4 gap-4`
-  - No horizontal snap-scroll at any breakpoint (the whole point is showing the density).
-- 16 rows / 4 cols = 4 rows on desktop, 4 rows on `sm` (5–6 rows), 8 rows on mobile. Long on mobile is fine — this section is exactly the moment users want to see "there are lots of real people here."
+**`src/routes/features.ai.tsx`**
+- L258 FAQ: "Is REPS AI included in Verified or only Pro?" → "Is REPS AI included in Core or only Pro?"
+- L828 Pro card blurb: "Everything in Verified, plus the full REPS AI operating layer..." → "Everything in Core, plus...".
 
-## What I'm deliberately NOT doing
+## What NOT to change (correct "Verified" usage — status, not tier)
 
-- Not adding a "photo is a real face, not a logo" filter — no reliable auto-detector, and you said keep it loose. The Alt Fitness–style logo tile will occasionally appear.
-- Not adding a profession/city completeness filter — same reason.
-- Not touching `FeaturedProCard` (still used on locked pages).
-- Not changing any other homepage section — locked-homepage memory stands, this is the same section slot, just denser.
-- No mock/demo profiles; strictly whatever the DB returns.
+- `VerifiedBadge.tsx`, `VerificationCard.tsx`, `dashboard/hub` status chips — verification status.
+- `for-professionals.tsx` "Verified credentials", "Verified badge", "Verified profile live today", hero eyebrow "Verified · Trusted · Booked" — status/badge language.
+- `features.visibility.tsx` "Verified badge", "REPS Verified", "Verified credentials", alt text — status/badge language.
+- `feature-content.tsx`, `TestimonialFeature.tsx`, `ForProsFaq.tsx` "Verified badge" — status.
+- `RegisterProof.tsx` stat "Verified", `sample-pro.ts` qualification status "Verified", `standards.tsx` "Verified by REPS", `specialisms.tsx` "Verified pros" / "single Verified badge the public can actually trust" — status.
+- `about.tsx` / `index.tsx` "Verified professionals" stat — describes the register, not a plan.
+- `find-a-professional.tsx` testimonial "Verified, insured, and genuinely good" — status.
+- All internal enum values `"verified"` in `.functions.ts`, admin routes, mockups, `signup.tsx` slug-mapping, campaigns, search, billing resolvers — internal identifiers, not user-facing copy. Signup already maps `core` ↔ internal `verified`; leave the enum alone.
+
+## Out of scope
+
+- No visual/layout changes.
+- No routing changes.
+- No pricing/enum/DB changes.
+- No changes to admin surfaces or the locked coach website.
 
 ## Verification
 
-- `bunx tsgo --noEmit` clean on the three edited files.
-- Load `/` and confirm: 16 tiles, 4×4 on desktop, no horizontal scrollbar, hover lift works, each tile navigates to `/c/{slug}`.
-- Confirm section still hides entirely when `newestCoaches.length === 0`.
+`bunx tsgo --noEmit`; then re-grep `rg -n "Verified" src/routes src/components | rg -v "admin_|_authenticated|mockups"` and confirm remaining hits are all status/badge usage.
