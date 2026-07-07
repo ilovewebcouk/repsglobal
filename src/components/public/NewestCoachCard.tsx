@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Star, ShieldCheck } from "lucide-react";
+import { ShieldCheck, MapPin, Users, Star } from "lucide-react";
 
 export type NewestCoach = {
   name: string;
@@ -12,69 +12,69 @@ export type NewestCoach = {
   reviews: number;
 };
 
+const MODE_LABEL: Record<NewestCoach["mode"], string> = {
+  "In-person": "In-person",
+  Online: "Online",
+  "In-person & Online": "Blended",
+};
+
 /**
- * Photo-led register tile for the home "Newest coaches" section.
- * Portrait aspect, verified pill overlay, star chip, quiet trust microline,
- * hover CTA. The whole card is the link.
+ * Coach card for the home "Newest coaches" wall.
+ * Structure mirrors the training-provider tile: bordered white card,
+ * media well at top, REPS Verified strip + name + role, footer meta row.
  */
 export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
-  // Collapse long city strings ("Johnstone North, Kilbarchan…") to first segment.
   const shortCity = (pro.city ?? "").split(/[,&]/)[0].trim() || pro.city;
-
   return (
     <Link
       to="/c/$slug"
       params={{ slug: pro.slug }}
-      className="group flex h-full flex-col rounded-[18px] focus:outline-none focus-visible:ring-2 focus-visible:ring-reps-orange/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reps-warm-white"
+      className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-black/10 bg-white transition-all hover:-translate-y-0.5 hover:border-black/25 hover:shadow-[0_12px_28px_-16px_rgba(0,0,0,0.25)]"
     >
-      {/* Photo well */}
-      <div className="relative mb-3 aspect-[4/5] overflow-hidden rounded-[18px] bg-reps-stone/40">
+      <div className="relative aspect-[4/5] overflow-hidden border-b border-black/[0.06] bg-[#f7f6f2]">
         <img
           src={pro.image}
           alt={pro.name}
           loading="lazy"
-          className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
+          className="h-full w-full object-cover object-top"
         />
-
-        {/* Verified pill */}
-        <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300 backdrop-blur-md">
-          <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.5} />
-          Verified
-        </span>
-
-        {/* Hover CTA */}
-        <div className="pointer-events-none absolute inset-0 flex items-end p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-          <div className="absolute inset-0 bg-gradient-to-t from-reps-charcoal/55 via-transparent to-transparent" />
-          <span className="relative w-full translate-y-1 rounded-[10px] bg-reps-orange py-2.5 text-center text-[13px] font-semibold text-white shadow-lg transition-transform duration-200 group-hover:translate-y-0">
-            View profile →
+        {pro.rating != null && (
+          <span
+            className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-[8px] bg-white/95 px-1.5 py-0.5 shadow-sm backdrop-blur"
+            aria-label={`Rated ${pro.rating.toFixed(1)} out of 5 from ${pro.reviews} reviews`}
+          >
+            <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
+            <span className="text-[11px] font-bold text-black">
+              {pro.rating.toFixed(1)}
+            </span>
+          </span>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <div className="flex items-center gap-1.5">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+            REPS Verified
           </span>
         </div>
-      </div>
-
-      {/* Meta */}
-      <div className="space-y-1.5 px-0.5">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="truncate font-display text-[15.5px] font-bold leading-tight text-reps-charcoal">
-            {pro.name}
-          </h3>
-          {pro.rating != null && (
-            <span
-              className="flex shrink-0 items-center gap-1 rounded-[6px] bg-reps-ivory px-1.5 py-0.5"
-              aria-label={`Rated ${pro.rating.toFixed(1)} out of 5 from ${pro.reviews} reviews`}
-            >
-              <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
-              <span className="text-[11px] font-bold text-reps-charcoal">
-                {pro.rating.toFixed(1)}
-              </span>
+        <h3 className="font-display text-[17px] font-bold leading-tight text-black group-hover:text-[#E96F00]">
+          {pro.name}
+        </h3>
+        {pro.role ? (
+          <p className="line-clamp-2 text-[13px] text-black/60">{pro.role}</p>
+        ) : null}
+        <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 text-[12.5px] text-black/60">
+          {shortCity ? (
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
+              {shortCity}
             </span>
-          )}
+          ) : null}
+          <span className="inline-flex items-center gap-1">
+            <Users className="h-3.5 w-3.5" strokeWidth={2} />
+            {MODE_LABEL[pro.mode]}
+          </span>
         </div>
-        <p className="truncate text-[12.5px] text-reps-muted-light">{pro.role}</p>
-        <p className="flex items-center gap-2 text-[11.5px] text-reps-muted-light">
-          <span className="truncate">{shortCity}</span>
-          <span aria-hidden>·</span>
-          <span className="shrink-0">Insured · CPD</span>
-        </p>
       </div>
     </Link>
   );
