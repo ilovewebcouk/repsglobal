@@ -47,8 +47,17 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/v
   validateSearch: (s: Record<string, unknown>) => ({
     stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
   }),
-  component: VerificationPage,
+  component: RootVerificationPage,
 });
+
+import { ProviderVerificationPage } from "@/components/dashboard/provider/VerificationPage";
+
+function RootVerificationPage() {
+  const tier = useTrainerTier();
+  if (tier === "training_provider") return <ProviderVerificationPage />;
+  return <VerificationPage />;
+}
+
 
 function useStripeIdentityReturn() {
   const qc = useQueryClient();
