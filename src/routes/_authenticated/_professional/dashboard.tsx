@@ -151,6 +151,34 @@ function DashboardPage() {
             </DashboardButton>
           </AlertDescription>
         </Alert>
+      ) : isOrganisation ? (
+        <div className="flex flex-col gap-4">
+          <WelcomeBanner
+            name={memberName}
+            avatarUrl={data?.identity?.avatar_url}
+            headline={data?.website?.tagline ?? null}
+            tierLabel={tierLabel}
+            isPublished={isPublished}
+            slug={slug}
+            trust={hub.trust.data ?? null}
+          />
+          <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
+            <div className="min-h-[340px] xl:col-span-8">
+              <NeedsAttention
+                unreadEnquiries={0}
+                pendingReviewReplies={0}
+                unreadSupport={hub.supportUnread}
+                insuranceExpiringDays={insuranceExpiringDays}
+                insuranceExpired={insuranceExpired}
+                readiness={hub.readiness.data ?? null}
+                trust={hub.trust.data ?? null}
+              />
+            </div>
+            <div className="min-h-[340px] xl:col-span-4">
+              <CompletenessCard readiness={hub.readiness.data ?? null} />
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           {/* ROW 0 — Verification banner */}
