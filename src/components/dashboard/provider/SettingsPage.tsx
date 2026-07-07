@@ -104,7 +104,7 @@ export function ProviderSettingsPage() {
                   <li key={t.key}>
                     <button
                       type="button"
-                      onClick={() => navigate({ search: { tab: t.key }, replace: true })}
+                      onClick={() => navigate({ search: { tab: t.key } as any, replace: true })}
                       className={`flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors ${
                         active
                           ? "bg-reps-orange-soft text-reps-orange"
