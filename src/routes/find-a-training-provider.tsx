@@ -173,6 +173,18 @@ function FindTrainingProviderPage() {
   );
 }
 
+function providerGradient(name: string): string {
+  // Deterministic warm gradient derived from the provider name — keeps
+  // hero-less cards feeling branded rather than empty.
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  }
+  const hue = 18 + (hash % 28); // orange (18) → amber (46)
+  const h2 = 30 + ((hash >> 3) % 20);
+  return `linear-gradient(135deg, hsl(${hue} 78% 58%) 0%, hsl(${h2} 65% 42%) 100%)`;
+}
+
 function ProviderCardTile({ row }: { row: ProviderCard }) {
   const deliveryLabel =
     row.in_person_available && row.online_available
@@ -180,25 +192,46 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
       : row.online_available
         ? "Online"
         : "In-person";
+  const monogram = (row.name?.trim()?.[0] ?? "•").toUpperCase();
   return (
     <Link
       to="/t/$slug"
       params={{ slug: row.slug }}
       className="group flex flex-col overflow-hidden rounded-[18px] border border-black/10 bg-white transition-all hover:-translate-y-0.5 hover:border-black/25 hover:shadow-[0_12px_28px_-16px_rgba(0,0,0,0.25)]"
     >
-      <div className="flex items-center justify-center border-b border-black/[0.06] bg-[#f7f6f2] p-6">
-        {row.avatar_url ? (
+      <div
+        className="relative aspect-[16/9] w-full overflow-hidden"
+        style={row.hero_image_url ? undefined : { background: providerGradient(row.name) }}
+      >
+        {row.hero_image_url ? (
           <img
-            src={row.avatar_url}
-            alt={`${row.name} logo`}
-            className="h-20 w-20 rounded-[14px] object-contain"
+            src={row.hero_image_url}
+            alt=""
+            aria-hidden
+            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
             loading="lazy"
           />
-        ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-[14px] bg-white text-black/25">
-            <Building2 className="h-9 w-9" strokeWidth={1.5} />
-          </div>
-        )}
+        ) : null}
+        {/* Legibility wash so the logo chip always reads on photo or gradient */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent"
+        />
+        {/* Logo chip */}
+        <div className="absolute bottom-3 left-3 flex h-11 w-11 items-center justify-center overflow-hidden rounded-[12px] bg-white ring-1 ring-black/5 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.35)]">
+          {row.avatar_url ? (
+            <img
+              src={row.avatar_url}
+              alt={`${row.name} logo`}
+              className="h-full w-full object-contain p-1"
+              loading="lazy"
+            />
+          ) : (
+            <span className="font-display text-[16px] font-bold text-black/80">
+              {monogram}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-center gap-1.5">
