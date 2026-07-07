@@ -127,6 +127,34 @@ export const PRO_NAV = [
   },
 ] as const satisfies readonly NavGroup[];
 
+export const TRAINING_PROVIDER_NAV = [
+  {
+    title: "Account",
+    items: [
+      { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+      { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
+    ],
+  },
+  {
+    title: "Deliver",
+    items: [
+      { icon: Store, label: "Website", to: "/dashboard/provider-website" },
+    ],
+  },
+  {
+    title: "Help",
+    items: [
+      { icon: LifeBuoy, label: "Support", to: "/dashboard/support" },
+    ],
+  },
+  {
+    title: "System",
+    items: [
+      { icon: Settings, label: "Settings", to: "/dashboard/settings" },
+    ],
+  },
+] as const satisfies readonly NavGroup[];
+
 export const ADMIN_NAV = [
   {
     title: "Overview",
