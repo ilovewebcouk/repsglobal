@@ -20,6 +20,8 @@ export type ProviderCard = {
   hero_image_url: string | null;
   in_person_available: boolean;
   online_available: boolean;
+  rating_avg: number | null;
+  review_count: number;
 };
 
 const InputSchema = z.object({
