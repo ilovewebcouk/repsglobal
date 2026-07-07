@@ -36,6 +36,7 @@ import {
 import {
   clearReviewReply,
   createReviewRequest,
+  createReviewRequestsBulk,
   flagReview,
   getMyReviewKpis,
   listMyReviewRequests,
