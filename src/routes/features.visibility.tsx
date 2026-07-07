@@ -155,7 +155,7 @@ const FAQ_ITEMS = [
   },
   {
     q:"Is my REPS profile indexed by search engines?",
-    a:"Yes. Verified profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPS and beyond it.",
+    a:"Yes. Core profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPS and beyond it.",
   },
   {
     q:"Can I reply to reviews?",
