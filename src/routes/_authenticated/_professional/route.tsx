@@ -93,7 +93,7 @@ export const Route = createFileRoute("/_authenticated/_professional")({
       throw redirect({ to: "/pricing" });
     }
 
-    const trainerTier = sub!.tier as "verified" | "pro" | "studio";
+    const trainerTier = sub!.tier as "verified" | "pro" | "studio" | "training_provider";
     return { user, role: "professional" as const, trainerTier };
   },
   head: () => ({
