@@ -27,20 +27,10 @@ import {
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import diverseLogo from "@/assets/diverse-logo.svg.asset.json";
-import origymLogo from "@/assets/origym-logo.webp.asset.json";
-import forgeCover from "@/assets/providers/forge-cover.jpg.asset.json";
-import northlineCover from "@/assets/providers/northline-cover.jpg.asset.json";
-
-const DEMO_PROVIDER_LOGOS: Record<string, string> = {
-  "northline-fitness-academy": diverseLogo.url,
-  "forge-strength-institute": origymLogo.url,
-};
-
-const DEMO_PROVIDER_COVERS: Record<string, string> = {
-  "northline-fitness-academy": northlineCover.url,
-  "forge-strength-institute": forgeCover.url,
-};
+import {
+  DEMO_PROVIDER_COVERS,
+  DEMO_PROVIDER_LOGOS,
+} from "@/lib/directory/demo-provider-assets";
 
 /* -------------------------------------------------------------------- */
 /* Route                                                                */
