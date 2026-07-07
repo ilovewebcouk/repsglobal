@@ -31,6 +31,7 @@ import {
   DEMO_PROVIDER_COVERS,
   DEMO_PROVIDER_LOGOS,
 } from "@/lib/directory/demo-provider-assets";
+import { useMeasuredHeight } from "@/hooks/use-measured-height";
 
 /* -------------------------------------------------------------------- */
 /* Route                                                                */
