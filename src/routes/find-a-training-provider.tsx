@@ -152,7 +152,7 @@ function FindTrainingProviderPage() {
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-[200px] animate-pulse rounded-[18px] border border-black/10 bg-white"
+                  className="h-[300px] animate-pulse rounded-[18px] border border-black/10 bg-white"
                 />
               ))}
             </div>
