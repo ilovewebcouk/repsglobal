@@ -46,6 +46,7 @@ import {
 import { RESOURCE_ARTICLES, getFeaturedArticles, getLatestArticles, type ResourceCategory } from "@/lib/resources";
 import { cn } from "@/lib/utils";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { SiteBanner } from "@/components/SiteBanner";
 import { useSessionUser, type SessionUser } from "@/hooks/use-session-user";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
 import {
@@ -177,6 +178,7 @@ export function PublicHeader({
   return (
     <>
       <header className={wrapperClass}>
+        <SiteBanner />
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           {/* Row 1 — logo · location · nav · trust · right cluster */}
           <div className="flex h-[72px] items-center justify-between gap-4">
