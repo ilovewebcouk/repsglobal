@@ -299,12 +299,12 @@ function HomeV2() {
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
           <div className="mb-10 flex items-end justify-between gap-4 border-b border-reps-charcoal/5 pb-6">
             <div>
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Just joined</span>
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">NEW TO REPS</span>
               <h2 className="mt-1 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
-                Newest coaches on REPS
+                Recently joined professionals
               </h2>
               <p className="mt-2 max-w-[520px] text-[13.5px] text-reps-muted-light">
-                Verified in the last few weeks — every one qualified, insured and CPD-active.
+                Meet the latest fitness professionals building their trusted profiles on REPS
               </p>
             </div>
             <Link
@@ -312,7 +312,7 @@ function HomeV2() {
               search={{ page: 1, sort: "nearest" }}
               className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-reps-orange transition-opacity hover:opacity-80"
             >
-              View all coaches →
+              View all professionals →
             </Link>
           </div>
 
