@@ -31,6 +31,7 @@ import {
   DEMO_PROVIDER_COVERS,
   DEMO_PROVIDER_LOGOS,
 } from "@/lib/directory/demo-provider-assets";
+import { useMeasuredHeight } from "@/hooks/use-measured-height";
 
 /* -------------------------------------------------------------------- */
 /* Route                                                                */
@@ -551,7 +552,7 @@ function ProviderProfilePage() {
             </div>
 
             {/* RIGHT — sticky review rail */}
-            <aside className="space-y-6 self-start lg:sticky lg:top-[116px]">
+            <aside className="space-y-6 self-start lg:sticky lg:top-[calc(var(--public-header-h,72px)+var(--provider-subnav-h,52px)+12px)]">
               <article id="reviews" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
                 <header className="flex items-center justify-between">
                   <h2 className="font-display text-[18px] font-bold text-black">What Learners Say</h2>
@@ -723,8 +724,13 @@ function StickyNav() {
     { id: "accreditations", label: "Accreditations" },
     { id: "locations", label: "Locations" },
   ];
+  const navRef = React.useRef<HTMLDivElement | null>(null);
+  useMeasuredHeight(navRef, "--provider-subnav-h");
   return (
-    <div className="sticky top-[64px] z-20 mt-6 border-b border-black/10 bg-[#f7f6f2]/90 backdrop-blur supports-[backdrop-filter]:bg-[#f7f6f2]/75">
+    <div
+      ref={navRef}
+      className="sticky top-[var(--public-header-h,72px)] z-20 mt-6 border-b border-black/10 bg-[#f7f6f2]/90 backdrop-blur supports-[backdrop-filter]:bg-[#f7f6f2]/75"
+    >
       <div className="mx-auto max-w-[1180px] overflow-x-auto px-4 lg:px-6">
         <ul className="flex items-center gap-6 py-3 text-[14px]">
           {items.map((it, i) => (

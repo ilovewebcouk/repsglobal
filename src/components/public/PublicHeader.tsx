@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useMeasuredHeight } from "@/hooks/use-measured-height";
 import { Link, useRouterState } from "@tanstack/react-router";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import {
@@ -175,9 +176,12 @@ export function PublicHeader({
       : "bg-transparent",
   );
 
+  const headerRef = useRef<HTMLElement | null>(null);
+  useMeasuredHeight(headerRef, "--public-header-h");
+
   return (
     <>
-      <header className={wrapperClass}>
+      <header ref={headerRef} className={wrapperClass}>
         <SiteBanner />
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           {/* Row 1 — logo · location · nav · trust · right cluster */}
