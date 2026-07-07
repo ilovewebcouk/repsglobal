@@ -241,10 +241,17 @@ function ProviderProfilePage() {
             </div>
 
             <div className="flex flex-col justify-center">
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
-                REPS Verified
-              </span>
+              {sf.trust?.identityVerifiedAt ? (
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                  <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
+                  REPS Verified
+                </span>
+              ) : (
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                  <Shield className="h-3.5 w-3.5" strokeWidth={2.2} />
+                  Unverified
+                </span>
+              )}
               <h1 className="mt-3 font-display text-[36px] font-bold leading-[1.05] tracking-[-0.01em] text-black lg:text-[46px]">
                 {providerName}
               </h1>
