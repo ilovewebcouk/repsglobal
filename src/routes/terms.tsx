@@ -239,7 +239,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           REPs offers paid Subscriptions to Professionals. Pricing for each
-          tier (currently Verified at £34 per year, Pro Founding at £59 per
+          tier (currently Core at £34 per year, Pro Founding at £59 per
           month, and Studio by waitlist) is shown at{" "}
           <Link to="/pricing">/pricing</Link> and at checkout. All prices
           are in pounds sterling and inclusive of UK VAT where applicable
