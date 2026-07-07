@@ -31,6 +31,8 @@ function labelForRole(role: AccountRole): string {
       return "Pro";
     case "verified":
       return "Core";
+    case "training_provider":
+      return "Training provider";
     case "client":
       return "Client";
     default:
