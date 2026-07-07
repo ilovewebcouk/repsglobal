@@ -151,7 +151,7 @@ const FAQ_ITEMS = [
   },
   {
     q:"Do I need Pro to be visible?",
-    a:"No. Verified gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded website and the client management tools that turn enquiries into a working business.",
+    a:"No. Core gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded website and the client management tools that turn enquiries into a working business.",
   },
   {
     q:"Is my REPS profile indexed by search engines?",
