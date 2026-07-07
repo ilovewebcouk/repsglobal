@@ -11,7 +11,7 @@ import { IdentityGateWall } from "@/components/dashboard/verification/IdentityGa
 import { VerificationPromptDialog } from "@/components/dashboard/verification/VerificationPromptDialog";
 
 const LIVE_STATUSES = ["active", "trialing", "past_due", "unpaid"];
-const PAID_TIERS = ["verified", "pro", "studio"];
+const PAID_TIERS = ["verified", "pro", "studio", "training_provider"];
 
 // Routes that remain reachable while identity is not yet approved.
 // Anything else under /dashboard/* is replaced by the IdentityGateWall.
