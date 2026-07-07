@@ -176,7 +176,7 @@ export function PublicHeader({
       : "bg-transparent",
   );
 
-  const headerRef = React.useRef<HTMLElement | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
   useMeasuredHeight(headerRef, "--public-header-h");
 
   return (
