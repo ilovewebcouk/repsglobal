@@ -73,12 +73,10 @@ function useStripeIdentityReturn() {
   }, [search.stripe_identity]);
 }
 
-import { ProviderVerificationPage } from "@/components/dashboard/provider/VerificationPage";
-
 function VerificationPage() {
-  const tier = useTrainerTier();
-  if (tier === "training_provider") return <ProviderVerificationPage />;
   useStripeIdentityReturn();
+  const tier = useTrainerTier();
+
 
   const fetchTrust = useServerFn(getTrustState);
   const trustQ = useQuery({
