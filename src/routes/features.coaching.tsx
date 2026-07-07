@@ -976,7 +976,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus the full Coaching workspace — programmes, exercise library, nutrition, habits & wearables, check-ins, progress, messaging, client view, accountability, automations and AI assist."
+            blurb="Everything in Core, plus the full Coaching workspace — programmes, exercise library, nutrition, habits & wearables, check-ins, progress, messaging, client view, accountability, automations and AI assist."
             highlighted
             cta={{ to:"/pricing", label:"See Pro pricing" }}
           />
