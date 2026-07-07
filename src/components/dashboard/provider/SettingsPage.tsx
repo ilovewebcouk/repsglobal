@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link , getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
+
   getMySettings,
   updateMyAccount,
   updateMyNotificationPrefs,
@@ -55,8 +56,6 @@ import {
   type SessionRow,
   type ActivityEvent,
 } from "@/lib/settings/settings.functions";
-import { ProviderSettingsPage } from "@/components/dashboard/provider/SettingsPage";
-
 
 
 type TabKey = "account" | "notifications" | "billing" | "payments" | "credits" | "security" | "activity" | "privacy";
@@ -72,39 +71,14 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
   { key: "privacy", label: "Privacy & data", icon: EyeOff },
 ];
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/settings")({
-  validateSearch: (s: Record<string, unknown>) => {
-    const raw = typeof s.tab === "string" ? (s.tab as TabKey) : "account";
-    const tab: TabKey = TABS.some((t) => t.key === raw) ? raw : "account";
-    return { tab };
-  },
-  head: () => ({
-    meta: [
-      { title: "Settings — REPS Professional" },
-      { name: "description", content: "Account, notifications, billing, security and privacy." },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
-    links: [{ rel: "canonical", href: "/dashboard/settings" }],
-  }),
-  component: RootSettingsPage,
-});
+const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/settings");
 
 
-
-
-function RootSettingsPage() {
+export function ProviderSettingsPage() {
   const tier = useTrainerTier();
-  if (tier === "training_provider") return <ProviderSettingsPage />;
-  return <SettingsPage />;
-}
-
-function SettingsPage() {
-  const tier = useTrainerTier();
-  const { tab } = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const { tab } = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
   const fetchSettings = useServerFn(getMySettings);
-
-
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-settings"],
@@ -130,7 +104,7 @@ function SettingsPage() {
                   <li key={t.key}>
                     <button
                       type="button"
-                      onClick={() => navigate({ search: { tab: t.key }, replace: true })}
+                      onClick={() => navigate({ search: { tab: t.key } as any, replace: true })}
                       className={`flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium transition-colors ${
                         active
                           ? "bg-reps-orange-soft text-reps-orange"

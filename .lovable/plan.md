@@ -1,34 +1,91 @@
-## Goal
-Make the sticky right-hand review rail on `/t/$slug` sit **dynamically** below the real header + sub-nav — never hidden under the nav bar, never crushed against its shadow.
+# Separate the training-provider dashboard from the trainer dashboard
 
-## Brutal opinion
-Yes, it's too tight. The header is `h-[72px]`, but the sub-nav row (`top-[64px]` — already 8px off from the real header height) adds ~48px more. The rail currently sticks at `lg:top-[116px]`, which is roughly flush with the bottom of the sub-nav. The nav's drop-shadow / backdrop-blur bleeds right into the top of the "What Learners Say" card, making the rail look like it's tucked *under* the chrome rather than sitting cleanly below it. It needs ~12–16px of breathing room, and the sub-nav offset itself needs to line up with the real 72px header, not 64px.
+## Why
 
-## Fix
+Today a training provider and a trainer render the **same files**. Only the sidebar and one branch on the dashboard home differ. If you edit `dashboard_.settings.tsx` or `dashboard_.verification.tsx` to change what a provider sees, you change what a trainer sees at the same time. That's fragile and it will bite us the moment provider-specific settings (org details, courses, staff seats) diverge from trainer settings.
 
-**1. Correct the sub-nav offset**
-`src/routes/t.$slug.index.tsx` line 727: change `sticky top-[64px]` → `sticky top-[var(--public-header-h,72px)]`.
+The fix is a physical file split: providers get their own route tree, their own settings, their own verification, their own home — under the same `/dashboard/*` URLs the user already knows.
 
-**2. Measure the header + sub-nav at runtime**
-Publish two CSS variables on `document.documentElement`:
-- `--public-header-h` — real height of `PublicHeader`
-- `--provider-subnav-h` — real height of the section sub-nav (`SectionNav` inside this route)
+## What the user will see
 
-Use a small hook `useMeasuredHeight(ref, cssVar)` (ResizeObserver + `element.getBoundingClientRect().height`), wire it to the `<header>` in `PublicHeader.tsx` and to the sub-nav `<div>` in the route. Clean up on unmount. SSR-safe (guard `typeof window`).
+- Same URL bar (`/dashboard`, `/dashboard/settings`, `/dashboard/verification`, `/dashboard/support`, `/dashboard/provider-website`) — nothing to relearn.
+- Trainers keep exactly the pages they have today, untouched.
+- Training providers get a dedicated home, settings, verification and support that we can evolve without touching trainer pages.
+- Sidebar is already correct for providers (Dashboard, Verification, Support, Settings) — no visual change on this pass.
 
-**3. Dynamic sticky offset on the review rail**
-`src/routes/t.$slug.index.tsx` line 554:
+## Scope of this pass (v1)
+
+We split the shell only. **We do not redesign** provider settings / verification / home content yet — v1 duplicates today's provider-visible content into the new files so nothing regresses. Redesigns (org-only settings fields, provider verification flow, courses & CPD dashboard, learner enquiries) come in a follow-up pass.
+
+Out of scope for v1:
+- New provider-only content sections (courses, learner enquiries, reviews-for-providers) — planned but not built here.
+- Any change to trainer pages.
+- Any URL change. `/dashboard/*` stays.
+
+## Structure after the split
+
+```text
+src/routes/_authenticated/
+├── _professional/                  (trainer-only, unchanged)
+│   ├── route.tsx                   gate: redirects tier=training_provider away
+│   ├── dashboard.tsx
+│   ├── dashboard_.settings.tsx
+│   ├── dashboard_.verification.tsx
+│   ├── dashboard_.support.*.tsx
+│   └── ...
+└── _organisation/                  NEW pathless layout for providers
+    ├── route.tsx                   gate: requires tier=training_provider
+    ├── dashboard.tsx               provider home (isOrganisation branch moves here)
+    ├── dashboard_.settings.tsx     provider settings (org name, billing contact, seats)
+    ├── dashboard_.verification.tsx provider verification (org identity, insurance)
+    ├── dashboard_.support.*.tsx    provider support (thin wrapper for now)
+    └── dashboard_.provider-website.tsx  moves here from _professional/
 ```
-lg:sticky lg:top-[calc(var(--public-header-h,72px)+var(--provider-subnav-h,52px)+12px)]
-```
-The `+12px` is the breathing gap that stops the nav shadow from covering the card top. Fallback values (72 / 52) match today's measured chrome so SSR renders sanely before the observer fires.
 
-**4. Scope**
-- Frontend/presentation only — no data or server changes.
-- Only touches `src/components/public/PublicHeader.tsx` (adds ref + hook call on the outer `<header>`) and `src/routes/t.$slug.index.tsx` (sub-nav ref, sub-nav top offset, rail top offset).
-- New hook file: `src/hooks/use-measured-height.ts`.
-- No visual change on any other route — the CSS vars are additive; existing components that don't use them are unaffected.
+Both pathless layouts claim the same `/dashboard/*` URL space; the gates make sure only one matches per user.
 
-## Out of scope
-- The generic `SectionNav` / coach-website sticky nav — they're on locked routes and aren't part of this complaint.
-- Any redesign of the rail card itself.
+## Routing gates
+
+- `_professional/route.tsx` — if `tier === "training_provider"`, `redirect({ to: "/dashboard" })` and let the `_organisation` gate pick it up. Otherwise behave as today.
+- `_organisation/route.tsx` — mirror of `_professional/route.tsx` but only accepts `tier === "training_provider"`. Any other tier is redirected into `_professional`. Impersonation status is honoured the same way.
+- Because file-based routing generates the tree at build time, we add a small tie-breaker: the trainer gate throws the redirect first when the tier is provider, so the router falls through to the organisation branch cleanly. No shared component imports across the two trees.
+
+## Data & backend
+
+- **No schema changes.** Provider vs trainer is already `subscriptions.tier = 'training_provider'`.
+- Server functions currently used by both (e.g. `getDashboardStatus`, `getTrustState`) stay shared — they already return provider-shaped data when the caller is an org. Only the *routes* are duplicated, not the data layer.
+- `syncMySubscription`, billing, impersonation — untouched.
+
+## Files touched
+
+New:
+- `src/routes/_authenticated/_organisation/route.tsx`
+- `src/routes/_authenticated/_organisation/dashboard.tsx` (extracts today's `isOrganisation` branch)
+- `src/routes/_authenticated/_organisation/dashboard_.settings.tsx` (copy of trainer settings, provider-relevant tabs only)
+- `src/routes/_authenticated/_organisation/dashboard_.verification.tsx` (copy, keeps existing three-step trust flow)
+- `src/routes/_authenticated/_organisation/dashboard_.support.tsx` + `.index.tsx` + `.$id.tsx` + `.new.tsx` (thin re-exports for v1)
+- Move `dashboard_.provider-website.tsx` into `_organisation/`.
+
+Edited:
+- `src/routes/_authenticated/_professional/route.tsx` — add "redirect provider to /dashboard" line so the organisation tree catches it.
+- `src/routes/_authenticated/_professional/dashboard.tsx` — drop the `isOrganisation` branch (dead code once split lands).
+- `src/routes/_authenticated/_professional/dashboard_.website.tsx` — drop its "redirect provider" line (no longer reachable).
+
+Untouched (guaranteed): every other trainer file, `nav-data.ts`, `DashboardShell`, server functions, database, styles.
+
+## Verification once implemented
+
+1. Sign in as `demo-org-forge@repsuk.org` → land on `/dashboard`, see provider home, provider-only sidebar. Navigate to `/dashboard/settings` → renders the new `_organisation/dashboard_.settings.tsx`.
+2. Sign in as a trainer → `/dashboard/settings` still renders the trainer file. Diff shows zero lines changed in `_professional/dashboard_.settings.tsx` or `dashboard_.verification.tsx`.
+3. Impersonate the demo provider from an admin account → same result as (1).
+4. Grep confirms no provider route imports a `_professional/*` file, and vice versa.
+
+## What this unlocks next (not in this plan)
+
+Once the trees are physically separate, we can safely design:
+- Provider settings: organisation name, billing contact, staff seats, invoice email.
+- Provider verification: company house / awarding-body proof, insurance for the org, primary contact ID.
+- Provider home v2: courses published, learner enquiries, verified pros linked, review rating.
+- Provider-only reviews / enquiries routes.
+
+Each of those becomes an isolated edit to `_organisation/*` with zero risk to trainers.

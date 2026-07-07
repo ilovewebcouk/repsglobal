@@ -13,7 +13,7 @@
  */
 
 import * as React from "react";
-import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
+import { Link, useRouter, useSearch , getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -27,45 +27,20 @@ import {
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
 import { NameProfessionCard } from "@/components/dashboard/verification/NameProfessionCard";
-import { ProviderVerificationPage } from "@/components/dashboard/provider/VerificationPage";
-
 import {
   VerifiedBadge,
   tierFromCounts,
   tierLabel,
 } from "@/components/verification/VerifiedBadge";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/verification")({
-  head: () => ({
-    meta: [
-      { title: "Verification — REPS Professional" },
-      {
-        name: "description",
-        content:
-          "Earn your REPS credential. Three independent checks — identity, insurance, qualifications — each one earns a visible trust layer.",
-      },
-    ],
-  }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
-  }),
-  component: RootVerificationPage,
-});
+const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/verification");
 
-
-
-
-function RootVerificationPage() {
-  const tier = useTrainerTier();
-  if (tier === "training_provider") return <ProviderVerificationPage />;
-  return <VerificationPage />;
-}
 
 
 function useStripeIdentityReturn() {
   const qc = useQueryClient();
   const router = useRouter();
-  const search = useSearch({ from: Route.id }) as { stripe_identity?: string };
+  const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" }) as { stripe_identity?: string };
   React.useEffect(() => {
     if (search.stripe_identity === "complete") {
       void qc.invalidateQueries({ queryKey: ["my-identity"] });
@@ -85,11 +60,9 @@ function useStripeIdentityReturn() {
   }, [search.stripe_identity]);
 }
 
-function VerificationPage() {
+export function ProviderVerificationPage() {
   useStripeIdentityReturn();
   const tier = useTrainerTier();
-
-
   const fetchTrust = useServerFn(getTrustState);
   const trustQ = useQuery({
     queryKey: ["my-trust-state"],

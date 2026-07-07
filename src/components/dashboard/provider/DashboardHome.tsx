@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link , getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Inbox, MessageCircleQuestion, Star } from "lucide-react";
@@ -29,30 +29,17 @@ import {
   useHubData,
 } from "@/components/dashboard/hub";
 import { DashboardVerificationBanner } from "@/components/dashboard/DashboardVerificationBanner";
-import { ProviderDashboardHome } from "@/components/dashboard/provider/DashboardHome";
 
-export const Route = createFileRoute("/_authenticated/_professional/dashboard")({
-  validateSearch: (raw: Record<string, unknown>) => ({
-    billing: typeof raw.billing === "string" ? raw.billing : undefined,
-  }),
-  head: () => ({ meta: [{ title: "Dashboard — REPS" }] }),
-  component: RootDashboardPage,
-});
 
-function RootDashboardPage() {
+const routeApi = getRouteApi("/_authenticated/_professional/dashboard");
+
+export function ProviderDashboardHome() {
   const tier = useTrainerTier();
-  if (tier === "training_provider") return <ProviderDashboardHome />;
-  return <DashboardPage />;
-}
-
-function DashboardPage() {
-  const tier = useTrainerTier();
-
   const fetchStatus = useServerFn(getDashboardStatus);
   const syncSub = useServerFn(syncMySubscription);
   const qc = useQueryClient();
-  const { billing } = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const { billing } = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
 
   const status = useQuery({
     queryKey: ["dashboard-status"],
@@ -67,7 +54,7 @@ function DashboardPage() {
   React.useEffect(() => {
     if (billing === "success") {
       syncMutation.mutate();
-      navigate({ search: { billing: undefined }, replace: true });
+      navigate({ search: { billing: undefined } as any, replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [billing]);
