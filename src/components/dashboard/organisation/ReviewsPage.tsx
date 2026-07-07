@@ -1,5 +1,4 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -34,7 +33,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import {
   clearReviewReply,
   createReviewRequest,
@@ -47,21 +45,6 @@ import {
   type ReviewDTO,
   type ReviewRequestRow,
 } from "@/lib/reviews/reviews.functions";
-
-
-export const Route = createFileRoute("/_authenticated/_professional/dashboard_/reviews")({
-  head: () => ({
-    meta: [
-      { title: "Reviews — REPS Professional" },
-      { name: "description", content: "Public reviews, rating breakdown and request-a-review for your REPS profile." },
-      { property: "og:title", content: "Reviews — REPS Professional" },
-      { property: "og:description", content: "Reviews and response composer." },
-      { property: "og:url", content: "/dashboard/reviews" },
-    ],
-    links: [{ rel: "canonical", href: "/dashboard/reviews" }],
-  }),
-  component: ReviewsPage,
-});
 
 function Stars({ n, size = "sm" }: { n: number; size?: "sm" | "lg" }) {
   const s = size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5";
