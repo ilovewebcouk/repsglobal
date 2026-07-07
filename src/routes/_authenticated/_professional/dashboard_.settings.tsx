@@ -89,7 +89,8 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/s
   component: RootSettingsPage,
 });
 
-import { ProviderSettingsPage } from "@/components/dashboard/provider/SettingsPage";
+
+
 
 function RootSettingsPage() {
   const tier = useTrainerTier();
