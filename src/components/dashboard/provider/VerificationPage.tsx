@@ -40,7 +40,7 @@ const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/verificat
 function useStripeIdentityReturn() {
   const qc = useQueryClient();
   const router = useRouter();
-  const search = useSearch({ from: Route.id }) as { stripe_identity?: string };
+  const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" }) as { stripe_identity?: string };
   React.useEffect(() => {
     if (search.stripe_identity === "complete") {
       void qc.invalidateQueries({ queryKey: ["my-identity"] });
