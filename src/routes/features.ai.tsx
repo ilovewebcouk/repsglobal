@@ -825,7 +825,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus the full REPS AI operating layer — Next Move cards, check-in summaries, programme drafts, nutrition drafts, risk alerts and on-brand content."
+            blurb="Everything in Core, plus the full REPS AI operating layer — Next Move cards, check-in summaries, programme drafts, nutrition drafts, risk alerts and on-brand content."
             highlighted
             cta={{ to: "/pricing", label: "See Pro pricing" }}
           />
