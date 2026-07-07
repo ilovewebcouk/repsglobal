@@ -43,7 +43,6 @@ import {
 import { Button } from "@/components/ui/button";
 import {
 
-const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/settings");
   getMySettings,
   updateMyAccount,
   updateMyNotificationPrefs,
