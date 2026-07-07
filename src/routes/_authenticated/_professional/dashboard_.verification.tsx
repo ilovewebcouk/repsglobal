@@ -52,7 +52,8 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/v
   component: RootVerificationPage,
 });
 
-import { ProviderVerificationPage } from "@/components/dashboard/provider/VerificationPage";
+
+
 
 function RootVerificationPage() {
   const tier = useTrainerTier();
