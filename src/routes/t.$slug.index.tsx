@@ -12,6 +12,7 @@ import {
   GraduationCap,
   MapPin,
   MessageCircle,
+  Shield,
   ShieldCheck,
   Sparkles,
   Star,
