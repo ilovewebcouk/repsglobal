@@ -810,6 +810,16 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const setTpM = useMutation({
+    mutationFn: () => setTpFn({ data: { professional_id: row.id } }),
+    onSuccess: () => {
+      toast.success(`${row.name} set to Training Provider plan`);
+      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
+      qc.invalidateQueries({ queryKey: ["impersonation-status"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   // Cancel-sub and delete-member are owned by Member 360 (Phase 6 — single
   // destructive-action surface). The dropdown links there.
 
