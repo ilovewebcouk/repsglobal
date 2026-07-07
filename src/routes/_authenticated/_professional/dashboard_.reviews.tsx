@@ -60,8 +60,16 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/r
     ],
     links: [{ rel: "canonical", href: "/dashboard/reviews" }],
   }),
-  component: ReviewsPage,
+  component: ReviewsDispatcher,
 });
+
+function ReviewsDispatcher() {
+  const tier = useTrainerTier();
+  if (tier === "training_provider") {
+    return <ProviderReviewsPage />;
+  }
+  return <ReviewsPage />;
+}
 
 function Stars({ n, size = "sm" }: { n: number; size?: "sm" | "lg" }) {
   const s = size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5";
