@@ -167,7 +167,7 @@ const FAQ_ITEMS = [
     a: "Indirectly, yes — through reviews, referrals, better conversion of the enquiries you already have and re-engaging clients you'd otherwise lose. For new audience reach, see Visibility and Website.",
   },
   {
-    q: "Is Growth included in Verified or only Pro?",
+    q: "Is Growth included in Core or only Pro?",
     a: "Growth is a Pro feature. Verified gives you a trusted public profile and review collection. Pro adds the business dashboard, conversion insights, retention signals, referral prompts, reactivation queue and AI growth actions behind it.",
   },
 ];
