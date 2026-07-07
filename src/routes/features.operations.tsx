@@ -240,7 +240,7 @@ const FAQ_ITEMS = [
     a:"Import contacts from a CSV or your current CRM. Match them to existing enquiries, attach historical notes, then carry on from one record per client instead of five places per client.",
   },
   {
-    q:"Is Operations included in Verified or only Pro?",
+    q:"Is Operations included in Core or only Pro?",
     a:"Operations is a Pro feature. Verified gives you a trusted public profile, verification, visibility and reviews. Pro adds the operational system behind that profile — enquiries, bookings, forms, payments, client records and follow-ups.",
   },
 ];
