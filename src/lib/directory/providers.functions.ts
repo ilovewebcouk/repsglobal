@@ -95,14 +95,16 @@ export const listPublicProviders = createServerFn({ method: "GET" })
 
     let rows: ProviderCard[] = (proRows ?? []).map((r) => {
       const prof = profilesById[r.id as string] ?? { name: null, avatar: null };
+      const slug = (r.slug as string | null) ?? "";
       return {
         id: r.id as string,
-        slug: (r.slug as string | null) ?? "",
+        slug,
         name: prof.name?.trim() || "Training Provider",
         city: (r.city as string | null) ?? null,
         tagline: (r.headline as string | null) ?? null,
-        avatar_url: prof.avatar,
-        hero_image_url: heroById[r.id as string] ?? null,
+        avatar_url: prof.avatar ?? DEMO_PROVIDER_LOGOS[slug] ?? null,
+        hero_image_url:
+          heroById[r.id as string] ?? DEMO_PROVIDER_COVERS[slug] ?? null,
         in_person_available: Boolean(r.in_person_available),
         online_available: Boolean(r.online_available),
       };
