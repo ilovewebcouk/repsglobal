@@ -86,9 +86,12 @@ function DashboardPage() {
   const insuranceExpiringDays =
     insuranceDays !== null && insuranceDays >= 0 ? insuranceDays : null;
 
-  const tierLabel = hasPaidTier
-    ? (TIERS[subTier as "verified" | "pro"]?.label ?? subTier)
-    : "No plan";
+  const isOrganisation = data?.accountType === "organisation";
+  const tierLabel = isOrganisation
+    ? "Training provider"
+    : hasPaidTier
+      ? (TIERS[subTier as "verified" | "pro"]?.label ?? subTier)
+      : "No plan";
   const memberName =
     data?.identity?.full_name ?? data?.identity?.business_name ?? "REPS member";
   const firstName = memberName.split(" ")[0];
