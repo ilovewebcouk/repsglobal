@@ -843,7 +843,19 @@ function ChromeBar({ coach }: { coach: Coach }) {
                 ID, insurance and qualifications independently verified by REPS.
               </TooltipContent>
             </Tooltip>
-          ) : null}
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-reps-muted ring-1 ring-white/12">
+                  <Shield className="h-3 w-3" />
+                  Unverified
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                ID, insurance and qualifications not yet independently verified by REPS.
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Link
             to="/auth"
             className="text-[13px] font-medium text-reps-muted transition-colors hover:text-reps-text"
