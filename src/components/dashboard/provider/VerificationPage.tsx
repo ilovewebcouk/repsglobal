@@ -28,12 +28,13 @@ import {
 } from "@/components/dashboard/verification/TrustBlock";
 import { NameProfessionCard } from "@/components/dashboard/verification/NameProfessionCard";
 import {
-
-const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/verification");
   VerifiedBadge,
   tierFromCounts,
   tierLabel,
 } from "@/components/verification/VerifiedBadge";
+
+const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/verification");
+
 
 
 function useStripeIdentityReturn() {
