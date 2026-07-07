@@ -30,9 +30,10 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
     <Link
       to="/c/$slug"
       params={{ slug: pro.slug }}
-      className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-black/10 bg-white transition-all hover:-translate-y-0.5 hover:border-black/25 hover:shadow-[0_12px_28px_-16px_rgba(0,0,0,0.25)]"
+      className="group flex h-full items-stretch overflow-hidden rounded-[18px] border border-black/10 bg-white transition-all hover:-translate-y-0.5 hover:border-black/25 hover:shadow-[0_12px_28px_-16px_rgba(0,0,0,0.25)]"
     >
-      <div className="relative aspect-square overflow-hidden border-b border-black/[0.06] bg-[#f7f6f2]">
+      {/* Square image on the left */}
+      <div className="relative aspect-square w-[120px] shrink-0 overflow-hidden bg-[#f7f6f2] sm:w-[140px]">
         <img
           src={pro.image}
           alt={pro.name}
@@ -41,7 +42,7 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
         />
         {pro.rating != null && (
           <span
-            className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-[8px] bg-white/95 px-1.5 py-0.5 shadow-sm backdrop-blur"
+            className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-[8px] bg-white/95 px-1.5 py-0.5 shadow-sm backdrop-blur"
             aria-label={`Rated ${pro.rating.toFixed(1)} out of 5 from ${pro.reviews} reviews`}
           >
             <Star className="h-3 w-3 fill-reps-orange text-reps-orange" />
@@ -51,7 +52,9 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
           </span>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-4">
+
+      {/* Text content on the right */}
+      <div className="flex flex-1 flex-col justify-center gap-1.5 px-4 py-3">
         {pro.verified ? (
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
@@ -67,13 +70,13 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
             </span>
           </div>
         )}
-        <h3 className="line-clamp-1 font-display text-[17px] font-bold leading-tight text-black group-hover:text-[#E96F00]">
+        <h3 className="line-clamp-1 font-display text-[16px] font-bold leading-tight text-black group-hover:text-[#E96F00] sm:text-[17px]">
           {pro.name}
         </h3>
         {pro.role ? (
-          <p className="line-clamp-2 text-[13px] text-black/60">{pro.role}</p>
+          <p className="line-clamp-1 text-[12.5px] text-black/60">{pro.role}</p>
         ) : null}
-        <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 text-[12.5px] text-black/60">
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-black/55">
           {shortCity ? (
             <span className="inline-flex min-w-0 items-center gap-1">
               <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
