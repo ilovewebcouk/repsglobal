@@ -190,7 +190,16 @@ function CurrentClientsField({
 
 function WebsiteEditorPage() {
   const tier = useTrainerTier();
+  const navigate = Route.useNavigate();
   const blocked = false;
+
+  // Training providers use a dedicated editor for /t/$slug — route them away
+  // from the coach website editor so they never see coach-only content.
+  React.useEffect(() => {
+    if (tier === "training_provider") {
+      navigate({ to: "/dashboard/provider-website", replace: true });
+    }
+  }, [tier, navigate]);
 
   // Core members get the Lite website; Pro/Studio get the full editor.
 
