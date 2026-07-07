@@ -772,6 +772,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
   const startFn = useServerFn(startImpersonation);
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
+  const setTpFn = useServerFn(setTrainingProviderPlan);
   const [busy, setBusy] = React.useState(false);
   const [suspendOpen, setSuspendOpen] = React.useState(false);
 
