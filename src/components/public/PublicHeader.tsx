@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useMeasuredHeight } from "@/hooks/use-measured-height";
 import { Link, useRouterState } from "@tanstack/react-router";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import {
