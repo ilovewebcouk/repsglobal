@@ -119,6 +119,7 @@ import {
   type AdminProSegment,
 } from "@/lib/admin/professionals.functions";
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
+import { setTrainingProviderPlan } from "@/lib/admin/set-training-provider-plan.functions";
 import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
 
 type ProfessionalsSearch = { plan?: "free" | "paid" };
