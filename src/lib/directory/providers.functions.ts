@@ -73,6 +73,21 @@ export const listPublicProviders = createServerFn({ method: "GET" })
       }
     }
 
+    const heroById: Record<string, string | null> = {};
+    if (ids.length > 0) {
+      const { data: siteRows } = await supabaseAdmin
+        .from("professional_websites")
+        .select("professional_id, hero_image_url")
+        .in("professional_id", ids);
+      for (const s of siteRows ?? []) {
+        const pid = (s as { professional_id?: string | null }).professional_id;
+        if (pid) {
+          heroById[pid] =
+            (s as { hero_image_url?: string | null }).hero_image_url ?? null;
+        }
+      }
+    }
+
     let rows: ProviderCard[] = (proRows ?? []).map((r) => {
       const prof = profilesById[r.id as string] ?? { name: null, avatar: null };
       return {
@@ -82,6 +97,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
         city: (r.city as string | null) ?? null,
         tagline: (r.headline as string | null) ?? null,
         avatar_url: prof.avatar,
+        hero_image_url: heroById[r.id as string] ?? null,
         in_person_available: Boolean(r.in_person_available),
         online_available: Boolean(r.online_available),
       };
