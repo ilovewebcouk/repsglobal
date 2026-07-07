@@ -32,7 +32,7 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
       params={{ slug: pro.slug }}
       className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-black/10 bg-white transition-all hover:-translate-y-0.5 hover:border-black/25 hover:shadow-[0_12px_28px_-16px_rgba(0,0,0,0.25)]"
     >
-      <div className="relative aspect-[4/5] overflow-hidden border-b border-black/[0.06] bg-[#f7f6f2]">
+      <div className="relative aspect-square overflow-hidden border-b border-black/[0.06] bg-[#f7f6f2]">
         <img
           src={pro.image}
           alt={pro.name}
@@ -67,7 +67,7 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
             </span>
           </div>
         )}
-        <h3 className="font-display text-[17px] font-bold leading-tight text-black group-hover:text-[#E96F00]">
+        <h3 className="line-clamp-1 font-display text-[17px] font-bold leading-tight text-black group-hover:text-[#E96F00]">
           {pro.name}
         </h3>
         {pro.role ? (
@@ -75,9 +75,9 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
         ) : null}
         <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 text-[12.5px] text-black/60">
           {shortCity ? (
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
-              {shortCity}
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+              <span className="truncate">{shortCity}</span>
             </span>
           ) : null}
           <span className="inline-flex items-center gap-1">
