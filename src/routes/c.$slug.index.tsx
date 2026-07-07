@@ -754,6 +754,7 @@ function CoachWebsitePage() {
 
   return (
     <div data-coach-theme={coach.theme ?? "dark"} className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
+      <SiteBanner />
       {showPlaceholderBanner ? (
         <TemplateContentBanner
           firstName={(coach.name ?? "").split(" ")[0] || "This coach"}
@@ -823,7 +824,6 @@ function TemplateContentBanner({
 function ChromeBar({ coach }: { coach: Coach }) {
   return (
     <header className="sticky top-0 z-40 bg-reps-ink/85 backdrop-blur supports-[backdrop-filter]:bg-reps-ink/70 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
-      <SiteBanner />
       <div className="mx-auto flex h-14 max-w-[1320px] items-center justify-between gap-4 px-6 lg:px-10">
         <Link to="/" className="flex items-center gap-3 text-reps-text">
           <RepsWordmark className="h-4 w-auto text-reps-text" />
