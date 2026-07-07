@@ -86,7 +86,8 @@ function DashboardPage() {
   const insuranceExpiringDays =
     insuranceDays !== null && insuranceDays >= 0 ? insuranceDays : null;
 
-  const isOrganisation = data?.accountType === "organisation";
+  const isOrganisation =
+    data?.accountType === "organisation" || tier === "training_provider";
   const tierLabel = isOrganisation
     ? "Training provider"
     : hasPaidTier
@@ -116,19 +117,35 @@ function DashboardPage() {
       }}
 
       actions={
-        <div className="flex items-center gap-2">
-          {slug ? (
-            <DashboardButton asChild size="sm" variant="ghost">
-              <Link to="/c/$slug" params={{ slug }} target="_blank">
-                View public profile
-                <ExternalLink className="ml-1.5 size-4" />
-              </Link>
+        isOrganisation ? (
+          <div className="flex items-center gap-2">
+            {slug ? (
+              <DashboardButton asChild size="sm" variant="ghost">
+                <Link to="/t/$slug" params={{ slug }} target="_blank">
+                  View provider page
+                  <ExternalLink className="ml-1.5 size-4" />
+                </Link>
+              </DashboardButton>
+            ) : null}
+            <DashboardButton asChild size="sm" variant="primary">
+              <Link to="/dashboard/provider-website">Edit provider website</Link>
             </DashboardButton>
-          ) : null}
-          <DashboardButton asChild size="sm" variant="primary">
-            <Link to="/dashboard/reviews">Request a review</Link>
-          </DashboardButton>
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            {slug ? (
+              <DashboardButton asChild size="sm" variant="ghost">
+                <Link to="/c/$slug" params={{ slug }} target="_blank">
+                  View public profile
+                  <ExternalLink className="ml-1.5 size-4" />
+                </Link>
+              </DashboardButton>
+            ) : null}
+            <DashboardButton asChild size="sm" variant="primary">
+              <Link to="/dashboard/reviews">Request a review</Link>
+            </DashboardButton>
+          </div>
+        )
       }
     >
       {status.isLoading ? (
@@ -150,6 +167,34 @@ function DashboardPage() {
             </DashboardButton>
           </AlertDescription>
         </Alert>
+      ) : isOrganisation ? (
+        <div className="flex flex-col gap-4">
+          <WelcomeBanner
+            name={memberName}
+            avatarUrl={data?.identity?.avatar_url}
+            headline={data?.website?.tagline ?? null}
+            tierLabel={tierLabel}
+            isPublished={isPublished}
+            slug={slug}
+            trust={hub.trust.data ?? null}
+          />
+          <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
+            <div className="min-h-[340px] xl:col-span-8">
+              <NeedsAttention
+                unreadEnquiries={0}
+                pendingReviewReplies={0}
+                unreadSupport={hub.supportUnread}
+                insuranceExpiringDays={insuranceExpiringDays}
+                insuranceExpired={insuranceExpired}
+                readiness={hub.readiness.data ?? null}
+                trust={hub.trust.data ?? null}
+              />
+            </div>
+            <div className="min-h-[340px] xl:col-span-4">
+              <CompletenessCard readiness={hub.readiness.data ?? null} />
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           {/* ROW 0 — Verification banner */}
