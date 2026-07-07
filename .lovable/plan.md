@@ -1,28 +1,28 @@
 ## Goal
-Stop showing "REPS Verified" on unverified newcomers. Plumb verification through and render a neutral "New member" pill for pros whose `verification_status !== 'verified'`.
+Tighten the "Recently joined professionals" rail: square photos, true signup ordering, and fix the card-height jitter caused by long names / long cities.
 
 ## Changes
 
-### 1. `src/lib/directory/newest.functions.ts`
-- Add `verification_status: string | null` to `NewestCoachRow`.
-- Include `verification_status` in the `professionals` select (line 42).
-- Pass it through when building each row (line 79–92).
+### 1. `src/components/public/NewestCoachCard.tsx`
+- Photo well: `aspect-[4/5]` → `aspect-square`.
+- Name: add `line-clamp-1` (was untruncated, breaks baseline on multi-word names like "Isabelle Natalia Elizabeth Hamilton-Bower").
+- City in meta row: keep the existing `shortCity` split on `,&` but also truncate to a single line with `truncate` + `max-w-[10ch]` fallback so "Stevenage and Welwyn Garden City" and "Johnstone North" stop wrapping to two lines.
+- No change to Verified / New member pill, rating chip, or role line (per your answers: fallback stays, no joined-date signal).
 
-### 2. `src/routes/index.tsx` — `rowToNewestCoach`
-- Compute `verified: r.verification_status === "verified"` and set it on the returned `NewestCoach`.
+### 2. `src/lib/directory/newest.functions.ts` — order by real signup date
+- After fetching the professionals pool, also fetch `auth.users.created_at` for the same ids via `supabaseAdmin.auth.admin.listUsers` is not viable at scale, so use a dedicated read: `supabaseAdmin.from("profiles").select("id, full_name, avatar_url, created_at").in("id", ids)` — `profiles.id` mirrors `auth.users.id` and `profiles.created_at` is written at signup by the standard handle_new_user trigger, making it the correct "member since" proxy without leaving the public schema.
+- Sort the assembled `rows` by that `created_at` descending before applying `data.limit`.
+- Widen the initial `professionals` pull from 120 → 200 so the resort has enough candidates to pick a truly-newest 16 after the avatar filter.
 
-### 3. `src/components/public/NewestCoachCard.tsx`
-- Add `verified: boolean` to the `NewestCoach` type.
-- Replace the hardcoded verified strip with a conditional:
-  - **Verified** (unchanged): `ShieldCheck` + "REPS Verified" in emerald (`text-emerald-600` / `text-emerald-700`).
-  - **Unverified**: `Sparkles` icon + "New member" in neutral stone tones — `text-black/45` icon + `text-black/55` label, same size / tracking / vertical rhythm so card heights stay identical across the grid.
-- No border, no background fill on either pill — matches the existing quiet chrome.
+If `profiles.created_at` is missing on any row (older accounts pre-trigger), fall back to `professionals.created_at` for that row so ordering stays deterministic.
 
 ## Out of scope
-- No change to which pros appear in the rail (unverified newcomers stay included, per the serverfn's stated intent).
-- No change to homepage section header, grid, spacing, or any other card element (photo well, rating chip, name, role, meta row).
-- No change to `/c/$slug` or other surfaces.
+- Homepage section header, grid, spacing — unchanged.
+- Verified logic and pill styling — unchanged.
+- Rating chip presence / placement — unchanged.
+- Role fallback ("Fitness Professional") — unchanged, per your call.
+- Any other homepage section, `/c/$slug`, or admin surface.
 
-## Memory compliance
-- Emerald stays reserved for the verified status pill only (per `mem://design/status-colors`).
-- Neutral pill uses only stone/black opacities already in the card — no new accent hue introduced.
+## Technical notes
+- No new dependencies, no schema migration, no auth.* schema access.
+- `profiles.created_at` is already granted to service_role via the standard project setup; no GRANT changes needed.
