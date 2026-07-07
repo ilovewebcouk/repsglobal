@@ -136,12 +136,6 @@ export const TRAINING_PROVIDER_NAV = [
     ],
   },
   {
-    title: "Deliver",
-    items: [
-      { icon: Store, label: "Website", to: "/dashboard/provider-website" },
-    ],
-  },
-  {
     title: "Help",
     items: [
       { icon: LifeBuoy, label: "Support", to: "/dashboard/support" },
