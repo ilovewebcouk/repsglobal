@@ -297,23 +297,26 @@ function HomeV2() {
       {hasNewest && (
       <section className="bg-reps-warm-white">
         <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10 lg:py-20">
-          <div className="flex items-end justify-between gap-4">
+          <div className="mb-10 flex items-end justify-between gap-4 border-b border-reps-charcoal/5 pb-6">
             <div>
               <span className="text-[12px] font-semibold uppercase tracking-wider text-reps-orange">Just joined</span>
               <h2 className="mt-1 font-display text-[30px] font-bold leading-tight text-reps-charcoal lg:text-[34px]">
                 Newest coaches on REPS
               </h2>
+              <p className="mt-2 max-w-[520px] text-[13.5px] text-reps-muted-light">
+                Verified in the last few weeks — every one qualified, insured and CPD-active.
+              </p>
             </div>
             <Link
               to="/find-a-professional"
               search={{ page: 1, sort: "nearest" }}
-              className="text-[14px] font-medium text-reps-charcoal underline-offset-4 hover:underline"
+              className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-reps-orange transition-opacity hover:opacity-80"
             >
-              View all
+              View all coaches →
             </Link>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4">
             {newestCoaches.map((pro) => (
               <NewestCoachCard key={pro.slug} pro={pro} />
             ))}
