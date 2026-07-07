@@ -234,11 +234,25 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex items-center gap-1.5">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
-            REPS Verified
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+              REPS Verified
+            </span>
+          </div>
+          {row.rating_avg != null && row.review_count > 0 ? (
+            <span className="inline-flex items-center gap-1 text-[12.5px] text-black/60">
+              <Star className="h-3.5 w-3.5 fill-[#FF7A00] text-[#FF7A00]" strokeWidth={0} />
+              <span className="font-semibold text-black">{row.rating_avg.toFixed(1)}</span>
+              <span className="text-black/55">({row.review_count})</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[12.5px] text-black/45">
+              <Star className="h-3.5 w-3.5" strokeWidth={2} />
+              New
+            </span>
+          )}
         </div>
         <h3 className="font-display text-[17px] font-bold leading-tight text-black group-hover:text-[#E96F00]">
           {row.name}
@@ -247,20 +261,6 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
           <p className="line-clamp-2 text-[13px] text-black/60">{row.tagline}</p>
         ) : null}
         <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[12.5px] text-black/60">
-          {row.rating_avg != null && row.review_count > 0 ? (
-            <span className="inline-flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-[#FF7A00] text-[#FF7A00]" strokeWidth={0} />
-              <span className="font-semibold text-black">{row.rating_avg.toFixed(1)}</span>
-              <span className="text-black/55">
-                · {row.review_count} {row.review_count === 1 ? "review" : "reviews"}
-              </span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 text-black/45">
-              <Star className="h-3.5 w-3.5" strokeWidth={2} />
-              New
-            </span>
-          )}
           {row.city ? (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
