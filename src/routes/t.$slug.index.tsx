@@ -551,7 +551,7 @@ function ProviderProfilePage() {
             </div>
 
             {/* RIGHT — sticky review rail */}
-            <aside className="space-y-6 self-start lg:sticky lg:top-[88px]">
+            <aside className="space-y-6 self-start lg:sticky lg:top-[116px]">
               <article id="reviews" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
                 <header className="flex items-center justify-between">
                   <h2 className="font-display text-[18px] font-bold text-black">What Learners Say</h2>
