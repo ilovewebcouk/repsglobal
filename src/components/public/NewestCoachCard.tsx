@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ShieldCheck, MapPin, Users, Star } from "lucide-react";
+import { ShieldCheck, MapPin, Users, Star, Sparkles } from "lucide-react";
 
 export type NewestCoach = {
   name: string;
@@ -10,6 +10,7 @@ export type NewestCoach = {
   slug: string;
   rating: number | null;
   reviews: number;
+  verified: boolean;
 };
 
 const MODE_LABEL: Record<NewestCoach["mode"], string> = {
@@ -51,12 +52,21 @@ export function NewestCoachCard({ pro }: { pro: NewestCoach }) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex items-center gap-1.5">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
-            REPS Verified
-          </span>
-        </div>
+        {pro.verified ? (
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+              REPS Verified
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-black/45" strokeWidth={2.2} />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-black/55">
+              New member
+            </span>
+          </div>
+        )}
         <h3 className="font-display text-[17px] font-bold leading-tight text-black group-hover:text-[#E96F00]">
           {pro.name}
         </h3>

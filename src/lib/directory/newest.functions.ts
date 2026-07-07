@@ -27,6 +27,7 @@ export type NewestCoachRow = {
   online_available: boolean | null;
   rating_avg: number | null;
   review_count: number;
+  verification_status: string | null;
 };
 
 export const getNewestCoaches = createServerFn({ method: "GET" })
@@ -39,7 +40,7 @@ export const getNewestCoaches = createServerFn({ method: "GET" })
     const { data: prosRaw, error } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, city, primary_profession, primary_title_slug, secondary_title_slug, in_person_available, online_available, account_type, created_at",
+        "id, slug, city, primary_profession, primary_title_slug, secondary_title_slug, in_person_available, online_available, account_type, verification_status, created_at",
       )
       .eq("is_published", true)
       .eq("is_demo", false)
@@ -89,6 +90,7 @@ export const getNewestCoaches = createServerFn({ method: "GET" })
         online_available: p.online_available,
         rating_avg: agg && agg.count > 0 ? agg.sum / agg.count : null,
         review_count: agg?.count ?? 0,
+        verification_status: (p as { verification_status: string | null }).verification_status ?? null,
       });
       if (rows.length >= data.limit) break;
     }

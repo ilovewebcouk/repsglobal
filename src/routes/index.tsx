@@ -184,6 +184,7 @@ function rowToNewestCoach(r: NewestCoachRow): NewestCoach {
     slug: r.slug,
     rating: r.rating_avg,
     reviews: r.review_count,
+    verified: r.verification_status === "verified",
   };
 }
 
