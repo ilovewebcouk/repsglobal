@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { SiteBanner } from "@/components/SiteBanner";
 
 export function AuthShell({
   topRight,
@@ -18,6 +19,7 @@ export function AuthShell({
   return (
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <header className="relative z-30">
+        <SiteBanner />
         <div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
           <Link to="/" className="flex items-center gap-3">
             <RepsWordmark className="h-[25px] text-white" />
