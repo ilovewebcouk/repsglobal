@@ -257,16 +257,15 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
         <h3 className="font-display text-[17px] font-bold leading-tight text-black group-hover:text-[#E96F00]">
           {row.name}
         </h3>
-        {row.tagline ? (
+        {row.registered_address ? (
+          <p className="flex items-start gap-1.5 text-[13px] leading-snug text-black/60">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-black/45" strokeWidth={2} />
+            <span className="line-clamp-2">{row.registered_address}</span>
+          </p>
+        ) : row.tagline ? (
           <p className="line-clamp-2 text-[13px] text-black/60">{row.tagline}</p>
         ) : null}
         <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[12.5px] text-black/60">
-          {row.city ? (
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
-              {row.city}
-            </span>
-          ) : null}
           <span className="inline-flex items-center gap-1">
             <Users className="h-3.5 w-3.5" strokeWidth={2} />
             {deliveryLabel}

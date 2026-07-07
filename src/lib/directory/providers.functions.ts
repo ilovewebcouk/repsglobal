@@ -16,6 +16,7 @@ export type ProviderCard = {
   name: string;
   city: string | null;
   tagline: string | null;
+  registered_address: string | null;
   avatar_url: string | null;
   hero_image_url: string | null;
   in_person_available: boolean;
@@ -95,6 +96,28 @@ export const listPublicProviders = createServerFn({ method: "GET" })
       }
     }
 
+    // Registered address — take the primary location (label + town + region + postcode)
+    // so the directory card can show a real address as a trust signal.
+    const addressById: Record<string, string | null> = {};
+    if (ids.length > 0) {
+      const { data: locRows } = await supabaseAdmin
+        .from("professional_locations")
+        .select("professional_id, label, town, region, postcode, is_primary")
+        .in("professional_id", ids)
+        .eq("is_primary", true);
+      for (const l of locRows ?? []) {
+        const pid = (l as { professional_id?: string | null }).professional_id;
+        if (!pid || addressById[pid]) continue;
+        const label = (l as { label?: string | null }).label?.trim() || null;
+        const town = (l as { town?: string | null }).town?.trim() || null;
+        const region = (l as { region?: string | null }).region?.trim() || null;
+        const postcode = (l as { postcode?: string | null }).postcode?.trim() || null;
+        const tail = [town, region, postcode].filter(Boolean).join(", ");
+        const formatted = [label, tail].filter(Boolean).join(" · ");
+        addressById[pid] = formatted || null;
+      }
+    }
+
     const reviewAggById = new Map<string, { count: number; sum: number }>();
     if (ids.length > 0) {
       const { data: reviewRows } = await supabaseAdmin
@@ -122,6 +145,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
         name: prof.name?.trim() || "Training Provider",
         city: (r.city as string | null) ?? null,
         tagline: (r.headline as string | null) ?? null,
+        registered_address: addressById[r.id as string] ?? null,
         avatar_url: prof.avatar ?? DEMO_PROVIDER_LOGOS[slug] ?? null,
         hero_image_url:
           heroById[r.id as string] ?? DEMO_PROVIDER_COVERS[slug] ?? null,
