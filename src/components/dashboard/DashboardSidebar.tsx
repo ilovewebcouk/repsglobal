@@ -57,6 +57,7 @@ import type {
 import {
   ADMIN_NAV,
   PRO_NAV,
+  TRAINING_PROVIDER_NAV,
   VERIFIED_NAV,
   type NavGroup,
   type NavItem,
@@ -67,6 +68,7 @@ import {
 /* ------------------------------------------------------------------------- */
 
 function trainerNav(tier: Tier): readonly NavGroup[] {
+  if (tier === "training_provider") return TRAINING_PROVIDER_NAV;
   if (tier === "verified") return VERIFIED_NAV;
   return PRO_NAV;
 }
