@@ -265,7 +265,7 @@ export function ProviderReviewsPage() {
       tier={shellTier}
       active="Reviews"
       title="Reviews"
-      subtitle="Your public reviews, rating breakdown and review requests."
+      subtitle="Reviews from learners on your provider profile and review requests."
       actions={<HeaderActions />}
     >
       {/* KPIs */}
