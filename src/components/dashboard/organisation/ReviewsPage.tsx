@@ -902,7 +902,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                 </button>
               </div>
 
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border bg-reps-panel-soft/40 px-4 py-8 text-center hover:bg-reps-panel-soft/60">
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-reps-border bg-reps-ink/50 px-4 py-8 text-center hover:bg-reps-ink/70">
                 <Upload className="h-5 w-5 text-white/65" />
                 <span className="text-[13px] font-semibold text-white">
                   {csvFileName ?? "Choose CSV file"}
