@@ -27,7 +27,7 @@ import {
   InsuranceProfileCard,
 } from "@/components/dashboard/verification/TrustBlock";
 import { NameProfessionCard } from "@/components/dashboard/verification/NameProfessionCard";
-import { ProviderVerificationPage } from "@/components/dashboard/provider/VerificationPage";
+import { ProviderVerificationPage } from "@/components/dashboard/organisation/VerificationPage";
 
 import {
   VerifiedBadge,

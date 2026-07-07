@@ -29,7 +29,7 @@ import {
   useHubData,
 } from "@/components/dashboard/hub";
 import { DashboardVerificationBanner } from "@/components/dashboard/DashboardVerificationBanner";
-import { ProviderDashboardHome } from "@/components/dashboard/provider/DashboardHome";
+import { ProviderDashboardHome } from "@/components/dashboard/organisation/DashboardHome";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard")({
   validateSearch: (raw: Record<string, unknown>) => ({
