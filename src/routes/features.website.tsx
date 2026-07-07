@@ -756,7 +756,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus a branded Website, bookings, payments, CRM and client management."
+            blurb="Everything in Core, plus a branded Website, bookings, payments, CRM and client management."
             highlighted
             cta={{ to:"/pricing", label:"See Pro pricing" }}
           />

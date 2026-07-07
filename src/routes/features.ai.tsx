@@ -255,7 +255,7 @@ const FAQ_ITEMS = [
     a: "Yes. Every AI surface can be disabled per area. You can run REPS Pro with no AI assistance at all, or switch it on only for the parts of your business where you want it.",
   },
   {
-    q: "Is REPS AI included in Verified or only Pro?",
+    q: "Is REPS AI included in Core or only Pro?",
     a: "REPS AI is a Pro feature. Verified covers the public side — profile, verification, visibility and reviews. Pro adds the operating layer that drafts, ranks and flags across your business.",
   },
   {
@@ -825,7 +825,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus the full REPS AI operating layer — Next Move cards, check-in summaries, programme drafts, nutrition drafts, risk alerts and on-brand content."
+            blurb="Everything in Core, plus the full REPS AI operating layer — Next Move cards, check-in summaries, programme drafts, nutrition drafts, risk alerts and on-brand content."
             highlighted
             cta={{ to: "/pricing", label: "See Pro pricing" }}
           />

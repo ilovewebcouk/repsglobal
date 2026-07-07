@@ -104,7 +104,7 @@ function MethodologyPage() {
               <Link to="/pricing" className="text-reps-orange underline underline-offset-2 hover:text-white">
                 pricing page
               </Link>
-              . REPS has a 3-tier ladder (Verified, Pro, Studio). When we say a
+              . REPS has a 3-tier ladder (Core, Pro, Studio). When we say a
               feature is &quot;included in your tier&quot;, we mean it&apos;s
               included on the REPS tier shown next to the claim — not that
               REPS ships a single universal plan.

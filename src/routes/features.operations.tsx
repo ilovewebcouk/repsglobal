@@ -240,7 +240,7 @@ const FAQ_ITEMS = [
     a:"Import contacts from a CSV or your current CRM. Match them to existing enquiries, attach historical notes, then carry on from one record per client instead of five places per client.",
   },
   {
-    q:"Is Operations included in Verified or only Pro?",
+    q:"Is Operations included in Core or only Pro?",
     a:"Operations is a Pro feature. Verified gives you a trusted public profile, verification, visibility and reviews. Pro adds the operational system behind that profile — enquiries, bookings, forms, payments, client records and follow-ups.",
   },
 ];
@@ -852,7 +852,7 @@ function TierComparisonSection() {
           <TierCard
             badge="Pro"
             price="£59 / month · Founding"
-            blurb="Everything in Verified, plus the full Operations workspace — pipeline, bookings, forms, payments, client records, tasks and follow-ups."
+            blurb="Everything in Core, plus the full Operations workspace — pipeline, bookings, forms, payments, client records, tasks and follow-ups."
             highlighted
             cta={{ to:"/pricing", label:"See Pro pricing" }}
           />

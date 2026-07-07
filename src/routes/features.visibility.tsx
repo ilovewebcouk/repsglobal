@@ -151,11 +151,11 @@ const FAQ_ITEMS = [
   },
   {
     q:"Do I need Pro to be visible?",
-    a:"No. Verified gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded website and the client management tools that turn enquiries into a working business.",
+    a:"No. Core gives you the full public profile, reviews, directory placement and an enquiry inbox. Pro adds bookings, payments, a branded website and the client management tools that turn enquiries into a working business.",
   },
   {
     q:"Is my REPS profile indexed by search engines?",
-    a:"Yes. Verified profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPS and beyond it.",
+    a:"Yes. Core profiles are public, indexable pages with proper metadata and structured data — so you're discoverable inside REPS and beyond it.",
   },
   {
     q:"Can I reply to reviews?",
@@ -673,7 +673,7 @@ function TierComparisonSection() {
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
           eyebrow="Core vs Pro"
-          heading="Verified makes you visible. Pro turns visibility into a working business."
+          heading="Core makes you visible. Pro turns visibility into a working business."
           lede="Visibility is included in every tier. Pro layers on the tools that convert an enquiry into a paying client."
         />
 
