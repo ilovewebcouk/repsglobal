@@ -212,6 +212,7 @@ export const ADMIN_NAV = [
 // present in these arrays is now a typecheck error.
 export type TrainerActive =
   | (typeof VERIFIED_NAV)[number]["items"][number]["label"]
-  | (typeof PRO_NAV)[number]["items"][number]["label"];
+  | (typeof PRO_NAV)[number]["items"][number]["label"]
+  | (typeof TRAINING_PROVIDER_NAV)[number]["items"][number]["label"];
 
 export type AdminActive = (typeof ADMIN_NAV)[number]["items"][number]["label"];
