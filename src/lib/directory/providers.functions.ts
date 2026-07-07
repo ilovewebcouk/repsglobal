@@ -5,6 +5,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import {
+  DEMO_PROVIDER_COVERS,
+  DEMO_PROVIDER_LOGOS,
+} from "@/lib/directory/demo-provider-assets";
+
 export type ProviderCard = {
   id: string;
   slug: string;
