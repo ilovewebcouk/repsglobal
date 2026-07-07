@@ -196,6 +196,7 @@ function LoginPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-reps-ink text-reps-text">
+      <SiteBanner />
       {/* Decorative orange glow — brand chrome */}
       <div
         aria-hidden
