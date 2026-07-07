@@ -27,6 +27,7 @@ import {
   MessageCircle,
   Quote,
   Route as RouteIcon,
+  Shield,
   ShieldCheck,
   Sparkles,
   Star,
