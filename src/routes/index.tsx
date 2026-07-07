@@ -238,10 +238,10 @@ function HomeV2() {
           <div className="grid gap-12 lg:grid-cols-[1.15fr_minmax(0,440px)] lg:items-center lg:gap-16">
             <div>
               <h1
-                className="animate-rise-in font-display font-bold leading-[0.98] tracking-[-0.035em] text-white text-balance text-[44px] sm:text-[60px] lg:text-[76px]"
+                className="animate-rise-in font-display font-bold leading-[0.94] tracking-[-0.035em] text-white text-balance text-[44px] sm:text-[60px] lg:text-[80px]"
                 style={{ animationDelay: "120ms" }}
               >
-                The world&rsquo;s <span className="text-reps-orange">#1</span> register of verified fitness coaches.
+                Find a coach <span className="text-reps-orange">worth trusting.</span>
               </h1>
               <p
                 className="animate-rise-in mt-6 max-w-[520px] text-[18px] font-light leading-relaxed text-white/75"
