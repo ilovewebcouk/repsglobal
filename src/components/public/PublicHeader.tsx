@@ -175,9 +175,12 @@ export function PublicHeader({
       : "bg-transparent",
   );
 
+  const headerRef = React.useRef<HTMLElement | null>(null);
+  useMeasuredHeight(headerRef, "--public-header-h");
+
   return (
     <>
-      <header className={wrapperClass}>
+      <header ref={headerRef} className={wrapperClass}>
         <SiteBanner />
         <div className="mx-auto max-w-[1320px] px-6 lg:px-10">
           {/* Row 1 — logo · location · nav · trust · right cluster */}
