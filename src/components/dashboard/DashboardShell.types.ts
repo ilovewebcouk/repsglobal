@@ -3,7 +3,7 @@ import type { TrainerActive, AdminActive } from "./nav-data";
 
 export type DashboardActive = TrainerActive | AdminActive;
 
-export type Tier = "verified" | "pro" | "studio";
+export type Tier = "verified" | "pro" | "studio" | "training_provider";
 export type Role = "admin" | "trainer";
 
 export type DashboardShellMember = {
