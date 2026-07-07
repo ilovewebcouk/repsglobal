@@ -11,7 +11,7 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
         supabase
           .from("professionals")
           .select(
-            "slug, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status, reps_level, cert_uploaded_at, insurance_valid_until, dbs_valid_until",
+            "slug, headline, bio, specialisms, city, hourly_rate_pence, is_published, verification_status, reps_level, cert_uploaded_at, insurance_valid_until, dbs_valid_until, account_type",
           )
           .eq("id", userId)
           .maybeSingle(),
@@ -59,6 +59,8 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
     const isVerified = profile?.verification_status === "verified";
     const isPublished = profile?.is_published ?? false;
 
+    const accountType = (profile?.account_type as string | null) ?? null;
+
     return {
       userId,
       identity,
@@ -67,6 +69,7 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
       profileComplete,
       subscription: subs,
       lastSubmission: lastSub,
+      accountType,
 
       entitlement: {
         tier,
