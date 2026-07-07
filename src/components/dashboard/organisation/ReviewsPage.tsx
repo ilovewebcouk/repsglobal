@@ -95,13 +95,10 @@ function TabCount({ n, active }: { n: number; active: boolean }) {
   );
 }
 
-function ReviewsPage() {
+export function ProviderReviewsPage() {
   const qc = useQueryClient();
-  const tier = useTrainerTier();
-  const shellTier = (tier === "verified" || tier === "pro" || tier === "studio" ? tier : "verified") as
-    | "verified"
-    | "pro"
-    | "studio";
+  const shellTier = "training_provider" as const;
+
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["my-reviews"],
