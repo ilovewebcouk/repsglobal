@@ -958,7 +958,7 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
-                  className="rounded-[10px]"
+                  className="rounded-[10px] border-reps-border bg-transparent text-white/80 hover:bg-reps-panel-soft hover:text-white"
                 >
                   Cancel
                 </Button>
