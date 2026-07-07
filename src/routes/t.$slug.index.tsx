@@ -539,76 +539,79 @@ function ProviderProfilePage() {
                   </button>
                 ) : null}
               </header>
-              <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-[260px_1fr]">
+              <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-[320px_1fr]">
                 <div>
-                  <p className="font-display text-[40px] font-bold leading-none text-black">
-                    {ratingAvg.toFixed(1)}
-                    <span className="ml-1 text-[16px] font-semibold text-black/45">/ 5</span>
-                  </p>
-                  <div className="mt-1.5 flex gap-0.5" aria-hidden>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={
-                          ratingCount > 0 && i < Math.round(ratingAvg)
-                            ? "h-4 w-4 fill-[#FF7A00] text-[#FF7A00]"
-                            : "h-4 w-4 text-black/20"
-                        }
-                        strokeWidth={0}
-                      />
-                    ))}
+                  <div className="flex items-center gap-3">
+                    <p className="font-display text-[44px] font-bold leading-none text-black">
+                      {ratingAvg.toFixed(1)}
+                    </p>
+                    <div className="flex gap-0.5" aria-hidden>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={
+                            ratingCount > 0 && i < Math.round(ratingAvg)
+                              ? "h-5 w-5 fill-[#FF7A00] text-[#FF7A00]"
+                              : "h-5 w-5 text-black/25"
+                          }
+                          strokeWidth={1.6}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <p className="mt-1.5 text-[12px] text-black/55">
-                    {ratingCount === 0
-                      ? "No reviews yet"
-                      : `Based on ${ratingCount} ${ratingCount === 1 ? "review" : "reviews"}`}
+                  <p className="mt-2 text-[13px] text-black/55">
+                    Based on {ratingCount} {ratingCount === 1 ? "review" : "reviews"}
                   </p>
-                  <div className="mt-4 space-y-1.5">
+                  <div className="mt-4 space-y-2">
                     {[5, 4, 3, 2, 1].map((stars) => {
                       const c = reviews.filter((r) => r.rating === stars).length;
                       const pct = ratingCount === 0 ? 0 : Math.round((c / ratingCount) * 100);
                       return (
                         <div
                           key={stars}
-                          className="grid grid-cols-[36px_1fr_54px] items-center gap-2 text-[12px] text-black/60"
+                          className="grid grid-cols-[16px_20px_1fr_28px] items-center gap-2 text-[13px] text-black/60"
                         >
-                          <span className="font-semibold text-black/70">{stars} ★</span>
+                          <span className="text-black/55">{stars}</span>
+                          <Star
+                            className="h-4 w-4 fill-[#FF7A00] text-[#FF7A00]"
+                            strokeWidth={0}
+                          />
                           <div className="h-2 overflow-hidden rounded-full bg-black/[0.08]">
                             <div
                               className="h-full rounded-full bg-[#FF7A00]"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <span className="text-right tabular-nums">
-                            {pct}%{" "}
-                            <span className="text-black/40">({c})</span>
-                          </span>
+                          <span className="text-right tabular-nums text-black/55">{c}</span>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div>
                   {reviews.length === 0 ? (
-                    <EmptyBlock
-                      icon={<Star className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
-                      title="No reviews yet"
-                      sub="Verified learner reviews will appear here."
-                    />
+                    <div className="flex h-full min-h-[180px] items-center justify-center rounded-[18px] border border-dashed border-black/15 bg-white px-6 text-center">
+                      <p className="max-w-[380px] text-[14px] text-black/55">
+                        No reviews yet. Verified learner reviews will appear here once published.
+                      </p>
+                    </div>
                   ) : (
-                    reviews.slice(0, 1).map((r) => (
-                      <div key={r.id}>
-                        <p className="text-[13px] font-semibold text-black">
-                          {r.client_name ?? "Learner"}
-                        </p>
-                        <p className="mt-1 text-[13.5px] leading-[1.6] text-black/72">
-                          "{r.body}"
-                        </p>
-                      </div>
-                    ))
+                    <div className="space-y-3">
+                      {reviews.slice(0, 1).map((r) => (
+                        <div key={r.id}>
+                          <p className="text-[13px] font-semibold text-black">
+                            {r.client_name ?? "Learner"}
+                          </p>
+                          <p className="mt-1 text-[13.5px] leading-[1.6] text-black/72">
+                            "{r.body}"
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
+
 
             </article>
 
