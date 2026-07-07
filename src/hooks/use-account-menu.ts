@@ -103,7 +103,7 @@ export function useAccountMenu(): AccountContext {
   const LIVE = ["active", "trialing", "past_due", "unpaid"];
   const sub = subQuery.data;
   const tier: AccountTier =
-    sub && LIVE.includes(sub.status) && ["verified", "pro", "studio"].includes(sub.tier)
+    sub && LIVE.includes(sub.status) && ["verified", "pro", "studio", "training_provider"].includes(sub.tier)
       ? (sub.tier as AccountTier)
       : null;
 
