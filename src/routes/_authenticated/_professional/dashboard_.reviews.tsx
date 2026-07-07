@@ -35,6 +35,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+import { ProviderReviewsPage } from "@/components/dashboard/organisation/ReviewsPage";
 import {
   clearReviewReply,
   createReviewRequest,
