@@ -1,57 +1,47 @@
 ## Goal
 
-Sweep public-facing copy so the tier is called **Core** everywhere. "Verified" stays only where it refers to the verification **status/badge** (identity + insurance + qualifications check), never as a plan name.
+Replace the homepage H1 on `src/routes/index.tsx` with a plain, direct, client-facing line that leads with a defensible rank claim. Orange accent on `#1` only.
 
-## What to change (tier-name usages only)
+## New H1
 
-**`src/routes/terms.tsx`**
-- L94: "currently Verified, Pro and Studio tiers" → "currently Core, Pro and Studio tiers".
-- L242: "Verified at £34 per year, Pro Founding at £59 per month" → "Core at £34 per year, Pro Founding at £59 per month".
+> **The world's #1 register of verified fitness coaches.**
 
-**`src/routes/comparison-methodology.tsx`**
-- L107: "3-tier ladder (Verified, Pro, Studio)" → "3-tier ladder (Core, Pro, Studio)".
+- `#1` in orange (`text-reps-orange`).
+- Everything else pure white.
+- One typographic size — drop the shrunken third line (`for Fitness Professionals`). The new line is self-contained and doesn't need a subtitle tacked underneath.
 
-**`src/routes/features.visibility.tsx`**
-- L154 FAQ answer: "No. Verified gives you the full public profile..." → "No. Core gives you the full public profile...".
-- L158 FAQ answer: "Verified profiles are public, indexable pages..." → "Core profiles are public, indexable pages..." (tier context — contrasts with Pro).
-- L676 heading: "Verified makes you visible. Pro turns visibility into a working business." → "Core makes you visible. Pro turns visibility into a working business."
+## Why this line (brutal version, for the record)
 
-**`src/routes/features.website.tsx`**
-- L759 Pro card blurb: "Everything in Verified, plus a branded Website..." → "Everything in Core, plus a branded Website...".
+- **"#1 register"** is a real, defensible claim. There isn't a competing global register of verified fitness coaches. "#1 way to book" or "#1 platform" would not survive scrutiny — "register" does.
+- **"Verified coaches"** puts the promise on the visitor's side (they get someone real), not on REPS' side (we're a standard).
+- **Plain sentence, full stop.** No two-tier "The World's / Trusted Standard / for Fitness Professionals" split where the eye reads three different weights. One line, one thought, one full stop.
+- **Matches the subhead.** Subhead already says "25,000+ verified fitness professionals. Real qualifications. Real reviews. Book in 30 seconds." H1 now sets up that promise instead of fighting it.
 
-**`src/routes/features.operations.tsx`**
-- L243 FAQ: "Is Operations included in Verified or only Pro?" → "Is Operations included in Core or only Pro?"
-- L855 Pro card blurb: "Everything in Verified, plus the full Operations workspace..." → "Everything in Core, plus...".
+## Change (single file)
 
-**`src/routes/features.growth.tsx`**
-- L170 FAQ: "Is Growth included in Verified or only Pro?" → "Is Growth included in Core or only Pro?"
-- L964 Pro card blurb: "Everything in Verified, plus the full Growth layer..." → "Everything in Core, plus...".
+**`src/routes/index.tsx`** L240–L249 — replace the three-span H1 with a single-line H1:
 
-**`src/routes/features.coaching.tsx`**
-- L979 Pro card blurb: "Everything in Verified, plus the full Coaching workspace..." → "Everything in Core, plus...".
+```tsx
+<h1
+  className="animate-rise-in font-display font-bold leading-[0.98] tracking-[-0.035em] text-white text-balance text-[44px] sm:text-[60px] lg:text-[76px]"
+  style={{ animationDelay: "120ms" }}
+>
+  The world&rsquo;s <span className="text-reps-orange">#1</span> register of verified fitness coaches.
+</h1>
+```
 
-**`src/routes/features.ai.tsx`**
-- L258 FAQ: "Is REPS AI included in Verified or only Pro?" → "Is REPS AI included in Core or only Pro?"
-- L828 Pro card blurb: "Everything in Verified, plus the full REPS AI operating layer..." → "Everything in Core, plus...".
-
-## What NOT to change (correct "Verified" usage — status, not tier)
-
-- `VerifiedBadge.tsx`, `VerificationCard.tsx`, `dashboard/hub` status chips — verification status.
-- `for-professionals.tsx` "Verified credentials", "Verified badge", "Verified profile live today", hero eyebrow "Verified · Trusted · Booked" — status/badge language.
-- `features.visibility.tsx` "Verified badge", "REPS Verified", "Verified credentials", alt text — status/badge language.
-- `feature-content.tsx`, `TestimonialFeature.tsx`, `ForProsFaq.tsx` "Verified badge" — status.
-- `RegisterProof.tsx` stat "Verified", `sample-pro.ts` qualification status "Verified", `standards.tsx` "Verified by REPS", `specialisms.tsx` "Verified pros" / "single Verified badge the public can actually trust" — status.
-- `about.tsx` / `index.tsx` "Verified professionals" stat — describes the register, not a plan.
-- `find-a-professional.tsx` testimonial "Verified, insured, and genuinely good" — status.
-- All internal enum values `"verified"` in `.functions.ts`, admin routes, mockups, `signup.tsx` slug-mapping, campaigns, search, billing resolvers — internal identifiers, not user-facing copy. Signup already maps `core` ↔ internal `verified`; leave the enum alone.
+Notes:
+- Drops `lg:text-[80px]` a hair to `76px` so a longer single sentence still fits on two lines at desktop without wrapping ugly. `text-balance` handles line breaks.
+- Leaves the subhead, search, chips and trust row untouched.
+- No changes to any other route, component, memory, or token.
 
 ## Out of scope
 
-- No visual/layout changes.
-- No routing changes.
-- No pricing/enum/DB changes.
-- No changes to admin surfaces or the locked coach website.
+- No changes to the hero image, overlay, search, chips, trust strip, or "Newest coaches on REPS" grid.
+- No copy changes on any other page.
+- No SEO/meta changes (the route `<title>` is already generic REPS).
 
 ## Verification
 
-`bunx tsgo --noEmit`; then re-grep `rg -n "Verified" src/routes src/components | rg -v "admin_|_authenticated|mockups"` and confirm remaining hits are all status/badge usage.
+- Visual check at 1440, 1280, 768, 390: H1 fits on two lines desktop / three lines mobile, orange `#1` sits inline, subhead still reads.
+- `bunx tsgo --noEmit` clean.
