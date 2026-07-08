@@ -8,7 +8,17 @@ export type AwardingBody = {
   aliases?: string[];
   // True if this body issues qualifications regulated by Ofqual (or equivalent).
   regulated?: boolean;
+  // Optional logo URL (Lovable Asset). Rendered on /t/$slug next to approved
+  // regulated qualifications. If missing, we render a text chip instead.
+  logo?: string;
 };
+
+/** Look up a logo URL by awarding-body slug. */
+export function awardingBodyLogo(slug: string | null | undefined): string | null {
+  if (!slug) return null;
+  const body = AWARDING_BODIES.find((b) => b.slug === slug);
+  return body?.logo ?? null;
+}
 
 export const AWARDING_BODIES: AwardingBody[] = [
   // Ofqual-regulated awarding bodies (fitness / coaching / sport)
