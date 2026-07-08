@@ -142,6 +142,8 @@ const UpdateInput = z.object({
     .nullable()
     .or(z.literal(""))
     .optional(),
+  address: z.string().trim().max(500).nullable().optional(),
+
   year_established: z
     .number()
     .int()
