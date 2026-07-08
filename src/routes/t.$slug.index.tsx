@@ -25,6 +25,8 @@ import {
   type WebsiteFaqDTO,
 } from "@/lib/website/website.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
+import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
+import { awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import {
@@ -129,9 +131,21 @@ function ProviderProfilePage() {
     staleTime: 60_000,
   });
 
+  const fetchQuals = useServerFn(listPublicProviderQualifications);
+  const { data: qualsData } = useQuery({
+    queryKey: ["public-provider-quals", sf.professional_id],
+    queryFn: () => fetchQuals({ data: { providerId: sf.professional_id } }),
+    staleTime: 60_000,
+    enabled: !!sf.professional_id,
+  });
+
   const reviews = reviewsData?.reviews ?? [];
   const ratingAvg = reviewsData?.average ?? 0;
   const ratingCount = reviewsData?.count ?? 0;
+
+  const regulatedRows = qualsData?.regulated ?? [];
+  const cpdRows = qualsData?.cpd ?? [];
+  const repsMemberId = qualsData?.reps_member_id ?? null;
 
   const providerName = sf.full_name?.trim() || "Training Provider";
   const tagline = sf.tagline?.trim() || `${providerName} — REPS Verified Training Provider`;
@@ -155,13 +169,35 @@ function ProviderProfilePage() {
   if (sf.online_available) deliveryModes.push("Online");
   const deliveryLabel = deliveryModes.length === 2 ? "Blended" : deliveryModes[0] ?? "In-person";
 
-  // Provider-specific: mock courses (empty state safe)
-  const courses: Course[] = [];
-
-  const accreditations: Array<{ code: string; title: string; body: string; regulated: boolean }> = [];
+  // Approved regulated qualifications grouped by awarding body for the
+  // "Accreditations & Recognition" block.
+  const accreditationsByBody = React.useMemo(() => {
+    const groups = new Map<
+      string,
+      { slug: string; name: string; logo: string | null; items: Array<{ id: string; title: string; level: number | null; ofqual_ref: string | null }> }
+    >();
+    for (const row of regulatedRows) {
+      const q = row.qualification;
+      if (!q) continue;
+      const key = q.awarding_body_slug;
+      const existing = groups.get(key) ?? {
+        slug: key,
+        name: awardingBodyName(key) ?? key,
+        logo: awardingBodyLogo(key),
+        items: [],
+      };
+      existing.items.push({
+        id: row.id,
+        title: q.title,
+        level: q.level,
+        ofqual_ref: q.ofqual_ref,
+      });
+      groups.set(key, existing);
+    }
+    return Array.from(groups.values());
+  }, [regulatedRows]);
 
   const verifiedProsLinked = 0;
-
   const faqs: WebsiteFaqDTO[] = [];
 
   return (
@@ -234,17 +270,25 @@ function ProviderProfilePage() {
             </div>
 
             <div className="flex flex-col justify-center">
-              {sf.trust?.identityVerifiedAt ? (
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                  <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
-                  REPS Verified
-                </span>
-              ) : (
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black/60">
-                  <Shield className="h-3.5 w-3.5" strokeWidth={2.2} />
-                  Unverified
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {sf.trust?.identityVerifiedAt ? (
+                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                    <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
+                    REPS Verified
+                  </span>
+                ) : (
+                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                    <Shield className="h-3.5 w-3.5" strokeWidth={2.2} />
+                    Unverified
+                  </span>
+                )}
+                {repsMemberId ? (
+                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black/70">
+                    <BadgeCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
+                    {repsMemberId}
+                  </span>
+                ) : null}
+              </div>
               <h1 className="mt-2 font-display text-[36px] font-bold leading-[1.05] tracking-[-0.01em] text-black lg:text-[46px]">
                 {providerName}
               </h1>
@@ -385,27 +429,59 @@ function ProviderProfilePage() {
                 </div>
               </article>
 
-              {/* Courses & Pricing */}
+              {/* REPS-Accredited CPD Courses */}
               <article id="courses" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
                 <header className="flex items-center justify-between">
-                  <h2 className="font-display text-[20px] font-bold text-black">Courses & Pricing</h2>
-                  <Link
-                    to="/t/$slug/enquire"
-                    params={{ slug }}
-                    className="text-[13px] font-semibold text-[#FF7A00] hover:text-[#E96F00]"
-                  >
-                    View all courses →
-                  </Link>
+                  <h2 className="font-display text-[20px] font-bold text-black">
+                    REPS-Accredited CPD
+                  </h2>
+                  {cpdRows.length > 0 ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                      <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
+                      REPS Accredited
+                    </span>
+                  ) : null}
                 </header>
                 <div className="mt-4 space-y-3">
-                  {courses.length === 0 ? (
+                  {cpdRows.length === 0 ? (
                     <EmptyBlock
-                      icon={<GraduationCap className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
-                      title="No courses listed yet"
-                      sub="Course catalogue will appear here once the provider adds them."
+                      icon={<Sparkles className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
+                      title="No REPS-accredited CPD yet"
+                      sub="This provider has not had CPD accredited by REPS yet."
                     />
                   ) : (
-                    courses.map((c) => <CourseCard key={c.id} course={c} />)
+                    cpdRows.map((c) => (
+                      <div
+                        key={c.id}
+                        className="rounded-[16px] border border-black/10 bg-[#f7f6f2] p-4"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-[15px] font-semibold text-black">{c.title}</p>
+                            <p className="mt-0.5 text-[12.5px] text-black/60">
+                              {[
+                                c.level != null ? `Level ${c.level}` : null,
+                                c.hours != null ? `${c.hours}h CPD` : null,
+                                c.delivery_mode
+                                  ? c.delivery_mode.replace("_", "-")
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          </div>
+                          {c.reps_cpd_number ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                              <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
+                              {c.reps_cpd_number}
+                            </span>
+                          ) : null}
+                        </div>
+                        {c.summary ? (
+                          <p className="mt-2 text-[13px] text-black/70">{c.summary}</p>
+                        ) : null}
+                      </div>
+                    ))
                   )}
                 </div>
               </article>
@@ -464,38 +540,70 @@ function ProviderProfilePage() {
                 ) : null}
               </article>
 
-              {/* Accreditations & Recognition */}
+              {/* Accreditations & Recognition — approved regulated qualifications */}
               <article id="accreditations" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
                 <h2 className="font-display text-[20px] font-bold text-black">
                   Accreditations & Recognition
                 </h2>
-                {accreditations.length === 0 ? (
+                <p className="mt-1 text-[12.5px] text-black/55">
+                  Ofqual-regulated qualifications this provider is approved to deliver.
+                </p>
+                {accreditationsByBody.length === 0 ? (
                   <EmptyBlock
                     className="mt-4"
                     icon={<BadgeCheck className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
                     title="Accreditations will appear here"
-                    sub="Awarding bodies and Ofqual-regulated qualifications the provider offers."
+                    sub="Once REPS has verified the provider's approved-centre status with the awarding body, their regulated qualifications will appear here."
                   />
                 ) : (
-                  <ul className="mt-4 space-y-3">
-                    {accreditations.map((a) => (
-                      <li key={a.code} className="flex items-start gap-3">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#f2f1ec] text-[11px] font-bold text-black/60">
-                          {a.code}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[14px] font-semibold text-black">{a.title}</p>
-                          <p className="text-[12.5px] text-black/55">{a.body}</p>
-                          {a.regulated ? (
-                            <span className="mt-1 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-700">
+                  <div className="mt-4 space-y-5">
+                    {accreditationsByBody.map((group) => (
+                      <div key={group.slug}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white">
+                            {group.logo ? (
+                              <img
+                                src={group.logo}
+                                alt={group.name}
+                                className="max-h-8 max-w-14 object-contain"
+                              />
+                            ) : (
+                              <span className="text-[10px] font-bold uppercase tracking-wide text-black/50">
+                                {group.name.slice(0, 3)}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[14px] font-semibold text-black">{group.name}</p>
+                            <span className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-700">
                               <Check className="h-3 w-3" strokeWidth={2.5} />
-                              Ofqual-regulated
+                              Approved centre · Ofqual-regulated
                             </span>
-                          ) : null}
+                          </div>
                         </div>
-                      </li>
+                        <ul className="mt-2 space-y-1.5 pl-[76px]">
+                          {group.items.map((it) => (
+                            <li
+                              key={it.id}
+                              className="flex flex-wrap items-center gap-2 text-[13.5px] text-black/75"
+                            >
+                              {it.level != null ? (
+                                <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
+                                  L{it.level}
+                                </span>
+                              ) : null}
+                              <span className="font-medium text-black">{it.title}</span>
+                              {it.ofqual_ref ? (
+                                <span className="text-[11.5px] text-black/45">
+                                  {it.ofqual_ref}
+                                </span>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </article>
 

@@ -143,8 +143,8 @@ Two blocks:
 8. Server fn: submit CPD accreditation + AI extraction (gemini-2.5-pro).
 9. Provider dashboard tab (both sub-sections).
 10. Admin queue tabs (both).
-11. Public render on `/t/$slug`.
-12. Member ID chip + SVG badge download.
+11. Public render on `/t/$slug` — DONE. `listPublicProviderQualifications` (anon-safe) fetches approved regulated permissions grouped by awarding body (with logos) + approved CPD courses. Rendered in the existing Accreditations & Recognition and Courses sections.
+12. Member ID chip — DONE. `reps_member_id` surfaced next to the REPS Verified pill in the hero. SVG badge download deferred until asset pack.
 
 ## Open questions
 
