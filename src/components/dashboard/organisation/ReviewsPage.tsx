@@ -487,7 +487,7 @@ export function ProviderReviewsPage() {
                         {r.service_label ? ` · ${r.service_label}` : ""}
                       </p>
                     </div>
-                    <StatusPill status={r.status} />
+                    <StatusPill status={displayStatusOf(r)} title={r.failure_reason ?? undefined} />
                   </li>
                 ))}
               </ul>
