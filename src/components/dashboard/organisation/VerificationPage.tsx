@@ -320,7 +320,8 @@ function DomainEmailCard({
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
         </div>
       ) : websiteMissing ? (
-        <WebsiteMissingBlock />
+        <WebsiteMissingBlock currentWebsite={state?.rawWebsite ?? null} />
+
       ) : status === "approved" ? (
         <ApprovedBlock state={state} />
       ) : status === "rejected" ? (
