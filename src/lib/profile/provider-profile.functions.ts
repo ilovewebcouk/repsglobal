@@ -104,7 +104,10 @@ function normaliseSocial(raw: string | null | undefined): string | null {
 const currentYear = new Date().getFullYear();
 
 const UpdateInput = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120),
+  // `name` is accepted for backwards compatibility but ignored — name
+  // changes go through the admin approval queue.
+  name: z.string().trim().max(120).optional(),
+
   tagline: z.string().trim().max(160).nullable().optional(),
   about: z.string().trim().max(4000).nullable().optional(),
   website_url: z
@@ -163,13 +166,12 @@ export const updateMyProviderProfile = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const c = emptyToNull(data);
 
-    // profiles: business_name is the provider's public name.
-    const { error: pErr } = await supabase
-      .from("profiles")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .update({ business_name: c.name } as any)
-      .eq("id", userId);
-    if (pErr) throw pErr;
+    // NOTE: `name` (profiles.business_name) is NOT written here. Name
+    // changes go through the admin approval queue via
+    // `submitProviderNameChange` in provider-name.functions.ts. The `name`
+    // field on this input is accepted for backwards compatibility but
+    // ignored — the client submits name changes separately.
+
 
     // professionals: contact + company + socials.
     const proPatch = {

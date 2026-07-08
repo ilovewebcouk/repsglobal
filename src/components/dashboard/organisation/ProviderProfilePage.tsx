@@ -28,6 +28,10 @@ import {
   updateMyProviderProfile,
 } from "@/lib/profile/provider-profile.functions";
 import {
+  getMyProviderNameStatus,
+  submitProviderNameChange,
+} from "@/lib/verification/provider-name.functions";
+import {
   updateMyAvatar,
   uploadAvatarFromBase64,
 } from "@/lib/profile/dashboard-profile.functions";
@@ -79,6 +83,8 @@ export function ProviderProfilePage() {
   const qc = useQueryClient();
   const fetchProfile = useServerFn(getMyProviderProfile);
   const saveProfile = useServerFn(updateMyProviderProfile);
+  const fetchNameStatus = useServerFn(getMyProviderNameStatus);
+  const submitName = useServerFn(submitProviderNameChange);
 
   const uploadAvatar = useServerFn(uploadAvatarFromBase64);
   const setAvatar = useServerFn(updateMyAvatar);
@@ -89,6 +95,15 @@ export function ProviderProfilePage() {
     queryKey: ["my-provider-profile"],
     queryFn: () => fetchProfile(),
   });
+
+  const { data: nameStatus } = useQuery({
+    queryKey: ["my-provider-name-status"],
+    queryFn: () => fetchNameStatus(),
+  });
+
+  const namePending = !!nameStatus?.pending;
+  const approvedName = nameStatus?.approved_name ?? "";
+
 
   const [form, setForm] = React.useState({
     name: "",
