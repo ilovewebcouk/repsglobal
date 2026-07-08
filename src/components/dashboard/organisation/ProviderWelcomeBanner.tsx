@@ -99,6 +99,7 @@ export function ProviderWelcomeBanner({
   /* ---------------------- logo upload (avatars bucket) --------------------- */
 
   const saveAvatarFn = useServerFn(updateMyAvatar);
+  const uploadAvatarFn = useServerFn(uploadAvatarFromBase64);
 
   const invalidateBranding = React.useCallback(() => {
     qc.invalidateQueries({ queryKey: ["dashboard-status"] });
@@ -109,24 +110,9 @@ export function ProviderWelcomeBanner({
 
   const logoMut = useMutation({
     mutationFn: async (file: File) => {
-      const { data: session } = await supabase.auth.getSession();
-      const userId = session.session?.user.id;
-      if (!userId) throw new Error("Not signed in");
-      const ext =
-        file.type === "image/png"
-          ? "png"
-          : file.type === "image/webp"
-            ? "webp"
-            : "jpg";
-      const path = `${userId}/logo-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, {
-          contentType: file.type,
-          cacheControl: "31536000",
-          upsert: true,
-        });
-      if (upErr) throw new Error(upErr.message);
+      const dataUrl = await fileToDataUrl(file);
+      const resized = await resizeForLogo(dataUrl);
+      const { path } = await uploadAvatarFn({ data: { dataUrl: resized } });
       return saveAvatarFn({ data: { path } });
     },
     onSuccess: () => {
@@ -135,6 +121,7 @@ export function ProviderWelcomeBanner({
     },
     onError: (e: Error) => toast.error(e.message || "Couldn't save logo"),
   });
+
 
   const logoClearMut = useMutation({
     mutationFn: () => saveAvatarFn({ data: { path: null } }),
