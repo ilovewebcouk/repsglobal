@@ -997,20 +997,31 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
 }
 
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({ status, title }: { status: string; title?: string }) {
   const map: Record<string, { label: string; Icon: typeof Clock; tone: string }> = {
     sent: { label: "Sent", Icon: Clock, tone: "border-white/20 bg-white/5 text-white/70" },
+    delivered: {
+      label: "Delivered",
+      Icon: MailCheck,
+      tone: "border-white/25 bg-white/10 text-white/80",
+    },
     opened: { label: "Opened", Icon: Mail, tone: "border-sky-400/30 bg-sky-500/15 text-sky-300" },
     submitted: {
       label: "Submitted",
       Icon: CheckCircle2,
       tone: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
     },
+    failed: {
+      label: "Failed",
+      Icon: AlertTriangle,
+      tone: "border-rose-400/30 bg-rose-500/15 text-rose-300",
+    },
     expired: { label: "Expired", Icon: XCircle, tone: "border-rose-400/30 bg-rose-500/15 text-rose-300" },
   };
   const m = map[status] ?? map.sent;
   return (
     <span
+      title={title}
       className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider ${m.tone}`}
     >
       <m.Icon className="h-3 w-3" />
