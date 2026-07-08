@@ -1,0 +1,1 @@
+UPDATE public.websites SET subtitle = NULL WHERE professional_id = '11111111-0000-4000-a000-000000000002';
