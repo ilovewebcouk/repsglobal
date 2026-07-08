@@ -459,15 +459,24 @@ export function ProviderProfilePage() {
                 aria-readonly={websiteLocked}
               />
             </Field>
-            <Field label="Contact email" hint="Public — shown on your provider page.">
+            <Field
+              label="Contact email"
+              hint={
+                emailLocked
+                  ? "Locked — matches the email confirmed during verification. Contact support to change it."
+                  : "Public — shown on your provider page."
+              }
+            >
               <input
-                className={inputCls}
+                className={`${inputCls} ${emailLocked ? "cursor-not-allowed opacity-70" : ""}`}
                 type="email"
                 inputMode="email"
-                value={form.contact_email}
+                value={emailLocked ? approvedEmail : form.contact_email}
                 onChange={(e) => update("contact_email", e.target.value)}
                 placeholder="hello@yourprovider.com"
                 maxLength={254}
+                readOnly={emailLocked}
+                aria-readonly={emailLocked}
               />
             </Field>
             <div className="md:col-span-2">
