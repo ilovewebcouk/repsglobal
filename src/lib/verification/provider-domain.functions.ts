@@ -213,3 +213,78 @@ export const startProviderDomainVerification = createServerFn({ method: "POST" }
 
     return { ok: true, expectedDomain, email };
   });
+
+/* -------------------------------------------------------------------------- */
+/* Admin decisions                                                            */
+/* -------------------------------------------------------------------------- */
+
+const AdminListInput = z.object({
+  status: z
+    .enum(["pending_admin_review", "approved", "rejected", "all"])
+    .default("pending_admin_review"),
+});
+
+export const adminListProviderDomainQueue = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AdminListInput.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    let query = supabase
+      .from("provider_domain_verifications")
+      .select(
+        "id, professional_id, domain, email, status, email_sent_at, email_confirmed_at, admin_reviewed_at, admin_decision_reason, admin_notes, created_at, updated_at",
+      )
+      .order("email_confirmed_at", { ascending: false, nullsFirst: false });
+
+    if (data.status !== "all") query = query.eq("status", data.status);
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+const AdminDecideInput = z.object({
+  id: z.string().uuid(),
+  decision: z.enum(["approve", "reject"]),
+  reason: z.string().trim().max(500).optional(),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+export const adminDecideProviderDomain = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AdminDecideInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const nowIso = new Date().toISOString();
+    const newStatus: ProviderDomainStatus =
+      data.decision === "approve" ? "approved" : "rejected";
+
+    const { error } = await supabaseAdmin
+      .from("provider_domain_verifications")
+      .update({
+        status: newStatus,
+        admin_reviewed_at: nowIso,
+        admin_reviewer_id: userId,
+        admin_decision_reason: data.reason ?? null,
+        admin_notes: data.notes ?? null,
+      })
+      .eq("id", data.id);
+
+    if (error) throw new Error(error.message);
+
+    return { ok: true, status: newStatus };
+  });
