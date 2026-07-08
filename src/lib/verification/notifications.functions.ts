@@ -26,7 +26,13 @@ export type VerificationEvent =
   | "verification.blocked_by_insurance"
   | "qualification.approved"
   | "qualification.rejected"
-  | "qualification.changes_requested";
+  | "qualification.changes_requested"
+  | "provider_change.approved"
+  | "provider_change.rejected"
+  | "provider_name.approved"
+  | "provider_name.rejected"
+  | "provider_domain.approved"
+  | "provider_domain.rejected";
 
 export interface VerificationNotificationItem {
   key: string;
@@ -139,7 +145,7 @@ export async function notifyVerificationEvent(params: InsertParams) {
   }
 }
 
-function titleFor(event: VerificationEvent, threshold?: number | null) {
+function titleFor(event: VerificationEvent, threshold?: number | null): string {
   switch (event) {
     case "insurance.rejected_expired":
       return "Insurance certificate expired";
@@ -166,7 +172,24 @@ function titleFor(event: VerificationEvent, threshold?: number | null) {
       return "Qualification rejected";
     case "qualification.changes_requested":
       return "Qualification needs changes";
+    case "provider_change.approved":
+      return "Profile change approved";
+    case "provider_change.rejected":
+      return "Profile change rejected";
+    case "provider_name.approved":
+      return "Provider name approved";
+    case "provider_name.rejected":
+      return "Provider name rejected";
+    case "provider_domain.approved":
+      return "Domain verification approved";
+    case "provider_domain.rejected":
+      return "Domain verification rejected";
   }
+}
+
+function hrefFor(event: VerificationEvent): string {
+  if (event.startsWith("provider_")) return "/dashboard/profile";
+  return "/dashboard/verification";
 }
 
 export const listMyVerificationNotifications = createServerFn({ method: "POST" })
@@ -194,9 +217,12 @@ export const listMyVerificationNotifications = createServerFn({ method: "POST" }
         const ctx = r.context ?? {};
         const preview =
           (ctx.message as string | undefined) ??
+          (ctx.admin_note as string | undefined) ??
           (ctx.expiry_date
             ? `Expiry on file: ${ctx.expiry_date as string}`
-            : "Open your verification dashboard for details.");
+            : r.event.startsWith("provider_")
+              ? "Open your provider profile for details."
+              : "Open your verification dashboard for details.");
         return {
           key: `verif:${r.id}`,
           notificationId: r.id,
@@ -204,7 +230,7 @@ export const listMyVerificationNotifications = createServerFn({ method: "POST" }
           title,
           preview,
           createdAt: r.created_at,
-          href: "/dashboard/verification",
+          href: hrefFor(r.event),
         } satisfies VerificationNotificationItem;
       }),
     };
