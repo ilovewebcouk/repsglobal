@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import {
   Building2,
   Camera,
+  Clock,
   ImageIcon,
   Instagram,
   Linkedin,
@@ -27,6 +28,10 @@ import {
   getMyProviderProfile,
   updateMyProviderProfile,
 } from "@/lib/profile/provider-profile.functions";
+import {
+  getMyProviderNameStatus,
+  submitProviderNameChange,
+} from "@/lib/verification/provider-name.functions";
 import {
   updateMyAvatar,
   uploadAvatarFromBase64,
@@ -79,6 +84,8 @@ export function ProviderProfilePage() {
   const qc = useQueryClient();
   const fetchProfile = useServerFn(getMyProviderProfile);
   const saveProfile = useServerFn(updateMyProviderProfile);
+  const fetchNameStatus = useServerFn(getMyProviderNameStatus);
+  const submitName = useServerFn(submitProviderNameChange);
 
   const uploadAvatar = useServerFn(uploadAvatarFromBase64);
   const setAvatar = useServerFn(updateMyAvatar);
@@ -89,6 +96,15 @@ export function ProviderProfilePage() {
     queryKey: ["my-provider-profile"],
     queryFn: () => fetchProfile(),
   });
+
+  const { data: nameStatus } = useQuery({
+    queryKey: ["my-provider-name-status"],
+    queryFn: () => fetchNameStatus(),
+  });
+
+  const namePending = !!nameStatus?.pending;
+  const approvedName = nameStatus?.approved_name ?? "";
+
 
   const [form, setForm] = React.useState({
     name: "",
@@ -140,9 +156,18 @@ export function ProviderProfilePage() {
       if (yearNum != null && (Number.isNaN(yearNum) || yearNum < 1800 || yearNum > CURRENT_YEAR)) {
         throw new Error(`Year established must be between 1800 and ${CURRENT_YEAR}.`);
       }
-      return saveProfile({
+
+      // Submit name change for admin approval when it differs from the
+      // currently approved name (and isn't already pending).
+      let nameSubmitted = false;
+      const requestedName = form.name.trim();
+      if (!namePending && requestedName && requestedName !== approvedName.trim()) {
+        const res = await submitName({ data: { requested_name: requestedName } });
+        if ((res as { submitted?: boolean }).submitted) nameSubmitted = true;
+      }
+
+      await saveProfile({
         data: {
-          name: form.name.trim(),
           tagline: form.tagline || null,
           about: form.about || null,
           website_url: form.website_url || null,
@@ -157,15 +182,23 @@ export function ProviderProfilePage() {
           social_x: form.social_x || null,
         },
       });
+
+      return { nameSubmitted };
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
+      qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       qc.invalidateQueries({ queryKey: ["website-public"] });
-      toast.success("Profile saved.");
+      if (res?.nameSubmitted) {
+        toast.success("Profile saved. Name change submitted for admin approval.");
+      } else {
+        toast.success("Profile saved.");
+      }
     },
     onError: (e: Error) => toast.error(e.message || "Couldn't save profile"),
   });
+
 
   /* -------------------- image uploads -------------------- */
 
@@ -243,15 +276,44 @@ export function ProviderProfilePage() {
             </p>
           </div>
           <div className="flex flex-col gap-5 px-5 py-4">
-            <Field label="Provider name" hint="Shown in headings, cards and search results.">
-              <input
-                className={inputCls}
-                value={form.name}
-                onChange={(e) => update("name", e.target.value)}
-                placeholder="e.g. Northline Academy"
-                maxLength={120}
-              />
+            <Field
+              label="Provider name"
+              hint={
+                namePending
+                  ? "Name changes are locked until your submission is reviewed by an admin."
+                  : approvedName
+                    ? "Changes to your name require admin approval before going live."
+                    : "This will be shown in headings, cards and search results — subject to admin approval."
+              }
+            >
+              <div className="flex flex-col gap-2">
+                <input
+                  className={`${inputCls} disabled:cursor-not-allowed disabled:opacity-60`}
+                  value={namePending ? (nameStatus?.pending?.requested_name ?? "") : form.name}
+                  onChange={(e) => update("name", e.target.value)}
+                  placeholder="e.g. Northline Academy"
+                  maxLength={120}
+                  disabled={namePending}
+                />
+                {namePending ? (
+                  <div className="flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
+                    <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      Awaiting admin approval —{" "}
+                      <span className="font-semibold">
+                        &ldquo;{nameStatus?.pending?.requested_name}&rdquo;
+                      </span>
+                      . Your public page still shows{" "}
+                      <span className="font-semibold">
+                        {approvedName ? `"${approvedName}"` : "no name yet"}
+                      </span>{" "}
+                      until this is reviewed.
+                    </span>
+                  </div>
+                ) : null}
+              </div>
             </Field>
+
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Logo" hint="Square works best. Max 5 MB.">
