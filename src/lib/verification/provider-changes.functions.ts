@@ -206,22 +206,13 @@ export const submitProviderChange = createServerFn({ method: "POST" })
     const key = data.field_key as ProviderFieldKey;
 
     // Validate against per-field schema.
-    let normalised: string | null;
-    if (key === "year_established") {
-      const parsed = ValueSchema.year_established.parse(
-        data.proposed_value === "" || data.proposed_value == null
-          ? null
-          : Number(data.proposed_value),
-      );
-      normalised = parsed as string | null;
-    } else {
-      const raw =
-        data.proposed_value == null
-          ? null
-          : String(data.proposed_value);
-      const parsed = ValueSchema[key].parse(raw);
-      normalised = normaliseValue(key, parsed as string | null);
-    }
+    const raw =
+      data.proposed_value == null
+        ? null
+        : String(data.proposed_value);
+    const parsed = ValueSchema[key].parse(raw);
+    const normalised: string | null = normaliseValue(key, parsed as string | null);
+
 
     const current = await loadCurrentValue(sb, userId, key);
 
