@@ -283,7 +283,7 @@ function ProviderProfilePage() {
               </div>
 
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-black/12 bg-white px-3 py-1 text-[12.5px] font-medium text-black/70">
                   <Users className="h-3.5 w-3.5" strokeWidth={2} />
                   {deliveryLabel}
