@@ -11,9 +11,11 @@ import {
   ThumbsUp,
   Trash2,
   Mail,
+  MailCheck,
   CheckCircle2,
   Clock,
   XCircle,
+  AlertTriangle,
   ShieldAlert,
   Upload,
   Download,
@@ -82,7 +84,20 @@ function formatDate(iso: string): string {
 }
 
 type ReviewTab = "all" | "approved" | "pending" | "removed";
-type RequestTab = "all" | "sent" | "opened" | "submitted" | "expired";
+type RequestTab = "all" | "sent" | "delivered" | "opened" | "submitted" | "failed" | "expired";
+
+/** Derive a display status from a request row. Mailgun events populate
+ * `delivered_at` / `failed_at` outside the stored `status` column, so we
+ * fold them in here for tab counts, filtering, and the pill. */
+function displayStatusOf(r: {
+  status: string;
+  delivered_at: string | null;
+  failed_at: string | null;
+}): "sent" | "delivered" | "opened" | "submitted" | "failed" | "expired" {
+  if (r.failed_at) return "failed";
+  if (r.status === "sent" && r.delivered_at) return "delivered";
+  return (r.status as "sent" | "opened" | "submitted" | "expired") ?? "sent";
+}
 
 function TabCount({ n, active }: { n: number; active: boolean }) {
   if (n <= 0) return null;
@@ -193,18 +208,16 @@ export function ProviderReviewsPage() {
 
   // ── request status filtering ───────────────────────────────────────────
   const requestCounts = React.useMemo(() => {
-    const c = { all: requests.length, sent: 0, opened: 0, submitted: 0, expired: 0 };
+    const c = { all: requests.length, sent: 0, delivered: 0, opened: 0, submitted: 0, failed: 0, expired: 0 };
     for (const r of requests) {
-      if (r.status === "sent") c.sent++;
-      else if (r.status === "opened") c.opened++;
-      else if (r.status === "submitted") c.submitted++;
-      else if (r.status === "expired") c.expired++;
+      const s = displayStatusOf(r);
+      c[s]++;
     }
     return c;
   }, [requests]);
   const filteredRequests = React.useMemo(() => {
     if (requestTab === "all") return requests;
-    return requests.filter((r) => r.status === requestTab);
+    return requests.filter((r) => displayStatusOf(r) === requestTab);
   }, [requests, requestTab]);
 
   const kpiTiles = [
@@ -424,8 +437,10 @@ export function ProviderReviewsPage() {
                       {([
                         { v: "all" as const, label: "All", n: requestCounts.all },
                         { v: "sent" as const, label: "Sent", n: requestCounts.sent },
+                        { v: "delivered" as const, label: "Delivered", n: requestCounts.delivered },
                         { v: "opened" as const, label: "Opened", n: requestCounts.opened },
                         { v: "submitted" as const, label: "Submitted", n: requestCounts.submitted },
+                        { v: "failed" as const, label: "Failed", n: requestCounts.failed },
                         { v: "expired" as const, label: "Expired", n: requestCounts.expired },
                       ]).map((t) => (
                         <TabsTrigger
@@ -472,7 +487,7 @@ export function ProviderReviewsPage() {
                         {r.service_label ? ` · ${r.service_label}` : ""}
                       </p>
                     </div>
-                    <StatusPill status={r.status} />
+                    <StatusPill status={displayStatusOf(r)} title={r.failure_reason ?? undefined} />
                   </li>
                 ))}
               </ul>
@@ -982,20 +997,31 @@ function RequestReviewDialog({ trigger }: { trigger: React.ReactNode }) {
 }
 
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({ status, title }: { status: string; title?: string }) {
   const map: Record<string, { label: string; Icon: typeof Clock; tone: string }> = {
     sent: { label: "Sent", Icon: Clock, tone: "border-white/20 bg-white/5 text-white/70" },
+    delivered: {
+      label: "Delivered",
+      Icon: MailCheck,
+      tone: "border-white/25 bg-white/10 text-white/80",
+    },
     opened: { label: "Opened", Icon: Mail, tone: "border-sky-400/30 bg-sky-500/15 text-sky-300" },
     submitted: {
       label: "Submitted",
       Icon: CheckCircle2,
       tone: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
     },
+    failed: {
+      label: "Failed",
+      Icon: AlertTriangle,
+      tone: "border-rose-400/30 bg-rose-500/15 text-rose-300",
+    },
     expired: { label: "Expired", Icon: XCircle, tone: "border-rose-400/30 bg-rose-500/15 text-rose-300" },
   };
   const m = map[status] ?? map.sent;
   return (
     <span
+      title={title}
       className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider ${m.tone}`}
     >
       <m.Icon className="h-3 w-3" />

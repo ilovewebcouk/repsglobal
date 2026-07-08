@@ -287,6 +287,12 @@ export type ReviewRequestRow = {
   status: string;
   sent_at: string;
   expires_at: string;
+  delivered_at: string | null;
+  first_opened_at: string | null;
+  last_opened_at: string | null;
+  open_count: number;
+  failed_at: string | null;
+  failure_reason: string | null;
 };
 
 const CreateRequestSchema = z.object({
@@ -464,7 +470,7 @@ export const listMyReviewRequests = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("review_requests")
-      .select("id, client_email, client_name, service_label, status, sent_at, expires_at")
+      .select("id, client_email, client_name, service_label, status, sent_at, expires_at, delivered_at, first_opened_at, last_opened_at, open_count, failed_at, failure_reason")
       .eq("professional_id", context.userId)
       .order("sent_at", { ascending: false })
       .limit(20);
