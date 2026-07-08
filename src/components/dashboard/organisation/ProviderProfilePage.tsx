@@ -226,7 +226,7 @@ export function ProviderProfilePage() {
           type="button"
           disabled={saveMut.isPending || isLoading}
           onClick={() => saveMut.mutate()}
-          className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-black transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
+          className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
         >
           {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Save changes
