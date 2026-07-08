@@ -623,14 +623,14 @@ function ProviderProfilePage() {
                               key={it.id}
                               className="flex flex-wrap items-center gap-2 text-[13.5px] text-black/75"
                             >
-                              {it.level != null ? (
+                              {it.level ? (
                                 <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
-                                  L{it.level}
+                                  {it.level}
                                 </span>
                               ) : null}
                               <span className="font-medium text-black">{it.title}</span>
                               {it.ofqual_ref ? (
-                                <span className="text-[11.5px] text-black/45">
+                                <span className="font-mono text-[11.5px] text-black/45">
                                   {it.ofqual_ref}
                                 </span>
                               ) : null}
