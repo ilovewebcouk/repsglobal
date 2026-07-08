@@ -79,8 +79,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
       contact_phone: (p.contact_phone as string | null) ?? null,
       address: (p.address as string | null) ?? null,
 
-      year_established: (p.year_established as number | null) ?? null,
-      company_number: (p.company_number as string | null) ?? null,
+
       social_instagram: (p.social_instagram as string | null) ?? null,
       social_linkedin: (p.social_linkedin as string | null) ?? null,
       social_youtube: (p.social_youtube as string | null) ?? null,
