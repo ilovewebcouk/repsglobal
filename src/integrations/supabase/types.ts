@@ -3733,6 +3733,81 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_domain_verifications: {
+        Row: {
+          admin_decision_reason: string | null
+          admin_notes: string | null
+          admin_reviewed_at: string | null
+          admin_reviewer_id: string | null
+          confirmation_expires_at: string | null
+          confirmation_token_hash: string | null
+          created_at: string
+          domain: string | null
+          email: string | null
+          email_confirmed_at: string | null
+          email_sent_at: string | null
+          id: string
+          last_resend_at: string | null
+          professional_id: string
+          resend_count_today: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_decision_reason?: string | null
+          admin_notes?: string | null
+          admin_reviewed_at?: string | null
+          admin_reviewer_id?: string | null
+          confirmation_expires_at?: string | null
+          confirmation_token_hash?: string | null
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          email_confirmed_at?: string | null
+          email_sent_at?: string | null
+          id?: string
+          last_resend_at?: string | null
+          professional_id: string
+          resend_count_today?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_decision_reason?: string | null
+          admin_notes?: string | null
+          admin_reviewed_at?: string | null
+          admin_reviewer_id?: string | null
+          confirmation_expires_at?: string | null
+          confirmation_token_hash?: string | null
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          email_confirmed_at?: string | null
+          email_sent_at?: string | null
+          id?: string
+          last_resend_at?: string | null
+          professional_id?: string
+          resend_count_today?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_domain_verifications_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_domain_verifications_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       proxy_ingest_diagnostics: {
         Row: {
           attempted: boolean | null
