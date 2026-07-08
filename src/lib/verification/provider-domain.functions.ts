@@ -9,6 +9,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 import { z } from "zod";
 
 import {
@@ -45,7 +46,7 @@ function generateToken(): string {
 /* -------------------------------------------------------------------------- */
 
 export const getProviderDomainVerification = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<ProviderDomainState> => {
     const { supabase, userId } = context;
 
