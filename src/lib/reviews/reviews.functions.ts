@@ -338,11 +338,12 @@ export const createReviewRequest = createServerFn({ method: "POST" })
 
     const reviewUrl = `https://repsuk.org/r/${row.token}`;
     try {
-      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
-      await sendTransactionalEmailServer({
-        templateName: "review-request",
+      const { sendReviewRequestViaMailgun } = await import(
+        "@/lib/reviews/send-review-request.server"
+      );
+      await sendReviewRequestViaMailgun({
+        reviewRequestId: row.id,
         recipientEmail: data.client_email,
-        idempotencyKey: `review-request:${row.id}`,
         templateData: {
           proName,
           reviewUrl,
