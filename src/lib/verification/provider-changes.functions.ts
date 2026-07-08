@@ -185,8 +185,8 @@ const SubmitInput = z.object({
     "contact_phone",
     "address",
 
-    "year_established",
-    "company_number",
+
+
     "social_instagram",
     "social_linkedin",
     "social_youtube",
