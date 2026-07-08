@@ -12,9 +12,11 @@ import {
   ThumbsUp,
   Trash2,
   Mail,
+  MailCheck,
   CheckCircle2,
   Clock,
   XCircle,
+  AlertTriangle,
   ShieldAlert,
 } from "lucide-react";
 
