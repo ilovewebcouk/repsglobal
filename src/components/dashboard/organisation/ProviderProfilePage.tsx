@@ -181,6 +181,8 @@ export function ProviderProfilePage() {
           website_url: (websiteLocked ? approvedWebsite : form.website_url) || null,
           contact_email: (emailLocked ? approvedEmail : form.contact_email) || null,
           contact_phone: form.contact_phone || null,
+          address: form.address || null,
+
           year_established: yearNum,
           company_number: form.company_number || null,
           social_instagram: form.social_instagram || null,
