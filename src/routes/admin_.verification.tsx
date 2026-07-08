@@ -69,6 +69,7 @@ import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 import { TimeAgo } from "@/components/verification/TimeAgo";
 import { absoluteDateTime, relativeTime } from "@/lib/verification/format-time";
 import { AdminProviderQueueTab } from "@/components/admin/verification/AdminProviderQueueTab";
+import { AdminProviderQualificationsTab } from "@/components/admin/verification/AdminProviderQualificationsTab";
 
 export const Route = createFileRoute("/admin_/verification")({
   head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
