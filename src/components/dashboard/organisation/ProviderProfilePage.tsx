@@ -10,11 +10,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  Building2,
-  Camera,
   Clock,
   ExternalLink,
-  ImageIcon,
   Instagram,
   Linkedin,
   Loader2,
@@ -34,27 +31,11 @@ import {
   submitProviderNameChange,
 } from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
-import {
-  updateMyAvatar,
-  uploadAvatarFromBase64,
-} from "@/lib/profile/dashboard-profile.functions";
-import {
-  updateMyWebsiteHero,
-  uploadHeroFromBase64,
-} from "@/lib/website/hero.functions";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
 /* -------------------------------------------------------------------------- */
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(new Error("Couldn't read file"));
-    r.readAsDataURL(file);
-  });
-}
 
 function XIcon() {
   return (
@@ -89,10 +70,6 @@ export function ProviderProfilePage() {
   const fetchNameStatus = useServerFn(getMyProviderNameStatus);
   const submitName = useServerFn(submitProviderNameChange);
 
-  const uploadAvatar = useServerFn(uploadAvatarFromBase64);
-  const setAvatar = useServerFn(updateMyAvatar);
-  const uploadHero = useServerFn(uploadHeroFromBase64);
-  const setHero = useServerFn(updateMyWebsiteHero);
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-provider-profile"],
@@ -214,50 +191,6 @@ export function ProviderProfilePage() {
   });
 
 
-  /* -------------------- image uploads -------------------- */
-
-  const [logoBusy, setLogoBusy] = React.useState(false);
-  const [heroBusy, setHeroBusy] = React.useState(false);
-
-  const onPickLogo = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Logo must be under 5 MB.");
-      return;
-    }
-    setLogoBusy(true);
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      const { path } = await uploadAvatar({ data: { dataUrl } });
-      await setAvatar({ data: { path } });
-      qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-      qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
-      toast.success("Logo updated.");
-    } catch (e) {
-      toast.error((e as Error).message || "Logo upload failed");
-    } finally {
-      setLogoBusy(false);
-    }
-  };
-
-  const onPickHero = async (file: File) => {
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Hero image must be under 8 MB.");
-      return;
-    }
-    setHeroBusy(true);
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      const { url } = await uploadHero({ data: { dataUrl } });
-      await setHero({ data: { url } });
-      qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-      qc.invalidateQueries({ queryKey: ["website-public"] });
-      toast.success("Hero image updated.");
-    } catch (e) {
-      toast.error((e as Error).message || "Hero upload failed");
-    } finally {
-      setHeroBusy(false);
-    }
-  };
 
   /* -------------------- render -------------------- */
 
@@ -342,55 +275,6 @@ export function ProviderProfilePage() {
             </Field>
 
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field label="Logo" hint="Square works best. Max 5 MB.">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-reps-border bg-reps-panel-soft p-1.5">
-                    {data?.logo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={data.logo_url}
-                        alt="Provider logo"
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <Building2 className="h-4 w-4 text-white/40" />
-                    )}
-                  </div>
-                  <FilePickerButton
-                    accept="image/png,image/jpeg,image/webp"
-                    onPick={onPickLogo}
-                    busy={logoBusy}
-                    icon={<Camera className="h-4 w-4" />}
-                    label={data?.logo_url ? "Replace logo" : "Upload logo"}
-                  />
-                </div>
-              </Field>
-
-              <Field label="Hero image" hint="Wide banner shown on your public page. Max 8 MB.">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-[12px] border border-reps-border bg-reps-panel-soft">
-                    {data?.hero_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={data.hero_image_url}
-                        alt="Hero image"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <ImageIcon className="h-6 w-6 text-white/40" />
-                    )}
-                  </div>
-                  <FilePickerButton
-                    accept="image/png,image/jpeg,image/webp"
-                    onPick={onPickHero}
-                    busy={heroBusy}
-                    icon={<ImageIcon className="h-4 w-4" />}
-                    label={data?.hero_image_url ? "Replace hero" : "Upload hero"}
-                  />
-                </div>
-              </Field>
-            </div>
           </div>
         </PPanel>
 
@@ -611,45 +495,5 @@ function Field({
       {children}
       {hint ? <span className="text-[11.5px] text-white/45">{hint}</span> : null}
     </label>
-  );
-}
-
-function FilePickerButton({
-  accept,
-  onPick,
-  busy,
-  icon,
-  label,
-}: {
-  accept: string;
-  onPick: (f: File) => void;
-  busy: boolean;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  const ref = React.useRef<HTMLInputElement>(null);
-  return (
-    <>
-      <input
-        ref={ref}
-        type="file"
-        accept={accept}
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onPick(f);
-          e.target.value = "";
-        }}
-      />
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => ref.current?.click()}
-        className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[12.5px] font-medium text-white/85 transition-colors hover:bg-white/5 disabled:opacity-50"
-      >
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
-        {busy ? "Uploading…" : label}
-      </button>
-    </>
   );
 }
