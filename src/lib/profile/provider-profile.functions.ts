@@ -68,6 +68,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
         (pr.business_name as string | null) ??
         (pr.full_name as string | null) ??
         "",
+      slug: (p.slug as string | null) ?? null,
       logo_url: (pr.avatar_url as string | null) ?? null,
       hero_image_url: (s.hero_image_url as string | null) ?? null,
       tagline: (s.tagline as string | null) ?? null,
