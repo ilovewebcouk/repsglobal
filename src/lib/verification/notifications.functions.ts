@@ -145,7 +145,7 @@ export async function notifyVerificationEvent(params: InsertParams) {
   }
 }
 
-function titleFor(event: VerificationEvent, threshold?: number | null) {
+function titleFor(event: VerificationEvent, threshold?: number | null): string {
   switch (event) {
     case "insurance.rejected_expired":
       return "Insurance certificate expired";
@@ -172,7 +172,24 @@ function titleFor(event: VerificationEvent, threshold?: number | null) {
       return "Qualification rejected";
     case "qualification.changes_requested":
       return "Qualification needs changes";
+    case "provider_change.approved":
+      return "Profile change approved";
+    case "provider_change.rejected":
+      return "Profile change rejected";
+    case "provider_name.approved":
+      return "Provider name approved";
+    case "provider_name.rejected":
+      return "Provider name rejected";
+    case "provider_domain.approved":
+      return "Domain verification approved";
+    case "provider_domain.rejected":
+      return "Domain verification rejected";
   }
+}
+
+function hrefFor(event: VerificationEvent): string {
+  if (event.startsWith("provider_")) return "/dashboard/profile";
+  return "/dashboard/verification";
 }
 
 export const listMyVerificationNotifications = createServerFn({ method: "POST" })
