@@ -470,7 +470,7 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg bg-reps-panel border-reps-border text-white">
         <DialogHeader>
           <DialogTitle>Add regulated qualification</DialogTitle>
           <DialogDescription>
@@ -643,7 +643,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg bg-reps-panel border-reps-border text-white">
         <DialogHeader>
           <DialogTitle>Request REPS CPD accreditation</DialogTitle>
           <DialogDescription>
