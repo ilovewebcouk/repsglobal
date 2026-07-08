@@ -28,6 +28,8 @@ import {
   WelcomeBanner,
   useHubData,
 } from "@/components/dashboard/hub";
+import { ProviderWelcomeBanner } from "@/components/dashboard/organisation/ProviderWelcomeBanner";
+
 import { DashboardVerificationBanner } from "@/components/dashboard/DashboardVerificationBanner";
 
 
@@ -164,7 +166,7 @@ export function ProviderDashboardHome() {
         </Alert>
       ) : isOrganisation ? (
         <div className="flex flex-col gap-4">
-          <WelcomeBanner
+          <ProviderWelcomeBanner
             name={memberName}
             avatarUrl={data?.identity?.avatar_url}
             headline={data?.website?.tagline ?? null}
@@ -172,7 +174,9 @@ export function ProviderDashboardHome() {
             isPublished={isPublished}
             slug={slug}
             trust={hub.trust.data ?? null}
+            heroUrl={hub.website.data?.website?.hero_image_url ?? null}
           />
+
           <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
             <div className="min-h-[340px] xl:col-span-8">
               <NeedsAttention
