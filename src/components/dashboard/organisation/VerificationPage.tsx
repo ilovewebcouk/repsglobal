@@ -34,6 +34,7 @@ import { IdentityProfileCard } from "@/components/dashboard/verification/TrustBl
 import { VerifiedBadge, type VerifiedTier } from "@/components/verification/VerifiedBadge";
 import {
   getProviderDomainVerification,
+  setProviderWebsite,
   startProviderDomainVerification,
 } from "@/lib/verification/provider-domain.functions";
 import type { ProviderDomainState } from "@/lib/verification/provider-domain-shared";
