@@ -198,7 +198,9 @@ function ProviderProfilePage() {
         const q = norm(snapshotOrg);
         // best-effort fuzzy match against known bodies via awardingBodyName lookups
         // — we iterate our known slugs by trying substrings.
-        for (const candidate of KNOWN_AWARDING_SLUGS) {
+        for (const body of AWARDING_BODIES) {
+          if (body.slug === "other") continue;
+          const candidate = body.slug;
           const nm = awardingBodyName(candidate);
           if (!nm) continue;
           const n = norm(nm);
