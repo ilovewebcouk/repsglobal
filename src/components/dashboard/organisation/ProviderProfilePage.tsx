@@ -275,15 +275,44 @@ export function ProviderProfilePage() {
             </p>
           </div>
           <div className="flex flex-col gap-5 px-5 py-4">
-            <Field label="Provider name" hint="Shown in headings, cards and search results.">
-              <input
-                className={inputCls}
-                value={form.name}
-                onChange={(e) => update("name", e.target.value)}
-                placeholder="e.g. Northline Academy"
-                maxLength={120}
-              />
+            <Field
+              label="Provider name"
+              hint={
+                namePending
+                  ? "Name changes are locked until your submission is reviewed by an admin."
+                  : approvedName
+                    ? "Changes to your name require admin approval before going live."
+                    : "This will be shown in headings, cards and search results — subject to admin approval."
+              }
+            >
+              <div className="flex flex-col gap-2">
+                <input
+                  className={`${inputCls} disabled:cursor-not-allowed disabled:opacity-60`}
+                  value={namePending ? (nameStatus?.pending?.requested_name ?? "") : form.name}
+                  onChange={(e) => update("name", e.target.value)}
+                  placeholder="e.g. Northline Academy"
+                  maxLength={120}
+                  disabled={namePending}
+                />
+                {namePending ? (
+                  <div className="flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
+                    <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      Awaiting admin approval —{" "}
+                      <span className="font-semibold">
+                        &ldquo;{nameStatus?.pending?.requested_name}&rdquo;
+                      </span>
+                      . Your public page still shows{" "}
+                      <span className="font-semibold">
+                        {approvedName ? `"${approvedName}"` : "no name yet"}
+                      </span>{" "}
+                      until this is reviewed.
+                    </span>
+                  </div>
+                ) : null}
+              </div>
             </Field>
+
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Logo" hint="Square works best. Max 5 MB.">
