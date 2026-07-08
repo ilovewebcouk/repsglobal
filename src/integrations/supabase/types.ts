@@ -3745,6 +3745,51 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_change_requests: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          current_value: Json | null
+          field_group: string
+          field_key: string
+          id: string
+          proposed_value: Json | null
+          provider_id: string
+          reviewed_at: string | null
+          reviewer_id: string | null
+          status: Database["public"]["Enums"]["provider_change_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          current_value?: Json | null
+          field_group: string
+          field_key: string
+          id?: string
+          proposed_value?: Json | null
+          provider_id: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: Database["public"]["Enums"]["provider_change_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          current_value?: Json | null
+          field_group?: string
+          field_key?: string
+          id?: string
+          proposed_value?: Json | null
+          provider_id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: Database["public"]["Enums"]["provider_change_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       provider_domain_verifications: {
         Row: {
           admin_decision_reason: string | null
@@ -5808,6 +5853,20 @@ export type Database = {
           },
         ]
       }
+      provider_pending_queue: {
+        Row: {
+          created_at: string | null
+          current_value: Json | null
+          field_group: string | null
+          field_key: string | null
+          id: string | null
+          proposed_value: Json | null
+          provider_id: string | null
+          source: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       v_identity_review_queue: {
         Row: {
           display_name: string | null
@@ -5933,6 +5992,10 @@ export type Database = {
         }[]
       }
       admin_seed_demo_pros: { Args: never; Returns: number }
+      apply_provider_change: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
       audit_verification_drift: {
         Args: never
         Returns: {
@@ -6458,6 +6521,7 @@ export type Database = {
         | "member_request"
       organisation_user_role: "owner" | "manager"
       prospect_status: "active" | "converted" | "unsubscribed" | "bounced"
+      provider_change_status: "pending" | "approved" | "rejected" | "superseded"
       provider_review_source: "open" | "verified"
       provider_review_status:
         | "pending_email"
@@ -6699,6 +6763,7 @@ export const Constants = {
       ],
       organisation_user_role: ["owner", "manager"],
       prospect_status: ["active", "converted", "unsubscribed", "bounced"],
+      provider_change_status: ["pending", "approved", "rejected", "superseded"],
       provider_review_source: ["open", "verified"],
       provider_review_status: [
         "pending_email",

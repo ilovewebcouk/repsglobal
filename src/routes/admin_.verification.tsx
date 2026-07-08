@@ -68,6 +68,7 @@ import { buildAwardingBodyVerifyLinks } from "@/lib/verification/awarding-body-v
 import { getTitleLabel } from "@/lib/cpd/titles-catalog";
 import { TimeAgo } from "@/components/verification/TimeAgo";
 import { absoluteDateTime, relativeTime } from "@/lib/verification/format-time";
+import { AdminProviderQueueTab } from "@/components/admin/verification/AdminProviderQueueTab";
 
 export const Route = createFileRoute("/admin_/verification")({
   head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
@@ -122,6 +123,7 @@ function AdminVerificationPage() {
     mutationFn: (professional_id: string) => nudgeRenewal({ data: { professional_id } }),
   });
 
+  const [audience, setAudience] = useState<"trainers" | "providers">("trainers");
   const [topTab, setTopTab] = useState<TopTab>("qualifications");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("submitted");
@@ -282,7 +284,28 @@ function AdminVerificationPage() {
       title="Verification queue"
       subtitle="Review identity, insurance and credentials before activating professionals."
     >
+      {/* Audience toggle — Trainers (identity/insurance/qualifications) vs
+          Providers (name/domain/profile change requests). */}
+      <div className="mb-4 inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
+        {(["trainers", "providers"] as const).map((a) => (
+          <button
+            key={a}
+            onClick={() => { setAudience(a); setSelectedId(null); }}
+            className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold capitalize transition ${
+              audience === a ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
+            }`}
+          >
+            {a === "trainers" ? "Trainers" : "Training providers"}
+          </button>
+        ))}
+      </div>
+
+      {audience === "providers" ? (
+        <AdminProviderQueueTab />
+      ) : (
+      <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+
         {topStrip.map((t) => (
           <PCard key={t.label}>
             <div className="flex items-center justify-between">
@@ -1102,6 +1125,8 @@ function AdminVerificationPage() {
           })()}
         </div>
       </div>
+      )}
+      </>
       )}
     </DashboardShell>
   );

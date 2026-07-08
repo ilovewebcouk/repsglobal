@@ -129,28 +129,43 @@ function TierDots({ earned, size }: { earned: number; size: VerifiedBadgeSize })
 }
 
 /**
- * Sidebar count chip — "1/3", "2/3", "3/3". Compact, emerald when full.
+ * Sidebar count chip — "1/3" for trainers, "1/2" for training providers.
+ * - Full  → emerald.
+ * - Any check awaiting admin review → amber (matches "Awaiting review" pill).
+ * - Otherwise → orange.
  */
 export function VerifiedCountChip({
   completed,
+  total = 3,
+  pending = false,
   className,
 }: {
-  completed: 0 | 1 | 2 | 3;
+  completed: number;
+  total?: number;
+  pending?: boolean;
   className?: string;
 }) {
-  const full = completed === 3;
+  const full = completed >= total;
+  const tone = full
+    ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+    : pending
+      ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+      : "border-reps-orange-border bg-reps-orange-soft text-reps-orange";
   return (
     <span
       className={cn(
         "inline-flex h-5 min-w-[34px] items-center justify-center rounded-full border px-1.5 text-[10px] font-semibold tabular-nums",
-        full
-          ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-          : "border-reps-orange-border bg-reps-orange-soft text-reps-orange",
+        tone,
         className,
       )}
-      aria-label={full ? "Verification complete" : `Verification ${completed} of 3 complete`}
+      aria-label={
+        full
+          ? "Verification complete"
+          : `Verification ${completed} of ${total} complete${pending ? " — awaiting review" : ""}`
+      }
     >
-      {completed}/3
+      {completed}/{total}
     </span>
   );
 }
+

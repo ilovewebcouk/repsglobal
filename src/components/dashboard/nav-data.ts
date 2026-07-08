@@ -26,7 +26,7 @@ import {
   Store,
   Target,
   Send,
-  UserCheck,
+  
   UserCircle,
   Users,
   type LucideIcon,
@@ -169,7 +169,6 @@ export const ADMIN_NAV = [
     items: [
       { icon: Users, label: "Members", to: "/admin/members" },
       { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
-      { icon: UserCheck, label: "Name approvals", to: "/admin/provider-names" },
       { icon: Star, label: "Reviews", to: "/admin/reviews" },
     ],
   },
