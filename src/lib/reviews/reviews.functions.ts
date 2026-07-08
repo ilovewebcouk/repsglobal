@@ -287,6 +287,12 @@ export type ReviewRequestRow = {
   status: string;
   sent_at: string;
   expires_at: string;
+  delivered_at: string | null;
+  first_opened_at: string | null;
+  last_opened_at: string | null;
+  open_count: number;
+  failed_at: string | null;
+  failure_reason: string | null;
 };
 
 const CreateRequestSchema = z.object({
