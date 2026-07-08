@@ -28,6 +28,8 @@ export type ProviderFieldKey =
   | "website_url"
   | "contact_email"
   | "contact_phone"
+  | "address"
+
   | "year_established"
   | "company_number"
   | "social_instagram"
