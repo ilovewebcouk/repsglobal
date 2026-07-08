@@ -4075,8 +4075,15 @@ export type Database = {
           client_email: string
           client_name: string | null
           created_at: string
+          delivered_at: string | null
           expires_at: string
+          failed_at: string | null
+          failure_reason: string | null
+          first_opened_at: string | null
           id: string
+          last_opened_at: string | null
+          mailgun_message_id: string | null
+          open_count: number
           opened_at: string | null
           professional_id: string
           sent_at: string
@@ -4090,8 +4097,15 @@ export type Database = {
           client_email: string
           client_name?: string | null
           created_at?: string
+          delivered_at?: string | null
           expires_at?: string
+          failed_at?: string | null
+          failure_reason?: string | null
+          first_opened_at?: string | null
           id?: string
+          last_opened_at?: string | null
+          mailgun_message_id?: string | null
+          open_count?: number
           opened_at?: string | null
           professional_id: string
           sent_at?: string
@@ -4105,8 +4119,15 @@ export type Database = {
           client_email?: string
           client_name?: string | null
           created_at?: string
+          delivered_at?: string | null
           expires_at?: string
+          failed_at?: string | null
+          failure_reason?: string | null
+          first_opened_at?: string | null
           id?: string
+          last_opened_at?: string | null
+          mailgun_message_id?: string | null
+          open_count?: number
           opened_at?: string | null
           professional_id?: string
           sent_at?: string
