@@ -32,6 +32,7 @@ import {
   getMyProviderNameStatus,
   submitProviderNameChange,
 } from "@/lib/verification/provider-name.functions";
+import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
 import {
   updateMyAvatar,
   uploadAvatarFromBase64,
@@ -102,8 +103,18 @@ export function ProviderProfilePage() {
     queryFn: () => fetchNameStatus(),
   });
 
+  const fetchDomainStatus = useServerFn(getProviderDomainVerification);
+  const { data: domainStatus } = useQuery({
+    queryKey: ["my-provider-domain-status"],
+    queryFn: () => fetchDomainStatus(),
+  });
+
   const namePending = !!nameStatus?.pending;
   const approvedName = nameStatus?.approved_name ?? "";
+
+  const websiteLocked = domainStatus?.status === "approved";
+  const approvedWebsite = domainStatus?.rawWebsite ?? "";
+
 
 
   const [form, setForm] = React.useState({
@@ -170,7 +181,7 @@ export function ProviderProfilePage() {
         data: {
           tagline: form.tagline || null,
           about: form.about || null,
-          website_url: form.website_url || null,
+          website_url: (websiteLocked ? approvedWebsite : form.website_url) || null,
           contact_email: form.contact_email || null,
           contact_phone: form.contact_phone || null,
           year_established: yearNum,
@@ -412,15 +423,24 @@ export function ProviderProfilePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-2">
-            <Field label="Website URL" hint="Must start with https://">
+            <Field
+              label="Website URL"
+              hint={
+                websiteLocked
+                  ? "Locked — matches the domain approved during verification. Contact support to change it."
+                  : "Must start with https://"
+              }
+            >
               <input
-                className={inputCls}
+                className={`${inputCls} ${websiteLocked ? "cursor-not-allowed opacity-70" : ""}`}
                 type="url"
                 inputMode="url"
-                value={form.website_url}
+                value={websiteLocked ? approvedWebsite : form.website_url}
                 onChange={(e) => update("website_url", e.target.value)}
                 placeholder="https://yourprovider.com"
                 maxLength={500}
+                readOnly={websiteLocked}
+                aria-readonly={websiteLocked}
               />
             </Field>
             <Field label="Contact email" hint="Public — shown on your provider page.">
