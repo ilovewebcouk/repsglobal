@@ -111,6 +111,8 @@ const ValueSchema: Record<ProviderFieldKey, z.ZodTypeAny> = {
       "Enter a valid international phone number (e.g. +44 7911 123456).",
     )
     .nullable(),
+  address: z.string().trim().max(500).nullable(),
+
   year_established: z
     .union([
       z.number().int().min(1800).max(currentYear),
