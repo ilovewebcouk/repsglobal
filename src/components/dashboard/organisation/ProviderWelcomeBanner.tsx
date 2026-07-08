@@ -239,8 +239,8 @@ export function ProviderWelcomeBanner({
           <div className="relative">
             <Avatar
               className={cn(
-                "size-20 rounded-[16px] border border-reps-border shadow-lg",
-                avatarUrl ? "bg-white p-1.5" : "bg-reps-panel-soft",
+                "size-20 rounded-[16px] border border-reps-border shadow-lg overflow-hidden",
+                avatarUrl ? "bg-white" : "bg-reps-panel-soft",
               )}
             >
               {avatarUrl ? (

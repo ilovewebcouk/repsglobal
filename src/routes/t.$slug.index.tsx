@@ -226,7 +226,7 @@ function ProviderProfilePage() {
                   <img
                     src={logoUrl}
                     alt={`${providerName} logo`}
-                    className="h-full w-full object-contain p-1.5"
+                    className="h-full w-full object-contain"
                     loading="eager"
                   />
                 </div>

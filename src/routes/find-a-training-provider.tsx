@@ -223,7 +223,7 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
             <img
               src={row.avatar_url}
               alt={`${row.name} logo`}
-              className="h-full w-full object-contain p-1.5"
+              className="h-full w-full object-contain"
               loading="lazy"
             />
           ) : (
