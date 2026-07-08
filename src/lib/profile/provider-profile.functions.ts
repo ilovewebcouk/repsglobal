@@ -105,7 +105,7 @@ function normaliseSocial(raw: string | null | undefined): string | null {
   return v || null;
 }
 
-const currentYear = new Date().getFullYear();
+
 
 const UpdateInput = z.object({
   // `name` is accepted for backwards compatibility but ignored — name
