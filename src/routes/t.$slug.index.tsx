@@ -170,29 +170,63 @@ function ProviderProfilePage() {
   const deliveryLabel = deliveryModes.length === 2 ? "Blended" : deliveryModes[0] ?? "In-person";
 
   // Approved regulated qualifications grouped by awarding body for the
-  // "Accreditations & Recognition" block.
+  // "Accreditations & Recognition" block. Prefer the live Ofqual snapshot
+  // over the historic catalogue link.
   const accreditationsByBody = React.useMemo(() => {
     const groups = new Map<
       string,
-      { slug: string; name: string; logo: string | null; items: Array<{ id: string; title: string; level: number | null; ofqual_ref: string | null }> }
+      {
+        slug: string;
+        name: string;
+        logo: string | null;
+        items: Array<{ id: string; title: string; level: string | null; ofqual_ref: string | null }>;
+      }
     >();
     for (const row of regulatedRows) {
-      const q = row.qualification;
-      if (!q) continue;
-      const key = q.awarding_body_slug;
-      const existing = groups.get(key) ?? {
-        slug: key,
-        name: awardingBodyName(key) ?? key,
-        logo: awardingBodyLogo(key),
+      const snap = row.ofqual_snapshot;
+      const legacy = row.qualification;
+      const title = snap?.title ?? legacy?.title ?? null;
+      if (!title) continue;
+
+      // Match the awarding body from the snapshot back to our slug map for a
+      // logo; fall back to the legacy catalogue slug for historic rows.
+      const snapshotOrg = snap?.awardingOrganisation ?? null;
+      const legacySlug = legacy?.awarding_body_slug ?? null;
+      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      let matchedSlug: string | null = legacySlug;
+      if (snapshotOrg) {
+        const q = norm(snapshotOrg);
+        // best-effort fuzzy match against known bodies via awardingBodyName lookups
+        // — we iterate our known slugs by trying substrings.
+        for (const candidate of KNOWN_AWARDING_SLUGS) {
+          const nm = awardingBodyName(candidate);
+          if (!nm) continue;
+          const n = norm(nm);
+          if (n === q || n.includes(q) || q.includes(n)) {
+            matchedSlug = candidate;
+            break;
+          }
+        }
+      }
+
+      const groupKey = matchedSlug ?? snapshotOrg ?? "unknown";
+      const displayName =
+        (matchedSlug ? awardingBodyName(matchedSlug) : null) ?? snapshotOrg ?? "Awarding body";
+      const logo = matchedSlug ? awardingBodyLogo(matchedSlug) : null;
+
+      const existing = groups.get(groupKey) ?? {
+        slug: groupKey,
+        name: displayName,
+        logo,
         items: [],
       };
       existing.items.push({
         id: row.id,
-        title: q.title,
-        level: q.level,
-        ofqual_ref: q.ofqual_ref,
+        title,
+        level: snap?.level ?? (legacy?.level != null ? `L${legacy.level}` : null),
+        ofqual_ref: row.ofqual_number ?? legacy?.ofqual_ref ?? null,
       });
-      groups.set(key, existing);
+      groups.set(groupKey, existing);
     }
     return Array.from(groups.values());
   }, [regulatedRows]);
