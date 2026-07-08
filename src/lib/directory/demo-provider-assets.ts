@@ -12,10 +12,12 @@ import northlineCover from "@/assets/providers/northline-cover.jpg.asset.json";
 
 export const DEMO_PROVIDER_LOGOS: Record<string, string> = {
   "northline-fitness-academy": diverseLogo.url,
+  "diverse-trainers": diverseLogo.url,
   "forge-strength-institute": origymLogo.url,
 };
 
 export const DEMO_PROVIDER_COVERS: Record<string, string> = {
   "northline-fitness-academy": northlineCover.url,
+  "diverse-trainers": northlineCover.url,
   "forge-strength-institute": forgeCover.url,
 };
