@@ -15,14 +15,27 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { OFQUAL_QUAL_NO_REGEX } from "@/lib/cpd/awarding-bodies";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types shared with UI
 
+export type OfqualSnapshot = {
+  qualificationNumber: string;
+  title: string | null;
+  awardingOrganisation: string | null;
+  level: string | null;
+  status: string | null;
+} | null;
+
 export type RegulatedPermissionRow = {
   id: string;
   provider_id: string;
-  qualification_id: string;
+  ofqual_number: string | null;
+  ofqual_snapshot: OfqualSnapshot;
+  ofqual_found: boolean;
+  // Legacy — historic rows only.
+  qualification_id: string | null;
   qualification: {
     id: string;
     title: string;
@@ -35,6 +48,11 @@ export type RegulatedPermissionRow = {
   awarding_body_reference: string | null;
   ai_verdict: "recommend_approve" | "flagged" | "inconclusive" | null;
   ai_red_flags: string[];
+  ai_cross_check: {
+    ofqual_found: boolean;
+    awarding_body_match: boolean;
+    qualification_in_doc: "yes" | "no" | "inconclusive";
+  } | null;
   status: "submitted" | "approved" | "rejected" | "changes_requested";
   admin_note: string | null;
   evidence_issued_at: string | null;
@@ -85,11 +103,42 @@ export const listQualifications = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Provider — regulated permissions
+// Ofqual resolve (called by the provider dashboard as they type the number)
+
+export const resolveOfqualNumber = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ ofqual_number: z.string().min(1).max(20) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const trimmed = data.ofqual_number.trim().toUpperCase();
+    if (!OFQUAL_QUAL_NO_REGEX.test(trimmed)) {
+      return { valid: false as const, found: false, snapshot: null };
+    }
+    const { lookupOfqualQualification } = await import("@/lib/cpd/ofqual.server");
+    const result = await lookupOfqualQualification(trimmed);
+    return {
+      valid: true as const,
+      found: result.found,
+      snapshot: result.record
+        ? {
+            qualificationNumber: result.record.qualificationNumber,
+            title: result.record.title,
+            awardingOrganisation: result.record.awardingOrganisation,
+            level: result.record.level,
+            status: result.record.status,
+          }
+        : null,
+    };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Provider — regulated permission submission (Ofqual-number-first)
 
 const submitRegulatedInput = z.object({
-  qualification_id: z.string().uuid(),
+  ofqual_number: z.string().min(1).max(20),
   evidence_type: z.enum(["eqa_report", "centre_certificate", "approval_letter"]),
   evidence_doc_paths: z.array(z.string().min(1)).min(1).max(5),
   awarding_body_reference: z.string().max(120).optional().nullable(),
@@ -101,12 +150,30 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
+    const ofqualNumber = data.ofqual_number.trim().toUpperCase();
+    if (!OFQUAL_QUAL_NO_REGEX.test(ofqualNumber)) {
+      throw new Error("Ofqual qualification number must look like 601/3866/X");
+    }
+
     // Ownership: every doc must be under the caller's storage folder
     for (const p of data.evidence_doc_paths) {
       if (!p.startsWith(`${userId}/`)) {
         throw new Error("Forbidden: doc path does not belong to you");
       }
     }
+
+    // Snapshot the Ofqual register at submit time
+    const { lookupOfqualQualification } = await import("@/lib/cpd/ofqual.server");
+    const lookup = await lookupOfqualQualification(ofqualNumber);
+    const snapshot = lookup.record
+      ? {
+          qualificationNumber: lookup.record.qualificationNumber,
+          title: lookup.record.title,
+          awardingOrganisation: lookup.record.awardingOrganisation,
+          level: lookup.record.level,
+          status: lookup.record.status,
+        }
+      : null;
 
     // Ensure a professional row exists
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
@@ -115,7 +182,9 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
       .from("provider_regulated_permissions")
       .insert({
         provider_id: userId,
-        qualification_id: data.qualification_id,
+        ofqual_number: ofqualNumber,
+        ofqual_snapshot: snapshot as never,
+        ofqual_found: lookup.found,
         evidence_type: data.evidence_type,
         evidence_doc_paths: data.evidence_doc_paths,
         awarding_body_reference: data.awarding_body_reference ?? null,
@@ -141,7 +210,7 @@ export const listMyRegulatedPermissions = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_verdict, ai_red_flags, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
       )
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
@@ -269,7 +338,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });
@@ -401,20 +470,22 @@ export const getProviderQualificationsForProfile = createServerFn({ method: "GET
 // ─────────────────────────────────────────────────────────────────────────────
 // AI extraction (Lovable AI Gateway, gemini-2.5-pro)
 
-const REGULATED_SYSTEM = `You are an evidence reviewer for REPS, a professional register for fitness training providers. You inspect one PDF/image of provider evidence and extract structured fields. Return ONLY valid JSON. Do not fabricate.
+const REGULATED_SYSTEM = `You are an evidence reviewer for REPS, a professional register for fitness training providers. You inspect one PDF/image of provider evidence — an EQA report, centre approval certificate, or approval letter — and extract structured fields. Return ONLY valid JSON. Do not fabricate. If a field is not visible in the document, return null (or an empty array). Do not guess.
 
 Fields:
 - document_type: "eqa_report" | "centre_certificate" | "approval_letter" | "other"
-- awarding_body_detected: canonical name if visible (Active IQ, Focus Awards, YMCA Awards, NCFE, VTCT, Innovate Awarding, TQUK, 1st4sport, or other)
-- centre_name_detected
-- centre_number_detected
-- qualifications_listed: array of {title, ofqual_ref_if_visible}
-- issue_date: YYYY-MM-DD if visible
-- expiry_date: YYYY-MM-DD if visible
+- awarding_body_detected: canonical awarding body name if visible (e.g. Active IQ, Focus Awards, YMCA Awards, NCFE, VTCT, Innovate Awarding, TQUK, 1st4sport, Pearson, City & Guilds), or the name as it appears on the document
+- centre_name_detected: the approved centre name as it appears on the document (this is the training provider being approved)
+- centre_number_detected: the awarding body's centre number for that provider, if quoted
+- approval_status: "approved" | "suspended" | "withdrawn" | "unclear"
+- qualifications_listed: array of {title, ofqual_ref_if_visible}, listing every regulated qualification the document says this centre is approved to deliver
+- issue_date: YYYY-MM-DD if visible (report date or letter date)
+- expiry_date: YYYY-MM-DD if visible (expiry of approval, or next EQA visit / next review date)
+- eqa_name: External Quality Assurer's name if visible
 - signatory_name
 - signatory_role
 - confidence: 0..1 overall
-- red_flags: array of strings such as "no letterhead", "expired", "template mismatch", "unreadable", "wrong document type"`;
+- red_flags: array of short strings such as "no letterhead", "expired", "template mismatch", "unreadable", "wrong document type", "centre_number_missing", "no dates present"`;
 
 const CPD_SYSTEM = `You are a CPD accreditation reviewer for REPS. The provider is requesting REPS accreditation for a fitness/coaching CPD course. You inspect three uploaded files (syllabus, assessment criteria, tutor CV — you receive them in this order) and extract structured fields. Return ONLY valid JSON. Do not fabricate.
 
@@ -488,7 +559,7 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
   const { data: row, error } = await supabaseAdmin
     .from("provider_regulated_permissions")
     .select(
-      "id, evidence_doc_paths, evidence_type, qualification:qualification_id (title, level, awarding_body_slug)",
+      "id, evidence_doc_paths, evidence_type, ofqual_number, ofqual_snapshot, ofqual_found",
     )
     .eq("id", id)
     .single();
@@ -501,10 +572,23 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
   }
   if (urls.length === 0) return;
 
-  const qual = (row as unknown as { qualification: { title: string; level: number | null; awarding_body_slug: string } | null }).qualification;
-  const claim = qual
-    ? `The provider is claiming approval to deliver "${qual.title}" (Level ${qual.level ?? "?"}) via ${qual.awarding_body_slug}. Their submitted evidence type is: ${(row as { evidence_type: string }).evidence_type}.`
-    : "";
+  const r = row as unknown as {
+    evidence_type: string;
+    ofqual_number: string | null;
+    ofqual_snapshot: {
+      title: string | null;
+      awardingOrganisation: string | null;
+      level: string | null;
+      status: string | null;
+    } | null;
+    ofqual_found: boolean;
+  };
+  const snap = r.ofqual_snapshot;
+  const claim = snap
+    ? `The provider is claiming approval to deliver Ofqual qualification ${r.ofqual_number} — "${snap.title ?? "?"}"${
+        snap.level ? ` (${snap.level})` : ""
+      }, awarded by ${snap.awardingOrganisation ?? "?"}. Their submitted evidence type is: ${r.evidence_type}. Confirm from the document whether their centre is approved to deliver this qualification, and extract every field per the schema.`
+    : `The provider entered Ofqual number ${r.ofqual_number ?? "(unknown)"}, which was NOT found on the Ofqual register. Their submitted evidence type is: ${r.evidence_type}. Extract every field per the schema so a human reviewer can judge.`;
 
   const parts: Array<{ text?: string } | { image_url: { url: string } }> = [{ text: claim }];
   for (const url of urls) parts.push({ image_url: { url } });
@@ -513,16 +597,60 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
   if (!result) {
     await supabaseAdmin
       .from("provider_regulated_permissions")
-      .update({ ai_verdict: "inconclusive", ai_red_flags: [] } as never)
+      .update({
+        ai_verdict: "inconclusive",
+        ai_red_flags: [],
+        ai_cross_check: {
+          ofqual_found: r.ofqual_found,
+          awarding_body_match: false,
+          qualification_in_doc: "inconclusive",
+        } as never,
+      } as never)
       .eq("id", id);
     return;
   }
+
+  // Cross-check: awarding body match + qualification listed in doc
+  const raw = result.raw as {
+    awarding_body_detected?: string | null;
+    qualifications_listed?: Array<{ title?: string | null; ofqual_ref_if_visible?: string | null }> | null;
+  };
+  const norm = (s: string | null | undefined) =>
+    (s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+  let awardingBodyMatch = false;
+  if (snap?.awardingOrganisation && raw.awarding_body_detected) {
+    const a = norm(snap.awardingOrganisation);
+    const b = norm(raw.awarding_body_detected);
+    awardingBodyMatch = !!a && !!b && (a === b || a.includes(b) || b.includes(a));
+  }
+
+  let qualificationInDoc: "yes" | "no" | "inconclusive" = "inconclusive";
+  const listed = Array.isArray(raw.qualifications_listed) ? raw.qualifications_listed : [];
+  if (listed.length > 0) {
+    const target = norm(r.ofqual_number ?? "");
+    const targetTitle = norm(snap?.title ?? "");
+    const hit = listed.some((q) => {
+      const ref = norm(q?.ofqual_ref_if_visible ?? "");
+      const t = norm(q?.title ?? "");
+      if (target && ref && (ref === target || ref.includes(target) || target.includes(ref))) return true;
+      if (targetTitle && t && (t === targetTitle || t.includes(targetTitle) || targetTitle.includes(t))) return true;
+      return false;
+    });
+    qualificationInDoc = hit ? "yes" : "no";
+  }
+
   await supabaseAdmin
     .from("provider_regulated_permissions")
     .update({
       ai_extraction: result.raw as never,
       ai_verdict: result.verdict as never,
       ai_red_flags: result.red_flags as never,
+      ai_cross_check: {
+        ofqual_found: r.ofqual_found,
+        awarding_body_match: awardingBodyMatch,
+        qualification_in_doc: qualificationInDoc,
+      } as never,
     })
     .eq("id", id);
 }
@@ -599,6 +727,9 @@ export const getQualificationDocSignedUrl = createServerFn({ method: "POST" })
 
 export type PublicProviderRegulatedRow = {
   id: string;
+  ofqual_number: string | null;
+  ofqual_snapshot: OfqualSnapshot;
+  // Historic rows may still link to the deprecated catalogue table.
   qualification: {
     id: string;
     title: string;
@@ -639,7 +770,7 @@ export const listPublicProviderQualifications = createServerFn({ method: "GET" }
       supabase
         .from("provider_regulated_permissions")
         .select(
-          "id, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
+          "id, ofqual_number, ofqual_snapshot, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
         )
         .eq("provider_id", data.providerId)
         .eq("status", "approved"),

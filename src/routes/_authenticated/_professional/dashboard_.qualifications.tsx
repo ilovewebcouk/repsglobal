@@ -16,6 +16,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   BadgeCheck,
   CheckCircle2,
   Clock,
@@ -23,6 +24,7 @@ import {
   GraduationCap,
   Loader2,
   Plus,
+  
   Sparkles,
   Trash2,
   Upload,
@@ -56,12 +58,12 @@ import {
 } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-import { awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
+import { awardingBodyName, awardingBodyLogo, OFQUAL_QUAL_NO_REGEX } from "@/lib/cpd/awarding-bodies";
 import { uploadCertificateFile } from "@/lib/cpd/cpd.functions";
 import {
-  listQualifications,
   listMyRegulatedPermissions,
   listMyCpdCourses,
+  resolveOfqualNumber,
   submitRegulatedPermission,
   submitCpdCourse,
   deleteMyRegulatedPermission,
@@ -209,41 +211,52 @@ function RegulatedRow({ row }: { row: RegulatedPermissionRow }) {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
   });
 
-  const logo = awardingBodyLogo(row.qualification?.awarding_body_slug ?? null);
-  const bodyName = awardingBodyName(row.qualification?.awarding_body_slug ?? null);
+  // Prefer live Ofqual snapshot over the historic catalogue link.
+  const snap = row.ofqual_snapshot;
+  const title = snap?.title ?? row.qualification?.title ?? "Awaiting Ofqual match";
+  const awardingOrg = snap?.awardingOrganisation ?? null;
+  const level = snap?.level ?? (row.qualification?.level != null ? `L${row.qualification.level}` : null);
+  const legacySlug = row.qualification?.awarding_body_slug ?? null;
+  const logo = legacySlug ? awardingBodyLogo(legacySlug) : null;
+  const bodyLabel = awardingOrg ?? (legacySlug ? awardingBodyName(legacySlug) ?? legacySlug : null);
 
   return (
     <li>
       <PCard className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] border border-reps-border bg-white/5">
           {logo ? (
-            <img src={logo} alt={bodyName ?? ""} className="max-h-8 max-w-10 object-contain" />
+            <img src={logo} alt={bodyLabel ?? ""} className="max-h-8 max-w-10 object-contain" />
           ) : (
-            <span className="text-[11px] font-semibold text-white/70">
-              {bodyName?.slice(0, 3).toUpperCase() ?? "—"}
-            </span>
+            <GraduationCap className="h-5 w-5 text-white/60" />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-white">
-              {row.qualification?.title ?? "Qualification removed"}
-            </span>
-            {row.qualification?.level != null ? (
+            <span className="font-semibold text-white">{title}</span>
+            {level ? (
               <Badge className="border-reps-orange/30 bg-reps-orange-soft text-reps-orange">
-                L{row.qualification.level}
+                {level}
               </Badge>
             ) : null}
             <StatusBadge status={row.status} />
+            {row.ofqual_number && !row.ofqual_found ? (
+              <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
+                <AlertTriangle className="mr-1 h-3 w-3" /> Not on register
+              </Badge>
+            ) : null}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-white/55">
-            <span>{bodyName ?? row.qualification?.awarding_body_slug}</span>
+            {bodyLabel ? <span>{bodyLabel}</span> : null}
+            {bodyLabel && row.ofqual_number ? <span>·</span> : null}
+            {row.ofqual_number ? (
+              <span className="font-mono text-white/70">{row.ofqual_number}</span>
+            ) : null}
             <span>·</span>
             <span>{EVIDENCE_LABEL[row.evidence_type]}</span>
             {row.awarding_body_reference ? (
               <>
                 <span>·</span>
-                <span>Ref {row.awarding_body_reference}</span>
+                <span>Centre {row.awarding_body_reference}</span>
               </>
             ) : null}
           </div>
@@ -419,18 +432,63 @@ function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
 
 function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
-  const fetchQuals = useServerFn(listQualifications);
+  const resolve = useServerFn(resolveOfqualNumber);
   const upload = useServerFn(uploadCertificateFile);
   const submit = useServerFn(submitRegulatedPermission);
 
-  const catalogue = useQuery({ queryKey: ["qualifications-catalogue"], queryFn: () => fetchQuals() });
-
-  const [qualId, setQualId] = React.useState<string>("");
+  const [ofqualNumber, setOfqualNumber] = React.useState("");
   const [evidenceType, setEvidenceType] =
     React.useState<RegulatedPermissionRow["evidence_type"]>("eqa_report");
   const [reference, setReference] = React.useState("");
   const [files, setFiles] = React.useState<File[]>([]);
   const [submitting, setSubmitting] = React.useState(false);
+  const [lookup, setLookup] = React.useState<
+    | { state: "idle" }
+    | { state: "loading" }
+    | { state: "invalid" }
+    | {
+        state: "resolved";
+        found: boolean;
+        snapshot: {
+          title: string | null;
+          awardingOrganisation: string | null;
+          level: string | null;
+          status: string | null;
+        } | null;
+      }
+  >({ state: "idle" });
+
+  // Debounced lookup as the provider types the Ofqual number.
+  React.useEffect(() => {
+    const trimmed = ofqualNumber.trim().toUpperCase();
+    if (!trimmed) {
+      setLookup({ state: "idle" });
+      return;
+    }
+    if (!OFQUAL_QUAL_NO_REGEX.test(trimmed)) {
+      setLookup({ state: "invalid" });
+      return;
+    }
+    let cancelled = false;
+    setLookup({ state: "loading" });
+    const t = window.setTimeout(async () => {
+      try {
+        const res = await resolve({ data: { ofqual_number: trimmed } });
+        if (cancelled) return;
+        if (!res.valid) {
+          setLookup({ state: "invalid" });
+          return;
+        }
+        setLookup({ state: "resolved", found: res.found, snapshot: res.snapshot });
+      } catch {
+        if (!cancelled) setLookup({ state: "idle" });
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [ofqualNumber, resolve]);
 
   const onFilesChange = (list: FileList | null) => {
     if (!list) return;
@@ -438,7 +496,8 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
     setFiles(arr);
   };
 
-  const canSubmit = qualId && files.length > 0 && !submitting;
+  const validFormat = OFQUAL_QUAL_NO_REGEX.test(ofqualNumber.trim().toUpperCase());
+  const canSubmit = validFormat && files.length > 0 && !submitting;
 
   const onSubmit = async () => {
     if (!canSubmit) return;
@@ -452,7 +511,7 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
       }
       await submit({
         data: {
-          qualification_id: qualId,
+          ofqual_number: ofqualNumber.trim().toUpperCase(),
           evidence_type: evidenceType,
           evidence_doc_paths: paths,
           awarding_body_reference: reference.trim() || null,
@@ -474,29 +533,68 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
         <DialogHeader>
           <DialogTitle>Add regulated qualification</DialogTitle>
           <DialogDescription>
-            Upload evidence that your centre is approved to deliver this qualification.
+            Enter the Ofqual qualification number and upload evidence that your centre is approved to deliver it.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
             <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Qualification
+              Ofqual qualification number <span className="text-red-300">*</span>
             </Label>
-            <Select value={qualId} onValueChange={setQualId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a qualification…" />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px]">
-                {(catalogue.data ?? []).map((q) => (
-                  <SelectItem key={q.id} value={q.id}>
-                    {q.title} {q.level != null ? `(L${q.level})` : ""} ·{" "}
-                    {awardingBodyName(q.awarding_body_slug) ?? q.awarding_body_slug}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <Input
+                value={ofqualNumber}
+                onChange={(e) => setOfqualNumber(e.target.value)}
+                placeholder="e.g. 601/3866/X"
+                className="font-mono uppercase"
+                autoCapitalize="characters"
+              />
+              {lookup.state === "loading" ? (
+                <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-white/50" />
+              ) : lookup.state === "resolved" && lookup.found ? (
+                <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-300" />
+              ) : lookup.state === "resolved" && !lookup.found ? (
+                <AlertTriangle className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-300" />
+              ) : lookup.state === "invalid" && ofqualNumber.trim() ? (
+                <XCircle className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-300" />
+              ) : null}
+            </div>
+            <p className="mt-1 text-[11.5px] text-white/45">
+              Format: three digits / four digits / one letter or digit (e.g. 601/3866/X).
+            </p>
+
+            {lookup.state === "invalid" && ofqualNumber.trim() ? (
+              <div className="mt-2 rounded-[10px] border border-red-500/30 bg-red-500/10 p-2.5 text-[12px] text-red-200">
+                That doesn't match the Ofqual number format. Check your certificate — it should look like 601/3866/X.
+              </div>
+            ) : null}
+
+            {lookup.state === "resolved" && lookup.found && lookup.snapshot ? (
+              <div className="mt-2 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-3 text-[12.5px]">
+                <div className="flex items-center gap-1.5 text-emerald-300">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span className="font-semibold">Found on Ofqual register</span>
+                </div>
+                <div className="mt-1.5 space-y-0.5 text-white/85">
+                  <div className="font-semibold">{lookup.snapshot.title ?? "—"}</div>
+                  <div className="text-white/60">
+                    {lookup.snapshot.awardingOrganisation ?? "—"}
+                    {lookup.snapshot.level ? ` · ${lookup.snapshot.level}` : ""}
+                    {lookup.snapshot.status ? ` · ${lookup.snapshot.status}` : ""}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {lookup.state === "resolved" && !lookup.found ? (
+              <div className="mt-2 rounded-[10px] border border-amber-500/30 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
+                <span className="font-semibold">Not on the Ofqual register.</span> Double-check the
+                number. You can still submit — our team will review it manually.
+              </div>
+            ) : null}
           </div>
+
 
           <div>
             <Label className="mb-2 block text-[12px] font-semibold text-white/80">

@@ -3994,6 +3994,7 @@ export type Database = {
       provider_regulated_permissions: {
         Row: {
           admin_note: string | null
+          ai_cross_check: Json | null
           ai_extraction: Json | null
           ai_red_flags: string[]
           ai_verdict: string | null
@@ -4004,8 +4005,11 @@ export type Database = {
           evidence_issued_at: string | null
           evidence_type: string
           id: string
+          ofqual_found: boolean
+          ofqual_number: string | null
+          ofqual_snapshot: Json | null
           provider_id: string
-          qualification_id: string
+          qualification_id: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -4013,6 +4017,7 @@ export type Database = {
         }
         Insert: {
           admin_note?: string | null
+          ai_cross_check?: Json | null
           ai_extraction?: Json | null
           ai_red_flags?: string[]
           ai_verdict?: string | null
@@ -4023,8 +4028,11 @@ export type Database = {
           evidence_issued_at?: string | null
           evidence_type: string
           id?: string
+          ofqual_found?: boolean
+          ofqual_number?: string | null
+          ofqual_snapshot?: Json | null
           provider_id: string
-          qualification_id: string
+          qualification_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -4032,6 +4040,7 @@ export type Database = {
         }
         Update: {
           admin_note?: string | null
+          ai_cross_check?: Json | null
           ai_extraction?: Json | null
           ai_red_flags?: string[]
           ai_verdict?: string | null
@@ -4042,8 +4051,11 @@ export type Database = {
           evidence_issued_at?: string | null
           evidence_type?: string
           id?: string
+          ofqual_found?: boolean
+          ofqual_number?: string | null
+          ofqual_snapshot?: Json | null
           provider_id?: string
-          qualification_id?: string
+          qualification_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
