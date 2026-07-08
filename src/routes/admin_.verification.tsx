@@ -1590,5 +1590,25 @@ function AdminInsuranceTab() {
   );
 }
 
-
+function ProvidersAudience() {
+  const [sub, setSub] = useState<"change_requests" | "qualifications">("change_requests");
+  return (
+    <div>
+      <div className="mb-4 inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
+        {(["change_requests", "qualifications"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setSub(t)}
+            className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition ${
+              sub === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
+            }`}
+          >
+            {t === "change_requests" ? "Name & domain changes" : "Qualifications & CPD"}
+          </button>
+        ))}
+      </div>
+      {sub === "change_requests" ? <AdminProviderQueueTab /> : <AdminProviderQualificationsTab />}
+    </div>
+  );
+}
 
