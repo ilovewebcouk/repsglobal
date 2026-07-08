@@ -634,6 +634,45 @@ export const setProfessionalFlag = createServerFn({ method: 'POST' })
     return { ok: true };
   });
 
+export const setProfessionalPublished = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { professional_id: string; is_published: boolean }) => {
+    if (!d.professional_id) throw new Error('professional_id required');
+    return { professional_id: d.professional_id, is_published: !!d.is_published };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+
+    const { data: prev } = await supabaseAdmin
+      .from('professionals')
+      .select('id, is_published')
+      .eq('id', data.professional_id)
+      .maybeSingle();
+    if (!prev) throw new Error('Professional not found');
+
+    const update = data.is_published
+      ? { is_published: true, unpublished_reason: null, unpublished_at: null }
+      : { is_published: false, unpublished_reason: 'admin_hidden', unpublished_at: new Date().toISOString() };
+
+    const { error } = await supabaseAdmin
+      .from('professionals')
+      .update(update)
+      .eq('id', data.professional_id);
+    if (error) throw error;
+
+    await supabaseAdmin.rpc('log_admin_action', {
+      _actor_id: context.userId,
+      _action: data.is_published ? 'professional.publish' : 'professional.unpublish',
+      _target_table: 'professionals',
+      _target_id: data.professional_id,
+      _before_state: prev,
+      _after_state: update,
+    });
+
+    return { ok: true, is_published: data.is_published };
+  });
+
 // --- Subscription cancel + account delete ---------------------------------
 
 async function cancelStripeSubsForUser(userId: string) {
