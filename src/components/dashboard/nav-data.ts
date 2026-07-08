@@ -132,6 +132,7 @@ export const TRAINING_PROVIDER_NAV = [
     title: "Account",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+      { icon: Building2, label: "Profile", to: "/dashboard/profile" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
     ],
   },

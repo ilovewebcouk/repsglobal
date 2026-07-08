@@ -3387,7 +3387,9 @@ export type Database = {
           bio: string | null
           cert_uploaded_at: string | null
           city: string | null
+          company_number: string | null
           company_registration: string | null
+          contact_email: string | null
           contact_phone: string | null
           country: string | null
           cover_url: string | null
@@ -3438,6 +3440,8 @@ export type Database = {
           verification_grace_until: string | null
           verification_status: Database["public"]["Enums"]["verification_state"]
           website: string | null
+          website_url: string | null
+          year_established: number | null
           years_experience: number | null
         }
         Insert: {
@@ -3447,7 +3451,9 @@ export type Database = {
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
+          company_number?: string | null
           company_registration?: string | null
+          contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           cover_url?: string | null
@@ -3498,6 +3504,8 @@ export type Database = {
           verification_grace_until?: string | null
           verification_status?: Database["public"]["Enums"]["verification_state"]
           website?: string | null
+          website_url?: string | null
+          year_established?: number | null
           years_experience?: number | null
         }
         Update: {
@@ -3507,7 +3515,9 @@ export type Database = {
           bio?: string | null
           cert_uploaded_at?: string | null
           city?: string | null
+          company_number?: string | null
           company_registration?: string | null
+          contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           cover_url?: string | null
@@ -3558,6 +3568,8 @@ export type Database = {
           verification_grace_until?: string | null
           verification_status?: Database["public"]["Enums"]["verification_state"]
           website?: string | null
+          website_url?: string | null
+          year_established?: number | null
           years_experience?: number | null
         }
         Relationships: []
