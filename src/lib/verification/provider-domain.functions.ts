@@ -82,6 +82,42 @@ export const getProviderDomainVerification = createServerFn({ method: "GET" })
   });
 
 /* -------------------------------------------------------------------------- */
+/* setProviderWebsite — inline update from the verification page              */
+/* -------------------------------------------------------------------------- */
+
+const SetWebsiteInput = z.object({
+  website: z.string().trim().min(3).max(500),
+});
+
+export const setProviderWebsite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => SetWebsiteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    let raw = data.website.trim();
+    if (!/^https?:\/\//i.test(raw)) raw = `https://${raw}`;
+
+    const domain = domainFromWebsite(raw);
+    if (!domain) {
+      throw new Error("That doesn't look like a valid website URL.");
+    }
+    if (isFreeEmailDomain(domain)) {
+      throw new Error(
+        "Use your provider's own website domain — free email providers (Gmail, Outlook, etc.) aren't accepted.",
+      );
+    }
+
+    const { error } = await supabase
+      .from("professionals")
+      .update({ website: raw })
+      .eq("id", userId);
+    if (error) throw new Error(error.message);
+
+    return { ok: true, website: raw, domain };
+  });
+
+/* -------------------------------------------------------------------------- */
 /* startProviderDomainVerification                                            */
 /* -------------------------------------------------------------------------- */
 
