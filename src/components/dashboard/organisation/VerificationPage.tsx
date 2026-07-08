@@ -343,24 +343,73 @@ function DomainEmailCard({
   );
 }
 
-function WebsiteMissingBlock() {
+function WebsiteMissingBlock({ currentWebsite }: { currentWebsite: string | null }) {
+  const qc = useQueryClient();
+  const save = useServerFn(setProviderWebsite);
+  const [website, setWebsite] = React.useState(currentWebsite ?? "");
+  const [submitting, setSubmitting] = React.useState(false);
+
+  async function handleSave() {
+    if (!website.trim()) {
+      toast.error("Enter your provider website URL.");
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const res = await save({ data: { website: website.trim() } });
+      toast.success(`Website saved. You'll verify against ${res.domain}.`);
+      await qc.invalidateQueries({ queryKey: ["provider-domain-verification"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="rounded-[12px] border border-amber-400/25 bg-amber-500/5 p-4">
       <div className="flex items-start gap-2.5">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-        <div className="min-w-0">
-          <p className="text-[13.5px] font-semibold text-white">Add your provider website first</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13.5px] font-semibold text-white">Set your provider website</p>
           <p className="mt-1 text-[12.5px] text-white/60">
-            We derive the domain to verify against from your provider website. Set that URL in your
-            profile, then come back here.
+            We derive the domain to verify against from your provider website. Enter your URL below
+            — we'll match your confirmation email to this domain.
           </p>
-          <Link
-            to="/dashboard/profile"
-            className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-hover"
-          >
-            Edit provider profile
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+
+          <label className="mt-3 flex flex-col gap-1.5">
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-white/50">
+              Provider website URL
+            </span>
+            <input
+              type="url"
+              inputMode="url"
+              autoComplete="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://your-provider.com"
+              className="h-10 rounded-[12px] border border-reps-border bg-reps-ink/60 px-3 text-[13.5px] text-white placeholder:text-white/30 focus:border-reps-orange focus:outline-none"
+            />
+          </label>
+
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={submitting || !website.trim()}
+              className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              Save website
+            </button>
+            <Link
+              to="/dashboard/profile"
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white/60 hover:text-white"
+            >
+              Edit full profile
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
