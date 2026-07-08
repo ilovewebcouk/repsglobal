@@ -256,7 +256,7 @@ export function ProviderProfilePage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Logo" hint="Square works best. Max 5 MB.">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[12px] border border-reps-border bg-reps-panel-soft">
+                  <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-reps-border bg-reps-panel-soft">
                     {data?.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
