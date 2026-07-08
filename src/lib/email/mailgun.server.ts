@@ -20,6 +20,12 @@ export interface SendViaMailgunArgs {
   text?: string;
   templateName: string;
   idempotencyKey: string;
+  /** Extra Mailgun user-variables (sent as `v:key=value`, surfaces in webhooks). */
+  variables?: Record<string, string>;
+  /** Enable open tracking (adds a pixel). */
+  trackOpens?: boolean;
+  /** "no" (default), "yes" (rewrite all links + pixel), or "htmlonly". */
+  trackClicks?: "no" | "yes" | "htmlonly";
 }
 
 export interface SendViaMailgunResult {
@@ -70,10 +76,16 @@ export async function sendViaMailgun(args: SendViaMailgunArgs): Promise<SendViaM
     subject: args.subject,
     html: args.html,
     "o:tag": args.templateName,
-    "o:tracking-clicks": "no",
+    "o:tracking-opens": args.trackOpens ? "yes" : "no",
+    "o:tracking-clicks": args.trackClicks ?? "no",
     "v:idempotency_key": args.idempotencyKey,
   });
   if (args.text) body.set("text", args.text);
+  if (args.variables) {
+    for (const [k, v] of Object.entries(args.variables)) {
+      body.append(`v:${k}`, v);
+    }
+  }
 
   try {
     const res = await fetch(`${GATEWAY_URL}/${MAILGUN_DOMAIN}/messages`, {

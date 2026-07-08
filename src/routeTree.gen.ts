@@ -160,6 +160,7 @@ import { Route as AuthenticatedProfessionalDashboardSyncingRouteImport } from '.
 import { Route as AuthenticatedProfessionalCheckoutCreditsRouteImport } from './routes/_authenticated/_professional/checkout_.credits'
 import { Route as AuthenticatedProfessionalDashboardSupportIndexRouteImport } from './routes/_authenticated/_professional/dashboard_.support.index'
 import { Route as ApiPublicEmailInboundMailgunRouteImport } from './routes/api/public/email/inbound/mailgun'
+import { Route as ApiPublicEmailEventsReviewRequestMailgunRouteImport } from './routes/api/public/email/events/review-request-mailgun'
 import { Route as ApiPublicEmailEventsMailgunRouteImport } from './routes/api/public/email/events/mailgun'
 import { Route as AuthenticatedProfessionalDashboardSupportNewRouteImport } from './routes/_authenticated/_professional/dashboard_.support.new'
 import { Route as AuthenticatedProfessionalDashboardSupportIdRouteImport } from './routes/_authenticated/_professional/dashboard_.support.$id'
@@ -966,6 +967,12 @@ const ApiPublicEmailInboundMailgunRoute =
     path: '/api/public/email/inbound/mailgun',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicEmailEventsReviewRequestMailgunRoute =
+  ApiPublicEmailEventsReviewRequestMailgunRouteImport.update({
+    id: '/api/public/email/events/review-request-mailgun',
+    path: '/api/public/email/events/review-request-mailgun',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicEmailEventsMailgunRoute =
   ApiPublicEmailEventsMailgunRouteImport.update({
     id: '/api/public/email/events/mailgun',
@@ -1232,6 +1239,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/support/$id': typeof AuthenticatedProfessionalDashboardSupportIdRoute
   '/dashboard/support/new': typeof AuthenticatedProfessionalDashboardSupportNewRoute
   '/api/public/email/events/mailgun': typeof ApiPublicEmailEventsMailgunRoute
+  '/api/public/email/events/review-request-mailgun': typeof ApiPublicEmailEventsReviewRequestMailgunRoute
   '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/dashboard/support/': typeof AuthenticatedProfessionalDashboardSupportIndexRoute
   '/dashboard/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
@@ -1393,6 +1401,7 @@ export interface FileRoutesByTo {
   '/dashboard/support/$id': typeof AuthenticatedProfessionalDashboardSupportIdRoute
   '/dashboard/support/new': typeof AuthenticatedProfessionalDashboardSupportNewRoute
   '/api/public/email/events/mailgun': typeof ApiPublicEmailEventsMailgunRoute
+  '/api/public/email/events/review-request-mailgun': typeof ApiPublicEmailEventsReviewRequestMailgunRoute
   '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportIndexRoute
   '/dashboard/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
@@ -1564,6 +1573,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/support/$id': typeof AuthenticatedProfessionalDashboardSupportIdRoute
   '/_authenticated/_professional/dashboard_/support/new': typeof AuthenticatedProfessionalDashboardSupportNewRoute
   '/api/public/email/events/mailgun': typeof ApiPublicEmailEventsMailgunRoute
+  '/api/public/email/events/review-request-mailgun': typeof ApiPublicEmailEventsReviewRequestMailgunRoute
   '/api/public/email/inbound/mailgun': typeof ApiPublicEmailInboundMailgunRoute
   '/_authenticated/_professional/dashboard_/support/': typeof AuthenticatedProfessionalDashboardSupportIndexRoute
   '/_authenticated/_professional/_pro/dashboard_/clients/$slug': typeof AuthenticatedProfessionalProDashboardClientsSlugRoute
@@ -1733,6 +1743,7 @@ export interface FileRouteTypes {
     | '/dashboard/support/$id'
     | '/dashboard/support/new'
     | '/api/public/email/events/mailgun'
+    | '/api/public/email/events/review-request-mailgun'
     | '/api/public/email/inbound/mailgun'
     | '/dashboard/support/'
     | '/dashboard/clients/$slug'
@@ -1894,6 +1905,7 @@ export interface FileRouteTypes {
     | '/dashboard/support/$id'
     | '/dashboard/support/new'
     | '/api/public/email/events/mailgun'
+    | '/api/public/email/events/review-request-mailgun'
     | '/api/public/email/inbound/mailgun'
     | '/dashboard/support'
     | '/dashboard/clients/$slug'
@@ -2064,6 +2076,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/support/$id'
     | '/_authenticated/_professional/dashboard_/support/new'
     | '/api/public/email/events/mailgun'
+    | '/api/public/email/events/review-request-mailgun'
     | '/api/public/email/inbound/mailgun'
     | '/_authenticated/_professional/dashboard_/support/'
     | '/_authenticated/_professional/_pro/dashboard_/clients/$slug'
@@ -2188,6 +2201,7 @@ export interface RootRouteChildren {
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiPublicEmailEventsMailgunRoute: typeof ApiPublicEmailEventsMailgunRoute
+  ApiPublicEmailEventsReviewRequestMailgunRoute: typeof ApiPublicEmailEventsReviewRequestMailgunRoute
   ApiPublicEmailInboundMailgunRoute: typeof ApiPublicEmailInboundMailgunRoute
 }
 
@@ -3250,6 +3264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEmailInboundMailgunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/email/events/review-request-mailgun': {
+      id: '/api/public/email/events/review-request-mailgun'
+      path: '/api/public/email/events/review-request-mailgun'
+      fullPath: '/api/public/email/events/review-request-mailgun'
+      preLoaderRoute: typeof ApiPublicEmailEventsReviewRequestMailgunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/email/events/mailgun': {
       id: '/api/public/email/events/mailgun'
       path: '/api/public/email/events/mailgun'
@@ -3767,6 +3788,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiPublicEmailEventsMailgunRoute: ApiPublicEmailEventsMailgunRoute,
+  ApiPublicEmailEventsReviewRequestMailgunRoute:
+    ApiPublicEmailEventsReviewRequestMailgunRoute,
   ApiPublicEmailInboundMailgunRoute: ApiPublicEmailInboundMailgunRoute,
 }
 export const routeTree = rootRouteImport
