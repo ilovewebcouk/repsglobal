@@ -10,11 +10,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  Building2,
-  Camera,
   Clock,
   ExternalLink,
-  ImageIcon,
   Instagram,
   Linkedin,
   Loader2,
@@ -34,14 +31,6 @@ import {
   submitProviderNameChange,
 } from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
-import {
-  updateMyAvatar,
-  uploadAvatarFromBase64,
-} from "@/lib/profile/dashboard-profile.functions";
-import {
-  updateMyWebsiteHero,
-  uploadHeroFromBase64,
-} from "@/lib/website/hero.functions";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
