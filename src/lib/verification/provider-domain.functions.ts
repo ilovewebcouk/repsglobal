@@ -204,7 +204,7 @@ export const startProviderDomainVerification = createServerFn({ method: "POST" }
       recipientEmail: email,
       idempotencyKey: `provider-domain-${userId}-${tokenHash.slice(0, 12)}`,
       templateData: {
-        providerName: (pro?.display_name as string | null) ?? "Your organisation",
+        providerName: (pro?.legal_entity_name as string | null) ?? "Your organisation",
         domain: expectedDomain,
         confirmUrl,
         expiresInHours: CONFIRM_TTL_HOURS,
