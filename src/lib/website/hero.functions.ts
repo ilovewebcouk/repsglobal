@@ -42,7 +42,35 @@ export const uploadHeroFromBase64 = createServerFn({ method: "POST" })
   });
 
 // ---------------------------------------------------------------------------
+// Persist hero URL on the current user's website row.
+// Used by the provider dashboard branding uploader — we upload with
+// `uploadHeroFromBase64`, get the public URL back, then call this to save.
+// ---------------------------------------------------------------------------
+
+const PersistHeroInput = z.object({
+  url: z.string().trim().url().max(500).nullable(),
+});
+
+export const updateMyWebsiteHero = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((data) => PersistHeroInput.parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    // Upsert on professional_id so a first-time provider without a websites row still works.
+    const { error } = await supabase
+      .from("websites")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .upsert(
+        { professional_id: userId, hero_image_url: data.url } as any,
+        { onConflict: "professional_id" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true, url: data.url };
+  });
+
+// ---------------------------------------------------------------------------
 // AI generation
+
 // ---------------------------------------------------------------------------
 
 const Style = z.enum(["editorial", "studio", "action"]);
