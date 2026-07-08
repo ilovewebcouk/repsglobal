@@ -100,9 +100,18 @@ function FooterItemBadge({ item }: { item: NavItem }) {
 
 function VerificationCountBadge() {
   const { user } = useSessionUser();
-  const isOrganisation = useIsOrganisation();
+  const fetchAcctType = useServerFn(getMyAccountType);
   const fetchTrust = useServerFn(getTrustState);
   const fetchDomain = useServerFn(getProviderDomainVerification);
+
+  const acctTypeQ = useQuery({
+    queryKey: ["my-account-type"],
+    queryFn: () => fetchAcctType(),
+    staleTime: 5 * 60_000,
+    enabled: !!user,
+  });
+  const accountType = acctTypeQ.data?.accountType;
+  const isOrganisation = accountType === "organisation";
 
   const trustQ = useQuery({
     queryKey: ["my-trust-state"],
@@ -117,6 +126,10 @@ function VerificationCountBadge() {
     staleTime: 30_000,
     enabled: !!user && isOrganisation,
   });
+
+  // Wait until we know the account type — otherwise organisations briefly
+  // render the individual /3 chip while the query is in-flight.
+  if (accountType === undefined) return null;
 
   if (isOrganisation) {
     const identityDone = !!trustQ.data?.ticks.identity;
