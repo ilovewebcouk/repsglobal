@@ -428,7 +428,7 @@ export function ProviderProfilePage() {
               <Field label="Address" hint="Public — shown on your provider page. Start typing and pick from Google's suggestions.">
                 <AddressAutocomplete
                   value={form.address}
-                  onChange={(v) => update("address", v.slice(0, 500))}
+                  onChange={(v: string) => update("address", v.slice(0, 500))}
                   placeholder="Start typing your address…"
                 />
               </Field>
