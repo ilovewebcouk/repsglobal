@@ -25,6 +25,8 @@ import {
   type WebsiteFaqDTO,
 } from "@/lib/website/website.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
+import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
+import { awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import {
