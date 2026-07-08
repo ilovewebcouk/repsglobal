@@ -103,8 +103,18 @@ export function ProviderProfilePage() {
     queryFn: () => fetchNameStatus(),
   });
 
+  const fetchDomainStatus = useServerFn(getProviderDomainVerification);
+  const { data: domainStatus } = useQuery({
+    queryKey: ["my-provider-domain-status"],
+    queryFn: () => fetchDomainStatus(),
+  });
+
   const namePending = !!nameStatus?.pending;
   const approvedName = nameStatus?.approved_name ?? "";
+
+  const websiteLocked = domainStatus?.status === "approved";
+  const approvedWebsite = domainStatus?.rawWebsite ?? "";
+
 
 
   const [form, setForm] = React.useState({
