@@ -176,8 +176,6 @@ export function ProviderProfilePage() {
           contact_phone: form.contact_phone || null,
           address: form.address || null,
 
-          year_established: yearNum,
-          company_number: form.company_number || null,
           social_instagram: form.social_instagram || null,
           social_linkedin: form.social_linkedin || null,
           social_youtube: form.social_youtube || null,
