@@ -435,7 +435,7 @@ export function ProviderProfilePage() {
           <div className="border-b border-reps-border px-5 py-4">
             <h3 className="text-[14px] font-semibold text-white">Contact</h3>
             <p className="mt-0.5 text-[12px] text-white/55">
-              How prospective learners get in touch. All optional — but the more you show, the more trust.
+              How prospective learners get in touch.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-2">
