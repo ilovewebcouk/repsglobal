@@ -115,6 +115,8 @@ export function ProviderProfilePage() {
 
   const websiteLocked = domainStatus?.status === "approved";
   const approvedWebsite = domainStatus?.rawWebsite ?? "";
+  const emailLocked = domainStatus?.status === "approved";
+  const approvedEmail = domainStatus?.email ?? "";
 
 
 
@@ -183,7 +185,7 @@ export function ProviderProfilePage() {
           tagline: form.tagline || null,
           about: form.about || null,
           website_url: (websiteLocked ? approvedWebsite : form.website_url) || null,
-          contact_email: form.contact_email || null,
+          contact_email: (emailLocked ? approvedEmail : form.contact_email) || null,
           contact_phone: form.contact_phone || null,
           year_established: yearNum,
           company_number: form.company_number || null,
@@ -457,15 +459,24 @@ export function ProviderProfilePage() {
                 aria-readonly={websiteLocked}
               />
             </Field>
-            <Field label="Contact email" hint="Public — shown on your provider page.">
+            <Field
+              label="Contact email"
+              hint={
+                emailLocked
+                  ? "Locked — matches the email confirmed during verification. Contact support to change it."
+                  : "Public — shown on your provider page."
+              }
+            >
               <input
-                className={inputCls}
+                className={`${inputCls} ${emailLocked ? "cursor-not-allowed opacity-70" : ""}`}
                 type="email"
                 inputMode="email"
-                value={form.contact_email}
+                value={emailLocked ? approvedEmail : form.contact_email}
                 onChange={(e) => update("contact_email", e.target.value)}
                 placeholder="hello@yourprovider.com"
                 maxLength={254}
+                readOnly={emailLocked}
+                aria-readonly={emailLocked}
               />
             </Field>
             <div className="md:col-span-2">
