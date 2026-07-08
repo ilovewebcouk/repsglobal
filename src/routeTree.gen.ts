@@ -88,6 +88,7 @@ import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
 import { Route as AdminSeoRouteImport } from './routes/admin_.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
+import { Route as AdminProviderNamesRouteImport } from './routes/admin_.provider-names'
 import { Route as AdminProspectsRouteImport } from './routes/admin_.prospects'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
 import { Route as AdminPaymentsRouteImport } from './routes/admin_.payments'
@@ -574,6 +575,11 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
 const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
   id: '/admin_/reconciliation',
   path: '/admin/reconciliation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProviderNamesRoute = AdminProviderNamesRouteImport.update({
+  id: '/admin_/provider-names',
+  path: '/admin/provider-names',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminProspectsRoute = AdminProspectsRouteImport.update({
@@ -1142,6 +1148,7 @@ export interface FileRoutesByFullPath {
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
+  '/admin/provider-names': typeof AdminProviderNamesRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRouteWithChildren
@@ -1311,6 +1318,7 @@ export interface FileRoutesByTo {
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
+  '/admin/provider-names': typeof AdminProviderNamesRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRouteWithChildren
@@ -1479,6 +1487,7 @@ export interface FileRoutesById {
   '/admin_/payments': typeof AdminPaymentsRoute
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/prospects': typeof AdminProspectsRoute
+  '/admin_/provider-names': typeof AdminProviderNamesRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
   '/admin_/reviews': typeof AdminReviewsRoute
   '/admin_/seo': typeof AdminSeoRouteWithChildren
@@ -1652,6 +1661,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/prospects'
+    | '/admin/provider-names'
     | '/admin/reconciliation'
     | '/admin/reviews'
     | '/admin/seo'
@@ -1821,6 +1831,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/professionals'
     | '/admin/prospects'
+    | '/admin/provider-names'
     | '/admin/reconciliation'
     | '/admin/reviews'
     | '/admin/seo'
@@ -1988,6 +1999,7 @@ export interface FileRouteTypes {
     | '/admin_/payments'
     | '/admin_/professionals'
     | '/admin_/prospects'
+    | '/admin_/provider-names'
     | '/admin_/reconciliation'
     | '/admin_/reviews'
     | '/admin_/seo'
@@ -2161,6 +2173,7 @@ export interface RootRouteChildren {
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminProspectsRoute: typeof AdminProspectsRoute
+  AdminProviderNamesRoute: typeof AdminProviderNamesRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSeoRoute: typeof AdminSeoRouteWithChildren
@@ -2785,6 +2798,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/reconciliation'
       fullPath: '/admin/reconciliation'
       preLoaderRoute: typeof AdminReconciliationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/provider-names': {
+      id: '/admin_/provider-names'
+      path: '/admin/provider-names'
+      fullPath: '/admin/provider-names'
+      preLoaderRoute: typeof AdminProviderNamesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/prospects': {
@@ -3763,6 +3783,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminProspectsRoute: AdminProspectsRoute,
+  AdminProviderNamesRoute: AdminProviderNamesRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSeoRoute: AdminSeoRouteWithChildren,
