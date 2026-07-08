@@ -119,8 +119,8 @@ export function ProviderProfilePage() {
     contact_phone: "",
     address: "",
 
-    year_established: "" as string,
-    company_number: "",
+
+
     social_instagram: "",
     social_linkedin: "",
     social_youtube: "",
