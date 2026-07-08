@@ -219,6 +219,8 @@ export const updateMyProviderProfile = createServerFn({ method: "POST" })
       { field_group: "contact", field_key: "website_url",        proposed: toStr(c.website_url),        current: toStr(p.website_url) },
       { field_group: "contact", field_key: "contact_email",      proposed: toStr(c.contact_email),      current: toStr(p.contact_email) },
       { field_group: "contact", field_key: "contact_phone",      proposed: toStr(c.contact_phone),      current: toStr(p.contact_phone) },
+      { field_group: "contact", field_key: "address",            proposed: toStr(c.address),            current: toStr(p.address) },
+
       { field_group: "company", field_key: "year_established",   proposed: toStr(c.year_established),   current: toStr(p.year_established) },
       { field_group: "company", field_key: "company_number",     proposed: toStr(c.company_number),     current: toStr(p.company_number) },
       { field_group: "social",  field_key: "social_instagram",   proposed: normaliseSocial(c.social_instagram), current: toStr(p.social_instagram) },
