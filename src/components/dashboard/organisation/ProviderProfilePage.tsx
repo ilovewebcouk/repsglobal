@@ -199,50 +199,6 @@ export function ProviderProfilePage() {
   });
 
 
-  /* -------------------- image uploads -------------------- */
-
-  const [logoBusy, setLogoBusy] = React.useState(false);
-  const [heroBusy, setHeroBusy] = React.useState(false);
-
-  const onPickLogo = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Logo must be under 5 MB.");
-      return;
-    }
-    setLogoBusy(true);
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      const { path } = await uploadAvatar({ data: { dataUrl } });
-      await setAvatar({ data: { path } });
-      qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-      qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
-      toast.success("Logo updated.");
-    } catch (e) {
-      toast.error((e as Error).message || "Logo upload failed");
-    } finally {
-      setLogoBusy(false);
-    }
-  };
-
-  const onPickHero = async (file: File) => {
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Hero image must be under 8 MB.");
-      return;
-    }
-    setHeroBusy(true);
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      const { url } = await uploadHero({ data: { dataUrl } });
-      await setHero({ data: { url } });
-      qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-      qc.invalidateQueries({ queryKey: ["website-public"] });
-      toast.success("Hero image updated.");
-    } catch (e) {
-      toast.error((e as Error).message || "Hero upload failed");
-    } finally {
-      setHeroBusy(false);
-    }
-  };
 
   /* -------------------- render -------------------- */
 
