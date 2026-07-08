@@ -27,8 +27,7 @@ export type ProviderProfile = {
   contact_phone: string | null;
   address: string | null;
 
-  year_established: number | null;
-  company_number: string | null;
+
   social_instagram: string | null;
   social_linkedin: string | null;
   social_youtube: string | null;
@@ -50,7 +49,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "slug, contact_phone, contact_email, website_url, address, year_established, company_number, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
+          "slug, contact_phone, contact_email, website_url, address, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -80,8 +79,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
       contact_phone: (p.contact_phone as string | null) ?? null,
       address: (p.address as string | null) ?? null,
 
-      year_established: (p.year_established as number | null) ?? null,
-      company_number: (p.company_number as string | null) ?? null,
+
       social_instagram: (p.social_instagram as string | null) ?? null,
       social_linkedin: (p.social_linkedin as string | null) ?? null,
       social_youtube: (p.social_youtube as string | null) ?? null,
@@ -107,7 +105,7 @@ function normaliseSocial(raw: string | null | undefined): string | null {
   return v || null;
 }
 
-const currentYear = new Date().getFullYear();
+
 
 const UpdateInput = z.object({
   // `name` is accepted for backwards compatibility but ignored — name
@@ -144,14 +142,7 @@ const UpdateInput = z.object({
     .optional(),
   address: z.string().trim().max(500).nullable().optional(),
 
-  year_established: z
-    .number()
-    .int()
-    .min(1800)
-    .max(currentYear)
-    .nullable()
-    .optional(),
-  company_number: z.string().trim().max(40).nullable().optional(),
+
   social_instagram: z.string().trim().max(120).nullable().optional(),
   social_linkedin: z.string().trim().max(120).nullable().optional(),
   social_youtube: z.string().trim().max(120).nullable().optional(),
@@ -190,7 +181,7 @@ export const updateMyProviderProfile = createServerFn({ method: "POST" })
       sb
         .from("professionals")
         .select(
-          "contact_phone, contact_email, website_url, address, year_established, company_number, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
+          "contact_phone, contact_email, website_url, address, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -221,8 +212,7 @@ export const updateMyProviderProfile = createServerFn({ method: "POST" })
       { field_group: "contact", field_key: "contact_phone",      proposed: toStr(c.contact_phone),      current: toStr(p.contact_phone) },
       { field_group: "contact", field_key: "address",            proposed: toStr(c.address),            current: toStr(p.address) },
 
-      { field_group: "company", field_key: "year_established",   proposed: toStr(c.year_established),   current: toStr(p.year_established) },
-      { field_group: "company", field_key: "company_number",     proposed: toStr(c.company_number),     current: toStr(p.company_number) },
+
       { field_group: "social",  field_key: "social_instagram",   proposed: normaliseSocial(c.social_instagram), current: toStr(p.social_instagram) },
       { field_group: "social",  field_key: "social_linkedin",    proposed: normaliseSocial(c.social_linkedin),  current: toStr(p.social_linkedin) },
       { field_group: "social",  field_key: "social_youtube",     proposed: normaliseSocial(c.social_youtube),   current: toStr(p.social_youtube) },

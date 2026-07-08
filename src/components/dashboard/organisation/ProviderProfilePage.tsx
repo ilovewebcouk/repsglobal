@@ -57,7 +57,7 @@ function TiktokIcon() {
   );
 }
 
-const CURRENT_YEAR = new Date().getFullYear();
+
 
 const inputCls =
   "h-10 w-full rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[13px] text-white placeholder:text-white/35 focus:border-white/25 focus:outline-none";
@@ -119,8 +119,8 @@ export function ProviderProfilePage() {
     contact_phone: "",
     address: "",
 
-    year_established: "" as string,
-    company_number: "",
+
+
     social_instagram: "",
     social_linkedin: "",
     social_youtube: "",
@@ -139,9 +139,7 @@ export function ProviderProfilePage() {
       contact_phone: data.contact_phone ?? "",
       address: data.address ?? "",
 
-      year_established:
-        data.year_established != null ? String(data.year_established) : "",
-      company_number: data.company_number ?? "",
+
       social_instagram: data.social_instagram ?? "",
       social_linkedin: data.social_linkedin ?? "",
       social_youtube: data.social_youtube ?? "",
@@ -158,12 +156,7 @@ export function ProviderProfilePage() {
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!phoneValid) throw new Error("Phone number looks invalid.");
-      const yearNum = form.year_established.trim()
-        ? Number(form.year_established)
-        : null;
-      if (yearNum != null && (Number.isNaN(yearNum) || yearNum < 1800 || yearNum > CURRENT_YEAR)) {
-        throw new Error(`Year established must be between 1800 and ${CURRENT_YEAR}.`);
-      }
+
 
       // Submit name change for admin approval when it differs from the
       // currently approved name (and isn't already pending).
@@ -183,8 +176,6 @@ export function ProviderProfilePage() {
           contact_phone: form.contact_phone || null,
           address: form.address || null,
 
-          year_established: yearNum,
-          company_number: form.company_number || null,
           social_instagram: form.social_instagram || null,
           social_linkedin: form.social_linkedin || null,
           social_youtube: form.social_youtube || null,
@@ -447,38 +438,8 @@ export function ProviderProfilePage() {
           </div>
         </PPanel>
 
-        {/* COMPANY */}
-        <PPanel>
-          <div className="border-b border-reps-border px-5 py-4">
-            <h3 className="text-[14px] font-semibold text-white">Company</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">
-              Optional details that add credibility to your listing.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-2">
-            <Field label="Year established">
-              <input
-                className={inputCls}
-                type="number"
-                inputMode="numeric"
-                min={1800}
-                max={CURRENT_YEAR}
-                value={form.year_established}
-                onChange={(e) => update("year_established", e.target.value)}
-                placeholder="e.g. 2012"
-              />
-            </Field>
-            <Field label="Company number" hint="Companies House / registrar number, if applicable.">
-              <input
-                className={inputCls}
-                value={form.company_number}
-                onChange={(e) => update("company_number", e.target.value)}
-                placeholder="e.g. 08123456"
-                maxLength={40}
-              />
-            </Field>
-          </div>
-        </PPanel>
+
+
 
         {/* SOCIAL */}
         <PPanel>

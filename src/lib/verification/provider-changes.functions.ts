@@ -30,8 +30,7 @@ export type ProviderFieldKey =
   | "contact_phone"
   | "address"
 
-  | "year_established"
-  | "company_number"
+
   | "social_instagram"
   | "social_linkedin"
   | "social_youtube"
@@ -46,8 +45,6 @@ export const PROVIDER_FIELD_LABELS: Record<ProviderFieldKey, string> = {
   contact_phone: "Telephone",
   address: "Address",
 
-  year_established: "Year established",
-  company_number: "Company number",
   social_instagram: "Instagram",
   social_linkedin: "LinkedIn",
   social_youtube: "YouTube",
@@ -63,8 +60,7 @@ const FIELD_GROUP: Record<ProviderFieldKey, ProviderFieldGroup> = {
   contact_phone: "contact",
   address: "contact",
 
-  year_established: "company",
-  company_number: "company",
+
   social_instagram: "social",
   social_linkedin: "social",
   social_youtube: "social",
@@ -91,7 +87,7 @@ export type ProviderChangeRequest = {
 /* Per-field validation                                                 */
 /* ------------------------------------------------------------------ */
 
-const currentYear = new Date().getFullYear();
+
 
 const ValueSchema: Record<ProviderFieldKey, z.ZodTypeAny> = {
   tagline: z.string().trim().max(160).nullable(),
@@ -113,13 +109,7 @@ const ValueSchema: Record<ProviderFieldKey, z.ZodTypeAny> = {
     .nullable(),
   address: z.string().trim().max(500).nullable(),
 
-  year_established: z
-    .union([
-      z.number().int().min(1800).max(currentYear),
-      z.null(),
-    ])
-    .transform((v) => (v == null ? null : String(v))),
-  company_number: z.string().trim().max(40).nullable(),
+
   social_instagram: z.string().trim().max(120).nullable(),
   social_linkedin: z.string().trim().max(120).nullable(),
   social_youtube: z.string().trim().max(120).nullable(),
@@ -195,8 +185,8 @@ const SubmitInput = z.object({
     "contact_phone",
     "address",
 
-    "year_established",
-    "company_number",
+
+
     "social_instagram",
     "social_linkedin",
     "social_youtube",
@@ -216,22 +206,13 @@ export const submitProviderChange = createServerFn({ method: "POST" })
     const key = data.field_key as ProviderFieldKey;
 
     // Validate against per-field schema.
-    let normalised: string | null;
-    if (key === "year_established") {
-      const parsed = ValueSchema.year_established.parse(
-        data.proposed_value === "" || data.proposed_value == null
-          ? null
-          : Number(data.proposed_value),
-      );
-      normalised = parsed as string | null;
-    } else {
-      const raw =
-        data.proposed_value == null
-          ? null
-          : String(data.proposed_value);
-      const parsed = ValueSchema[key].parse(raw);
-      normalised = normaliseValue(key, parsed as string | null);
-    }
+    const raw =
+      data.proposed_value == null
+        ? null
+        : String(data.proposed_value);
+    const parsed = ValueSchema[key].parse(raw);
+    const normalised: string | null = normaliseValue(key, parsed as string | null);
+
 
     const current = await loadCurrentValue(sb, userId, key);
 
