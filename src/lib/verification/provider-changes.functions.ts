@@ -28,6 +28,8 @@ export type ProviderFieldKey =
   | "website_url"
   | "contact_email"
   | "contact_phone"
+  | "address"
+
   | "year_established"
   | "company_number"
   | "social_instagram"
@@ -42,6 +44,8 @@ export const PROVIDER_FIELD_LABELS: Record<ProviderFieldKey, string> = {
   website_url: "Website URL",
   contact_email: "Contact email",
   contact_phone: "Telephone",
+  address: "Address",
+
   year_established: "Year established",
   company_number: "Company number",
   social_instagram: "Instagram",
@@ -57,6 +61,8 @@ const FIELD_GROUP: Record<ProviderFieldKey, ProviderFieldGroup> = {
   website_url: "contact",
   contact_email: "contact",
   contact_phone: "contact",
+  address: "contact",
+
   year_established: "company",
   company_number: "company",
   social_instagram: "social",
@@ -105,6 +111,8 @@ const ValueSchema: Record<ProviderFieldKey, z.ZodTypeAny> = {
       "Enter a valid international phone number (e.g. +44 7911 123456).",
     )
     .nullable(),
+  address: z.string().trim().max(500).nullable(),
+
   year_established: z
     .union([
       z.number().int().min(1800).max(currentYear),
@@ -185,6 +193,8 @@ const SubmitInput = z.object({
     "website_url",
     "contact_email",
     "contact_phone",
+    "address",
+
     "year_established",
     "company_number",
     "social_instagram",

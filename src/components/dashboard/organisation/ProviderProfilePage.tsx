@@ -117,6 +117,8 @@ export function ProviderProfilePage() {
     website_url: "",
     contact_email: "",
     contact_phone: "",
+    address: "",
+
     year_established: "" as string,
     company_number: "",
     social_instagram: "",
@@ -135,6 +137,8 @@ export function ProviderProfilePage() {
       website_url: data.website_url ?? "",
       contact_email: data.contact_email ?? "",
       contact_phone: data.contact_phone ?? "",
+      address: data.address ?? "",
+
       year_established:
         data.year_established != null ? String(data.year_established) : "",
       company_number: data.company_number ?? "",
@@ -177,6 +181,8 @@ export function ProviderProfilePage() {
           website_url: (websiteLocked ? approvedWebsite : form.website_url) || null,
           contact_email: (emailLocked ? approvedEmail : form.contact_email) || null,
           contact_phone: form.contact_phone || null,
+          address: form.address || null,
+
           year_established: yearNum,
           company_number: form.company_number || null,
           social_instagram: form.social_instagram || null,
@@ -425,6 +431,19 @@ export function ProviderProfilePage() {
                 ) : null}
               </Field>
             </div>
+            <div className="md:col-span-2">
+              <Field label="Address" hint="Public — shown on your provider page. Head office or main training venue.">
+                <textarea
+                  className={textareaCls}
+                  value={form.address}
+                  onChange={(e) => update("address", e.target.value)}
+                  maxLength={500}
+                  placeholder="e.g. Unit 4, 120 High Street, Manchester, M1 2AB, United Kingdom"
+                  rows={3}
+                />
+              </Field>
+            </div>
+
           </div>
         </PPanel>
 
