@@ -93,6 +93,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'member-cancelled': memberCancelled,
   'dispute-won-resubscribe': disputeWonResubscribe,
   'admin-invite': adminInvite,
+  'provider-domain-confirm': providerDomainConfirm,
   'onboarding-log-in-1': onboardingLogIn1,
   'onboarding-log-in-2': onboardingLogIn2,
   'onboarding-log-in-3': onboardingLogIn3,
