@@ -437,8 +437,10 @@ export function ProviderReviewsPage() {
                       {([
                         { v: "all" as const, label: "All", n: requestCounts.all },
                         { v: "sent" as const, label: "Sent", n: requestCounts.sent },
+                        { v: "delivered" as const, label: "Delivered", n: requestCounts.delivered },
                         { v: "opened" as const, label: "Opened", n: requestCounts.opened },
                         { v: "submitted" as const, label: "Submitted", n: requestCounts.submitted },
+                        { v: "failed" as const, label: "Failed", n: requestCounts.failed },
                         { v: "expired" as const, label: "Expired", n: requestCounts.expired },
                       ]).map((t) => (
                         <TabsTrigger
