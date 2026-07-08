@@ -35,8 +35,10 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { supabase } from "@/integrations/supabase/client";
-import { updateMyAvatar } from "@/lib/profile/dashboard-profile.functions";
+import {
+  updateMyAvatar,
+  uploadAvatarFromBase64,
+} from "@/lib/profile/dashboard-profile.functions";
 import {
   updateMyWebsiteHero,
   uploadHeroFromBase64,
@@ -97,6 +99,7 @@ export function ProviderWelcomeBanner({
   /* ---------------------- logo upload (avatars bucket) --------------------- */
 
   const saveAvatarFn = useServerFn(updateMyAvatar);
+  const uploadAvatarFn = useServerFn(uploadAvatarFromBase64);
 
   const invalidateBranding = React.useCallback(() => {
     qc.invalidateQueries({ queryKey: ["dashboard-status"] });
@@ -107,24 +110,9 @@ export function ProviderWelcomeBanner({
 
   const logoMut = useMutation({
     mutationFn: async (file: File) => {
-      const { data: session } = await supabase.auth.getSession();
-      const userId = session.session?.user.id;
-      if (!userId) throw new Error("Not signed in");
-      const ext =
-        file.type === "image/png"
-          ? "png"
-          : file.type === "image/webp"
-            ? "webp"
-            : "jpg";
-      const path = `${userId}/logo-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, {
-          contentType: file.type,
-          cacheControl: "31536000",
-          upsert: true,
-        });
-      if (upErr) throw new Error(upErr.message);
+      const dataUrl = await fileToDataUrl(file);
+      const resized = await resizeForLogo(dataUrl);
+      const { path } = await uploadAvatarFn({ data: { dataUrl: resized } });
       return saveAvatarFn({ data: { path } });
     },
     onSuccess: () => {
@@ -133,6 +121,7 @@ export function ProviderWelcomeBanner({
     },
     onError: (e: Error) => toast.error(e.message || "Couldn't save logo"),
   });
+
 
   const logoClearMut = useMutation({
     mutationFn: () => saveAvatarFn({ data: { path: null } }),
@@ -484,4 +473,30 @@ async function resizeForCover(dataUrl: string): Promise<string> {
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, 0, 0, targetW, targetH);
   return canvas.toDataURL("image/jpeg", 0.85);
+}
+
+// Logo/avatar: cap to 512px square-ish, JPEG 0.9. Keeps the payload well
+// under the server's 5 MB base64 cap and matches how the avatar is rendered.
+async function resizeForLogo(dataUrl: string): Promise<string> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.decoding = "async";
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("Couldn't decode image"));
+    i.src = dataUrl;
+  });
+  const MAX = 512;
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+  const scale = Math.min(1, MAX / Math.max(w, h));
+  const targetW = Math.round(w * scale);
+  const targetH = Math.round(h * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = targetW;
+  canvas.height = targetH;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, targetW, targetH);
+  return canvas.toDataURL("image/jpeg", 0.9);
 }
