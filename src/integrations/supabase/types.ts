@@ -3382,6 +3382,7 @@ export type Database = {
       professionals: {
         Row: {
           account_type: string
+          address: string | null
           awarding_bodies: string[]
           bd_seed_thin: boolean
           bio: string | null
@@ -3446,6 +3447,7 @@ export type Database = {
         }
         Insert: {
           account_type?: string
+          address?: string | null
           awarding_bodies?: string[]
           bd_seed_thin?: boolean
           bio?: string | null
@@ -3510,6 +3512,7 @@ export type Database = {
         }
         Update: {
           account_type?: string
+          address?: string | null
           awarding_bodies?: string[]
           bd_seed_thin?: boolean
           bio?: string | null
