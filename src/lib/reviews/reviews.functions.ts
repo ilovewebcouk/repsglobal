@@ -470,7 +470,7 @@ export const listMyReviewRequests = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("review_requests")
-      .select("id, client_email, client_name, service_label, status, sent_at, expires_at")
+      .select("id, client_email, client_name, service_label, status, sent_at, expires_at, delivered_at, first_opened_at, last_opened_at, open_count, failed_at, failure_reason")
       .eq("professional_id", context.userId)
       .order("sent_at", { ascending: false })
       .limit(20);
