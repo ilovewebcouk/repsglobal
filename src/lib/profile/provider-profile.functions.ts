@@ -17,6 +17,7 @@ import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/au
 
 export type ProviderProfile = {
   name: string;
+  slug: string | null;
   logo_url: string | null;
   hero_image_url: string | null;
   tagline: string | null;
