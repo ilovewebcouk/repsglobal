@@ -1190,6 +1190,93 @@ export type Database = {
         }
         Relationships: []
       }
+      cpd_courses: {
+        Row: {
+          accredited_at: string | null
+          admin_note: string | null
+          ai_extraction: Json | null
+          ai_red_flags: string[]
+          ai_verdict: string | null
+          assessment_criteria_doc_path: string | null
+          created_at: string
+          delivery_mode: string | null
+          hours: number | null
+          id: string
+          level: number | null
+          provider_id: string
+          reps_cpd_number: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          summary: string | null
+          syllabus_doc_path: string | null
+          title: string
+          tutor_cv_doc_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          accredited_at?: string | null
+          admin_note?: string | null
+          ai_extraction?: Json | null
+          ai_red_flags?: string[]
+          ai_verdict?: string | null
+          assessment_criteria_doc_path?: string | null
+          created_at?: string
+          delivery_mode?: string | null
+          hours?: number | null
+          id?: string
+          level?: number | null
+          provider_id: string
+          reps_cpd_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          summary?: string | null
+          syllabus_doc_path?: string | null
+          title: string
+          tutor_cv_doc_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accredited_at?: string | null
+          admin_note?: string | null
+          ai_extraction?: Json | null
+          ai_red_flags?: string[]
+          ai_verdict?: string | null
+          assessment_criteria_doc_path?: string | null
+          created_at?: string
+          delivery_mode?: string | null
+          hours?: number | null
+          id?: string
+          level?: number | null
+          provider_id?: string
+          reps_cpd_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          summary?: string | null
+          syllabus_doc_path?: string | null
+          title?: string
+          tutor_cv_doc_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cpd_courses_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cpd_courses_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       credit_transactions: {
         Row: {
           action: string
@@ -3418,6 +3505,7 @@ export type Database = {
           primary_title_slug: string | null
           quality_score: number
           reps_level: Database["public"]["Enums"]["reps_level"] | null
+          reps_member_id: string | null
           secondary_title_slug: string | null
           slug: string | null
           social_instagram: string | null
@@ -3483,6 +3571,7 @@ export type Database = {
           primary_title_slug?: string | null
           quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
+          reps_member_id?: string | null
           secondary_title_slug?: string | null
           slug?: string | null
           social_instagram?: string | null
@@ -3548,6 +3637,7 @@ export type Database = {
           primary_title_slug?: string | null
           quality_score?: number
           reps_level?: Database["public"]["Enums"]["reps_level"] | null
+          reps_member_id?: string | null
           secondary_title_slug?: string | null
           slug?: string | null
           social_instagram?: string | null
@@ -3901,6 +3991,88 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_regulated_permissions: {
+        Row: {
+          admin_note: string | null
+          ai_extraction: Json | null
+          ai_red_flags: string[]
+          ai_verdict: string | null
+          awarding_body_reference: string | null
+          created_at: string
+          evidence_doc_paths: string[]
+          evidence_expires_at: string | null
+          evidence_issued_at: string | null
+          evidence_type: string
+          id: string
+          provider_id: string
+          qualification_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          ai_extraction?: Json | null
+          ai_red_flags?: string[]
+          ai_verdict?: string | null
+          awarding_body_reference?: string | null
+          created_at?: string
+          evidence_doc_paths?: string[]
+          evidence_expires_at?: string | null
+          evidence_issued_at?: string | null
+          evidence_type: string
+          id?: string
+          provider_id: string
+          qualification_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          ai_extraction?: Json | null
+          ai_red_flags?: string[]
+          ai_verdict?: string | null
+          awarding_body_reference?: string | null
+          created_at?: string
+          evidence_doc_paths?: string[]
+          evidence_expires_at?: string | null
+          evidence_issued_at?: string | null
+          evidence_type?: string
+          id?: string
+          provider_id?: string
+          qualification_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_regulated_permissions_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_regulated_permissions_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+          {
+            foreignKeyName: "provider_regulated_permissions_qualification_id_fkey"
+            columns: ["qualification_id"]
+            isOneToOne: false
+            referencedRelation: "qualifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proxy_ingest_diagnostics: {
         Row: {
           attempted: boolean | null
@@ -4166,6 +4338,42 @@ export type Database = {
             referencedColumns: ["professional_id"]
           },
         ]
+      }
+      qualifications: {
+        Row: {
+          awarding_body_slug: string
+          created_at: string
+          id: string
+          is_active: boolean
+          level: number | null
+          ofqual_ref: string | null
+          title: string
+          title_slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          awarding_body_slug: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          level?: number | null
+          ofqual_ref?: string | null
+          title: string
+          title_slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          awarding_body_slug?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          level?: number | null
+          ofqual_ref?: string | null
+          title?: string
+          title_slug?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       renewal_tokens: {
         Row: {
@@ -5998,6 +6206,10 @@ export type Database = {
       apply_provider_change: {
         Args: { _request_id: string }
         Returns: undefined
+      }
+      assign_reps_member_id: {
+        Args: { _professional_id: string }
+        Returns: string
       }
       audit_verification_drift: {
         Args: never
