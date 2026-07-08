@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { IdentityProfileCard } from "@/components/dashboard/verification/TrustBlock";
 import { VerifiedBadge, type VerifiedTier } from "@/components/verification/VerifiedBadge";
