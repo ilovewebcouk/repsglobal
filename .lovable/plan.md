@@ -1,51 +1,33 @@
-## Problem
+## Two issues on `/t/diverse-trainers` hero
 
-On `/dashboard/profile` the header button is always labelled **"Submit for review"** with the same orange styling — regardless of whether:
+### 1. Logo doesn't reflect the provider's profile
 
-- the form is untouched (nothing to submit),
-- the user has edited fields (there's something to submit),
-- a submit is in flight,
-- a submit just succeeded,
-- everything is already pending admin review.
+`src/routes/t.$slug.index.tsx` line 140:
 
-So a user can edit a field, click Submit, and the button looks identical afterwards — no confirmation the click did anything, and no way to tell at a glance whether their current edits are saved.
+```ts
+const logoUrl = DEMO_PROVIDER_LOGOS[slug] ?? sf.avatar_url ?? null;
+```
 
-## Fix (UI-only, no backend changes)
+The seeded demo constant wins over the profile avatar, so uploading a new logo from the provider dashboard has no visible effect on this page. The directory route already does it the other way round (`prof.avatar ?? DEMO_PROVIDER_LOGOS[slug]`).
 
-Compute a `dirty` boolean by comparing the current `form` state against the loaded `data` (using the same fields that feed into `saveMut`, and respecting `websiteLocked` / `emailLocked` / `namePending` so locked/pending fields don't count as dirty). Also treat the requested name differing from `approvedName` as dirty.
+**Fix:** flip the priority so DB wins, demo is only a fallback for NULLs:
 
-Then drive the button by a small state machine derived from `dirty`, `saveMut.isPending`, `saveMut.isSuccess`, `pendingKeys.length`, `namePending`, and `phoneValid`:
+```ts
+const logoUrl = sf.avatar_url ?? DEMO_PROVIDER_LOGOS[slug] ?? null;
+```
 
-| State | Condition | Label | Style | Disabled |
-|---|---|---|---|---|
-| Loading | `isLoading` | "Submit for review" | orange, muted | yes |
-| Invalid | dirty && !phoneValid | "Fix phone number" | amber outline | yes |
-| Saving | `saveMut.isPending` | "Submitting…" + spinner | orange | yes |
-| Just submitted | `saveMut.isSuccess` && !dirty (for ~4s after success) | "Submitted ✓" | emerald (`border-emerald-400/30 bg-emerald-500/15 text-emerald-300`) | yes |
-| Dirty | dirty | "Submit N change(s) for review" | orange (primary) | no |
-| Clean, pending admin | !dirty && (pendingKeys.length \|\| namePending) | "Awaiting admin review" | neutral panel-soft | yes |
-| Clean, nothing pending | !dirty | "No changes to submit" | neutral panel-soft | yes |
+### 2. Floating logo chip is smaller than the directory tile
 
-Notes:
+Directory card (`find-a-training-provider.tsx` line 221) uses a 72×72 chip with `rounded-[14px]`, `p-1.5`, `ring-1 ring-black/5`, `shadow-[0_6px_16px_-8px_rgba(0,0,0,0.35)]`.
 
-- The count in "Submit N change(s)…" is the number of form fields whose current value differs from the loaded/approved value (cheap client-side diff — this is the same set the server already counts, just for display; the toast after save still uses the authoritative server count).
-- The "Submitted ✓" state uses a 4-second timer after `saveMut.isSuccess` flips, then falls back to the clean state. This gives visual confirmation without permanently masking real state.
-- Emerald is only used for the success confirmation, which fits the status-color rule (`mem://design/status-colors`).
-- The existing amber pending-changes banner below the header stays as the detailed source of truth; the button just mirrors it at a glance.
-- No changes to `saveMut`, server functions, or DB.
+Hero chip (`t.$slug.index.tsx` line 225) uses only 56×56 (`h-14 w-14`), `rounded-[12px]`, `p-2`, `border` + heavier shadow — reads much smaller against the 280px cover.
 
-## Files touched
+**Fix:** align the hero chip to the directory spec so the same provider reads the same on both surfaces:
 
-- `src/components/dashboard/organisation/ProviderProfilePage.tsx` — add `dirty` + `changedCount` computation, a `justSubmitted` timer via `useEffect` on `saveMut.isSuccess`, and replace the single button JSX in the `actions` slot with the state-driven variant above.
+```tsx
+<div className="absolute bottom-3 left-3 flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[14px] bg-white ring-1 ring-black/5 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.35)]">
+  <img src={logoUrl} alt={`${providerName} logo`} className="h-full w-full object-contain p-1.5" loading="eager" />
+</div>
+```
 
-## QA checklist (I will run through this before saying done)
-
-1. Fresh load, no edits → button reads **"No changes to submit"**, disabled, neutral.
-2. Edit tagline → button flips to **"Submit 1 change for review"**, orange, enabled.
-3. Edit tagline + about → **"Submit 2 changes for review"**.
-4. Click submit → **"Submitting…"** with spinner, disabled.
-5. After success → **"Submitted ✓"** emerald for ~4s, then **"Awaiting admin review"** (since fields are now pending) or **"No changes to submit"** if nothing was actually different.
-6. Reload with pending changes already on record → **"Awaiting admin review"**, disabled.
-7. Type an invalid phone number → **"Fix phone number"**, amber, disabled.
-8. Locked website/email fields don't cause false-dirty.
-9. Name field: typing a new name (when not already pending) counts toward the change count; while `namePending`, editing is blocked so it can't contribute to dirty.
+No other files touched. No DB / DTO changes needed (`avatar_url` is already returned).
