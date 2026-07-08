@@ -104,7 +104,8 @@ export function ProviderVerificationPage() {
   const identityDone = !!t?.ticks.identity;
   const domainDone = d?.status === "approved";
   const completed = (Number(identityDone) + Number(domainDone)) as 0 | 1 | 2;
-  const badgeTier: VerifiedTier = completed === 2 ? "verified" : "unverified";
+  const badgeTier: VerifiedTier =
+    completed === 2 ? "full" : identityDone ? "identity" : "none";
 
   return (
     <DashboardShell
