@@ -10,6 +10,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  Check,
   Clock,
   ExternalLink,
   Instagram,
@@ -209,6 +210,120 @@ export function ProviderProfilePage() {
 
 
 
+  /* -------------------- dirty / submit-button state -------------------- */
+
+  // Build the "baseline" values we compare form state against. Locked fields
+  // (approved website/email) and the name (when pending admin review) never
+  // count as dirty, so locking doesn't trigger a false diff.
+  const baseline = React.useMemo(() => {
+    if (!data) return null;
+    return {
+      name: (data.name ?? "").trim(),
+      tagline: data.tagline ?? "",
+      about: data.about ?? "",
+      website_url: data.website_url ?? "",
+      contact_email: data.contact_email ?? "",
+      contact_phone: data.contact_phone ?? "",
+      address: data.address ?? "",
+      social_instagram: data.social_instagram ?? "",
+      social_linkedin: data.social_linkedin ?? "",
+      social_youtube: data.social_youtube ?? "",
+      social_tiktok: data.social_tiktok ?? "",
+      social_x: data.social_x ?? "",
+    };
+  }, [data]);
+
+  const changedCount = React.useMemo(() => {
+    if (!baseline) return 0;
+    let n = 0;
+    // Name — only if not currently pending; compare against approved name.
+    if (!namePending) {
+      const requested = form.name.trim();
+      const approved = (approvedName ?? "").trim();
+      if (requested && requested !== approved) n += 1;
+    }
+    // Free-text fields (skip locked ones).
+    const pairs: Array<[keyof typeof form, string, boolean]> = [
+      ["tagline", baseline.tagline, false],
+      ["about", baseline.about, false],
+      ["website_url", baseline.website_url, websiteLocked],
+      ["contact_email", baseline.contact_email, emailLocked],
+      ["contact_phone", baseline.contact_phone, false],
+      ["address", baseline.address, false],
+      ["social_instagram", baseline.social_instagram, false],
+      ["social_linkedin", baseline.social_linkedin, false],
+      ["social_youtube", baseline.social_youtube, false],
+      ["social_tiktok", baseline.social_tiktok, false],
+      ["social_x", baseline.social_x, false],
+    ];
+    for (const [key, base, locked] of pairs) {
+      if (locked) continue;
+      if ((form[key] ?? "") !== (base ?? "")) n += 1;
+    }
+    return n;
+  }, [baseline, form, namePending, approvedName, websiteLocked, emailLocked]);
+
+  const dirty = changedCount > 0;
+
+  // "Submitted ✓" confirmation for ~4s after a successful save.
+  const [justSubmitted, setJustSubmitted] = React.useState(false);
+  React.useEffect(() => {
+    if (!saveMut.isSuccess) return;
+    setJustSubmitted(true);
+    const t = setTimeout(() => setJustSubmitted(false), 4000);
+    return () => clearTimeout(t);
+  }, [saveMut.isSuccess, saveMut.submittedAt]);
+
+  const hasPending = pendingKeys.length > 0 || namePending;
+
+  type BtnState =
+    | { kind: "loading" }
+    | { kind: "saving" }
+    | { kind: "invalid" }
+    | { kind: "submitted" }
+    | { kind: "dirty"; count: number }
+    | { kind: "pending" }
+    | { kind: "clean" };
+
+  const btnState: BtnState = isLoading
+    ? { kind: "loading" }
+    : saveMut.isPending
+      ? { kind: "saving" }
+      : dirty && !phoneValid
+        ? { kind: "invalid" }
+        : justSubmitted && !dirty
+          ? { kind: "submitted" }
+          : dirty
+            ? { kind: "dirty", count: changedCount }
+            : hasPending
+              ? { kind: "pending" }
+              : { kind: "clean" };
+
+  const btnBase =
+    "inline-flex h-9 items-center gap-2 rounded-[10px] px-4 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed";
+  const btnStyles: Record<BtnState["kind"], string> = {
+    loading: "bg-reps-orange text-white opacity-60",
+    saving: "bg-reps-orange text-white opacity-80",
+    invalid: "border border-amber-400/40 bg-amber-500/15 text-amber-200",
+    submitted: "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+    dirty: "bg-reps-orange text-white hover:bg-reps-orange/90",
+    pending: "border border-reps-border bg-reps-panel-soft text-white/60",
+    clean: "border border-reps-border bg-reps-panel-soft text-white/55",
+  };
+  const btnLabel: Record<BtnState["kind"], string> = {
+    loading: "Submit for review",
+    saving: "Submitting…",
+    invalid: "Fix phone number",
+    submitted: "Submitted",
+    dirty:
+      btnState.kind === "dirty"
+        ? `Submit ${btnState.count} ${btnState.count === 1 ? "change" : "changes"} for review`
+        : "Submit for review",
+    pending: "Awaiting admin review",
+    clean: "No changes to submit",
+  };
+  const btnDisabled = btnState.kind !== "dirty";
+
   /* -------------------- render -------------------- */
 
   return (
@@ -233,12 +348,19 @@ export function ProviderProfilePage() {
           ) : null}
           <button
             type="button"
-            disabled={saveMut.isPending || isLoading}
+            disabled={btnDisabled}
             onClick={() => saveMut.mutate()}
-            className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
+            className={`${btnBase} ${btnStyles[btnState.kind]}`}
+            aria-live="polite"
           >
-            {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Submit for review
+            {btnState.kind === "saving" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : btnState.kind === "submitted" ? (
+              <Check className="h-4 w-4" />
+            ) : btnState.kind === "pending" ? (
+              <Clock className="h-3.5 w-3.5" />
+            ) : null}
+            {btnLabel[btnState.kind]}
           </button>
         </div>
       }

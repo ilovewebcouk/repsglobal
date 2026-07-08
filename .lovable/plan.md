@@ -1,35 +1,51 @@
-# Fix: Verification pill shows `0/3` on organisation accounts
+## Problem
 
-## Diagnosis
+On `/dashboard/profile` the header button is always labelled **"Submit for review"** with the same orange styling — regardless of whether:
 
-`VerificationCountBadge` in `src/components/dashboard/DashboardSidebar.tsx` chooses which pill to render (`x/2` for orgs, `x/3` for individuals) based on `useIsOrganisation()`. That hook is a `useQuery` around `getMyAccountType` and returns `false` until the request resolves (`data?.accountType === "organisation"`).
+- the form is untouched (nothing to submit),
+- the user has edited fields (there's something to submit),
+- a submit is in flight,
+- a submit just succeeded,
+- everything is already pending admin review.
 
-Result: while the account-type query is still in-flight (or if it ever fails / returns undefined), the badge falls through to the **individual** branch and renders `0/3` — even for organisation accounts. Once the query resolves it should flip to `x/2`, but the initial paint is wrong on every dashboard navigation, and if the query hasn't resolved before the sidebar unmounts (fast route change, offline, RLS hiccup) the org will keep seeing `0/3`.
+So a user can edit a field, click Submit, and the button looks identical afterwards — no confirmation the click did anything, and no way to tell at a glance whether their current edits are saved.
 
-Confirmed in DB: `demo-org-northline@repsuk.org` and `demo-org-forge@repsuk.org` are correctly stored as `account_type = 'organisation'`, so the data is right — this is purely a client-side loading-state bug.
+## Fix (UI-only, no backend changes)
 
-## Fix
+Compute a `dirty` boolean by comparing the current `form` state against the loaded `data` (using the same fields that feed into `saveMut`, and respecting `websiteLocked` / `emailLocked` / `namePending` so locked/pending fields don't count as dirty). Also treat the requested name differing from `approvedName` as dirty.
 
-Update `VerificationCountBadge` (`src/components/dashboard/DashboardSidebar.tsx`, ~lines 101–136) so it:
+Then drive the button by a small state machine derived from `dirty`, `saveMut.isPending`, `saveMut.isSuccess`, `pendingKeys.length`, `namePending`, and `phoneValid`:
 
-1. Also reads the `useQuery` **status** (not just `data`) from the account-type lookup.
-2. While account type is still loading (or errored/unknown), renders nothing (`return null`) instead of defaulting to the individual `/3` chip. The chip is a soft badge; hiding it briefly is preferable to flashing the wrong denominator.
-3. Only after `accountType` is known:
-   - `"organisation"` → render `x/2` chip as today (identity + domain).
-   - anything else → render `x/3` chip as today (identity + qualifications + insurance).
+| State | Condition | Label | Style | Disabled |
+|---|---|---|---|---|
+| Loading | `isLoading` | "Submit for review" | orange, muted | yes |
+| Invalid | dirty && !phoneValid | "Fix phone number" | amber outline | yes |
+| Saving | `saveMut.isPending` | "Submitting…" + spinner | orange | yes |
+| Just submitted | `saveMut.isSuccess` && !dirty (for ~4s after success) | "Submitted ✓" | emerald (`border-emerald-400/30 bg-emerald-500/15 text-emerald-300`) | yes |
+| Dirty | dirty | "Submit N change(s) for review" | orange (primary) | no |
+| Clean, pending admin | !dirty && (pendingKeys.length \|\| namePending) | "Awaiting admin review" | neutral panel-soft | yes |
+| Clean, nothing pending | !dirty | "No changes to submit" | neutral panel-soft | yes |
 
-Concretely: split the account-type query out of the `useIsOrganisation` boolean helper (or inline the query inside `VerificationCountBadge`) so the badge has access to `isPending` / `data`, and gate the render on `data !== undefined`.
+Notes:
 
-No other call site of `useIsOrganisation` needs to change — the loading-state bug only produces a visible wrong value here.
+- The count in "Submit N change(s)…" is the number of form fields whose current value differs from the loaded/approved value (cheap client-side diff — this is the same set the server already counts, just for display; the toast after save still uses the authoritative server count).
+- The "Submitted ✓" state uses a 4-second timer after `saveMut.isSuccess` flips, then falls back to the clean state. This gives visual confirmation without permanently masking real state.
+- Emerald is only used for the success confirmation, which fits the status-color rule (`mem://design/status-colors`).
+- The existing amber pending-changes banner below the header stays as the detailed source of truth; the button just mirrors it at a glance.
+- No changes to `saveMut`, server functions, or DB.
 
-## Verification
+## Files touched
 
-- Sign in as `demo-org-northline@repsuk.org` → sidebar shows `x/2` (no `/3` flash).
-- Sign in as an individual account → still shows `x/3` as before.
-- Hard refresh on `/dashboard/profile` → no initial `0/3` flash for orgs.
+- `src/components/dashboard/organisation/ProviderProfilePage.tsx` — add `dirty` + `changedCount` computation, a `justSubmitted` timer via `useEffect` on `saveMut.isSuccess`, and replace the single button JSX in the `actions` slot with the state-driven variant above.
 
-## Out of scope
+## QA checklist (I will run through this before saying done)
 
-- Changing what counts toward the org pill (still identity + domain).
-- Redesigning `VerifiedCountChip`.
-- Any DB / migration changes — data is correct.
+1. Fresh load, no edits → button reads **"No changes to submit"**, disabled, neutral.
+2. Edit tagline → button flips to **"Submit 1 change for review"**, orange, enabled.
+3. Edit tagline + about → **"Submit 2 changes for review"**.
+4. Click submit → **"Submitting…"** with spinner, disabled.
+5. After success → **"Submitted ✓"** emerald for ~4s, then **"Awaiting admin review"** (since fields are now pending) or **"No changes to submit"** if nothing was actually different.
+6. Reload with pending changes already on record → **"Awaiting admin review"**, disabled.
+7. Type an invalid phone number → **"Fix phone number"**, amber, disabled.
+8. Locked website/email fields don't cause false-dirty.
+9. Name field: typing a new name (when not already pending) counts toward the change count; while `namePending`, editing is blocked so it can't contribute to dirty.
