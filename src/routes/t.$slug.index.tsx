@@ -95,7 +95,7 @@ export const Route = createFileRoute("/t/$slug/")({
             "@type": "EducationalOrganization",
             name,
             url: canonical,
-            address: sf.city ?? undefined,
+            address: sf.address?.trim() || sf.city?.trim() || undefined,
             logo: sf.avatar_url ?? undefined,
           }),
         },
@@ -136,6 +136,7 @@ function ProviderProfilePage() {
   const providerName = sf.full_name?.trim() || "Training Provider";
   const tagline = sf.tagline?.trim() || `${providerName} — REPS Verified Training Provider`;
   const city = sf.city ?? "Location coming soon";
+  const location = sf.address?.trim() || sf.city?.trim() || "Location coming soon";
   const logoUrl = DEMO_PROVIDER_LOGOS[slug] ?? sf.avatar_url ?? null;
 
   const yearFrom = sf.trust?.qualifiedSinceYear ?? sf.coaching_since_year ?? null;
@@ -252,7 +253,7 @@ function ProviderProfilePage() {
               <div className="mt-4 flex flex-wrap items-center gap-4 text-[14px] text-black/65">
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="h-4 w-4" strokeWidth={2} />
-                  {city}
+                  {location}
                 </span>
                 {ratingCount > 0 ? (
                   <span className="inline-flex items-center gap-1.5">

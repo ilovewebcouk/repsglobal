@@ -55,6 +55,7 @@ export type WebsiteDTO = {
   titles: string[];
   specialisms: string[];
   city: string | null;
+  address: string | null;
   in_person_available: boolean;
   online_available: boolean;
   member_since: string | null;
@@ -544,7 +545,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     const { data: pro } = await supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
+        "id, slug, headline, primary_profession, primary_title_slug, secondary_title_slug, specialisms, city, address, in_person_available, online_available, trains_at_home_studio, trains_at_clients_home, member_since, social_instagram, social_tiktok, social_youtube, social_x, social_linkedin",
 
       )
       .eq("slug", data.slug)
@@ -699,6 +700,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
           specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
           city: pro.city,
+          address: (pro as { address?: string | null }).address ?? null,
           in_person_available: !!pro.in_person_available,
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
@@ -853,6 +855,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
           specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
           city: pro.city,
+          address: (pro as { address?: string | null }).address ?? null,
           in_person_available: !!pro.in_person_available,
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
