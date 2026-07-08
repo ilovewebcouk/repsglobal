@@ -87,7 +87,7 @@ export type ProviderChangeRequest = {
 /* Per-field validation                                                 */
 /* ------------------------------------------------------------------ */
 
-const currentYear = new Date().getFullYear();
+
 
 const ValueSchema: Record<ProviderFieldKey, z.ZodTypeAny> = {
   tagline: z.string().trim().max(160).nullable(),
