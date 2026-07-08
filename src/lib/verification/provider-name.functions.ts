@@ -266,6 +266,7 @@ export const reviewProviderNameRequest = createServerFn({ method: "POST" })
         .update({ business_name: req.requested_name })
         .eq("id", req.user_id);
       if (pErr) throw pErr;
+      await regenerateProviderSlug(sa, req.user_id, req.requested_name);
     }
 
     const { error: uErr } = await sa
