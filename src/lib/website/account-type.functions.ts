@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
 
 /**
  * Lightweight lookup of a professional's account_type by slug.
@@ -26,7 +26,7 @@ export const getAccountTypeBySlug = createServerFn({ method: "GET" })
  * is not gated behind the 3-pillar trust flow).
  */
 export const getMyAccountType = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("professionals")
