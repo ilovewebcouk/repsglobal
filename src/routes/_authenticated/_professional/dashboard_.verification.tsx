@@ -48,6 +48,7 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/v
   }),
   validateSearch: (s: Record<string, unknown>) => ({
     stripe_identity: typeof s.stripe_identity === "string" ? s.stripe_identity : undefined,
+    domain_confirm: typeof s.domain_confirm === "string" ? s.domain_confirm : undefined,
   }),
   component: RootVerificationPage,
 });
