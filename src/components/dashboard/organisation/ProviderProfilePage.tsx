@@ -57,7 +57,7 @@ function TiktokIcon() {
   );
 }
 
-const CURRENT_YEAR = new Date().getFullYear();
+
 
 const inputCls =
   "h-10 w-full rounded-[12px] border border-reps-border bg-reps-ink px-3 text-[13px] text-white placeholder:text-white/35 focus:border-white/25 focus:outline-none";
