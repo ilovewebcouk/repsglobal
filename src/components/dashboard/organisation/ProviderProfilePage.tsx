@@ -431,6 +431,19 @@ export function ProviderProfilePage() {
                 ) : null}
               </Field>
             </div>
+            <div className="md:col-span-2">
+              <Field label="Address" hint="Public — shown on your provider page. Head office or main training venue.">
+                <textarea
+                  className={textareaCls}
+                  value={form.address}
+                  onChange={(e) => update("address", e.target.value)}
+                  maxLength={500}
+                  placeholder="e.g. Unit 4, 120 High Street, Manchester, M1 2AB, United Kingdom"
+                  rows={3}
+                />
+              </Field>
+            </div>
+
           </div>
         </PPanel>
 
