@@ -218,16 +218,16 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
           className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent"
         />
         {/* Logo chip */}
-        <div className="absolute bottom-3 left-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-[14px] bg-white ring-1 ring-black/5 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.35)]">
+        <div className="absolute bottom-3 left-3 flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[16px] bg-white ring-1 ring-black/5 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.35)]">
           {row.avatar_url ? (
             <img
               src={row.avatar_url}
               alt={`${row.name} logo`}
-              className="h-full w-full object-contain p-1.5"
+              className="h-full w-full object-contain p-2"
               loading="lazy"
             />
           ) : (
-            <span className="font-display text-[18px] font-bold text-black/80">
+            <span className="font-display text-[20px] font-bold text-black/80">
               {monogram}
             </span>
           )}
