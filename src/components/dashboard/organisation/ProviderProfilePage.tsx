@@ -156,12 +156,7 @@ export function ProviderProfilePage() {
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!phoneValid) throw new Error("Phone number looks invalid.");
-      const yearNum = form.year_established.trim()
-        ? Number(form.year_established)
-        : null;
-      if (yearNum != null && (Number.isNaN(yearNum) || yearNum < 1800 || yearNum > CURRENT_YEAR)) {
-        throw new Error(`Year established must be between 1800 and ${CURRENT_YEAR}.`);
-      }
+
 
       // Submit name change for admin approval when it differs from the
       // currently approved name (and isn't already pending).
