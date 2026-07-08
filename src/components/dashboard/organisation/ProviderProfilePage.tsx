@@ -78,10 +78,6 @@ export function ProviderProfilePage() {
   const fetchNameStatus = useServerFn(getMyProviderNameStatus);
   const submitName = useServerFn(submitProviderNameChange);
 
-  const uploadAvatar = useServerFn(uploadAvatarFromBase64);
-  const setAvatar = useServerFn(updateMyAvatar);
-  const uploadHero = useServerFn(uploadHeroFromBase64);
-  const setHero = useServerFn(updateMyWebsiteHero);
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-provider-profile"],
