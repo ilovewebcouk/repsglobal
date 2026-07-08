@@ -22,6 +22,8 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PPanel } from "@/components/dashboard/primitives";
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
+import { AddressAutocomplete } from "@/components/forms/AddressAutocomplete";
+
 import {
   getMyProviderProfile,
   updateMyProviderProfile,
