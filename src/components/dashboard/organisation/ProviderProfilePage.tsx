@@ -13,6 +13,7 @@ import {
   Building2,
   Camera,
   Clock,
+  ExternalLink,
   ImageIcon,
   Instagram,
   Linkedin,
