@@ -22,6 +22,8 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PPanel } from "@/components/dashboard/primitives";
 import { PhoneField, isValidPhoneNumber } from "@/components/forms/PhoneField";
 import { SocialHandleInput } from "@/components/forms/SocialHandleInput";
+import { AddressAutocomplete } from "@/components/forms/AddressAutocomplete";
+
 import {
   getMyProviderProfile,
   updateMyProviderProfile,
@@ -423,17 +425,15 @@ export function ProviderProfilePage() {
               </Field>
             </div>
             <div className="md:col-span-2">
-              <Field label="Address" hint="Public — shown on your provider page. Head office or main training venue.">
-                <textarea
-                  className={textareaCls}
+              <Field label="Address" hint="Public — shown on your provider page. Start typing and pick from Google's suggestions.">
+                <AddressAutocomplete
                   value={form.address}
-                  onChange={(e) => update("address", e.target.value)}
-                  maxLength={500}
-                  placeholder="e.g. Unit 4, 120 High Street, Manchester, M1 2AB, United Kingdom"
-                  rows={3}
+                  onChange={(v: string) => update("address", v.slice(0, 500))}
+                  placeholder="Start typing your address…"
                 />
               </Field>
             </div>
+
 
           </div>
         </PPanel>
