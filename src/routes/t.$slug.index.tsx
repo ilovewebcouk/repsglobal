@@ -255,20 +255,31 @@ function ProviderProfilePage() {
                   <MapPin className="h-4 w-4 shrink-0" strokeWidth={2} />
                   {location}
                 </span>
-                {ratingCount > 0 ? (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Star className="h-4 w-4 shrink-0 fill-[#FF7A00] text-[#FF7A00]" />
-                    <span className="font-semibold text-black">{ratingAvg.toFixed(1)}</span>
-                    <span className="text-black/55">
-                      ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
-                    </span>
+                <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="flex gap-0.5" aria-hidden>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={
+                          ratingCount > 0 && i < Math.round(ratingAvg)
+                            ? "h-4 w-4 fill-[#FF7A00] text-[#FF7A00]"
+                            : "h-4 w-4 text-black/25"
+                        }
+                        strokeWidth={1.6}
+                      />
+                    ))}
                   </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 text-black/45">
-                    <Star className="h-4 w-4 shrink-0" strokeWidth={2} />
-                    No reviews yet
-                  </span>
-                )}
+                  {ratingCount > 0 ? (
+                    <>
+                      <span className="font-semibold text-black">{ratingAvg.toFixed(1)}</span>
+                      <span className="text-black/55">
+                        · Based on {ratingCount} {ratingCount === 1 ? "review" : "reviews"}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-black/55">Based on 0 reviews</span>
+                  )}
+                </span>
               </div>
 
 
