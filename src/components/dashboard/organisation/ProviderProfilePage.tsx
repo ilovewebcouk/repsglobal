@@ -181,7 +181,7 @@ export function ProviderProfilePage() {
         data: {
           tagline: form.tagline || null,
           about: form.about || null,
-          website_url: form.website_url || null,
+          website_url: (websiteLocked ? approvedWebsite : form.website_url) || null,
           contact_email: form.contact_email || null,
           contact_phone: form.contact_phone || null,
           year_established: yearNum,
