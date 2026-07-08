@@ -435,6 +435,21 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
     );
     const sa = supabaseAdmin as any;
 
+    async function notifyPro(params: {
+      professionalId: string;
+      event: string;
+      context: Record<string, unknown>;
+    }) {
+      const { error: notifErr } = await sa.from("verification_notifications").insert({
+        professional_id: params.professionalId,
+        event: params.event,
+        context: params.context,
+      });
+      if (notifErr) {
+        console.error("[provider-changes.notify] insert failed", notifErr.message);
+      }
+    }
+
     if (data.source === "change") {
       const { data: row, error: readErr } = await sa
         .from("provider_change_requests")
@@ -464,6 +479,25 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
         })
         .eq("id", data.id);
       if (uErr) throw new Error(uErr.message);
+
+      const fieldKey = (row as any).field_key as string;
+      const fieldLabel = PROVIDER_FIELD_LABELS[fieldKey as ProviderFieldKey] ?? fieldKey;
+      await notifyPro({
+        professionalId: (row as any).provider_id,
+        event:
+          data.decision === "approved"
+            ? "provider_change.approved"
+            : "provider_change.rejected",
+        context: {
+          request_id: data.id,
+          field_key: fieldKey,
+          message:
+            data.decision === "approved"
+              ? `${fieldLabel} is now live on your public page.`
+              : `${fieldLabel} wasn't approved${data.admin_note?.trim() ? `: ${data.admin_note.trim()}` : "."}`,
+          admin_note: data.admin_note?.trim() || null,
+        },
+      });
 
       return { ok: true as const };
     }
@@ -496,12 +530,35 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
         })
         .eq("id", data.id);
       if (uErr) throw new Error(uErr.message);
+
+      await notifyPro({
+        professionalId: (row as any).user_id,
+        event:
+          data.decision === "approved"
+            ? "provider_name.approved"
+            : "provider_name.rejected",
+        context: {
+          request_id: data.id,
+          requested_name: (row as any).requested_name,
+          message:
+            data.decision === "approved"
+              ? `Provider name updated to "${(row as any).requested_name}".`
+              : `Name change wasn't approved${data.admin_note?.trim() ? `: ${data.admin_note.trim()}` : "."}`,
+          admin_note: data.admin_note?.trim() || null,
+        },
+      });
+
       return { ok: true as const };
     }
 
     // source === "domain"
     const nowIso = new Date().toISOString();
     const newStatus = data.decision === "approved" ? "approved" : "rejected";
+    const { data: domainRow } = await sa
+      .from("provider_domain_verifications")
+      .select("professional_id, domain")
+      .eq("id", data.id)
+      .maybeSingle();
     const { error } = await sa
       .from("provider_domain_verifications")
       .update({
@@ -512,5 +569,25 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
       })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+
+    if (domainRow) {
+      await notifyPro({
+        professionalId: (domainRow as any).professional_id,
+        event:
+          data.decision === "approved"
+            ? "provider_domain.approved"
+            : "provider_domain.rejected",
+        context: {
+          request_id: data.id,
+          domain: (domainRow as any).domain,
+          message:
+            data.decision === "approved"
+              ? `Domain ${(domainRow as any).domain} is verified.`
+              : `Domain verification for ${(domainRow as any).domain} wasn't approved${data.admin_note?.trim() ? `: ${data.admin_note.trim()}` : "."}`,
+          admin_note: data.admin_note?.trim() || null,
+        },
+      });
+    }
+
     return { ok: true as const };
   });
