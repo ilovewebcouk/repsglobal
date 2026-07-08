@@ -1,68 +1,92 @@
 /**
- * /dashboard/verification — the credential page.
+ * /dashboard/verification — training provider variant.
  *
- * Three independent checks, any order. Each one earns a visible trust layer.
- *   1. Identity         → "Verified"
- *   2. Insurance        → "Verified · Insured"
- *   3. Qualifications   → "Verified · Insured · <Profession>"
+ * Two-stage flow (purpose-built for training providers):
+ *   Stage 01 — Identity: Stripe Identity (reuses existing IdentityProfileCard)
+ *   Stage 02 — Domain email: confirm an email on the provider's website domain
+ *              → admin then approves the domain itself.
  *
- * Reuses the existing IdentityProfileCard / InsuranceProfileCard from
- * /components/dashboard/verification/TrustBlock for the Identity and
- * Insurance step bodies, and a small Qualifications summary card that
- * links to /dashboard/cpd (read-only here — CPD owns the editor).
+ * Insurance and qualifications are intentionally NOT shown here — they belong
+ * to the individual-trainer flow, not the training-provider flow.
  */
 
 import * as React from "react";
-import { Link, useRouter, useSearch , getRouteApi } from "@tanstack/react-router";
+import { Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, GraduationCap, Loader2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Mail,
+  RefreshCw,
+  ShieldCheck,
+  XCircle,
+} from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
-import { getTrustState, type TrustState } from "@/lib/verification/trust.functions";
+import { getTrustState } from "@/lib/verification/trust.functions";
+import { IdentityProfileCard } from "@/components/dashboard/verification/TrustBlock";
+import { VerifiedBadge, type Tier as BadgeTier } from "@/components/verification/VerifiedBadge";
 import {
-  IdentityProfileCard,
-  InsuranceProfileCard,
-} from "@/components/dashboard/verification/TrustBlock";
-import { NameProfessionCard } from "@/components/dashboard/verification/NameProfessionCard";
-import {
-  VerifiedBadge,
-  tierFromCounts,
-  tierLabel,
-} from "@/components/verification/VerifiedBadge";
+  getProviderDomainVerification,
+  startProviderDomainVerification,
+} from "@/lib/verification/provider-domain.functions";
+import type { ProviderDomainState } from "@/lib/verification/provider-domain-shared";
+import { isEmailShape } from "@/lib/verification/provider-domain-shared";
 
-const routeApi = getRouteApi("/_authenticated/_professional/dashboard_/verification");
+/* -------------------------------------------------------------------------- */
+/* Return-from-flow toasts                                                    */
+/* -------------------------------------------------------------------------- */
 
-
-
-function useStripeIdentityReturn() {
+function useReturnToasts() {
   const qc = useQueryClient();
   const router = useRouter();
-  const search = useSearch({ from: "/_authenticated/_professional/dashboard_/verification" }) as { stripe_identity?: string };
+  const search = useSearch({
+    from: "/_authenticated/_professional/dashboard_/verification",
+  }) as { stripe_identity?: string; domain_confirm?: string };
+
   React.useEffect(() => {
     if (search.stripe_identity === "complete") {
       void qc.invalidateQueries({ queryKey: ["my-identity"] });
       void qc.invalidateQueries({ queryKey: ["my-trust-state"] });
       toast.success("ID check submitted — we'll confirm shortly.");
+    }
+    if (search.domain_confirm === "ok") {
+      void qc.invalidateQueries({ queryKey: ["provider-domain-verification"] });
+      toast.success("Email confirmed. Our team will review your domain shortly.");
+    } else if (search.domain_confirm === "expired") {
+      toast.error("That confirmation link expired. Send yourself a new one below.");
+    } else if (search.domain_confirm === "invalid") {
+      toast.error("That confirmation link isn't valid. Send yourself a new one.");
+    } else if (search.domain_confirm === "already") {
+      toast.info("Your provider domain is already verified.");
+    } else if (search.domain_confirm === "error") {
+      toast.error("Something went wrong confirming your email. Please try again.");
+    }
+    if (search.stripe_identity || search.domain_confirm) {
       router.navigate({
         to: "/dashboard/verification",
         search: {},
-        hash: "identity",
         replace: true,
       });
-      setTimeout(() => {
-        document.getElementById("identity")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 120);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.stripe_identity]);
+  }, [search.stripe_identity, search.domain_confirm]);
 }
 
+/* -------------------------------------------------------------------------- */
+/* Page                                                                        */
+/* -------------------------------------------------------------------------- */
+
 export function ProviderVerificationPage() {
-  useStripeIdentityReturn();
+  useReturnToasts();
   const tier = useTrainerTier();
+
   const fetchTrust = useServerFn(getTrustState);
   const trustQ = useQuery({
     queryKey: ["my-trust-state"],
@@ -70,13 +94,17 @@ export function ProviderVerificationPage() {
   });
   const t = trustQ.data;
 
-  const badgeTier = tierFromCounts({
-    identity: !!t?.ticks.identity,
-    insurance: !!t?.ticks.insurance,
-    qualifications: !!t?.ticks.qualifications,
+  const fetchDomain = useServerFn(getProviderDomainVerification);
+  const domainQ = useQuery({
+    queryKey: ["provider-domain-verification"],
+    queryFn: () => fetchDomain(),
   });
-  const completed = t?.completedCount ?? 0;
-  const profession = t?.qualifications.professionLabel ?? t?.qualifications.primaryTitle ?? t?.qualifications.titles?.[0] ?? null;
+  const d = domainQ.data;
+
+  const identityDone = !!t?.ticks.identity;
+  const domainDone = d?.status === "approved";
+  const completed = (Number(identityDone) + Number(domainDone)) as 0 | 1 | 2;
+  const badgeTier: BadgeTier = completed === 2 ? "verified" : "unverified";
 
   return (
     <DashboardShell
@@ -84,16 +112,21 @@ export function ProviderVerificationPage() {
       tier={tier === "verified" ? "verified" : "pro"}
       active="Verification"
       title="Verification"
-      subtitle="Three checks. Each one earns a visible layer on your REPS credential."
+      subtitle="Two checks to verify your training provider on REPS."
     >
       <div className="flex flex-col gap-6">
-        <Hero trust={t} completed={completed} badgeTier={badgeTier} profession={profession} loading={trustQ.isLoading} />
+        <Hero
+          identityDone={identityDone}
+          domainDone={domainDone}
+          domainStatus={d?.status ?? "unstarted"}
+          completed={completed}
+          badgeTier={badgeTier}
+          loading={trustQ.isLoading || domainQ.isLoading}
+        />
 
         <div className="flex flex-col gap-4">
-          <NameProfessionCard />
           <IdentityProfileCard step="01" />
-          <InsuranceProfileCard step="02" />
-          <QualificationsCard trust={t} />
+          <DomainEmailCard state={d} loading={domainQ.isLoading} />
         </div>
       </div>
     </DashboardShell>
@@ -105,32 +138,39 @@ export function ProviderVerificationPage() {
 /* -------------------------------------------------------------------------- */
 
 function Hero({
-  trust,
+  identityDone,
+  domainDone,
+  domainStatus,
   completed,
   badgeTier,
-  profession,
   loading,
 }: {
-  trust: TrustState | undefined;
-  completed: number;
-  badgeTier: ReturnType<typeof tierFromCounts>;
-  profession: string | null;
+  identityDone: boolean;
+  domainDone: boolean;
+  domainStatus: ProviderDomainState["status"];
+  completed: 0 | 1 | 2;
+  badgeTier: BadgeTier;
   loading: boolean;
 }) {
-  const allDone = completed === 3;
+  const allDone = completed === 2;
   const empty = completed === 0;
+  const pending = domainStatus === "pending_admin_review";
 
-  const headline = empty
-    ? "Earn your REPS credential"
-    : allDone
-      ? "You're fully credentialed"
-      : `${completed} of 3 — keep going`;
+  const headline = allDone
+    ? "You're verified"
+    : empty
+      ? "Verify your training provider"
+      : pending
+        ? "Awaiting REPS review"
+        : `${completed} of 2 — keep going`;
 
-  const sub = empty
-    ? "Complete three checks — in any order. Each one adds a visible trust layer to your public profile."
-    : allDone
-      ? "All three checks passed. Your full credential is live on every public surface."
-      : "Each remaining check adds another visible layer to your credential.";
+  const sub = allDone
+    ? "Both checks passed. Your provider is verified across REPS."
+    : empty
+      ? "Two checks: prove your identity with Stripe, then confirm an email on your provider's domain."
+      : pending
+        ? "You've confirmed your provider email. Our team will review your domain shortly."
+        : "One more check to complete your provider verification.";
 
   return (
     <section className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
@@ -138,7 +178,7 @@ function Hero({
         <div className="absolute inset-0 -z-0 bg-[radial-gradient(circle_at_85%_50%,rgba(255,122,0,0.10),transparent_55%)]" />
         <div className="relative z-10 min-w-0">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-ink/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">
-            REPS Credential
+            Provider Verification
           </div>
           <h2 className="font-display text-[24px] font-bold leading-tight text-white lg:text-[28px]">
             {headline}
@@ -146,22 +186,17 @@ function Hero({
           <p className="mt-2 max-w-[56ch] text-[14px] text-white/65">{sub}</p>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            <LayerChip label="Verified" earned={!!trust?.ticks.identity} loading={loading} />
-            <LayerChip label="Insured" earned={!!trust?.ticks.insurance} loading={loading} />
-            <LayerChip
-              label={profession ?? "Qualified"}
-              earned={!!trust?.ticks.qualifications}
-              loading={loading}
-            />
+            <LayerChip label="Identity verified" earned={identityDone} loading={loading} />
+            <LayerChip label="Domain confirmed" earned={domainDone} loading={loading} />
           </div>
         </div>
 
         <div className="relative z-10 flex flex-col items-start gap-3 lg:items-end">
-          <VerifiedBadge tier={badgeTier} size="lg" profession={profession} />
+          <VerifiedBadge tier={badgeTier} size="lg" profession={null} />
           <p className="text-[11px] text-white/45 lg:text-right">
             {allDone
               ? "Live on every public surface."
-              : "Updates the moment a check passes."}
+              : "Updates the moment both checks pass."}
           </p>
         </div>
       </div>
@@ -203,93 +238,328 @@ function LayerChip({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Qualifications card — read-only summary; CPD page owns the editor          */
+/* Domain email card                                                          */
 /* -------------------------------------------------------------------------- */
 
-function QualificationsCard({ trust }: { trust: TrustState | undefined }) {
-  const count = trust?.qualifications.count ?? 0;
-  const titles = trust?.qualifications.titles ?? [];
-  const pending = trust?.qualifications.pendingCount ?? 0;
-  const changes = trust?.qualifications.changesRequestedCount ?? 0;
-  const rejected = trust?.qualifications.rejectedCount ?? 0;
-  const earned = count > 0;
+function DomainEmailCard({
+  state,
+  loading,
+}: {
+  state: ProviderDomainState | undefined;
+  loading: boolean;
+}) {
+  const qc = useQueryClient();
+  const start = useServerFn(startProviderDomainVerification);
 
-  // Status pill — approved beats pending beats changes_requested beats rejected.
-  let pill: { label: string; cls: string };
-  let subline: string;
-  if (earned) {
-    pill = {
-      label: "Verified",
-      cls: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
-    };
-    subline = `${count} approved qualification${count === 1 ? "" : "s"} — managed in Education & CPD.`;
-  } else if (pending > 0) {
-    pill = {
-      label: "Pending review",
-      cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
-    };
-    subline = `${pending} certificate${pending === 1 ? "" : "s"} with the REPS team — usually reviewed within 1 working day.`;
-  } else if (changes > 0) {
-    pill = {
-      label: "Changes requested",
-      cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
-    };
-    subline = "Admin asked for more info on your certificate — open CPD to respond.";
-  } else if (rejected > 0) {
-    pill = {
-      label: "Rejected",
-      cls: "border-rose-400/30 bg-rose-500/15 text-rose-300",
-    };
-    subline = "Your last certificate wasn't accepted. Upload a fresh one in Education & CPD.";
-  } else {
-    pill = {
-      label: "Not started",
-      cls: "border-white/12 bg-white/[0.05] text-white/60",
-    };
-    subline = "Upload your first certificate in Education & CPD. Approval unlocks your profession title.";
+  const [email, setEmail] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
+
+  const status = state?.status ?? "unstarted";
+  const domain = state?.expectedDomain ?? null;
+  const websiteMissing = state?.websiteMissing ?? false;
+  const suggested = domain ? `hello@${domain}` : "";
+
+  React.useEffect(() => {
+    if (!email && domain && (status === "unstarted" || status === "email_sent")) {
+      setEmail(state?.email ?? suggested);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [domain, state?.email, status]);
+
+  const pill = statusPill(status);
+
+  async function handleSend() {
+    if (!email || !isEmailShape(email)) {
+      toast.error("Enter a valid email address on your provider's domain.");
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await start({ data: { email: email.trim().toLowerCase() } });
+      toast.success(`Confirmation email sent to ${email}.`);
+      await qc.invalidateQueries({ queryKey: ["provider-domain-verification"] });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <section
-      id="qualifications"
+      id="domain"
       className="scroll-mt-24 rounded-[16px] border border-reps-border bg-reps-panel p-5"
     >
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-[15px] font-semibold text-white">Qualifications</h2>
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${pill.cls}`}>
+            <h2 className="font-display text-[15px] font-semibold text-white">Provider domain</h2>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${pill.cls}`}
+            >
+              {pill.icon}
               {pill.label}
             </span>
           </div>
-          <p className="mt-0.5 text-[12px] text-white/55">{subline}</p>
+          <p className="mt-0.5 text-[12px] text-white/55">
+            {domain
+              ? `Confirm an email on ${domain} — the domain of your provider website.`
+              : "Confirm a business email on your provider's website domain."}
+          </p>
         </div>
         <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/60">
-          03
+          02
         </span>
       </div>
 
-      {earned && titles.length > 0 ? (
-        <div className="mb-4 flex flex-wrap gap-2">
-          {titles.map((t) => (
-            <span
-              key={t}
-              className="inline-flex items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-ink/40 px-2.5 py-1 text-[12px] font-medium text-white/80"
-            >
-              <GraduationCap className="h-3.5 w-3.5 text-reps-orange" />
-              {t}
-            </span>
-          ))}
+      {loading ? (
+        <div className="flex items-center gap-2 text-[13px] text-white/55">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
+        </div>
+      ) : websiteMissing ? (
+        <WebsiteMissingBlock />
+      ) : status === "approved" ? (
+        <ApprovedBlock state={state} />
+      ) : status === "rejected" ? (
+        <RejectedBlock state={state} onRetry={handleSend} email={email} setEmail={setEmail} submitting={submitting} domain={domain} />
+      ) : status === "pending_admin_review" || status === "email_confirmed" ? (
+        <AwaitingReviewBlock state={state} />
+      ) : (
+        <SendBlock
+          email={email}
+          setEmail={setEmail}
+          onSend={handleSend}
+          submitting={submitting}
+          state={state}
+          domain={domain}
+          suggested={suggested}
+        />
+      )}
+    </section>
+  );
+}
+
+function WebsiteMissingBlock() {
+  return (
+    <div className="rounded-[12px] border border-amber-400/25 bg-amber-500/5 p-4">
+      <div className="flex items-start gap-2.5">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+        <div className="min-w-0">
+          <p className="text-[13.5px] font-semibold text-white">Add your provider website first</p>
+          <p className="mt-1 text-[12.5px] text-white/60">
+            We derive the domain to verify against from your provider website. Set that URL in your
+            profile, then come back here.
+          </p>
+          <Link
+            to="/dashboard/profile"
+            className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-hover"
+          >
+            Edit provider profile
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SendBlock({
+  email,
+  setEmail,
+  onSend,
+  submitting,
+  state,
+  domain,
+  suggested,
+}: {
+  email: string;
+  setEmail: (v: string) => void;
+  onSend: () => void;
+  submitting: boolean;
+  state: ProviderDomainState | undefined;
+  domain: string | null;
+  suggested: string;
+}) {
+  const sentAt = state?.emailSentAt ? new Date(state.emailSentAt) : null;
+  const alreadySent = state?.status === "email_sent";
+
+  return (
+    <div className="flex flex-col gap-3">
+      {alreadySent && sentAt ? (
+        <div className="rounded-[12px] border border-reps-border bg-reps-ink/40 p-3.5">
+          <div className="flex items-start gap-2.5">
+            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-white">
+                We sent a link to {state?.email}
+              </p>
+              <p className="mt-0.5 text-[12px] text-white/55">
+                Click the button in that email to confirm. Didn't get it? Check spam, or resend below.
+                Sent {sentAt.toLocaleString()}.
+              </p>
+            </div>
+          </div>
         </div>
       ) : null}
 
-      <Link
-        to="/dashboard/cpd"
-        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-hover"
-      >
-        {earned ? "Manage in Education & CPD" : "Add your first certificate"}
-        <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
-    </section>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11.5px] font-semibold uppercase tracking-wide text-white/50">
+          Email on {domain ?? "your domain"}
+        </span>
+        <input
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={suggested}
+          className="h-10 rounded-[12px] border border-reps-border bg-reps-ink/60 px-3 text-[13.5px] text-white placeholder:text-white/30 focus:border-reps-orange focus:outline-none"
+        />
+        <span className="text-[11px] text-white/40">
+          Must be on {domain ?? "your provider's domain"} — free providers (Gmail, Outlook, Yahoo…) aren't accepted.
+        </span>
+      </label>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onSend}
+          disabled={submitting || !email}
+          className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {submitting ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : alreadySent ? (
+            <RefreshCw className="h-3.5 w-3.5" />
+          ) : (
+            <Mail className="h-3.5 w-3.5" />
+          )}
+          {alreadySent ? "Resend confirmation" : "Send confirmation email"}
+        </button>
+      </div>
+    </div>
   );
+}
+
+function AwaitingReviewBlock({ state }: { state: ProviderDomainState | undefined }) {
+  return (
+    <div className="rounded-[12px] border border-amber-400/25 bg-amber-500/5 p-4">
+      <div className="flex items-start gap-2.5">
+        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+        <div className="min-w-0">
+          <p className="text-[13.5px] font-semibold text-white">Awaiting REPS review</p>
+          <p className="mt-1 text-[12.5px] text-white/60">
+            You confirmed <strong>{state?.email}</strong>. Our team will review your provider domain
+            and approve it — usually within 1 working day. You'll get an email once it's live.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ApprovedBlock({ state }: { state: ProviderDomainState | undefined }) {
+  return (
+    <div className="rounded-[12px] border border-emerald-400/25 bg-emerald-500/5 p-4">
+      <div className="flex items-start gap-2.5">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+        <div className="min-w-0">
+          <p className="text-[13.5px] font-semibold text-white">Domain verified</p>
+          <p className="mt-1 text-[12.5px] text-white/60">
+            <strong>{state?.expectedDomain}</strong> is confirmed via <strong>{state?.email}</strong>.
+            {state?.adminReviewedAt
+              ? ` Approved ${new Date(state.adminReviewedAt).toLocaleDateString()}.`
+              : ""}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RejectedBlock({
+  state,
+  email,
+  setEmail,
+  onRetry,
+  submitting,
+  domain,
+}: {
+  state: ProviderDomainState | undefined;
+  email: string;
+  setEmail: (v: string) => void;
+  onRetry: () => void;
+  submitting: boolean;
+  domain: string | null;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="rounded-[12px] border border-rose-400/25 bg-rose-500/5 p-4">
+        <div className="flex items-start gap-2.5">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+          <div className="min-w-0">
+            <p className="text-[13.5px] font-semibold text-white">Domain not approved</p>
+            <p className="mt-1 text-[12.5px] text-white/60">
+              {state?.adminDecisionReason ?? "Our team couldn't approve this domain."}
+              {state?.adminNotes ? ` — ${state.adminNotes}` : ""}
+            </p>
+          </div>
+        </div>
+      </div>
+      <SendBlock
+        email={email}
+        setEmail={setEmail}
+        onSend={onRetry}
+        submitting={submitting}
+        state={state}
+        domain={domain}
+        suggested={domain ? `hello@${domain}` : ""}
+      />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                     */
+/* -------------------------------------------------------------------------- */
+
+function statusPill(status: ProviderDomainState["status"]): {
+  label: string;
+  cls: string;
+  icon: React.ReactNode;
+} {
+  switch (status) {
+    case "approved":
+      return {
+        label: "Verified",
+        cls: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+        icon: <CheckCircle2 className="h-3 w-3" />,
+      };
+    case "pending_admin_review":
+    case "email_confirmed":
+      return {
+        label: "Awaiting review",
+        cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+        icon: <Clock className="h-3 w-3" />,
+      };
+    case "email_sent":
+      return {
+        label: "Email sent",
+        cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+        icon: <Mail className="h-3 w-3" />,
+      };
+    case "rejected":
+      return {
+        label: "Rejected",
+        cls: "border-rose-400/30 bg-rose-500/15 text-rose-300",
+        icon: <XCircle className="h-3 w-3" />,
+      };
+    default:
+      return {
+        label: "Not started",
+        cls: "border-white/12 bg-white/[0.05] text-white/60",
+        icon: <Mail className="h-3 w-3" />,
+      };
+  }
 }
