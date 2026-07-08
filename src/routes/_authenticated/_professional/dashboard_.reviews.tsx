@@ -106,7 +106,19 @@ function formatDate(iso: string): string {
 }
 
 type ReviewTab = "all" | "approved" | "pending" | "removed";
-type RequestTab = "all" | "sent" | "opened" | "submitted" | "expired";
+type RequestTab = "all" | "sent" | "delivered" | "opened" | "submitted" | "failed" | "expired";
+
+/** Derive display status; Mailgun events populate delivered_at/failed_at
+ * outside the stored `status` column, so we fold them in here. */
+function displayStatusOf(r: {
+  status: string;
+  delivered_at: string | null;
+  failed_at: string | null;
+}): "sent" | "delivered" | "opened" | "submitted" | "failed" | "expired" {
+  if (r.failed_at) return "failed";
+  if (r.status === "sent" && r.delivered_at) return "delivered";
+  return (r.status as "sent" | "opened" | "submitted" | "expired") ?? "sent";
+}
 
 function TabCount({ n, active }: { n: number; active: boolean }) {
   if (n <= 0) return null;
