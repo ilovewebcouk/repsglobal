@@ -237,7 +237,12 @@ export function ProviderWelcomeBanner({
         <div className="flex min-w-0 items-end gap-4">
           {/* Logo tile with camera hover overlay */}
           <div className="relative">
-            <Avatar className="size-20 rounded-[16px] border border-reps-border bg-reps-panel-soft p-1.5 shadow-lg">
+            <Avatar
+              className={cn(
+                "size-20 rounded-[16px] border border-reps-border shadow-lg",
+                avatarUrl ? "bg-white p-1.5" : "bg-reps-panel-soft",
+              )}
+            >
               {avatarUrl ? (
                 <AvatarImage
                   src={avatarUrl}
@@ -245,7 +250,7 @@ export function ProviderWelcomeBanner({
                   className="rounded-[10px] object-contain"
                 />
               ) : null}
-              <AvatarFallback className="rounded-[10px] bg-reps-panel-soft text-[18px] font-semibold text-white/85">
+              <AvatarFallback className="rounded-[16px] bg-reps-panel-soft text-[18px] font-semibold text-white/85">
                 {initials || "?"}
               </AvatarFallback>
             </Avatar>
