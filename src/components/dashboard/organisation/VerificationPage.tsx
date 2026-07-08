@@ -31,7 +31,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { IdentityProfileCard } from "@/components/dashboard/verification/TrustBlock";
-import { VerifiedBadge, type Tier as BadgeTier } from "@/components/verification/VerifiedBadge";
+import { VerifiedBadge, type VerifiedTier } from "@/components/verification/VerifiedBadge";
 import {
   getProviderDomainVerification,
   startProviderDomainVerification,
