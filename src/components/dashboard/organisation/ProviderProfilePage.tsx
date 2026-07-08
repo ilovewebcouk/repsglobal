@@ -404,11 +404,11 @@ export function ProviderProfilePage() {
                 className={textareaCls}
                 value={form.about}
                 onChange={(e) => update("about", e.target.value)}
-                maxLength={4000}
+                maxLength={800}
                 placeholder="Tell prospective learners about your provider…"
               />
               <div className="mt-1 text-right text-[11px] text-white/40">
-                {form.about.length}/4000
+                {form.about.length}/800
               </div>
             </Field>
           </div>
