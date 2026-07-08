@@ -109,13 +109,7 @@ const ValueSchema: Record<ProviderFieldKey, z.ZodTypeAny> = {
     .nullable(),
   address: z.string().trim().max(500).nullable(),
 
-  year_established: z
-    .union([
-      z.number().int().min(1800).max(currentYear),
-      z.null(),
-    ])
-    .transform((v) => (v == null ? null : String(v))),
-  company_number: z.string().trim().max(40).nullable(),
+
   social_instagram: z.string().trim().max(120).nullable(),
   social_linkedin: z.string().trim().max(120).nullable(),
   social_youtube: z.string().trim().max(120).nullable(),
