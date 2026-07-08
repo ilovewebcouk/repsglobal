@@ -26,7 +26,7 @@ export const getAccountTypeBySlug = createServerFn({ method: "GET" })
  * is not gated behind the 3-pillar trust flow).
  */
 export const getMyAccountType = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("professionals")
