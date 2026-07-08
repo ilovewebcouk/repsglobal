@@ -114,8 +114,11 @@ function displayStatusOf(r: {
   status: string;
   delivered_at: string | null;
   failed_at: string | null;
+  expires_at?: string | null;
 }): "sent" | "delivered" | "opened" | "submitted" | "failed" | "expired" {
+  if (r.status === "submitted") return "submitted";
   if (r.failed_at) return "failed";
+  if (r.expires_at && new Date(r.expires_at) < new Date()) return "expired";
   if (r.status === "sent" && r.delivered_at) return "delivered";
   return (r.status as "sent" | "opened" | "submitted" | "expired") ?? "sent";
 }
