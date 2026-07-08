@@ -409,10 +409,10 @@ export function ProviderProfilePage() {
               label="Provider name"
               hint={
                 namePending
-                  ? "Name changes are locked until your submission is reviewed by an admin."
+                  ? "Name changes are locked until your submission is reviewed by an admin. Your public URL (repsuk.org/t/…) will update automatically once approved."
                   : approvedName
-                    ? "Changes to your name require admin approval before going live."
-                    : "This will be shown in headings, cards and search results — subject to admin approval."
+                    ? "Changes to your name require admin approval before going live. Your public URL (repsuk.org/t/…) updates automatically once approved — you don't set it manually."
+                    : "This will be shown in headings, cards and search results — subject to admin approval. It also sets your public URL (repsuk.org/t/…) automatically."
               }
             >
               <div className="flex flex-col gap-2">
