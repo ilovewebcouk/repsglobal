@@ -532,38 +532,70 @@ function ProviderProfilePage() {
                 ) : null}
               </article>
 
-              {/* Accreditations & Recognition */}
+              {/* Accreditations & Recognition — approved regulated qualifications */}
               <article id="accreditations" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
                 <h2 className="font-display text-[20px] font-bold text-black">
                   Accreditations & Recognition
                 </h2>
-                {accreditations.length === 0 ? (
+                <p className="mt-1 text-[12.5px] text-black/55">
+                  Ofqual-regulated qualifications this provider is approved to deliver.
+                </p>
+                {accreditationsByBody.length === 0 ? (
                   <EmptyBlock
                     className="mt-4"
                     icon={<BadgeCheck className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
                     title="Accreditations will appear here"
-                    sub="Awarding bodies and Ofqual-regulated qualifications the provider offers."
+                    sub="Once REPS has verified the provider's approved-centre status with the awarding body, their regulated qualifications will appear here."
                   />
                 ) : (
-                  <ul className="mt-4 space-y-3">
-                    {accreditations.map((a) => (
-                      <li key={a.code} className="flex items-start gap-3">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#f2f1ec] text-[11px] font-bold text-black/60">
-                          {a.code}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[14px] font-semibold text-black">{a.title}</p>
-                          <p className="text-[12.5px] text-black/55">{a.body}</p>
-                          {a.regulated ? (
-                            <span className="mt-1 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-700">
+                  <div className="mt-4 space-y-5">
+                    {accreditationsByBody.map((group) => (
+                      <div key={group.slug}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white">
+                            {group.logo ? (
+                              <img
+                                src={group.logo}
+                                alt={group.name}
+                                className="max-h-8 max-w-14 object-contain"
+                              />
+                            ) : (
+                              <span className="text-[10px] font-bold uppercase tracking-wide text-black/50">
+                                {group.name.slice(0, 3)}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[14px] font-semibold text-black">{group.name}</p>
+                            <span className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-700">
                               <Check className="h-3 w-3" strokeWidth={2.5} />
-                              Ofqual-regulated
+                              Approved centre · Ofqual-regulated
                             </span>
-                          ) : null}
+                          </div>
                         </div>
-                      </li>
+                        <ul className="mt-2 space-y-1.5 pl-[76px]">
+                          {group.items.map((it) => (
+                            <li
+                              key={it.id}
+                              className="flex flex-wrap items-center gap-2 text-[13.5px] text-black/75"
+                            >
+                              {it.level != null ? (
+                                <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
+                                  L{it.level}
+                                </span>
+                              ) : null}
+                              <span className="font-medium text-black">{it.title}</span>
+                              {it.ofqual_ref ? (
+                                <span className="text-[11.5px] text-black/45">
+                                  {it.ofqual_ref}
+                                </span>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </article>
 
