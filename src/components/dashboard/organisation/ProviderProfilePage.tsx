@@ -329,16 +329,16 @@ export function ProviderProfilePage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Logo" hint="Square works best. Max 5 MB.">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-reps-border bg-reps-panel-soft">
+                  <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-reps-border bg-reps-panel-soft p-1.5">
                     {data?.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={data.logo_url}
                         alt="Provider logo"
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain"
                       />
                     ) : (
-                      <Building2 className="h-6 w-6 text-white/40" />
+                      <Building2 className="h-4 w-4 text-white/40" />
                     )}
                   </div>
                   <FilePickerButton
