@@ -855,6 +855,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           titles: buildTitleLabels(pro.primary_title_slug, (pro as { secondary_title_slug?: string | null }).secondary_title_slug ?? null),
           specialisms: Array.isArray(pro.specialisms) ? pro.specialisms : [],
           city: pro.city,
+          address: (pro as { address?: string | null }).address ?? null,
           in_person_available: !!pro.in_person_available,
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
