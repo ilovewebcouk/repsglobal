@@ -117,6 +117,8 @@ export function ProviderProfilePage() {
     website_url: "",
     contact_email: "",
     contact_phone: "",
+    address: "",
+
     year_established: "" as string,
     company_number: "",
     social_instagram: "",
