@@ -212,8 +212,7 @@ export const updateMyProviderProfile = createServerFn({ method: "POST" })
       { field_group: "contact", field_key: "contact_phone",      proposed: toStr(c.contact_phone),      current: toStr(p.contact_phone) },
       { field_group: "contact", field_key: "address",            proposed: toStr(c.address),            current: toStr(p.address) },
 
-      { field_group: "company", field_key: "year_established",   proposed: toStr(c.year_established),   current: toStr(p.year_established) },
-      { field_group: "company", field_key: "company_number",     proposed: toStr(c.company_number),     current: toStr(p.company_number) },
+
       { field_group: "social",  field_key: "social_instagram",   proposed: normaliseSocial(c.social_instagram), current: toStr(p.social_instagram) },
       { field_group: "social",  field_key: "social_linkedin",    proposed: normaliseSocial(c.social_linkedin),  current: toStr(p.social_linkedin) },
       { field_group: "social",  field_key: "social_youtube",     proposed: normaliseSocial(c.social_youtube),   current: toStr(p.social_youtube) },
