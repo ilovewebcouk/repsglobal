@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
+
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { IdentityProfileCard } from "@/components/dashboard/verification/TrustBlock";
 import { VerifiedBadge, type VerifiedTier } from "@/components/verification/VerifiedBadge";
@@ -86,7 +86,6 @@ function useReturnToasts() {
 
 export function ProviderVerificationPage() {
   useReturnToasts();
-  const tier = useTrainerTier();
 
   const fetchTrust = useServerFn(getTrustState);
   const trustQ = useQuery({
@@ -111,10 +110,11 @@ export function ProviderVerificationPage() {
   return (
     <DashboardShell
       role="trainer"
-      tier={tier === "verified" ? "verified" : "pro"}
+      tier="training_provider"
       active="Verification"
       title="Verification"
       subtitle="Two checks to verify your training provider on REPS."
+
     >
       <div className="flex flex-col gap-6">
         <Hero
