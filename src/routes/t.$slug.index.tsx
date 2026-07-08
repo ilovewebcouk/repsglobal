@@ -131,9 +131,21 @@ function ProviderProfilePage() {
     staleTime: 60_000,
   });
 
+  const fetchQuals = useServerFn(listPublicProviderQualifications);
+  const { data: qualsData } = useQuery({
+    queryKey: ["public-provider-quals", sf.professional_id],
+    queryFn: () => fetchQuals({ data: { providerId: sf.professional_id } }),
+    staleTime: 60_000,
+    enabled: !!sf.professional_id,
+  });
+
   const reviews = reviewsData?.reviews ?? [];
   const ratingAvg = reviewsData?.average ?? 0;
   const ratingCount = reviewsData?.count ?? 0;
+
+  const regulatedRows = qualsData?.regulated ?? [];
+  const cpdRows = qualsData?.cpd ?? [];
+  const repsMemberId = qualsData?.reps_member_id ?? null;
 
   const providerName = sf.full_name?.trim() || "Training Provider";
   const tagline = sf.tagline?.trim() || `${providerName} — REPS Verified Training Provider`;
@@ -157,13 +169,35 @@ function ProviderProfilePage() {
   if (sf.online_available) deliveryModes.push("Online");
   const deliveryLabel = deliveryModes.length === 2 ? "Blended" : deliveryModes[0] ?? "In-person";
 
-  // Provider-specific: mock courses (empty state safe)
-  const courses: Course[] = [];
-
-  const accreditations: Array<{ code: string; title: string; body: string; regulated: boolean }> = [];
+  // Approved regulated qualifications grouped by awarding body for the
+  // "Accreditations & Recognition" block.
+  const accreditationsByBody = React.useMemo(() => {
+    const groups = new Map<
+      string,
+      { slug: string; name: string; logo: string | null; items: Array<{ id: string; title: string; level: number | null; ofqual_ref: string | null }> }
+    >();
+    for (const row of regulatedRows) {
+      const q = row.qualification;
+      if (!q) continue;
+      const key = q.awarding_body_slug;
+      const existing = groups.get(key) ?? {
+        slug: key,
+        name: awardingBodyName(key) ?? key,
+        logo: awardingBodyLogo(key),
+        items: [],
+      };
+      existing.items.push({
+        id: row.id,
+        title: q.title,
+        level: q.level,
+        ofqual_ref: q.ofqual_ref,
+      });
+      groups.set(key, existing);
+    }
+    return Array.from(groups.values());
+  }, [regulatedRows]);
 
   const verifiedProsLinked = 0;
-
   const faqs: WebsiteFaqDTO[] = [];
 
   return (
