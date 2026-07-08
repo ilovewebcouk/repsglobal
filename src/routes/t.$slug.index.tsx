@@ -137,7 +137,7 @@ function ProviderProfilePage() {
   const tagline = sf.tagline?.trim() || `${providerName} — REPS Verified Training Provider`;
   const city = sf.city ?? "Location coming soon";
   const location = sf.address?.trim() || sf.city?.trim() || "Location coming soon";
-  const logoUrl = DEMO_PROVIDER_LOGOS[slug] ?? sf.avatar_url ?? null;
+  const logoUrl = sf.avatar_url ?? DEMO_PROVIDER_LOGOS[slug] ?? null;
 
   const yearFrom = sf.trust?.qualifiedSinceYear ?? sf.coaching_since_year ?? null;
   const yearsEstablished = yearFrom ? Math.max(1, new Date().getFullYear() - yearFrom) : null;
@@ -222,11 +222,11 @@ function ProviderProfilePage() {
                 );
               })()}
               {logoUrl && DEMO_PROVIDER_COVERS[slug] && (
-                <div className="absolute bottom-3 left-3 flex h-14 w-14 items-center justify-center rounded-[12px] border border-black/10 bg-white p-2 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.25)]">
+                <div className="absolute bottom-3 left-3 flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[14px] bg-white ring-1 ring-black/5 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.35)]">
                   <img
                     src={logoUrl}
                     alt={`${providerName} logo`}
-                    className="h-full w-full object-contain"
+                    className="h-full w-full object-contain p-1.5"
                     loading="eager"
                   />
                 </div>
