@@ -36,14 +36,6 @@ import { getProviderDomainVerification } from "@/lib/verification/provider-domai
 /* Helpers                                                                     */
 /* -------------------------------------------------------------------------- */
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(new Error("Couldn't read file"));
-    r.readAsDataURL(file);
-  });
-}
 
 function XIcon() {
   return (
