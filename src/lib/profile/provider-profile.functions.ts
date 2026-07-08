@@ -109,7 +109,7 @@ const UpdateInput = z.object({
   name: z.string().trim().max(120).optional(),
 
   tagline: z.string().trim().max(160).nullable().optional(),
-  about: z.string().trim().max(4000).nullable().optional(),
+  about: z.string().trim().max(800).nullable().optional(),
   website_url: z
     .string()
     .trim()
