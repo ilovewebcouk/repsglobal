@@ -367,3 +367,45 @@ export const updateMyAvatar = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true, url };
   });
+
+// Upload a logo/avatar image server-side (base64 data URL). Uses service-role
+// so it works both for the signed-in owner AND when an admin is impersonating
+// a provider — client-side supabase.storage.upload trips storage RLS in the
+// impersonation case because the browser JWT's auth.uid is the admin's, not
+// the professional's. Mirrors uploadHeroFromBase64.
+export const uploadAvatarFromBase64 = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        dataUrl: z.string().min(20).max(10 * 1024 * 1024),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const match = /^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i.exec(
+      data.dataUrl,
+    );
+    if (!match) throw new Error("Invalid image data URL");
+    const rawExt = match[1].toLowerCase();
+    const ext = rawExt === "png" ? "png" : rawExt === "webp" ? "webp" : "jpg";
+    const contentType =
+      ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+    const bytes = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
+    if (bytes.byteLength > 5 * 1024 * 1024) {
+      throw new Error("Image is over 5 MB after encoding — try a smaller source");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const objectPath = `${userId}/logo-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from("avatars")
+      .upload(objectPath, bytes, {
+        contentType,
+        upsert: true,
+        cacheControl: "31536000",
+      });
+    if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+    return { path: objectPath };
+  });
+
