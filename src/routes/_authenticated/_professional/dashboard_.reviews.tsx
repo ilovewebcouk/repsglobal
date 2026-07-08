@@ -232,18 +232,16 @@ function ReviewsPage() {
 
   // ── request status filtering ───────────────────────────────────────────
   const requestCounts = React.useMemo(() => {
-    const c = { all: requests.length, sent: 0, opened: 0, submitted: 0, expired: 0 };
+    const c = { all: requests.length, sent: 0, delivered: 0, opened: 0, submitted: 0, failed: 0, expired: 0 };
     for (const r of requests) {
-      if (r.status === "sent") c.sent++;
-      else if (r.status === "opened") c.opened++;
-      else if (r.status === "submitted") c.submitted++;
-      else if (r.status === "expired") c.expired++;
+      const s = displayStatusOf(r);
+      c[s]++;
     }
     return c;
   }, [requests]);
   const filteredRequests = React.useMemo(() => {
     if (requestTab === "all") return requests;
-    return requests.filter((r) => r.status === requestTab);
+    return requests.filter((r) => displayStatusOf(r) === requestTab);
   }, [requests, requestTab]);
 
   const kpiTiles = [
