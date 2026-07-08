@@ -26,7 +26,7 @@ import {
   Store,
   Target,
   Send,
-  UserCheck,
+  
   UserCircle,
   Users,
   type LucideIcon,
