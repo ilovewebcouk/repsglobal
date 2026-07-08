@@ -49,7 +49,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "slug, contact_phone, contact_email, website_url, address, year_established, company_number, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
+          "slug, contact_phone, contact_email, website_url, address, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
         )
         .eq("id", userId)
         .maybeSingle(),
