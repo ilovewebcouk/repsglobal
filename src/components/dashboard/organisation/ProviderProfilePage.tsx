@@ -137,6 +137,8 @@ export function ProviderProfilePage() {
       website_url: data.website_url ?? "",
       contact_email: data.contact_email ?? "",
       contact_phone: data.contact_phone ?? "",
+      address: data.address ?? "",
+
       year_established:
         data.year_established != null ? String(data.year_established) : "",
       company_number: data.company_number ?? "",
