@@ -13,6 +13,7 @@ import {
   Building2,
   Camera,
   Clock,
+  ExternalLink,
   ImageIcon,
   Instagram,
   Linkedin,
@@ -266,15 +267,28 @@ export function ProviderProfilePage() {
       title="Provider profile"
       subtitle="Public identity, contact details and social links for your REPS listing."
       actions={
-        <button
-          type="button"
-          disabled={saveMut.isPending || isLoading}
-          onClick={() => saveMut.mutate()}
-          className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
-        >
-          {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Save changes
-        </button>
+        <div className="flex items-center gap-2">
+          {data?.slug ? (
+            <a
+              href={`/t/${data.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] font-medium text-white transition-colors hover:bg-white/[0.06]"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              View public page
+            </a>
+          ) : null}
+          <button
+            type="button"
+            disabled={saveMut.isPending || isLoading}
+            onClick={() => saveMut.mutate()}
+            className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
+          >
+            {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Save changes
+          </button>
+        </div>
       }
     >
       <div className="flex flex-col gap-4">

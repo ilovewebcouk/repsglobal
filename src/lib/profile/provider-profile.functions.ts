@@ -17,6 +17,7 @@ import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/au
 
 export type ProviderProfile = {
   name: string;
+  slug: string | null;
   logo_url: string | null;
   hero_image_url: string | null;
   tagline: string | null;
@@ -47,7 +48,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
       supabase
         .from("professionals")
         .select(
-          "contact_phone, contact_email, website_url, year_established, company_number, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
+          "slug, contact_phone, contact_email, website_url, year_established, company_number, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -67,6 +68,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
         (pr.business_name as string | null) ??
         (pr.full_name as string | null) ??
         "",
+      slug: (p.slug as string | null) ?? null,
       logo_url: (pr.avatar_url as string | null) ?? null,
       hero_image_url: (s.hero_image_url as string | null) ?? null,
       tagline: (s.tagline as string | null) ?? null,
