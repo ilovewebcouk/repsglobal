@@ -60,8 +60,7 @@ const FIELD_GROUP: Record<ProviderFieldKey, ProviderFieldGroup> = {
   contact_phone: "contact",
   address: "contact",
 
-  year_established: "company",
-  company_number: "company",
+
   social_instagram: "social",
   social_linkedin: "social",
   social_youtube: "social",
