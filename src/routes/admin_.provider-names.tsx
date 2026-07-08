@@ -83,7 +83,7 @@ function AdminProviderNamesPage() {
   return (
     <DashboardShell
       role="admin"
-      active="Verification"
+      active="Name approvals"
       title="Provider name approvals"
       subtitle="Approve or reject public name changes submitted by training providers."
     >
