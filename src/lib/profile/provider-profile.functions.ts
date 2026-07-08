@@ -181,7 +181,7 @@ export const updateMyProviderProfile = createServerFn({ method: "POST" })
       sb
         .from("professionals")
         .select(
-          "contact_phone, contact_email, website_url, address, year_established, company_number, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
+          "contact_phone, contact_email, website_url, address, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
         )
         .eq("id", userId)
         .maybeSingle(),
