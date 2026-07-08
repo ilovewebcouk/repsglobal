@@ -217,9 +217,12 @@ export const listMyVerificationNotifications = createServerFn({ method: "POST" }
         const ctx = r.context ?? {};
         const preview =
           (ctx.message as string | undefined) ??
+          (ctx.admin_note as string | undefined) ??
           (ctx.expiry_date
             ? `Expiry on file: ${ctx.expiry_date as string}`
-            : "Open your verification dashboard for details.");
+            : r.event.startsWith("provider_")
+              ? "Open your provider profile for details."
+              : "Open your verification dashboard for details.");
         return {
           key: `verif:${r.id}`,
           notificationId: r.id,
@@ -227,7 +230,7 @@ export const listMyVerificationNotifications = createServerFn({ method: "POST" }
           title,
           preview,
           createdAt: r.created_at,
-          href: "/dashboard/verification",
+          href: hrefFor(r.event),
         } satisfies VerificationNotificationItem;
       }),
     };
