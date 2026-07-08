@@ -155,9 +155,18 @@ export function ProviderProfilePage() {
       if (yearNum != null && (Number.isNaN(yearNum) || yearNum < 1800 || yearNum > CURRENT_YEAR)) {
         throw new Error(`Year established must be between 1800 and ${CURRENT_YEAR}.`);
       }
-      return saveProfile({
+
+      // Submit name change for admin approval when it differs from the
+      // currently approved name (and isn't already pending).
+      let nameSubmitted = false;
+      const requestedName = form.name.trim();
+      if (!namePending && requestedName && requestedName !== approvedName.trim()) {
+        const res = await submitName({ data: { requested_name: requestedName } });
+        if ((res as { submitted?: boolean }).submitted) nameSubmitted = true;
+      }
+
+      await saveProfile({
         data: {
-          name: form.name.trim(),
           tagline: form.tagline || null,
           about: form.about || null,
           website_url: form.website_url || null,
@@ -172,15 +181,23 @@ export function ProviderProfilePage() {
           social_x: form.social_x || null,
         },
       });
+
+      return { nameSubmitted };
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
+      qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       qc.invalidateQueries({ queryKey: ["website-public"] });
-      toast.success("Profile saved.");
+      if (res?.nameSubmitted) {
+        toast.success("Profile saved. Name change submitted for admin approval.");
+      } else {
+        toast.success("Profile saved.");
+      }
     },
     onError: (e: Error) => toast.error(e.message || "Couldn't save profile"),
   });
+
 
   /* -------------------- image uploads -------------------- */
 
