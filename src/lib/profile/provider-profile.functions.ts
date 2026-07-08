@@ -25,6 +25,8 @@ export type ProviderProfile = {
   website_url: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  address: string | null;
+
   year_established: number | null;
   company_number: string | null;
   social_instagram: string | null;
