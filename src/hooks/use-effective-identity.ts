@@ -9,6 +9,7 @@ import { useAccountMenu } from "@/hooks/use-account-menu";
 import { getImpersonationStatus } from "@/lib/admin/impersonation.functions";
 
 export type EffectiveIdentity = {
+  id: string | null;
   name: string;
   email: string | null;
   avatarUrl: string | null;
@@ -42,6 +43,7 @@ export function useEffectiveIdentity(): EffectiveIdentity {
             ? "Training provider"
             : "Core";
     return {
+      id: data.professional_id,
       name: data.name,
       email: data.email ?? null,
       avatarUrl: data.avatarUrl,
@@ -52,6 +54,7 @@ export function useEffectiveIdentity(): EffectiveIdentity {
   }
 
   return {
+    id: account.user?.id ?? null,
     name: account.user?.name ?? "REPS Member",
     email: account.user?.email ?? null,
     avatarUrl: account.avatarUrl,

@@ -100,12 +100,14 @@ function FooterItemBadge({ item }: { item: NavItem }) {
 
 function VerificationCountBadge() {
   const { user } = useSessionUser();
+  const effective = useEffectiveIdentity();
   const fetchAcctType = useServerFn(getMyAccountType);
   const fetchTrust = useServerFn(getTrustState);
   const fetchDomain = useServerFn(getProviderDomainVerification);
+  const queryScope = effective.id ?? user?.id ?? "anon";
 
   const acctTypeQ = useQuery({
-    queryKey: ["my-account-type"],
+    queryKey: ["my-account-type", queryScope],
     queryFn: () => fetchAcctType(),
     staleTime: 5 * 60_000,
     enabled: !!user,
@@ -114,14 +116,14 @@ function VerificationCountBadge() {
   const isOrganisation = accountType === "organisation";
 
   const trustQ = useQuery({
-    queryKey: ["my-trust-state"],
+    queryKey: ["my-trust-state", queryScope],
     queryFn: () => fetchTrust(),
     staleTime: 30_000,
     enabled: !!user,
   });
 
   const domainQ = useQuery({
-    queryKey: ["my-provider-domain-status"],
+    queryKey: ["my-provider-domain-status", queryScope],
     queryFn: () => fetchDomain(),
     staleTime: 30_000,
     enabled: !!user && isOrganisation,
@@ -324,9 +326,10 @@ function WebsiteLockedMenuItem({ item, isActive }: { item: NavItem; isActive: bo
 
 function useIsFullyVerified(): { ready: boolean; verified: boolean } {
   const { user } = useSessionUser();
+  const effective = useEffectiveIdentity();
   const fetchTrust = useServerFn(getTrustState);
   const { data, isLoading } = useQuery({
-    queryKey: ["my-trust-state"],
+    queryKey: ["my-trust-state", effective.id ?? user?.id ?? "anon"],
     queryFn: () => fetchTrust(),
     staleTime: 30_000,
     enabled: !!user,
@@ -336,9 +339,10 @@ function useIsFullyVerified(): { ready: boolean; verified: boolean } {
 
 function useIsOrganisation(): boolean {
   const { user } = useSessionUser();
+  const effective = useEffectiveIdentity();
   const fetchAcctType = useServerFn(getMyAccountType);
   const { data } = useQuery({
-    queryKey: ["my-account-type"],
+    queryKey: ["my-account-type", effective.id ?? user?.id ?? "anon"],
     queryFn: () => fetchAcctType(),
     staleTime: 5 * 60_000,
     enabled: !!user,
