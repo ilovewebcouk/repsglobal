@@ -404,7 +404,9 @@ export const createReviewRequestsBulk = createServerFn({ method: "POST" })
 
     let sent = 0;
     const failed: Array<{ email: string; reason: string }> = [];
-    const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+    const { sendReviewRequestViaMailgun } = await import(
+      "@/lib/reviews/send-review-request.server"
+    );
 
     for (const entry of rows) {
       try {
@@ -430,10 +432,9 @@ export const createReviewRequestsBulk = createServerFn({ method: "POST" })
 
         const reviewUrl = `https://repsuk.org/r/${row.token}`;
         try {
-          await sendTransactionalEmailServer({
-            templateName: "review-request",
+          await sendReviewRequestViaMailgun({
+            reviewRequestId: row.id,
             recipientEmail: entry.client_email,
-            idempotencyKey: `review-request:${row.id}`,
             templateData: {
               proName,
               reviewUrl,
