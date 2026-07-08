@@ -699,10 +699,14 @@ function ProviderProfilePage() {
                 <MessageCircle className="h-4 w-4" strokeWidth={2} />
                 Send Enquiry
               </Link>
-              <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/15 bg-white px-5 text-[14px] font-semibold text-black shadow-none transition-colors hover:border-black/30">
-                <Bookmark className="h-4 w-4" strokeWidth={2} />
-                Save profile
-              </button>
+              <Link
+                to="/t/$slug/review"
+                params={{ slug }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/15 bg-white px-5 text-[14px] font-semibold text-black shadow-none transition-colors hover:border-black/30"
+              >
+                <Star className="h-4 w-4" strokeWidth={2} />
+                Write a Review
+              </Link>
             </div>
           </div>
         </section>
