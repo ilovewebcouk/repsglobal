@@ -520,6 +520,11 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
           .update({ business_name: (row as any).requested_name })
           .eq("id", (row as any).user_id);
         if (pErr) throw new Error(pErr.message);
+        await regenerateProviderSlug(
+          sa,
+          (row as any).user_id,
+          (row as any).requested_name,
+        );
       }
       const { error: uErr } = await sa
         .from("provider_name_requests")
