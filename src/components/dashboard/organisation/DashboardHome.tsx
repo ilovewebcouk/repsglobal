@@ -28,6 +28,8 @@ import {
   WelcomeBanner,
   useHubData,
 } from "@/components/dashboard/hub";
+import { ProviderWelcomeBanner } from "@/components/dashboard/organisation/ProviderWelcomeBanner";
+
 import { DashboardVerificationBanner } from "@/components/dashboard/DashboardVerificationBanner";
 
 
