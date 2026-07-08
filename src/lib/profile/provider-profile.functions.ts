@@ -27,8 +27,7 @@ export type ProviderProfile = {
   contact_phone: string | null;
   address: string | null;
 
-  year_established: number | null;
-  company_number: string | null;
+
   social_instagram: string | null;
   social_linkedin: string | null;
   social_youtube: string | null;
