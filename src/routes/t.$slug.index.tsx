@@ -190,7 +190,7 @@ function ProviderProfilePage() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr] lg:gap-8">
             <div className="relative aspect-square w-full overflow-hidden rounded-[18px] border border-black/10 bg-gradient-to-br from-reps-warm-white to-[#efece4]">
               {(() => {
-                const coverUrl = DEMO_PROVIDER_COVERS[slug] ?? null;
+                const coverUrl = sf.hero_image_url ?? DEMO_PROVIDER_COVERS[slug] ?? null;
                 if (coverUrl) {
                   return (
                     <>
