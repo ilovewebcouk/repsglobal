@@ -474,3 +474,29 @@ async function resizeForCover(dataUrl: string): Promise<string> {
   ctx.drawImage(img, 0, 0, targetW, targetH);
   return canvas.toDataURL("image/jpeg", 0.85);
 }
+
+// Logo/avatar: cap to 512px square-ish, JPEG 0.9. Keeps the payload well
+// under the server's 5 MB base64 cap and matches how the avatar is rendered.
+async function resizeForLogo(dataUrl: string): Promise<string> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.decoding = "async";
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("Couldn't decode image"));
+    i.src = dataUrl;
+  });
+  const MAX = 512;
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+  const scale = Math.min(1, MAX / Math.max(w, h));
+  const targetW = Math.round(w * scale);
+  const targetH = Math.round(h * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = targetW;
+  canvas.height = targetH;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, targetW, targetH);
+  return canvas.toDataURL("image/jpeg", 0.9);
+}
