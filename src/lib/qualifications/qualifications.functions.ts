@@ -593,3 +593,75 @@ export const getQualificationDocSignedUrl = createServerFn({ method: "POST" })
     if (error || !signed) throw new Error(error?.message ?? "Sign failed");
     return { url: signed.signedUrl };
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public — approved qualifications & CPD for a provider (read-only, anon-safe)
+
+export type PublicProviderRegulatedRow = {
+  id: string;
+  qualification: {
+    id: string;
+    title: string;
+    level: number | null;
+    awarding_body_slug: string;
+    ofqual_ref: string | null;
+  } | null;
+};
+
+export type PublicProviderCpdRow = {
+  id: string;
+  title: string;
+  level: number | null;
+  hours: number | null;
+  delivery_mode: "in_person" | "online" | "blended" | null;
+  summary: string | null;
+  reps_cpd_number: string | null;
+  accredited_at: string | null;
+};
+
+export const listPublicProviderQualifications = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z.object({ providerId: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data }): Promise<{
+    regulated: PublicProviderRegulatedRow[];
+    cpd: PublicProviderCpdRow[];
+    reps_member_id: string | null;
+  }> => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+    );
+
+    const [reg, cpd, pro] = await Promise.all([
+      supabase
+        .from("provider_regulated_permissions")
+        .select(
+          "id, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
+        )
+        .eq("provider_id", data.providerId)
+        .eq("status", "approved"),
+      supabase
+        .from("cpd_courses")
+        .select(
+          "id, title, level, hours, delivery_mode, summary, reps_cpd_number, accredited_at",
+        )
+        .eq("provider_id", data.providerId)
+        .eq("status", "approved")
+        .order("accredited_at", { ascending: false }),
+      supabase
+        .from("professionals")
+        .select("reps_member_id")
+        .eq("id", data.providerId)
+        .maybeSingle(),
+    ]);
+
+    return {
+      regulated: ((reg.data ?? []) as unknown) as PublicProviderRegulatedRow[],
+      cpd: ((cpd.data ?? []) as unknown) as PublicProviderCpdRow[],
+      reps_member_id:
+        (pro.data as { reps_member_id?: string | null } | null)?.reps_member_id ?? null,
+    };
+  });
