@@ -32,6 +32,7 @@ import {
   getMyProviderNameStatus,
   submitProviderNameChange,
 } from "@/lib/verification/provider-name.functions";
+import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
 import {
   updateMyAvatar,
   uploadAvatarFromBase64,
