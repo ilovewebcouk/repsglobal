@@ -35,8 +35,10 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { supabase } from "@/integrations/supabase/client";
-import { updateMyAvatar } from "@/lib/profile/dashboard-profile.functions";
+import {
+  updateMyAvatar,
+  uploadAvatarFromBase64,
+} from "@/lib/profile/dashboard-profile.functions";
 import {
   updateMyWebsiteHero,
   uploadHeroFromBase64,
