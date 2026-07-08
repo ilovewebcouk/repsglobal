@@ -161,53 +161,92 @@ function emptyToNull<T extends Record<string, unknown>>(o: T): T {
   return out as T;
 }
 
+/**
+ * Save profile changes.
+ *
+ * NOTE: as of the provider approval overhaul, EVERY public-facing field is
+ * routed through `provider_change_requests` and admin approval — nothing is
+ * written directly to `professionals` / `websites`. The `name` field goes
+ * through `provider_name_requests` via `submitProviderNameChange` on the
+ * client. `contact_email` and `website_url` are locked once the domain has
+ * been verified (client-side guard).
+ */
 export const updateMyProviderProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => UpdateInput.parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ ok: true; submitted: number }> => {
     const { supabase, userId } = context;
+    const sb = supabase as any;
     const c = emptyToNull(data);
 
-    // NOTE: `name` (profiles.business_name) is NOT written here. Name
-    // changes go through the admin approval queue via
-    // `submitProviderNameChange` in provider-name.functions.ts. The `name`
-    // field on this input is accepted for backwards compatibility but
-    // ignored — the client submits name changes separately.
+    // Load current values so we only enqueue actual diffs.
+    const [{ data: pro }, { data: site }] = await Promise.all([
+      sb
+        .from("professionals")
+        .select(
+          "contact_phone, contact_email, website_url, year_established, company_number, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
+        )
+        .eq("id", userId)
+        .maybeSingle(),
+      sb
+        .from("websites")
+        .select("tagline, about")
+        .eq("professional_id", userId)
+        .maybeSingle(),
+    ]);
+    const p = (pro ?? {}) as Record<string, unknown>;
+    const s = (site ?? {}) as Record<string, unknown>;
 
+    type Row = {
+      field_group: "identity" | "about" | "contact" | "company" | "social";
+      field_key: string;
+      proposed: string | null;
+      current: string | null;
+    };
 
-    // professionals: contact + company + socials.
-    const proPatch = {
-      contact_phone: c.contact_phone ?? null,
-      contact_email: c.contact_email ?? null,
-      website_url: c.website_url ?? null,
-      year_established: c.year_established ?? null,
-      company_number: c.company_number ?? null,
-      social_instagram: normaliseSocial(c.social_instagram),
-      social_linkedin: normaliseSocial(c.social_linkedin),
-      social_youtube: normaliseSocial(c.social_youtube),
-      social_tiktok: normaliseSocial(c.social_tiktok),
-      social_x: normaliseSocial(c.social_x),
-    } as Record<string, unknown>;
-    const { error: proErr } = await supabase
-      .from("professionals")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .update(proPatch as any)
-      .eq("id", userId);
-    if (proErr) throw proErr;
+    const toStr = (v: unknown): string | null =>
+      v == null || v === "" ? null : String(v);
 
-    // websites: about + tagline (upsert so first-time providers work).
-    const { error: sErr } = await supabase
-      .from("websites")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .upsert(
-        {
-          professional_id: userId,
-          about: c.about ?? null,
-          tagline: c.tagline ?? null,
-        } as any,
-        { onConflict: "professional_id" },
-      );
-    if (sErr) throw sErr;
+    const rows: Row[] = [
+      { field_group: "about",   field_key: "tagline",            proposed: toStr(c.tagline),            current: toStr(s.tagline) },
+      { field_group: "about",   field_key: "about",              proposed: toStr(c.about),              current: toStr(s.about) },
+      { field_group: "contact", field_key: "website_url",        proposed: toStr(c.website_url),        current: toStr(p.website_url) },
+      { field_group: "contact", field_key: "contact_email",      proposed: toStr(c.contact_email),      current: toStr(p.contact_email) },
+      { field_group: "contact", field_key: "contact_phone",      proposed: toStr(c.contact_phone),      current: toStr(p.contact_phone) },
+      { field_group: "company", field_key: "year_established",   proposed: toStr(c.year_established),   current: toStr(p.year_established) },
+      { field_group: "company", field_key: "company_number",     proposed: toStr(c.company_number),     current: toStr(p.company_number) },
+      { field_group: "social",  field_key: "social_instagram",   proposed: normaliseSocial(c.social_instagram), current: toStr(p.social_instagram) },
+      { field_group: "social",  field_key: "social_linkedin",    proposed: normaliseSocial(c.social_linkedin),  current: toStr(p.social_linkedin) },
+      { field_group: "social",  field_key: "social_youtube",     proposed: normaliseSocial(c.social_youtube),   current: toStr(p.social_youtube) },
+      { field_group: "social",  field_key: "social_tiktok",      proposed: normaliseSocial(c.social_tiktok),    current: toStr(p.social_tiktok) },
+      { field_group: "social",  field_key: "social_x",           proposed: normaliseSocial(c.social_x),         current: toStr(p.social_x) },
+    ];
 
-    return { ok: true };
+    // Only submit a value the caller actually provided (undefined → skip).
+    const provided = new Set(
+      Object.entries(c)
+        .filter(([, v]) => v !== undefined)
+        .map(([k]) => k),
+    );
+
+    const toInsert = rows
+      .filter((r) => provided.has(r.field_key))
+      .filter((r) => (r.proposed ?? null) !== (r.current ?? null))
+      .map((r) => ({
+        provider_id: userId,
+        field_group: r.field_group,
+        field_key: r.field_key,
+        proposed_value: { value: r.proposed },
+        current_value: { value: r.current },
+        status: "pending" as const,
+      }));
+
+    if (toInsert.length === 0) return { ok: true, submitted: 0 };
+
+    const { error } = await sb
+      .from("provider_change_requests")
+      .insert(toInsert);
+    if (error) throw new Error(error.message);
+
+    return { ok: true, submitted: toInsert.length };
   });

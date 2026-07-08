@@ -31,6 +31,11 @@ import {
   submitProviderNameChange,
 } from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
+import {
+  listMyProviderChanges,
+  PROVIDER_FIELD_LABELS,
+  type ProviderFieldKey,
+} from "@/lib/verification/provider-changes.functions";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
@@ -86,6 +91,14 @@ export function ProviderProfilePage() {
     queryKey: ["my-provider-domain-status"],
     queryFn: () => fetchDomainStatus(),
   });
+
+  const fetchChanges = useServerFn(listMyProviderChanges);
+  const { data: changes } = useQuery({
+    queryKey: ["my-provider-changes"],
+    queryFn: () => fetchChanges(),
+  });
+  const pendingChanges = changes?.pending ?? {};
+  const pendingKeys = Object.keys(pendingChanges) as ProviderFieldKey[];
 
   const namePending = !!nameStatus?.pending;
   const approvedName = nameStatus?.approved_name ?? "";
@@ -157,7 +170,7 @@ export function ProviderProfilePage() {
         if ((res as { submitted?: boolean }).submitted) nameSubmitted = true;
       }
 
-      await saveProfile({
+      const res = await saveProfile({
         data: {
           tagline: form.tagline || null,
           about: form.about || null,
@@ -174,17 +187,22 @@ export function ProviderProfilePage() {
         },
       });
 
-      return { nameSubmitted };
+      const submitted = (res as { submitted?: number } | undefined)?.submitted ?? 0;
+      return { nameSubmitted, submitted };
     },
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
       qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
+      qc.invalidateQueries({ queryKey: ["my-provider-changes"] });
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       qc.invalidateQueries({ queryKey: ["website-public"] });
-      if (res?.nameSubmitted) {
-        toast.success("Profile saved. Name change submitted for admin approval.");
+      const total = (res?.submitted ?? 0) + (res?.nameSubmitted ? 1 : 0);
+      if (total === 0) {
+        toast.success("No changes to submit.");
+      } else if (total === 1) {
+        toast.success("1 change submitted for admin approval.");
       } else {
-        toast.success("Profile saved.");
+        toast.success(`${total} changes submitted for admin approval.`);
       }
     },
     onError: (e: Error) => toast.error(e.message || "Couldn't save profile"),
@@ -221,12 +239,42 @@ export function ProviderProfilePage() {
             className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
           >
             {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Save changes
+            Submit for review
           </button>
         </div>
       }
     >
       <div className="flex flex-col gap-4">
+        {/* Pending changes banner — every edit awaits admin review */}
+        <div className="rounded-[14px] border border-amber-400/25 bg-amber-500/[0.06] px-4 py-3 text-[12.5px] text-amber-100/90">
+          <div className="flex items-start gap-2">
+            <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" />
+            <div className="min-w-0">
+              <span className="font-semibold text-amber-200">
+                Every profile change needs admin approval before it goes live.
+              </span>
+              {pendingKeys.length > 0 ? (
+                <div className="mt-1 text-amber-100/80">
+                  {pendingKeys.length === 1 ? "1 field is" : `${pendingKeys.length} fields are`}{" "}
+                  awaiting review:{" "}
+                  {pendingKeys
+                    .map((k) => PROVIDER_FIELD_LABELS[k] ?? k)
+                    .join(", ")}
+                  {namePending ? (pendingKeys.length ? ", " : "") + "Provider name" : ""}.
+                </div>
+              ) : namePending ? (
+                <div className="mt-1 text-amber-100/80">
+                  Provider name is awaiting review.
+                </div>
+              ) : (
+                <div className="mt-1 text-amber-100/70">
+                  Your public page shows the currently approved values. Submitted changes appear here until an admin decides.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* IDENTITY */}
         <PPanel>
           <div className="border-b border-reps-border px-5 py-4">
@@ -468,7 +516,7 @@ export function ProviderProfilePage() {
             className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
           >
             {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Save changes
+            Submit for review
           </button>
         </div>
       </div>

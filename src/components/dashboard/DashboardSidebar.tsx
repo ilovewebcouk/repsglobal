@@ -43,6 +43,8 @@ import { useAdminVerificationPending } from "@/hooks/useAdminVerificationPending
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getTrustState } from "@/lib/verification/trust.functions";
+import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
+import { adminCountProviderQueue } from "@/lib/verification/provider-changes.functions";
 import { getMyAccountType } from "@/lib/website/account-type.functions";
 import { getEnquiryStats } from "@/lib/enquiries/enquiries.functions";
 import { VerifiedCountChip } from "@/components/verification/VerifiedBadge";
@@ -98,15 +100,39 @@ function FooterItemBadge({ item }: { item: NavItem }) {
 
 function VerificationCountBadge() {
   const { user } = useSessionUser();
+  const isOrganisation = useIsOrganisation();
   const fetchTrust = useServerFn(getTrustState);
-  const { data } = useQuery({
+  const fetchDomain = useServerFn(getProviderDomainVerification);
+
+  const trustQ = useQuery({
     queryKey: ["my-trust-state"],
     queryFn: () => fetchTrust(),
     staleTime: 30_000,
     enabled: !!user,
   });
-  const completed = (data?.completedCount ?? 0) as 0 | 1 | 2 | 3;
-  return <VerifiedCountChip completed={completed} />;
+
+  const domainQ = useQuery({
+    queryKey: ["my-provider-domain-status"],
+    queryFn: () => fetchDomain(),
+    staleTime: 30_000,
+    enabled: !!user && isOrganisation,
+  });
+
+  if (isOrganisation) {
+    const identityDone = !!trustQ.data?.ticks.identity;
+    const domainStatus = domainQ.data?.status ?? "unstarted";
+    const domainDone = domainStatus === "approved";
+    const completed = (Number(identityDone) + Number(domainDone)) as 0 | 1 | 2;
+    const pending =
+      domainStatus === "pending_admin_review" ||
+      domainStatus === "email_sent" ||
+      domainStatus === "email_confirmed";
+    return <VerifiedCountChip completed={completed} total={2} pending={pending} />;
+  }
+
+  const completed = (trustQ.data?.completedCount ?? 0) as 0 | 1 | 2 | 3;
+  const pendingCount = trustQ.data?.qualifications?.pendingCount ?? 0;
+  return <VerifiedCountChip completed={completed} total={3} pending={pendingCount > 0} />;
 }
 
 function EnquiriesUnreadBadge() {
@@ -147,8 +173,17 @@ function ReviewsUnreadBadge() {
 function AdminVerificationPendingBadge() {
   const { isAdmin } = useSessionUser();
   const { total } = useAdminVerificationPending({ enabled: isAdmin });
-  if (!total) return null;
-  return <CountPill>{total > 99 ? "99+" : total}</CountPill>;
+  const fetchProvider = useServerFn(adminCountProviderQueue);
+  const providerQ = useQuery({
+    queryKey: ["admin-provider-queue-count"],
+    queryFn: () => fetchProvider(),
+    enabled: isAdmin,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const grand = total + (providerQ.data?.count ?? 0);
+  if (!grand) return null;
+  return <CountPill>{grand > 99 ? "99+" : grand}</CountPill>;
 }
 
 function ItemBadge({ item }: { item: NavItem }) {
