@@ -174,7 +174,7 @@ export function ProviderDashboardHome() {
             isPublished={isPublished}
             slug={slug}
             trust={hub.trust.data ?? null}
-            heroUrl={hub.website.data?.hero_image_url ?? null}
+            heroUrl={hub.website.data?.website?.hero_image_url ?? null}
           />
 
           <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
