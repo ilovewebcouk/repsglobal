@@ -118,6 +118,46 @@ export const submitProviderNameChange = createServerFn({ method: "POST" })
 /* Admin-facing                                                         */
 /* ------------------------------------------------------------------ */
 
+function slugify(name: string) {
+  return name
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+}
+
+/**
+ * Regenerate `professionals.slug` from an approved provider name and write it
+ * back. Ensures uniqueness by suffixing (-2, -3, …) when a clash exists.
+ * No-op when the derived base is empty.
+ */
+export async function regenerateProviderSlug(sa: any, userId: string, name: string) {
+  const base = slugify(name);
+  if (!base) return null;
+  let slug = base;
+  for (let i = 2; i < 50; i++) {
+    const { data: clash } = await sa
+      .from("professionals")
+      .select("id")
+      .eq("slug", slug)
+      .neq("id", userId)
+      .maybeSingle();
+    if (!clash) break;
+    slug = `${base}-${i}`;
+  }
+  const { error } = await sa
+    .from("professionals")
+    .update({ slug })
+    .eq("id", userId);
+  if (error) {
+    console.error("[provider-name.regenerateSlug] update failed", error.message);
+    return null;
+  }
+  return slug;
+}
+
 async function assertAdmin(supabase: any, userId: string): Promise<void> {
   const { data, error } = await supabase.rpc("has_role", {
     _user_id: userId,
@@ -226,6 +266,7 @@ export const reviewProviderNameRequest = createServerFn({ method: "POST" })
         .update({ business_name: req.requested_name })
         .eq("id", req.user_id);
       if (pErr) throw pErr;
+      await regenerateProviderSlug(sa, req.user_id, req.requested_name);
     }
 
     const { error: uErr } = await sa
