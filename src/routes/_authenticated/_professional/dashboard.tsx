@@ -125,21 +125,7 @@ function DashboardPage() {
       }}
 
       actions={
-        isOrganisation ? (
-          <div className="flex items-center gap-2">
-            {slug ? (
-              <DashboardButton asChild size="sm" variant="ghost">
-                <Link to="/t/$slug" params={{ slug }} target="_blank">
-                  View provider page
-                  <ExternalLink className="ml-1.5 size-4" />
-                </Link>
-              </DashboardButton>
-            ) : null}
-            <DashboardButton asChild size="sm" variant="primary">
-              <Link to="/dashboard/provider-website">Edit provider website</Link>
-            </DashboardButton>
-          </div>
-        ) : (
+        isOrganisation ? null : (
           <div className="flex items-center gap-2">
             {slug ? (
               <DashboardButton asChild size="sm" variant="ghost">
@@ -155,6 +141,7 @@ function DashboardPage() {
           </div>
         )
       }
+
     >
       {status.isLoading ? (
         <div className="flex flex-col gap-4">
