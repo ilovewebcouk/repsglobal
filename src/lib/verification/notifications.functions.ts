@@ -26,7 +26,13 @@ export type VerificationEvent =
   | "verification.blocked_by_insurance"
   | "qualification.approved"
   | "qualification.rejected"
-  | "qualification.changes_requested";
+  | "qualification.changes_requested"
+  | "provider_change.approved"
+  | "provider_change.rejected"
+  | "provider_name.approved"
+  | "provider_name.rejected"
+  | "provider_domain.approved"
+  | "provider_domain.rejected";
 
 export interface VerificationNotificationItem {
   key: string;
