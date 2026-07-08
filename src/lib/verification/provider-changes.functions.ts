@@ -44,6 +44,8 @@ export const PROVIDER_FIELD_LABELS: Record<ProviderFieldKey, string> = {
   website_url: "Website URL",
   contact_email: "Contact email",
   contact_phone: "Telephone",
+  address: "Address",
+
   year_established: "Year established",
   company_number: "Company number",
   social_instagram: "Instagram",
