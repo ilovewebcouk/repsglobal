@@ -104,7 +104,7 @@ export function ProviderVerificationPage() {
   const identityDone = !!t?.ticks.identity;
   const domainDone = d?.status === "approved";
   const completed = (Number(identityDone) + Number(domainDone)) as 0 | 1 | 2;
-  const badgeTier: BadgeTier = completed === 2 ? "verified" : "unverified";
+  const badgeTier: VerifiedTier = completed === 2 ? "verified" : "unverified";
 
   return (
     <DashboardShell
@@ -149,7 +149,7 @@ function Hero({
   domainDone: boolean;
   domainStatus: ProviderDomainState["status"];
   completed: 0 | 1 | 2;
-  badgeTier: BadgeTier;
+  badgeTier: VerifiedTier;
   loading: boolean;
 }) {
   const allDone = completed === 2;
