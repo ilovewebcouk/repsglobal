@@ -250,14 +250,14 @@ function ProviderProfilePage() {
               </h1>
               <p className="mt-2 text-[15px] text-black/60">Training Provider · Ofqual-regulated</p>
 
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-[14px] text-black/65">
+              <div className="mt-4 flex flex-col gap-2 text-[14px] text-black/65">
                 <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4" strokeWidth={2} />
+                  <MapPin className="h-4 w-4 shrink-0" strokeWidth={2} />
                   {location}
                 </span>
                 {ratingCount > 0 ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <Star className="h-4 w-4 fill-[#FF7A00] text-[#FF7A00]" />
+                    <Star className="h-4 w-4 shrink-0 fill-[#FF7A00] text-[#FF7A00]" />
                     <span className="font-semibold text-black">{ratingAvg.toFixed(1)}</span>
                     <span className="text-black/55">
                       ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
@@ -265,11 +265,12 @@ function ProviderProfilePage() {
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-black/45">
-                    <Star className="h-4 w-4" strokeWidth={2} />
+                    <Star className="h-4 w-4 shrink-0" strokeWidth={2} />
                     No reviews yet
                   </span>
                 )}
               </div>
+
 
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-black/12 bg-white px-3 py-1 text-[12.5px] font-medium text-black/70">
