@@ -423,15 +423,24 @@ export function ProviderProfilePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-2">
-            <Field label="Website URL" hint="Must start with https://">
+            <Field
+              label="Website URL"
+              hint={
+                websiteLocked
+                  ? "Locked — matches the domain approved during verification. Contact support to change it."
+                  : "Must start with https://"
+              }
+            >
               <input
-                className={inputCls}
+                className={`${inputCls} ${websiteLocked ? "cursor-not-allowed opacity-70" : ""}`}
                 type="url"
                 inputMode="url"
-                value={form.website_url}
+                value={websiteLocked ? approvedWebsite : form.website_url}
                 onChange={(e) => update("website_url", e.target.value)}
                 placeholder="https://yourprovider.com"
                 maxLength={500}
+                readOnly={websiteLocked}
+                aria-readonly={websiteLocked}
               />
             </Field>
             <Field label="Contact email" hint="Public — shown on your provider page.">
