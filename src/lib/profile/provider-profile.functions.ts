@@ -142,14 +142,7 @@ const UpdateInput = z.object({
     .optional(),
   address: z.string().trim().max(500).nullable().optional(),
 
-  year_established: z
-    .number()
-    .int()
-    .min(1800)
-    .max(currentYear)
-    .nullable()
-    .optional(),
-  company_number: z.string().trim().max(40).nullable().optional(),
+
   social_instagram: z.string().trim().max(120).nullable().optional(),
   social_linkedin: z.string().trim().max(120).nullable().optional(),
   social_youtube: z.string().trim().max(120).nullable().optional(),
