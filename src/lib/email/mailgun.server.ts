@@ -20,6 +20,12 @@ export interface SendViaMailgunArgs {
   text?: string;
   templateName: string;
   idempotencyKey: string;
+  /** Extra Mailgun user-variables (sent as `v:key=value`, surfaces in webhooks). */
+  variables?: Record<string, string>;
+  /** Enable open tracking (adds a pixel). */
+  trackOpens?: boolean;
+  /** "no" (default), "yes" (rewrite all links + pixel), or "htmlonly". */
+  trackClicks?: "no" | "yes" | "htmlonly";
 }
 
 export interface SendViaMailgunResult {
