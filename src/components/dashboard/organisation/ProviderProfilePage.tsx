@@ -115,6 +115,8 @@ export function ProviderProfilePage() {
 
   const websiteLocked = domainStatus?.status === "approved";
   const approvedWebsite = domainStatus?.rawWebsite ?? "";
+  const emailLocked = domainStatus?.status === "approved";
+  const approvedEmail = domainStatus?.email ?? "";
 
 
 
