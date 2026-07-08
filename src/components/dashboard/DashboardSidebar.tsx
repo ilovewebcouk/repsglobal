@@ -236,7 +236,7 @@ function MemberRow({ member }: { member?: DashboardShellMember }) {
         "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0",
       )}
     >
-      <Avatar className="size-9 rounded-[10px] group-data-[collapsible=icon]:size-8">
+      <Avatar className="size-9 shrink-0 rounded-[10px] group-data-[collapsible=icon]:size-8">
         {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-[10px]" /> : null}
         <AvatarFallback className="rounded-[10px] bg-reps-panel-soft text-[11px] text-white/60">
           {initials}
