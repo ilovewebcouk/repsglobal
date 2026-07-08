@@ -103,7 +103,7 @@ export const startProviderDomainVerification = createServerFn({ method: "POST" }
     // Load provider website
     const { data: pro } = await supabase
       .from("professionals")
-      .select("website, full_name")
+      .select("website, legal_entity_name")
       .eq("id", userId)
       .maybeSingle();
 
