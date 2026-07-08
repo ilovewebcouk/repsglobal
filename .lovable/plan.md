@@ -1,9 +1,21 @@
-## Remove header action buttons on the provider dashboard
+## Problem
 
-The provider dashboard header currently shows two buttons — **View provider page** and **Edit provider website** — that duplicate actions already available on the new `ProviderWelcomeBanner` below (View provider page + Branding + Copy link, plus the sidebar "Provider website" link). Remove them for provider accounts only.
+On the directory card the logo tile is **white** (`bg-white`) with `p-1.5` on the image — so a white-background logo blends seamlessly into the tile and the padding just gives the artwork breathing room.
 
-### Change
+On the dashboard banner I kept the tile dark (`bg-reps-panel-soft`) and added `p-1.5`. Result: a dark ring around the white logo — which is what you're seeing and (rightly) hate.
 
-In `src/routes/_authenticated/_professional/dashboard.tsx` (lines ~127–157), drop the `isOrganisation` branch of the `actions` prop so no header actions render for providers. The trainer branch (View public profile / Request a review) stays exactly as-is.
+## Fix
 
-Result: cleaner provider header — only search, notifications, and account menu remain on the right. Trainer dashboard is unaffected.
+Match the directory card exactly in `src/components/dashboard/organisation/ProviderWelcomeBanner.tsx`:
+
+- Logo tile background → `bg-white` (was `bg-reps-panel-soft`)
+- Keep `p-1.5` inner padding so wordmark logos have breathing room
+- `AvatarImage` uses `object-contain` so non-square logos aren't cropped
+- Fallback (initials) tile: keep dark panel bg + white initials only when there's no logo — swap via conditional so we don't get white-on-white monograms
+- Keep the size (`size-20`), radius (`rounded-[16px]`), border, and shadow as they are — that part matches the directory
+
+Nothing else on the banner changes.
+
+## Files
+
+- `src/components/dashboard/organisation/ProviderWelcomeBanner.tsx` — logo tile only (approx lines 244–255)
