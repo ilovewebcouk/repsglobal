@@ -465,62 +465,7 @@ function ProviderProfilePage() {
                 </div>
               </article>
 
-              {/* REPS-Accredited CPD Courses */}
-              <article id="courses" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
-                <header className="flex items-center justify-between">
-                  <h2 className="font-display text-[20px] font-bold text-black">
-                    REPS-Accredited CPD
-                  </h2>
-                  {cpdRows.length > 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                      <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
-                      REPS Accredited
-                    </span>
-                  ) : null}
-                </header>
-                <div className="mt-4 space-y-3">
-                  {cpdRows.length === 0 ? (
-                    <EmptyBlock
-                      icon={<Sparkles className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
-                      title="No REPS-accredited CPD yet"
-                      sub="This provider has not had CPD accredited by REPS yet."
-                    />
-                  ) : (
-                    cpdRows.map((c) => (
-                      <div
-                        key={c.id}
-                        className="rounded-[16px] border border-black/10 bg-[#f7f6f2] p-4"
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-[15px] font-semibold text-black">{c.title}</p>
-                            <p className="mt-0.5 text-[12.5px] text-black/60">
-                              {[
-                                c.level != null ? `Level ${c.level}` : null,
-                                c.hours != null ? `${c.hours}h CPD` : null,
-                                c.delivery_mode
-                                  ? c.delivery_mode.replace("_", "-")
-                                  : null,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </p>
-                          </div>
-                          {c.reps_cpd_number ? (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                              <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
-                              {c.reps_cpd_number}
-                            </span>
-                          ) : null}
-                        </div>
-                        {c.summary ? (
-                          <p className="mt-2 text-[13px] text-black/70">{c.summary}</p>
-                        ) : null}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </article>
+              {/* CPD moved into #accreditations below */}
 
               {/* Verified Professionals Trained */}
               <article
@@ -582,65 +527,143 @@ function ProviderProfilePage() {
                   Accreditations & Recognition
                 </h2>
                 <p className="mt-1 text-[12.5px] text-black/55">
-                  Ofqual-regulated qualifications this provider is approved to deliver.
+                  Regulated qualifications this provider is approved to deliver, and CPD courses REPS has independently accredited. Each carries its own verifiable ID number.
                 </p>
-                {accreditationsByBody.length === 0 ? (
-                  <EmptyBlock
-                    className="mt-4"
-                    icon={<BadgeCheck className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
-                    title="Accreditations will appear here"
-                    sub="Once REPS has verified the provider's approved-centre status with the awarding body, their regulated qualifications will appear here."
-                  />
-                ) : (
-                  <div className="mt-4 space-y-5">
-                    {accreditationsByBody.map((group) => (
-                      <div key={group.slug}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white">
-                            {group.logo ? (
-                              <img
-                                src={group.logo}
-                                alt={group.name}
-                                className="max-h-8 max-w-14 object-contain"
-                              />
-                            ) : (
-                              <span className="text-[10px] font-bold uppercase tracking-wide text-black/50">
-                                {group.name.slice(0, 3)}
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-[14px] font-semibold text-black">{group.name}</p>
-                            <span className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-700">
-                              <Check className="h-3 w-3" strokeWidth={2.5} />
-                              Approved centre · Ofqual-regulated
-                            </span>
-                          </div>
-                        </div>
-                        <ul className="mt-2 space-y-1.5 pl-[76px]">
-                          {group.items.map((it) => (
-                            <li
-                              key={it.id}
-                              className="flex flex-wrap items-center gap-2 text-[13.5px] text-black/75"
-                            >
-                              {it.level ? (
-                                <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
-                                  {it.level}
-                                </span>
-                              ) : null}
-                              <span className="font-medium text-black">{it.title}</span>
-                              {it.ofqual_ref ? (
-                                <span className="font-mono text-[11.5px] text-black/45">
-                                  {it.ofqual_ref}
-                                </span>
-                              ) : null}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
+
+                {/* ── Ofqual-regulated ─────────────────────────────── */}
+                <div className="mt-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-display text-[15px] font-bold text-black">
+                      Ofqual-regulated qualifications
+                    </h3>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700">
+                      <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
+                      Approved centre
+                    </span>
                   </div>
-                )}
+                  <p className="mt-1 text-[12px] text-black/50">
+                    Verified with the awarding body. Each qualification carries its Ofqual reference number.
+                  </p>
+
+                  {accreditationsByBody.length === 0 ? (
+                    <EmptyBlock
+                      className="mt-3"
+                      icon={<BadgeCheck className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
+                      title="No regulated qualifications yet"
+                      sub="Once REPS has verified this provider's approved-centre status with the awarding body, their regulated qualifications will appear here."
+                    />
+                  ) : (
+                    <div className="mt-3 space-y-5">
+                      {accreditationsByBody.map((group) => (
+                        <div key={group.slug}>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white">
+                              {group.logo ? (
+                                <img
+                                  src={group.logo}
+                                  alt={group.name}
+                                  className="max-h-8 max-w-14 object-contain"
+                                />
+                              ) : (
+                                <span className="text-[10px] font-bold uppercase tracking-wide text-black/50">
+                                  {group.name.slice(0, 3)}
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-[14px] font-semibold text-black">{group.name}</p>
+                              <span className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-700">
+                                <Check className="h-3 w-3" strokeWidth={2.5} />
+                                Approved centre · Ofqual-regulated
+                              </span>
+                            </div>
+                          </div>
+                          <ul className="mt-2 space-y-1.5 pl-[76px]">
+                            {group.items.map((it) => (
+                              <li
+                                key={it.id}
+                                className="flex flex-wrap items-center gap-2 text-[13.5px] text-black/75"
+                              >
+                                {it.level ? (
+                                  <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
+                                    {it.level}
+                                  </span>
+                                ) : null}
+                                <span className="font-medium text-black">{it.title}</span>
+                                {it.ofqual_ref ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-black/10 bg-[#f7f6f2] px-2 py-0.5 font-mono text-[11px] text-black/60">
+                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-black/45">Ofqual</span>
+                                    {it.ofqual_ref}
+                                  </span>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── REPS-accredited CPD ──────────────────────────── */}
+                <div className="mt-8 border-t border-black/10 pt-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-display text-[15px] font-bold text-black">
+                      REPS-accredited CPD courses
+                    </h3>
+                    {cpdRows.some((c) => c.reps_cpd_number) ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700">
+                        <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
+                        REPS Accredited
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-[12px] text-black/50">
+                    CPD reviewed and accredited by REPS. Each course carries a unique REPS CPD number.
+                  </p>
+
+                  {cpdRows.length === 0 ? (
+                    <EmptyBlock
+                      className="mt-3"
+                      icon={<Sparkles className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
+                      title="No REPS-accredited CPD yet"
+                      sub="This provider hasn't had CPD accredited by REPS yet."
+                    />
+                  ) : (
+                    <div className="mt-3 space-y-3">
+                      {cpdRows.map((c) => (
+                        <div
+                          key={c.id}
+                          className="rounded-[16px] border border-black/10 bg-[#f7f6f2] p-4"
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-[15px] font-semibold text-black">{c.title}</p>
+                              <p className="mt-0.5 text-[12.5px] text-black/60">
+                                {[
+                                  c.level != null ? `Level ${c.level}` : null,
+                                  c.hours != null ? `${c.hours}h CPD` : null,
+                                  c.delivery_mode ? c.delivery_mode.replace("_", "-") : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </p>
+                            </div>
+                            {c.reps_cpd_number ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-700">
+                                <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide">REPS CPD</span>
+                                {c.reps_cpd_number}
+                              </span>
+                            ) : null}
+                          </div>
+                          {c.summary ? (
+                            <p className="mt-2 text-[13px] text-black/70">{c.summary}</p>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </article>
 
               {/* Trust & Assurance */}
@@ -879,10 +902,9 @@ function ProviderProfilePage() {
 function StickyNav() {
   const items = [
     { id: "about", label: "About" },
-    { id: "courses", label: "Courses" },
+    { id: "accreditations", label: "Accreditations & CPD" },
     { id: "verified-pros", label: "Verified Pros" },
     { id: "reviews", label: "Reviews" },
-    { id: "accreditations", label: "Accreditations" },
     { id: "locations", label: "Locations" },
   ];
   const navRef = React.useRef<HTMLDivElement | null>(null);
