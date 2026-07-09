@@ -1,32 +1,42 @@
-## One source of truth — provider display name
+## Goal
 
-Currently the sidebar/avatar/header read `profiles.full_name` ("Diverse Trainers" — set at signup and never touched again), while the Profile → Identity row and public `/t/<slug>` page read `profiles.business_name` ("Test Profile" — the approved public trading name). For provider accounts we treat `business_name` as the single source of truth and stop showing `full_name` in chrome.
+One home for the provider name: the **Profile** page. Providers can change it as often as they like — every change submits a request to admin, and the public page keeps showing the last approved name until review.
 
-Rule: **if `profiles.business_name` is set, use it as the display name; otherwise fall back to `full_name`, then email.** Individuals (PT/coach) never have `business_name` set, so their behaviour is unchanged. Providers always have it once the name-change flow has approved a name.
+## Changes
 
-### Changes
+### 1. Verification page — remove the name card
+`src/components/dashboard/organisation/VerificationPage.tsx`
+- Remove `<TradingNameCard />` from the render tree (line 136) and delete the `TradingNameCard` function (lines ~645–770).
+- Drop now-unused imports: `getMyProviderNameStatus`, `submitProviderNameChange` from `@/lib/verification/provider-name.functions`, plus any icons only that card used.
+- Verification page becomes: qualifications, insurance, CPD only.
 
-1. **`src/hooks/use-account-menu.ts`**
-   - Extend the profile query to also select `business_name`.
-   - `resolvedName = business_name?.trim() || full_name?.trim() || user.name || user.email || "Account"`.
-   - No other logic changes.
+### 2. Profile page — make Provider name an editable field
+`src/components/dashboard/organisation/ProviderProfilePage.tsx`
+- Replace the current read-only "Provider name" row + "Set in Verification" link (lines ~391–445) with an editable input:
+  - Text input pre-filled with the approved name.
+  - Inline "Submit name change" button (disabled when unchanged or empty).
+  - Calls `submitProviderNameChange({ requested_name })` on click — same server fn already used by Verification.
+  - Shows pending banner ("Awaiting admin approval — 'X'. Public page still shows 'Y'.") when `nameStatus.pending` is set — reuses existing pending UI already in this file.
+  - Hint text: "Change this any time. Every change is reviewed by REPs before it appears on your public page and URL."
+- Keep the public-URL hint (`repsuk.org/t/{slug}`) unchanged.
+- Keep the top "Every profile change needs admin approval" banner — the name now fits that same model naturally.
 
-2. **`src/lib/admin/impersonation.functions.ts` — `getImpersonationStatus`**
-   - Add `business_name` to the `profiles` select.
-   - `name: profile?.business_name ?? profile?.full_name ?? 'Professional'`.
-   - This fixes the "Viewing as …" chip + sidebar name during admin impersonation.
+### 3. Server function — no schema changes
+`src/lib/verification/provider-name.functions.ts` already implements the right behaviour:
+- First-time set (no prior `business_name`) → applied instantly.
+- Any subsequent change → inserted into `provider_name_requests` as pending; `profiles.business_name` unchanged until an admin approves via `reviewProviderNameRequest`.
 
-3. **`src/routes/admin_.members_.$userId.tsx`** — already resolves `displayName = isProvider ? business_name : full_name`. Keep as-is.
+No migration needed. Admin review queue at `/admin/provider-names` is unchanged.
 
-4. **Nothing else changes.** `full_name` stays as a stored column and continues to power internal surfaces that name the *person* who owns the account (email templates, prospects table, campaign name lookups). Only the visible chrome for the signed-in provider swaps.
+### 4. Copy tidy
+- Anywhere that says "Managed on your Verification page" / "Contact REPs support to change" for provider name → remove.
+- The "Set this before you can submit regulated qualifications or CPD" gating text disappears with the Verification card. If qualifications submission actually requires an approved name, that gate should live on the qualifications card (existing behaviour — no change unless you want it revisited).
 
-### Not doing
+## Out of scope
+- Admin review UX at `/admin/provider-names` (unchanged).
+- Rate-limiting repeated name changes (can add later if spam becomes an issue).
+- The public read path already reads `business_name ?? full_name` from the recent QA fix.
 
-- No DB migration, no backfill, no delete of `full_name`.
-- No changes to the Profile → Identity row (it already reads `business_name` via the name-change flow).
-- No changes to public-facing pages (`/t/<slug>` already uses `business_name`).
-
-### Verification
-
-- Typecheck.
-- Reload `/dashboard/profile` while impersonating this provider — sidebar footer, header avatar and "Viewing as …" chip should all read **Test Profile** (matching the Identity row + public page). Rename via Verification and confirm the whole chrome updates after refresh.
+## Files touched
+- `src/components/dashboard/organisation/VerificationPage.tsx` — remove card + imports
+- `src/components/dashboard/organisation/ProviderProfilePage.tsx` — swap read-only row for editable input + submit
