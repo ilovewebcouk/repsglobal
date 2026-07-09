@@ -465,62 +465,7 @@ function ProviderProfilePage() {
                 </div>
               </article>
 
-              {/* REPS-Accredited CPD Courses */}
-              <article id="courses" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
-                <header className="flex items-center justify-between">
-                  <h2 className="font-display text-[20px] font-bold text-black">
-                    REPS-Accredited CPD
-                  </h2>
-                  {cpdRows.length > 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                      <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
-                      REPS Accredited
-                    </span>
-                  ) : null}
-                </header>
-                <div className="mt-4 space-y-3">
-                  {cpdRows.length === 0 ? (
-                    <EmptyBlock
-                      icon={<Sparkles className="h-6 w-6 text-black/30" strokeWidth={1.8} />}
-                      title="No REPS-accredited CPD yet"
-                      sub="This provider has not had CPD accredited by REPS yet."
-                    />
-                  ) : (
-                    cpdRows.map((c) => (
-                      <div
-                        key={c.id}
-                        className="rounded-[16px] border border-black/10 bg-[#f7f6f2] p-4"
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-[15px] font-semibold text-black">{c.title}</p>
-                            <p className="mt-0.5 text-[12.5px] text-black/60">
-                              {[
-                                c.level != null ? `Level ${c.level}` : null,
-                                c.hours != null ? `${c.hours}h CPD` : null,
-                                c.delivery_mode
-                                  ? c.delivery_mode.replace("_", "-")
-                                  : null,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </p>
-                          </div>
-                          {c.reps_cpd_number ? (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                              <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
-                              {c.reps_cpd_number}
-                            </span>
-                          ) : null}
-                        </div>
-                        {c.summary ? (
-                          <p className="mt-2 text-[13px] text-black/70">{c.summary}</p>
-                        ) : null}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </article>
+              {/* CPD moved into #accreditations below */}
 
               {/* Verified Professionals Trained */}
               <article
