@@ -56,7 +56,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
-import { ProviderMemberView } from "@/components/admin/providers/ProviderMemberView";
+import { ProviderProfileMirror } from "@/components/admin/providers/ProviderProfileMirror";
+import { suspendProvider, republishProvider } from "@/lib/admin/providers.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/admin_/members_/$userId")({
   ssr: false,
