@@ -53,12 +53,14 @@ export type RegulatedPermissionRow = {
     awarding_body_match: boolean;
     qualification_in_doc: "yes" | "no" | "inconclusive";
   } | null;
-  status: "submitted" | "approved" | "rejected" | "changes_requested";
+  status: "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
   admin_note: string | null;
   evidence_issued_at: string | null;
   evidence_expires_at: string | null;
   created_at: string;
   reviewed_at: string | null;
+  withdrawn_at: string | null;
+  withdrawn_reason: string | null;
 };
 
 export type CpdCourseRow = {
