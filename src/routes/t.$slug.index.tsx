@@ -905,7 +905,6 @@ function StickyNav() {
     { id: "accreditations", label: "Accreditations & CPD" },
     { id: "verified-pros", label: "Verified Pros" },
     { id: "reviews", label: "Reviews" },
-    { id: "accreditations", label: "Accreditations" },
     { id: "locations", label: "Locations" },
   ];
   const navRef = React.useRef<HTMLDivElement | null>(null);
