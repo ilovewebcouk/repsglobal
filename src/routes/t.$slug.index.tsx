@@ -226,6 +226,7 @@ function ProviderProfilePage() {
         title,
         level: snap?.level ?? (legacy?.level != null ? `L${legacy.level}` : null),
         ofqual_ref: row.ofqual_number ?? legacy?.ofqual_ref ?? null,
+        reps_ref: row.reps_qualification_number ?? null,
       });
       groups.set(groupKey, existing);
     }
@@ -589,6 +590,14 @@ function ProviderProfilePage() {
                                       Ofqual
                                     </span>
                                     {it.ofqual_ref}
+                                  </span>
+                                ) : null}
+                                {it.reps_ref ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-800">
+                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-emerald-700/70">
+                                      REPS
+                                    </span>
+                                    {it.reps_ref}
                                   </span>
                                 ) : null}
                               </div>
