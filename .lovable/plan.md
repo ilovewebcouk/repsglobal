@@ -1,143 +1,116 @@
-# Post-Implementation QA Evidence
+# Admin Provider Control — build plan
 
-**No further code changes proposed. This is a read-only verification pack.**
+Backend/admin only. No pricing, public profile, dashboard layout, design tokens, or verification override. One provider name: `profiles.business_name`. `professionals.legal_entity_name` never surfaced or editable.
 
-## 1. Files created
+## Snag handling (from honest review)
 
-- `src/lib/admin/erase-member-data.server.ts` (3220 bytes)
+1. **`admin_pro_invites.plan` enum** — pass `'pro'` for provider invites this pass. No enum change. Note the provider-ness via the seeded `professionals.account_type='organisation'`; revisit invite metadata in a later pass.
+2. **Pre-seed race with signup handler** — `upsert` on `professionals.id` and `profiles.id` with `account_type='organisation'` locked in. Any downstream new-user flow overwriting it back to `individual` is a bug to fix if observed, not something we work around here.
+3. **`renameProvider` old-slug capture** — SELECT current `professionals.slug` first; skip `legacy_redirects` insert when old == new; hard-fail if `regenerateProviderSlug` returns `null` (empty slugify base).
+4. **Provider verification queue display** — small edit to existing `AdminProviderQueueTab` copy so "current provider name" shows `profiles.business_name` and the requested change reads alongside it. No behavioural change.
 
-## 2. Files edited
+## Files created
 
-- `src/lib/admin/close-membership.server.ts` — rewritten (canonical worker + ops alerts + erasure wire-in + marketing consent fix + new reasons)
-- `src/lib/admin/billing-actions.functions.ts` — `CancelReason` union + `ALL_REASONS` extended
-- `src/lib/settings/settings.functions.ts` — `deleteMyAccount` refactored to delegate
-- `src/lib/admin/batch-cleanup.functions.ts` — `marketing_opt_in: true` → `false`
-- `src/routes/api/public/payments/webhook.ts` — `invoice.marked_uncollectible` reason swap + DLQ ops alert
+**Routes**
+- `src/routes/admin_.providers.tsx` — list page.
+- `src/routes/admin_.providers_.$userId.tsx` — Provider 360 shell + tabs.
 
-## 3. Migration
+**Server functions**
+- `src/lib/admin/providers.functions.ts` — `listProviders`, `getProvider`, `updateProviderField`, `renameProvider`, `createProvider`, `suspendProvider`, `republishProvider`, `closeProvider`.
 
-`supabase/migrations/20260709123853_13d1ea71-c21a-4ba1-afed-282555009a9b.sql`
+**Components** (under `src/components/admin/providers/`)
+- `ProviderListTable.tsx`
+- `ProviderCreateDialog.tsx`
+- `ProviderRenameDialog.tsx`
+- `ProviderSuspendDialog.tsx`
+- `Provider360Header.tsx`
+- `ProviderProfileTab.tsx` (whitelisted per-field edit)
+- `ProviderVerificationTab.tsx` (read-only)
+- `ProviderQualificationsTab.tsx` (scoped reuse of existing provider qualification list)
+- `ProviderNameHistoryTab.tsx` (name requests + rename audit)
+- `ProviderBillingTab.tsx` (mirrors Member 360 read shape)
+- `ProviderActivityTab.tsx` (`admin_audit_log` filter)
+- `ProviderDangerTab.tsx`
 
-```sql
-ALTER TYPE public.mailing_list_deletion_reason ADD VALUE IF NOT EXISTS 'self_delete';
-ALTER TYPE public.mailing_list_deletion_reason ADD VALUE IF NOT EXISTS 'stripe_uncollectible';
-```
+**Migration**
+- `supabase/migrations/<ts>_admin_audit_log_target_idx.sql`
+  ```sql
+  CREATE INDEX IF NOT EXISTS admin_audit_log_target_idx
+    ON public.admin_audit_log (target_table, target_id, created_at DESC);
+  ```
 
-- Idempotent (`IF NOT EXISTS`), non-destructive, additive-only.
-- Touches only `mailing_list_deletion_reason` enum; no tables, RLS, or grants changed.
+## Files edited
 
-## 4. Typecheck
+- `src/components/admin/verification/AdminProviderQueueTab.tsx` (or equivalent) — display current `profiles.business_name` alongside `provider_name_requests.requested_name`; no behaviour change.
+- `.lovable/plan.md` — mark this pass complete.
 
-`bunx tsgo --noEmit` — **zero errors in any touched file**. Filter of the 5 changed paths + new file against the tsgo output returned empty. Pre-existing errors elsewhere (`routes/reviews.tsx`, `routes/signup.tsx`, `routes/specialisms.tsx`, `routes/t.*.tsx` — TanStack Router `search` param requirements) are unrelated to this pass.
+Nothing else. No touches to: pricing files, `/t/*` public routes, dashboard route/layout files, `src/styles.css` or design tokens, close-membership worker, `regenerateProviderSlug`, RLS.
 
-## 5. Scope confirmation — no forbidden surfaces touched
+## Server function contracts
 
-None of the following categories were edited:
+All `.middleware([requireSupabaseAuth])` + inline `has_role('admin')` check. `supabaseAdmin` loaded via `await import` inside handlers. Audit via existing `log_admin_action` RPC — `logAdminAction` server fn or direct `.rpc('log_admin_action', ...)` inside the same handler (single tx-adjacent write). Zod inputValidator on every fn.
 
-- Pricing (`src/lib/billing.ts`, `src/routes/pricing.tsx`, plan tiers) — untouched
-- Public profile (`src/routes/pro.*.tsx`, `src/routes/c.$slug.tsx`, `src/routes/t.$slug*.tsx`) — untouched
-- Dashboard layout (`src/components/dashboard/**`, `src/routes/_authenticated/**` UI) — untouched
-- Design tokens / marketing pages — untouched
+- `listProviders({ q?, verified?, published?, suspended?, limit, offset })` — SELECT from `professionals` where `account_type='organisation'`, LEFT JOIN `profiles` for `business_name`, projections only. Search: OR across `business_name`, `slug`, `contact_email`.
+- `getProvider({ userId })` — return 404 if row missing or `account_type != 'organisation'`. Returns professionals + profiles snapshot.
+- `updateProviderField({ userId, field, value, reason? })` — field must be in whitelist (see below). Per-field validator. Fetch before → update → fetch after → audit `provider.field_update`.
+- `renameProvider({ userId, name, reason })` — required reason. Trim, 1–120. Capture old slug. Update `profiles.business_name`. Call `regenerateProviderSlug`. If old !== new slug, insert `legacy_redirects(source_path='/t/<old>', destination_path='/t/<new>', kind='provider_rename')` (upsert on PK). Audit `provider.rename` with `{old_name, new_name, old_slug, new_slug}`.
+- `createProvider({ email, name, website?, note? })` — email regex, name 1–120. `supabaseAdmin.auth.admin.generateLink({type:'invite'})` — reuse `sendProfessionalInvite` style. On existing email → throw clean error, write nothing. Upsert `profiles {id, business_name}`. Upsert `professionals {id, account_type:'organisation', slug: uniqueSlugify(name), is_published:false, website_url?}`. Insert `admin_pro_invites` row with `plan='pro'`. Send `professional-invite` email. Audit `provider.manual_create`.
+- `suspendProvider({ userId, reason })` — reason required. Update `professionals { is_published:false, suspended_at:now(), suspension_reason:reason, unpublished_reason:'admin_suspend', unpublished_at:now() }`. Audit `provider.suspend`.
+- `republishProvider({ userId, reason? })` — set `is_published:true`, clear `suspended_at`/`suspension_reason`/`unpublished_reason`/`unpublished_at`. Audit `provider.republish`.
+- `closeProvider({ userId, reason, notes? })` — thin wrapper calling `_closeMembershipImpl({ user_id, mode:'end_now_delete', reason:'admin_delete', notes, actor_id:'admin:<uid>' })`. Worker owns its own audit.
 
-Only backend workers, webhook handler, one server fn (`deleteMyAccount`), and one enum migration.
+## Profile field whitelist
 
-## 6. `deleteMyAccount` no longer calls destructive APIs directly
+Editable: `headline`, `bio`, `value_prop`, `contact_email`, `contact_phone`, `website`, `website_url`, `city`, `address`, `country`, `year_established`, `staff_count`, `company_number`, `cover_url`, existing social link columns on `professionals`, `awarding_bodies` (text[]).
 
-`rg -n "stripe.subscriptions.cancel|erase_user_pii|storage.*remove|auth.admin.deleteUser" src/lib/settings/settings.functions.ts` returns **empty**. Only surviving admin call is a subscriptions read to decide `mode`. Validation (`confirm_email` match + `DELETE` phrase) runs before any admin work — see lines 316–321 below.
+Validators: email regex; URL parse + http/https + trailing-slash normalise; int 1800–currentYear; int ≥ 0; array-of-strings trim+dedupe; light trim for phone; 1–120 char provider name (rename only, not generic).
 
----
+Never editable / not shown as edit fields: `id`, `slug`, `account_type`, `verification_status`, `verification`, `reps_member_id`, `is_published`, `suspended_at`, `suspension_reason`, `unpublished_reason`, `unpublished_at`, `created_at`, `updated_at`, any Stripe IDs, auth email, and — per one-name rule — `legal_entity_name`.
 
-## A. Self-delete path — `src/lib/settings/settings.functions.ts:307–348`
+## Tabs behaviour
 
-- L338–345: `await _closeMembershipImpl({ user_id: userId, mode: hasLiveSub ? "end_now_delete" : "delete_only", reason: "self_delete", notes: ..., actor_id: \`user:${userId}\` })`
-- L316–321: email echo + `DELETE` phrase validated before any admin call
-- L347: `return { ok: true }`
+- **Profile** — whitelist-driven form; per-field save with inline validator; each save calls `updateProviderField` and shows toast.
+- **Verification** — read-only list of `provider_regulated_permissions` rows for this provider (status, evidence_type, ofqual_number, reviewed_at). Link out to `/admin/verification`. Explicit copy: "Provider verification is handled through the regulated permissions workflow." No write buttons.
+- **Qualifications** — reuse existing provider qualifications component, scoped by provider id (read-only view).
+- **Name history** — `provider_name_requests` rows (chronological) + `admin_audit_log` rows where `action='provider.rename'` and `target_id=userId`.
+- **Billing** — reuse Member 360 billing read fns (subscriptions rows, latest status, tier). No write actions.
+- **Activity** — `admin_audit_log` where `target_table='professionals' AND target_id=userId`, newest first (uses the new index).
+- **Danger** — Suspend / Republish / Close actions. Modal for each with required reason (except republish). Close copy: "This will cancel the membership, remove public visibility, delete the account, and may affect CPD courses/accreditation data connected to this provider."
 
-## B. Canonical worker — `src/lib/admin/close-membership.server.ts`
+## Build order
 
-- L199–210: `professionals.update({ is_published: false, unpublished_reason: 'membership_closed', ... })` runs FIRST, before Stripe/erasure/auth-delete
-- L296–299: `eraseClosedMemberData(input.user_id, { erasureMode: erasureModeFor(input.reason) })` — called before auth delete
-- L312–313: `auth.admin.deleteUser(input.user_id)` — runs AFTER erasure
-- Ops alerts on partial failure: Stripe (L233), email (L279), erasure (L303), audit (L332), roll-up `payments.member_close_partial_failure` (L344)
-- L361–367: return object includes `erasure: {...}` and `partialFailures: string[]`
+1. Migration (audit-log target index).
+2. `providers.functions.ts` — read paths (`listProviders`, `getProvider`).
+3. `/admin/providers` list route + create-dialog trigger (dialog non-functional yet).
+4. `/admin/providers/$userId` shell + header + tab skeleton.
+5. Profile tab + `updateProviderField`.
+6. `renameProvider` + rename dialog + `legacy_redirects` insert.
+7. Danger tab (`suspendProvider`, `republishProvider`, `closeProvider`).
+8. `createProvider` + manual-create dialog wired.
+9. Read-only tabs: Verification, Qualifications, Name history, Billing, Activity.
+10. Small edit to `AdminProviderQueueTab` for current-name display.
+11. QA report.
 
-## C. Erasure policy — `src/lib/admin/erase-member-data.server.ts`
+## Acceptance tests
 
-```
-ALL_BUCKETS = ["avatars","pro-photos","identity-docs","insurance-docs",
-               "verification-docs","support-attachments","cpd-certificates"]
-CHARGEBACK_RETAIN = { "identity-docs", "insurance-docs", "verification-docs" }
-```
+1. `/admin/providers` shows only `account_type='organisation'` — verify by counting rows in the response vs a direct query.
+2. `/admin/providers/<individual-id>` → 404 UI (no provider found).
+3. Edit `contact_email` → `professionals.contact_email` updated; `admin_audit_log` has `action='provider.field_update'` with `target_table='professionals'`, `target_id=<userId>`, `before_state`/`after_state` containing the field.
+4. `legal_entity_name` does not appear in Profile tab; grepping the new components returns zero matches.
+5. Rename "Acme" → "Acme Fitness": `profiles.business_name` updated, `professionals.slug` regenerated, `legacy_redirects` has row `source_path='/t/acme'`, `destination_path='/t/acme-fitness'`, `kind='provider_rename'`, and an audit row exists.
+6. Verification tab renders but issues no writes — DB snapshot of `verification_decisions` / `professionals.verification_status` unchanged after visiting.
+7. Manual create new email: invite email sent, `profiles.business_name` set, `professionals` row has `account_type='organisation'`, `is_published=false`, `slug` non-empty; audit `provider.manual_create` present.
+8. Manual create existing email: clean error surfaced in UI, no `profiles`/`professionals`/`admin_pro_invites` rows written.
+9. Suspend with reason: `is_published=false`, `suspension_reason` set; hitting `/t/<slug>` no longer shows the provider (existing public route already filters on `is_published`).
+10. Close via Danger: `_closeMembershipImpl` invoked; provider account gone; worker's normal audit+ops output present. Close-membership source file unchanged.
+11. Activity tab query hits `admin_audit_log_target_idx` (verified via EXPLAIN or by observing sub-ms response on a seeded row set).
+12. Diff review: no changes to `src/lib/billing*`, `src/routes/t.*`, `src/routes/(dashboard|_authenticated/dashboard)*`, `src/styles.css`, `src/lib/admin/close-membership.server.ts`, `src/lib/verification/provider-name.functions.ts`.
 
-`bucketsForMode()`:
-- `full_self_delete` → all 7 buckets ✓
-- `membership_closed` → all 7 buckets ✓
-- `chargeback_lost` → filters out CHARGEBACK_RETAIN → deletes `avatars`, `pro-photos`, `support-attachments`, `cpd-certificates` ✓; retains `identity-docs`, `insurance-docs`, `verification-docs` ✓
+## QA report contents (returned after build)
 
-Reason → mode mapping (`close-membership.server.ts:123–128`): `self_delete` → `full_self_delete`; `chargeback_lost` → `chargeback_lost`; everything else → `membership_closed`.
-
-## D. Marketing consent — `close-membership.server.ts:132–162, 259` and `batch-cleanup.functions.ts:148`
-
-- `resolveMarketingOptIn(userId, email)`:
-  1. Reads `notification_preferences.marketing_opt_in` — returns it if present ✓ (preserves existing opt-in)
-  2. Falls back to prior `mailing_list_contacts.marketing_opt_in` by email
-  3. Defaults `false` when both unknown ✓
-- Upsert (L259): `marketing_opt_in: marketingOptIn` — never hard-coded `true` ✓
-- `batch-cleanup.functions.ts:148`: was `marketing_opt_in: true`, now `marketing_opt_in: false` ✓
-
-## E. `invoice.marked_uncollectible` — `src/routes/api/public/payments/webhook.ts:828–834`
-
-```
-await _closeMembershipImpl({
-  user_id: userId,
-  mode: "end_now_delete",
-  reason: "stripe_uncollectible",   // was "member_request"
-  notes: `Invoice marked uncollectible (invoice ${invoice.id})`,
-  actor_id: "stripe_webhook",
-});
-```
-
-- reason ✓ `stripe_uncollectible`
-- actor ✓ `stripe_webhook`
-- `member_request` no longer present in this branch ✓
-
-## F. Ops alerts — all six emitted
-
-| Alert kind | Site | Severity |
-|---|---|---|
-| `payments.webhook_dead_lettered` | `webhook.ts:1005` (in DLQ branch, after `dead_lettered_at` stamp) | high |
-| `payments.member_close_stripe_cancel_failed` | `close-membership.server.ts:233` (Stripe cancel catch) | high |
-| `payments.member_close_storage_erasure_failed` | `close-membership.server.ts:303` (erasure post-check) | high |
-| `payments.member_close_email_failed` | `close-membership.server.ts:279` (email `ok:false`) | medium |
-| `payments.member_close_audit_failed` | `close-membership.server.ts:332` (audit log catch) | medium |
-| `payments.member_close_partial_failure` | `close-membership.server.ts:344` (roll-up when `partialFailures.length > 0`) | high |
-
-Plus existing `payments.member_cancelled` (info / high for chargeback) preserved.
-
-## G. Migration
-
-Full content shown in §3. Safety review:
-
-- `ADD VALUE IF NOT EXISTS` → safe to re-run; no error if value already present
-- Only affects one enum type
-- No table alterations, no policy/grant changes, no data mutations
-- Cannot be inside an explicit transaction with other DDL that reads the enum in the same statement — not applicable here (standalone migration)
-
-## H. Manual QA checklist (expected behaviour)
-
-| # | Scenario | Expected result |
-|---|---|---|
-| 1 | Self-delete from `/dashboard/settings` | Validates email + `DELETE`. Worker: profile hide → Stripe cancel (if live sub) → retention stamp → mailing archive (opt-in preserved) → bd_migration detach → email → erasure (all 7 buckets) → auth delete → audit `actor:user:<uuid>` → ops alert `member_cancelled` info |
-| 2 | Stripe portal cancel | `customer.subscription.deleted` handler → worker (`reason:member_request`, `actor:stripe_webhook`) → same footprint + full erasure now included |
-| 3 | Admin close (Member 360) | `closeMembership` → worker (`actor:admin:<uuid>`) → cannot close own admin account (guard in `billing-actions.functions.ts`) → full erasure |
-| 4 | Invoice uncollectible | Webhook → worker with `reason:stripe_uncollectible`, `actor:stripe_webhook`; audit + `member_cancelled` ops alert reflect new reason; label = "closed after payment could not be collected" |
-| 5 | Chargeback lost | Existing dispute-lost caller passes `reason:chargeback_lost` → erasure mode `chargeback_lost` → retains identity/insurance/verification buckets, deletes avatars/pro-photos/support-attachments/cpd-certificates; `member_cancelled` ops alert severity = high |
-| 6 | Webhook duplicate delivery | Existing `payment_events` idempotency layer unchanged; second delivery no-ops. Worker also idempotent-friendly: profile already hidden, Stripe cancel returns `resource_missing` (skipped), auth delete on already-deleted user throws → surfaces as error (caller retries, DLQ eventually) — behaviour matches pre-change |
-| 7 | Webhook dead-letter | After 5 attempts, `payment_events.dead_lettered_at` stamped, 200 ack returned, and new `payments.webhook_dead_lettered` high-severity ops alert inserted with `{event_id, event_type, attempts, error}` |
-| 8 | Simulated storage delete failure | `eraseClosedMemberData` catches per-bucket error, populates `storageBucketsFailed`, `ok:false`. Worker still completes (auth delete runs), emits `member_close_storage_erasure_failed` high + roll-up `member_close_partial_failure` high. Return payload shows failed bucket list |
-| 9 | Simulated email failure | `sendCancellationEmail` returns `{ok:false, error}`. Worker still completes, emits `member_close_email_failed` medium + roll-up partial-failure high. `emailSent:false` + `emailError` in return |
-| 10 | Marketing opt-out member cancels | `resolveMarketingOptIn` reads `notification_preferences.marketing_opt_in = false` → mailing archive row written with `marketing_opt_in:false`; no forced `true` |
-
----
-
-**Verdict:** all P0-1 through P0-5 fixes verified against source. Awaiting sign-off before next work item.
+- Files created (listed).
+- Files edited (listed — should be exactly `AdminProviderQueueTab.tsx` + `.lovable/plan.md`).
+- Migration filename.
+- Typecheck result.
+- Grep confirmations: `legal_entity_name` zero-hit in new files; no writes to `verification_decisions` / `professionals.verification_status` in new files; no changes to forbidden paths (diff summary).
+- Acceptance test evidence for each of the 12 above.
