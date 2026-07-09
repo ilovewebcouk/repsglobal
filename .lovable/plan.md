@@ -1,22 +1,53 @@
-## Problem
+## Trading name lifecycle — QA walkthrough
 
-The hero chip on `/dashboard/verification` always reads **"Identity verified"** and **"Domain confirmed"**, regardless of whether those checks have actually passed. Only the dot colour changes (grey vs emerald). Meanwhile the section below correctly says **"Start ID check"** because identity isn't done. Same story for domain.
+No code changes proposed; this documents the current behaviour so you can confirm it's what you want. If anything is wrong, tell me which step to change.
 
-That's why the two areas contradict each other — the chip label is a fixed string that describes the *earned* state, not the current state.
+### 1. Where the name lives
 
-For Diverse Trainers (`11111111-…0002`):
-- `professionals.identity_status = 'unverified'`, no `identity_documents` row → `t.ticks.identity = false`
-- no `provider_domain_verifications` row → `d.status = 'unstarted'` → `domainDone = false`
+- **Single source of truth:** `profiles.business_name` (one column, per user).
+- **Pending changes** live in `provider_name_requests` with `status = 'pending' | 'approved' | 'rejected'`. Not shown publicly.
 
-So both chips are correctly *not earned* (grey dot), but the text still reads "Identity verified / Domain confirmed", which is misleading.
+### 2. How a name is added (first time)
 
-## Fix
+Dashboard → `/dashboard/verification` → **Trading name** card.
 
-In `src/components/dashboard/organisation/VerificationPage.tsx` (Hero component, lines 197–200), make the chip label reflect actual state:
+1. If `profiles.business_name` is empty, the card renders in amber "action needed" state with an input + **Set name** button.
+2. On submit, `submitProviderNameChange({ requested_name })` runs:
+   - Checks for an existing pending request → rejects if one exists.
+   - Sees `current` is empty → **writes directly to `profiles.business_name`** (via `supabaseAdmin`), regenerates the provider slug, and returns `{ applied: true }`.
+   - **No admin approval on first set.** Name goes live immediately.
+3. UI refetches `getMyProviderNameStatus`; card flips to locked state.
 
-- Identity chip: `"Identity verified"` when `identityDone`, else `"Identity — not started"` (or `"Identity — in review"` when `t?.identity.status === 'pending'`).
-- Domain chip: `"Domain confirmed"` when `domainDone`, `"Domain — in review"` when `domainStatus === 'pending_admin_review'`, `"Domain — email sent"` when `'email_sent'`, else `"Domain — not started"`.
+### 3. When the card becomes "locked"
 
-Pass `identityStatus` (from `t?.identity.status`) into `Hero` alongside `domainStatus` so the chip can pick the right label. `LayerChip` stays visually identical; only its `label` prop changes.
+As soon as `profiles.business_name` is non-empty (`hasName === true`), the card shows:
 
-No DB / server changes. No copy elsewhere changes. This is a pure UI label fix so the hero, section, and badge tier all tell the same story.
+- Green check icon
+- The approved name in a read-only pill
+- Copy: *"Locked. Contact REPs support to change your trading name."*
+- **No input, no button, no "Request change" affordance.**
+
+The `submitProviderNameChange` server fn still exists but is no longer reachable from the provider dashboard.
+
+### 4. How a locked name changes
+
+Only two paths, both admin-side:
+
+- **Support / admin** edits `profiles.business_name` directly (or approves a `provider_name_requests` row created out-of-band).
+- The `approveProviderNameRequest` admin fn (in the same file) writes the new name to `profiles.business_name` and marks the request approved.
+
+Providers themselves have no UI to trigger a change.
+
+### 5. Downstream effects of setting/changing the name
+
+- **Provider slug** (`professionals.slug`) is regenerated from the new name on first-set and on admin approval.
+- **Submission gate:** `submitRegulatedPermission(Batch)` and `submitCpdCourse` throw `"Set your trading name…"` when `business_name` is empty **and** `professionals.account_type = 'organisation'`. Individual trainers are not gated.
+- **Admin verification queues** and hero labels read `profiles.business_name` as the display name; fall back to `"Unnamed provider"` when null.
+
+### Confirm or change
+
+If any of the following should be different, say which and I'll plan the change:
+
+- (a) Should first-set also require admin approval? Currently it's instant.
+- (b) Should providers see a "Request change" flow at all, or is contact-support the final answer? Currently: contact-support only.
+- (c) Should individual (non-organisation) providers also be gated by trading name? Currently: no.
