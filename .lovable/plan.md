@@ -1,58 +1,72 @@
-# Simplify qualification lifecycle + mirror to CPD
+# Awarding-body logos — hybrid strategy
 
 ## Goal
 
-Replace the current 5-tab admin queue (Pending / Changes / Approved / Rejected / Withdrawn) with **4 tabs: Pending, Approved, Rejected, Withdrawn** — for both Regulated qualifications and CPD accreditations.
+Show the awarding body's actual logo next to approved qualifications on trainer profiles and the admin queue (instead of the generic graduation-cap icon), starting today with Logo.dev auto-fetch and progressively replacing with official uploads you send me.
 
-Semantics:
-- **Withdrawn** = the provider deleted / retracted the entry (audit trail).
-- No "Changes" flow — if a provider wants to amend an entry, they delete it and resubmit.
+## How the existing plumbing works
 
-Mirror the member-side delete UX so CPD works the same way as Regulated.
+`src/lib/cpd/awarding-bodies.ts` already exposes:
 
-## Admin UI (`AdminProviderQualificationsTab.tsx`)
+```ts
+type AwardingBody = { slug, name, aliases?, regulated?, logo? }
+awardingBodyLogo(slug) → string | null
+```
 
-- Drop `"changes_requested"` from `STATUS_TABS` and `REGULATED_STATUS_TABS`.
-- Both Regulated and CPD now share tabs: `["submitted", "approved", "rejected", "withdrawn"]`.
-- Remove the `if (t === "cpd" && status === "withdrawn")` special-case — no longer needed.
-- Remove the "Changes" label from `STATUS_LABEL`.
-- No visual redesign; just fewer chips.
+Callers (`RegulatedRow`, admin `QualificationDocDrawer`, profile qualifications section) already render `<img>` when `logo` is truthy, and fall back to the icon otherwise. So the only real work is populating `logo`.
 
-## Member-side CPD delete (mirror Regulated)
+## Step 1 — Add a `domain` field + Logo.dev fallback (this turn)
 
-Regulated already has `removeMyRegulatedPermission` (approved → soft-withdraw, others → hard delete). CPD currently only has `deleteMyCpdCourse`, and it hard-deletes only `submitted` rows.
+Add an optional `domain?: string` on `AwardingBody` and fill it for the 30 bodies where I can identify an official site. Then update `awardingBodyLogo(slug)`:
 
-Change:
-- Rename/replace with `removeMyCpdCourse` that mirrors Regulated behaviour:
-  - `approved` → soft-withdraw (set `status = 'withdrawn'`, stamp `withdrawn_at`, optional `withdrawn_reason`).
-  - `submitted` / `rejected` → hard delete row + storage cleanup of any attached certificate.
-  - `withdrawn` → no-op.
-- Keep `deleteMyCpdCourse` as an alias export for backwards compatibility with existing call sites, forwarding to the new handler.
-- Add a "Delete" button to the member's CPD list row (matching the Regulated delete button placement), with a small confirmation dialog. Approved rows say "Withdraw"; others say "Delete".
+```ts
+if (body.logo) return body.logo;             // official upload takes priority
+if (body.domain) return logoDevUrl(body.domain); // fallback
+return null;                                 // component uses icon
+```
 
-## Database migration
+`logoDevUrl(domain)` reads `import.meta.env.VITE_LOVABLE_CONNECTOR_LOGO_DEV_API_KEY` and returns `https://img.logo.dev/{domain}?token=...&size=128&format=png`.
 
-`cpd_courses` currently has no withdrawn tracking columns.
+## Step 2 — Link the Logo.dev connector
 
-Migration:
-- Add `withdrawn_at timestamptz NULL`.
-- Add `withdrawn_reason text NULL`.
-- No CHECK constraint change needed (status is `text`); "withdrawn" is already valid data.
-- Backfill: none — new state only.
+Logo.dev isn't linked to this project yet. I'll call `standard_connectors--connect` for it so `VITE_LOVABLE_CONNECTOR_LOGO_DEV_API_KEY` is injected. You'll get a one-tap approval prompt. If the workspace doesn't have a Logo.dev connection yet, that flow lets you set one up (free tier is fine).
 
-## Files to change
+## Step 3 — Domains for the 30 bodies
 
-- `src/components/admin/verification/AdminProviderQualificationsTab.tsx` — remove Changes tab, unify tab arrays for both sub-tabs.
-- `src/lib/qualifications/qualifications.functions.ts` — add `removeMyCpdCourse` handler (soft-withdraw when approved, else hard delete), export alias `deleteMyCpdCourse`.
-- Member CPD list component (dashboard route that lists a provider's CPD courses) — add Delete/Withdraw button + confirm dialog. I'll locate the exact file (`src/routes/dashboard/**` or similar) during build.
-- Migration adding `withdrawn_at` + `withdrawn_reason` to `cpd_courses`.
+I'll populate `domain` for these using publicly known primary sites, for example:
+
+- Focus Awards → `focusawards.org.uk`
+- Active IQ → `activeiq.co.uk`
+- 1st4sport → `1st4sportqualifications.com`
+- NCFE → `ncfe.org.uk`
+- YMCA Awards → `ymcaawards.co.uk`
+- VTCT → `vtct.org.uk`
+- Pearson → `pearson.com`
+- City & Guilds → `cityandguilds.com`
+- NASM → `nasm.org`
+- UKSCA → `uksca.org.uk`
+- …and so on for the rest of the list.
+
+Any body where I can't confidently identify the domain gets left with `domain: undefined` and just keeps rendering the fallback icon until you send me the logo.
+
+## Step 4 — When you send me an official logo
+
+You upload the file to chat (PNG or SVG). I'll:
+
+1. Upload to the Lovable CDN via `lovable-assets create`.
+2. Set the resulting URL on that body's `logo` field.
+
+Because `awardingBodyLogo()` prefers `logo` over the Logo.dev URL, the swap is instant with no other code changes.
+
+## Files changed
+
+- `src/lib/cpd/awarding-bodies.ts` — add `domain?` field, populate it, update `awardingBodyLogo()`.
 
 ## Out of scope
 
-- No changes to `provider_change_requests` table (that's the profile-fields change queue, separate from qualifications).
-- No copy changes to public-facing profile qualification rendering.
-- No new admin actions on the Withdrawn tab beyond read-only listing (already how it renders).
+- No visual redesign of the qualification rows / cards. Same `<img>` slot, just populated.
+- No admin UI for editing logos (send them in chat and I'll wire them).
 
-## Open question
+## Note on Logo.dev quality
 
-None blocking — proceeding with the above unless you'd like the member-side button labelled differently (e.g. always "Delete" regardless of approved state).
+Logo.dev's coverage of niche awarding bodies is inconsistent — some will return a crisp logo, some will return a favicon, and some may 404 to a generic fallback. That's expected and why we're set up to progressively replace with your uploads. The image tag will still render something (or the icon if it 404s), so no broken layouts.
