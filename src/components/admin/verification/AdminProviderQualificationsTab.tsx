@@ -145,6 +145,7 @@ type RegRow = {
   ofqual_number: string | null;
   ofqual_snapshot: OfqualSnapshot;
   ofqual_found: boolean;
+  reps_qualification_number: string | null;
   submission_group_id: string | null;
   qualification_id: string | null;
   evidence_type: "eqa_report" | "centre_certificate" | "approval_letter";
@@ -483,6 +484,11 @@ function RegulatedDetail({
                 {level ? ` · ${level}` : ""}
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-[11.5px]">
+                {row.reps_qualification_number ? (
+                  <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300 font-mono">
+                    {row.reps_qualification_number}
+                  </Badge>
+                ) : null}
                 {row.ofqual_number ? (
                   <Badge className="border-white/15 bg-white/5 font-mono">
                     {row.ofqual_number}
