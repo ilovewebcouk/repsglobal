@@ -113,7 +113,6 @@ export function ProviderProfilePage() {
 
 
   const [form, setForm] = React.useState({
-    name: "",
     tagline: "",
     about: "",
     website_url: "",
@@ -133,7 +132,6 @@ export function ProviderProfilePage() {
   React.useEffect(() => {
     if (!data) return;
     setForm({
-      name: data.name ?? "",
       tagline: data.tagline ?? "",
       about: data.about ?? "",
       website_url: data.website_url ?? "",
@@ -149,6 +147,7 @@ export function ProviderProfilePage() {
       social_x: data.social_x ?? "",
     });
   }, [data]);
+
 
   const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
