@@ -43,7 +43,8 @@ function ProviderPage() {
 
   if (snap.isLoading) {
     return (
-      <DashboardShell role="admin" active="Providers" title="Provider 360">
+      <DashboardShell role="admin" active="Providers" title="Provider 360" subtitle="Loading…">
+
         <div className="flex flex-col gap-6 p-6">
           <Skeleton className="h-24 w-full bg-reps-panel/60" />
           <Skeleton className="h-96 w-full bg-reps-panel/60" />
