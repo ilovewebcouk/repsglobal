@@ -144,10 +144,18 @@ const submitRegulatedInput = z.object({
   awarding_body_reference: z.string().max(120).optional().nullable(),
 });
 
-// Gate: every provider must set a trading name (profiles.business_name)
-// before they can submit regulated qualifications or CPD courses. Without
-// it the admin queue can't tell who submitted, so we block at the door.
+// Gate: training PROVIDERS (organisations) must set a trading name
+// (profiles.business_name) before they can submit regulated qualifications
+// or CPD courses — otherwise the admin queue can't identify them.
+// Individual trainers submitting their own qualifications are exempt.
 async function assertProviderHasTradingName(supabase: any, userId: string) {
+  const { data: pro } = await supabase
+    .from("professionals")
+    .select("account_type")
+    .eq("id", userId)
+    .maybeSingle();
+  if (pro?.account_type !== "organisation") return;
+
   const { data, error } = await supabase
     .from("profiles")
     .select("business_name")
@@ -161,6 +169,7 @@ async function assertProviderHasTradingName(supabase: any, userId: string) {
     );
   }
 }
+
 
 export const submitRegulatedPermission = createServerFn({ method: "POST" })
 
