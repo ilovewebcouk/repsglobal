@@ -542,14 +542,23 @@ export const createProvider = createServerFn({ method: "POST" })
         },
       });
 
+      // NOTE (temporary compat): admin_pro_invites.plan CHECK constraint only
+      // permits 'verified' | 'pro' and the table has no metadata/kind/note
+      // column. We record provider invites as plan='pro' so acceptance still
+      // works, and distinguish them by the seeded professionals.account_type
+      // ='organisation' row keyed on email at accept-time.
+      // FOLLOW-UP: add a proper provider invite type (either extend the plan
+      // enum with 'provider' or add a signup_kind/kind column) so provider
+      // invites are not recorded as pro invites.
       await sa.from("admin_pro_invites").insert({
         email: data.email,
         full_name: data.name,
-        plan: "pro" as never, // enum lacks 'provider' — see plan snag #1
+        plan: "pro" as never,
         invited_by: context.userId,
         invite_url: inviteUrl,
         email_message_id: (sendRes as { messageId?: string }).messageId ?? null,
       } as never);
+
     } catch (e) {
       // Invite user exists, seed done — surface but don't roll back.
       console.error("[createProvider] invite email/track failed", e);
