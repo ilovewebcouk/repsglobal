@@ -1,29 +1,28 @@
+## Accreditations block — 10/10 polish
 
-Restore the previous compact two-line row layout for each awarding body in the "Ofqual-regulated qualifications" section of `src/routes/t.$slug.index.tsx` (lines 556–605). Keep the emerald Ofqual pill; drop the card-per-body wrapper the last edit introduced.
+Keep pills on the qualification row (they belong to the qual, not the awarding body). Reserve the header-right slot for the future awarding-body badge so nothing has to re-lay out later.
 
-## Layout per body
+### Changes (single file: `src/routes/t.$slug.index.tsx`, lines ~574–605)
 
-One horizontal row:
-- Left: awarding-body logo container, sized to match ~two lines of text so the logo reads at the correct scale next to a stacked "Body name / qualification" text block.
-  - `flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white`
-  - Logo `max-h-9 max-w-14 object-contain`
-- Right (flex column, `min-w-0`):
-  - Line 1: body name — `text-[13.5px] font-semibold text-black`
-  - Line 2: the qualification(s) as an inline flex-wrap list: optional level pill + title + emerald Ofqual pill, `text-[13px] text-black/75`, `gap-x-2 gap-y-1`.
-  - If a body has multiple qualifications, each qualification renders as its own line-2 row under the name (stacked, `space-y-1`), so the logo still visually aligns to the first two lines.
+1. **Body header row — reserve badge slot**
+   - Wrap `<p>Active IQ</p>` in a flex row: `<div className="flex items-center justify-between gap-3">` with `<p className="text-[13.5px] font-semibold ...">Active IQ</p>` on the left and an empty `<div />` placeholder on the right. When the badge lands later it drops in without touching layout.
 
-## Container
+2. **Qualification title — stronger hierarchy**
+   - Bump title from `font-medium` at inherited 13px to `text-[13.5px] font-semibold text-black` so it visually outweighs the pills.
 
-- Replace the `mt-3 space-y-2.5` card list with `mt-3 space-y-4` (no per-body card, no border, no inner background) so it matches the original clean two-line look.
-- Remove the `<ul className="mt-3 divide-y ... border-t ...">` divider treatment.
+3. **Pill row — breathing room**
+   - Change the qual row from `gap-x-2 gap-y-1` to `gap-x-2 gap-y-1.5` so wrapped pills don't crowd.
 
-## Emerald Ofqual pill
+4. **Pill micro-cap labels — cleaner emerald**
+   - Change the "Ofqual" and "REPS" inner `<span>` from `text-emerald-700/70` to `text-emerald-700 font-semibold` (drop from `font-bold`), so the label reads crisp against the mono ref number instead of washed out.
 
-Keep exactly as it is now:
-```
-border-emerald-400/30 bg-emerald-500/10 text-emerald-800  (Ofqual prefix: text-emerald-700/70)
-```
+### Explicitly NOT changing
+- Pill position (stays on qual row, not header row).
+- REPS-QUAL 4-digit format.
+- Level chip, order of elements, or any color tokens outside the two micro-caps.
+- Any other section on the page.
 
-## Out of scope
-
-No changes to: section heading, intro copy, section-level "Approved centre" pill, empty state, REPS-accredited CPD block, dashboard qualifications page.
+### Why this is the right call
+- Awarding bodies can hold multiple quals; pills glued to the body name break the moment a second qual is added.
+- Header-right reservation means the future "Active IQ endorsed" / approved-centre badge lands with zero re-layout.
+- Title-weight bump restores the intended read order: body → qual → reference IDs.

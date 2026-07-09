@@ -572,21 +572,24 @@ function ProviderProfilePage() {
                             )}
                           </div>
                           <div className="min-w-0 flex-1 space-y-1">
-                            <p className="text-[13.5px] font-semibold leading-tight text-black">{group.name}</p>
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-[13.5px] font-semibold leading-tight text-black">{group.name}</p>
+                              <div />
+                            </div>
                             {group.items.map((it) => (
                               <div
                                 key={it.id}
-                                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-black/75"
+                                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[13px] text-black/75"
                               >
                                 {it.level ? (
                                   <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
                                     {it.level}
                                   </span>
                                 ) : null}
-                                <span className="font-medium text-black">{it.title}</span>
+                                <span className="text-[13.5px] font-semibold text-black">{it.title}</span>
                                 {it.ofqual_ref ? (
                                   <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-800">
-                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-emerald-700/70">
+                                    <span className="text-[9.5px] font-sans font-semibold uppercase tracking-wide text-emerald-700">
                                       Ofqual
                                     </span>
                                     {it.ofqual_ref}
@@ -594,7 +597,7 @@ function ProviderProfilePage() {
                                 ) : null}
                                 {it.reps_ref ? (
                                   <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-800">
-                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-emerald-700/70">
+                                    <span className="text-[9.5px] font-sans font-semibold uppercase tracking-wide text-emerald-700">
                                       REPS
                                     </span>
                                     {it.reps_ref}
@@ -602,6 +605,7 @@ function ProviderProfilePage() {
                                 ) : null}
                               </div>
                             ))}
+
                           </div>
                         </div>
                       ))}
