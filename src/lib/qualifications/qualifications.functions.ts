@@ -994,6 +994,7 @@ export type PublicProviderRegulatedRow = {
   id: string;
   ofqual_number: string | null;
   ofqual_snapshot: OfqualSnapshot;
+  reps_qualification_number: string | null;
   // Historic rows may still link to the deprecated catalogue table.
   qualification: {
     id: string;
