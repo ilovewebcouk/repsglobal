@@ -3721,9 +3721,7 @@ export type Database = {
           avatar_qa_source: string | null
           avatar_qa_status: string
           avatar_url: string | null
-          business_name: string | null
           created_at: string
-          display_name: string | null
           full_name: string | null
           id: string
           updated_at: string
@@ -3733,9 +3731,7 @@ export type Database = {
           avatar_qa_source?: string | null
           avatar_qa_status?: string
           avatar_url?: string | null
-          business_name?: string | null
           created_at?: string
-          display_name?: string | null
           full_name?: string | null
           id: string
           updated_at?: string
@@ -3745,9 +3741,7 @@ export type Database = {
           avatar_qa_source?: string | null
           avatar_qa_status?: string
           avatar_url?: string | null
-          business_name?: string | null
           created_at?: string
-          display_name?: string | null
           full_name?: string | null
           id?: string
           updated_at?: string
@@ -6101,7 +6095,6 @@ export type Database = {
       }
       v_identity_review_queue: {
         Row: {
-          display_name: string | null
           document_id: string | null
           full_name: string | null
           identity_status: string | null
@@ -6120,7 +6113,6 @@ export type Database = {
           certificate_number: string | null
           claimed_at: string | null
           claimed_by: string | null
-          display_name: string | null
           duplicate_of: string | null
           expiry_date: string | null
           full_name: string | null
