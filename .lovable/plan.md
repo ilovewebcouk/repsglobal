@@ -1,116 +1,143 @@
-## Goal
+# Post-Implementation QA Evidence
 
-Make every account-ending path — member self-delete, Stripe cancel, admin close, dispute lost, invoice uncollectible — go through **one** canonical worker with the same audit, retention, profile hide, email, PII/storage erasure, and ops-alert behaviour. Backend consistency pass only. No pricing, refund, plan, public-profile, or dashboard-layout changes.
+**No further code changes proposed. This is a read-only verification pack.**
 
-## Scope (in order)
+## 1. Files created
 
-### Fix 1 — Route self-delete through `_closeMembershipImpl`
+- `src/lib/admin/erase-member-data.server.ts` (3220 bytes)
 
-**Files**
-- `src/lib/admin/close-membership.server.ts`
-- `src/routes/api/**` or wherever `deleteMyAccount` currently lives (locate via `rg "deleteMyAccount"` in build mode)
+## 2. Files edited
 
-**Changes**
-- Extend `CancelReason` union with `"self_delete"`.
-- Extend `REASON_LABEL` with `self_delete: "at your request"`.
-- Refactor `deleteMyAccount` to:
-  1. Validate email echo + `DELETE` phrase (keep existing guards).
-  2. Resolve `userId` from session.
-  3. Call `_closeMembershipImpl({ user_id, mode: hasLiveSub ? "end_now_delete" : "delete_only", reason: "self_delete", notes, actor_id: \`user:${userId}\` })`.
-  4. Remove duplicated Stripe cancel + `auth.admin.deleteUser` calls — the worker owns them.
-- Keep the client-facing return shape (`{ ok: true }`) stable.
+- `src/lib/admin/close-membership.server.ts` — rewritten (canonical worker + ops alerts + erasure wire-in + marketing consent fix + new reasons)
+- `src/lib/admin/billing-actions.functions.ts` — `CancelReason` union + `ALL_REASONS` extended
+- `src/lib/settings/settings.functions.ts` — `deleteMyAccount` refactored to delegate
+- `src/lib/admin/batch-cleanup.functions.ts` — `marketing_opt_in: true` → `false`
+- `src/routes/api/public/payments/webhook.ts` — `invoice.marked_uncollectible` reason swap + DLQ ops alert
 
-### Fix 2 — Shared erasure helper into canonical worker
+## 3. Migration
 
-**New file**
-- `src/lib/admin/erase-member-data.server.ts` exporting `eraseClosedMemberData(userId, { erasureMode })`.
+`supabase/migrations/20260709123853_13d1ea71-c21a-4ba1-afed-282555009a9b.sql`
 
-**Erasure surface (ported from current `deleteMyAccount`)**
-- `erase_user_pii` RPC (whichever tables it covers today).
-- Storage buckets: `avatars`, `pro-photos`, `identity-docs`, `insurance-docs`, `verification-docs`, `support-attachments`, `cpd-certificates`.
-
-**`erasureMode` policy matrix**
-
-| Mode | PII RPC | Avatars/pro-photos | Identity/insurance/verification | Support attachments | CPD certificates |
-|---|---|---|---|---|---|
-| `full_self_delete` | yes | delete | delete | delete | delete |
-| `membership_closed` (admin close, stripe cancel, uncollectible) | yes | delete | delete | delete | delete |
-| `chargeback_lost` | yes | delete | **retain** | **retain** | delete |
-| (future: `admin_close` — currently maps to `membership_closed`) | — | — | — | — | — |
-
-- Each step wrapped in try/catch; failures raise a partial-failure signal (see Fix 5) but do not abort the close.
-
-**Wire-in**
-- `_closeMembershipImpl` calls `eraseClosedMemberData(user_id, { erasureMode })` **before** `auth.admin.deleteUser` (auth row is FK target for storage owner checks; deleting after erase keeps RLS predictable).
-- Map incoming `CancelReason` → `erasureMode`:
-  - `self_delete` → `full_self_delete`
-  - `chargeback_lost` → `chargeback_lost`
-  - everything else → `membership_closed`
-- Remove the equivalent inline erasure from `deleteMyAccount` once it delegates to the worker.
-
-### Fix 3 — Marketing consent must not be forced true
-
-**File**: `src/lib/admin/close-membership.server.ts` (the `mailing_list_contacts` upsert block)
-
-**Changes**
-- Before upsert, read existing row by `email`:
-  - If found and `marketing_opt_in = true` with a real prior source → preserve `marketing_opt_in`, `marketing_consent_source`, `marketing_consent_at`.
-  - Otherwise → `marketing_opt_in = false`, do not set `marketing_consent_source = 'cancellation'`, leave `marketing_consent_at` null.
-- `source` column (archive/provenance) can remain `"cancellation"` — that is provenance, not marketing consent.
-- Confirm `marketing_consent_source` / `marketing_consent_at` columns exist on `mailing_list_contacts`; if not, defer those two fields and only fix `marketing_opt_in`. (Check in build mode via `supabase--read_query`; if columns are missing, do NOT add a migration in this pass — flag as follow-up.)
-
-### Fix 4 — `stripe_uncollectible` reason
-
-**Files**
-- `src/lib/admin/close-membership.server.ts` (type + label)
-- `src/lib/admin/billing-actions.functions.ts` (`ALL_REASONS` array, `CancelReason` union)
-- Stripe webhook handler for `invoice.marked_uncollectible` (locate via `rg "marked_uncollectible"`)
-
-**Changes**
-- Add `"stripe_uncollectible"` to `CancelReason` union in both files.
-- `REASON_LABEL.stripe_uncollectible = "closed after payment could not be collected"`.
-- Webhook path swaps `reason: "member_request"` → `reason: "stripe_uncollectible"`, `actor_id: "stripe_webhook"`.
-
-### Fix 5 — Ops alerts for dead-letter and partial failures
-
-**New helper** in `close-membership.server.ts` (or a sibling `ops-alerts.server.ts`):
-
-```
-insertOpsAlert(kind, severity, context)
+```sql
+ALTER TYPE public.mailing_list_deletion_reason ADD VALUE IF NOT EXISTS 'self_delete';
+ALTER TYPE public.mailing_list_deletion_reason ADD VALUE IF NOT EXISTS 'stripe_uncollectible';
 ```
 
-**Emit from**:
+- Idempotent (`IF NOT EXISTS`), non-destructive, additive-only.
+- Touches only `mailing_list_deletion_reason` enum; no tables, RLS, or grants changed.
 
-| Kind | Severity | Site |
+## 4. Typecheck
+
+`bunx tsgo --noEmit` — **zero errors in any touched file**. Filter of the 5 changed paths + new file against the tsgo output returned empty. Pre-existing errors elsewhere (`routes/reviews.tsx`, `routes/signup.tsx`, `routes/specialisms.tsx`, `routes/t.*.tsx` — TanStack Router `search` param requirements) are unrelated to this pass.
+
+## 5. Scope confirmation — no forbidden surfaces touched
+
+None of the following categories were edited:
+
+- Pricing (`src/lib/billing.ts`, `src/routes/pricing.tsx`, plan tiers) — untouched
+- Public profile (`src/routes/pro.*.tsx`, `src/routes/c.$slug.tsx`, `src/routes/t.$slug*.tsx`) — untouched
+- Dashboard layout (`src/components/dashboard/**`, `src/routes/_authenticated/**` UI) — untouched
+- Design tokens / marketing pages — untouched
+
+Only backend workers, webhook handler, one server fn (`deleteMyAccount`), and one enum migration.
+
+## 6. `deleteMyAccount` no longer calls destructive APIs directly
+
+`rg -n "stripe.subscriptions.cancel|erase_user_pii|storage.*remove|auth.admin.deleteUser" src/lib/settings/settings.functions.ts` returns **empty**. Only surviving admin call is a subscriptions read to decide `mode`. Validation (`confirm_email` match + `DELETE` phrase) runs before any admin work — see lines 316–321 below.
+
+---
+
+## A. Self-delete path — `src/lib/settings/settings.functions.ts:307–348`
+
+- L338–345: `await _closeMembershipImpl({ user_id: userId, mode: hasLiveSub ? "end_now_delete" : "delete_only", reason: "self_delete", notes: ..., actor_id: \`user:${userId}\` })`
+- L316–321: email echo + `DELETE` phrase validated before any admin call
+- L347: `return { ok: true }`
+
+## B. Canonical worker — `src/lib/admin/close-membership.server.ts`
+
+- L199–210: `professionals.update({ is_published: false, unpublished_reason: 'membership_closed', ... })` runs FIRST, before Stripe/erasure/auth-delete
+- L296–299: `eraseClosedMemberData(input.user_id, { erasureMode: erasureModeFor(input.reason) })` — called before auth delete
+- L312–313: `auth.admin.deleteUser(input.user_id)` — runs AFTER erasure
+- Ops alerts on partial failure: Stripe (L233), email (L279), erasure (L303), audit (L332), roll-up `payments.member_close_partial_failure` (L344)
+- L361–367: return object includes `erasure: {...}` and `partialFailures: string[]`
+
+## C. Erasure policy — `src/lib/admin/erase-member-data.server.ts`
+
+```
+ALL_BUCKETS = ["avatars","pro-photos","identity-docs","insurance-docs",
+               "verification-docs","support-attachments","cpd-certificates"]
+CHARGEBACK_RETAIN = { "identity-docs", "insurance-docs", "verification-docs" }
+```
+
+`bucketsForMode()`:
+- `full_self_delete` → all 7 buckets ✓
+- `membership_closed` → all 7 buckets ✓
+- `chargeback_lost` → filters out CHARGEBACK_RETAIN → deletes `avatars`, `pro-photos`, `support-attachments`, `cpd-certificates` ✓; retains `identity-docs`, `insurance-docs`, `verification-docs` ✓
+
+Reason → mode mapping (`close-membership.server.ts:123–128`): `self_delete` → `full_self_delete`; `chargeback_lost` → `chargeback_lost`; everything else → `membership_closed`.
+
+## D. Marketing consent — `close-membership.server.ts:132–162, 259` and `batch-cleanup.functions.ts:148`
+
+- `resolveMarketingOptIn(userId, email)`:
+  1. Reads `notification_preferences.marketing_opt_in` — returns it if present ✓ (preserves existing opt-in)
+  2. Falls back to prior `mailing_list_contacts.marketing_opt_in` by email
+  3. Defaults `false` when both unknown ✓
+- Upsert (L259): `marketing_opt_in: marketingOptIn` — never hard-coded `true` ✓
+- `batch-cleanup.functions.ts:148`: was `marketing_opt_in: true`, now `marketing_opt_in: false` ✓
+
+## E. `invoice.marked_uncollectible` — `src/routes/api/public/payments/webhook.ts:828–834`
+
+```
+await _closeMembershipImpl({
+  user_id: userId,
+  mode: "end_now_delete",
+  reason: "stripe_uncollectible",   // was "member_request"
+  notes: `Invoice marked uncollectible (invoice ${invoice.id})`,
+  actor_id: "stripe_webhook",
+});
+```
+
+- reason ✓ `stripe_uncollectible`
+- actor ✓ `stripe_webhook`
+- `member_request` no longer present in this branch ✓
+
+## F. Ops alerts — all six emitted
+
+| Alert kind | Site | Severity |
 |---|---|---|
-| `payments.webhook_dead_lettered` | high | webhook DLQ handler (after retry threshold, when `payment_events.dead_lettered_at` is stamped) |
-| `payments.member_close_partial_failure` | high | worker top-level catch when any non-fatal step throws |
-| `payments.member_close_storage_erasure_failed` | high | `eraseClosedMemberData` catch |
-| `payments.member_close_stripe_cancel_failed` | high | existing Stripe cancel loop |
-| `payments.member_close_email_failed` | medium | when `sendCancellationEmail` returns `ok: false` |
-| `payments.member_close_audit_failed` | medium | audit log catch |
+| `payments.webhook_dead_lettered` | `webhook.ts:1005` (in DLQ branch, after `dead_lettered_at` stamp) | high |
+| `payments.member_close_stripe_cancel_failed` | `close-membership.server.ts:233` (Stripe cancel catch) | high |
+| `payments.member_close_storage_erasure_failed` | `close-membership.server.ts:303` (erasure post-check) | high |
+| `payments.member_close_email_failed` | `close-membership.server.ts:279` (email `ok:false`) | medium |
+| `payments.member_close_audit_failed` | `close-membership.server.ts:332` (audit log catch) | medium |
+| `payments.member_close_partial_failure` | `close-membership.server.ts:344` (roll-up when `partialFailures.length > 0`) | high |
 
-- Each context payload: `{ user_id, reason, actor, step, error: message }`.
-- Ops-alert insert failure itself stays a `console.warn` — unavoidable last resort.
+Plus existing `payments.member_cancelled` (info / high for chargeback) preserved.
 
-## Non-goals (explicit)
+## G. Migration
 
-- No change to "cancel = immediate termination, no grace" policy.
-- No change to pricing, refund logic, plan tiers.
-- No public-profile or dashboard UI changes.
-- No new schema migrations unless a column referenced above is missing; if so, flag and defer.
+Full content shown in §3. Safety review:
 
-## Verification (acceptance tests to walk through post-build)
+- `ADD VALUE IF NOT EXISTS` → safe to re-run; no error if value already present
+- Only affects one enum type
+- No table alterations, no policy/grant changes, no data mutations
+- Cannot be inside an explicit transaction with other DDL that reads the enum in the same statement — not applicable here (standalone migration)
 
-1. Self-delete from `/dashboard/settings` runs the canonical worker; audit row shows `actor: user:<uuid>`, reason `self_delete`; storage buckets scrubbed; `member-cancelled` email sent.
-2. Stripe portal cancel: still works, now also erases storage; duplicate webhook is idempotent (existing behaviour preserved).
-3. Admin close: unchanged actor format `admin:<uuid>`, now also erases storage.
-4. `invoice.marked_uncollectible`: reason `stripe_uncollectible`, actor `stripe_webhook`, ops alert emitted.
-5. Marketing consent: opted-out member stays opted out; unknown → false; no forced `true`.
-6. Chargeback lost: identity/insurance/verification retained; other storage erased.
-7. Webhook DLQ: dead-lettered event → high-severity ops alert.
-8. Partial failure (simulate Stripe cancel or storage delete throwing): close still completes, high-severity ops alert written.
+## H. Manual QA checklist (expected behaviour)
 
-## Deliverable
+| # | Scenario | Expected result |
+|---|---|---|
+| 1 | Self-delete from `/dashboard/settings` | Validates email + `DELETE`. Worker: profile hide → Stripe cancel (if live sub) → retention stamp → mailing archive (opt-in preserved) → bd_migration detach → email → erasure (all 7 buckets) → auth delete → audit `actor:user:<uuid>` → ops alert `member_cancelled` info |
+| 2 | Stripe portal cancel | `customer.subscription.deleted` handler → worker (`reason:member_request`, `actor:stripe_webhook`) → same footprint + full erasure now included |
+| 3 | Admin close (Member 360) | `closeMembership` → worker (`actor:admin:<uuid>`) → cannot close own admin account (guard in `billing-actions.functions.ts`) → full erasure |
+| 4 | Invoice uncollectible | Webhook → worker with `reason:stripe_uncollectible`, `actor:stripe_webhook`; audit + `member_cancelled` ops alert reflect new reason; label = "closed after payment could not be collected" |
+| 5 | Chargeback lost | Existing dispute-lost caller passes `reason:chargeback_lost` → erasure mode `chargeback_lost` → retains identity/insurance/verification buckets, deletes avatars/pro-photos/support-attachments/cpd-certificates; `member_cancelled` ops alert severity = high |
+| 6 | Webhook duplicate delivery | Existing `payment_events` idempotency layer unchanged; second delivery no-ops. Worker also idempotent-friendly: profile already hidden, Stripe cancel returns `resource_missing` (skipped), auth delete on already-deleted user throws → surfaces as error (caller retries, DLQ eventually) — behaviour matches pre-change |
+| 7 | Webhook dead-letter | After 5 attempts, `payment_events.dead_lettered_at` stamped, 200 ack returned, and new `payments.webhook_dead_lettered` high-severity ops alert inserted with `{event_id, event_type, attempts, error}` |
+| 8 | Simulated storage delete failure | `eraseClosedMemberData` catches per-bucket error, populates `storageBucketsFailed`, `ok:false`. Worker still completes (auth delete runs), emits `member_close_storage_erasure_failed` high + roll-up `member_close_partial_failure` high. Return payload shows failed bucket list |
+| 9 | Simulated email failure | `sendCancellationEmail` returns `{ok:false, error}`. Worker still completes, emits `member_close_email_failed` medium + roll-up partial-failure high. `emailSent:false` + `emailError` in return |
+| 10 | Marketing opt-out member cancels | `resolveMarketingOptIn` reads `notification_preferences.marketing_opt_in = false` → mailing archive row written with `marketing_opt_in:false`; no forced `true` |
 
-One implementation turn covering Fixes 1–5, followed by a short QA note in chat confirming each acceptance test.
+---
+
+**Verdict:** all P0-1 through P0-5 fixes verified against source. Awaiting sign-off before next work item.
