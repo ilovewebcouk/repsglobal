@@ -261,7 +261,7 @@ export const findMemberByEmail = createServerFn({ method: "POST" })
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("full_name, display_name")
+      .select("full_name")
       .eq("id", matched.id)
       .maybeSingle();
 
@@ -274,12 +274,6 @@ export const findMemberByEmail = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
 
-    return {
-      found: true as const,
-      user_id: matched.id,
-      full_name:
-        (profile as any)?.full_name ?? (profile as any)?.display_name ?? null,
-      has_active_subscription: !!sub,
-      tier: (sub as any)?.tier ?? null,
-    };
+    return { found: true as const, user_id: matched.id, full_name:
+        (profile as any)?.full_name ?? (profile as any)?.full_name ?? null, has_active_subscription: !!sub, tier: (sub as any)?.tier ?? null,  };
   });

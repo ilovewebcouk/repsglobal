@@ -91,8 +91,8 @@ export function ProviderDashboardHome() {
       ? (TIERS[subTier as "verified" | "pro"]?.label ?? subTier)
       : "No plan";
   const memberName =
-    data?.identity?.full_name ?? data?.identity?.business_name ?? "REPS member";
-  const firstName = memberName.split(" ")[0];
+    data?.identity?.full_name ?? data?.identity?.full_name ?? "REPS member";
+  const firstName = memberName.split("")[0];
 
   const enqStats = hub.enqStats.data;
   const reviewKpis = hub.reviewKpis.data;

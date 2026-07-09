@@ -72,7 +72,7 @@ import { AdminProviderQueueTab } from "@/components/admin/verification/AdminProv
 import { AdminProviderQualificationsTab } from "@/components/admin/verification/AdminProviderQualificationsTab";
 
 export const Route = createFileRoute("/admin_/verification")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   component: AdminVerificationPage,
@@ -1096,7 +1096,7 @@ function AdminVerificationPage() {
                     <DialogHeader>
                       <DialogTitle>Revoke approved qualification?</DialogTitle>
                       <DialogDescription className="text-white/65">
-                        This deletes any titles granted from &ldquo;{sub.qualification}&rdquo; for{" "}
+                        This deletes any titles granted from &ldquo;{sub.qualification}&rdquo; for{""}
                         {prof?.full_name || "this pro"}. Reason is recorded permanently and shown to the pro.
                       </DialogDescription>
                     </DialogHeader>
@@ -1367,7 +1367,7 @@ type InsuranceRow = {
   reviewed_at: string | null;
   reviewed_by: string | null;
   created_at: string;
-  professional: { full_name: string | null; display_name: string | null } | null;
+  professional: { full_name: string | null} | null;
 };
 
 function AdminInsuranceTab() {
@@ -1395,7 +1395,7 @@ function AdminInsuranceTab() {
     const q = search.toLowerCase();
     return list.filter(
       (r) =>
-        (r.professional?.display_name ?? r.professional?.full_name ?? "").toLowerCase().includes(q) ||
+        (r.professional?.full_name ?? r.professional?.full_name ?? "").toLowerCase().includes(q) ||
         (r.provider ?? "").toLowerCase().includes(q) ||
         (r.insured_name ?? "").toLowerCase().includes(q),
     );
@@ -1496,7 +1496,7 @@ function AdminInsuranceTab() {
               const nameScore = typeof ts.name_score === "number" ? ts.name_score : null;
               const aiSkipped = ts.ai === "skipped";
               const cover = r.cover_amount_gbp ? `£${r.cover_amount_gbp.toLocaleString()}` : "—";
-              const name = r.professional?.display_name || r.professional?.full_name || "Unnamed";
+              const name = r.professional?.full_name || r.professional?.full_name || "Unnamed";
               return (
                 <tr key={r.id}>
                   <td className="py-2 pr-3">

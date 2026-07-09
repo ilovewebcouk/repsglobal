@@ -174,8 +174,8 @@ export function MemberCancelCard({ requesterEmail, onClosed }: Props) {
             </div>
             <div>
               <Label htmlFor="support-close-confirm" className="text-[12.5px] text-foreground/70">
-                Type{" "}
-                <span className="font-semibold text-foreground">{displayName}</span>{" "}
+                Type{""}
+                <span className="font-semibold text-foreground">{displayName}</span>{""}
                 to confirm
               </Label>
 

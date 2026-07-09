@@ -44,25 +44,7 @@ export function SpecialismsDeliveryPanel() {
     mutationFn: () => {
       if (!data) throw new Error("Profile not loaded");
       return saveProfile({
-        data: {
-          full_name: data.full_name,
-          display_name: data.display_name,
-          business_name: data.business_name,
-          headline: data.headline,
-          primary_profession: data.primary_profession,
-          specialisms,
-          in_person_available: data.in_person_available,
-          online_available: data.online_available,
-          city: data.city,
-          contact_phone: data.contact_phone,
-          bio: data.bio,
-          languages: data.languages,
-          social_instagram: data.social_instagram,
-          social_linkedin: data.social_linkedin,
-          social_youtube: data.social_youtube,
-          social_tiktok: data.social_tiktok,
-          social_x: data.social_x,
-        },
+        data: { full_name: data.full_name, headline: data.headline, primary_profession: data.primary_profession, specialisms, in_person_available: data.in_person_available, online_available: data.online_available, city: data.city, contact_phone: data.contact_phone, bio: data.bio, languages: data.languages, social_instagram: data.social_instagram, social_linkedin: data.social_linkedin, social_youtube: data.social_youtube, social_tiktok: data.social_tiktok, social_x: data.social_x,  },
       });
     },
     onSuccess: () => {

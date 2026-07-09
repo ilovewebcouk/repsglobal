@@ -316,11 +316,11 @@ export const createReviewRequest = createServerFn({ method: "POST" })
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("full_name, display_name")
+      .select("full_name")
       .eq("id", context.userId)
       .maybeSingle();
     const proName =
-      profile?.display_name || profile?.full_name || "Your trainer";
+      profile?.full_name || "Your trainer";
 
     const token = generateReviewToken();
     const now = new Date();
@@ -392,11 +392,11 @@ export const createReviewRequestsBulk = createServerFn({ method: "POST" })
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("full_name, display_name")
+      .select("full_name")
       .eq("id", context.userId)
       .maybeSingle();
     const proName =
-      profile?.display_name || profile?.full_name || "Your provider";
+      profile?.full_name || "Your provider";
 
     // De-dupe within batch (keep first name for a given email).
     const seen = new Set<string>();
@@ -696,11 +696,11 @@ export const adminListReviews = createServerFn({ method: "POST" })
     const proIds = Array.from(new Set(list.map((r) => r.professional_id)));
     const [{ data: pros }, { data: profs }] = await Promise.all([
       supabaseAdmin.from("professionals").select("id, slug").in("id", proIds),
-      supabaseAdmin.from("profiles").select("id, full_name, display_name").in("id", proIds),
+      supabaseAdmin.from("profiles").select("id, full_name").in("id", proIds),
     ]);
     const slugById = new Map((pros ?? []).map((p: any) => [p.id, p.slug]));
     const nameById = new Map(
-      (profs ?? []).map((p: any) => [p.id, p.display_name || p.full_name || null]),
+      (profs ?? []).map((p: any) => [p.id, p.full_name || null]),
     );
 
     return list.map((r) => ({
@@ -776,7 +776,7 @@ export const adminModerateReview = createServerFn({ method: "POST" })
         if (r) {
           const { data: profile } = await supabaseAdmin
             .from("profiles")
-            .select("full_name, display_name")
+            .select("full_name")
             .eq("id", r.professional_id)
             .maybeSingle();
           const { data: user } = await supabaseAdmin.auth.admin.getUserById(
@@ -785,7 +785,7 @@ export const adminModerateReview = createServerFn({ method: "POST" })
           const recipientEmail = user?.user?.email ?? null;
           if (recipientEmail) {
             const proName =
-              (profile as any)?.display_name ||
+              (profile as any)?.full_name ||
               (profile as any)?.full_name ||
               "there";
             const categoryLabel = data.category
@@ -872,8 +872,7 @@ export const draftReviewRemovalReason = createServerFn({ method: "POST" })
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Lovable-API-Key": key,
+            "Content-Type": "application/json", "Lovable-API-Key": key,
           },
           body: JSON.stringify({
             model: "google/gemini-3-flash-preview",
@@ -983,10 +982,10 @@ export const listMyReviewNotifications = createServerFn({ method: "POST" })
       const proIds = Array.from(new Set(list.map((r) => r.professional_id)));
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, display_name")
+        .select("id, full_name")
         .in("id", proIds);
       const nameById = new Map(
-        (profs ?? []).map((p: any) => [p.id, p.display_name || p.full_name || null]),
+        (profs ?? []).map((p: any) => [p.id, p.full_name || null]),
       );
 
       return {
@@ -1023,10 +1022,10 @@ export const listMyReviewNotifications = createServerFn({ method: "POST" })
     const proIds = Array.from(new Set((reviews ?? []).map((r: any) => r.professional_id)));
     const { data: profs } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, display_name")
+      .select("id, full_name")
       .in("id", proIds);
     const nameById = new Map(
-      (profs ?? []).map((p: any) => [p.id, p.display_name || p.full_name || null]),
+      (profs ?? []).map((p: any) => [p.id, p.full_name || null]),
     );
 
     return {
@@ -1126,11 +1125,11 @@ export const replyToReview = createServerFn({ method: "POST" })
             .maybeSingle();
           const { data: profile } = await supabaseAdmin
             .from("profiles")
-            .select("full_name, display_name")
+            .select("full_name")
             .eq("id", before.professional_id)
             .maybeSingle();
           const proName =
-            profile?.display_name || profile?.full_name || "Your trainer";
+            profile?.full_name || "Your trainer";
 
           const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
           await sendTransactionalEmailServer({

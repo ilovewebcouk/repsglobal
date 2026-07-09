@@ -112,7 +112,7 @@ export function PublicVisitorDrawer({ journeyId, onClose }: PublicVisitorDrawerP
                 {detail.member ? (
                   <span className="inline-flex items-center gap-1.5">
                     <Badge className="bg-orange-500/20 text-orange-100 hover:bg-orange-500/30">Member</Badge>
-                    <span className="text-white/90">{detail.member.display_name ?? detail.member.email}</span>
+                    <span className="text-white/90">{detail.member.full_name ?? detail.member.email}</span>
                   </span>
                 ) : <span className="text-white/50">Anonymous</span>}
               </KV>

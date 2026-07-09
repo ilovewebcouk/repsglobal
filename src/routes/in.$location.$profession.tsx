@@ -158,7 +158,7 @@ function getCity(slug: string): CityMeta {
       name: slug
         .split("-")
         .map((s) => (s ? s[0].toUpperCase() + s.slice(1) : ""))
-        .join(" "),
+        .join(""),
       region: "",
     }
   );
@@ -234,7 +234,7 @@ export const Route = createFileRoute("/in/$location/$profession")({
   head: ({ params, loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Not found | REPS" }, { name: "robots", content: "noindex,nofollow" }],
+        meta: [{ title: "Not found | REPS" }, { name: "robots", content: "noindex, nofollow" }],
       };
     }
     const { city } = loaderData;
@@ -268,8 +268,7 @@ export const Route = createFileRoute("/in/$location/$profession")({
         {
           type: "application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
+            "@context": "https://schema.org", "@type": "ItemList",
             name: title,
             url: canonical,
             numberOfItems: count,
@@ -284,8 +283,7 @@ export const Route = createFileRoute("/in/$location/$profession")({
         {
           type: "application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
+            "@context": "https://schema.org", "@type": "BreadcrumbList",
             itemListElement: [
               { "@type": "ListItem", position: 1, name: "Home", item: "https://repsuk.org/" },
               {
@@ -301,8 +299,7 @@ export const Route = createFileRoute("/in/$location/$profession")({
         {
           type: "application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
+            "@context": "https://schema.org", "@type": "FAQPage",
             mainEntity: buildFaqs(city.name, label, plural).map((f) => ({
               "@type": "Question",
               name: f.q,
@@ -436,7 +433,7 @@ function ProfessionInCityPage() {
         {featured.length === 0 ? (
           <div className="rounded-[18px] border border-reps-stone bg-white p-10 text-center">
             <p className="text-[15px] text-reps-muted-light">
-              No {plural.toLowerCase()} listed in {city.name} yet — try a nearby city, or browse all{" "}
+              No {plural.toLowerCase()} listed in {city.name} yet — try a nearby city, or browse all{""}
               <Link to="/professions/$profession" params={{ profession }} className="text-reps-orange underline">
                 {plural.toLowerCase()}
               </Link>

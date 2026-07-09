@@ -45,7 +45,7 @@ export function useAccountMenu(): AccountContext {
   const navigate = useNavigate();
   const { user, isLoading: userLoading } = useSessionUser();
 
-  // profiles.avatar_url + full_name + business_name (providers)
+  // profiles.avatar_url + full_name + full_name (providers)
   const profileQuery = useQuery({
     queryKey: ["account-profile", user?.id ?? "anon"],
     enabled: !!user,
@@ -53,7 +53,7 @@ export function useAccountMenu(): AccountContext {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("avatar_url, full_name, business_name")
+        .select("avatar_url, full_name")
         .eq("id", user.id)
         .maybeSingle();
       return data ?? null;
@@ -86,7 +86,7 @@ export function useAccountMenu(): AccountContext {
       if (!user) return null;
       const { data } = await supabase
         .from("subscriptions")
-        .select("tier,status")
+        .select("tier, status")
         .eq("user_id", user.id)
         .maybeSingle();
       return data ?? null;
@@ -125,9 +125,9 @@ export function useAccountMenu(): AccountContext {
     navigate({ to: "/auth", replace: true });
   }, [queryClient, navigate]);
 
-  const profile = profileQuery.data as { avatar_url: string | null; full_name: string | null; business_name: string | null } | null;
+  const profile = profileQuery.data as { avatar_url: string | null; full_name: string | null} | null;
   const resolvedName =
-    (profile?.business_name && profile.business_name.trim()) ||
+    (profile?.full_name && profile.full_name.trim()) ||
     (profile?.full_name && profile.full_name.trim()) ||
     user?.name ||
     user?.email ||

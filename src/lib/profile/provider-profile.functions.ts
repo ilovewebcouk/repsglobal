@@ -3,7 +3,7 @@
  *
  * Loads / saves the provider's public identity + contact + company + socials.
  * Data is spread across three tables:
- *   - profiles         : business_name (public name), avatar_url (logo)
+ *   - profiles         : full_name (public name), avatar_url (logo)
  *   - professionals    : contact_phone, contact_email, website_url,
  *                        year_established, company_number, social_*
  *   - websites         : hero_image_url, about, tagline
@@ -43,7 +43,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: pro }, { data: site }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("business_name, full_name, avatar_url")
+        .select("full_name, avatar_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -64,28 +64,10 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
     const p = (pro ?? {}) as Record<string, unknown>;
     const s = (site ?? {}) as Record<string, unknown>;
 
-    return {
-      name:
-        (pr.business_name as string | null) ??
+    return { name:
         (pr.full_name as string | null) ??
-        "",
-      slug: (p.slug as string | null) ?? null,
-      logo_url: (pr.avatar_url as string | null) ?? null,
-      hero_image_url: (s.hero_image_url as string | null) ?? null,
-      tagline: (s.tagline as string | null) ?? null,
-      about: (s.about as string | null) ?? null,
-      website_url: (p.website_url as string | null) ?? null,
-      contact_email: (p.contact_email as string | null) ?? null,
-      contact_phone: (p.contact_phone as string | null) ?? null,
-      address: (p.address as string | null) ?? null,
-
-
-      social_instagram: (p.social_instagram as string | null) ?? null,
-      social_linkedin: (p.social_linkedin as string | null) ?? null,
-      social_youtube: (p.social_youtube as string | null) ?? null,
-      social_tiktok: (p.social_tiktok as string | null) ?? null,
-      social_x: (p.social_x as string | null) ?? null,
-    };
+        (pr.full_name as string | null) ??
+        "", slug: (p.slug as string | null) ?? null, logo_url: (pr.avatar_url as string | null) ?? null, hero_image_url: (s.hero_image_url as string | null) ?? null, tagline: (s.tagline as string | null) ?? null, about: (s.about as string | null) ?? null, website_url: (p.website_url as string | null) ?? null, contact_email: (p.contact_email as string | null) ?? null, contact_phone: (p.contact_phone as string | null) ?? null, address: (p.address as string | null) ?? null, social_instagram: (p.social_instagram as string | null) ?? null, social_linkedin: (p.social_linkedin as string | null) ?? null, social_youtube: (p.social_youtube as string | null) ?? null, social_tiktok: (p.social_tiktok as string | null) ?? null, social_x: (p.social_x as string | null) ?? null,  };
   });
 
 /**

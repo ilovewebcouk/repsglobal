@@ -33,15 +33,15 @@ export const saveInsurance = createServerFn({ method: "POST" })
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: prof } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, display_name")
+        .select("full_name")
         .eq("id", userId)
         .maybeSingle();
-      const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
+      const profAny = prof as { full_name?: string | null} | null;
       await notifyVerificationEvent({
         professionalId: userId,
         event: "insurance.rejected_expired",
         context: { expiry_date: data.expiry_date, doc_path: data.doc_path },
-        proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+        proName: profAny?.full_name ?? undefined,
         alsoEmail: true,
       });
       throw new Error(
@@ -76,13 +76,13 @@ export const saveInsurance = createServerFn({ method: "POST" })
       const proAny = pro as { identity_verified_name?: string | null; identity_status?: string | null } | null;
       const { data: prof } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, display_name")
+        .select("full_name")
         .eq("id", userId)
         .maybeSingle();
-      const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
-      proName = profAny?.display_name ?? profAny?.full_name ?? null;
+      const profAny = prof as { full_name?: string | null} | null;
+      proName = profAny?.full_name ?? null;
       const identityName =
-        proAny?.identity_verified_name ?? profAny?.full_name ?? profAny?.display_name ?? null;
+        proAny?.identity_verified_name ?? profAny?.full_name ?? null;
       const identityApproved = proAny?.identity_status === "approved";
 
       const nameScore =
@@ -359,9 +359,7 @@ async function runInsuranceAi(
     {
       type: "text",
       text: [
-        "You are extracting fields from a professional liability / public liability insurance certificate (UK fitness industry).",
-        "Return a single JSON object — no prose, no markdown — matching this exact shape:",
-        "{",
+        "You are extracting fields from a professional liability / public liability insurance certificate (UK fitness industry).", "Return a single JSON object — no prose, no markdown — matching this exact shape:", "{",
         '  "provider": string | null,           // insurer name, e.g. "Insure4Sport", "Hiscox"',
         '  "policy_number": string | null,      // policy reference printed on the certificate',
         '  "cover_amount_gbp": number | null,   // TOTAL cover in pounds (e.g. 5000000 for £5m). Pick the public liability limit if multiple are listed.',
@@ -369,9 +367,7 @@ async function runInsuranceAi(
         '  "expiry_date": string | null,        // YYYY-MM-DD, period of cover end / renewal date',
         '  "insured_name": string | null,       // name of the insured person/business as printed',
         '  "confidence": number                 // 0..1 overall confidence',
-        "}",
-        "Rules: if a field is not clearly visible, set it to null. Do not guess. Do not invent dates or amounts.",
-        "cover_amount_gbp is pounds, not millions: £1,000,000 → 1000000.",
+        "}", "Rules: if a field is not clearly visible, set it to null. Do not guess. Do not invent dates or amounts.", "cover_amount_gbp is pounds, not millions: £1,000,000 → 1000000.",
       ].join("\n"),
     },
   ];
@@ -610,14 +606,14 @@ export const listInsurancePolicies = createServerFn({ method: "POST" })
       .limit(500);
     if (error) throw new Error(error.message);
     const ids = Array.from(new Set((rows ?? []).map((r) => r.professional_id))).filter(Boolean) as string[];
-    const profilesById = new Map<string, { full_name: string | null; display_name: string | null }>();
+    const profilesById = new Map<string, { full_name: string | null}>();
     if (ids.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, display_name")
+        .select("id, full_name")
         .in("id", ids);
-      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null }>) {
-        profilesById.set(p.id, { full_name: p.full_name, display_name: p.display_name });
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null}>) {
+        profilesById.set(p.id, { full_name: p.full_name });
       }
     }
     return (rows ?? []).map((r) => ({

@@ -210,7 +210,7 @@ function getLocation(slug: string): LocationMeta {
       name: slug
         .split("-")
         .map((s) => s[0]?.toUpperCase() + s.slice(1))
-        .join(" "),
+        .join(""),
       region: "",
       blurb:
         "REPS-verified personal trainers, Pilates instructors, nutritionists and coaches in your area — every professional identity, qualification and insurance checked.",
@@ -252,8 +252,7 @@ export const Route = createFileRoute("/in/$location")({
         {
           type: "application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
+            "@context": "https://schema.org", "@type": "FAQPage",
             mainEntity: faqsFor(loc.name).map((f) => ({
               "@type": "Question",
               name: f.q,
@@ -394,7 +393,7 @@ function LocationLanding() {
 
   const professionSlugs = loc.professions.map((p) => p.slug);
   const { data: liveCounts } = useQuery({
-    queryKey: ["city-profession-counts", loc.slug, professionSlugs.join(",")],
+    queryKey: ["city-profession-counts", loc.slug, professionSlugs.join(", ")],
     queryFn: () =>
       getCityProfessionCounts({ data: { city: loc.name, professions: professionSlugs } }),
     staleTime: 60_000,
@@ -571,7 +570,7 @@ function LocationLanding() {
         ) : (
           <div className="mt-6 rounded-[18px] border border-reps-border bg-white px-6 py-10 text-center">
             <p className="text-[14px] text-reps-muted-light">
-              We're onboarding verified professionals in {loc.name} now. Check back soon — or{" "}
+              We're onboarding verified professionals in {loc.name} now. Check back soon — or{""}
               <Link to="/find-a-professional" search={{ city: loc.name }} className="font-semibold text-reps-orange hover:text-reps-orange-dark">
                 browse the full directory
               </Link>

@@ -147,7 +147,7 @@ const submitRegulatedInput = z.object({
 });
 
 // Gate: training PROVIDERS (organisations) must set a trading name
-// (profiles.business_name) before they can submit regulated qualifications
+// (profiles.full_name) before they can submit regulated qualifications
 // or CPD courses — otherwise the admin queue can't identify them.
 // Individual trainers submitting their own qualifications are exempt.
 async function assertProviderHasTradingName(supabase: any, userId: string) {
@@ -160,11 +160,11 @@ async function assertProviderHasTradingName(supabase: any, userId: string) {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("business_name")
+    .select("full_name")
     .eq("id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  const name = (data?.business_name as string | null | undefined)?.trim();
+  const name = (data?.full_name as string | null | undefined)?.trim();
   if (!name) {
     throw new Error(
       "Set your trading name on your Verification page before submitting qualifications or CPD.",
@@ -537,10 +537,10 @@ export const adminListCpdQueue = createServerFn({ method: "GET" })
     return await hydrateProviderNames(rows ?? [], supabaseAdmin);
   });
 
-// Provider display name comes from ONE column: profiles.business_name.
+// Provider display name comes from ONE column: profiles.full_name.
 // The joined `provider.legal_entity_name` field is overwritten with this
 // value so downstream UI keeps its existing shape, but the read path no
-// longer falls back through identity_verified_name / display_name /
+// longer falls back through identity_verified_name / full_name /
 // full_name — those aren't the provider's public trading name.
 async function hydrateProviderNames<T extends { provider?: { id?: string | null; legal_entity_name?: string | null; identity_verified_name?: string | null } | null }>(
   rows: T[],
@@ -556,17 +556,17 @@ async function hydrateProviderNames<T extends { provider?: { id?: string | null;
   if (ids.length === 0) return rows;
   const { data: profs } = await supabaseAdmin
     .from("profiles")
-    .select("id, business_name")
+    .select("id, full_name")
     .in("id", ids);
   const nameById = new Map<string, string>();
-  for (const p of ((profs as Array<{ id: string; business_name: string | null }> | null) ?? [])) {
-    const n = p.business_name?.trim();
+  for (const p of ((profs as Array<{ id: string; full_name: string | null }> | null) ?? [])) {
+    const n = p.full_name?.trim();
     if (n) nameById.set(p.id, n);
   }
   return rows.map((r) => {
     if (!r.provider?.id) return r;
     const n = nameById.get(r.provider.id);
-    // Always prefer business_name (the provider-editable trading name) over
+    // Always prefer full_name (the provider-editable trading name) over
     // whatever legal_entity_name/identity_verified_name were stored.
     return { ...r, provider: { ...r.provider, legal_entity_name: n ?? null, identity_verified_name: null } };
   });
@@ -825,7 +825,7 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
     qualifications_listed?: Array<{ title?: string | null; ofqual_ref_if_visible?: string | null }> | null;
   };
   const norm = (s: string | null | undefined) =>
-    (s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    (s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
 
   let awardingBodyMatch = false;
   if (snap?.awardingOrganisation && raw.awarding_body_detected) {

@@ -185,7 +185,7 @@ export function MemberFinder({
             </div>
           </div>
           <Badge variant="outline" className="shrink-0 border-white/20 bg-reps-panel-soft text-[10px] uppercase text-white/70">
-            {m.match_kind.replace("_", " ")}
+            {m.match_kind.replace("_", "")}
           </Badge>
         </button>
       ))}

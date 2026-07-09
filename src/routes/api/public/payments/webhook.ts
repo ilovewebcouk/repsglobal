@@ -5,8 +5,7 @@ import { lookupTierByPriceId } from "@/lib/billing/prices";
 import { type StripeEnv, verifyWebhook } from "@/lib/billing/stripe.server";
 
 const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "stripe-signature, content-type",
 } as const;
 
@@ -190,7 +189,7 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: St
   };
   await supabaseAdmin
     .from("subscriptions")
-    .upsert(row as never, { onConflict: "user_id,environment" });
+    .upsert(row as never, { onConflict: "user_id, environment" });
   return userId;
 }
 
@@ -210,13 +209,13 @@ function nameTokens(raw: string | null | undefined): Set<string> {
   if (!raw) return new Set();
   const cleaned = raw
     .toLowerCase()
-    .replace(/[.,'’`-]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/[.,'’`-]/g, "")
+    .replace(/\s+/g, "")
     .trim();
   const titles = new Set(["mr", "mrs", "ms", "mx", "miss", "dr", "prof", "professor", "sir", "dame"]);
   return new Set(
     cleaned
-      .split(" ")
+      .split("")
       .filter((t) => t.length > 0 && !titles.has(t)),
   );
 }
@@ -273,7 +272,7 @@ async function handleIdentityEvent(
       });
       const out = full.verified_outputs;
       if (out) {
-        const name = [out.first_name, out.last_name].filter(Boolean).join(" ").trim();
+        const name = [out.first_name, out.last_name].filter(Boolean).join("").trim();
         if (name) {
           patch.name_on_doc = name;
           docName = name;
@@ -579,7 +578,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     const email = authUser?.user?.email ?? null;
                     if (email) {
                       const { data: profile } = await supabaseAdmin
-                        .from("profiles").select("display_name, full_name").eq("id", userId).maybeSingle();
+                        .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                       const item = sub.items.data[0];
                       const tier = (sub.metadata?.tier as string) ?? "verified";
                       const tierLabel = tier === "pro" ? "REPS Pro" : tier === "studio" ? "REPS Studio" : "REPS Core";
@@ -593,7 +592,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                         recipientEmail: email,
                         idempotencyKey: `purchase-confirmation:${session.id}`,
                         templateData: {
-                          proName: (profile?.display_name ?? profile?.full_name ?? "").toString().split(" ")[0] || null,
+                          proName: (profile?.full_name ?? "").toString().split("")[0] || null,
                           tierLabel, amountText, periodText,
                         },
                       });
@@ -746,7 +745,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                           templateName: "renewal-payment-failed",
                           intendedTier: (sub.metadata?.tier as string) ?? "verified",
                           templateData: {
-                            proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
+                            proName: (profile as { full_name?: string | null } | null)?.full_name?.split("")[0] ?? "there",
                             amount: subAmount,
                             graceEndDate: graceEnd.toLocaleDateString("en-GB", {
                               day: "numeric", month: "long", year: "numeric",
@@ -915,7 +914,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                       templateName: "renewal-payment-failed",
                       intendedTier: invTier,
                       templateData: {
-                        proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
+                        proName: (profile as { full_name?: string | null } | null)?.full_name?.split("")[0] ?? "there",
                         amount: invAmount,
                         graceEndDate: graceEnd.toLocaleDateString("en-GB", {
                           day: "numeric", month: "long", year: "numeric",

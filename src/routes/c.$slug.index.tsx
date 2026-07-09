@@ -170,8 +170,7 @@ const TITLE_SHORT_LABEL: Record<string, string> = {
   "group-fitness-instructor": "Level 2 GFI",
   "pilates-instructor": "Level 3 Pilates",
   "yoga-teacher": "Level 3 Yoga",
-  "strength-coach": "Level 4 S&C",
-  "nutrition-coach": "Level 4 Nutrition",
+  "strength-coach": "Level 4 S&C", "nutrition-coach": "Level 4 Nutrition",
   "accredited-sc-coach": "ASCC",
   "registered-nutritionist": "Registered Nutritionist",
   "registered-dietitian": "Registered Dietitian",
@@ -213,8 +212,7 @@ const COACHES: Record<string, Coach> = {
       ],
     },
     bio: [
-      "I'm a REPS Verified Personal Trainer with eight years coaching clients from total beginners to competitive athletes. Most come to me stuck — stalled progress, no time, fed up of training without a clear plan. We fix that in the first two weeks.",
-      "I don't take on every enquiry. I work with around 20 people at a time, in person and online, so every client gets a programme written for them — not a template with their name on the front.",
+      "I'm a REPS Verified Personal Trainer with eight years coaching clients from total beginners to competitive athletes. Most come to me stuck — stalled progress, no time, fed up of training without a clear plan. We fix that in the first two weeks.", "I don't take on every enquiry. I work with around 20 people at a time, in person and online, so every client gets a programme written for them — not a template with their name on the front.",
     ],
     heroImage: coachJamesCoaching,
     aboutImage: proJames,
@@ -243,11 +241,7 @@ const COACHES: Record<string, Coach> = {
         unit: "/ month",
         blurb: "For people who train themselves but want a coach in their corner.",
         includes: [
-          "Fully bespoke programme in-app",
-          "Weekly written check-in & adjustments",
-          "Unlimited messaging (Mon–Fri)",
-          "Video form reviews",
-          "Quarterly strategy call",
+          "Fully bespoke programme in-app", "Weekly written check-in & adjustments", "Unlimited messaging (Mon–Fri)", "Video form reviews", "Quarterly strategy call",
         ],
       },
       {
@@ -259,10 +253,7 @@ const COACHES: Record<string, Coach> = {
         blurb: "The full programme — two in-person sessions a month, online the rest.",
         includes: [
           "Everything in Online Coaching",
-          "2× in-person sessions per month",
-          "Movement screen & progress reviews",
-          "Body composition tracking",
-          "Priority response time",
+          "2× in-person sessions per month", "Movement screen & progress reviews", "Body composition tracking", "Priority response time",
         ],
         highlight: true,
       },
@@ -274,11 +265,7 @@ const COACHES: Record<string, Coach> = {
         unit: "/ session",
         blurb: "Train with me in central London. Programming, coaching and accountability in one room.",
         includes: [
-          "60-minute sessions at Third Space or BXR",
-          "Bespoke programme outside sessions",
-          "Nutrition & recovery rails",
-          "Direct messaging access",
-          "Block discount available (10+ sessions)",
+          "60-minute sessions at Third Space or BXR", "Bespoke programme outside sessions", "Nutrition & recovery rails", "Direct messaging access", "Block discount available (10+ sessions)",
         ],
       },
     ],
@@ -576,7 +563,7 @@ export const Route = createFileRoute("/c/$slug/")({
         meta: [
           { title },
           { name: "description", content: description },
-          { name: "robots", content: "noindex,nofollow" },
+          { name: "robots", content: "noindex, nofollow" },
           { property: "og:title", content: title },
           { property: "og:description", content: description },
         ],
@@ -590,7 +577,7 @@ export const Route = createFileRoute("/c/$slug/")({
       return {
         meta: [
           { title: "Profile not found | REPS" },
-          { name: "robots", content: "noindex,nofollow" },
+          { name: "robots", content: "noindex, nofollow" },
         ],
         links: [{ rel: "canonical", href: canonical }],
       };
@@ -604,7 +591,7 @@ export const Route = createFileRoute("/c/$slug/")({
     const pageTitle = `${name} — ${titleLabel}${cityPart} | REPS`;
 
     const bioSnippet = (sf.tagline || sf.subtitle || sf.about || "")
-      .replace(/\s+/g, " ")
+      .replace(/\s+/g, "")
       .trim()
       .slice(0, 110);
     const description = bioSnippet
@@ -629,8 +616,7 @@ export const Route = createFileRoute("/c/$slug/")({
     }
 
     const personJsonLd: Record<string, unknown> = {
-      "@context": "https://schema.org",
-      "@type": "Person",
+      "@context": "https://schema.org", "@type": "Person",
       name,
       url: canonical,
       jobTitle: titleLabel,
@@ -757,7 +743,7 @@ function CoachWebsitePage() {
       <SiteBanner />
       {showPlaceholderBanner ? (
         <TemplateContentBanner
-          firstName={(coach.name ?? "").split(" ")[0] || "This coach"}
+          firstName={(coach.name ?? "").split("")[0] || "This coach"}
           isOwnerViewing={isOwnerViewing}
         />
       ) : null}
@@ -799,7 +785,7 @@ function TemplateContentBanner({
         <p className="flex items-start gap-2">
           <Sparkles className="mt-[2px] h-4 w-4 shrink-0 text-amber-300" aria-hidden />
           <span>
-            <span className="font-semibold text-amber-50">Some content on this page is still template placeholder text and imagery.</span>{" "}
+            <span className="font-semibold text-amber-50">Some content on this page is still template placeholder text and imagery.</span>{""}
             <span className="text-amber-100/85">{firstName} is finishing their REPS profile.</span>
           </span>
         </p>
@@ -1194,7 +1180,7 @@ function TierCard({
         isHighlight
           ? "border-transparent bg-reps-panel"
           : "border-reps-border bg-reps-midnight",
-      ].join(" ")}
+      ].join("")}
       style={
         isHighlight
           ? {
@@ -1224,7 +1210,7 @@ function TierCard({
         className={[
           "font-display text-[24px] font-bold text-reps-text",
           isHighlight ? "mt-3" : "mt-2",
-        ].join(" ")}
+        ].join("")}
       >
         {tier.name}
       </h3>
@@ -1257,7 +1243,7 @@ function TierCard({
           className={[
             "inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] px-5 text-[13.5px] font-semibold transition-opacity hover:opacity-90",
             isHighlight ? "text-white" : "border border-reps-border bg-reps-ink text-reps-text hover:bg-reps-panel-soft",
-          ].join(" ")}
+          ].join("")}
           style={isHighlight ? { backgroundColor: "var(--accent-color)" } : undefined}
         >
           {tier.ctaLabel || (isHighlight ? `Start with ${tier.name}` : `Enquire about ${tier.name}`)}

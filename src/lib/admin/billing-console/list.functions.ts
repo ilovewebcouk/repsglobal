@@ -71,7 +71,7 @@ async function resolveContactsByCustomerIds(
         .select("bd_member_id, first_name, last_name")
         .in("bd_member_id", bdIds);
       for (const r of (seedRows ?? []) as Array<{ bd_member_id: number; first_name: string | null; last_name: string | null }>) {
-        const name = [r.first_name, r.last_name].filter(Boolean).join(" ").trim();
+        const name = [r.first_name, r.last_name].filter(Boolean).join("").trim();
         if (name) nameByBd.set(r.bd_member_id, name);
       }
     }

@@ -2,7 +2,7 @@
  * Admin — Training-provider control surface.
  *
  * Provider discriminator: `professionals.account_type = 'organisation'`.
- * Canonical provider display name: `profiles.business_name`.
+ * Canonical provider display name: `profiles.full_name`.
  * `professionals.legal_entity_name` is NEVER surfaced or edited here.
  *
  * All handlers verify `has_role('admin')` and audit via the existing
@@ -61,7 +61,7 @@ function slugify(name: string) {
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/&/g, " and ")
+    .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
@@ -87,7 +87,7 @@ async function uniqueProviderSlug(sa: any, name: string, excludeId?: string): Pr
 
 export type ProviderListRow = {
   id: string;
-  business_name: string | null;
+  full_name: string | null;
   slug: string | null;
   contact_email: string | null;
   verification_status: string | null;
@@ -139,20 +139,20 @@ export const listProviders = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     const ids = (pros ?? []).map((r: any) => r.id);
 
-    // Join business_name from profiles.
+    // Join full_name from profiles.
     const nameMap = new Map<string, string | null>();
     if (ids.length > 0) {
       const { data: profs } = await sa
         .from("profiles")
-        .select("id, business_name")
+        .select("id, full_name")
         .in("id", ids);
-      for (const p of (profs ?? []) as any[]) nameMap.set(p.id, p.business_name ?? null);
+      for (const p of (profs ?? []) as any[]) nameMap.set(p.id, p.full_name ?? null);
     }
 
     const q = data.q?.trim().toLowerCase() ?? "";
     let rows: ProviderListRow[] = (pros ?? []).map((r: any) => ({
       id: r.id,
-      business_name: nameMap.get(r.id) ?? null,
+      full_name: nameMap.get(r.id) ?? null,
       slug: r.slug,
       contact_email: r.contact_email,
       verification_status: r.verification_status,
@@ -165,7 +165,7 @@ export const listProviders = createServerFn({ method: "GET" })
     if (q) {
       rows = rows.filter((r) => {
         return (
-          (r.business_name ?? "").toLowerCase().includes(q) ||
+          (r.full_name ?? "").toLowerCase().includes(q) ||
           (r.slug ?? "").toLowerCase().includes(q) ||
           (r.contact_email ?? "").toLowerCase().includes(q)
         );
@@ -208,7 +208,7 @@ export const readProviderProfileForAdmin = createServerFn({ method: "GET" })
         .select("tagline, about")
         .eq("professional_id", data.user_id)
         .maybeSingle(),
-      sa.from("profiles").select("business_name").eq("id", data.user_id).maybeSingle(),
+      sa.from("profiles").select("full_name").eq("id", data.user_id).maybeSingle(),
       sa
         .from("provider_domain_verifications")
         .select("status")
@@ -222,7 +222,7 @@ export const readProviderProfileForAdmin = createServerFn({ method: "GET" })
 
     return {
       slug: (pro.slug as string | null) ?? null,
-      approved_name: (profile?.business_name as string | null) ?? null,
+      approved_name: (profile?.full_name as string | null) ?? null,
       tagline: (site?.tagline as string | null) ?? null,
       about: (site?.about as string | null) ?? null,
       website_url: (pro.website_url as string | null) ?? null,
@@ -414,7 +414,7 @@ export const adminUpdateProviderProfileMirror = createServerFn({ method: "POST" 
               data.override_email_lock ? "email" : null,
             ]
               .filter(Boolean)
-              .join(",")}`
+              .join(", ")}`
           : null),
     });
 
@@ -452,15 +452,15 @@ export const renameProvider = createServerFn({ method: "POST" })
 
     const { data: oldProfile } = await sa
       .from("profiles")
-      .select("business_name")
+      .select("full_name")
       .eq("id", data.user_id)
       .maybeSingle();
-    const oldName: string | null = oldProfile?.business_name ?? null;
+    const oldName: string | null = oldProfile?.full_name ?? null;
 
-    // Update business_name (upsert — profiles row may not yet exist for legacy).
+    // Update full_name (upsert — profiles row may not yet exist for legacy).
     const { error: pErr } = await sa
       .from("profiles")
-      .upsert({ id: data.user_id, business_name: data.name } as never, { onConflict: "id" });
+      .upsert({ id: data.user_id, full_name: data.name } as never, { onConflict: "id" });
     if (pErr) throw new Error(pErr.message);
 
     const newSlug = await regenerateProviderSlug(sa, data.user_id, data.name);
@@ -490,8 +490,8 @@ export const renameProvider = createServerFn({ method: "POST" })
       _action: "provider.rename",
       _target_table: "professionals",
       _target_id: data.user_id,
-      _before_state: { business_name: oldName, slug: oldSlug },
-      _after_state: { business_name: data.name, slug: newSlug },
+      _before_state: { full_name: oldName, slug: oldSlug },
+      _after_state: { full_name: data.name, slug: newSlug },
       _reason: data.reason,
     });
 
@@ -529,7 +529,7 @@ export const createProvider = createServerFn({ method: "POST" })
         data: {
           signup_kind: "professional",
           account_type: "organisation",
-          business_name: data.name,
+          full_name: data.name,
         },
       },
     });
@@ -543,13 +543,13 @@ export const createProvider = createServerFn({ method: "POST" })
     const newUserId = linkData.user?.id;
     if (!newUserId) throw new Error("Invite created but no user id was returned.");
 
-    // Pre-seed profiles.business_name and professionals row.
+    // Pre-seed profiles.full_name and professionals row.
     const slug = await uniqueProviderSlug(sa, data.name, newUserId);
     if (!slug) throw new Error("Could not derive a slug from that name.");
 
     await sa
       .from("profiles")
-      .upsert({ id: newUserId, business_name: data.name } as never, { onConflict: "id" });
+      .upsert({ id: newUserId, full_name: data.name } as never, { onConflict: "id" });
 
     const proRow: Record<string, unknown> = {
       id: newUserId,
@@ -616,7 +616,7 @@ export const createProvider = createServerFn({ method: "POST" })
       _after_state: {
         id: newUserId,
         email: data.email,
-        business_name: data.name,
+        full_name: data.name,
         slug,
         website_url: website,
       },

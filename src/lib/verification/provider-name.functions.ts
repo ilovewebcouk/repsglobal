@@ -3,7 +3,7 @@
  *
  * Training providers submit their public display name via
  * `submitProviderNameChange`. It lands in `provider_name_requests` as
- * pending and is NOT reflected in `profiles.business_name` until an admin
+ * pending and is NOT reflected in `profiles.full_name` until an admin
  * approves it via `reviewProviderNameRequest`.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -47,7 +47,7 @@ export const getMyProviderNameStatus = createServerFn({ method: "GET" })
       const [{ data: profile }, { data: pending }] = await Promise.all([
         sb
           .from("profiles")
-          .select("business_name")
+          .select("full_name")
           .eq("id", userId)
           .maybeSingle(),
         sb
@@ -59,7 +59,7 @@ export const getMyProviderNameStatus = createServerFn({ method: "GET" })
       ]);
 
       return {
-        approved_name: (profile?.business_name as string | null) ?? null,
+        approved_name: (profile?.full_name as string | null) ?? null,
         pending: pending
           ? {
               id: String(pending.id),
@@ -85,11 +85,11 @@ export const submitProviderNameChange = createServerFn({ method: "POST" })
 
     const { data: profile } = await sb
       .from("profiles")
-      .select("business_name")
+      .select("full_name")
       .eq("id", userId)
       .maybeSingle();
     const current: string | null =
-      (profile?.business_name as string | null) ?? null;
+      (profile?.full_name as string | null) ?? null;
     if (current && current.trim().toLowerCase() === requested.toLowerCase()) {
       return { ok: true, unchanged: true as const };
     }
@@ -115,7 +115,7 @@ export const submitProviderNameChange = createServerFn({ method: "POST" })
       const sa = supabaseAdmin as any;
       const { error: pErr } = await sa
         .from("profiles")
-        .update({ business_name: requested })
+        .update({ full_name: requested })
         .eq("id", userId);
       if (pErr) throw pErr;
       await regenerateProviderSlug(sa, userId, requested);
@@ -215,11 +215,11 @@ export const listProviderNameRequests = createServerFn({ method: "GET" })
       const ids = Array.from(new Set(list.map((r) => r.user_id)));
       const { data: profiles } = await sa
         .from("profiles")
-        .select("id, business_name")
+        .select("id, full_name")
         .in("id", ids);
       const profileMap = new Map<string, string | null>(
-        ((profiles ?? []) as { id: string; business_name: string | null }[]).map(
-          (p) => [p.id, p.business_name],
+        ((profiles ?? []) as { id: string; full_name: string | null }[]).map(
+          (p) => [p.id, p.full_name],
         ),
       );
 
@@ -280,7 +280,7 @@ export const reviewProviderNameRequest = createServerFn({ method: "POST" })
     if (data.decision === "approved") {
       const { error: pErr } = await sa
         .from("profiles")
-        .update({ business_name: req.requested_name })
+        .update({ full_name: req.requested_name })
         .eq("id", req.user_id);
       if (pErr) throw pErr;
       await regenerateProviderSlug(sa, req.user_id, req.requested_name);

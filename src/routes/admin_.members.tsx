@@ -94,8 +94,8 @@ function Sparkline({ values }: { values: number[] }) {
   });
   const lastX = pad + (values.length - 1) * stepX;
   const lastY = pad + (h - pad * 2) * (1 - (values[values.length - 1] - min) / range);
-  const areaPath = `M ${pts[0]} L ${pts.join(" L ")} L ${lastX.toFixed(1)},${h - pad} L ${pad},${h - pad} Z`;
-  const linePath = `M ${pts.join(" L ")}`;
+  const areaPath = `M ${pts[0]} L ${pts.join("L")} L ${lastX.toFixed(1)},${h - pad} L ${pad},${h - pad} Z`;
+  const linePath = `M ${pts.join("L")}`;
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="h-7 w-full" preserveAspectRatio="none">
       <path d={areaPath} fill="rgb(255 122 0 / 0.12)" />
@@ -129,7 +129,7 @@ import { createProvider } from "@/lib/admin/providers.functions";
 type ProfessionalsSearch = { plan?: "free" | "paid" };
 
 export const Route = createFileRoute("/admin_/members")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   validateSearch: (search: Record<string, unknown>): ProfessionalsSearch => {

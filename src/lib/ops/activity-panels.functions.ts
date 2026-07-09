@@ -223,12 +223,12 @@ export const getOnlineNow = createServerFn({ method: "POST" })
       }>;
       const userIds = Array.from(new Set(rows.map((r) => r.user_id).filter((x): x is string => Boolean(x))));
       const [profilesRes, subsRes] = await Promise.all([
-        userIds.length ? supabaseAdmin.from("profiles").select("id, full_name, display_name, avatar_url").in("id", userIds) : Promise.resolve({ data: [] as unknown[] }),
+        userIds.length ? supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", userIds) : Promise.resolve({ data: [] as unknown[] }),
         userIds.length ? supabaseAdmin.from("subscriptions").select("user_id, tier, status, created_at").in("user_id", userIds) : Promise.resolve({ data: [] as unknown[] }),
       ]);
       const pMap = new Map<string, { name: string; email: string | null; avatar_url: string | null }>();
-      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null; avatar_url: string | null }>) {
-        pMap.set(p.id, { name: p.full_name || p.display_name || p.id.slice(0, 8), email: null, avatar_url: p.avatar_url });
+      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; avatar_url: string | null }>) {
+        pMap.set(p.id, { name: p.full_name || p.id.slice(0, 8), email: null, avatar_url: p.avatar_url });
       }
       const sMap = new Map<string, { tier: string | null; status: string | null; created_at: string }>();
       for (const s of (subsRes.data ?? []) as Array<{ user_id: string; tier: string | null; status: string | null; created_at: string }>) {
@@ -317,11 +317,11 @@ export const getCurrentPages = createServerFn({ method: "POST" })
 
       const allUserIds = Array.from(new Set(live.map((r) => r.user_id).filter((x): x is string => Boolean(x))));
       const profilesRes = allUserIds.length
-        ? await supabaseAdmin.from("profiles").select("id, full_name, display_name, avatar_url").in("id", allUserIds)
+        ? await supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", allUserIds)
         : { data: [] as unknown[] };
       const pMap = new Map<string, { name: string; avatar_url: string | null }>();
-      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null; avatar_url: string | null }>) {
-        pMap.set(p.id, { name: p.full_name || p.display_name || p.id.slice(0, 8), avatar_url: p.avatar_url });
+      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; avatar_url: string | null }>) {
+        pMap.set(p.id, { name: p.full_name || p.id.slice(0, 8), avatar_url: p.avatar_url });
       }
 
       const rows: CurrentPageRow[] = Array.from(perPage.entries())
@@ -482,11 +482,11 @@ export const getNeedsAttention = createServerFn({ method: "POST" })
         ...verifRows.map((r) => r.professional_id),
       ].filter((x): x is string => Boolean(x))));
       const profilesRes = userIds.length
-        ? await supabaseAdmin.from("profiles").select("id, full_name, display_name").in("id", userIds)
+        ? await supabaseAdmin.from("profiles").select("id, full_name").in("id", userIds)
         : { data: [] as unknown[] };
       const pMap = new Map<string, string>();
-      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null }>) {
-        pMap.set(p.id, p.full_name || p.display_name || p.id.slice(0, 8));
+      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null}>) {
+        pMap.set(p.id, p.full_name || p.id.slice(0, 8));
       }
       void iso7d;
 
@@ -663,12 +663,12 @@ export const getActivityEventDetail = createServerFn({ method: "POST" })
     if (userId) {
       const { data: p } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, display_name, avatar_url")
+        .select("id, full_name, avatar_url")
         .eq("id", userId)
         .maybeSingle();
       if (p) {
-        const pp = p as { id: string; full_name: string | null; display_name: string | null; avatar_url: string | null };
-        member = { user_id: pp.id, name: pp.full_name || pp.display_name || pp.id.slice(0, 8), email: null, avatar_url: pp.avatar_url };
+        const pp = p as { id: string; full_name: string | null; avatar_url: string | null };
+        member = { user_id: pp.id, name: pp.full_name || pp.id.slice(0, 8), email: null, avatar_url: pp.avatar_url };
       }
     }
     return {

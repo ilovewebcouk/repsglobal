@@ -1,42 +1,96 @@
-## Goal
+## What you're seeing
 
-One home for the provider name: the **Profile** page. Providers can change it as often as they like — every change submits a request to admin, and the public page keeps showing the last approved name until review.
+You're right — the reason edits don't propagate is that **`profiles` has three overlapping name columns** and different surfaces read different ones:
 
-## Changes
+| Column | Currently used by | Value on your test row |
+|---|---|---|
+| `profiles.full_name` | Dashboard hero, support tickets, campaigns, individual-trainer flows | `"Diverse Trainers"` |
+| `profiles.business_name` | Sidebar chip, public `/t/<slug>`, provider profile page, admin impersonation, name-change queue | `"Test Profile"` |
+| `profiles.display_name` | Not read anywhere in `src/` (dead) | (null) |
 
-### 1. Verification page — remove the name card
-`src/components/dashboard/organisation/VerificationPage.tsx`
-- Remove `<TradingNameCard />` from the render tree (line 136) and delete the `TradingNameCard` function (lines ~645–770).
-- Drop now-unused imports: `getMyProviderNameStatus`, `submitProviderNameChange` from `@/lib/verification/provider-name.functions`, plus any icons only that card used.
-- Verification page becomes: qualifications, insurance, CPD only.
+Plus `professionals.legal_entity_name` — separate concept, keep.
 
-### 2. Profile page — make Provider name an editable field
-`src/components/dashboard/organisation/ProviderProfilePage.tsx`
-- Replace the current read-only "Provider name" row + "Set in Verification" link (lines ~391–445) with an editable input:
-  - Text input pre-filled with the approved name.
-  - Inline "Submit name change" button (disabled when unchanged or empty).
-  - Calls `submitProviderNameChange({ requested_name })` on click — same server fn already used by Verification.
-  - Shows pending banner ("Awaiting admin approval — 'X'. Public page still shows 'Y'.") when `nameStatus.pending` is set — reuses existing pending UI already in this file.
-  - Hint text: "Change this any time. Every change is reviewed by REPs before it appears on your public page and URL."
-- Keep the public-URL hint (`repsuk.org/t/{slug}`) unchanged.
-- Keep the top "Every profile change needs admin approval" banner — the name now fits that same model naturally.
+So "business_name is not being used" is half-true: the *dashboard* and a handful of admin surfaces still read `full_name` for providers instead of `business_name`. Fix = collapse to one column, delete the rest.
 
-### 3. Server function — no schema changes
-`src/lib/verification/provider-name.functions.ts` already implements the right behaviour:
-- First-time set (no prior `business_name`) → applied instantly.
-- Any subsequent change → inserted into `provider_name_requests` as pending; `profiles.business_name` unchanged until an admin approves via `reviewProviderNameRequest`.
+## Decision to confirm
 
-No migration needed. Admin review queue at `/admin/provider-names` is unchanged.
+**Keep `full_name` as the single name column for every account (individual and provider). Drop `business_name` and `display_name`.**
 
-### 4. Copy tidy
-- Anywhere that says "Managed on your Verification page" / "Contact REPs support to change" for provider name → remove.
-- The "Set this before you can submit regulated qualifications or CPD" gating text disappears with the Verification card. If qualifications submission actually requires an approved name, that gate should live on the qualifications card (existing behaviour — no change unless you want it revisited).
+Why `full_name` (not `business_name`):
+- Already used by every individual-trainer flow — no rename there.
+- Mirrors `auth.users.raw_user_meta_data.full_name`.
+- One column ⇒ dashboard/public/sidebar/admin can never disagree again.
 
-## Out of scope
-- Admin review UX at `/admin/provider-names` (unchanged).
-- Rate-limiting repeated name changes (can add later if spam becomes an issue).
-- The public read path already reads `business_name ?? full_name` from the recent QA fix.
+For providers, "full_name" simply stores the trading name (e.g. "Test Profile"). The name-change approval flow writes to that one column.
+
+## Plan
+
+### 1. Data + schema migration (one migration)
+
+```sql
+-- Move approved provider names into full_name where they diverge.
+UPDATE public.profiles p
+SET full_name = p.business_name, updated_at = now()
+FROM public.professionals pr
+WHERE pr.id = p.id
+  AND pr.account_type = 'organisation'
+  AND p.business_name IS NOT NULL
+  AND p.business_name <> ''
+  AND (p.full_name IS DISTINCT FROM p.business_name);
+
+-- Drop the now-redundant columns.
+ALTER TABLE public.profiles DROP COLUMN business_name;
+ALTER TABLE public.profiles DROP COLUMN display_name;
+```
+
+(RLS/GRANTs untouched — column drops don't affect them.)
+
+### 2. Code — collapse every `business_name` reference to `full_name`
+
+All ~15 call sites, batched in one turn:
+
+- `src/lib/dashboard/dashboard.functions.ts` — remove `business_name` from select; `identity.full_name` becomes the sole name; the `profileComplete` check switches to `full_name`.
+- `src/lib/verification/provider-name.functions.ts` — read + write `full_name` (both `submitProviderNameChange` first-time-set branch and `reviewProviderNameRequest` approval branch); `getMyProviderNameStatus.approved_name` reads `full_name`.
+- `src/lib/profile/provider-profile.functions.ts` — drop the `business_name ?? full_name` fallback, just read `full_name`.
+- `src/lib/website/website.functions.ts` — 2 select lists + 2 fallbacks.
+- `src/lib/admin/impersonation.functions.ts` — 1 select + 1 fallback.
+- `src/hooks/use-account-menu.ts` — drop `business_name` from select + fallback chain.
+- `src/lib/support/tickets.functions.ts:783` — flip to `full_name` only.
+- `src/lib/campaigns/scheduled-runner.server.ts:182`, `outbound-extras.functions.ts:85` — same.
+- `src/components/dashboard/organisation/DashboardHome.tsx:94` + `src/routes/_authenticated/_professional/dashboard.tsx:105` — read `identity.full_name` only.
+- Any admin views listing `business_name` in a column selector (name-request queue) — swap to `full_name`.
+
+Regenerated `src/integrations/supabase/types.ts` (auto after migration) will lose `business_name` / `display_name`, so any missed reference will fail typecheck — that's the safety net.
+
+### 3. QA — the broader "unused column" audit
+
+Same-turn deliverable: a written audit at `docs/schema-audit-providers-2026-07-09.md` listing every column on `profiles` (74 cols currently) and `professionals`, marked:
+
+- ✅ Read AND written by app code
+- ⚠️ Written but never read (candidate for removal)
+- ❌ Neither read nor written (dead)
+- 🗂️ Read by BD-migration/legacy code only (mark for future removal, not now)
+
+I run this by grepping `src/` for each column name, cross-referencing SELECT lists and mutation payloads. No columns are dropped from this audit in this turn — you approve the ❌/⚠️ list first, then a follow-up migration clears them.
+
+Columns I already suspect are stale (to confirm in the audit):
+- `profiles.avatar_is_ai_generated`, `profiles.avatar_qa_status`, `profiles.avatar_qa_source` — worth checking if still wired.
+- `professionals.bd_seed_thin`, `professionals.quality_score`, `professionals.reps_member_id` — BD-migration era, banned from copy but may still be written.
+- `professionals.identity_verified_name` / `identity_verified_dob` vs `identity_documents.*` — possible duplication.
+- `professionals.legal_entity_name` vs the new single `full_name` — decide whether provider legal name lives in one place.
+
+### 4. Verification after code + migration land
+
+1. `SELECT full_name, business_name FROM profiles LIMIT 1` errors with "column business_name does not exist" — proof no code still references it.
+2. Dashboard, sidebar, `/t/test-profile`, admin impersonation, admin name-request queue — all show `full_name` and match.
+3. Rename via Profile page → pending banner shows; after admin approve, everywhere updates in one refresh.
+
+## Out of scope this turn
+
+- Actually dropping the ⚠️/❌ columns surfaced by step 3 — done in a follow-up after you sign off on the audit list.
+- Any UI/copy change beyond swapping the column name.
+- `professionals.legal_entity_name` (kept — different concept: registered company name).
 
 ## Files touched
-- `src/components/dashboard/organisation/VerificationPage.tsx` — remove card + imports
-- `src/components/dashboard/organisation/ProviderProfilePage.tsx` — swap read-only row for editable input + submit
+
+Migration + ~10 `.ts`/`.tsx` files listed under step 2 + one new audit doc `docs/schema-audit-providers-2026-07-09.md`.

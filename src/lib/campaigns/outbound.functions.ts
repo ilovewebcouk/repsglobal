@@ -100,7 +100,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
         supabaseAdmin
           .from("profiles")
           .select("id")
-          .or(`full_name.ilike.${like},business_name.ilike.${like}`)
+          .or(`full_name.ilike.${like},full_name.ilike.${like}`)
           .limit(50),
         supabaseAdmin
           .from("professionals")
@@ -131,18 +131,18 @@ export const searchTrainers = createServerFn({ method: "POST" })
 
     const ids = (pros ?? []).map((p: any) => p.id);
 
-    // Fetch profile names + business_name separately — no FK between
+    // Fetch profile names + full_name separately — no FK between
     // professionals and profiles, so PostgREST can't embed-join them.
     const nameMap = new Map<string, string>();
     const businessMap = new Map<string, string>();
     if (ids.length > 0) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, business_name")
+        .select("id, full_name")
         .in("id", ids);
       for (const p of profs ?? []) {
         if (p.full_name) nameMap.set(p.id, p.full_name);
-        if (p.business_name) businessMap.set(p.id, p.business_name);
+        if (p.full_name) businessMap.set(p.id, p.full_name);
       }
     }
 
@@ -252,7 +252,7 @@ async function resolveTierRecipients(
 
   // Pull all professionals (we filter in-memory; small dataset on REPs today).
   // No FK exists between professionals and profiles, so we can't embed-join —
-  // fetch full_name / business_name separately below.
+  // fetch full_name / full_name separately below.
   const { data: allPros, error: pErr } = await supabaseAdmin
     .from("professionals")
     .select("id");
@@ -288,17 +288,17 @@ async function resolveTierRecipients(
     proSet = proSet.filter((p: any) => !everyPaid.has(p.id));
   }
 
-  // Fetch full_name + business_name for the surviving set
+  // Fetch full_name + full_name for the surviving set
   const nameMap = new Map<string, string>();
   const businessMap = new Map<string, string>();
   if (proSet.length > 0) {
     const { data: profs } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, business_name")
+      .select("id, full_name")
       .in("id", proSet.map((p: any) => p.id));
     for (const p of profs ?? []) {
       if (p.full_name) nameMap.set(p.id, p.full_name);
-      if (p.business_name) businessMap.set(p.id, p.business_name);
+      if (p.full_name) businessMap.set(p.id, p.full_name);
     }
   }
 
@@ -816,7 +816,7 @@ function applyMergeTags(
   const full = (recipient.name ?? "").trim();
   const parts = full.split(/\s+/).filter(Boolean);
   const first = parts[0] ?? "";
-  const last = parts.length > 1 ? parts.slice(1).join(" ") : "";
+  const last = parts.length > 1 ? parts.slice(1).join("") : "";
   const map: Record<string, string> = {
     first_name: first || "there",
     last_name: last,

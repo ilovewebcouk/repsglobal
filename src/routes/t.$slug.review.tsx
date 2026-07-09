@@ -19,7 +19,7 @@ export const Route = createFileRoute("/t/$slug/review")({
     meta: [
       { title: "Leave a review — REPS" },
       { name: "description", content: "Share your experience with a REPS-verified professional." },
-      { name: "robots", content: "noindex,nofollow" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: ReviewPage,

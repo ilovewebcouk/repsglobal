@@ -42,13 +42,7 @@ import proLaura from "@/assets/pro-laura.jpg";
 
 const VALID_VENUE_SLUGS = new Set([
   "puregym",
-  "gym-group",
-  "virgin-active",
-  "bannatyne",
-  "david-lloyd",
-  "nuffield-health",
-  "third-space",
-  "anytime-fitness",
+  "gym-group", "virgin-active", "bannatyne", "david-lloyd", "nuffield-health", "third-space", "anytime-fitness",
 ]);
 
 const VALID_SORTS = new Set<ResultsBarSort>(["recommended", "nearest", "rating", "most_reviewed", "newest"]);
@@ -139,8 +133,7 @@ export const Route = createFileRoute("/find-a-professional")({
       {
         type: "application/ld+json",
         children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
+          "@context": "https://schema.org", "@type": "CollectionPage",
           name: "Find a REPS-verified professional",
           description:
             "Browse REPS-verified fitness professionals. Filter by specialism, location, gym and training type.",
@@ -559,7 +552,7 @@ function DirectoryPage() {
               <div className="mt-2 rounded-[12px] border border-reps-orange/30 bg-reps-orange/[0.06] p-3 text-[13px] text-reps-charcoal">
                 <span className="font-medium">
                   Only {withinRadius.length} within {radius_mi} mi.
-                </span>{" "}
+                </span>{""}
                 <span className="text-reps-muted-light">
                   Showing {autoWidenResult.extras} more within {autoWidenResult.tier} mi.
                 </span>
@@ -629,11 +622,11 @@ function DirectoryPage() {
                 className="mt-8 flex flex-col items-center gap-3 border-t border-reps-stone/70 pt-6 sm:mt-10 sm:flex-row sm:justify-between"
               >
                 <p className="text-[13px] text-reps-muted-light">
-                  Showing{" "}
+                  Showing{""}
                   <span className="font-semibold text-reps-charcoal">
                     {rangeStart}–{rangeEnd}
-                  </span>{" "}
-                  of{" "}
+                  </span>{""}
+                  of{""}
                   <span className="font-semibold text-reps-charcoal">
                     {visibleTotal.toLocaleString()}
                   </span>
@@ -989,7 +982,7 @@ function ProCard({
               <MapPin className="h-3.5 w-3.5" />
               {pro._miles != null && pro.town ? (
                 <>
-                  {pro.town} ·{" "}
+                  {pro.town} ·{""}
                   <span className="font-semibold text-reps-charcoal">{formatMiles(pro._miles)}</span>
                 </>
               ) : (
@@ -1242,8 +1235,8 @@ function DidYouMeanBanner({ query }: { query: string }) {
     <div className="mt-4 rounded-[12px] border border-reps-orange/30 bg-reps-orange/[0.06] p-3 text-[13px] text-reps-charcoal">
       <span className="font-medium">
         Showing name matches for "{query}".
-      </span>{" "}
-      <span className="text-reps-muted-light">Did you mean:</span>{" "}
+      </span>{""}
+      <span className="text-reps-muted-light">Did you mean:</span>{""}
       <span className="inline-flex flex-wrap gap-1.5 align-middle">
         {matches.map((m) => (
           <Link

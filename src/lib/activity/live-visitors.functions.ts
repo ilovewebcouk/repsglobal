@@ -53,7 +53,7 @@ export const getPublicVisitorsLive = createServerFn({ method: "POST" })
             .in("id", obsIds)
         : Promise.resolve({ data: [] as unknown[], error: null }),
       userIds.length
-        ? supabaseAdmin.from("profiles").select("id, display_name, email").in("id", userIds)
+        ? supabaseAdmin.from("profiles").select("id, full_name, email").in("id", userIds)
         : Promise.resolve({ data: [] as unknown[], error: null }),
     ]);
 
@@ -74,7 +74,7 @@ export const getPublicVisitorsLive = createServerFn({ method: "POST" })
         session_id: j.session_id,
         posthog_distinct_id: j.posthog_distinct_id,
         user_id: j.user_id,
-        member_name: prof?.display_name ?? prof?.email ?? null,
+        member_name: prof?.full_name ?? prof?.email ?? null,
         masked_ip: o ? maskIp(o.raw_ip) : null,
         city: o?.city ?? null,
         region: o?.region ?? null,
@@ -127,7 +127,7 @@ export const getPublicVisitorDetail = createServerFn({ method: "POST" })
         .eq("session_id", j.session_id ?? "")
         .order("occurred_at", { ascending: false }),
       j.user_id
-        ? supabaseAdmin.from("profiles").select("id, display_name, email").eq("id", j.user_id).maybeSingle()
+        ? supabaseAdmin.from("profiles").select("id, full_name, email").eq("id", j.user_id).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
 

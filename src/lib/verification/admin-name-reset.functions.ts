@@ -55,14 +55,7 @@ export const forceResetLegalName = createServerFn({ method: "POST" })
 
     // Explicit audit row with reason + actor (the trigger-written 'admin' row
     // has no reason field populated, so we add this one for the queue UI).
-    await supabaseAdmin.from("identity_name_changes").insert({
-      user_id: data.user_id,
-      old_full_name: oldName,
-      new_full_name: data.new_full_name,
-      changed_by: userId,
-      reason: data.reason,
-      source: "admin",
-    });
+    await supabaseAdmin.from("identity_name_changes").insert({ user_id: data.user_id, old_full_name: oldName, new_full_name: data.new_full_name, changed_by: userId, reason: data.reason, source: "admin",  });
 
     return { ok: true as const };
   });

@@ -175,11 +175,11 @@ async function resolveTierRecipients(
     const ids = proSet.map((p: any) => p.id);
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, business_name")
+      .select("id, full_name")
       .in("id", ids);
     const names = new Map<string, string>();
     for (const pf of profiles ?? []) {
-      names.set(pf.id, (pf.full_name || pf.business_name || "") as string);
+      names.set(pf.id, (pf.full_name || "") as string);
     }
 
     for (const p of proSet) {
@@ -255,7 +255,7 @@ async function runBroadcastBatch(opts: BatchOpts) {
       const full = (r.name ?? "").trim();
       const parts = full.split(/\s+/).filter(Boolean);
       const first = parts[0] ?? "";
-      const last = parts.length > 1 ? parts.slice(1).join(" ") : "";
+      const last = parts.length > 1 ? parts.slice(1).join("") : "";
       const map: Record<string, string> = {
         first_name: first || "there",
         last_name: last,
