@@ -328,7 +328,7 @@ export const listMyRegulatedPermissions = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, withdrawn_at, withdrawn_reason, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
       )
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
