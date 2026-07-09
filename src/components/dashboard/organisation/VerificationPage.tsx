@@ -733,13 +733,13 @@ function TradingNameCard() {
             </p>
           ) : null}
 
-          {(!hasName || !pending) && (
+          {!hasName && !pending && (
             <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
               <input
                 type="text"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder={hasName ? "New trading name" : "e.g. Diverse Trainers"}
+                placeholder="e.g. Diverse Trainers"
                 className="h-10 flex-1 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
               />
               <button
@@ -748,7 +748,7 @@ function TradingNameCard() {
                 disabled={saving || !value.trim()}
                 className="inline-flex h-10 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
               >
-                {saving ? "Saving…" : hasName ? "Request change" : "Set name"}
+                {saving ? "Saving…" : "Set name"}
               </button>
             </div>
           )}
@@ -758,9 +758,10 @@ function TradingNameCard() {
             </p>
           ) : (
             <p className="mt-2 text-[11.5px] text-white/45">
-              Changing your trading name requires REPS approval.
+              Locked. Contact REPs support to change your trading name.
             </p>
           )}
+
         </div>
       </div>
     </section>
