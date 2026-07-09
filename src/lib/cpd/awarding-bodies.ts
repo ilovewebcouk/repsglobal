@@ -9,61 +9,77 @@ export type AwardingBody = {
   // True if this body issues qualifications regulated by Ofqual (or equivalent).
   regulated?: boolean;
   // Optional logo URL (Lovable Asset). Rendered on /t/$slug next to approved
-  // regulated qualifications. If missing, we render a text chip instead.
+  // regulated qualifications. If missing, we fall back to Logo.dev by domain.
   logo?: string;
+  // Optional primary domain for the awarding body. Used by `awardingBodyLogo`
+  // to pull a logo from Logo.dev when no official upload exists yet.
+  domain?: string;
 };
+
+const LOGO_DEV_TOKEN =
+  (typeof import.meta !== "undefined" && (import.meta as { env?: Record<string, string | undefined> }).env
+    ? (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_LOVABLE_CONNECTOR_LOGO_DEV_API_KEY
+    : undefined) ?? null;
+
+function logoDevUrl(domain: string): string | null {
+  if (!LOGO_DEV_TOKEN) return null;
+  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_TOKEN}&size=128&format=png`;
+}
 
 /** Look up a logo URL by awarding-body slug. */
 export function awardingBodyLogo(slug: string | null | undefined): string | null {
   if (!slug) return null;
   const body = AWARDING_BODIES.find((b) => b.slug === slug);
-  return body?.logo ?? null;
+  if (!body) return null;
+  if (body.logo) return body.logo;
+  if (body.domain) return logoDevUrl(body.domain);
+  return null;
 }
 
 export const AWARDING_BODIES: AwardingBody[] = [
   // Ofqual-regulated awarding bodies (fitness / coaching / sport)
-  { slug: "active-iq", name: "Active IQ", aliases: ["activeiq"], regulated: true },
-  { slug: "ncfe", name: "NCFE", aliases: ["ncfe cache", "cache"], regulated: true },
-  { slug: "focus-awards", name: "Focus Awards", regulated: true },
-  { slug: "ymca-awards", name: "YMCA Awards", aliases: ["ymca"], regulated: true },
-  { slug: "vtct", name: "VTCT", aliases: ["itec"], regulated: true },
-  { slug: "innovate-awarding", name: "Innovate Awarding", regulated: true },
-  { slug: "1st4sport", name: "1st4sport", aliases: ["1st 4 sport"], regulated: true },
-  { slug: "pearson", name: "Pearson (Edexcel/BTEC)", aliases: ["edexcel", "btec"], regulated: true },
-  { slug: "city-and-guilds", name: "City & Guilds", aliases: ["city and guilds", "c&g"], regulated: true },
-  { slug: "ocr", name: "OCR", aliases: ["oxford cambridge and rsa"], regulated: true },
-  { slug: "tquk", name: "TQUK", aliases: ["training qualifications uk"], regulated: true },
-  { slug: "aim-qualifications", name: "AIM Qualifications", aliases: ["aim"], regulated: true },
-  { slug: "open-awards", name: "Open Awards", regulated: true },
-  { slug: "gateway-qualifications", name: "Gateway Qualifications", regulated: true },
-  { slug: "iao", name: "IAO", aliases: ["industry qualifications", "iq"], regulated: true },
+  { slug: "active-iq", name: "Active IQ", aliases: ["activeiq"], regulated: true, domain: "activeiq.co.uk" },
+  { slug: "ncfe", name: "NCFE", aliases: ["ncfe cache", "cache"], regulated: true, domain: "ncfe.org.uk" },
+  { slug: "focus-awards", name: "Focus Awards", regulated: true, domain: "focusawards.org.uk" },
+  { slug: "ymca-awards", name: "YMCA Awards", aliases: ["ymca"], regulated: true, domain: "ymcaawards.co.uk" },
+  { slug: "vtct", name: "VTCT", aliases: ["itec"], regulated: true, domain: "vtct.org.uk" },
+  { slug: "innovate-awarding", name: "Innovate Awarding", regulated: true, domain: "innovateawarding.org" },
+  { slug: "1st4sport", name: "1st4sport", aliases: ["1st 4 sport"], regulated: true, domain: "1st4sportqualifications.com" },
+  { slug: "pearson", name: "Pearson (Edexcel/BTEC)", aliases: ["edexcel", "btec"], regulated: true, domain: "pearson.com" },
+  { slug: "city-and-guilds", name: "City & Guilds", aliases: ["city and guilds", "c&g"], regulated: true, domain: "cityandguilds.com" },
+  { slug: "ocr", name: "OCR", aliases: ["oxford cambridge and rsa"], regulated: true, domain: "ocr.org.uk" },
+  { slug: "tquk", name: "TQUK", aliases: ["training qualifications uk"], regulated: true, domain: "tquk.org" },
+  { slug: "aim-qualifications", name: "AIM Qualifications", aliases: ["aim"], regulated: true, domain: "aim-group.org.uk" },
+  { slug: "open-awards", name: "Open Awards", regulated: true, domain: "openawards.org.uk" },
+  { slug: "gateway-qualifications", name: "Gateway Qualifications", regulated: true, domain: "gatewayqualifications.org.uk" },
+  { slug: "iao", name: "IAO", aliases: ["industry qualifications", "iq"], regulated: true, domain: "industryqualifications.org.uk" },
 
   // Strength & conditioning / international (not Ofqual but well-known)
-  { slug: "uksca", name: "UKSCA", aliases: ["uk strength & conditioning association"] },
-  { slug: "nasm", name: "NASM", aliases: ["national academy of sports medicine"] },
-  { slug: "ace", name: "ACE", aliases: ["american council on exercise"] },
-  { slug: "acsm", name: "ACSM", aliases: ["american college of sports medicine"] },
-  { slug: "nsca", name: "NSCA", aliases: ["national strength & conditioning association"] },
+  { slug: "uksca", name: "UKSCA", aliases: ["uk strength & conditioning association"], domain: "uksca.org.uk" },
+  { slug: "nasm", name: "NASM", aliases: ["national academy of sports medicine"], domain: "nasm.org" },
+  { slug: "ace", name: "ACE", aliases: ["american council on exercise"], domain: "acefitness.org" },
+  { slug: "acsm", name: "ACSM", aliases: ["american college of sports medicine"], domain: "acsm.org" },
+  { slug: "nsca", name: "NSCA", aliases: ["national strength & conditioning association"], domain: "nsca.com" },
 
   // UK private training providers
-  { slug: "premier-global", name: "Premier Global NASM", aliases: ["premier", "premier global", "premier training"] },
-  { slug: "future-fit", name: "Future Fit Training", aliases: ["future fit"] },
-  { slug: "lifetime-training", name: "Lifetime Training", aliases: ["lifetime"] },
-  { slug: "protrainings", name: "ProTrainings", aliases: ["pro trainings"] },
-  { slug: "emd-uk", name: "EMD UK", aliases: ["exercise movement and dance"] },
+  { slug: "premier-global", name: "Premier Global NASM", aliases: ["premier", "premier global", "premier training"], domain: "premierglobal.co.uk" },
+  { slug: "future-fit", name: "Future Fit Training", aliases: ["future fit"], domain: "futurefit.co.uk" },
+  { slug: "lifetime-training", name: "Lifetime Training", aliases: ["lifetime"], domain: "lifetimetraining.co.uk" },
+  { slug: "protrainings", name: "ProTrainings", aliases: ["pro trainings"], domain: "protrainings.uk" },
+  { slug: "emd-uk", name: "EMD UK", aliases: ["exercise movement and dance"], domain: "emduk.org" },
 
   // Nutrition
-  { slug: "mac-nutrition-uni", name: "Mac-Nutrition Uni", aliases: ["mnu"] },
-  { slug: "precision-nutrition", name: "Precision Nutrition", aliases: ["pn"] },
+  { slug: "mac-nutrition-uni", name: "Mac-Nutrition Uni", aliases: ["mnu"], domain: "mac-nutritionuni.com" },
+  { slug: "precision-nutrition", name: "Precision Nutrition", aliases: ["pn"], domain: "precisionnutrition.com" },
 
   // Specialist
-  { slug: "girls-gone-strong", name: "Girls Gone Strong", aliases: ["ggs"] },
-  { slug: "fitpro", name: "FitPro" },
-  { slug: "yoga-alliance", name: "Yoga Alliance", aliases: ["yoga alliance professionals"] },
-  { slug: "british-wheel-of-yoga", name: "British Wheel of Yoga", aliases: ["bwy"] },
-  { slug: "body-control-pilates", name: "Body Control Pilates" },
-  { slug: "stott-pilates", name: "STOTT Pilates", aliases: ["stott"] },
-  { slug: "polestar-pilates", name: "Polestar Pilates" },
+  { slug: "girls-gone-strong", name: "Girls Gone Strong", aliases: ["ggs"], domain: "girlsgonestrong.com" },
+  { slug: "fitpro", name: "FitPro", domain: "fitpro.com" },
+  { slug: "yoga-alliance", name: "Yoga Alliance", aliases: ["yoga alliance professionals"], domain: "yogaalliance.org" },
+  { slug: "british-wheel-of-yoga", name: "British Wheel of Yoga", aliases: ["bwy"], domain: "bwy.org.uk" },
+  { slug: "body-control-pilates", name: "Body Control Pilates", domain: "bodycontrolpilates.com" },
+  { slug: "stott-pilates", name: "STOTT Pilates", aliases: ["stott"], domain: "merrithew.com" },
+  { slug: "polestar-pilates", name: "Polestar Pilates", domain: "polestarpilates.com" },
 
   { slug: "other", name: "Other (specify)" },
 ];
