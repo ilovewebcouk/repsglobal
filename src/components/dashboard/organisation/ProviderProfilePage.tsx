@@ -206,7 +206,6 @@ export function ProviderProfilePage() {
   const baseline = React.useMemo(() => {
     if (!data) return null;
     return {
-      name: (data.name ?? "").trim(),
       tagline: data.tagline ?? "",
       about: data.about ?? "",
       website_url: data.website_url ?? "",
@@ -224,13 +223,8 @@ export function ProviderProfilePage() {
   const changedCount = React.useMemo(() => {
     if (!baseline) return 0;
     let n = 0;
-    // Name — only if not currently pending; compare against approved name.
-    if (!namePending) {
-      const requested = form.name.trim();
-      const approved = (approvedName ?? "").trim();
-      if (requested && requested !== approved) n += 1;
-    }
-    // Free-text fields (skip locked ones).
+    // Free-text fields (skip locked ones). Provider name is not editable here —
+    // it's managed on /dashboard/verification.
     const pairs: Array<[keyof typeof form, string, boolean]> = [
       ["tagline", baseline.tagline, false],
       ["about", baseline.about, false],
@@ -249,7 +243,8 @@ export function ProviderProfilePage() {
       if ((form[key] ?? "") !== (base ?? "")) n += 1;
     }
     return n;
-  }, [baseline, form, namePending, approvedName, websiteLocked, emailLocked]);
+  }, [baseline, form, websiteLocked, emailLocked]);
+
 
   const dirty = changedCount > 0;
 
