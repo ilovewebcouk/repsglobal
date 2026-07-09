@@ -338,7 +338,7 @@ const uploadInput = z.object({
 });
 
 export const uploadCertificateFile = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => uploadInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
