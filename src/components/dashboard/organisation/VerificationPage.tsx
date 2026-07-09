@@ -711,15 +711,16 @@ function TradingNameCard() {
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="font-display text-[15px] font-semibold text-white">
-            Trading name
+            Provider name
           </h3>
           <p className="mt-0.5 text-[12.5px] text-white/60">
             {missing
               ? "Set this before you can submit regulated qualifications or CPD. It's the name members and admins see for your provider."
               : hasName
                 ? "Your public provider name across REPS."
-                : "Awaiting your first trading name."}
+                : "Awaiting your first provider name."}
           </p>
+
 
           {hasName ? (
             <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white">
