@@ -4010,6 +4010,7 @@ export type Database = {
           ofqual_snapshot: Json | null
           provider_id: string
           qualification_id: string | null
+          reps_qualification_number: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -4036,6 +4037,7 @@ export type Database = {
           ofqual_snapshot?: Json | null
           provider_id: string
           qualification_id?: string | null
+          reps_qualification_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -4062,6 +4064,7 @@ export type Database = {
           ofqual_snapshot?: Json | null
           provider_id?: string
           qualification_id?: string | null
+          reps_qualification_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
