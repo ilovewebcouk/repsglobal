@@ -92,7 +92,7 @@ export function ProviderDashboardHome() {
       : "No plan";
   const memberName =
     data?.identity?.full_name ?? data?.identity?.full_name ?? "REPS member";
-  const firstName = memberName.split(" ")[0];
+  const firstName = memberName.split("")[0];
 
   const enqStats = hub.enqStats.data;
   const reviewKpis = hub.reviewKpis.data;

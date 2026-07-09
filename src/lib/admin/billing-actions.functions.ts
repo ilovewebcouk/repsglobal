@@ -274,12 +274,6 @@ export const findMemberByEmail = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
 
-    return {
-      found: true as const,
-      user_id: matched.id,
-      full_name:
-        (profile as any)?.full_name ?? (profile as any)?.full_name ?? null,
-      has_active_subscription: !!sub,
-      tier: (sub as any)?.tier ?? null,
-    };
+    return { found: true as const, user_id: matched.id, full_name:
+        (profile as any)?.full_name ?? (profile as any)?.full_name ?? null, has_active_subscription: !!sub, tier: (sub as any)?.tier ?? null,  };
   });

@@ -71,7 +71,7 @@ import { EyeOff } from "lucide-react";
 export const Route = createFileRoute("/admin_/members_/$userId")({
   ssr: false,
   beforeLoad: requireRole(["admin"]),
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }, { title: "Member 360 — REPS Admin" }] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }, { title: "Member 360 — REPS Admin" }] }),
   component: MemberPage,
 });
 
@@ -259,7 +259,7 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
     );
   }
 
-  const { full_name, email, slug, verification, subscription, avatar_url, profession, account_type, full_name } = snapshot;
+  const { full_name, email, slug, verification, subscription, avatar_url, profession, account_type } = snapshot;
   const sub = subscription;
   const tierLbl = sub.tier_label;
   const status = sub.status;
@@ -610,7 +610,7 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
       <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
         {sub.discrepancies.length > 0 && (
           <div className="rounded-[12px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-200">
-            Stripe and our copy disagree on: {sub.discrepancies.join(", ").replace(/_/g, " ")}. Open in Stripe to reconcile.
+            Stripe and our copy disagree on: {sub.discrepancies.join(", ").replace(/_/g, "")}. Open in Stripe to reconcile.
           </div>
         )}
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">

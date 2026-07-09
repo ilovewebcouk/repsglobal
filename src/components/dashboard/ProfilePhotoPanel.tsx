@@ -144,7 +144,7 @@ function humanizeAvatarError(err: unknown, fallback: string): string {
   ) {
     return "Our image check hit a server problem — please try again in a moment.";
   }
-  const stripped = trimmed.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const stripped = trimmed.replace(/<[^>]+>/g, "").replace(/\s+/g, "").trim();
   if (stripped.length > 180) return fallback;
   return stripped || fallback;
 }

@@ -250,7 +250,7 @@ async function liftSuspensionAfterWin(
       const proName =
         ((profile?.full_name ?? "") as string)
           .toString()
-          .split(" ")[0] || null;
+          .split("")[0] || null;
       const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
       await sendTransactionalEmailServer({
         templateName: "dispute-won-resubscribe",
@@ -283,7 +283,7 @@ async function sendDisputeEmail(opts: {
   const proName =
     ((profile?.full_name ?? "") as string)
       .toString()
-      .split(" ")[0] || null;
+      .split("")[0] || null;
 
   // Only "opened" fires a member-facing dispute email now. "won" is handled
   // by liftSuspensionAfterWin (dispute-won-resubscribe email). "lost" is
@@ -484,8 +484,7 @@ export async function handlePlatformDispute(
     await insertOpsAlert(
       stage === "funds_withdrawn"
         ? "payments.dispute_funds_withdrawn"
-        : "payments.dispute_funds_reinstated",
-      "info",
+        : "payments.dispute_funds_reinstated", "info",
       {
         user_id: userId,
         dispute_id: disputeRowId,

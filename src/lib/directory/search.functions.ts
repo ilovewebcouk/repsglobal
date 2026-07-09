@@ -135,7 +135,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     const hiddenChurnIds = ((hiddenChurnRows ?? []) as Array<{ user_id: string }>)
       .map((r) => r.user_id);
     if (hiddenChurnIds.length > 0) {
-      qb = qb.not("id", "in", `(${hiddenChurnIds.join(",")})`);
+      qb = qb.not("id", "in", `(${hiddenChurnIds.join(", ")})`);
     }
 
 

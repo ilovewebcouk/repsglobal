@@ -60,7 +60,7 @@ async function assertProfessional(
 
   const { data: subscriptions } = await supabase
     .from("subscriptions")
-    .select("tier,status")
+    .select("tier, status")
     .eq("user_id", userId);
   const hasProTier = (subscriptions ?? []).some(
     (subscription: { tier: string; status: string }) =>
@@ -91,13 +91,7 @@ export const addRosterClient = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabase
       .from("client_roster")
-      .insert({
-        professional_id: userId,
-        email: data.email,
-        full_name: data.full_name ?? null,
-        notes: data.notes ?? null,
-        status: "prospect",
-      })
+      .insert({ professional_id: userId, email: data.email, full_name: data.full_name ?? null, notes: data.notes ?? null, status: "prospect",  })
       .select("id, email, full_name, status")
       .single();
 
@@ -182,12 +176,7 @@ export const importRosterCSV = createServerFn({ method: "POST" })
       }
       // Name conflict?
       if (v.full_name && ex.full_name && v.full_name.toLowerCase() !== ex.full_name.toLowerCase()) {
-        conflicting.push({
-          rowIndex: v.rowIndex,
-          email: v.email,
-          existingName: ex.full_name,
-          csvName: v.full_name,
-        });
+        conflicting.push({ rowIndex: v.rowIndex, email: v.email, existingName: ex.full_name, csvName: v.full_name,  });
         return;
       }
       alreadyActive.push({ email: v.email, status: ex.status });
@@ -219,12 +208,7 @@ export const importRosterCSV = createServerFn({ method: "POST" })
     // Commit
     if (newRows.length) {
       const { error: insertErr } = await supabase.from("client_roster").insert(
-        newRows.map((r) => ({
-          professional_id: userId,
-          email: r.email,
-          full_name: r.full_name,
-          status: "prospect" as const,
-        })),
+        newRows.map((r) => ({ professional_id: userId, email: r.email, full_name: r.full_name, status: "prospect" as const,  })),
       );
       if (insertErr) throw new Error(insertErr.message);
     }
@@ -330,12 +314,7 @@ async function ensureInviteSentInternal(opts: {
       templateName: "client-invite",
       recipientEmail: invite.email,
       idempotencyKey: `client-invite-${invite.id}`,
-      templateData: {
-        proName: profile?.full_name ?? "Your coach",
-        tradingName: profile?.full_name ?? null,
-        clientName: invite.full_name ?? null,
-        acceptUrl,
-      },
+      templateData: { proName: profile?.full_name ?? "Your coach", tradingName: profile?.full_name ?? null, clientName: invite.full_name ?? null, acceptUrl,  },
     });
     messageId = res.messageId;
   } catch (e) {
@@ -532,18 +511,7 @@ export const listRoster = createServerFn({ method: "GET" })
             inviteStatus = inv.status as InviteStatus;
           }
         }
-        return {
-          id: r.id,
-          email: r.email,
-          full_name: r.full_name,
-          status: r.status as RosterStatus,
-          inviteStatus: inviteStatus as InviteStatus,
-          inviteSentAt: inv?.created_at ?? null,
-          confirmedAt: r.confirmed_at,
-          activatedAt: r.activated_at,
-          createdAt: r.created_at,
-          notes: r.notes,
-        };
+        return { id: r.id, email: r.email, full_name: r.full_name, status: r.status as RosterStatus, inviteStatus: inviteStatus as InviteStatus, inviteSentAt: inv?.created_at ?? null, confirmedAt: r.confirmed_at, activatedAt: r.activated_at, createdAt: r.created_at, notes: r.notes,  };
       }),
     };
   });
@@ -570,13 +538,7 @@ export const lookupInviteByToken = createServerFn({ method: "GET" })
 
     const expired = new Date(invite.expires_at).getTime() < Date.now();
     return {
-      invite: {
-        email: invite.email as string,
-        full_name: (invite.full_name as string | null) ?? null,
-        status: invite.status as string,
-        expired,
-        professional_name: profile?.full_name ?? "Your coach",
-      },
+      invite: { email: invite.email as string, full_name: (invite.full_name as string | null) ?? null, status: invite.status as string, expired, professional_name: profile?.full_name ?? "Your coach",  },
     };
   });
 
@@ -656,7 +618,7 @@ export const completeInviteSignup = createServerFn({ method: "POST" })
       .from("user_roles")
       .upsert(
         { user_id: authUserId, role: "client" },
-        { onConflict: "user_id,role", ignoreDuplicates: true },
+        { onConflict: "user_id, role", ignoreDuplicates: true },
       );
     await supabaseAdmin
       .from("clients")
@@ -669,7 +631,7 @@ export const completeInviteSignup = createServerFn({ method: "POST" })
         client_id: authUserId,
         status: "active",
       },
-      { onConflict: "professional_id,client_id", ignoreDuplicates: true },
+      { onConflict: "professional_id, client_id", ignoreDuplicates: true },
     );
 
     // Mark invite accepted

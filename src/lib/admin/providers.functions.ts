@@ -61,7 +61,7 @@ function slugify(name: string) {
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/&/g, " and ")
+    .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
@@ -414,7 +414,7 @@ export const adminUpdateProviderProfileMirror = createServerFn({ method: "POST" 
               data.override_email_lock ? "email" : null,
             ]
               .filter(Boolean)
-              .join(",")}`
+              .join(", ")}`
           : null),
     });
 

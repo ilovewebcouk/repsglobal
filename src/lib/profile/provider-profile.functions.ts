@@ -64,28 +64,10 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
     const p = (pro ?? {}) as Record<string, unknown>;
     const s = (site ?? {}) as Record<string, unknown>;
 
-    return {
-      name:
+    return { name:
         (pr.full_name as string | null) ??
         (pr.full_name as string | null) ??
-        "",
-      slug: (p.slug as string | null) ?? null,
-      logo_url: (pr.avatar_url as string | null) ?? null,
-      hero_image_url: (s.hero_image_url as string | null) ?? null,
-      tagline: (s.tagline as string | null) ?? null,
-      about: (s.about as string | null) ?? null,
-      website_url: (p.website_url as string | null) ?? null,
-      contact_email: (p.contact_email as string | null) ?? null,
-      contact_phone: (p.contact_phone as string | null) ?? null,
-      address: (p.address as string | null) ?? null,
-
-
-      social_instagram: (p.social_instagram as string | null) ?? null,
-      social_linkedin: (p.social_linkedin as string | null) ?? null,
-      social_youtube: (p.social_youtube as string | null) ?? null,
-      social_tiktok: (p.social_tiktok as string | null) ?? null,
-      social_x: (p.social_x as string | null) ?? null,
-    };
+        "", slug: (p.slug as string | null) ?? null, logo_url: (pr.avatar_url as string | null) ?? null, hero_image_url: (s.hero_image_url as string | null) ?? null, tagline: (s.tagline as string | null) ?? null, about: (s.about as string | null) ?? null, website_url: (p.website_url as string | null) ?? null, contact_email: (p.contact_email as string | null) ?? null, contact_phone: (p.contact_phone as string | null) ?? null, address: (p.address as string | null) ?? null, social_instagram: (p.social_instagram as string | null) ?? null, social_linkedin: (p.social_linkedin as string | null) ?? null, social_youtube: (p.social_youtube as string | null) ?? null, social_tiktok: (p.social_tiktok as string | null) ?? null, social_x: (p.social_x as string | null) ?? null,  };
   });
 
 /**

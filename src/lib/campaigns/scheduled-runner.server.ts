@@ -255,7 +255,7 @@ async function runBroadcastBatch(opts: BatchOpts) {
       const full = (r.name ?? "").trim();
       const parts = full.split(/\s+/).filter(Boolean);
       const first = parts[0] ?? "";
-      const last = parts.length > 1 ? parts.slice(1).join(" ") : "";
+      const last = parts.length > 1 ? parts.slice(1).join("") : "";
       const map: Record<string, string> = {
         first_name: first || "there",
         last_name: last,

@@ -80,7 +80,7 @@ function getPro(slug: string) {
   const name = slug
     .split("-")
     .map((s) => s[0]?.toUpperCase() + s.slice(1))
-    .join(" ");
+    .join("");
   return {
     slug,
     name: name || "James Wilson",
@@ -108,10 +108,7 @@ const GOALS = [
   "Build muscle",
   "Get stronger",
   "Improve health",
-  "Sport-specific",
-  "Pre / postnatal",
-  "Rehab from injury",
-  "Other",
+  "Sport-specific", "Pre / postnatal", "Rehab from injury", "Other",
 ];
 
 const FREQUENCY = ["1x / week", "2x / week", "3x / week", "4+ / week", "Online only"];
@@ -123,7 +120,7 @@ const BUDGET = ["Under £50 / session", "£50–£80 / session", "£80–£120 /
 /* ------------------------------------------------------------------ */
 
 type ServiceOption = {
-  id: string; // synthetic id used for radio state ("svc:<uuid>" or "fallback:<id>")
+  id: string; // synthetic id used for radio state ("svc:<uuid>"or"fallback:<id>")
   serviceUuid: string | null;
   label: string;
   desc: string;
@@ -282,7 +279,7 @@ function EnquirePage() {
       void import("@/hooks/usePublicAnalyticsBeacon").then(({ capturePublic }) => {
         void capturePublic("enquiry_submit", { slug });
       });
-      toast.success(`Enquiry sent to ${pro.name.split(" ")[0]} — they'll reply by email.`);
+      toast.success(`Enquiry sent to ${pro.name.split("")[0]} — they'll reply by email.`);
       router.navigate({ to: "/t/$slug", params: { slug } });
     },
     onError: (err: unknown) => {
@@ -341,12 +338,12 @@ function EnquirePage() {
               Enquire about coaching with {pro.name}
             </h1>
             <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-reps-muted-light">
-              Tell {pro.name.split(" ")[0]} a bit about your goals, availability and budget — they'll reply privately with a clear quote and next steps.
+              Tell {pro.name.split("")[0]} a bit about your goals, availability and budget — they'll reply privately with a clear quote and next steps.
             </p>
           </div>
           <div className="flex items-center gap-2 text-[12px] text-reps-muted-light lg:justify-end">
             <Lock className="h-3.5 w-3.5 text-reps-green" />
-            Private to {pro.name.split(" ")[0]} · You won't be added to any mailing lists
+            Private to {pro.name.split("")[0]} · You won't be added to any mailing lists
           </div>
         </div>
       </section>
@@ -428,8 +425,7 @@ function EnquirePage() {
                     value={g}
                     aria-label={g}
                     className={cn(
-                      "h-auto rounded-full border border-reps-stone bg-reps-ivory px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:bg-reps-ivory hover:text-reps-charcoal",
-                      "data-[state=on]:border-reps-orange data-[state=on]:bg-reps-orange/10 data-[state=on]:text-reps-orange",
+                      "h-auto rounded-full border border-reps-stone bg-reps-ivory px-3.5 py-1.5 text-[13px] font-medium text-reps-charcoal hover:border-reps-orange hover:bg-reps-ivory hover:text-reps-charcoal", "data-[state=on]:border-reps-orange data-[state=on]:bg-reps-orange/10 data-[state=on]:text-reps-orange",
                     )}
                   >
                     {g}
@@ -455,7 +451,7 @@ function EnquirePage() {
                 required
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={`Hi ${pro.name.split(" ")[0]} — I'm hoping to build strength after a long break from the gym. I can train two evenings a week and I'm based in central ${pro.city}. Would love to hear about your strength block.`}
+                placeholder={`Hi ${pro.name.split("")[0]} — I'm hoping to build strength after a long break from the gym. I can train two evenings a week and I'm based in central ${pro.city}. Would love to hear about your strength block.`}
                 className="w-full rounded-[12px] border-reps-stone bg-reps-ivory px-4 py-3 text-[14px] leading-relaxed text-reps-charcoal placeholder:text-reps-muted-light focus-visible:border-reps-orange focus-visible:ring-0"
               />
 
@@ -481,8 +477,8 @@ function EnquirePage() {
                   className="mt-0.5 border-reps-stone data-[state=checked]:border-reps-orange data-[state=checked]:bg-reps-orange data-[state=checked]:text-white"
                 />
                 <span>
-                  I agree to REPS'{" "}
-                  <Link to="/terms" className="text-reps-charcoal underline">terms</Link> and{" "}
+                  I agree to REPS'{""}
+                  <Link to="/terms" className="text-reps-charcoal underline">terms</Link> and{""}
                   <Link to="/privacy" className="text-reps-charcoal underline">privacy policy</Link>. My enquiry will be sent privately to {pro.name}.
                 </span>
               </label>
@@ -505,7 +501,7 @@ function EnquirePage() {
                 className="h-11 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
               >
                 <Send data-icon="inline-start" />
-                {mutation.isPending ? "Sending…" : `Send enquiry to ${pro.name.split(" ")[0]}`}
+                {mutation.isPending ? "Sending…" : `Send enquiry to ${pro.name.split("")[0]}`}
                 <ChevronRight data-icon="inline-end" />
               </Button>
             </div>

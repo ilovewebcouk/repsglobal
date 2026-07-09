@@ -28,14 +28,7 @@ export async function ensureUserFromPendingSignup(
     stripe_customer_id: string | null;
   };
   const { decryptSecret } = await import("./secret-crypto.server");
-  const r = {
-    email: raw.email,
-    password: decryptSecret(raw.password_ciphertext),
-    full_name: raw.full_name,
-    tier: raw.tier,
-    period: raw.period,
-    stripe_customer_id: raw.stripe_customer_id,
-  };
+  const r = { email: raw.email, password: decryptSecret(raw.password_ciphertext), full_name: raw.full_name, tier: raw.tier, period: raw.period, stripe_customer_id: raw.stripe_customer_id,  };
 
 
   // If an auth user with this email already exists (webhook ran first, or
@@ -59,13 +52,7 @@ export async function ensureUserFromPendingSignup(
     email: r.email,
     password: r.password,
     email_confirm: true,
-    user_metadata: {
-      full_name: r.full_name,
-      signup_kind: "professional",
-      account_type: "pro",
-      intended_tier: r.tier,
-      intended_period: r.period,
-    },
+    user_metadata: { full_name: r.full_name, signup_kind: "professional", account_type: "pro", intended_tier: r.tier, intended_period: r.period,  },
   });
   if (createErr || !created?.user) {
     throw new Error(createErr?.message ?? "Failed to create user");

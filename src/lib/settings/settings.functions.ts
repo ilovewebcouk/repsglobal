@@ -12,7 +12,6 @@ export type SettingsBundle = {
     email: string | null;
     full_name: string | null;
     full_name: string | null;
-    full_name: string | null;
     avatar_url: string | null;
     contact_phone: string | null;
     timezone: string;
@@ -172,9 +171,7 @@ export const updateMyAccount = createServerFn({ method: "POST" })
     const idStatus = (proCheck as { identity_status?: string | null } | null)?.identity_status ?? null;
     const legalLocked = idStatus === "approved";
 
-    const profilePatch: Record<string, unknown> = {
-      full_name: data.full_name ?? null,
-    };
+    const profilePatch: Record<string, unknown> = { full_name: data.full_name ?? null,  };
     if (!legalLocked) {
       profilePatch.full_name = data.full_name;
     }
@@ -551,7 +548,7 @@ export const listMyActivity = createServerFn({ method: "GET" })
           id: `auth_${r.id}`,
           at: r.created_at,
           category: "auth",
-          title: AUTH_ACTION_LABELS[action] ?? (action.replace(/_/g, " ") || "Account event"),
+          title: AUTH_ACTION_LABELS[action] ?? (action.replace(/_/g, "") || "Account event"),
           detail: null,
           ip,
           location: null,
@@ -584,8 +581,8 @@ export const listMyActivity = createServerFn({ method: "GET" })
         else if (action === "topup") {
           const meta = (r.metadata ?? {}) as Record<string, unknown>;
           detail = meta.pack ? `Top-up · ${meta.pack} pack` : "Top-up purchase";
-        } else if (delta < 0) detail = `Used for ${action.replace(/_/g, " ")}`;
-        else detail = action.replace(/_/g, " ");
+        } else if (delta < 0) detail = `Used for ${action.replace(/_/g, "")}`;
+        else detail = action.replace(/_/g, "");
         title = `${title} · balance ${r.balance_after ?? "—"}`;
         events.push({
           id: `cred_${r.id}`,

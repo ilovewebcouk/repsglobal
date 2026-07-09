@@ -384,7 +384,7 @@ export function ComposeDialog({
                 {tiers.includes("prospects") ? (
                   <div className="mt-3 grid gap-3">
                     <div className="rounded-[10px] border border-amber-400/30 bg-amber-500/10 p-3 text-[12px] text-amber-100/90">
-                      <strong className="text-amber-200">Cold outreach.</strong>{" "}
+                      <strong className="text-amber-200">Cold outreach.</strong>{""}
                       Keep the message signup-focused, and don't hit the same
                       contact more than once a month. Unsubscribes are honoured
                       automatically.
@@ -397,7 +397,7 @@ export function ComposeDialog({
                         <div className="text-[12px] text-white/50">Loading tags…</div>
                       ) : (prospectTagsQuery.data?.tags?.length ?? 0) === 0 ? (
                         <div className="text-[12px] text-white/50">
-                          No prospects yet.{" "}
+                          No prospects yet.{""}
                           <a href="/admin/prospects" className="text-reps-orange hover:underline">
                             Import a CSV →
                           </a>
@@ -423,7 +423,7 @@ export function ComposeDialog({
                                     : "border-reps-border bg-white/[0.03] text-white/70 hover:text-white"
                                 }`}
                               >
-                                {t.list_tag}{" "}
+                                {t.list_tag}{""}
                                 <span className="text-white/40">· {t.count}</span>
                               </button>
                             );
@@ -551,7 +551,7 @@ export function ComposeDialog({
                       key={tag}
                       type="button"
                       onClick={() =>
-                        setBody((b) => (b.endsWith(" ") || b === "" ? b + tag : b + " " + tag))
+                        setBody((b) => (b.endsWith("") || b === "" ? b + tag : b + "" + tag))
                       }
                       className="rounded-[6px] border border-reps-border bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10.5px] text-white/75 hover:bg-white/[0.08] hover:text-white"
                     >
@@ -1169,7 +1169,7 @@ function pickArticleParagraphs(article: ResourceArticle, count: number): string[
 function truncate(s: string, max: number): string {
   if (s.length <= max) return s;
   const cut = s.slice(0, max);
-  const lastSpace = cut.lastIndexOf(" ");
+  const lastSpace = cut.lastIndexOf("");
   return (lastSpace > max - 60 ? cut.slice(0, lastSpace) : cut).replace(/[.,;:!?-]+$/, "") + "…";
 }
 

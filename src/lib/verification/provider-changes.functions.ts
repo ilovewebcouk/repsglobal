@@ -356,10 +356,7 @@ export const adminListProviderQueue = createServerFn({ method: "GET" })
 
     const pMap = new Map<string, { business: string | null; full: string | null }>();
     for (const p of ((profiles ?? []) as any[])) {
-      pMap.set(p.id, {
-        business: (p.full_name as string | null) ?? null,
-        full: (p.full_name as string | null) ?? null,
-      });
+      pMap.set(p.id, { business: (p.full_name as string | null) ?? null, full: (p.full_name as string | null) ?? null,  });
     }
     const slugMap = new Map<string, string | null>();
     for (const p of ((pros ?? []) as any[])) {

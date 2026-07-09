@@ -82,7 +82,7 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/s
     meta: [
       { title: "Settings — REPS Professional" },
       { name: "description", content: "Account, notifications, billing, security and privacy." },
-      { name: "robots", content: "noindex,nofollow" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
     links: [{ rel: "canonical", href: "/dashboard/settings" }],
   }),

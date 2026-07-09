@@ -359,9 +359,7 @@ async function runInsuranceAi(
     {
       type: "text",
       text: [
-        "You are extracting fields from a professional liability / public liability insurance certificate (UK fitness industry).",
-        "Return a single JSON object — no prose, no markdown — matching this exact shape:",
-        "{",
+        "You are extracting fields from a professional liability / public liability insurance certificate (UK fitness industry).", "Return a single JSON object — no prose, no markdown — matching this exact shape:", "{",
         '  "provider": string | null,           // insurer name, e.g. "Insure4Sport", "Hiscox"',
         '  "policy_number": string | null,      // policy reference printed on the certificate',
         '  "cover_amount_gbp": number | null,   // TOTAL cover in pounds (e.g. 5000000 for £5m). Pick the public liability limit if multiple are listed.',
@@ -369,9 +367,7 @@ async function runInsuranceAi(
         '  "expiry_date": string | null,        // YYYY-MM-DD, period of cover end / renewal date',
         '  "insured_name": string | null,       // name of the insured person/business as printed',
         '  "confidence": number                 // 0..1 overall confidence',
-        "}",
-        "Rules: if a field is not clearly visible, set it to null. Do not guess. Do not invent dates or amounts.",
-        "cover_amount_gbp is pounds, not millions: £1,000,000 → 1000000.",
+        "}", "Rules: if a field is not clearly visible, set it to null. Do not guess. Do not invent dates or amounts.", "cover_amount_gbp is pounds, not millions: £1,000,000 → 1000000.",
       ].join("\n"),
     },
   ];

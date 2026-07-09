@@ -825,7 +825,7 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
     qualifications_listed?: Array<{ title?: string | null; ofqual_ref_if_visible?: string | null }> | null;
   };
   const norm = (s: string | null | undefined) =>
-    (s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    (s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
 
   let awardingBodyMatch = false;
   if (snap?.awardingOrganisation && raw.awarding_body_detected) {

@@ -266,7 +266,7 @@ export const getActivityFeed = createServerFn({ method: "POST" })
         source: "auth",
         type: r.event,
         severity: sev,
-        summary: `${r.event.replaceAll("_", " ")} · ${userLabels.get(r.user_id ?? "") ?? "unknown"}`,
+        summary: `${r.event.replaceAll("_", "")} · ${userLabels.get(r.user_id ?? "") ?? "unknown"}`,
         user_id: r.user_id,
         user_label: userLabels.get(r.user_id ?? "") ?? null,
       });

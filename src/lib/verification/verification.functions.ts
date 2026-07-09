@@ -108,11 +108,7 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
     profByPro = Object.fromEntries(
       (pros ?? []).map((p) => [
         p.id,
-        {
-          full_name: profileMap.get(p.id)?.full_name ?? null,
-          trading_name: profileMap.get(p.id)?.full_name ?? null,
-          city: p.city,
-        },
+        { full_name: profileMap.get(p.id)?.full_name ?? null, trading_name: profileMap.get(p.id)?.full_name ?? null, city: p.city,  },
       ]),
     );
   }
@@ -254,7 +250,7 @@ export const reviewVerification = createServerFn({ method: "POST" })
               source_submission_id: sub.id,
               granted_by: "system",
             })) as never,
-            { onConflict: "professional_id,title_slug,source_submission_id" },
+            { onConflict: "professional_id, title_slug, source_submission_id" },
           );
 
         // If the pro doesn't have a primary title yet, set the highest-tier

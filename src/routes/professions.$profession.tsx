@@ -116,11 +116,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Strength Training",
       "Fat Loss",
       "Hypertrophy",
-      "Pre & Postnatal",
-      "Older Adults",
-      "Sports Performance",
-      "Online Coaching",
-      "1:1 In-Person",
+      "Pre & Postnatal", "Older Adults", "Sports Performance", "Online Coaching", "1:1 In-Person",
     ],
     avgRate: "£45 – £85 / hour",
     related: [
@@ -139,12 +135,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     specialisms: [
       "Mat Pilates",
       "Reformer Pilates",
-      "Pre & Postnatal",
-      "Rehabilitation",
-      "Posture & Mobility",
-      "Older Adults",
-      "Online Classes",
-      "Studio Sessions",
+      "Pre & Postnatal", "Rehabilitation", "Posture & Mobility", "Older Adults", "Online Classes", "Studio Sessions",
     ],
     avgRate: "£35 – £70 / hour",
     related: [
@@ -165,10 +156,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Muscle Gain",
       "Sports Nutrition",
       "Gut Health",
-      "Plant-Based",
-      "Female Hormones",
-      "Online Plans",
-      "Body Composition",
+      "Plant-Based", "Female Hormones", "Online Plans", "Body Composition",
     ],
     avgRate: "£60 – £120 / session",
     related: [
@@ -210,13 +198,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     qualifications: ["Level 3 PT (RQF)", "Online Coaching Certification", "Specialist Level 4"],
     specialisms: [
       "Online Programming",
-      "Weekly Check-ins",
-      "Video Form Reviews",
-      "Habit Coaching",
-      "Fat Loss",
-      "Muscle Gain",
-      "Strength Building",
-      "Nutrition Support",
+      "Weekly Check-ins", "Video Form Reviews", "Habit Coaching", "Fat Loss", "Muscle Gain", "Strength Building", "Nutrition Support",
     ],
     avgRate: "£99 – £249 / month",
     related: [
@@ -232,9 +214,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
     blurb:
       "REPS-verified yoga teachers for vinyasa, hatha, yin and pregnancy yoga — register-checked through Yoga Alliance Professionals or BWY, insured and ready to teach.",
     qualifications: [
-      "200hr / 500hr Yoga Alliance Professionals",
-      "British Wheel of Yoga (BWY) Level 4",
-      "First Aid (current)",
+      "200hr / 500hr Yoga Alliance Professionals", "British Wheel of Yoga (BWY) Level 4", "First Aid (current)",
     ],
     specialisms: [
       "Vinyasa Flow",
@@ -242,9 +222,7 @@ const PROFESSIONS: Record<string, ProfessionMeta> = {
       "Yin",
       "Pregnancy Yoga",
       "Beginners",
-      "Mobility & Recovery",
-      "1:1 Private",
-      "Online Classes",
+      "Mobility & Recovery", "1:1 Private", "Online Classes",
     ],
     avgRate: "£35 – £75 / class",
     related: [
@@ -262,12 +240,12 @@ function getProfession(slug: string): ProfessionMeta {
       title: slug
         .split("-")
         .map((s) => s[0]?.toUpperCase() + s.slice(1))
-        .join(" "),
+        .join(""),
       plural:
         slug
           .split("-")
           .map((s) => s[0]?.toUpperCase() + s.slice(1))
-          .join(" ") + "s",
+          .join("") + "s",
       blurb: "REPS-verified professionals in your city and online. Search, compare and book with confidence.",
       qualifications: ["Level 3 (RQF)", "Specialist Qualifications", "First Aid (current)"],
       specialisms: ["1:1 Coaching", "Online Sessions", "Group Classes", "Specialist Programmes"],
@@ -304,8 +282,7 @@ export const Route = createFileRoute("/professions/$profession")({
         {
           type: "application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
+            "@context": "https://schema.org", "@type": "FAQPage",
             mainEntity: FAQS.map((f) => ({
               "@type": "Question",
               name: f.q,
@@ -316,8 +293,7 @@ export const Route = createFileRoute("/professions/$profession")({
         {
           type: "application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
+            "@context": "https://schema.org", "@type": "CollectionPage",
             name: `${meta.plural} on REPS`,
             description: desc,
             url: `https://repsuk.org/professions/${meta.slug}`,
@@ -609,7 +585,7 @@ function ProfessionLanding() {
         ) : (
           <div className="mt-6 rounded-[18px] border border-reps-border bg-white px-6 py-10 text-center">
             <p className="text-[14px] text-reps-muted-light">
-              We're onboarding verified {meta.plural.toLowerCase()} now. Check back soon — or{" "}
+              We're onboarding verified {meta.plural.toLowerCase()} now. Check back soon — or{""}
               <Link to="/find-a-professional" search={{ profession: meta.slug }} className="font-semibold text-reps-orange hover:text-reps-orange-dark">
                 browse the full directory
               </Link>

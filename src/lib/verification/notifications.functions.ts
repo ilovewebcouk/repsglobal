@@ -82,7 +82,7 @@ export async function notifyVerificationEvent(params: InsertParams) {
         context: (params.context ?? {}) as never,
       } as never,
       {
-        onConflict: "professional_id,event,policy_id,threshold_days",
+        onConflict: "professional_id, event, policy_id, threshold_days",
         ignoreDuplicates: true,
       },
     );

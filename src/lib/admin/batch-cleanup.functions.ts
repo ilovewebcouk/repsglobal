@@ -86,12 +86,7 @@ export const previewExpiredBdCleanup = createServerFn({ method: "POST" })
         .select("bd_next_due_date")
         .eq("claimed_user_id", uid)
         .maybeSingle();
-      rows.push({
-        user_id: uid,
-        email: authUser?.user?.email ?? null,
-        full_name: (profile as any)?.full_name ?? (profile as any)?.full_name ?? null,
-        bd_next_due_date: (bd as any)?.bd_next_due_date ?? null,
-      });
+      rows.push({ user_id: uid, email: authUser?.user?.email ?? null, full_name: (profile as any)?.full_name ?? (profile as any)?.full_name ?? null, bd_next_due_date: (bd as any)?.bd_next_due_date ?? null,  });
     }
     return { count: rows.length, rows };
   });

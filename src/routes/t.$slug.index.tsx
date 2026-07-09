@@ -66,7 +66,7 @@ export const Route = createFileRoute("/t/$slug/")({
       return {
         meta: [
           { title: "Provider not found | REPS" },
-          { name: "robots", content: "noindex,nofollow" },
+          { name: "robots", content: "noindex, nofollow" },
         ],
         links: [{ rel: "canonical", href: canonical }],
       };
@@ -93,8 +93,7 @@ export const Route = createFileRoute("/t/$slug/")({
         {
           type: "application/ld+json",
           children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "EducationalOrganization",
+            "@context": "https://schema.org", "@type": "EducationalOrganization",
             name,
             url: canonical,
             address: sf.address?.trim() || sf.city?.trim() || undefined,
@@ -192,7 +191,7 @@ function ProviderProfilePage() {
       // logo; fall back to the legacy catalogue slug for historic rows.
       const snapshotOrg = snap?.awardingOrganisation ?? null;
       const legacySlug = legacy?.awarding_body_slug ?? null;
-      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
       let matchedSlug: string | null = legacySlug;
       if (snapshotOrg) {
         const q = norm(snapshotOrg);
@@ -481,7 +480,7 @@ function ProviderProfilePage() {
                   </p>
                 ) : (
                   <p className="mt-3 text-[14px] text-black/60">
-                    <span className="text-[24px] font-bold text-black">{verifiedProsLinked}</span>{" "}
+                    <span className="text-[24px] font-bold text-black">{verifiedProsLinked}</span>{""}
                     verified professionals trained
                   </p>
                 )}

@@ -239,9 +239,7 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
 
     // Build profile patch. Skip full_name when locked (DB trigger would
     // throw, but we'd rather not even attempt the update — gives a clean UX).
-    const profilePatch: Record<string, unknown> = {
-      full_name: cleaned.full_name ?? null,
-    };
+    const profilePatch: Record<string, unknown> = { full_name: cleaned.full_name ?? null,  };
     // Organisations' full_name is the canonical provider name — do not
     // overwrite from this generic form. Renames go through admin/provider flow.
     if (!isOrganisation) {

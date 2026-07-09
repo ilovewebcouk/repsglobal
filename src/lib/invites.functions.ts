@@ -30,13 +30,7 @@ export const createClientInvite = createServerFn({ method: "POST" })
 
     const { data: invite, error } = await supabase
       .from("client_invites")
-      .insert({
-        professional_id: userId,
-        email: data.email,
-        full_name: data.full_name ?? null,
-        token_hash: token,
-        status: "pending",
-      })
+      .insert({ professional_id: userId, email: data.email, full_name: data.full_name ?? null, token_hash: token, status: "pending",  })
       .select("id, token_hash, email, full_name, expires_at")
       .single();
 
@@ -82,13 +76,7 @@ export const lookupInvite = createServerFn({ method: "GET" })
     const expired = new Date(invite.expires_at).getTime() < Date.now();
 
     return {
-      invite: {
-        email: invite.email as string,
-        full_name: invite.full_name as string | null,
-        status: invite.status as string,
-        expired,
-        professional_name: profile?.full_name ?? "Your coach",
-      },
+      invite: { email: invite.email as string, full_name: invite.full_name as string | null, status: invite.status as string, expired, professional_name: profile?.full_name ?? "Your coach",  },
     };
   });
 

@@ -86,7 +86,7 @@ export function useAccountMenu(): AccountContext {
       if (!user) return null;
       const { data } = await supabase
         .from("subscriptions")
-        .select("tier,status")
+        .select("tier, status")
         .eq("user_id", user.id)
         .maybeSingle();
       return data ?? null;

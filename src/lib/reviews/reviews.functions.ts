@@ -872,8 +872,7 @@ export const draftReviewRemovalReason = createServerFn({ method: "POST" })
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Lovable-API-Key": key,
+            "Content-Type": "application/json", "Lovable-API-Key": key,
           },
           body: JSON.stringify({
             model: "google/gemini-3-flash-preview",

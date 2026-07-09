@@ -41,7 +41,7 @@ export const Route = createFileRoute("/admin_/prospects")({
   beforeLoad: requireRole(["admin"]),
   head: () => ({
     meta: [
-      { name: "robots", content: "noindex,nofollow" },
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Prospects — REPS Admin" },
       {
         name: "description",
@@ -196,7 +196,7 @@ function AdminProspects() {
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
     const lines = [
-      header.join(","),
+      header.join(", "),
       ...filtered.map((r) =>
         [
           r.email,
@@ -207,7 +207,7 @@ function AdminProspects() {
           r.imported_at,
         ]
           .map(escape)
-          .join(","),
+          .join(", "),
       ),
     ];
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
@@ -526,7 +526,7 @@ function ImportDialog({
         <DialogHeader>
           <DialogTitle className="text-white">Import prospects</DialogTitle>
           <DialogDescription className="text-[12.5px] text-white/55">
-            Paste emails, or upload a CSV with columns like{" "}
+            Paste emails, or upload a CSV with columns like{""}
             <code className="rounded bg-white/10 px-1 py-0.5 text-white/75">email,name</code>.
             Existing prospects, current members, and suppressed addresses are skipped automatically.
           </DialogDescription>
@@ -631,7 +631,7 @@ function ImportDialog({
 // Parse a CSV or plain email list into { email, fullName } rows.
 // Accepts:
 //   - one email per line
-//   - "email,name" per line
+//   - "email, name" per line
 //   - CSV with header row containing "email" and optionally "name"/"full_name"
 function parseCsv(text: string): Array<{ email: string; fullName: string | null }> {
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -658,13 +658,13 @@ function parseCsv(text: string): Array<{ email: string; fullName: string | null 
       email = cells[emailIdx]?.toLowerCase().trim();
       if (nameIdx >= 0) name = cells[nameIdx]?.trim();
     } else if (cells.length >= 2) {
-      // Try both orders: "email,name" or "name,email"
+      // Try both orders: "email, name" or "name, email"
       if (EMAIL_RE.test(cells[0])) {
         email = cells[0].toLowerCase().trim();
-        name = cells.slice(1).join(" ").trim();
+        name = cells.slice(1).join("").trim();
       } else if (EMAIL_RE.test(cells[cells.length - 1])) {
         email = cells[cells.length - 1].toLowerCase().trim();
-        name = cells.slice(0, -1).join(" ").trim();
+        name = cells.slice(0, -1).join("").trim();
       }
     } else {
       email = cells[0]?.toLowerCase().trim();
@@ -694,7 +694,7 @@ function splitLine(line: string): string[] {
       }
     } else {
       if (ch === '"') inQ = true;
-      else if (ch === "," || ch === ";" || ch === "\t") {
+      else if (ch === ", " || ch === ";" || ch === "\t") {
         out.push(cur);
         cur = "";
       } else cur += ch;

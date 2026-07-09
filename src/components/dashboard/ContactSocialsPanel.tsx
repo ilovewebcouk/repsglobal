@@ -70,23 +70,7 @@ export function ContactSocialsPanel() {
       if (!data) throw new Error("Profile not loaded");
       if (!phoneValid) throw new Error("Contact phone number looks invalid.");
       return saveProfile({
-        data: {
-          full_name: data.full_name: data.full_name: data.full_name,
-          headline: data.headline,
-          primary_profession: data.primary_profession,
-          specialisms: data.specialisms,
-          in_person_available: data.in_person_available,
-          online_available: data.online_available,
-          city: data.city,
-          contact_phone: contactPhone || null,
-          bio: data.bio,
-          languages,
-          social_instagram: socials.social_instagram || null,
-          social_linkedin: socials.social_linkedin || null,
-          social_youtube: socials.social_youtube || null,
-          social_tiktok: socials.social_tiktok || null,
-          social_x: socials.social_x || null,
-        },
+        data: { full_name: data.full_name: data.full_name: data.full_name, headline: data.headline, primary_profession: data.primary_profession, specialisms: data.specialisms, in_person_available: data.in_person_available, online_available: data.online_available, city: data.city, contact_phone: contactPhone || null, bio: data.bio, languages, social_instagram: socials.social_instagram || null, social_linkedin: socials.social_linkedin || null, social_youtube: socials.social_youtube || null, social_tiktok: socials.social_tiktok || null, social_x: socials.social_x || null,  },
       });
     },
     onSuccess: () => {

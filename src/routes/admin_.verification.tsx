@@ -72,7 +72,7 @@ import { AdminProviderQueueTab } from "@/components/admin/verification/AdminProv
 import { AdminProviderQualificationsTab } from "@/components/admin/verification/AdminProviderQualificationsTab";
 
 export const Route = createFileRoute("/admin_/verification")({
-  head: () => ({ meta: [{ name: "robots", content: "noindex,nofollow" }] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
   ssr: false,
   beforeLoad: requireRole(["admin"]),
   component: AdminVerificationPage,
@@ -1096,7 +1096,7 @@ function AdminVerificationPage() {
                     <DialogHeader>
                       <DialogTitle>Revoke approved qualification?</DialogTitle>
                       <DialogDescription className="text-white/65">
-                        This deletes any titles granted from &ldquo;{sub.qualification}&rdquo; for{" "}
+                        This deletes any titles granted from &ldquo;{sub.qualification}&rdquo; for{""}
                         {prof?.full_name || "this pro"}. Reason is recorded permanently and shown to the pro.
                       </DialogDescription>
                     </DialogHeader>
