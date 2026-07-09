@@ -1,96 +1,39 @@
-## What you're seeing
+## Two fixes
 
-You're right — the reason edits don't propagate is that **`profiles` has three overlapping name columns** and different surfaces read different ones:
+### 1. Impersonation for the Qualifications tab
+`src/lib/qualifications/qualifications.functions.ts` uses `requireSupabaseAuth`, which returns the admin's own `userId` even during an active impersonation session — so "Viewing as Test Profile" showed Scott's 3 approved rows instead of Test Profile's (zero).
 
-| Column | Currently used by | Value on your test row |
-|---|---|---|
-| `profiles.full_name` | Dashboard hero, support tickets, campaigns, individual-trainer flows | `"Diverse Trainers"` |
-| `profiles.business_name` | Sidebar chip, public `/t/<slug>`, provider profile page, admin impersonation, name-change queue | `"Test Profile"` |
-| `profiles.display_name` | Not read anywhere in `src/` (dead) | (null) |
+Swap the middleware to the existing impersonation-aware variant on the read + write server fns that scope by `provider_id = userId`:
 
-Plus `professionals.legal_entity_name` — separate concept, keep.
+- Change import: `requireSupabaseAuth` → `requireSupabaseAuthWithImpersonation` from `@/integrations/supabase/auth-middleware-impersonation`.
+- Apply to every `.middleware([requireSupabaseAuth])` in this file: `listMyRegulatedPermissions`, `listMyCpdCourses`, `submitRegulatedPermissionBatch`, `removeMyRegulatedPermission`, `submitCpdCourse`, `deleteMyCpdCourse`, `resolveOfqualNumber`, and the other current entries (lines 113, 178, 250, 325, 340, 420, 463, 478, 503, and any remaining ones the audit finds).
 
-So "business_name is not being used" is half-true: the *dashboard* and a handful of admin surfaces still read `full_name` for providers instead of `business_name`. Fix = collapse to one column, delete the rest.
+Result: while admin impersonates Test Profile, the Qualifications & Courses page reads and writes against Test Profile's rows, matching every other impersonated dashboard surface.
 
-## Decision to confirm
+### 2. "Approved centre" pill — driven by real data
 
-**Keep `full_name` as the single name column for every account (individual and provider). Drop `business_name` and `display_name`.**
+Currently the pill on `/t/$slug` is a hardcoded label printed on every provider profile (`src/routes/t.$slug.index.tsx:538` and `:576`). It has no relation to what the provider uploaded.
 
-Why `full_name` (not `business_name`):
-- Already used by every individual-trainer flow — no rename there.
-- Mirrors `auth.users.raw_user_meta_data.full_name`.
-- One column ⇒ dashboard/public/sidebar/admin can never disagree again.
+The real signal we have is per-qualification: `provider_regulated_permissions.status = 'approved'` (admin-approved evidence — EQA report, centre certificate, or awarding-body letter — uploaded via `/dashboard/qualifications`). If a provider has ≥1 approved permission for a given awarding body, they are, by definition, an approved centre for that body.
 
-For providers, "full_name" simply stores the trading name (e.g. "Test Profile"). The name-change approval flow writes to that one column.
+Changes in `src/routes/t.$slug.index.tsx`:
 
-## Plan
+- **Section-header pill (line 538–541, "Approved centre"):** only render when `accreditationsByBody.length > 0`. Otherwise omit it — the empty state already explains "Once REPS has verified this provider's approved-centre status…".
+- **Per-body pill (line 574–577, "Approved centre · Ofqual-regulated"):** keep as-is — it already only renders when the body has ≥1 approved qualification row, so it's already truthful. No change needed beyond confirming.
 
-### 1. Data + schema migration (one migration)
+No schema changes. No changes to admin verification flow (admins still approve each qualification's evidence — that IS the approved-centre verification).
 
-```sql
--- Move approved provider names into full_name where they diverge.
-UPDATE public.profiles p
-SET full_name = p.business_name, updated_at = now()
-FROM public.professionals pr
-WHERE pr.id = p.id
-  AND pr.account_type = 'organisation'
-  AND p.business_name IS NOT NULL
-  AND p.business_name <> ''
-  AND (p.full_name IS DISTINCT FROM p.business_name);
+### Out of scope
+- Redesigning the badge, changing copy, or adding a new "centre-level" verification concept.
+- Touching the dashboard's `Approved` per-row badge (already correct — reflects `status`).
+- Any change to `provider_regulated_permissions` schema or admin review UI.
 
--- Drop the now-redundant columns.
-ALTER TABLE public.profiles DROP COLUMN business_name;
-ALTER TABLE public.profiles DROP COLUMN display_name;
-```
+### Verification
+1. As admin, impersonate Test Profile → `/dashboard/qualifications` should show **zero** rows (Test Profile has none in DB), not Scott's 3.
+2. Exit impersonation → Scott's dashboard shows his 3 approved quals again.
+3. Public `/t/test-profile` Accreditations block: no "Approved centre" pill in the section header (empty state only).
+4. Public `/t/<slug-of-a-provider-with-approved-quals>`: pill visible in header, and each awarding body shows its per-body "Approved centre · Ofqual-regulated" line.
 
-(RLS/GRANTs untouched — column drops don't affect them.)
-
-### 2. Code — collapse every `business_name` reference to `full_name`
-
-All ~15 call sites, batched in one turn:
-
-- `src/lib/dashboard/dashboard.functions.ts` — remove `business_name` from select; `identity.full_name` becomes the sole name; the `profileComplete` check switches to `full_name`.
-- `src/lib/verification/provider-name.functions.ts` — read + write `full_name` (both `submitProviderNameChange` first-time-set branch and `reviewProviderNameRequest` approval branch); `getMyProviderNameStatus.approved_name` reads `full_name`.
-- `src/lib/profile/provider-profile.functions.ts` — drop the `business_name ?? full_name` fallback, just read `full_name`.
-- `src/lib/website/website.functions.ts` — 2 select lists + 2 fallbacks.
-- `src/lib/admin/impersonation.functions.ts` — 1 select + 1 fallback.
-- `src/hooks/use-account-menu.ts` — drop `business_name` from select + fallback chain.
-- `src/lib/support/tickets.functions.ts:783` — flip to `full_name` only.
-- `src/lib/campaigns/scheduled-runner.server.ts:182`, `outbound-extras.functions.ts:85` — same.
-- `src/components/dashboard/organisation/DashboardHome.tsx:94` + `src/routes/_authenticated/_professional/dashboard.tsx:105` — read `identity.full_name` only.
-- Any admin views listing `business_name` in a column selector (name-request queue) — swap to `full_name`.
-
-Regenerated `src/integrations/supabase/types.ts` (auto after migration) will lose `business_name` / `display_name`, so any missed reference will fail typecheck — that's the safety net.
-
-### 3. QA — the broader "unused column" audit
-
-Same-turn deliverable: a written audit at `docs/schema-audit-providers-2026-07-09.md` listing every column on `profiles` (74 cols currently) and `professionals`, marked:
-
-- ✅ Read AND written by app code
-- ⚠️ Written but never read (candidate for removal)
-- ❌ Neither read nor written (dead)
-- 🗂️ Read by BD-migration/legacy code only (mark for future removal, not now)
-
-I run this by grepping `src/` for each column name, cross-referencing SELECT lists and mutation payloads. No columns are dropped from this audit in this turn — you approve the ❌/⚠️ list first, then a follow-up migration clears them.
-
-Columns I already suspect are stale (to confirm in the audit):
-- `profiles.avatar_is_ai_generated`, `profiles.avatar_qa_status`, `profiles.avatar_qa_source` — worth checking if still wired.
-- `professionals.bd_seed_thin`, `professionals.quality_score`, `professionals.reps_member_id` — BD-migration era, banned from copy but may still be written.
-- `professionals.identity_verified_name` / `identity_verified_dob` vs `identity_documents.*` — possible duplication.
-- `professionals.legal_entity_name` vs the new single `full_name` — decide whether provider legal name lives in one place.
-
-### 4. Verification after code + migration land
-
-1. `SELECT full_name, business_name FROM profiles LIMIT 1` errors with "column business_name does not exist" — proof no code still references it.
-2. Dashboard, sidebar, `/t/test-profile`, admin impersonation, admin name-request queue — all show `full_name` and match.
-3. Rename via Profile page → pending banner shows; after admin approve, everywhere updates in one refresh.
-
-## Out of scope this turn
-
-- Actually dropping the ⚠️/❌ columns surfaced by step 3 — done in a follow-up after you sign off on the audit list.
-- Any UI/copy change beyond swapping the column name.
-- `professionals.legal_entity_name` (kept — different concept: registered company name).
-
-## Files touched
-
-Migration + ~10 `.ts`/`.tsx` files listed under step 2 + one new audit doc `docs/schema-audit-providers-2026-07-09.md`.
+### Files touched
+- `src/lib/qualifications/qualifications.functions.ts` (middleware swap only)
+- `src/routes/t.$slug.index.tsx` (conditional render on the section-header pill)
