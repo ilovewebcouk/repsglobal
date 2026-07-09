@@ -32,39 +32,8 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Field whitelist                                                     */
+/* URL helper                                                          */
 /* ------------------------------------------------------------------ */
-
-/** Fields admins may edit inline via `updateProviderField`. Every other
- *  column on `professionals` is read-only from this surface. Provider
- *  display name (business_name) has its OWN action — `renameProvider` —
- *  and is not in this whitelist. */
-const EDITABLE_FIELDS = [
-  "headline",
-  "bio",
-  "value_prop",
-  "contact_email",
-  "contact_phone",
-  "website",
-  "website_url",
-  "city",
-  "address",
-  "country",
-  "year_established",
-  "staff_count",
-  "company_number",
-  "cover_url",
-  "social_instagram",
-  "social_linkedin",
-  "social_youtube",
-  "social_tiktok",
-  "social_x",
-  "awarding_bodies",
-] as const;
-
-export type EditableProviderField = (typeof EDITABLE_FIELDS)[number];
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normaliseUrl(raw: string): string {
   const trimmed = raw.trim();
@@ -78,82 +47,9 @@ function normaliseUrl(raw: string): string {
   if (u.protocol !== "http:" && u.protocol !== "https:") {
     throw new Error("Only http/https URLs are allowed");
   }
-  // Normalise trailing slash on root paths only.
   let out = u.toString();
   if (u.pathname === "/" && out.endsWith("/")) out = out.slice(0, -1);
   return out;
-}
-
-function validateAndCoerce(field: EditableProviderField, value: unknown): any {
-  // null/empty → null (clears the field).
-  if (value === null || value === undefined || value === "") return null;
-
-  switch (field) {
-    case "contact_email": {
-      const v = String(value).trim().toLowerCase();
-      if (!EMAIL_RE.test(v)) throw new Error("Invalid email address");
-      if (v.length > 255) throw new Error("Email too long");
-      return v;
-    }
-    case "website":
-    case "website_url":
-    case "cover_url":
-    case "social_instagram":
-    case "social_linkedin":
-    case "social_youtube":
-    case "social_tiktok":
-    case "social_x":
-      return normaliseUrl(String(value));
-    case "year_established": {
-      const n = Number(value);
-      const currentYear = new Date().getUTCFullYear();
-      if (!Number.isInteger(n) || n < 1800 || n > currentYear) {
-        throw new Error(`Year must be an integer between 1800 and ${currentYear}`);
-      }
-      return n;
-    }
-    case "staff_count": {
-      const n = Number(value);
-      if (!Number.isInteger(n) || n < 0) throw new Error("Staff count must be ≥ 0");
-      return n;
-    }
-    case "awarding_bodies": {
-      if (!Array.isArray(value)) throw new Error("awarding_bodies must be an array");
-      const arr = value
-        .map((s) => String(s ?? "").trim())
-        .filter((s) => s.length > 0);
-      // Dedupe (case-insensitive).
-      const seen = new Set<string>();
-      const out: string[] = [];
-      for (const s of arr) {
-        const k = s.toLowerCase();
-        if (!seen.has(k)) {
-          seen.add(k);
-          out.push(s);
-        }
-      }
-      return out;
-    }
-    case "contact_phone": {
-      const v = String(value).trim();
-      if (!v) return null;
-      // Light normalise only — DB check constraint enforces E.164 shape.
-      return v;
-    }
-    case "bio":
-    case "headline":
-    case "value_prop":
-    case "city":
-    case "address":
-    case "country":
-    case "company_number": {
-      const v = String(value).trim();
-      if (v.length > 4000) throw new Error("Value too long");
-      return v || null;
-    }
-    default:
-      throw new Error(`Field not editable: ${String(field)}`);
-  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -201,13 +97,6 @@ export type ProviderListRow = {
   created_at: string | null;
 };
 
-export type ProviderSnapshot = {
-  id: string;
-  email: string | null;
-  business_name: string | null;
-  avatar_url: string | null;
-  professional: Record<string, any>;
-};
 
 /* ------------------------------------------------------------------ */
 /* listProviders                                                       */
@@ -289,94 +178,248 @@ export const listProviders = createServerFn({ method: "GET" })
   });
 
 /* ------------------------------------------------------------------ */
-/* getProvider                                                         */
+/* Shared input                                                        */
 /* ------------------------------------------------------------------ */
 
 const UserIdInput = z.object({ user_id: z.string().uuid() });
 
-export const getProvider = createServerFn({ method: "GET" })
+/* ------------------------------------------------------------------ */
+/* readProviderProfileForAdmin — mirrors dashboard read shape          */
+/* ------------------------------------------------------------------ */
+
+export const readProviderProfileForAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => UserIdInput.parse(d))
-  .handler(async ({ data, context }): Promise<ProviderSnapshot | null> => {
+  .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
-    const { data: pro } = await sa
-      .from("professionals")
-      .select("*")
-      .eq("id", data.user_id)
-      .maybeSingle();
-
-    if (!pro || pro.account_type !== "organisation") return null;
-
-    const [{ data: profile }, { data: authUser }] = await Promise.all([
-      sa.from("profiles").select("business_name, avatar_url").eq("id", data.user_id).maybeSingle(),
-      supabaseAdmin.auth.admin.getUserById(data.user_id),
+    const [{ data: pro }, { data: site }, { data: profile }, { data: dom }] = await Promise.all([
+      sa
+        .from("professionals")
+        .select(
+          "slug, website_url, contact_email, contact_phone, address, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, account_type",
+        )
+        .eq("id", data.user_id)
+        .maybeSingle(),
+      sa
+        .from("websites")
+        .select("tagline, about")
+        .eq("professional_id", data.user_id)
+        .maybeSingle(),
+      sa.from("profiles").select("business_name").eq("id", data.user_id).maybeSingle(),
+      sa
+        .from("provider_domain_verifications")
+        .select("status")
+        .eq("professional_id", data.user_id)
+        .maybeSingle(),
     ]);
 
-    // Strip legal_entity_name defensively so the UI never even sees it.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { legal_entity_name: _drop, ...safePro } = pro as any;
+    if (!pro || pro.account_type !== "organisation") {
+      throw new Error("Not a training provider");
+    }
 
     return {
-      id: data.user_id,
-      email: authUser?.user?.email ?? null,
-      business_name: profile?.business_name ?? null,
-      avatar_url: profile?.avatar_url ?? null,
-      professional: safePro,
+      slug: (pro.slug as string | null) ?? null,
+      approved_name: (profile?.business_name as string | null) ?? null,
+      tagline: (site?.tagline as string | null) ?? null,
+      about: (site?.about as string | null) ?? null,
+      website_url: (pro.website_url as string | null) ?? null,
+      contact_email: (pro.contact_email as string | null) ?? null,
+      contact_phone: (pro.contact_phone as string | null) ?? null,
+      address: (pro.address as string | null) ?? null,
+      social_instagram: (pro.social_instagram as string | null) ?? null,
+      social_linkedin: (pro.social_linkedin as string | null) ?? null,
+      social_youtube: (pro.social_youtube as string | null) ?? null,
+      social_tiktok: (pro.social_tiktok as string | null) ?? null,
+      social_x: (pro.social_x as string | null) ?? null,
+      domain_status: (dom?.status as string | null) ?? null,
     };
   });
 
 /* ------------------------------------------------------------------ */
-/* updateProviderField                                                 */
+/* adminUpdateProviderProfileMirror                                    */
+/*                                                                     */
+/* Mirrors the provider self-service `updateMyProviderProfile` write   */
+/* path so admin edits write to the SAME columns the training-provider */
+/* dashboard reads. Bypasses `provider_change_requests` — admin acts   */
+/* directly, and every change is audited.                              */
+/*                                                                     */
+/*   tagline / about       → public.websites                           */
+/*   website_url / contact_email / contact_phone / address / social_*  */
+/*                          → public.professionals                     */
+/*                                                                     */
+/* Provider name is NOT part of this payload — always goes through     */
+/* `renameProvider`.                                                   */
 /* ------------------------------------------------------------------ */
 
-const UpdateFieldInput = z.object({
+const PHONE_RE = /^\+[1-9]\d{6,14}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const nullableStr = (max: number) =>
+  z
+    .union([z.string().trim().max(max), z.literal(""), z.null()])
+    .optional()
+    .transform((v) => (v == null || v === "" ? null : v));
+
+const MirrorInput = z.object({
   user_id: z.string().uuid(),
-  field: z.enum(EDITABLE_FIELDS as unknown as [string, ...string[]]),
-  value: z.unknown(),
+  patch: z.object({
+    tagline: nullableStr(160),
+    about: nullableStr(800),
+    website_url: nullableStr(500),
+    contact_email: nullableStr(254),
+    contact_phone: nullableStr(32),
+    address: nullableStr(500),
+    social_instagram: nullableStr(120),
+    social_linkedin: nullableStr(120),
+    social_youtube: nullableStr(120),
+    social_tiktok: nullableStr(120),
+    social_x: nullableStr(120),
+  }),
+  override_domain_lock: z.boolean().optional().default(false),
+  override_email_lock: z.boolean().optional().default(false),
   reason: z.string().trim().max(500).optional().nullable(),
 });
 
-export const updateProviderField = createServerFn({ method: "POST" })
+export type AdminProviderMirrorPatch = z.infer<typeof MirrorInput>["patch"];
+
+export const adminUpdateProviderProfileMirror = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => UpdateFieldInput.parse(d))
+  .inputValidator((d: unknown) => MirrorInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const field = data.field as EditableProviderField;
-    const coerced = validateAndCoerce(field, data.value);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
+    const p = data.patch;
+
+    // Post-parse field validation (shape only — trimmed / empty→null above).
+    if (p.contact_email && !EMAIL_RE.test(p.contact_email)) {
+      throw new Error("Invalid contact email address.");
+    }
+    if (p.contact_phone && !PHONE_RE.test(p.contact_phone)) {
+      throw new Error("Enter a valid international phone number (e.g. +447123456789).");
+    }
+    if (p.website_url && !/^https?:\/\/.+/i.test(p.website_url)) {
+      throw new Error("Website URL must start with http:// or https://");
+    }
+
+    // Confirm this user IS an organisation and fetch current state.
     const { data: pro } = await sa
       .from("professionals")
-      .select(`id, account_type, ${field}`)
+      .select(
+        "id, account_type, website_url, contact_email, contact_phone, address, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x",
+      )
       .eq("id", data.user_id)
       .maybeSingle();
     if (!pro) throw new Error("Provider not found");
     if (pro.account_type !== "organisation") throw new Error("Not a training provider");
 
-    const beforeValue = (pro as any)[field] ?? null;
+    const { data: site } = await sa
+      .from("websites")
+      .select("professional_id, tagline, about")
+      .eq("professional_id", data.user_id)
+      .maybeSingle();
 
-    const { error: uErr } = await sa
-      .from("professionals")
-      .update({ [field]: coerced })
-      .eq("id", data.user_id);
-    if (uErr) throw new Error(uErr.message);
+    // Check domain-verification locks. Website/email are locked once domain
+    // is approved; admins can override with an explicit flag.
+    const { data: dom } = await sa
+      .from("provider_domain_verifications")
+      .select("status, email")
+      .eq("professional_id", data.user_id)
+      .maybeSingle();
+    const domainLocked = dom?.status === "approved";
+    if (domainLocked && p.website_url !== undefined && p.website_url !== pro.website_url) {
+      if (!data.override_domain_lock) {
+        throw new Error("Website is domain-locked. Enable 'Override domain lock' to change it.");
+      }
+    }
+    if (domainLocked && p.contact_email !== undefined && p.contact_email !== pro.contact_email) {
+      if (!data.override_email_lock) {
+        throw new Error("Contact email is domain-locked. Enable 'Override email lock' to change it.");
+      }
+    }
+
+    // Split payload: websites vs professionals.
+    const beforeSite = { tagline: site?.tagline ?? null, about: site?.about ?? null };
+    const afterSite = {
+      tagline: p.tagline !== undefined ? p.tagline : beforeSite.tagline,
+      about: p.about !== undefined ? p.about : beforeSite.about,
+    };
+    const siteDirty =
+      (p.tagline !== undefined && p.tagline !== beforeSite.tagline) ||
+      (p.about !== undefined && p.about !== beforeSite.about);
+
+    const proCols = [
+      "website_url",
+      "contact_email",
+      "contact_phone",
+      "address",
+      "social_instagram",
+      "social_linkedin",
+      "social_youtube",
+      "social_tiktok",
+      "social_x",
+    ] as const;
+    const beforePro: Record<string, string | null> = {};
+    const afterPro: Record<string, string | null> = {};
+    const proPatch: Record<string, string | null> = {};
+    for (const k of proCols) {
+      beforePro[k] = (pro as any)[k] ?? null;
+      const incoming = (p as any)[k];
+      if (incoming !== undefined && incoming !== beforePro[k]) {
+        proPatch[k] = incoming;
+        afterPro[k] = incoming;
+      } else {
+        afterPro[k] = beforePro[k];
+      }
+    }
+    const proDirty = Object.keys(proPatch).length > 0;
+
+    if (!siteDirty && !proDirty) {
+      return { ok: true, changed: 0 };
+    }
+
+    if (siteDirty) {
+      const { error: sErr } = await sa
+        .from("websites")
+        .upsert(
+          { professional_id: data.user_id, ...afterSite } as never,
+          { onConflict: "professional_id" },
+        );
+      if (sErr) throw new Error(sErr.message);
+    }
+    if (proDirty) {
+      const { error: uErr } = await sa
+        .from("professionals")
+        .update(proPatch as never)
+        .eq("id", data.user_id);
+      if (uErr) throw new Error(uErr.message);
+    }
 
     await sa.rpc("log_admin_action", {
       _actor_id: context.userId,
-      _action: "provider.field_update",
+      _action: "provider.profile_update",
       _target_table: "professionals",
       _target_id: data.user_id,
-      _before_state: { [field]: beforeValue },
-      _after_state: { [field]: coerced },
-      _reason: data.reason ?? null,
+      _before_state: { ...beforePro, ...beforeSite },
+      _after_state: { ...afterPro, ...afterSite },
+      _reason:
+        (data.reason ?? null) ||
+        (data.override_domain_lock || data.override_email_lock
+          ? `override_locks:${[
+              data.override_domain_lock ? "domain" : null,
+              data.override_email_lock ? "email" : null,
+            ]
+              .filter(Boolean)
+              .join(",")}`
+          : null),
     });
 
-    return { ok: true, field, value: coerced };
+    const changed = (siteDirty ? 1 : 0) + Object.keys(proPatch).length;
+    return { ok: true, changed };
   });
 
 /* ------------------------------------------------------------------ */
@@ -719,90 +762,5 @@ export const closeProvider = createServerFn({ method: "POST" })
     return result;
   });
 
-/* ------------------------------------------------------------------ */
-/* Read-only helpers for tabs                                          */
-/* ------------------------------------------------------------------ */
 
-export const getProviderActivity = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => UserIdInput.parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const sa = supabaseAdmin as any;
-    const { data: rows } = await sa
-      .from("admin_audit_log")
-      .select("id, actor_id, action, before_state, after_state, reason, created_at")
-      .eq("target_table", "professionals")
-      .eq("target_id", data.user_id)
-      .order("created_at", { ascending: false })
-      .limit(200);
-    return { rows: (rows ?? []) as any[] };
-  });
 
-export const getProviderRegulatedPermissions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => UserIdInput.parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const sa = supabaseAdmin as any;
-    const { data: rows } = await sa
-      .from("provider_regulated_permissions")
-      .select(
-        "id, status, evidence_type, ofqual_number, ofqual_found, admin_note, reviewed_by, reviewed_at, created_at, updated_at",
-      )
-      .eq("provider_id", data.user_id)
-      .order("created_at", { ascending: false });
-    return { rows: (rows ?? []) as any[] };
-  });
-
-export const getProviderNameHistory = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => UserIdInput.parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const sa = supabaseAdmin as any;
-    const [{ data: reqs }, { data: audits }, { data: domains }] = await Promise.all([
-      sa
-        .from("provider_name_requests")
-        .select("id, requested_name, status, admin_note, reviewed_by, reviewed_at, created_at")
-        .eq("user_id", data.user_id)
-        .order("created_at", { ascending: false }),
-      sa
-        .from("admin_audit_log")
-        .select("id, actor_id, action, before_state, after_state, reason, created_at")
-        .eq("target_table", "professionals")
-        .eq("target_id", data.user_id)
-        .eq("action", "provider.rename")
-        .order("created_at", { ascending: false }),
-      sa
-        .from("provider_domain_verifications")
-        .select("*")
-        .eq("provider_id", data.user_id)
-        .order("created_at", { ascending: false }),
-    ]);
-    return {
-      name_requests: (reqs ?? []) as any[],
-      rename_audits: (audits ?? []) as any[],
-      domains: (domains ?? []) as any[],
-    };
-  });
-
-export const getProviderBilling = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => UserIdInput.parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const sa = supabaseAdmin as any;
-    const { data: subs } = await sa
-      .from("subscriptions")
-      .select(
-        "id, tier, status, environment, cancel_at_period_end, current_period_end, canceled_at, stripe_customer_id, stripe_subscription_id, created_at",
-      )
-      .eq("user_id", data.user_id)
-      .order("created_at", { ascending: false });
-    return { subscriptions: (subs ?? []) as any[] };
-  });

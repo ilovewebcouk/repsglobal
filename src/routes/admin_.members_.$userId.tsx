@@ -56,7 +56,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
-import { ProviderMemberView } from "@/components/admin/providers/ProviderMemberView";
+import { ProviderProfileMirror } from "@/components/admin/providers/ProviderProfileMirror";
+import { suspendProvider, republishProvider } from "@/lib/admin/providers.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/admin_/members_/$userId")({
   ssr: false,
@@ -131,9 +141,6 @@ function MemberPage() {
 
   return (
     <DashboardShell role="admin" active="Members" title={isProvider ? "Provider 360" : "Member 360"} subtitle="One workbench for every member action.">
-      {isProvider ? (
-        <ProviderMemberView userId={userId} />
-      ) : (
       <div className="flex flex-col gap-6 p-6">
         <StickyHeader userId={userId} snapshot={snap.data} loading={snap.isLoading} />
 
@@ -175,10 +182,14 @@ function MemberPage() {
           </TabsContent>
 
           <TabsContent value="profile">
-            <SoonEmpty
-              title="Inline profile editing"
-              description="Edit name, slug, bio, services and avatar in place — without leaving the workbench."
-            />
+            {isProvider && snap.data ? (
+              <ProviderProfileMirror userId={userId} snapshot={snap.data} />
+            ) : (
+              <SoonEmpty
+                title="Inline profile editing"
+                description="Edit name, slug, bio, services and avatar in place — without leaving the workbench."
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="reviews">
@@ -205,7 +216,6 @@ function MemberPage() {
           </TabsContent>
         </Tabs>
       </div>
-      )}
     </DashboardShell>
   );
 }
@@ -249,34 +259,41 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
     );
   }
 
-  const { full_name, email, slug, verification, subscription, avatar_url, profession } = snapshot;
+  const { full_name, email, slug, verification, subscription, avatar_url, profession, account_type, business_name } = snapshot;
   const sub = subscription;
   const tierLbl = sub.tier_label;
   const status = sub.status;
-  const publicHref = slug ? `/c/${slug}` : null;
-  // "Send email" routes through /admin/campaigns so outbound is tracked
-  // end-to-end (drafts, schedule, delivery). Never use `mailto:` — that
-  // bypasses Mailgun, tracking, tone-locked templates, and audit trail.
-
-  
+  const isProvider = account_type === "organisation";
+  const displayName = isProvider ? (business_name ?? "Unnamed provider") : (full_name ?? "Unnamed member");
+  const publicHref = slug ? (isProvider ? `/t/${slug}` : `/c/${slug}`) : null;
+  const isSuspended = isProvider && (snapshot.professional_suspended_at ?? null) != null;
 
   return (
     <div className="sticky top-0 z-20 -mx-6 border-b border-reps-border bg-reps-ink/85 px-6 py-4 backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]">
       <div className="flex flex-wrap items-center gap-4">
         <Avatar className="size-14 ring-1 ring-reps-border">
-          {avatar_url && <AvatarImage src={avatar_url} alt={full_name ?? "Member avatar"} />}
+          {avatar_url && <AvatarImage src={avatar_url} alt={displayName} />}
           <AvatarFallback className="bg-reps-orange/15 text-base font-semibold text-reps-orange">
-            {initialsOf(full_name, email)}
+            {initialsOf(displayName, email)}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-            <h2 className="truncate text-lg font-semibold text-white">{full_name ?? "Unnamed member"}</h2>
-            {profession && <span className="truncate text-sm text-white/55">{profession}</span>}
+            <h2 className="truncate text-lg font-semibold text-white">{displayName}</h2>
+            {isProvider ? (
+              <span className="truncate font-mono text-[12px] text-white/45">/t/{slug ?? "—"}</span>
+            ) : (
+              profession && <span className="truncate text-sm text-white/55">{profession}</span>
+            )}
           </div>
           <div className="truncate text-[13px] text-white/45">{email ?? "no email on file"}</div>
           <div className="flex flex-wrap items-center gap-1.5">
+            {isProvider && (
+              <span className="inline-flex items-center rounded-full border border-sky-400/30 bg-sky-500/15 px-2 py-0.5 text-[11px] font-semibold text-sky-300">
+                Training provider
+              </span>
+            )}
             {tierLbl && (
               <span className="inline-flex items-center rounded-full border border-reps-orange-border bg-reps-orange/10 px-2 py-0.5 text-[11px] font-semibold text-reps-orange">
                 {tierLbl}
@@ -296,6 +313,11 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
                 Unverified
               </span>
             )}
+            {isSuspended && (
+              <span className="inline-flex items-center rounded-full border border-red-400/30 bg-red-500/15 px-2 py-0.5 text-[11px] font-semibold text-red-300">
+                Suspended
+              </span>
+            )}
           </div>
         </div>
 
@@ -304,7 +326,7 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
           {publicHref && (
             <Button asChild size="sm" className="h-9 rounded-[10px] bg-reps-orange text-white hover:bg-reps-orange-hover">
               <a href={publicHref} target="_blank" rel="noreferrer">
-                <ExternalLink data-icon="inline-start" /> View public profile
+                <ExternalLink data-icon="inline-start" /> View public {isProvider ? "page" : "profile"}
               </a>
             </Button>
           )}
@@ -317,7 +339,7 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
             >
               <Link
                 to="/admin/campaigns"
-                search={{ compose: "1", to: email, name: full_name ?? undefined, inbox: "pros" }}
+                search={{ compose: "1", to: email, name: displayName, inbox: "pros" }}
               >
                 <Mail data-icon="inline-start" /> Send email
               </Link>
@@ -332,11 +354,107 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
           >
             <Eye data-icon="inline-start" /> {viewAsBusy ? "Opening…" : "View as"}
           </Button>
-          {/* Overflow menu retired in Phase 6 — destructive actions consolidated into the Delete account dialog. */}
-
+          {isProvider && (
+            <ProviderVisibilityAction userId={userId} suspended={isSuspended} />
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+/* ───────────────────────── Provider visibility action ───────────────────────── */
+
+function ProviderVisibilityAction({ userId, suspended }: { userId: string; suspended: boolean }) {
+  const qc = useQueryClient();
+  const suspendFn = useServerFn(suspendProvider);
+  const republishFn = useServerFn(republishProvider);
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submitSuspend() {
+    if (busy || !reason.trim()) return;
+    setBusy(true);
+    try {
+      await suspendFn({ data: { user_id: userId, reason: reason.trim() } });
+      toast.success("Provider suspended");
+      await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+      setOpen(false);
+      setReason("");
+    } catch (e) {
+      toast.error((e as Error).message ?? "Suspend failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitRepublish() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await republishFn({ data: { user_id: userId, reason: null } });
+      toast.success("Provider republished");
+      await qc.invalidateQueries({ queryKey: ["admin-member-360", userId] });
+    } catch (e) {
+      toast.error((e as Error).message ?? "Republish failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (suspended) {
+    return (
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={submitRepublish}
+        disabled={busy}
+        className="h-9 rounded-[10px] border-emerald-400/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 hover:text-emerald-100"
+      >
+        <Eye data-icon="inline-start" /> {busy ? "Republishing…" : "Republish"}
+      </Button>
+    );
+  }
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="h-9 rounded-[10px] border-red-400/40 bg-red-500/10 text-red-200 hover:bg-red-500/20 hover:text-red-100"
+      >
+        <EyeOff data-icon="inline-start" /> Suspend
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="border-reps-border bg-reps-ink text-white">
+          <DialogHeader>
+            <DialogTitle>Suspend provider</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Hides the public /t/&lt;slug&gt; page. Reversible via Republish. Does not
+              cancel billing or delete the account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-1.5">
+            <Label>Reason (required)</Label>
+            <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+              Cancel
+            </Button>
+            <Button
+              onClick={submitSuspend}
+              disabled={busy || !reason.trim()}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              {busy ? "Suspending…" : "Suspend"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
