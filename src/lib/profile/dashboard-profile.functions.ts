@@ -15,18 +15,15 @@ import { MAX_LANGUAGES } from "@/lib/languages";
 /* -------------------------------------------------------------------------- */
 
 export type DashboardProfile = {
-  // identity (profiles) — THREE-NAMES MODEL
-  /** Legal name — must match ID + certs. Locked after identity approval. */
-  full_name: string;
-  /** Public-facing name (directory, website). Defaults to full_name. */
-  full_name: string | null;
-  /** Trading / business name (invoices, website header). Optional. */
+  // identity (profiles)
+  /** Public / trading name. Locked after identity approval. */
   full_name: string | null;
   avatar_url: string | null;
   /** Mirror of professionals.identity_status — drives the legal-name lock. */
   identity_status: "none" | "pending" | "approved" | "rejected" | "needs_more_info" | "expired";
   /** True when legal name is immutable from the dashboard. */
   legal_name_locked: boolean;
+
   // professional fields
   slug: string | null;
   headline: string | null; // "Tagline" in UI
