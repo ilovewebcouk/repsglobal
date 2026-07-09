@@ -66,7 +66,7 @@ import {
   resolveOfqualNumber,
   submitRegulatedPermissionBatch,
   submitCpdCourse,
-  deleteMyRegulatedPermission,
+  removeMyRegulatedPermission,
   deleteMyCpdCourse,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
