@@ -693,7 +693,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           theme: (sfRow.theme as "dark" | "light") ?? "dark",
           current_clients: (sfRow as { current_clients?: number | null }).current_clients ?? null,
           slug: pro.slug,
-          full_name: prof?.full_name ?? null,
+          full_name: ((prof as { business_name?: string | null } | null)?.business_name?.trim()) || prof?.full_name || null,
           avatar_url: prof?.avatar_url ?? null,
           headline: pro.headline,
           primary_profession: pro.primary_profession,
