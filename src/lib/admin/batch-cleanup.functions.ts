@@ -145,7 +145,7 @@ export const executeExpiredBdCleanup = createServerFn({ method: "POST" })
                   last_tier: null,
                   deletion_reason: "admin_delete",
                   deletion_notes: "Batch cleanup — expired BD legacy account, never converted",
-                  marketing_opt_in: true,
+                  marketing_opt_in: false,
                   source: "bd_legacy_cleanup",
                   deleted_at: new Date().toISOString(),
                 } as never,
