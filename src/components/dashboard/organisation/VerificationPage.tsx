@@ -149,6 +149,7 @@ export function ProviderVerificationPage() {
 
 function Hero({
   identityDone,
+  identityStatus,
   domainDone,
   domainStatus,
   completed,
@@ -156,6 +157,7 @@ function Hero({
   loading,
 }: {
   identityDone: boolean;
+  identityStatus: string;
   domainDone: boolean;
   domainStatus: ProviderDomainState["status"];
   completed: 0 | 1 | 2;
@@ -182,6 +184,28 @@ function Hero({
         ? "You've confirmed your provider email. Our team will review your domain shortly."
         : "One more check to complete your provider verification.";
 
+  const identityLabel = identityDone
+    ? "Identity verified"
+    : identityStatus === "pending"
+      ? "Identity — in review"
+      : identityStatus === "rejected"
+        ? "Identity — action needed"
+        : identityStatus === "needs_more_info"
+          ? "Identity — action needed"
+          : identityStatus === "expired"
+            ? "Identity — expired"
+            : "Identity — not started";
+
+  const domainLabel = domainDone
+    ? "Domain confirmed"
+    : domainStatus === "pending_admin_review"
+      ? "Domain — in review"
+      : domainStatus === "email_sent"
+        ? "Domain — email sent"
+        : domainStatus === "rejected"
+          ? "Domain — action needed"
+          : "Domain — not started";
+
   return (
     <section className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
       <div className="relative grid grid-cols-1 gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center lg:p-8">
@@ -196,9 +220,10 @@ function Hero({
           <p className="mt-2 max-w-[56ch] text-[14px] text-white/65">{sub}</p>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            <LayerChip label="Identity verified" earned={identityDone} loading={loading} />
-            <LayerChip label="Domain confirmed" earned={domainDone} loading={loading} />
+            <LayerChip label={identityLabel} earned={identityDone} loading={loading} />
+            <LayerChip label={domainLabel} earned={domainDone} loading={loading} />
           </div>
+
         </div>
 
         <div className="relative z-10 flex flex-col items-start gap-3 lg:items-end">
