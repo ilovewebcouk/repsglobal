@@ -255,11 +255,6 @@ function RegulatedRow({ row }: { row: RegulatedPermissionRow }) {
               </Badge>
             ) : null}
             <StatusBadge status={row.status} />
-            {row.reps_qualification_number ? (
-              <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300 font-mono">
-                {row.reps_qualification_number}
-              </Badge>
-            ) : null}
             {row.ofqual_number && !row.ofqual_found ? (
               <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
                 <AlertTriangle className="mr-1 h-3 w-3" /> Not on register
@@ -272,8 +267,14 @@ function RegulatedRow({ row }: { row: RegulatedPermissionRow }) {
             {row.ofqual_number ? (
               <span className="font-mono text-white/70">{row.ofqual_number}</span>
             ) : null}
-            <span>·</span>
-            <span>{EVIDENCE_LABEL[row.evidence_type]}</span>
+            {row.reps_qualification_number ? (
+              <>
+                <span>·</span>
+                <span className="font-mono text-emerald-300">
+                  {row.reps_qualification_number}
+                </span>
+              </>
+            ) : null}
             {row.awarding_body_reference ? (
               <>
                 <span>·</span>
