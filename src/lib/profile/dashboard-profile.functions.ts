@@ -239,11 +239,8 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
     const profilePatch: Record<string, unknown> = { full_name: cleaned.full_name ?? null,  };
     // Organisations' full_name is the canonical provider name — do not
     // overwrite from this generic form. Renames go through admin/provider flow.
-    if (!isOrganisation) {
+    if (!isOrganisation && !legalLocked) {
       profilePatch.full_name = cleaned.full_name ?? null;
-    }
-    if (!legalLocked) {
-      profilePatch.full_name = cleaned.full_name;
     }
 
     const { error: pErr } = await supabase
@@ -253,13 +250,14 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       .eq("id", userId);
     if (pErr) throw pErr;
 
-    // Slug derivation: full_name first (public-facing), fall back to full_name.
-    // Organisations keep their existing (provider) slug — never rederive here.
+    // Slug derivation from full_name. Organisations keep their existing
+    // (provider) slug — never rederive here.
     let slug: string;
     if (isOrganisation && existingSlug) {
       slug = existingSlug;
     } else {
-      const slugSource = (cleaned.full_name && cleaned.full_name.trim()) || cleaned.full_name;
+      const slugSource = (cleaned.full_name ?? "").trim() || "coach";
+
       const base = slugify(slugSource) || "coach";
       slug = base;
       for (let i = 2; i < 50; i++) {
