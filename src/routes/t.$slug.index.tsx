@@ -535,10 +535,12 @@ function ProviderProfilePage() {
                     <h3 className="font-display text-[15px] font-bold text-black">
                       Ofqual-regulated qualifications
                     </h3>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700">
-                      <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
-                      Approved centre
-                    </span>
+                    {accreditationsByBody.length > 0 ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700">
+                        <BadgeCheck className="h-3 w-3" strokeWidth={2.4} />
+                        Approved centre
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-1 text-[12px] text-black/50">
                     Verified with the awarding body. Each qualification carries its Ofqual reference number.
