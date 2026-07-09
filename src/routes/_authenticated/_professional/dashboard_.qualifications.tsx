@@ -408,19 +408,28 @@ function CpdSection({
 
 function CpdRow({ row }: { row: CpdCourseRow }) {
   const qc = useQueryClient();
-  const del = useServerFn(deleteMyCpdCourse);
+  const remove = useServerFn(deleteMyCpdCourse);
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [reason, setReason] = React.useState("");
+
+  const isWithdrawn = row.status === "withdrawn";
+  const isApproved = row.status === "approved";
+
   const mut = useMutation({
-    mutationFn: () => del({ data: { id: row.id } }),
-    onSuccess: () => {
-      toast.success("Removed");
+    mutationFn: () =>
+      remove({ data: { id: row.id, reason: isApproved ? reason.trim() || null : null } }),
+    onSuccess: (res) => {
+      toast.success(res?.mode === "withdrawn" ? "Removed from profile" : "Deleted");
+      setConfirmOpen(false);
+      setReason("");
       qc.invalidateQueries({ queryKey: ["my-cpd-courses"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Remove failed"),
   });
 
   return (
     <li>
-      <PCard className="flex items-start gap-4">
+      <PCard className={`flex items-start gap-4 ${isWithdrawn ? "opacity-60" : ""}`}>
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] border border-emerald-500/30 bg-emerald-500/10">
           <BadgeCheck className="h-5 w-5 text-emerald-300" />
         </div>
@@ -449,22 +458,77 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
           {row.summary ? (
             <p className="mt-1.5 line-clamp-2 text-[12.5px] text-white/70">{row.summary}</p>
           ) : null}
-          {row.admin_note ? (
+          {row.admin_note && !isWithdrawn ? (
             <div className="mt-2 rounded-[10px] border border-amber-500/25 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
               <span className="font-semibold">Admin note:</span> {row.admin_note}
             </div>
           ) : null}
         </div>
-        {row.status === "submitted" ? (
+        {!isWithdrawn ? (
           <button
-            onClick={() => mut.mutate()}
+            onClick={() => setConfirmOpen(true)}
             className="flex h-8 w-8 items-center justify-center rounded-[8px] text-white/50 hover:bg-white/5 hover:text-white"
-            title="Remove submission"
+            title={isApproved ? "Remove from profile" : "Delete submission"}
           >
             <Trash2 className="h-4 w-4" />
           </button>
         ) : null}
       </PCard>
+
+      <Dialog open={confirmOpen} onOpenChange={(v) => !mut.isPending && setConfirmOpen(v)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isApproved ? "Remove from your profile?" : "Delete this submission?"}
+            </DialogTitle>
+            <DialogDescription>
+              {isApproved
+                ? `“${row.title}” will disappear from your public profile immediately. REPs keeps a record for audit purposes.`
+                : "This cannot be undone. The uploaded evidence will also be deleted."}
+            </DialogDescription>
+          </DialogHeader>
+          {isApproved ? (
+            <div className="space-y-2">
+              <Label htmlFor="withdraw-cpd-reason" className="text-[12px] text-white/70">
+                Reason (optional)
+              </Label>
+              <Textarea
+                id="withdraw-cpd-reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g. Course no longer offered, content retired…"
+                maxLength={500}
+                rows={3}
+              />
+            </div>
+          ) : null}
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmOpen(false)}
+              disabled={mut.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => mut.mutate()}
+              disabled={mut.isPending}
+              className="bg-red-500/20 text-red-200 hover:bg-red-500/30 border-red-500/30"
+            >
+              {mut.isPending ? (
+                <>
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                  {isApproved ? "Removing…" : "Deleting…"}
+                </>
+              ) : isApproved ? (
+                "Remove from profile"
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </li>
   );
 }
