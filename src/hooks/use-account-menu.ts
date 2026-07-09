@@ -125,8 +125,9 @@ export function useAccountMenu(): AccountContext {
     navigate({ to: "/auth", replace: true });
   }, [queryClient, navigate]);
 
-  const profile = profileQuery.data;
+  const profile = profileQuery.data as { avatar_url: string | null; full_name: string | null; business_name: string | null } | null;
   const resolvedName =
+    (profile?.business_name && profile.business_name.trim()) ||
     (profile?.full_name && profile.full_name.trim()) ||
     user?.name ||
     user?.email ||
