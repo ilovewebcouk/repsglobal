@@ -320,109 +320,29 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       throw new Error("Type DELETE to confirm.");
     }
 
+    // Route through the canonical close-membership worker so self-delete
+    // gets the same audit, retention, profile-hide, email, Stripe cancel,
+    // PII/storage erasure, and ops-alert behaviour as every other account-
+    // ending path.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // Cancel any active Stripe subscription before deleting. We refuse to
-    // delete the account if Stripe rejects the cancel for any reason other
-    // than the subscription already being gone — otherwise billing silently
-    // continues against a deleted user (D-11.2).
-    try {
-      const { data: subs } = await supabaseAdmin
-        .from("subscriptions")
-        .select("stripe_subscription_id, environment, status")
-        .eq("user_id", userId);
-      if (subs && subs.length > 0) {
-        const { createStripeClient } = await import("@/lib/billing/stripe.server");
-        const cancelFailures: string[] = [];
-        for (const s of subs) {
-          const subRow = s as {
-            stripe_subscription_id: string | null;
-            environment: string | null;
-            status: string | null;
-          };
-          if (!subRow.stripe_subscription_id) continue;
-          // Skip statuses that are already terminal in Stripe.
-          if (subRow.status && ["canceled", "incomplete_expired"].includes(subRow.status)) {
-            continue;
-          }
-          const env = (subRow.environment === "live" ? "live" : "sandbox") as "live" | "sandbox";
-          try {
-            const stripe = createStripeClient(env);
-            await stripe.subscriptions.cancel(subRow.stripe_subscription_id);
-          } catch (e) {
-            const err = e as { code?: string; statusCode?: number; message?: string };
-            // "resource_missing" / 404 means Stripe no longer has the sub — safe to ignore.
-            if (err?.code === "resource_missing" || err?.statusCode === 404) {
-              continue;
-            }
-            console.error(
-              "[deleteMyAccount] stripe cancel failed",
-              subRow.stripe_subscription_id,
-              err?.code,
-              err?.message,
-            );
-            cancelFailures.push(subRow.stripe_subscription_id);
-          }
-        }
-        if (cancelFailures.length > 0) {
-          throw new Error(
-            "We couldn't cancel your active subscription with our payment provider. Please contact support so we can stop billing before deleting your account.",
-          );
-        }
-      }
-    } catch (e) {
-      // Re-throw the user-facing message; swallow only unexpected lookup errors.
-      if (e instanceof Error && e.message.startsWith("We couldn't cancel")) throw e;
-      console.warn("[deleteMyAccount] stripe lookup failed", e);
-    }
-
-
-    // GDPR erasure: anonymise PII in tables not covered by auth.users FK
-    // cascade (enquiries, reviews, support_messages, support_tickets,
-    // lead_activity) and drop any storage objects under <userId>/.
-    try {
-      const { error: eraseErr } = await supabaseAdmin.rpc("erase_user_pii", {
-        _user_id: userId,
-      });
-      if (eraseErr) {
-        console.error("[deleteMyAccount] erase_user_pii failed", eraseErr);
-        throw new Error("Erasure failed — account not deleted. Please contact support.");
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message.includes("Erasure failed")) throw e;
-      console.error("[deleteMyAccount] erase_user_pii threw", e);
-      throw new Error("Erasure failed — account not deleted. Please contact support.");
-    }
-
-    // Drop the user's storage objects across every bucket where they upload.
-    // (auth.users cascade does NOT clean storage.objects.)
-    const buckets = [
-      "avatars",
-      "pro-photos",
-      "identity-docs",
-      "insurance-docs",
-      "verification-docs",
-      "support-attachments",
-      "cpd-certificates",
-    ];
-    await Promise.all(
-      buckets.map(async (bucket) => {
-        try {
-          const { data: files } = await supabaseAdmin.storage
-            .from(bucket)
-            .list(userId, { limit: 1000 });
-          if (!files || files.length === 0) return;
-          const paths = files.map((f) => `${userId}/${f.name}`);
-          await supabaseAdmin.storage.from(bucket).remove(paths);
-        } catch (e) {
-          console.warn(`[deleteMyAccount] storage cleanup failed for ${bucket}`, e);
-        }
-      }),
+    const { data: subs } = await supabaseAdmin
+      .from("subscriptions")
+      .select("stripe_subscription_id, status")
+      .eq("user_id", userId);
+    const hasLiveSub = (subs ?? []).some(
+      (s: any) =>
+        s.stripe_subscription_id &&
+        ["active", "trialing", "past_due"].includes(s.status),
     );
 
-    // Auth user delete cascades via FKs.
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (error) throw error;
+    const { _closeMembershipImpl } = await import("@/lib/admin/close-membership.server");
+    await _closeMembershipImpl({
+      user_id: userId,
+      mode: hasLiveSub ? "end_now_delete" : "delete_only",
+      reason: "self_delete",
+      notes: "Member self-delete from /dashboard/settings",
+      actor_id: `user:${userId}`,
+    });
 
     return { ok: true };
   });
