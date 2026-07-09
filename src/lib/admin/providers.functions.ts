@@ -184,6 +184,61 @@ export const listProviders = createServerFn({ method: "GET" })
 const UserIdInput = z.object({ user_id: z.string().uuid() });
 
 /* ------------------------------------------------------------------ */
+/* readProviderProfileForAdmin — mirrors dashboard read shape          */
+/* ------------------------------------------------------------------ */
+
+export const readProviderProfileForAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => UserIdInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sa = supabaseAdmin as any;
+
+    const [{ data: pro }, { data: site }, { data: profile }, { data: dom }] = await Promise.all([
+      sa
+        .from("professionals")
+        .select(
+          "slug, website_url, contact_email, contact_phone, address, social_instagram, social_linkedin, social_youtube, social_tiktok, social_x, account_type",
+        )
+        .eq("id", data.user_id)
+        .maybeSingle(),
+      sa
+        .from("websites")
+        .select("tagline, about")
+        .eq("professional_id", data.user_id)
+        .maybeSingle(),
+      sa.from("profiles").select("business_name").eq("id", data.user_id).maybeSingle(),
+      sa
+        .from("provider_domain_verifications")
+        .select("status")
+        .eq("professional_id", data.user_id)
+        .maybeSingle(),
+    ]);
+
+    if (!pro || pro.account_type !== "organisation") {
+      throw new Error("Not a training provider");
+    }
+
+    return {
+      slug: (pro.slug as string | null) ?? null,
+      approved_name: (profile?.business_name as string | null) ?? null,
+      tagline: (site?.tagline as string | null) ?? null,
+      about: (site?.about as string | null) ?? null,
+      website_url: (pro.website_url as string | null) ?? null,
+      contact_email: (pro.contact_email as string | null) ?? null,
+      contact_phone: (pro.contact_phone as string | null) ?? null,
+      address: (pro.address as string | null) ?? null,
+      social_instagram: (pro.social_instagram as string | null) ?? null,
+      social_linkedin: (pro.social_linkedin as string | null) ?? null,
+      social_youtube: (pro.social_youtube as string | null) ?? null,
+      social_tiktok: (pro.social_tiktok as string | null) ?? null,
+      social_x: (pro.social_x as string | null) ?? null,
+      domain_status: (dom?.status as string | null) ?? null,
+    };
+  });
+
+/* ------------------------------------------------------------------ */
 /* adminUpdateProviderProfileMirror                                    */
 /*                                                                     */
 /* Mirrors the provider self-service `updateMyProviderProfile` write   */
