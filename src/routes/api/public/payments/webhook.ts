@@ -1001,6 +1001,20 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             console.error(
               `[payments-webhook] DEAD-LETTER event=${event.id} type=${event.type} attempts=${nextCount} error=${processingError}`,
             );
+            try {
+              await supabaseAdmin.from("ops_alerts").insert({
+                kind: "payments.webhook_dead_lettered",
+                severity: "high",
+                context: {
+                  event_id: event.id,
+                  event_type: event.type,
+                  attempts: nextCount,
+                  error: processingError,
+                } as never,
+              } as never);
+            } catch (e) {
+              console.warn("[payments-webhook] DLQ ops alert failed", e);
+            }
             return new Response(
               JSON.stringify({ received: true, dead_lettered: true, attempts: nextCount }),
               { status: 200, headers: { ...CORS, "Content-Type": "application/json" } },
