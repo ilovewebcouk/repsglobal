@@ -576,7 +576,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
 export const adminListCpdQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested"]).default("submitted") }).parse(d ?? {}),
+    z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested", "withdrawn"]).default("submitted") }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.realUserId ?? context.userId);
