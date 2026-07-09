@@ -64,7 +64,7 @@ import {
   listMyRegulatedPermissions,
   listMyCpdCourses,
   resolveOfqualNumber,
-  submitRegulatedPermission,
+  submitRegulatedPermissionBatch,
   submitCpdCourse,
   deleteMyRegulatedPermission,
   deleteMyCpdCourse,
