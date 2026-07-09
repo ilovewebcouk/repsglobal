@@ -55,7 +55,7 @@ function ProviderPage() {
 
   if (!snap.data) {
     return (
-      <DashboardShell role="admin" active="Providers" title="Provider 360">
+      <DashboardShell role="admin" active="Providers" title="Provider 360" subtitle="Not found">
         <div className="flex flex-col items-start gap-4 p-6">
           <Button
             variant="outline"
