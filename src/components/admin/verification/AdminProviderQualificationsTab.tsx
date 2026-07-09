@@ -53,8 +53,8 @@ import {
 
 type Status = "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
 
-const STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected"];
-const REGULATED_STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected", "withdrawn"];
+const STATUS_TABS: readonly Status[] = ["submitted", "approved", "rejected", "withdrawn"];
+const REGULATED_STATUS_TABS: readonly Status[] = STATUS_TABS;
 const STATUS_LABEL: Record<Status, string> = {
   submitted: "Pending",
   changes_requested: "Changes",
@@ -76,7 +76,6 @@ export function AdminProviderQualificationsTab() {
               key={t}
               onClick={() => {
                 setTab(t);
-                if (t === "cpd" && status === "withdrawn") setStatus("submitted");
               }}
               className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition ${
                 tab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
