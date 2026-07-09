@@ -190,9 +190,15 @@ function RegulatedSection({
         </div>
       ) : (
         <ul className="space-y-3">
-          {rows.map((r) => (
-            <RegulatedRow key={r.id} row={r} />
-          ))}
+          {[...rows]
+            .sort(
+              (a, b) =>
+                (a.status === "withdrawn" ? 1 : 0) -
+                (b.status === "withdrawn" ? 1 : 0),
+            )
+            .map((r) => (
+              <RegulatedRow key={r.id} row={r} />
+            ))}
         </ul>
       )}
     </PPanel>
