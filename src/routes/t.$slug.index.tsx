@@ -292,7 +292,7 @@ function ProviderProfilePage() {
                   </div>
                 );
               })()}
-              {logoUrl && DEMO_PROVIDER_COVERS[slug] && (
+              {logoUrl && (sf.hero_image_url || DEMO_PROVIDER_COVERS[slug]) && (
                 <div className="absolute bottom-3 left-3 flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[14px] bg-white ring-1 ring-black/5 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.35)]">
                   <img
                     src={logoUrl}
