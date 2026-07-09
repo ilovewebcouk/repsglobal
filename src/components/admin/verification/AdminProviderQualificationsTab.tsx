@@ -38,7 +38,7 @@ import {
 } from "@/components/dashboard/ui/empty";
 import { TimeAgo } from "@/components/verification/TimeAgo";
 import { absoluteDateTime } from "@/lib/verification/format-time";
-import { awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
+import { awardingBodyName, awardingBodyLogo, awardingBodyLogoByName } from "@/lib/cpd/awarding-bodies";
 import {
   adminDecideCpd,
   adminDecideRegulated,
@@ -388,7 +388,9 @@ function RegulatedDetail({
   const ai = row.ai_extraction;
   const cx = row.ai_cross_check;
   const legacySlug = row.qualification?.awarding_body_slug ?? null;
-  const logo = legacySlug ? awardingBodyLogo(legacySlug) : null;
+  const logo =
+    (legacySlug ? awardingBodyLogo(legacySlug) : null) ??
+    awardingBodyLogoByName(snap?.awardingOrganisation ?? null);
   const bodyLabel =
     snap?.awardingOrganisation ?? (legacySlug ? awardingBodyName(legacySlug) ?? legacySlug : null);
   const title = snap?.title ?? row.qualification?.title ?? "Awaiting Ofqual match";
