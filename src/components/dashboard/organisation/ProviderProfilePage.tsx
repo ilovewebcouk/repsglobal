@@ -29,7 +29,10 @@ import {
   getMyProviderProfile,
   updateMyProviderProfile,
 } from "@/lib/profile/provider-profile.functions";
-import { getMyProviderNameStatus } from "@/lib/verification/provider-name.functions";
+import {
+  getMyProviderNameStatus,
+  submitProviderNameChange,
+} from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
 import {
   listMyProviderChanges,
