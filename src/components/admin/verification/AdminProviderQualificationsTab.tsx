@@ -53,8 +53,8 @@ import {
 
 type Status = "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
 
-const STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected"];
-const REGULATED_STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected", "withdrawn"];
+const STATUS_TABS: readonly Status[] = ["submitted", "approved", "rejected", "withdrawn"];
+const REGULATED_STATUS_TABS: readonly Status[] = STATUS_TABS;
 const STATUS_LABEL: Record<Status, string> = {
   submitted: "Pending",
   changes_requested: "Changes",
