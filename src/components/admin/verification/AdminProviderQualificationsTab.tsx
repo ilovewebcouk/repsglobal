@@ -76,7 +76,6 @@ export function AdminProviderQualificationsTab() {
               key={t}
               onClick={() => {
                 setTab(t);
-                if (t === "cpd" && status === "withdrawn") setStatus("submitted");
               }}
               className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition ${
                 tab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
