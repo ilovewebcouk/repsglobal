@@ -76,7 +76,7 @@ export type CpdCourseRow = {
   tutor_cv_doc_path: string | null;
   ai_verdict: "recommend_approve" | "flagged" | "inconclusive" | null;
   ai_red_flags: string[];
-  status: "submitted" | "approved" | "rejected" | "changes_requested";
+  status: "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
   reps_cpd_number: string | null;
   accredited_at: string | null;
   admin_note: string | null;
