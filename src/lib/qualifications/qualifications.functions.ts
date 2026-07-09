@@ -502,7 +502,7 @@ async function requireAdmin(userId: string) {
 export const adminListRegulatedQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested"]).default("submitted") }).parse(d ?? {}),
+    z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested", "withdrawn"]).default("submitted") }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.userId);
@@ -510,7 +510,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, submission_group_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, submission_group_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, withdrawn_at, withdrawn_reason, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });
