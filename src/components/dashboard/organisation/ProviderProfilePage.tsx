@@ -409,14 +409,22 @@ export function ProviderProfilePage() {
               }
             >
               <div className="flex flex-col gap-2">
-                <input
-                  className={`${inputCls} disabled:cursor-not-allowed disabled:opacity-60`}
-                  value={namePending ? (nameStatus?.pending?.requested_name ?? "") : form.name}
-                  onChange={(e) => update("name", e.target.value)}
-                  placeholder="e.g. Northline Academy"
-                  maxLength={120}
-                  disabled={namePending}
-                />
+                <div className="flex items-center justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-ink px-3 py-2.5 text-[13px] text-white">
+                  <span className="truncate">
+                    {approvedName || (
+                      <span className="text-white/40">Not set yet</span>
+                    )}
+                  </span>
+                  <Link
+                    to="/dashboard/verification"
+                    className="shrink-0 text-[12px] font-semibold text-reps-orange hover:underline"
+                  >
+                    {approvedName ? "Manage" : "Set in Verification"}
+                  </Link>
+                </div>
+                <p className="text-[11.5px] text-white/45">
+                  Managed on your Verification page. Contact REPs support to change it once set.
+                </p>
                 {namePending ? (
                   <div className="flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
                     <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -435,6 +443,7 @@ export function ProviderProfilePage() {
                 ) : null}
               </div>
             </Field>
+
 
 
           </div>
