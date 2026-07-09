@@ -573,10 +573,6 @@ function ProviderProfilePage() {
                             </div>
                             <div>
                               <p className="text-[14px] font-semibold text-black">{group.name}</p>
-                              <span className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-700">
-                                <Check className="h-3 w-3" strokeWidth={2.5} />
-                                Approved centre · Ofqual-regulated
-                              </span>
                             </div>
                           </div>
                           <ul className="mt-2 space-y-1.5 pl-[76px]">
@@ -592,8 +588,8 @@ function ProviderProfilePage() {
                                 ) : null}
                                 <span className="font-medium text-black">{it.title}</span>
                                 {it.ofqual_ref ? (
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-black/10 bg-[#f7f6f2] px-2 py-0.5 font-mono text-[11px] text-black/60">
-                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-black/45">Ofqual</span>
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-800">
+                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-emerald-700/70">Ofqual</span>
                                     {it.ofqual_ref}
                                   </span>
                                 ) : null}
