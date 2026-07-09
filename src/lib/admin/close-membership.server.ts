@@ -174,7 +174,7 @@ export async function _closeMembershipImpl(
 
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("full_name, display_name")
+    .select("full_name, full_name")
     .eq("id", input.user_id)
     .maybeSingle();
 
@@ -195,7 +195,7 @@ export async function _closeMembershipImpl(
     null;
 
   const fullName =
-    (profile as any)?.full_name ?? (profile as any)?.display_name ?? null;
+    (profile as any)?.full_name ?? (profile as any)?.full_name ?? null;
 
   /* ─── Policy escalation: schedule_end_period is no longer supported ───
    * REPS cancels immediately with no grace period. Any legacy caller (older

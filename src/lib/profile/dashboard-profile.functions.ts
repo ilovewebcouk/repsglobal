@@ -19,9 +19,9 @@ export type DashboardProfile = {
   /** Legal name — must match ID + certs. Locked after identity approval. */
   full_name: string;
   /** Public-facing name (directory, website). Defaults to full_name. */
-  display_name: string | null;
+  full_name: string | null;
   /** Trading / business name (invoices, website header). Optional. */
-  business_name: string | null;
+  full_name: string | null;
   avatar_url: string | null;
   /** Mirror of professionals.identity_status — drives the legal-name lock. */
   identity_status: "none" | "pending" | "approved" | "rejected" | "needs_more_info" | "expired";
@@ -67,7 +67,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: pro }, { data: site }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, display_name, business_name, avatar_url")
+        .select("full_name, full_name, full_name, avatar_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -97,8 +97,8 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
 
     return {
       full_name: (profRow.full_name as string | null) ?? "",
-      display_name: (profRow.display_name as string | null) ?? null,
-      business_name: (profRow.business_name as string | null) ?? null,
+      full_name: (profRow.full_name as string | null) ?? null,
+      full_name: (profRow.full_name as string | null) ?? null,
       avatar_url: (profRow.avatar_url as string | null) ?? null,
       identity_status: idStatus,
       legal_name_locked: idStatus === "approved",
@@ -166,8 +166,8 @@ function normaliseSocial(raw: string | null | undefined): string | null {
 
 const UpdateInput = z.object({
   full_name: z.string().trim().min(1).max(120),
-  display_name: z.string().trim().max(120).nullable().optional(),
-  business_name: z.string().trim().max(120).nullable().optional(),
+  full_name: z.string().trim().max(120).nullable().optional(),
+  full_name: z.string().trim().max(120).nullable().optional(),
   headline: z.string().trim().max(160).nullable().optional(),
   primary_profession: ProfessionSlugSchema.nullable().optional(),
   specialisms: z.array(SpecialismSlugSchema).max(MAX_SPECIALISMS).optional(),
@@ -244,12 +244,12 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
     // Build profile patch. Skip full_name when locked (DB trigger would
     // throw, but we'd rather not even attempt the update — gives a clean UX).
     const profilePatch: Record<string, unknown> = {
-      display_name: cleaned.display_name ?? null,
+      full_name: cleaned.full_name ?? null,
     };
-    // Organisations' business_name is the canonical provider name — do not
+    // Organisations' full_name is the canonical provider name — do not
     // overwrite from this generic form. Renames go through admin/provider flow.
     if (!isOrganisation) {
-      profilePatch.business_name = cleaned.business_name ?? null;
+      profilePatch.full_name = cleaned.full_name ?? null;
     }
     if (!legalLocked) {
       profilePatch.full_name = cleaned.full_name;
@@ -262,13 +262,13 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       .eq("id", userId);
     if (pErr) throw pErr;
 
-    // Slug derivation: display_name first (public-facing), fall back to full_name.
+    // Slug derivation: full_name first (public-facing), fall back to full_name.
     // Organisations keep their existing (provider) slug — never rederive here.
     let slug: string;
     if (isOrganisation && existingSlug) {
       slug = existingSlug;
     } else {
-      const slugSource = (cleaned.display_name && cleaned.display_name.trim()) || cleaned.full_name;
+      const slugSource = (cleaned.full_name && cleaned.full_name.trim()) || cleaned.full_name;
       const base = slugify(slugSource) || "coach";
       slug = base;
       for (let i = 2; i < 50; i++) {

@@ -33,15 +33,15 @@ export const saveInsurance = createServerFn({ method: "POST" })
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: prof } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, display_name")
+        .select("full_name, full_name")
         .eq("id", userId)
         .maybeSingle();
-      const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
+      const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
       await notifyVerificationEvent({
         professionalId: userId,
         event: "insurance.rejected_expired",
         context: { expiry_date: data.expiry_date, doc_path: data.doc_path },
-        proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+        proName: profAny?.full_name ?? profAny?.full_name ?? undefined,
         alsoEmail: true,
       });
       throw new Error(
@@ -76,13 +76,13 @@ export const saveInsurance = createServerFn({ method: "POST" })
       const proAny = pro as { identity_verified_name?: string | null; identity_status?: string | null } | null;
       const { data: prof } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, display_name")
+        .select("full_name, full_name")
         .eq("id", userId)
         .maybeSingle();
-      const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
-      proName = profAny?.display_name ?? profAny?.full_name ?? null;
+      const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
+      proName = profAny?.full_name ?? profAny?.full_name ?? null;
       const identityName =
-        proAny?.identity_verified_name ?? profAny?.full_name ?? profAny?.display_name ?? null;
+        proAny?.identity_verified_name ?? profAny?.full_name ?? profAny?.full_name ?? null;
       const identityApproved = proAny?.identity_status === "approved";
 
       const nameScore =
@@ -610,14 +610,14 @@ export const listInsurancePolicies = createServerFn({ method: "POST" })
       .limit(500);
     if (error) throw new Error(error.message);
     const ids = Array.from(new Set((rows ?? []).map((r) => r.professional_id))).filter(Boolean) as string[];
-    const profilesById = new Map<string, { full_name: string | null; display_name: string | null }>();
+    const profilesById = new Map<string, { full_name: string | null; full_name: string | null }>();
     if (ids.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, display_name")
+        .select("id, full_name, full_name")
         .in("id", ids);
-      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null }>) {
-        profilesById.set(p.id, { full_name: p.full_name, display_name: p.display_name });
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null }>) {
+        profilesById.set(p.id, { full_name: p.full_name, full_name: p.full_name });
       }
     }
     return (rows ?? []).map((r) => ({

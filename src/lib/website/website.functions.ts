@@ -609,7 +609,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           )
           .eq("professional_id", pro.id)
           .maybeSingle(),
-        supabaseAdmin.from("profiles").select("full_name, business_name, avatar_url").eq("id", pro.id).maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, full_name, avatar_url").eq("id", pro.id).maybeSingle(),
         supabaseAdmin
           .from("services")
           .select(
@@ -693,7 +693,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           theme: (sfRow.theme as "dark" | "light") ?? "dark",
           current_clients: (sfRow as { current_clients?: number | null }).current_clients ?? null,
           slug: pro.slug,
-          full_name: ((prof as { business_name?: string | null } | null)?.business_name?.trim()) || prof?.full_name || null,
+          full_name: ((prof as { full_name?: string | null } | null)?.full_name?.trim()) || prof?.full_name || null,
           avatar_url: prof?.avatar_url ?? null,
           headline: pro.headline,
           primary_profession: pro.primary_profession,
@@ -771,7 +771,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
       )
           .eq("id", userId)
           .maybeSingle(),
-        supabaseAdmin.from("profiles").select("full_name, business_name, avatar_url").eq("id", userId).maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, full_name, avatar_url").eq("id", userId).maybeSingle(),
         supabaseAdmin
           .from("websites")
           .select(
@@ -848,7 +848,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           theme: ((resolvedSf as { theme?: string | null }).theme as "dark" | "light") ?? "dark",
           current_clients: (resolvedSf as { current_clients?: number | null }).current_clients ?? null,
           slug: pro.slug,
-          full_name: ((prof as { business_name?: string | null } | null)?.business_name?.trim()) || prof?.full_name || null,
+          full_name: ((prof as { full_name?: string | null } | null)?.full_name?.trim()) || prof?.full_name || null,
           avatar_url: prof?.avatar_url ?? null,
           headline: pro.headline,
           primary_profession: pro.primary_profession,

@@ -681,19 +681,19 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 1) Profiles matching by full_name OR business_name (the user-editable
+    // 1) Profiles matching by full_name OR full_name (the user-editable
     // settings fields). Note: professionals.trading_name / public_email were
     // removed — the source of truth is now profiles + auth.users.
     const { data: nameMatches, error: nameErr } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, business_name")
-      .or(`full_name.ilike.${like},business_name.ilike.${like}`)
+      .select("id, full_name, full_name")
+      .or(`full_name.ilike.${like},full_name.ilike.${like}`)
       .limit(20);
     if (nameErr) throw new Error(nameErr.message);
 
     // 1b) Partial UUID match on profiles.id (e.g. admin pastes "a1b2c3").
     // PostgREST can't ilike a uuid column, so we use a SECURITY DEFINER rpc.
-    let idMatches: Array<{ id: string; full_name: string | null; business_name: string | null }> = [];
+    let idMatches: Array<{ id: string; full_name: string | null; full_name: string | null }> = [];
     if (/^[0-9a-fA-F-]{4,}$/.test(q)) {
       const { data: idRows, error: idErr } = await supabaseAdmin.rpc(
         "search_profiles_by_id_prefix",
@@ -768,7 +768,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
     // 4) Resolve names + flags
     const [profilesRes, prosRes, clientsRes, subsRes] = allUserIds.length
       ? await Promise.all([
-          supabaseAdmin.from("profiles").select("id, full_name, business_name").in("id", allUserIds),
+          supabaseAdmin.from("profiles").select("id, full_name, full_name").in("id", allUserIds),
           supabaseAdmin.from("professionals").select("id, slug").in("id", allUserIds),
           supabaseAdmin.from("clients").select("id").in("id", allUserIds),
           supabaseAdmin
@@ -780,7 +780,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
       : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
     const nameById = new Map<string, string>(
-      ((profilesRes.data ?? []) as any[]).map((r) => [r.id, r.full_name || r.business_name]),
+      ((profilesRes.data ?? []) as any[]).map((r) => [r.id, r.full_name || r.full_name]),
     );
     const proById = new Map<string, string | null>(
       ((prosRes.data ?? []) as any[]).map((r) => [r.id, r.slug]),

@@ -259,12 +259,12 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
     );
   }
 
-  const { full_name, email, slug, verification, subscription, avatar_url, profession, account_type, business_name } = snapshot;
+  const { full_name, email, slug, verification, subscription, avatar_url, profession, account_type, full_name } = snapshot;
   const sub = subscription;
   const tierLbl = sub.tier_label;
   const status = sub.status;
   const isProvider = account_type === "organisation";
-  const displayName = isProvider ? (business_name ?? "Unnamed provider") : (full_name ?? "Unnamed member");
+  const displayName = isProvider ? (full_name ?? "Unnamed provider") : (full_name ?? "Unnamed member");
   const publicHref = slug ? (isProvider ? `/t/${slug}` : `/c/${slug}`) : null;
   const isSuspended = isProvider && (snapshot.professional_suspended_at ?? null) != null;
 

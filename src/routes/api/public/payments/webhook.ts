@@ -579,7 +579,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                     const email = authUser?.user?.email ?? null;
                     if (email) {
                       const { data: profile } = await supabaseAdmin
-                        .from("profiles").select("display_name, full_name").eq("id", userId).maybeSingle();
+                        .from("profiles").select("full_name, full_name").eq("id", userId).maybeSingle();
                       const item = sub.items.data[0];
                       const tier = (sub.metadata?.tier as string) ?? "verified";
                       const tierLabel = tier === "pro" ? "REPS Pro" : tier === "studio" ? "REPS Studio" : "REPS Core";
@@ -593,7 +593,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                         recipientEmail: email,
                         idempotencyKey: `purchase-confirmation:${session.id}`,
                         templateData: {
-                          proName: (profile?.display_name ?? profile?.full_name ?? "").toString().split(" ")[0] || null,
+                          proName: (profile?.full_name ?? profile?.full_name ?? "").toString().split(" ")[0] || null,
                           tierLabel, amountText, periodText,
                         },
                       });

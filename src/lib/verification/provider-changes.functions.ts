@@ -349,7 +349,7 @@ export const adminListProviderQueue = createServerFn({ method: "GET" })
 
     const ids = Array.from(new Set(list.map((r) => r.provider_id)));
     const [{ data: profiles }, { data: pros }, usersRes] = await Promise.all([
-      sa.from("profiles").select("id, business_name, full_name").in("id", ids),
+      sa.from("profiles").select("id, full_name, full_name").in("id", ids),
       sa.from("professionals").select("id, slug").in("id", ids),
       sa.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     ]);
@@ -357,7 +357,7 @@ export const adminListProviderQueue = createServerFn({ method: "GET" })
     const pMap = new Map<string, { business: string | null; full: string | null }>();
     for (const p of ((profiles ?? []) as any[])) {
       pMap.set(p.id, {
-        business: (p.business_name as string | null) ?? null,
+        business: (p.full_name as string | null) ?? null,
         full: (p.full_name as string | null) ?? null,
       });
     }
@@ -504,7 +504,7 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
     }
 
     if (data.source === "name") {
-      // Reuse existing behaviour: approving copies business_name.
+      // Reuse existing behaviour: approving copies full_name.
       const { data: row } = await sa
         .from("provider_name_requests")
         .select("*")
@@ -517,7 +517,7 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
       if (data.decision === "approved") {
         const { error: pErr } = await sa
           .from("profiles")
-          .update({ business_name: (row as any).requested_name })
+          .update({ full_name: (row as any).requested_name })
           .eq("id", (row as any).user_id);
         if (pErr) throw new Error(pErr.message);
         await regenerateProviderSlug(

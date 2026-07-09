@@ -78,7 +78,7 @@ export const previewExpiredBdCleanup = createServerFn({ method: "POST" })
       const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(uid);
       const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, display_name")
+        .select("full_name, full_name")
         .eq("id", uid)
         .maybeSingle();
       const { data: bd } = await supabaseAdmin
@@ -89,7 +89,7 @@ export const previewExpiredBdCleanup = createServerFn({ method: "POST" })
       rows.push({
         user_id: uid,
         email: authUser?.user?.email ?? null,
-        full_name: (profile as any)?.full_name ?? (profile as any)?.display_name ?? null,
+        full_name: (profile as any)?.full_name ?? (profile as any)?.full_name ?? null,
         bd_next_due_date: (bd as any)?.bd_next_due_date ?? null,
       });
     }
@@ -118,7 +118,7 @@ export const executeExpiredBdCleanup = createServerFn({ method: "POST" })
 
         const { data: profile } = await supabaseAdmin
           .from("profiles")
-          .select("full_name, display_name")
+          .select("full_name, full_name")
           .eq("id", uid)
           .maybeSingle();
         const { data: professional } = await supabaseAdmin
@@ -128,7 +128,7 @@ export const executeExpiredBdCleanup = createServerFn({ method: "POST" })
           .maybeSingle();
 
         const fullName =
-          (profile as any)?.full_name ?? (profile as any)?.display_name ?? null;
+          (profile as any)?.full_name ?? (profile as any)?.full_name ?? null;
 
         // Archive contact (best-effort, only if we have an email).
         if (email) {

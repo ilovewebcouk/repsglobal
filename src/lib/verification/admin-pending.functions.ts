@@ -89,13 +89,13 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
     if (proIds.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, business_name")
+        .select("id, full_name")
         .in("id", proIds);
       for (const p of (profs ?? []) as Array<{
         id: string;
-        business_name: string | null;
+        full_name: string | null;
       }>) {
-        const n = p.business_name?.trim();
+        const n = p.full_name?.trim();
         if (n) nameById.set(p.id, n);
       }
     }

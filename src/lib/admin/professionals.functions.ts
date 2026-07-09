@@ -744,7 +744,7 @@ export const deleteProfessional = createServerFn({ method: 'POST' })
     // Snapshot for audit log before deletion.
     const { data: prev } = await supabaseAdmin
       .from('professionals')
-      .select('id, display_name, slug, is_published')
+      .select('id, full_name, slug, is_published')
       .eq('id', data.professional_id)
       .maybeSingle();
 

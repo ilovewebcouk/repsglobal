@@ -72,8 +72,8 @@ export function ContactSocialsPanel() {
       return saveProfile({
         data: {
           full_name: data.full_name,
-          display_name: data.display_name,
-          business_name: data.business_name,
+          full_name: data.full_name,
+          full_name: data.full_name,
           headline: data.headline,
           primary_profession: data.primary_profession,
           specialisms: data.specialisms,

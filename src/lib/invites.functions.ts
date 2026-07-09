@@ -45,7 +45,7 @@ export const createClientInvite = createServerFn({ method: "POST" })
     // Fetch pro display name + optional business name for the email
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name, business_name")
+      .select("full_name, full_name")
       .eq("id", userId)
       .maybeSingle();
 
@@ -57,7 +57,7 @@ export const createClientInvite = createServerFn({ method: "POST" })
       invite: { id: invite.id, email: invite.email, expires_at: invite.expires_at },
       acceptUrl,
       professional_name: (profile?.full_name as string | null) ?? "Your coach",
-      trading_name: (profile?.business_name as string | null) ?? null,
+      trading_name: (profile?.full_name as string | null) ?? null,
       client_name: (invite.full_name as string | null) ?? null,
     };
   });

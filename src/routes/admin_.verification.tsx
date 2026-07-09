@@ -1367,7 +1367,7 @@ type InsuranceRow = {
   reviewed_at: string | null;
   reviewed_by: string | null;
   created_at: string;
-  professional: { full_name: string | null; display_name: string | null } | null;
+  professional: { full_name: string | null; full_name: string | null } | null;
 };
 
 function AdminInsuranceTab() {
@@ -1395,7 +1395,7 @@ function AdminInsuranceTab() {
     const q = search.toLowerCase();
     return list.filter(
       (r) =>
-        (r.professional?.display_name ?? r.professional?.full_name ?? "").toLowerCase().includes(q) ||
+        (r.professional?.full_name ?? r.professional?.full_name ?? "").toLowerCase().includes(q) ||
         (r.provider ?? "").toLowerCase().includes(q) ||
         (r.insured_name ?? "").toLowerCase().includes(q),
     );
@@ -1496,7 +1496,7 @@ function AdminInsuranceTab() {
               const nameScore = typeof ts.name_score === "number" ? ts.name_score : null;
               const aiSkipped = ts.ai === "skipped";
               const cover = r.cover_amount_gbp ? `£${r.cover_amount_gbp.toLocaleString()}` : "—";
-              const name = r.professional?.display_name || r.professional?.full_name || "Unnamed";
+              const name = r.professional?.full_name || r.professional?.full_name || "Unnamed";
               return (
                 <tr key={r.id}>
                   <td className="py-2 pr-3">

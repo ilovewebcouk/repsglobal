@@ -102,15 +102,15 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
       .in("id", proIds);
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, business_name")
+      .select("id, full_name, full_name")
       .in("id", proIds);
-    const profileMap = new Map((profiles ?? []).map((p) => [p.id, { full_name: p.full_name, business_name: p.business_name }]));
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, { full_name: p.full_name, full_name: p.full_name }]));
     profByPro = Object.fromEntries(
       (pros ?? []).map((p) => [
         p.id,
         {
           full_name: profileMap.get(p.id)?.full_name ?? null,
-          trading_name: profileMap.get(p.id)?.business_name ?? null,
+          trading_name: profileMap.get(p.id)?.full_name ?? null,
           city: p.city,
         },
       ]),
@@ -584,10 +584,10 @@ export const sendVerificationReminder = createServerFn({ method: "POST" })
     if (!email) throw new Error("No email on file");
     const { data: pro } = await supabaseAdmin
       .from("profiles")
-      .select("display_name, full_name")
+      .select("full_name, full_name")
       .eq("id", data.professional_id)
       .maybeSingle();
-    const proName = pro?.display_name ?? pro?.full_name ?? null;
+    const proName = pro?.full_name ?? pro?.full_name ?? null;
     const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
     await sendTransactionalEmailServer({
       templateName: "verification-reminder",

@@ -175,7 +175,7 @@ export const getActivityCommandCenter = createServerFn({ method: "POST" })
             .in("id", obsIds)
         : Promise.resolve({ data: [] as unknown[] }),
       userIds.length
-        ? supabaseAdmin.from("profiles").select("id, display_name, email, avatar_url").in("id", userIds)
+        ? supabaseAdmin.from("profiles").select("id, full_name, email, avatar_url").in("id", userIds)
         : Promise.resolve({ data: [] as unknown[] }),
     ]);
 
@@ -201,7 +201,7 @@ export const getActivityCommandCenter = createServerFn({ method: "POST" })
         journey_id: j.id,
         session_id: j.session_id,
         user_id: j.user_id,
-        member_name: prof?.display_name ?? prof?.email ?? null,
+        member_name: prof?.full_name ?? prof?.email ?? null,
         masked_ip: o ? maskIp(o.raw_ip) : null,
         city, region, country_code,
         latitude: o?.latitude ?? null,
@@ -227,7 +227,7 @@ export const getActivityCommandCenter = createServerFn({ method: "POST" })
       return {
         session_id: s.id,
         user_id: s.user_id,
-        name: prof?.display_name ?? prof?.email ?? "Member",
+        name: prof?.full_name ?? prof?.email ?? "Member",
         email: prof?.email ?? null,
         avatar_url: prof?.avatar_url ?? null,
         current_path: s.current_path,

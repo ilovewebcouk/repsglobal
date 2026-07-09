@@ -244,11 +244,11 @@ async function liftSuspensionAfterWin(
     if (email) {
       const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("display_name, full_name")
+        .select("full_name, full_name")
         .eq("id", userId)
         .maybeSingle();
       const proName =
-        ((profile?.display_name ?? profile?.full_name ?? "") as string)
+        ((profile?.full_name ?? profile?.full_name ?? "") as string)
           .toString()
           .split(" ")[0] || null;
       const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
@@ -277,11 +277,11 @@ async function sendDisputeEmail(opts: {
   if (!email) return;
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("display_name, full_name")
+    .select("full_name, full_name")
     .eq("id", opts.userId)
     .maybeSingle();
   const proName =
-    ((profile?.display_name ?? profile?.full_name ?? "") as string)
+    ((profile?.full_name ?? profile?.full_name ?? "") as string)
       .toString()
       .split(" ")[0] || null;
 

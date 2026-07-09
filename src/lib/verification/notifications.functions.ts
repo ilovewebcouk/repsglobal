@@ -270,10 +270,10 @@ export const adminNudgeInsuranceRenewal = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: prof } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, display_name")
+      .select("id, full_name, full_name")
       .eq("id", data.professional_id)
       .maybeSingle();
-    const profAny = prof as { full_name?: string | null; display_name?: string | null } | null;
+    const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
 
     const { data: ins } = await supabaseAdmin
       .from("insurance_policies")
@@ -296,7 +296,7 @@ export const adminNudgeInsuranceRenewal = createServerFn({ method: "POST" })
       policyId: insAny?.id ?? null,
       thresholdDays: threshold,
       context: { expiry_date: expiry, nudged_by: context.userId },
-      proName: profAny?.display_name ?? profAny?.full_name ?? undefined,
+      proName: profAny?.full_name ?? profAny?.full_name ?? undefined,
       alsoEmail: true,
     });
 

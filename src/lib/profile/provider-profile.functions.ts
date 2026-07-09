@@ -3,7 +3,7 @@
  *
  * Loads / saves the provider's public identity + contact + company + socials.
  * Data is spread across three tables:
- *   - profiles         : business_name (public name), avatar_url (logo)
+ *   - profiles         : full_name (public name), avatar_url (logo)
  *   - professionals    : contact_phone, contact_email, website_url,
  *                        year_established, company_number, social_*
  *   - websites         : hero_image_url, about, tagline
@@ -43,7 +43,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: pro }, { data: site }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("business_name, full_name, avatar_url")
+        .select("full_name, full_name, avatar_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -66,7 +66,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
 
     return {
       name:
-        (pr.business_name as string | null) ??
+        (pr.full_name as string | null) ??
         (pr.full_name as string | null) ??
         "",
       slug: (p.slug as string | null) ?? null,

@@ -280,7 +280,7 @@ export function ProviderProfileMirror({
         <div className={`${PANEL_BODY} flex flex-col gap-4`}>
           <ProviderNameRow
             userId={userId}
-            currentName={approvedName || snapshot.business_name || ""}
+            currentName={approvedName || snapshot.full_name || ""}
             slug={approvedSlug}
           />
         </div>

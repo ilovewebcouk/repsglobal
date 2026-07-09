@@ -31,12 +31,12 @@ export const sendWelcomeEmailServerFn = createServerFn({ method: "POST" })
 
       const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("display_name, full_name")
+        .select("full_name, full_name")
         .eq("id", userId)
         .maybeSingle();
 
       const first =
-        ((profile?.display_name ?? profile?.full_name) ?? "")
+        ((profile?.full_name ?? profile?.full_name) ?? "")
           .toString()
           .split(" ")[0] || null;
 

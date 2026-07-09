@@ -11,8 +11,8 @@ export type SettingsBundle = {
     user_id: string;
     email: string | null;
     full_name: string | null;
-    display_name: string | null;
-    business_name: string | null;
+    full_name: string | null;
+    full_name: string | null;
     avatar_url: string | null;
     contact_phone: string | null;
     timezone: string;
@@ -66,7 +66,7 @@ export const getMySettings = createServerFn({ method: "GET" })
       await Promise.all([
         supabase
           .from("profiles")
-          .select("full_name, display_name, business_name, avatar_url")
+          .select("full_name, full_name, full_name, avatar_url")
           .eq("id", userId)
           .maybeSingle(),
         supabase
@@ -113,8 +113,8 @@ export const getMySettings = createServerFn({ method: "GET" })
         user_id: userId,
         email,
         full_name: (profRow.full_name as string | null) ?? null,
-        display_name: (profRow.display_name as string | null) ?? null,
-        business_name: (profRow.business_name as string | null) ?? null,
+        full_name: (profRow.full_name as string | null) ?? null,
+        full_name: (profRow.full_name as string | null) ?? null,
         avatar_url: (profRow.avatar_url as string | null) ?? null,
         contact_phone: (proRow.contact_phone as string | null) ?? null,
         timezone: (proRow.timezone as string | null) ?? "Europe/London",
@@ -149,8 +149,8 @@ export const getMySettings = createServerFn({ method: "GET" })
 
 const AccountInput = z.object({
   full_name: z.string().trim().min(1).max(120),
-  display_name: z.string().trim().max(120).nullable().optional(),
-  business_name: z.string().trim().max(120).nullable().optional(),
+  full_name: z.string().trim().max(120).nullable().optional(),
+  full_name: z.string().trim().max(120).nullable().optional(),
   contact_phone: z
     .string()
     .trim()
@@ -177,8 +177,8 @@ export const updateMyAccount = createServerFn({ method: "POST" })
     const legalLocked = idStatus === "approved";
 
     const profilePatch: Record<string, unknown> = {
-      display_name: data.display_name ?? null,
-      business_name: data.business_name ?? null,
+      full_name: data.full_name ?? null,
+      full_name: data.full_name ?? null,
     };
     if (!legalLocked) {
       profilePatch.full_name = data.full_name;

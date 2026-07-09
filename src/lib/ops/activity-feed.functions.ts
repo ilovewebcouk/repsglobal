@@ -102,10 +102,10 @@ export const getActivityFeed = createServerFn({ method: "POST" })
       try {
         const { data: rows } = await supabaseAdmin
           .from("profiles")
-          .select("id, full_name, display_name")
+          .select("id, full_name, full_name")
           .in("id", unique);
-        for (const r of (rows ?? []) as Array<{ id: string; full_name: string | null; display_name: string | null }>) {
-          map.set(r.id, r.full_name || r.display_name || r.id.slice(0, 8));
+        for (const r of (rows ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null }>) {
+          map.set(r.id, r.full_name || r.full_name || r.id.slice(0, 8));
         }
       } catch {
         /* labels are nice-to-have */
