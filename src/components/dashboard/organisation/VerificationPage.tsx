@@ -37,8 +37,13 @@ import {
   setProviderWebsite,
   startProviderDomainVerification,
 } from "@/lib/verification/provider-domain.functions";
+import {
+  getMyProviderNameStatus,
+  submitProviderNameChange,
+} from "@/lib/verification/provider-name.functions";
 import type { ProviderDomainState } from "@/lib/verification/provider-domain-shared";
 import { isEmailShape } from "@/lib/verification/provider-domain-shared";
+
 
 /* -------------------------------------------------------------------------- */
 /* Return-from-flow toasts                                                    */
