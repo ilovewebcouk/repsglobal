@@ -147,7 +147,7 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
       active: true as const,
       professional_id: session.professional_id,
       slug: prof?.slug ?? null,
-      name: profile?.full_name ?? 'Professional',
+      name: (profile as { business_name?: string | null; full_name?: string | null } | null)?.business_name?.trim() || profile?.full_name || 'Professional',
       email: userRes?.data?.user?.email ?? null,
       avatarUrl: profile?.avatar_url ?? null,
       tier,
