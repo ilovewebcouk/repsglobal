@@ -224,20 +224,33 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
     }
 
     // Read current identity_status to decide whether full_name can change.
+    // Also read account_type + slug so we defensively preserve organisation
+    // (training-provider) identity on the generic professional dashboard save.
+    // Provider name/slug changes must flow through the provider name-change
+    // request pipeline (and admin renameProvider), never the coach dashboard.
     const { data: proCheck } = await supabase
       .from("professionals")
-      .select("identity_status")
+      .select("identity_status, account_type, slug")
       .eq("id", userId)
       .maybeSingle();
     const idStatus = (proCheck as { identity_status?: string | null } | null)?.identity_status ?? null;
     const legalLocked = idStatus === "approved";
+    const existingAccountType =
+      (proCheck as { account_type?: string | null } | null)?.account_type ?? null;
+    const existingSlug =
+      (proCheck as { slug?: string | null } | null)?.slug ?? null;
+    const isOrganisation = existingAccountType === "organisation";
 
     // Build profile patch. Skip full_name when locked (DB trigger would
     // throw, but we'd rather not even attempt the update — gives a clean UX).
     const profilePatch: Record<string, unknown> = {
       display_name: cleaned.display_name ?? null,
-      business_name: cleaned.business_name ?? null,
     };
+    // Organisations' business_name is the canonical provider name — do not
+    // overwrite from this generic form. Renames go through admin/provider flow.
+    if (!isOrganisation) {
+      profilePatch.business_name = cleaned.business_name ?? null;
+    }
     if (!legalLocked) {
       profilePatch.full_name = cleaned.full_name;
     }
@@ -250,19 +263,26 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
     if (pErr) throw pErr;
 
     // Slug derivation: display_name first (public-facing), fall back to full_name.
-    const slugSource = (cleaned.display_name && cleaned.display_name.trim()) || cleaned.full_name;
-    const base = slugify(slugSource) || "coach";
-    let slug = base;
-    for (let i = 2; i < 50; i++) {
-      const { data: clash } = await supabase
-        .from("professionals")
-        .select("id")
-        .eq("slug", slug)
-        .neq("id", userId)
-        .maybeSingle();
-      if (!clash) break;
-      slug = `${base}-${i}`;
+    // Organisations keep their existing (provider) slug — never rederive here.
+    let slug: string;
+    if (isOrganisation && existingSlug) {
+      slug = existingSlug;
+    } else {
+      const slugSource = (cleaned.display_name && cleaned.display_name.trim()) || cleaned.full_name;
+      const base = slugify(slugSource) || "coach";
+      slug = base;
+      for (let i = 2; i < 50; i++) {
+        const { data: clash } = await supabase
+          .from("professionals")
+          .select("id")
+          .eq("slug", slug)
+          .neq("id", userId)
+          .maybeSingle();
+        if (!clash) break;
+        slug = `${base}-${i}`;
+      }
     }
+
 
     // Drop any specialism that isn't valid for the chosen profession.
     // The DB trigger only enforces the global allow-list; we enforce the
