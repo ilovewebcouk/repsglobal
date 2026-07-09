@@ -51,14 +51,16 @@ import {
   type QualificationDoc,
 } from "./QualificationDocDrawer";
 
-type Status = "submitted" | "approved" | "rejected" | "changes_requested";
+type Status = "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
 
 const STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected"];
+const REGULATED_STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected", "withdrawn"];
 const STATUS_LABEL: Record<Status, string> = {
   submitted: "Pending",
   changes_requested: "Changes",
   approved: "Approved",
   rejected: "Rejected",
+  withdrawn: "Withdrawn",
 };
 
 export function AdminProviderQualificationsTab() {
@@ -72,7 +74,10 @@ export function AdminProviderQualificationsTab() {
           {(["regulated", "cpd"] as const).map((t) => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => {
+                setTab(t);
+                if (t === "cpd" && status === "withdrawn") setStatus("submitted");
+              }}
               className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition ${
                 tab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
               }`}
@@ -82,7 +87,7 @@ export function AdminProviderQualificationsTab() {
           ))}
         </div>
         <div className="inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
-          {STATUS_TABS.map((s) => (
+          {(tab === "regulated" ? REGULATED_STATUS_TABS : STATUS_TABS).map((s) => (
             <button
               key={s}
               onClick={() => setStatus(s)}

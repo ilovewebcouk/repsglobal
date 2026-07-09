@@ -53,12 +53,14 @@ export type RegulatedPermissionRow = {
     awarding_body_match: boolean;
     qualification_in_doc: "yes" | "no" | "inconclusive";
   } | null;
-  status: "submitted" | "approved" | "rejected" | "changes_requested";
+  status: "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
   admin_note: string | null;
   evidence_issued_at: string | null;
   evidence_expires_at: string | null;
   created_at: string;
   reviewed_at: string | null;
+  withdrawn_at: string | null;
+  withdrawn_reason: string | null;
 };
 
 export type CpdCourseRow = {
@@ -326,7 +328,7 @@ export const listMyRegulatedPermissions = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, withdrawn_at, withdrawn_reason, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
       )
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
@@ -334,20 +336,71 @@ export const listMyRegulatedPermissions = createServerFn({ method: "GET" })
     return (data ?? []) as unknown as RegulatedPermissionRow[];
   });
 
-export const deleteMyRegulatedPermission = createServerFn({ method: "POST" })
+export const removeMyRegulatedPermission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        reason: z.string().max(500).optional().nullable(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    const { data: row, error: readErr } = await supabase
+      .from("provider_regulated_permissions")
+      .select("id, provider_id, status, evidence_doc_paths")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    if (!row) throw new Error("Not found");
+    if (row.provider_id !== userId) throw new Error("Forbidden");
+
+    if (row.status === "withdrawn") {
+      return { mode: "withdrawn" as const };
+    }
+
+    if (row.status === "approved") {
+      const { error } = await supabase
+        .from("provider_regulated_permissions")
+        .update({
+          status: "withdrawn",
+          withdrawn_at: new Date().toISOString(),
+          withdrawn_reason: data.reason?.trim() || null,
+        } as never)
+        .eq("id", row.id)
+        .eq("provider_id", userId);
+      if (error) throw new Error(error.message);
+      return { mode: "withdrawn" as const };
+    }
+
+    // submitted | changes_requested | rejected -> hard delete
     const { error } = await supabase
       .from("provider_regulated_permissions")
       .delete()
-      .eq("id", data.id)
-      .eq("provider_id", userId)
-      .eq("status", "submitted");
+      .eq("id", row.id)
+      .eq("provider_id", userId);
     if (error) throw new Error(error.message);
-    return { ok: true };
+
+    // Best-effort: remove uploaded evidence docs from storage.
+    try {
+      const paths = (row.evidence_doc_paths ?? []).filter(
+        (p: string) => typeof p === "string" && p.startsWith(`${userId}/`),
+      );
+      if (paths.length > 0) {
+        await supabase.storage.from("verification-docs").remove(paths);
+      }
+    } catch (e) {
+      console.error("[removeMyRegulatedPermission] storage cleanup failed", e);
+    }
+
+    return { mode: "deleted" as const };
   });
+
+// Back-compat alias for older imports.
+export const deleteMyRegulatedPermission = removeMyRegulatedPermission;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider — CPD courses
@@ -449,7 +502,7 @@ async function requireAdmin(userId: string) {
 export const adminListRegulatedQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested"]).default("submitted") }).parse(d ?? {}),
+    z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested", "withdrawn"]).default("submitted") }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.userId);
@@ -457,7 +510,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, submission_group_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, submission_group_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, withdrawn_at, withdrawn_reason, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });

@@ -4015,6 +4015,8 @@ export type Database = {
           status: string
           submission_group_id: string | null
           updated_at: string
+          withdrawn_at: string | null
+          withdrawn_reason: string | null
         }
         Insert: {
           admin_note?: string | null
@@ -4039,6 +4041,8 @@ export type Database = {
           status?: string
           submission_group_id?: string | null
           updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
         }
         Update: {
           admin_note?: string | null
@@ -4063,6 +4067,8 @@ export type Database = {
           status?: string
           submission_group_id?: string | null
           updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
         }
         Relationships: [
           {
