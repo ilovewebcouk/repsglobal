@@ -1036,7 +1036,7 @@ export const listPublicProviderQualifications = createServerFn({ method: "GET" }
       supabase
         .from("provider_regulated_permissions")
         .select(
-          "id, ofqual_number, ofqual_snapshot, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
+          "id, ofqual_number, ofqual_snapshot, reps_qualification_number, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
         )
         .eq("provider_id", data.providerId)
         .eq("status", "approved"),
