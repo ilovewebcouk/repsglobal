@@ -609,7 +609,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           )
           .eq("professional_id", pro.id)
           .maybeSingle(),
-        supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", pro.id).maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, business_name, avatar_url").eq("id", pro.id).maybeSingle(),
         supabaseAdmin
           .from("services")
           .select(
