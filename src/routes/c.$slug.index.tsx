@@ -873,7 +873,7 @@ function SectionNav() {
   return (
     <nav
       aria-label="On this page"
-      className="sticky top-[92px] z-30 hidden bg-reps-ink/80 backdrop-blur shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)] md:block"
+      className="sticky top-14 z-30 hidden bg-reps-ink/80 backdrop-blur shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)] md:block"
     >
       <div className="mx-auto flex h-12 max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
         {NAV_ITEMS.map((item) => (
