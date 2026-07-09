@@ -194,7 +194,7 @@ function CloseButton({ userId }: { userId: string }) {
       });
       toast.success("Provider closed");
       // Navigate away — record no longer exists.
-      window.location.assign("/admin/providers");
+      window.location.assign("/admin/members");
     } catch (e) {
       toast.error((e as Error).message ?? "Close failed");
       setBusy(false);

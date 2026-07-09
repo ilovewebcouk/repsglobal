@@ -124,6 +124,7 @@ import {
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { setTrainingProviderPlan } from "@/lib/admin/set-training-provider-plan.functions";
 import { sendProfessionalInvite } from "@/lib/admin/invites.functions";
+import { createProvider } from "@/lib/admin/providers.functions";
 
 type ProfessionalsSearch = { plan?: "free" | "paid" };
 
@@ -687,18 +688,36 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
 
 function InviteButton() {
   const [open, setOpen] = React.useState(false);
+  const [type, setType] = React.useState<"individual" | "organisation">("individual");
   const [email, setEmail] = React.useState("");
   const [fullName, setFullName] = React.useState("");
+  const [website, setWebsite] = React.useState("");
   const [plan, setPlan] = React.useState<"verified" | "pro">("pro");
   const inviteFn = useServerFn(sendProfessionalInvite);
+  const createProviderFn = useServerFn(createProvider);
   const qc = useQueryClient();
 
   const m = useMutation({
-    mutationFn: (vars: { email: string; full_name?: string; plan: "verified" | "pro" }) =>
-      inviteFn({ data: vars }),
-    onSuccess: (res: { email: string }) => {
-      toast.success(`Invite sent to ${res.email}`);
-      setEmail(""); setFullName("");
+    mutationFn: async () => {
+      if (type === "organisation") {
+        return createProviderFn({
+          data: {
+            email: email.trim(),
+            name: fullName.trim(),
+            website: website.trim() || null,
+            note: null,
+          },
+        });
+      }
+      return inviteFn({ data: { email, full_name: fullName || undefined, plan } });
+    },
+    onSuccess: () => {
+      toast.success(
+        type === "organisation"
+          ? `Provider invite sent to ${email}`
+          : `Invite sent to ${email}`,
+      );
+      setEmail(""); setFullName(""); setWebsite("");
       qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
     },
     onError: (e: Error) => toast.error(e.message || "Failed to send invite"),
@@ -708,54 +727,83 @@ function InviteButton() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className="flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-reps-orange-hover">
-          <Plus className="h-4 w-4" /> Invite professional
+          <Plus className="h-4 w-4" /> Invite member
         </button>
       </DialogTrigger>
       <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-[460px]">
         <DialogHeader>
-          <DialogTitle className="text-white">Invite a professional</DialogTitle>
+          <DialogTitle className="text-white">Invite a member</DialogTitle>
           <DialogDescription className="text-white/55">
-            We'll email them a signup link. They'll land on pricing with your suggested plan pre-selected.
+            We'll email them a signup link. Choose the account type — individual professionals go to pricing, training providers land pre-seeded as an organisation.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-2">
           <div>
-            <Label htmlFor="invite-email" className="text-white/75">Email <span className="text-reps-orange">*</span></Label>
-            <Input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="trainer@example.com"
-              className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30" />
-          </div>
-          <div>
-            <Label htmlFor="invite-name" className="text-white/75">Full name (optional)</Label>
-            <Input id="invite-name" value={fullName} onChange={(e) => setFullName(e.target.value)}
-              placeholder="Sam Jones"
-              className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30" />
-          </div>
-          <div>
-            <Label className="text-white/75">Suggest plan</Label>
+            <Label className="text-white/75">Account type</Label>
             <div className="mt-1 flex gap-2">
-              <button onClick={() => setPlan("verified")}
-                className={plan === "verified"
+              <button onClick={() => setType("individual")}
+                className={type === "individual"
                   ? "flex-1 rounded-[10px] border border-reps-orange bg-reps-orange-soft px-3 py-2 text-left text-[12px] font-semibold text-reps-orange"
                   : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
-                Core <span className="font-normal text-white/55">£34/yr</span>
+                Individual professional
               </button>
-              <button onClick={() => setPlan("pro")}
-                className={plan === "pro"
+              <button onClick={() => setType("organisation")}
+                className={type === "organisation"
                   ? "flex-1 rounded-[10px] border border-reps-orange bg-reps-orange-soft px-3 py-2 text-left text-[12px] font-semibold text-reps-orange"
                   : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
-                Pro Founding <span className="font-normal text-white/55">£59/mo</span>
+                Training provider
               </button>
             </div>
           </div>
+          <div>
+            <Label htmlFor="invite-email" className="text-white/75">Email <span className="text-reps-orange">*</span></Label>
+            <Input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder={type === "organisation" ? "contact@provider.com" : "trainer@example.com"}
+              className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30" />
+          </div>
+          <div>
+            <Label htmlFor="invite-name" className="text-white/75">
+              {type === "organisation" ? "Provider name" : "Full name (optional)"}
+              {type === "organisation" && <span className="text-reps-orange"> *</span>}
+            </Label>
+            <Input id="invite-name" value={fullName} onChange={(e) => setFullName(e.target.value)}
+              placeholder={type === "organisation" ? "Northline Academy" : "Sam Jones"}
+              className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30" />
+          </div>
+          {type === "organisation" ? (
+            <div>
+              <Label htmlFor="invite-website" className="text-white/75">Website (optional)</Label>
+              <Input id="invite-website" value={website} onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://…"
+                className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30" />
+            </div>
+          ) : (
+            <div>
+              <Label className="text-white/75">Suggest plan</Label>
+              <div className="mt-1 flex gap-2">
+                <button onClick={() => setPlan("verified")}
+                  className={plan === "verified"
+                    ? "flex-1 rounded-[10px] border border-reps-orange bg-reps-orange-soft px-3 py-2 text-left text-[12px] font-semibold text-reps-orange"
+                    : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
+                  Core <span className="font-normal text-white/55">£34/yr</span>
+                </button>
+                <button onClick={() => setPlan("pro")}
+                  className={plan === "pro"
+                    ? "flex-1 rounded-[10px] border border-reps-orange bg-reps-orange-soft px-3 py-2 text-left text-[12px] font-semibold text-reps-orange"
+                    : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
+                  Pro Founding <span className="font-normal text-white/55">£59/mo</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>Close</Button>
           <Button
-            disabled={m.isPending || !email}
-            onClick={() => m.mutate({ email, full_name: fullName || undefined, plan })}
+            disabled={m.isPending || !email || (type === "organisation" && !fullName.trim())}
+            onClick={() => m.mutate()}
             className="bg-reps-orange text-white hover:bg-reps-orange-hover"
           >
             {m.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Sending…</> : "Send invite"}

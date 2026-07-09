@@ -56,6 +56,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 import { SourcePill, SOURCE_DOT_CLASSES } from "@/components/ops/source-pill";
+import { ProviderMemberView } from "@/components/admin/providers/ProviderMemberView";
 
 export const Route = createFileRoute("/admin_/members_/$userId")({
   ssr: false,
@@ -126,8 +127,13 @@ function MemberPage() {
     staleTime: 30_000,
   });
 
+  const isProvider = snap.data?.account_type === "organisation";
+
   return (
-    <DashboardShell role="admin" active="Members" title="Member 360" subtitle="One workbench for every member action.">
+    <DashboardShell role="admin" active="Members" title={isProvider ? "Provider 360" : "Member 360"} subtitle="One workbench for every member action.">
+      {isProvider ? (
+        <ProviderMemberView userId={userId} />
+      ) : (
       <div className="flex flex-col gap-6 p-6">
         <StickyHeader userId={userId} snapshot={snap.data} loading={snap.isLoading} />
 
@@ -199,6 +205,7 @@ function MemberPage() {
           </TabsContent>
         </Tabs>
       </div>
+      )}
     </DashboardShell>
   );
 }
