@@ -1,7 +1,8 @@
 // Canonical close-membership worker. Server-only — never import from a
 // client-reachable file at module scope. Used by `closeMembership` (the
-// admin server fn), `cancelAndDeleteMember` (back-compat shim), the
-// Stripe webhook self-cancel cleanup, and the dispute-lost handler.
+// admin server fn), `cancelAndDeleteMember` (back-compat shim),
+// `deleteMyAccount` (member self-delete), the Stripe webhook self-cancel
+// cleanup, and the dispute-lost handler.
 
 type StripeEnv = "live" | "sandbox";
 
@@ -16,7 +17,9 @@ export type CancelReason =
   | "admin_end_trial"
   | "admin_delete"
   | "member_request"
-  | "chargeback_lost";
+  | "self_delete"
+  | "chargeback_lost"
+  | "stripe_uncollectible";
 
 const REASON_LABEL: Record<CancelReason, string> = {
   admin_cancel_immediate: "cancelled by admin",
@@ -24,7 +27,9 @@ const REASON_LABEL: Record<CancelReason, string> = {
   admin_end_trial: "trial ended by admin",
   admin_delete: "removed by admin",
   member_request: "at your request",
+  self_delete: "at your request",
   chargeback_lost: "closed following a payment dispute",
+  stripe_uncollectible: "closed after payment could not be collected",
 };
 
 export interface CloseMembershipInput {
@@ -32,7 +37,7 @@ export interface CloseMembershipInput {
   mode: CloseMode;
   reason: CancelReason;
   notes?: string | null;
-  /** 'admin:<uuid>' or 'stripe_webhook' or 'dispute_lost'. */
+  /** 'admin:<uuid>', 'user:<uuid>', 'stripe_webhook', or 'dispute_lost'. */
   actor_id: string;
 }
 
@@ -42,6 +47,33 @@ export interface CloseMembershipResult {
   cancelled: number;
   emailSent: boolean;
   emailError?: string;
+  erasure: {
+    piiErased: boolean;
+    storageBucketsCleared: string[];
+    storageBucketsFailed: string[];
+  };
+  partialFailures: string[];
+}
+
+/* ─────────────── Ops alerts ─────────────── */
+
+type OpsSeverity = "info" | "medium" | "high";
+
+async function insertOpsAlert(
+  kind: string,
+  severity: OpsSeverity,
+  context: Record<string, unknown>,
+): Promise<void> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("ops_alerts").insert({
+      kind,
+      severity,
+      context: context as never,
+    } as never);
+  } catch (err) {
+    console.warn(`[closeMembership] ops alert insert failed (${kind}):`, err);
+  }
 }
 
 async function insertCancelOpsAlert(
@@ -50,16 +82,11 @@ async function insertCancelOpsAlert(
   email: string | null,
   actor: string,
 ): Promise<void> {
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("ops_alerts").insert({
-      kind: "payments.member_cancelled",
-      severity: reason === "chargeback_lost" ? "high" : "info",
-      context: { user_id: userId, reason, email, actor } as never,
-    } as never);
-  } catch (err) {
-    console.warn("[closeMembership] ops alert insert failed:", err);
-  }
+  await insertOpsAlert(
+    "payments.member_cancelled",
+    reason === "chargeback_lost" ? "high" : "info",
+    { user_id: userId, reason, email, actor },
+  );
 }
 
 async function sendCancellationEmail(opts: {
@@ -87,11 +114,58 @@ async function sendCancellationEmail(opts: {
   }
 }
 
+/* ─────────────── Reason → erasure mode ─────────────── */
+
+function erasureModeFor(reason: CancelReason):
+  | "full_self_delete"
+  | "membership_closed"
+  | "chargeback_lost" {
+  if (reason === "self_delete") return "full_self_delete";
+  if (reason === "chargeback_lost") return "chargeback_lost";
+  return "membership_closed";
+}
+
+/* ─────────────── Marketing consent (Fix 3) ───────────────
+ * Never force marketing_opt_in=true on close. Preserve the member's prior
+ * preference from notification_preferences or the existing mailing list
+ * row; default to false when unknown. */
+async function resolveMarketingOptIn(
+  userId: string,
+  email: string,
+): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  try {
+    const { data: prefs } = await supabaseAdmin
+      .from("notification_preferences")
+      .select("marketing_opt_in")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (prefs && typeof (prefs as any).marketing_opt_in === "boolean") {
+      return (prefs as any).marketing_opt_in === true;
+    }
+  } catch (e) {
+    console.warn("[closeMembership] notification_preferences lookup failed", e);
+  }
+  try {
+    const { data: prior } = await supabaseAdmin
+      .from("mailing_list_contacts")
+      .select("marketing_opt_in")
+      .ilike("email", email)
+      .maybeSingle();
+    if (prior && typeof (prior as any).marketing_opt_in === "boolean") {
+      return (prior as any).marketing_opt_in === true;
+    }
+  } catch (e) {
+    console.warn("[closeMembership] mailing_list_contacts lookup failed", e);
+  }
+  return false;
+}
 
 export async function _closeMembershipImpl(
   input: CloseMembershipInput,
 ): Promise<CloseMembershipResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const partialFailures: string[] = [];
 
   // Snapshot identity.
   const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(input.user_id);
@@ -144,6 +218,7 @@ export async function _closeMembershipImpl(
       .eq("id", input.user_id);
   } catch (e) {
     console.warn("[closeMembership] profile hide failed", e);
+    partialFailures.push("profile_hide");
   }
 
   /* ─── end_now_delete / delete_only ─── */
@@ -153,22 +228,33 @@ export async function _closeMembershipImpl(
   if (effectiveMode === "end_now_delete") {
     for (const s of (subs ?? []) as any[]) {
       if (!s.stripe_subscription_id) continue;
+      // Skip terminal statuses in Stripe.
+      if (s.status && ["canceled", "incomplete_expired"].includes(s.status)) continue;
       try {
         const stripe = createStripeClient(
           (s.environment === "live" ? "live" : "sandbox") as StripeEnv,
         );
         await stripe.subscriptions.cancel(s.stripe_subscription_id);
         cancelled++;
-      } catch (e) {
+      } catch (e: any) {
+        // resource_missing / 404 → already gone, fine.
+        if (e?.code === "resource_missing" || e?.statusCode === 404) continue;
         console.warn(
           "[closeMembership] stripe cancel failed",
           s.stripe_subscription_id,
           e,
         );
+        partialFailures.push("stripe_cancel");
+        await insertOpsAlert("payments.member_close_stripe_cancel_failed", "high", {
+          user_id: input.user_id,
+          reason: input.reason,
+          actor: input.actor_id,
+          stripe_subscription_id: s.stripe_subscription_id,
+          error: e?.message ?? String(e),
+        });
       }
     }
   }
-
 
   // Stamp retention columns onto every related subscription row BEFORE the
   // auth-user delete so cancellation history survives the SET NULL cascade.
@@ -188,9 +274,12 @@ export async function _closeMembershipImpl(
       .eq("user_id", input.user_id);
   } catch (e) {
     console.warn("[closeMembership] retention stamp failed", e);
+    partialFailures.push("retention_stamp");
   }
 
-  // Archive contact (idempotent on email).
+  // Archive contact (idempotent on email). Marketing consent preserved,
+  // NEVER forced true.
+  const marketingOptIn = await resolveMarketingOptIn(input.user_id, email);
   try {
     await supabaseAdmin
       .from("mailing_list_contacts")
@@ -204,7 +293,7 @@ export async function _closeMembershipImpl(
           last_tier: lastTier,
           deletion_reason: input.reason,
           deletion_notes: input.notes,
-          marketing_opt_in: true,
+          marketing_opt_in: marketingOptIn,
           source: "cancellation",
           deleted_at: new Date().toISOString(),
         } as never,
@@ -212,6 +301,7 @@ export async function _closeMembershipImpl(
       );
   } catch (e) {
     console.warn("[closeMembership] archive failed", e);
+    partialFailures.push("mailing_archive");
   }
 
   // Detach any legacy BD-migration link so the closed account stops
@@ -227,9 +317,8 @@ export async function _closeMembershipImpl(
       .eq("rep_user_id", input.user_id);
   } catch (e) {
     console.warn("[closeMembership] bd_migration detach failed", e);
+    partialFailures.push("bd_migration_detach");
   }
-
-
 
   // Email BEFORE delete (audit trail still has the email address).
   const emailRes = await sendCancellationEmail({
@@ -238,6 +327,34 @@ export async function _closeMembershipImpl(
     reason: input.reason,
     userId: input.user_id,
   });
+  if (!emailRes.ok) {
+    partialFailures.push("email");
+    await insertOpsAlert("payments.member_close_email_failed", "medium", {
+      user_id: input.user_id,
+      reason: input.reason,
+      actor: input.actor_id,
+      email,
+      error: emailRes.error,
+    });
+  }
+
+  // PII + storage erasure BEFORE auth delete.
+  const { eraseClosedMemberData } = await import("./erase-member-data.server");
+  const erasure = await eraseClosedMemberData(input.user_id, {
+    erasureMode: erasureModeFor(input.reason),
+  });
+  if (!erasure.ok || erasure.storageBucketsFailed.length > 0 || !erasure.piiErased) {
+    partialFailures.push("erasure");
+    await insertOpsAlert("payments.member_close_storage_erasure_failed", "high", {
+      user_id: input.user_id,
+      reason: input.reason,
+      actor: input.actor_id,
+      pii_erased: erasure.piiErased,
+      pii_error: erasure.piiError,
+      buckets_failed: erasure.storageBucketsFailed,
+      buckets_cleared: erasure.storageBucketsCleared,
+    });
+  }
 
   const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(input.user_id);
   if (delErr) throw delErr;
@@ -258,14 +375,31 @@ export async function _closeMembershipImpl(
         reason: input.reason,
         mode: effectiveMode,
         actor: input.actor_id,
+        partial_failures: partialFailures,
       },
       _reason: input.notes ?? input.reason,
     } as never);
   } catch (e) {
     console.warn("[closeMembership] audit log failed", e);
+    partialFailures.push("audit");
+    await insertOpsAlert("payments.member_close_audit_failed", "medium", {
+      user_id: input.user_id,
+      reason: input.reason,
+      actor: input.actor_id,
+      error: (e as any)?.message ?? String(e),
+    });
   }
 
   await insertCancelOpsAlert(input.user_id, input.reason, email, input.actor_id);
+
+  if (partialFailures.length > 0) {
+    await insertOpsAlert("payments.member_close_partial_failure", "high", {
+      user_id: input.user_id,
+      reason: input.reason,
+      actor: input.actor_id,
+      steps: partialFailures,
+    });
+  }
 
   return {
     ok: true,
@@ -273,5 +407,11 @@ export async function _closeMembershipImpl(
     cancelled,
     emailSent: emailRes.ok,
     emailError: emailRes.error,
+    erasure: {
+      piiErased: erasure.piiErased,
+      storageBucketsCleared: erasure.storageBucketsCleared,
+      storageBucketsFailed: erasure.storageBucketsFailed,
+    },
+    partialFailures,
   };
 }
