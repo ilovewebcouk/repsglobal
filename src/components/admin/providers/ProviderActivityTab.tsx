@@ -42,11 +42,12 @@ export function ProviderActivityTab({ userId }: { userId: string }) {
                   <summary className="cursor-pointer select-none text-white/60">before / after</summary>
                   <pre className="mt-1 max-h-40 overflow-auto rounded-[8px] bg-black/30 p-2 font-mono text-[11px]">
                     {JSON.stringify(
-                      { before: r.before_state ?? null, after: r.after_state ?? null },
+                      { before: r.before_state ?? null, after: r.after_state ?? null } as unknown as Record<string, unknown>,
                       null,
                       2,
-                    )}
+                    ) as string}
                   </pre>
+
 
                 </details>
               )}
