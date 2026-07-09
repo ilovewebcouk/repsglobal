@@ -474,20 +474,75 @@ export const listMyCpdCourses = createServerFn({ method: "GET" })
     return (data ?? []) as unknown as CpdCourseRow[];
   });
 
-export const deleteMyCpdCourse = createServerFn({ method: "POST" })
+export const removeMyCpdCourse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        reason: z.string().max(500).optional().nullable(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    const { data: row, error: readErr } = await supabase
+      .from("cpd_courses")
+      .select("id, provider_id, status, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    if (!row) throw new Error("Not found");
+    if (row.provider_id !== userId) throw new Error("Forbidden");
+
+    if (row.status === "withdrawn") {
+      return { mode: "withdrawn" as const };
+    }
+
+    if (row.status === "approved") {
+      const { error } = await supabase
+        .from("cpd_courses")
+        .update({
+          status: "withdrawn",
+          withdrawn_at: new Date().toISOString(),
+          withdrawn_reason: data.reason?.trim() || null,
+        } as never)
+        .eq("id", row.id)
+        .eq("provider_id", userId);
+      if (error) throw new Error(error.message);
+      return { mode: "withdrawn" as const };
+    }
+
+    // submitted | rejected | changes_requested -> hard delete
     const { error } = await supabase
       .from("cpd_courses")
       .delete()
-      .eq("id", data.id)
-      .eq("provider_id", userId)
-      .eq("status", "submitted");
+      .eq("id", row.id)
+      .eq("provider_id", userId);
     if (error) throw new Error(error.message);
-    return { ok: true };
+
+    // Best-effort: remove uploaded certificate docs from storage.
+    try {
+      const paths = [
+        row.syllabus_doc_path,
+        row.assessment_criteria_doc_path,
+        row.tutor_cv_doc_path,
+      ].filter(
+        (p): p is string => typeof p === "string" && p.startsWith(`${userId}/`),
+      );
+      if (paths.length > 0) {
+        await supabase.storage.from("verification-docs").remove(paths);
+      }
+    } catch (e) {
+      console.error("[removeMyCpdCourse] storage cleanup failed", e);
+    }
+
+    return { mode: "deleted" as const };
   });
+
+// Back-compat alias for older imports.
+export const deleteMyCpdCourse = removeMyCpdCourse;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Admin queues
