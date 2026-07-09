@@ -643,7 +643,7 @@ function statusPill(status: ProviderDomainState["status"]): {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Trading name card — the single source of truth for the provider's public   */
+/* Provider name card — the single source of truth for the provider's public   */
 /* display name. Required before qualifications / CPD can be submitted.       */
 /* -------------------------------------------------------------------------- */
 
@@ -667,14 +667,14 @@ function TradingNameCard() {
   async function save() {
     const name = value.trim();
     if (!name) {
-      toast.error("Enter your trading name.");
+      toast.error("Enter your provider name.");
       return;
     }
     setSaving(true);
     try {
       const res = await submit({ data: { requested_name: name } });
       if ("applied" in res && res.applied) {
-        toast.success("Trading name set.");
+        toast.success("Provider name set.");
       } else if ("submitted" in res && res.submitted) {
         toast.success("Change submitted — awaiting REPS review.");
       } else {
@@ -711,15 +711,16 @@ function TradingNameCard() {
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="font-display text-[15px] font-semibold text-white">
-            Trading name
+            Provider name
           </h3>
           <p className="mt-0.5 text-[12.5px] text-white/60">
             {missing
               ? "Set this before you can submit regulated qualifications or CPD. It's the name members and admins see for your provider."
               : hasName
                 ? "Your public provider name across REPS."
-                : "Awaiting your first trading name."}
+                : "Awaiting your first provider name."}
           </p>
+
 
           {hasName ? (
             <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white">
@@ -758,7 +759,7 @@ function TradingNameCard() {
             </p>
           ) : (
             <p className="mt-2 text-[11.5px] text-white/45">
-              Locked. Contact REPs support to change your trading name.
+              Locked. Contact REPs support to change your provider name.
             </p>
           )}
 

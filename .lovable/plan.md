@@ -1,53 +1,37 @@
-## Trading name lifecycle — QA walkthrough
+## Answer: they are the same field
 
-No code changes proposed; this documents the current behaviour so you can confirm it's what you want. If anything is wrong, tell me which step to change.
+Both surfaces read the **same column**: `profiles.business_name`. There is one provider name in the database, shown in two places.
 
-### 1. Where the name lives
+### What's on each page today
 
-- **Single source of truth:** `profiles.business_name` (one column, per user).
-- **Pending changes** live in `provider_name_requests` with `status = 'pending' | 'approved' | 'rejected'`. Not shown publicly.
+| Page | Label | Behaviour |
+|---|---|---|
+| `/dashboard/verification` — **Trading name** card | "Trading name" | Amber "action needed" state when empty. Input + **Set name** button. Once set → locked pill, copy: *"Locked. Contact REPs support to change your trading name."* |
+| `/dashboard/profile` — **Identity → Provider name** field | "Provider name" | Text input that reads `business_name`. But the `saveProviderProfile` server fn **ignores the `name` field on save** (see `provider-profile.functions.ts` L110–113: *"`name` is accepted for backwards compatibility but ignored — name changes go through the admin approval queue"*). So the input looks editable, does nothing. |
 
-### 2. How a name is added (first time)
+### Why this is confusing (and wrong)
 
-Dashboard → `/dashboard/verification` → **Trading name** card.
+1. **Two different labels for one field** — "Trading name" vs "Provider name" makes it look like two settings.
+2. **Profile input is a dead control** — user types, hits save, name doesn't change, no error, no explanation.
+3. **The gate lives in the wrong place** — trading name is a verification prerequisite (blocks qualification/CPD submission), so it belongs in `/dashboard/verification`, not in profile chrome.
 
-1. If `profiles.business_name` is empty, the card renders in amber "action needed" state with an input + **Set name** button.
-2. On submit, `submitProviderNameChange({ requested_name })` runs:
-   - Checks for an existing pending request → rejects if one exists.
-   - Sees `current` is empty → **writes directly to `profiles.business_name`** (via `supabaseAdmin`), regenerates the provider slug, and returns `{ applied: true }`.
-   - **No admin approval on first set.** Name goes live immediately.
-3. UI refetches `getMyProviderNameStatus`; card flips to locked state.
+### Recommendation (one field, one place)
 
-### 3. When the card becomes "locked"
+Consolidate to a single surface:
 
-As soon as `profiles.business_name` is non-empty (`hasName === true`), the card shows:
+- **Keep the card in `/dashboard/verification`** as the only place a provider sets or sees their name. Rename it from **"Trading name"** to **"Provider name"** to match the public label.
+- **Remove the Provider name input from `/dashboard/profile`.** Replace with a read-only display of the current provider name plus a small link: *"Set in Verification"* (or *"Contact support to change"* once locked). The Identity panel keeps logo + hero image + slug/public URL.
+- **Drop the ignored `name` field** from `UpdateProviderProfile` (server fn) and the `namePending` UI branch on the profile page — that logic is dead weight now that changes flow through support only.
+- **Column stays**: `profiles.business_name` is the single source of truth. No DB migration needed.
 
-- Green check icon
-- The approved name in a read-only pill
-- Copy: *"Locked. Contact REPs support to change your trading name."*
-- **No input, no button, no "Request change" affordance.**
+### Result
 
-The `submitProviderNameChange` server fn still exists but is no longer reachable from the provider dashboard.
+- One field, one page, one label ("Provider name"), consistent with the public site.
+- Profile page shows the current name for reference but is not editable there.
+- Verification page owns the write path (first-set instant, later changes = contact support).
+- No dead controls, no split brain.
 
-### 4. How a locked name changes
+### Open decisions before I build
 
-Only two paths, both admin-side:
-
-- **Support / admin** edits `profiles.business_name` directly (or approves a `provider_name_requests` row created out-of-band).
-- The `approveProviderNameRequest` admin fn (in the same file) writes the new name to `profiles.business_name` and marks the request approved.
-
-Providers themselves have no UI to trigger a change.
-
-### 5. Downstream effects of setting/changing the name
-
-- **Provider slug** (`professionals.slug`) is regenerated from the new name on first-set and on admin approval.
-- **Submission gate:** `submitRegulatedPermission(Batch)` and `submitCpdCourse` throw `"Set your trading name…"` when `business_name` is empty **and** `professionals.account_type = 'organisation'`. Individual trainers are not gated.
-- **Admin verification queues** and hero labels read `profiles.business_name` as the display name; fall back to `"Unnamed provider"` when null.
-
-### Confirm or change
-
-If any of the following should be different, say which and I'll plan the change:
-
-- (a) Should first-set also require admin approval? Currently it's instant.
-- (b) Should providers see a "Request change" flow at all, or is contact-support the final answer? Currently: contact-support only.
-- (c) Should individual (non-organisation) providers also be gated by trading name? Currently: no.
+- (a) Rename **"Trading name"** card → **"Provider name"** everywhere? Or keep "Trading name" (legal/tax connotation) and only rename the profile label?
+- (b) On the profile page, should the read-only pill link to `/dashboard/verification#trading-name`, or just render as static text?

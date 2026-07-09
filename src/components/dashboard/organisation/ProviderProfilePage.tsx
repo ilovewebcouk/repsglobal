@@ -29,16 +29,15 @@ import {
   getMyProviderProfile,
   updateMyProviderProfile,
 } from "@/lib/profile/provider-profile.functions";
-import {
-  getMyProviderNameStatus,
-  submitProviderNameChange,
-} from "@/lib/verification/provider-name.functions";
+import { getMyProviderNameStatus } from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
 import {
   listMyProviderChanges,
   PROVIDER_FIELD_LABELS,
   type ProviderFieldKey,
 } from "@/lib/verification/provider-changes.functions";
+import { Link } from "@tanstack/react-router";
+
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
@@ -76,7 +75,7 @@ export function ProviderProfilePage() {
   const fetchProfile = useServerFn(getMyProviderProfile);
   const saveProfile = useServerFn(updateMyProviderProfile);
   const fetchNameStatus = useServerFn(getMyProviderNameStatus);
-  const submitName = useServerFn(submitProviderNameChange);
+
 
 
   const { data, isLoading } = useQuery({
@@ -114,7 +113,6 @@ export function ProviderProfilePage() {
 
 
   const [form, setForm] = React.useState({
-    name: "",
     tagline: "",
     about: "",
     website_url: "",
@@ -134,7 +132,6 @@ export function ProviderProfilePage() {
   React.useEffect(() => {
     if (!data) return;
     setForm({
-      name: data.name ?? "",
       tagline: data.tagline ?? "",
       about: data.about ?? "",
       website_url: data.website_url ?? "",
@@ -151,6 +148,7 @@ export function ProviderProfilePage() {
     });
   }, [data]);
 
+
   const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
 
@@ -159,16 +157,6 @@ export function ProviderProfilePage() {
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!phoneValid) throw new Error("Phone number looks invalid.");
-
-
-      // Submit name change for admin approval when it differs from the
-      // currently approved name (and isn't already pending).
-      let nameSubmitted = false;
-      const requestedName = form.name.trim();
-      if (!namePending && requestedName && requestedName !== approvedName.trim()) {
-        const res = await submitName({ data: { requested_name: requestedName } });
-        if ((res as { submitted?: boolean }).submitted) nameSubmitted = true;
-      }
 
       const res = await saveProfile({
         data: {
@@ -188,15 +176,14 @@ export function ProviderProfilePage() {
       });
 
       const submitted = (res as { submitted?: number } | undefined)?.submitted ?? 0;
-      return { nameSubmitted, submitted };
+      return { submitted };
     },
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-      qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
       qc.invalidateQueries({ queryKey: ["my-provider-changes"] });
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       qc.invalidateQueries({ queryKey: ["website-public"] });
-      const total = (res?.submitted ?? 0) + (res?.nameSubmitted ? 1 : 0);
+      const total = res?.submitted ?? 0;
       if (total === 0) {
         toast.success("No changes to submit.");
       } else if (total === 1) {
@@ -210,6 +197,7 @@ export function ProviderProfilePage() {
 
 
 
+
   /* -------------------- dirty / submit-button state -------------------- */
 
   // Build the "baseline" values we compare form state against. Locked fields
@@ -218,7 +206,6 @@ export function ProviderProfilePage() {
   const baseline = React.useMemo(() => {
     if (!data) return null;
     return {
-      name: (data.name ?? "").trim(),
       tagline: data.tagline ?? "",
       about: data.about ?? "",
       website_url: data.website_url ?? "",
@@ -236,13 +223,8 @@ export function ProviderProfilePage() {
   const changedCount = React.useMemo(() => {
     if (!baseline) return 0;
     let n = 0;
-    // Name — only if not currently pending; compare against approved name.
-    if (!namePending) {
-      const requested = form.name.trim();
-      const approved = (approvedName ?? "").trim();
-      if (requested && requested !== approved) n += 1;
-    }
-    // Free-text fields (skip locked ones).
+    // Free-text fields (skip locked ones). Provider name is not editable here —
+    // it's managed on /dashboard/verification.
     const pairs: Array<[keyof typeof form, string, boolean]> = [
       ["tagline", baseline.tagline, false],
       ["about", baseline.about, false],
@@ -261,7 +243,8 @@ export function ProviderProfilePage() {
       if ((form[key] ?? "") !== (base ?? "")) n += 1;
     }
     return n;
-  }, [baseline, form, namePending, approvedName, websiteLocked, emailLocked]);
+  }, [baseline, form, websiteLocked, emailLocked]);
+
 
   const dirty = changedCount > 0;
 
@@ -426,14 +409,22 @@ export function ProviderProfilePage() {
               }
             >
               <div className="flex flex-col gap-2">
-                <input
-                  className={`${inputCls} disabled:cursor-not-allowed disabled:opacity-60`}
-                  value={namePending ? (nameStatus?.pending?.requested_name ?? "") : form.name}
-                  onChange={(e) => update("name", e.target.value)}
-                  placeholder="e.g. Northline Academy"
-                  maxLength={120}
-                  disabled={namePending}
-                />
+                <div className="flex items-center justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-ink px-3 py-2.5 text-[13px] text-white">
+                  <span className="truncate">
+                    {approvedName || (
+                      <span className="text-white/40">Not set yet</span>
+                    )}
+                  </span>
+                  <Link
+                    to="/dashboard/verification"
+                    className="shrink-0 text-[12px] font-semibold text-reps-orange hover:underline"
+                  >
+                    {approvedName ? "Manage" : "Set in Verification"}
+                  </Link>
+                </div>
+                <p className="text-[11.5px] text-white/45">
+                  Managed on your Verification page. Contact REPs support to change it once set.
+                </p>
                 {namePending ? (
                   <div className="flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
                     <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -452,6 +443,7 @@ export function ProviderProfilePage() {
                 ) : null}
               </div>
             </Field>
+
 
 
           </div>
