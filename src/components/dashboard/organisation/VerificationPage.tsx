@@ -37,8 +37,13 @@ import {
   setProviderWebsite,
   startProviderDomainVerification,
 } from "@/lib/verification/provider-domain.functions";
+import {
+  getMyProviderNameStatus,
+  submitProviderNameChange,
+} from "@/lib/verification/provider-name.functions";
 import type { ProviderDomainState } from "@/lib/verification/provider-domain-shared";
 import { isEmailShape } from "@/lib/verification/provider-domain-shared";
+
 
 /* -------------------------------------------------------------------------- */
 /* Return-from-flow toasts                                                    */
@@ -127,9 +132,11 @@ export function ProviderVerificationPage() {
         />
 
         <div className="flex flex-col gap-4">
+          <TradingNameCard />
           <IdentityProfileCard step="01" />
           <DomainEmailCard state={d} loading={domainQ.isLoading} />
         </div>
+
       </div>
     </DashboardShell>
   );
@@ -608,3 +615,129 @@ function statusPill(status: ProviderDomainState["status"]): {
       };
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Trading name card — the single source of truth for the provider's public   */
+/* display name. Required before qualifications / CPD can be submitted.       */
+/* -------------------------------------------------------------------------- */
+
+function TradingNameCard() {
+  const qc = useQueryClient();
+  const fetchStatus = useServerFn(getMyProviderNameStatus);
+  const submit = useServerFn(submitProviderNameChange);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["my-provider-name-status"],
+    queryFn: () => fetchStatus(),
+  });
+
+  const [value, setValue] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
+
+  const approved = data?.approved_name ?? null;
+  const pending = data?.pending ?? null;
+  const hasName = !!approved && approved.trim().length > 0;
+
+  async function save() {
+    const name = value.trim();
+    if (!name) {
+      toast.error("Enter your trading name.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await submit({ data: { requested_name: name } });
+      if ("applied" in res && res.applied) {
+        toast.success("Trading name set.");
+      } else if ("submitted" in res && res.submitted) {
+        toast.success("Change submitted — awaiting REPS review.");
+      } else {
+        toast.success("Saved.");
+      }
+      setValue("");
+      void qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const missing = !isLoading && !hasName && !pending;
+
+  return (
+    <section
+      className={`rounded-[16px] border p-5 ${
+        missing
+          ? "border-amber-400/40 bg-amber-500/[0.06]"
+          : "border-reps-border bg-reps-panel"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5">
+          {missing ? (
+            <AlertTriangle className="h-4 w-4 text-amber-300" />
+          ) : hasName ? (
+            <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+          ) : (
+            <Clock className="h-4 w-4 text-white/60" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display text-[15px] font-semibold text-white">
+            Trading name
+          </h3>
+          <p className="mt-0.5 text-[12.5px] text-white/60">
+            {missing
+              ? "Set this before you can submit regulated qualifications or CPD. It's the name members and admins see for your provider."
+              : hasName
+                ? "Your public provider name across REPS."
+                : "Awaiting your first trading name."}
+          </p>
+
+          {hasName ? (
+            <div className="mt-3 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 py-2 text-[13px] text-white">
+              {approved}
+            </div>
+          ) : null}
+
+          {pending ? (
+            <p className="mt-3 text-[12px] text-amber-300">
+              Pending review: <span className="font-semibold">{pending.requested_name}</span>
+            </p>
+          ) : null}
+
+          {(!hasName || !pending) && (
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder={hasName ? "New trading name" : "e.g. Diverse Trainers"}
+                className="h-10 flex-1 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+              />
+              <button
+                type="button"
+                onClick={save}
+                disabled={saving || !value.trim()}
+                className="inline-flex h-10 items-center justify-center rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
+              >
+                {saving ? "Saving…" : hasName ? "Request change" : "Set name"}
+              </button>
+            </div>
+          )}
+          {!hasName ? (
+            <p className="mt-2 text-[11.5px] text-white/45">
+              This appears immediately. Later changes go through REPS review.
+            </p>
+          ) : (
+            <p className="mt-2 text-[11.5px] text-white/45">
+              Changing your trading name requires REPS approval.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+

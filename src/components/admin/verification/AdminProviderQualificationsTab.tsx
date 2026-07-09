@@ -296,7 +296,7 @@ function RegulatedListItem({
   onSelect: () => void;
 }) {
   const providerName =
-    group.provider?.legal_entity_name || group.provider?.identity_verified_name || "Provider";
+    group.provider?.legal_entity_name || group.provider?.identity_verified_name || "Unnamed provider";
   const first = group.rows[0];
   const firstTitle = first.ofqual_snapshot?.title ?? first.qualification?.title ?? "Awaiting Ofqual match";
   const bodyLabel =
@@ -354,7 +354,7 @@ function RegulatedDetail({
   const row = group.rows[Math.min(activeRowIdx, group.rows.length - 1)];
 
   const providerName =
-    group.provider?.legal_entity_name || group.provider?.identity_verified_name || "Provider";
+    group.provider?.legal_entity_name || group.provider?.identity_verified_name || "Unnamed provider";
 
   const decide = useServerFn(adminDecideRegulated);
   const [note, setNote] = React.useState("");
@@ -809,7 +809,7 @@ function CpdListItem({
   onSelect: () => void;
 }) {
   const providerName =
-    row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Provider";
+    row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Unnamed provider";
   return (
     <li>
       <button
@@ -858,7 +858,7 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
   };
 
   const providerName =
-    row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Provider";
+    row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Unnamed provider";
 
   const allDocs: QualificationDoc[] = [
     row.syllabus_doc_path ? { path: row.syllabus_doc_path, label: "Syllabus" } : null,
