@@ -1367,7 +1367,7 @@ type InsuranceRow = {
   reviewed_at: string | null;
   reviewed_by: string | null;
   created_at: string;
-  professional: { full_name: string | null; full_name: string | null } | null;
+  professional: { full_name: string | null} | null;
 };
 
 function AdminInsuranceTab() {

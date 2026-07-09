@@ -41,7 +41,6 @@ export type Member360Snapshot = {
   has_active_subscription: boolean;
   subscription: AdminSubscriptionState;
   account_type: string | null;
-  full_name: string | null;
   professional_suspended_at: string | null;
 };
 
@@ -83,7 +82,7 @@ export const getMember360 = createServerFn({ method: "GET" })
     const email = authRes.data?.user?.email ?? null;
     const created_at = authRes.data?.user?.created_at ?? null;
     const last_sign_in_at = authRes.data?.user?.last_sign_in_at ?? null;
-    const profile = (profileRes.data as { full_name?: string | null; avatar_url?: string | null; full_name?: string | null } | null) ?? null;
+    const profile = (profileRes.data as { full_name?: string | null; avatar_url?: string | null} | null) ?? null;
     const full_name = profile?.full_name ?? null;
     const avatar_url = profile?.avatar_url ?? null;
     const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null; primary_profession?: string | null; account_type?: string | null; suspended_at?: string | null } | null) ?? null;

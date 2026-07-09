@@ -36,7 +36,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
         .select("full_name")
         .eq("id", userId)
         .maybeSingle();
-      const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
+      const profAny = prof as { full_name?: string | null} | null;
       await notifyVerificationEvent({
         professionalId: userId,
         event: "insurance.rejected_expired",
@@ -79,7 +79,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
         .select("full_name")
         .eq("id", userId)
         .maybeSingle();
-      const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
+      const profAny = prof as { full_name?: string | null} | null;
       proName = profAny?.full_name ?? null;
       const identityName =
         proAny?.identity_verified_name ?? profAny?.full_name ?? null;
@@ -606,13 +606,13 @@ export const listInsurancePolicies = createServerFn({ method: "POST" })
       .limit(500);
     if (error) throw new Error(error.message);
     const ids = Array.from(new Set((rows ?? []).map((r) => r.professional_id))).filter(Boolean) as string[];
-    const profilesById = new Map<string, { full_name: string | null; full_name: string | null }>();
+    const profilesById = new Map<string, { full_name: string | null}>();
     if (ids.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
         .select("id, full_name")
         .in("id", ids);
-      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null }>) {
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null}>) {
         profilesById.set(p.id, { full_name: p.full_name: p.full_name });
       }
     }

@@ -273,7 +273,7 @@ export const adminNudgeInsuranceRenewal = createServerFn({ method: "POST" })
       .select("id, full_name")
       .eq("id", data.professional_id)
       .maybeSingle();
-    const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
+    const profAny = prof as { full_name?: string | null} | null;
 
     const { data: ins } = await supabaseAdmin
       .from("insurance_policies")

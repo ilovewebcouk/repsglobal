@@ -11,7 +11,6 @@ export type SettingsBundle = {
     user_id: string;
     email: string | null;
     full_name: string | null;
-    full_name: string | null;
     avatar_url: string | null;
     contact_phone: string | null;
     timezone: string;

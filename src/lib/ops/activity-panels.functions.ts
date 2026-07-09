@@ -227,7 +227,7 @@ export const getOnlineNow = createServerFn({ method: "POST" })
         userIds.length ? supabaseAdmin.from("subscriptions").select("user_id, tier, status, created_at").in("user_id", userIds) : Promise.resolve({ data: [] as unknown[] }),
       ]);
       const pMap = new Map<string, { name: string; email: string | null; avatar_url: string | null }>();
-      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null; avatar_url: string | null }>) {
+      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; avatar_url: string | null }>) {
         pMap.set(p.id, { name: p.full_name || p.id.slice(0, 8), email: null, avatar_url: p.avatar_url });
       }
       const sMap = new Map<string, { tier: string | null; status: string | null; created_at: string }>();
@@ -320,7 +320,7 @@ export const getCurrentPages = createServerFn({ method: "POST" })
         ? await supabaseAdmin.from("profiles").select("id, full_name, avatar_url").in("id", allUserIds)
         : { data: [] as unknown[] };
       const pMap = new Map<string, { name: string; avatar_url: string | null }>();
-      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null; avatar_url: string | null }>) {
+      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; avatar_url: string | null }>) {
         pMap.set(p.id, { name: p.full_name || p.id.slice(0, 8), avatar_url: p.avatar_url });
       }
 
@@ -485,7 +485,7 @@ export const getNeedsAttention = createServerFn({ method: "POST" })
         ? await supabaseAdmin.from("profiles").select("id, full_name").in("id", userIds)
         : { data: [] as unknown[] };
       const pMap = new Map<string, string>();
-      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null }>) {
+      for (const p of (profilesRes.data ?? []) as Array<{ id: string; full_name: string | null}>) {
         pMap.set(p.id, p.full_name || p.id.slice(0, 8));
       }
       void iso7d;
@@ -667,7 +667,7 @@ export const getActivityEventDetail = createServerFn({ method: "POST" })
         .eq("id", userId)
         .maybeSingle();
       if (p) {
-        const pp = p as { id: string; full_name: string | null; full_name: string | null; avatar_url: string | null };
+        const pp = p as { id: string; full_name: string | null; avatar_url: string | null };
         member = { user_id: pp.id, name: pp.full_name || pp.id.slice(0, 8), email: null, avatar_url: pp.avatar_url };
       }
     }

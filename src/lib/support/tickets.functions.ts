@@ -693,7 +693,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
 
     // 1b) Partial UUID match on profiles.id (e.g. admin pastes "a1b2c3").
     // PostgREST can't ilike a uuid column, so we use a SECURITY DEFINER rpc.
-    let idMatches: Array<{ id: string; full_name: string | null; full_name: string | null }> = [];
+    let idMatches: Array<{ id: string; full_name: string | null}> = [];
     if (/^[0-9a-fA-F-]{4,}$/.test(q)) {
       const { data: idRows, error: idErr } = await supabaseAdmin.rpc(
         "search_profiles_by_id_prefix",

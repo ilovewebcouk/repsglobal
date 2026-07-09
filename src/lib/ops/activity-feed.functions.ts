@@ -104,7 +104,7 @@ export const getActivityFeed = createServerFn({ method: "POST" })
           .from("profiles")
           .select("id, full_name")
           .in("id", unique);
-        for (const r of (rows ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null }>) {
+        for (const r of (rows ?? []) as Array<{ id: string; full_name: string | null}>) {
           map.set(r.id, r.full_name || r.id.slice(0, 8));
         }
       } catch {
