@@ -45,7 +45,7 @@ export function useAccountMenu(): AccountContext {
   const navigate = useNavigate();
   const { user, isLoading: userLoading } = useSessionUser();
 
-  // profiles.avatar_url + full_name
+  // profiles.avatar_url + full_name + business_name (providers)
   const profileQuery = useQuery({
     queryKey: ["account-profile", user?.id ?? "anon"],
     enabled: !!user,
@@ -53,7 +53,7 @@ export function useAccountMenu(): AccountContext {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("avatar_url, full_name")
+        .select("avatar_url, full_name, business_name")
         .eq("id", user.id)
         .maybeSingle();
       return data ?? null;
