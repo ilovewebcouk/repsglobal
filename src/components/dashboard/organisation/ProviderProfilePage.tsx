@@ -75,7 +75,7 @@ export function ProviderProfilePage() {
   const fetchProfile = useServerFn(getMyProviderProfile);
   const saveProfile = useServerFn(updateMyProviderProfile);
   const fetchNameStatus = useServerFn(getMyProviderNameStatus);
-  const submitName = useServerFn(submitProviderNameChange);
+
 
 
   const { data, isLoading } = useQuery({
