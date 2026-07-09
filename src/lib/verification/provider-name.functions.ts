@@ -106,6 +106,22 @@ export const submitProviderNameChange = createServerFn({ method: "POST" })
       );
     }
 
+    // First-time trading name → apply immediately, no approval queue.
+    // Only *changes* to an existing approved name need admin review.
+    if (!current || !current.trim()) {
+      const { supabaseAdmin } = await import(
+        "@/integrations/supabase/client.server"
+      );
+      const sa = supabaseAdmin as any;
+      const { error: pErr } = await sa
+        .from("profiles")
+        .update({ business_name: requested })
+        .eq("id", userId);
+      if (pErr) throw pErr;
+      await regenerateProviderSlug(sa, userId, requested);
+      return { ok: true, applied: true as const };
+    }
+
     const { error } = await sb
       .from("provider_name_requests")
       .insert({ user_id: userId, requested_name: requested });
@@ -113,6 +129,7 @@ export const submitProviderNameChange = createServerFn({ method: "POST" })
 
     return { ok: true, submitted: true as const };
   });
+
 
 /* ------------------------------------------------------------------ */
 /* Admin-facing                                                         */

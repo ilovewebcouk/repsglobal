@@ -144,11 +144,33 @@ const submitRegulatedInput = z.object({
   awarding_body_reference: z.string().max(120).optional().nullable(),
 });
 
+// Gate: every provider must set a trading name (profiles.business_name)
+// before they can submit regulated qualifications or CPD courses. Without
+// it the admin queue can't tell who submitted, so we block at the door.
+async function assertProviderHasTradingName(supabase: any, userId: string) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("business_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  const name = (data?.business_name as string | null | undefined)?.trim();
+  if (!name) {
+    throw new Error(
+      "Set your trading name on your Verification page before submitting qualifications or CPD.",
+    );
+  }
+}
+
 export const submitRegulatedPermission = createServerFn({ method: "POST" })
+
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => submitRegulatedInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    await assertProviderHasTradingName(supabase, userId);
+
+
 
     const ofqualNumber = data.ofqual_number.trim().toUpperCase();
     if (!OFQUAL_QUAL_NO_REGEX.test(ofqualNumber)) {
@@ -218,6 +240,9 @@ export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => submitRegulatedBatchInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    await assertProviderHasTradingName(supabase, userId);
+
+
 
     // Ownership: every doc must be under the caller's storage folder.
     for (const p of data.evidence_doc_paths) {
@@ -334,6 +359,9 @@ export const submitCpdCourse = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => submitCpdInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    await assertProviderHasTradingName(supabase, userId);
+
+
 
     for (const p of [data.syllabus_doc_path, data.assessment_criteria_doc_path, data.tutor_cv_doc_path]) {
       if (!p.startsWith(`${userId}/`)) {
@@ -447,39 +475,41 @@ export const adminListCpdQueue = createServerFn({ method: "GET" })
     return await hydrateProviderNames(rows ?? [], supabaseAdmin);
   });
 
-// Backfills provider.legal_entity_name from profiles (business_name / display_name /
-// full_name) when the professionals row hasn't captured a legal entity name yet —
-// otherwise the admin queue shows a generic "Provider" label.
+// Provider display name comes from ONE column: profiles.business_name.
+// The joined `provider.legal_entity_name` field is overwritten with this
+// value so downstream UI keeps its existing shape, but the read path no
+// longer falls back through identity_verified_name / display_name /
+// full_name — those aren't the provider's public trading name.
 async function hydrateProviderNames<T extends { provider?: { id?: string | null; legal_entity_name?: string | null; identity_verified_name?: string | null } | null }>(
   rows: T[],
   supabaseAdmin: any,
 ): Promise<T[]> {
-  const missingIds = Array.from(
+  const ids = Array.from(
     new Set(
       rows
-        .filter((r) => r.provider && !r.provider.legal_entity_name && !r.provider.identity_verified_name)
         .map((r) => r.provider?.id)
         .filter((id): id is string => Boolean(id)),
     ),
   );
-  if (missingIds.length === 0) return rows;
+  if (ids.length === 0) return rows;
   const { data: profs } = await supabaseAdmin
     .from("profiles")
-    .select("id, business_name, display_name, full_name")
-    .in("id", missingIds);
+    .select("id, business_name")
+    .in("id", ids);
   const nameById = new Map<string, string>();
-  for (const p of ((profs as Array<{ id: string; business_name: string | null; display_name: string | null; full_name: string | null }> | null) ?? [])) {
-    const n = p.business_name?.trim() || p.display_name?.trim() || p.full_name?.trim();
+  for (const p of ((profs as Array<{ id: string; business_name: string | null }> | null) ?? [])) {
+    const n = p.business_name?.trim();
     if (n) nameById.set(p.id, n);
   }
   return rows.map((r) => {
-    if (r.provider && !r.provider.legal_entity_name && !r.provider.identity_verified_name) {
-      const n = nameById.get(r.provider.id ?? "");
-      if (n) return { ...r, provider: { ...r.provider, legal_entity_name: n } };
-    }
-    return r;
+    if (!r.provider?.id) return r;
+    const n = nameById.get(r.provider.id);
+    // Always prefer business_name (the provider-editable trading name) over
+    // whatever legal_entity_name/identity_verified_name were stored.
+    return { ...r, provider: { ...r.provider, legal_entity_name: n ?? null, identity_verified_name: null } };
   });
 }
+
 
 
 export const adminDecideRegulated = createServerFn({ method: "POST" })

@@ -89,16 +89,17 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
     if (proIds.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, display_name")
+        .select("id, business_name")
         .in("id", proIds);
       for (const p of (profs ?? []) as Array<{
         id: string;
-        full_name: string | null;
-        display_name: string | null;
+        business_name: string | null;
       }>) {
-        nameById.set(p.id, p.display_name || p.full_name || "Professional");
+        const n = p.business_name?.trim();
+        if (n) nameById.set(p.id, n);
       }
     }
+
 
     type Item = {
       key: string;
@@ -120,7 +121,7 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
       }>).map<Item>((r) => ({
         key: `qual-${r.id}`,
         kind: "qualification",
-        title: `${nameById.get(r.professional_id) ?? "Pro"} — qualification`,
+        title: `${nameById.get(r.professional_id) ?? "Unnamed provider"} — qualification`,
         preview: [r.qualification, r.awarding_body].filter(Boolean).join(" · ") || "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
@@ -134,7 +135,7 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
       }>).map<Item>((r) => ({
         key: `ins-${r.id}`,
         kind: "insurance",
-        title: `${nameById.get(r.professional_id) ?? "Pro"} — insurance`,
+        title: `${nameById.get(r.professional_id) ?? "Unnamed provider"} — insurance`,
         preview: r.provider ?? "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
