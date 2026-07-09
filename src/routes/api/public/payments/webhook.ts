@@ -828,7 +828,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   await _closeMembershipImpl({
                     user_id: userId,
                     mode: "end_now_delete",
-                    reason: "member_request",
+                    reason: "stripe_uncollectible",
                     notes: `Invoice marked uncollectible (invoice ${invoice.id})`,
                     actor_id: "stripe_webhook",
                   });
