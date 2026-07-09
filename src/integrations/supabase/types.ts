@@ -1213,6 +1213,8 @@ export type Database = {
           title: string
           tutor_cv_doc_path: string | null
           updated_at: string
+          withdrawn_at: string | null
+          withdrawn_reason: string | null
         }
         Insert: {
           accredited_at?: string | null
@@ -1236,6 +1238,8 @@ export type Database = {
           title: string
           tutor_cv_doc_path?: string | null
           updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
         }
         Update: {
           accredited_at?: string | null
@@ -1259,6 +1263,8 @@ export type Database = {
           title?: string
           tutor_cv_doc_path?: string | null
           updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
         }
         Relationships: [
           {
