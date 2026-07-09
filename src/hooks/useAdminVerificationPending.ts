@@ -28,16 +28,12 @@ export function useAdminVerificationPending(options: { enabled?: boolean } = {})
     if (!enabled) return;
     const channel = supabase
       .channel(channelName.current)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "verification_submissions" },
-        () => query.refetch(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "insurance_policies" },
-        () => query.refetch(),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "verification_submissions" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "insurance_policies" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "provider_name_requests" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "provider_domain_verifications" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "provider_regulated_permissions" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "cpd_courses" }, () => query.refetch())
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
