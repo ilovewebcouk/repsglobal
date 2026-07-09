@@ -64,7 +64,7 @@ import {
   listMyRegulatedPermissions,
   listMyCpdCourses,
   resolveOfqualNumber,
-  submitRegulatedPermission,
+  submitRegulatedPermissionBatch,
   submitCpdCourse,
   deleteMyRegulatedPermission,
   deleteMyCpdCourse,
@@ -430,74 +430,84 @@ function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
 
 /* ─── Add regulated dialog ──────────────────────────────────────────────── */
 
+type OfqualChip = {
+  id: string;
+  number: string;
+  state:
+    | { kind: "loading" }
+    | { kind: "invalid" }
+    | { kind: "resolved"; found: boolean; title: string | null; awardingOrg: string | null; level: string | null };
+};
+
 function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const resolve = useServerFn(resolveOfqualNumber);
   const upload = useServerFn(uploadCertificateFile);
-  const submit = useServerFn(submitRegulatedPermission);
+  const submit = useServerFn(submitRegulatedPermissionBatch);
 
-  const [ofqualNumber, setOfqualNumber] = React.useState("");
+  const [draftNumber, setDraftNumber] = React.useState("");
+  const [chips, setChips] = React.useState<OfqualChip[]>([]);
   const [evidenceType, setEvidenceType] =
     React.useState<RegulatedPermissionRow["evidence_type"]>("eqa_report");
   const [reference, setReference] = React.useState("");
   const [files, setFiles] = React.useState<File[]>([]);
   const [submitting, setSubmitting] = React.useState(false);
-  const [lookup, setLookup] = React.useState<
-    | { state: "idle" }
-    | { state: "loading" }
-    | { state: "invalid" }
-    | {
-        state: "resolved";
-        found: boolean;
-        snapshot: {
-          title: string | null;
-          awardingOrganisation: string | null;
-          level: string | null;
-          status: string | null;
-        } | null;
-      }
-  >({ state: "idle" });
 
-  // Debounced lookup as the provider types the Ofqual number.
-  React.useEffect(() => {
-    const trimmed = ofqualNumber.trim().toUpperCase();
-    if (!trimmed) {
-      setLookup({ state: "idle" });
+  const draftUpper = draftNumber.trim().toUpperCase();
+  const draftFormatValid = OFQUAL_QUAL_NO_REGEX.test(draftUpper);
+  const draftDuplicate = chips.some((c) => c.number === draftUpper);
+
+  const addChip = React.useCallback(async () => {
+    if (!draftFormatValid) {
+      toast.error("Ofqual number must look like 601/3866/X");
       return;
     }
-    if (!OFQUAL_QUAL_NO_REGEX.test(trimmed)) {
-      setLookup({ state: "invalid" });
+    if (draftDuplicate) {
+      toast.error("Already added");
       return;
     }
-    let cancelled = false;
-    setLookup({ state: "loading" });
-    const t = window.setTimeout(async () => {
-      try {
-        const res = await resolve({ data: { ofqual_number: trimmed } });
-        if (cancelled) return;
-        if (!res.valid) {
-          setLookup({ state: "invalid" });
-          return;
-        }
-        setLookup({ state: "resolved", found: res.found, snapshot: res.snapshot });
-      } catch {
-        if (!cancelled) setLookup({ state: "idle" });
-      }
-    }, 400);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(t);
-    };
-  }, [ofqualNumber, resolve]);
+    if (chips.length >= 10) {
+      toast.error("You can add up to 10 qualifications per submission");
+      return;
+    }
+    const id = `${draftUpper}-${Date.now()}`;
+    setChips((prev) => [...prev, { id, number: draftUpper, state: { kind: "loading" } }]);
+    setDraftNumber("");
+    try {
+      const res = await resolve({ data: { ofqual_number: draftUpper } });
+      setChips((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                state: !res.valid
+                  ? { kind: "invalid" }
+                  : {
+                      kind: "resolved",
+                      found: res.found,
+                      title: res.snapshot?.title ?? null,
+                      awardingOrg: res.snapshot?.awardingOrganisation ?? null,
+                      level: res.snapshot?.level ?? null,
+                    },
+              }
+            : c,
+        ),
+      );
+    } catch {
+      setChips((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, state: { kind: "invalid" } } : c)),
+      );
+    }
+  }, [chips, draftDuplicate, draftFormatValid, draftUpper, resolve]);
+
+  const removeChip = (id: string) => setChips((prev) => prev.filter((c) => c.id !== id));
 
   const onFilesChange = (list: FileList | null) => {
     if (!list) return;
-    const arr = Array.from(list).slice(0, 5);
-    setFiles(arr);
+    setFiles(Array.from(list).slice(0, 5));
   };
 
-  const validFormat = OFQUAL_QUAL_NO_REGEX.test(ofqualNumber.trim().toUpperCase());
-  const canSubmit = validFormat && files.length > 0 && !submitting;
+  const canSubmit = chips.length > 0 && files.length > 0 && !submitting;
 
   const onSubmit = async () => {
     if (!canSubmit) return;
@@ -511,13 +521,17 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
       }
       await submit({
         data: {
-          ofqual_number: ofqualNumber.trim().toUpperCase(),
+          ofqual_numbers: chips.map((c) => c.number),
           evidence_type: evidenceType,
           evidence_doc_paths: paths,
           awarding_body_reference: reference.trim() || null,
         },
       });
-      toast.success("Submitted for review");
+      toast.success(
+        chips.length === 1
+          ? "Submitted for review"
+          : `${chips.length} qualifications submitted for review`,
+      );
       qc.invalidateQueries({ queryKey: ["my-regulated-permissions"] });
       onClose();
     } catch (e) {
@@ -529,72 +543,112 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg bg-reps-panel border-reps-border text-white">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-reps-panel border-reps-border text-white">
         <DialogHeader>
-          <DialogTitle>Add regulated qualification</DialogTitle>
+          <DialogTitle>Add regulated qualifications</DialogTitle>
           <DialogDescription>
-            Enter the Ofqual qualification number and upload evidence that your centre is approved to deliver it.
+            Add every Ofqual number your evidence document covers — one EQA report or approval letter
+            often lists several qualifications. Upload the evidence once.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
             <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Ofqual qualification number <span className="text-red-300">*</span>
+              Ofqual qualification numbers <span className="text-red-300">*</span>
             </Label>
-            <div className="relative">
+            <div className="flex gap-2">
               <Input
-                value={ofqualNumber}
-                onChange={(e) => setOfqualNumber(e.target.value)}
+                value={draftNumber}
+                onChange={(e) => setDraftNumber(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (draftFormatValid && !draftDuplicate) void addChip();
+                  }
+                }}
                 placeholder="e.g. 601/3866/X"
                 className="font-mono uppercase"
                 autoCapitalize="characters"
               />
-              {lookup.state === "loading" ? (
-                <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-white/50" />
-              ) : lookup.state === "resolved" && lookup.found ? (
-                <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-300" />
-              ) : lookup.state === "resolved" && !lookup.found ? (
-                <AlertTriangle className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-300" />
-              ) : lookup.state === "invalid" && ofqualNumber.trim() ? (
-                <XCircle className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-300" />
-              ) : null}
+              <Button
+                type="button"
+                onClick={() => void addChip()}
+                disabled={!draftFormatValid || draftDuplicate}
+                variant="ghost"
+                className="shrink-0"
+              >
+                <Plus data-icon /> Add
+              </Button>
             </div>
             <p className="mt-1 text-[11.5px] text-white/45">
               Format: three digits / four digits / one letter or digit (e.g. 601/3866/X).
+              {draftNumber && !draftFormatValid ? (
+                <span className="ml-1 text-red-300">Format invalid.</span>
+              ) : null}
+              {draftDuplicate ? <span className="ml-1 text-amber-300">Already added.</span> : null}
             </p>
 
-            {lookup.state === "invalid" && ofqualNumber.trim() ? (
-              <div className="mt-2 rounded-[10px] border border-red-500/30 bg-red-500/10 p-2.5 text-[12px] text-red-200">
-                That doesn't match the Ofqual number format. Check your certificate — it should look like 601/3866/X.
-              </div>
-            ) : null}
-
-            {lookup.state === "resolved" && lookup.found && lookup.snapshot ? (
-              <div className="mt-2 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-3 text-[12.5px]">
-                <div className="flex items-center gap-1.5 text-emerald-300">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span className="font-semibold">Found on Ofqual register</span>
-                </div>
-                <div className="mt-1.5 space-y-0.5 text-white/85">
-                  <div className="font-semibold">{lookup.snapshot.title ?? "—"}</div>
-                  <div className="text-white/60">
-                    {lookup.snapshot.awardingOrganisation ?? "—"}
-                    {lookup.snapshot.level ? ` · ${lookup.snapshot.level}` : ""}
-                    {lookup.snapshot.status ? ` · ${lookup.snapshot.status}` : ""}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {lookup.state === "resolved" && !lookup.found ? (
-              <div className="mt-2 rounded-[10px] border border-amber-500/30 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
-                <span className="font-semibold">Not on the Ofqual register.</span> Double-check the
-                number. You can still submit — our team will review it manually.
-              </div>
+            {chips.length > 0 ? (
+              <ul className="mt-3 space-y-1.5">
+                {chips.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.03] p-2.5"
+                  >
+                    <div className="mt-0.5">
+                      {c.state.kind === "loading" ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-white/60" />
+                      ) : c.state.kind === "invalid" ? (
+                        <XCircle className="h-3.5 w-3.5 text-red-300" />
+                      ) : c.state.found ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+                      ) : (
+                        <AlertTriangle className="h-3.5 w-3.5 text-amber-300" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[12.5px] font-semibold text-white">
+                          {c.number}
+                        </span>
+                        {c.state.kind === "resolved" && c.state.found ? (
+                          <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
+                            On register
+                          </Badge>
+                        ) : c.state.kind === "resolved" && !c.state.found ? (
+                          <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
+                            Not on register
+                          </Badge>
+                        ) : null}
+                      </div>
+                      {c.state.kind === "resolved" && c.state.found ? (
+                        <div className="mt-0.5 text-[11.5px] text-white/70">
+                          {c.state.title ?? "—"}
+                          <span className="text-white/45">
+                            {c.state.awardingOrg ? ` · ${c.state.awardingOrg}` : ""}
+                            {c.state.level ? ` · ${c.state.level}` : ""}
+                          </span>
+                        </div>
+                      ) : c.state.kind === "resolved" && !c.state.found ? (
+                        <div className="mt-0.5 text-[11.5px] text-amber-200/80">
+                          Not found on the public Ofqual register — you can still submit; we'll review manually.
+                        </div>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeChip(c.id)}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-white/50 hover:bg-white/5 hover:text-white"
+                      aria-label={`Remove ${c.number}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             ) : null}
           </div>
-
 
           <div>
             <Label className="mb-2 block text-[12px] font-semibold text-white/80">
@@ -663,6 +717,11 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
                 ))}
               </ul>
             ) : null}
+            {chips.length > 1 ? (
+              <p className="mt-1.5 text-[11.5px] text-white/50">
+                These files will be attached to all {chips.length} qualifications in this submission.
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -671,7 +730,13 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={!canSubmit}>
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit for review"}
+            {submitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : chips.length > 1 ? (
+              `Submit ${chips.length} qualifications`
+            ) : (
+              "Submit for review"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

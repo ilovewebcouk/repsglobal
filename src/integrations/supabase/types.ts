@@ -4013,6 +4013,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          submission_group_id: string | null
           updated_at: string
         }
         Insert: {
@@ -4036,6 +4037,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          submission_group_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -4059,6 +4061,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          submission_group_id?: string | null
           updated_at?: string
         }
         Relationships: [
