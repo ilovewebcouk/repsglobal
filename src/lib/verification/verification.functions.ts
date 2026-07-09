@@ -104,7 +104,7 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
       .from("profiles")
       .select("id, full_name")
       .in("id", proIds);
-    const profileMap = new Map((profiles ?? []).map((p) => [p.id, { full_name: p.full_name: p.full_name }]));
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, { full_name: p.full_name }]));
     profByPro = Object.fromEntries(
       (pros ?? []).map((p) => [
         p.id,

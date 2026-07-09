@@ -613,7 +613,7 @@ export const listInsurancePolicies = createServerFn({ method: "POST" })
         .select("id, full_name")
         .in("id", ids);
       for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null}>) {
-        profilesById.set(p.id, { full_name: p.full_name: p.full_name });
+        profilesById.set(p.id, { full_name: p.full_name });
       }
     }
     return (rows ?? []).map((r) => ({

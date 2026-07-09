@@ -43,7 +43,7 @@ export function DeliveryModePanel() {
       if (!next.inPerson && !next.online)
         throw new Error("Pick at least one — in-person or online.");
       return saveProfile({
-        data: { full_name: data.full_name: data.full_name: data.full_name, headline: data.headline, primary_profession: data.primary_profession, specialisms: data.specialisms, in_person_available: next.inPerson, online_available: next.online, city: data.city, contact_phone: data.contact_phone, bio: data.bio, languages: data.languages, social_instagram: data.social_instagram, social_linkedin: data.social_linkedin, social_youtube: data.social_youtube, social_tiktok: data.social_tiktok, social_x: data.social_x,  },
+        data: { full_name: data.full_name, headline: data.headline, primary_profession: data.primary_profession, specialisms: data.specialisms, in_person_available: next.inPerson, online_available: next.online, city: data.city, contact_phone: data.contact_phone, bio: data.bio, languages: data.languages, social_instagram: data.social_instagram, social_linkedin: data.social_linkedin, social_youtube: data.social_youtube, social_tiktok: data.social_tiktok, social_x: data.social_x,  },
       });
     },
     onSuccess: () => {
