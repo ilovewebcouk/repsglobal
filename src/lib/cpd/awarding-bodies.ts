@@ -36,6 +36,40 @@ export function awardingBodyLogo(slug: string | null | undefined): string | null
   return null;
 }
 
+/**
+ * Fuzzy match an awarding-body name (as returned by the Ofqual register or
+ * the AI extractor) against our curated list, then return its logo. Handles
+ * suffixes like "Limited", "Ltd", "plc", punctuation, and known aliases.
+ */
+export function awardingBodyLogoByName(name: string | null | undefined): string | null {
+  const body = findAwardingBodyByName(name);
+  if (!body) return null;
+  if (body.logo) return body.logo;
+  if (body.domain) return logoDevUrl(body.domain);
+  return null;
+}
+
+function normaliseName(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\b(limited|ltd\.?|plc|llp|inc\.?|corp\.?|company|co\.?)\b/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export function findAwardingBodyByName(name: string | null | undefined): AwardingBody | null {
+  if (!name) return null;
+  const n = normaliseName(name);
+  if (!n) return null;
+  for (const b of AWARDING_BODIES) {
+    const candidates = [b.name, ...(b.aliases ?? [])].map(normaliseName);
+    if (candidates.some((c) => c && (c === n || n.includes(c) || c.includes(n)))) {
+      return b;
+    }
+  }
+  return null;
+}
+
 export const AWARDING_BODIES: AwardingBody[] = [
   // Ofqual-regulated awarding bodies (fitness / coaching / sport)
   { slug: "active-iq", name: "Active IQ", aliases: ["activeiq"], regulated: true, domain: "activeiq.co.uk" },

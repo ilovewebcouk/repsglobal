@@ -58,7 +58,7 @@ import {
 } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-import { awardingBodyName, awardingBodyLogo, OFQUAL_QUAL_NO_REGEX } from "@/lib/cpd/awarding-bodies";
+import { awardingBodyName, awardingBodyLogo, awardingBodyLogoByName, OFQUAL_QUAL_NO_REGEX } from "@/lib/cpd/awarding-bodies";
 import { uploadCertificateFile } from "@/lib/cpd/cpd.functions";
 import {
   listMyRegulatedPermissions,
@@ -231,7 +231,9 @@ function RegulatedRow({ row }: { row: RegulatedPermissionRow }) {
   const awardingOrg = snap?.awardingOrganisation ?? null;
   const level = snap?.level ?? (row.qualification?.level != null ? `L${row.qualification.level}` : null);
   const legacySlug = row.qualification?.awarding_body_slug ?? null;
-  const logo = legacySlug ? awardingBodyLogo(legacySlug) : null;
+  const logo =
+    (legacySlug ? awardingBodyLogo(legacySlug) : null) ??
+    awardingBodyLogoByName(awardingOrg);
   const bodyLabel = awardingOrg ?? (legacySlug ? awardingBodyName(legacySlug) ?? legacySlug : null);
 
   return (
