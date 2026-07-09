@@ -6749,6 +6749,8 @@ export type Database = {
         | "admin_end_trial"
         | "admin_delete"
         | "member_request"
+        | "self_delete"
+        | "stripe_uncollectible"
       organisation_user_role: "owner" | "manager"
       prospect_status: "active" | "converted" | "unsubscribed" | "bounced"
       provider_change_status: "pending" | "approved" | "rejected" | "superseded"
@@ -6990,6 +6992,8 @@ export const Constants = {
         "admin_end_trial",
         "admin_delete",
         "member_request",
+        "self_delete",
+        "stripe_uncollectible",
       ],
       organisation_user_role: ["owner", "manager"],
       prospect_status: ["active", "converted", "unsubscribed", "bounced"],

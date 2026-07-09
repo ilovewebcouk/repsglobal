@@ -148,7 +148,9 @@ export type CancelReason =
   | "admin_end_trial"
   | "admin_delete"
   | "member_request"
-  | "chargeback_lost";
+  | "self_delete"
+  | "chargeback_lost"
+  | "stripe_uncollectible";
 
 const ALL_MODES: CloseMode[] = ["schedule_end_period", "end_now_delete", "delete_only"];
 const ALL_REASONS: CancelReason[] = [
@@ -157,7 +159,9 @@ const ALL_REASONS: CancelReason[] = [
   "admin_end_trial",
   "admin_delete",
   "member_request",
+  "self_delete",
   "chargeback_lost",
+  "stripe_uncollectible",
 ];
 
 export const closeMembership = createServerFn({ method: "POST" })
