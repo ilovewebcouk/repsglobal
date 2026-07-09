@@ -124,6 +124,7 @@ export function ProviderVerificationPage() {
       <div className="flex flex-col gap-6">
         <Hero
           identityDone={identityDone}
+          identityStatus={t?.identity.status ?? "none"}
           domainDone={domainDone}
           domainStatus={d?.status ?? "unstarted"}
           completed={completed}
