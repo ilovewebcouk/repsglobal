@@ -40,6 +40,8 @@ export type Member360Snapshot = {
   stripe_customer_id: string | null;
   has_active_subscription: boolean;
   subscription: AdminSubscriptionState;
+  account_type: string | null;
+  business_name: string | null;
 };
 
 export const getMember360 = createServerFn({ method: "GET" })
@@ -67,10 +69,10 @@ export const getMember360 = createServerFn({ method: "GET" })
 
     const [authRes, profileRes, proRes, subState] = await Promise.all([
       supabaseAdmin.auth.admin.getUserById(data.user_id),
-      supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", data.user_id).maybeSingle(),
+      supabaseAdmin.from("profiles").select("full_name, avatar_url, business_name").eq("id", data.user_id).maybeSingle(),
       supabaseAdmin
         .from("professionals")
-        .select("slug, verification, is_published, primary_profession")
+        .select("slug, verification, is_published, primary_profession, account_type")
         .eq("id", data.user_id)
         .maybeSingle(),
       resolveSubscriptionStateForUser(data.user_id),
@@ -80,10 +82,11 @@ export const getMember360 = createServerFn({ method: "GET" })
     const email = authRes.data?.user?.email ?? null;
     const created_at = authRes.data?.user?.created_at ?? null;
     const last_sign_in_at = authRes.data?.user?.last_sign_in_at ?? null;
-    const profile = (profileRes.data as { full_name?: string | null; avatar_url?: string | null } | null) ?? null;
+    const profile = (profileRes.data as { full_name?: string | null; avatar_url?: string | null; business_name?: string | null } | null) ?? null;
     const full_name = profile?.full_name ?? null;
     const avatar_url = profile?.avatar_url ?? null;
-    const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null; primary_profession?: string | null } | null) ?? null;
+    const business_name = profile?.business_name ?? null;
+    const pro = (proRes.data as { slug?: string | null; verification?: string | null; is_published?: boolean | null; primary_profession?: string | null; account_type?: string | null } | null) ?? null;
     const profession = pro?.primary_profession ? (PROFESSION_LABEL[pro.primary_profession] ?? pro.primary_profession) : null;
 
     return {
@@ -100,5 +103,7 @@ export const getMember360 = createServerFn({ method: "GET" })
       stripe_customer_id: subState.stripe_customer_id,
       has_active_subscription: subState.has_active_entitlement,
       subscription: subState,
+      account_type: pro?.account_type ?? null,
+      business_name,
     };
   });

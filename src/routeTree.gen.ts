@@ -88,7 +88,6 @@ import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
 import { Route as AdminSeoRouteImport } from './routes/admin_.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
-import { Route as AdminProvidersRouteImport } from './routes/admin_.providers'
 import { Route as AdminProviderNamesRouteImport } from './routes/admin_.provider-names'
 import { Route as AdminProspectsRouteImport } from './routes/admin_.prospects'
 import { Route as AdminProfessionalsRouteImport } from './routes/admin_.professionals'
@@ -125,7 +124,6 @@ import { Route as CSlugReviewRouteImport } from './routes/c.$slug.review'
 import { Route as CSlugEnquireRouteImport } from './routes/c.$slug.enquire'
 import { Route as ApiPublicVerifyProviderDomainRouteImport } from './routes/api/public/verify-provider-domain'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
-import { Route as AdminProvidersUserIdRouteImport } from './routes/admin_.providers_.$userId'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members_.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
@@ -580,11 +578,6 @@ const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
   path: '/admin/reconciliation',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminProvidersRoute = AdminProvidersRouteImport.update({
-  id: '/admin_/providers',
-  path: '/admin/providers',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminProviderNamesRoute = AdminProviderNamesRouteImport.update({
   id: '/admin_/provider-names',
   path: '/admin/provider-names',
@@ -767,11 +760,6 @@ const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   id: '/legacy-redirects',
   path: '/legacy-redirects',
   getParentRoute: () => AdminSeoRoute,
-} as any)
-const AdminProvidersUserIdRoute = AdminProvidersUserIdRouteImport.update({
-  id: '/admin_/providers_/$userId',
-  path: '/admin/providers/$userId',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMembersUserIdRoute = AdminMembersUserIdRouteImport.update({
   id: '/admin_/members_/$userId',
@@ -1168,7 +1156,6 @@ export interface FileRoutesByFullPath {
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/provider-names': typeof AdminProviderNamesRoute
-  '/admin/providers': typeof AdminProvidersRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRouteWithChildren
@@ -1217,7 +1204,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
-  '/admin/providers/$userId': typeof AdminProvidersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/api/public/verify-provider-domain': typeof ApiPublicVerifyProviderDomainRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
@@ -1341,7 +1327,6 @@ export interface FileRoutesByTo {
   '/admin/professionals': typeof AdminProfessionalsRoute
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/provider-names': typeof AdminProviderNamesRoute
-  '/admin/providers': typeof AdminProvidersRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRouteWithChildren
@@ -1386,7 +1371,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
-  '/admin/providers/$userId': typeof AdminProvidersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/api/public/verify-provider-domain': typeof ApiPublicVerifyProviderDomainRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
@@ -1513,7 +1497,6 @@ export interface FileRoutesById {
   '/admin_/professionals': typeof AdminProfessionalsRoute
   '/admin_/prospects': typeof AdminProspectsRoute
   '/admin_/provider-names': typeof AdminProviderNamesRoute
-  '/admin_/providers': typeof AdminProvidersRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
   '/admin_/reviews': typeof AdminReviewsRoute
   '/admin_/seo': typeof AdminSeoRouteWithChildren
@@ -1563,7 +1546,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members_/$userId': typeof AdminMembersUserIdRoute
-  '/admin_/providers_/$userId': typeof AdminProvidersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
   '/api/public/verify-provider-domain': typeof ApiPublicVerifyProviderDomainRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
@@ -1690,7 +1672,6 @@ export interface FileRouteTypes {
     | '/admin/professionals'
     | '/admin/prospects'
     | '/admin/provider-names'
-    | '/admin/providers'
     | '/admin/reconciliation'
     | '/admin/reviews'
     | '/admin/seo'
@@ -1739,7 +1720,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
-    | '/admin/providers/$userId'
     | '/admin/seo/legacy-redirects'
     | '/api/public/verify-provider-domain'
     | '/c/$slug/enquire'
@@ -1863,7 +1843,6 @@ export interface FileRouteTypes {
     | '/admin/professionals'
     | '/admin/prospects'
     | '/admin/provider-names'
-    | '/admin/providers'
     | '/admin/reconciliation'
     | '/admin/reviews'
     | '/admin/seo'
@@ -1908,7 +1887,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
-    | '/admin/providers/$userId'
     | '/admin/seo/legacy-redirects'
     | '/api/public/verify-provider-domain'
     | '/c/$slug/enquire'
@@ -2034,7 +2012,6 @@ export interface FileRouteTypes {
     | '/admin_/professionals'
     | '/admin_/prospects'
     | '/admin_/provider-names'
-    | '/admin_/providers'
     | '/admin_/reconciliation'
     | '/admin_/reviews'
     | '/admin_/seo'
@@ -2084,7 +2061,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard'
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members_/$userId'
-    | '/admin_/providers_/$userId'
     | '/admin_/seo/legacy-redirects'
     | '/api/public/verify-provider-domain'
     | '/c/$slug/enquire'
@@ -2211,7 +2187,6 @@ export interface RootRouteChildren {
   AdminProfessionalsRoute: typeof AdminProfessionalsRoute
   AdminProspectsRoute: typeof AdminProspectsRoute
   AdminProviderNamesRoute: typeof AdminProviderNamesRoute
-  AdminProvidersRoute: typeof AdminProvidersRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSeoRoute: typeof AdminSeoRouteWithChildren
@@ -2256,7 +2231,6 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
-  AdminProvidersUserIdRoute: typeof AdminProvidersUserIdRoute
   ApiPublicVerifyProviderDomainRoute: typeof ApiPublicVerifyProviderDomainRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -2839,13 +2813,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReconciliationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/providers': {
-      id: '/admin_/providers'
-      path: '/admin/providers'
-      fullPath: '/admin/providers'
-      preLoaderRoute: typeof AdminProvidersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin_/provider-names': {
       id: '/admin_/provider-names'
       path: '/admin/provider-names'
@@ -3097,13 +3064,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/seo/legacy-redirects'
       preLoaderRoute: typeof AdminSeoLegacyRedirectsRouteImport
       parentRoute: typeof AdminSeoRoute
-    }
-    '/admin_/providers_/$userId': {
-      id: '/admin_/providers_/$userId'
-      path: '/admin/providers/$userId'
-      fullPath: '/admin/providers/$userId'
-      preLoaderRoute: typeof AdminProvidersUserIdRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/admin_/members_/$userId': {
       id: '/admin_/members_/$userId'
@@ -3847,7 +3807,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProfessionalsRoute: AdminProfessionalsRoute,
   AdminProspectsRoute: AdminProspectsRoute,
   AdminProviderNamesRoute: AdminProviderNamesRoute,
-  AdminProvidersRoute: AdminProvidersRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSeoRoute: AdminSeoRouteWithChildren,
@@ -3892,7 +3851,6 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
-  AdminProvidersUserIdRoute: AdminProvidersUserIdRoute,
   ApiPublicVerifyProviderDomainRoute: ApiPublicVerifyProviderDomainRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
