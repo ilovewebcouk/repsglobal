@@ -611,18 +611,6 @@ export function ProviderProfilePage() {
             />
           </div>
         </PPanel>
-
-        <div className="flex justify-end">
-          <button
-            type="button"
-            disabled={saveMut.isPending || isLoading}
-            onClick={() => saveMut.mutate()}
-            className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-5 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
-          >
-            {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Submit for review
-          </button>
-        </div>
       </div>
     </DashboardShell>
   );
