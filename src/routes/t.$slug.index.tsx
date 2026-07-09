@@ -554,16 +554,19 @@ function ProviderProfilePage() {
                       sub="Once REPS has verified this provider's approved-centre status with the awarding body, their regulated qualifications will appear here."
                     />
                   ) : (
-                    <div className="mt-3 space-y-5">
+                    <div className="mt-3 space-y-2.5">
                       {accreditationsByBody.map((group) => (
-                        <div key={group.slug}>
+                        <div
+                          key={group.slug}
+                          className="rounded-[14px] border border-black/10 bg-white p-3.5"
+                        >
                           <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white">
+                            <div className="flex h-9 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-black/10 bg-white">
                               {group.logo ? (
                                 <img
                                   src={group.logo}
                                   alt={group.name}
-                                  className="max-h-8 max-w-14 object-contain"
+                                  className="max-h-7 max-w-12 object-contain"
                                 />
                               ) : (
                                 <span className="text-[10px] font-bold uppercase tracking-wide text-black/50">
@@ -571,15 +574,13 @@ function ProviderProfilePage() {
                                 </span>
                               )}
                             </div>
-                            <div>
-                              <p className="text-[14px] font-semibold text-black">{group.name}</p>
-                            </div>
+                            <p className="text-[14px] font-semibold text-black">{group.name}</p>
                           </div>
-                          <ul className="mt-2 space-y-1.5 pl-[76px]">
+                          <ul className="mt-3 divide-y divide-black/5 border-t border-black/5">
                             {group.items.map((it) => (
                               <li
                                 key={it.id}
-                                className="flex flex-wrap items-center gap-2 text-[13.5px] text-black/75"
+                                className="flex flex-wrap items-center gap-2 py-2 text-[13.5px] text-black/75"
                               >
                                 {it.level ? (
                                   <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
@@ -589,7 +590,9 @@ function ProviderProfilePage() {
                                 <span className="font-medium text-black">{it.title}</span>
                                 {it.ofqual_ref ? (
                                   <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-800">
-                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-emerald-700/70">Ofqual</span>
+                                    <span className="text-[9.5px] font-sans font-bold uppercase tracking-wide text-emerald-700/70">
+                                      Ofqual
+                                    </span>
                                     {it.ofqual_ref}
                                   </span>
                                 ) : null}
