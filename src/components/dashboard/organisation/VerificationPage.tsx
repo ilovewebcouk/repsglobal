@@ -132,9 +132,11 @@ export function ProviderVerificationPage() {
         />
 
         <div className="flex flex-col gap-4">
+          <TradingNameCard />
           <IdentityProfileCard step="01" />
           <DomainEmailCard state={d} loading={domainQ.isLoading} />
         </div>
+
       </div>
     </DashboardShell>
   );
