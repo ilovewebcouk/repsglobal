@@ -902,7 +902,7 @@ function ProviderProfilePage() {
 function StickyNav() {
   const items = [
     { id: "about", label: "About" },
-    { id: "courses", label: "Courses" },
+    { id: "accreditations", label: "Accreditations & CPD" },
     { id: "verified-pros", label: "Verified Pros" },
     { id: "reviews", label: "Reviews" },
     { id: "accreditations", label: "Accreditations" },
