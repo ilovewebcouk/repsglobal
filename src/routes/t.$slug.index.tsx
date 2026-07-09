@@ -178,7 +178,7 @@ function ProviderProfilePage() {
         slug: string;
         name: string;
         logo: string | null;
-        items: Array<{ id: string; title: string; level: string | null; ofqual_ref: string | null }>;
+        items: Array<{ id: string; title: string; level: string | null; ofqual_ref: string | null; reps_ref: string | null }>;
       }
     >();
     for (const row of regulatedRows) {
