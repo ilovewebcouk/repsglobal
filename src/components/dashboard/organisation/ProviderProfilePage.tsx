@@ -29,14 +29,17 @@ import {
   getMyProviderProfile,
   updateMyProviderProfile,
 } from "@/lib/profile/provider-profile.functions";
-import { getMyProviderNameStatus } from "@/lib/verification/provider-name.functions";
+import {
+  getMyProviderNameStatus,
+  submitProviderNameChange,
+} from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
 import {
   listMyProviderChanges,
   PROVIDER_FIELD_LABELS,
   type ProviderFieldKey,
 } from "@/lib/verification/provider-changes.functions";
-import { Link } from "@tanstack/react-router";
+
 
 
 /* -------------------------------------------------------------------------- */
@@ -88,6 +91,10 @@ export function ProviderProfilePage() {
     queryFn: () => fetchNameStatus(),
   });
 
+  const submitName = useServerFn(submitProviderNameChange);
+  const [nameInput, setNameInput] = React.useState("");
+  const [nameSaving, setNameSaving] = React.useState(false);
+
   const fetchDomainStatus = useServerFn(getProviderDomainVerification);
   const { data: domainStatus } = useQuery({
     queryKey: ["my-provider-domain-status"],
@@ -104,6 +111,41 @@ export function ProviderProfilePage() {
 
   const namePending = !!nameStatus?.pending;
   const approvedName = nameStatus?.approved_name ?? "";
+  const pendingName = nameStatus?.pending?.requested_name ?? "";
+
+  // Seed the input with the current approved name (or pending, if any) once loaded.
+  React.useEffect(() => {
+    if (nameStatus) setNameInput(pendingName || approvedName || "");
+  }, [nameStatus, pendingName, approvedName]);
+
+  const nameDirty =
+    nameInput.trim().length > 0 &&
+    nameInput.trim() !== (pendingName || approvedName);
+
+  async function submitNameChange() {
+    const requested = nameInput.trim();
+    if (!requested) {
+      toast.error("Enter a provider name.");
+      return;
+    }
+    setNameSaving(true);
+    try {
+      const res = await submitName({ data: { requested_name: requested } });
+      if ("applied" in res && res.applied) {
+        toast.success("Provider name set.");
+      } else if ("submitted" in res && res.submitted) {
+        toast.success("Change submitted — awaiting REPS review.");
+      } else {
+        toast.success("Saved.");
+      }
+      void qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
+      void qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save.");
+    } finally {
+      setNameSaving(false);
+    }
+  }
 
   const websiteLocked = domainStatus?.status === "approved";
   const approvedWebsite = domainStatus?.rawWebsite ?? "";
@@ -409,21 +451,26 @@ export function ProviderProfilePage() {
               }
             >
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-3 rounded-[12px] border border-reps-border bg-reps-ink px-3 py-2.5 text-[13px] text-white">
-                  <span className="truncate">
-                    {approvedName || (
-                      <span className="text-white/40">Not set yet</span>
-                    )}
-                  </span>
-                  <Link
-                    to="/dashboard/verification"
-                    className="shrink-0 text-[12px] font-semibold text-reps-orange hover:underline"
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    placeholder="e.g. Diverse Trainers"
+                    className={`${inputCls} flex-1`}
+                  />
+                  <button
+                    type="button"
+                    onClick={submitNameChange}
+                    disabled={nameSaving || !nameDirty}
+                    className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
                   >
-                    {approvedName ? "Manage" : "Set in Verification"}
-                  </Link>
+                    {nameSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                    Submit name change
+                  </button>
                 </div>
                 <p className="text-[11.5px] text-white/45">
-                  Managed on your Verification page. Contact REPs support to change it once set.
+                  Change this any time. Every change is reviewed by REPs before it appears on your public page and URL.
                 </p>
                 {namePending ? (
                   <div className="flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
