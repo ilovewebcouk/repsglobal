@@ -141,9 +141,6 @@ function MemberPage() {
 
   return (
     <DashboardShell role="admin" active="Members" title={isProvider ? "Provider 360" : "Member 360"} subtitle="One workbench for every member action.">
-      {isProvider ? (
-        <ProviderMemberView userId={userId} />
-      ) : (
       <div className="flex flex-col gap-6 p-6">
         <StickyHeader userId={userId} snapshot={snap.data} loading={snap.isLoading} />
 
@@ -185,10 +182,14 @@ function MemberPage() {
           </TabsContent>
 
           <TabsContent value="profile">
-            <SoonEmpty
-              title="Inline profile editing"
-              description="Edit name, slug, bio, services and avatar in place — without leaving the workbench."
-            />
+            {isProvider && snap.data ? (
+              <ProviderProfileMirror userId={userId} snapshot={snap.data} />
+            ) : (
+              <SoonEmpty
+                title="Inline profile editing"
+                description="Edit name, slug, bio, services and avatar in place — without leaving the workbench."
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="reviews">
@@ -215,7 +216,6 @@ function MemberPage() {
           </TabsContent>
         </Tabs>
       </div>
-      )}
     </DashboardShell>
   );
 }
