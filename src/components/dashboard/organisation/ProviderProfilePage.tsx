@@ -29,16 +29,15 @@ import {
   getMyProviderProfile,
   updateMyProviderProfile,
 } from "@/lib/profile/provider-profile.functions";
-import {
-  getMyProviderNameStatus,
-  submitProviderNameChange,
-} from "@/lib/verification/provider-name.functions";
+import { getMyProviderNameStatus } from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
 import {
   listMyProviderChanges,
   PROVIDER_FIELD_LABELS,
   type ProviderFieldKey,
 } from "@/lib/verification/provider-changes.functions";
+import { Link } from "@tanstack/react-router";
+
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
