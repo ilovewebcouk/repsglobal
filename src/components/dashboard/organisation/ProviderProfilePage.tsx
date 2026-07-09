@@ -91,6 +91,10 @@ export function ProviderProfilePage() {
     queryFn: () => fetchNameStatus(),
   });
 
+  const submitName = useServerFn(submitProviderNameChange);
+  const [nameInput, setNameInput] = React.useState("");
+  const [nameSaving, setNameSaving] = React.useState(false);
+
   const fetchDomainStatus = useServerFn(getProviderDomainVerification);
   const { data: domainStatus } = useQuery({
     queryKey: ["my-provider-domain-status"],
