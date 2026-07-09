@@ -84,7 +84,7 @@ export function AdminProviderQualificationsTab() {
           ))}
         </div>
         <div className="inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
-          {STATUS_TABS.map((s) => (
+          {(tab === "regulated" ? REGULATED_STATUS_TABS : STATUS_TABS).map((s) => (
             <button
               key={s}
               onClick={() => setStatus(s)}
