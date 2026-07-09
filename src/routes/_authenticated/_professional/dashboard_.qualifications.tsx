@@ -484,6 +484,12 @@ function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
         <XCircle className="mr-1 h-3 w-3" /> Rejected
       </Badge>
     );
+  if (status === "withdrawn")
+    return (
+      <Badge className="border-white/15 bg-white/5 text-white/60">
+        Withdrawn
+      </Badge>
+    );
   return (
     <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
       <Clock className="mr-1 h-3 w-3" /> Changes requested
