@@ -78,11 +78,11 @@ async function resolveTierRecipients(
     // Fetch names from profiles
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, full_name")
+      .select("id, full_name")
       .in("id", proIds);
     const nameMap = new Map<string, string>();
     for (const pf of profiles ?? []) {
-      nameMap.set(pf.id, (pf.full_name || pf.full_name || "") as string);
+      nameMap.set(pf.id, (pf.full_name || "") as string);
     }
 
     // Fetch emails via auth.admin

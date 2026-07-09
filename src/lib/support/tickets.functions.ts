@@ -686,7 +686,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
     // removed — the source of truth is now profiles + auth.users.
     const { data: nameMatches, error: nameErr } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, full_name")
+      .select("id, full_name")
       .or(`full_name.ilike.${like},full_name.ilike.${like}`)
       .limit(20);
     if (nameErr) throw new Error(nameErr.message);
@@ -768,7 +768,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
     // 4) Resolve names + flags
     const [profilesRes, prosRes, clientsRes, subsRes] = allUserIds.length
       ? await Promise.all([
-          supabaseAdmin.from("profiles").select("id, full_name, full_name").in("id", allUserIds),
+          supabaseAdmin.from("profiles").select("id, full_name").in("id", allUserIds),
           supabaseAdmin.from("professionals").select("id, slug").in("id", allUserIds),
           supabaseAdmin.from("clients").select("id").in("id", allUserIds),
           supabaseAdmin
@@ -780,7 +780,7 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
       : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
     const nameById = new Map<string, string>(
-      ((profilesRes.data ?? []) as any[]).map((r) => [r.id, r.full_name || r.full_name]),
+      ((profilesRes.data ?? []) as any[]).map((r) => [r.id, r.full_name]),
     );
     const proById = new Map<string, string | null>(
       ((prosRes.data ?? []) as any[]).map((r) => [r.id, r.slug]),

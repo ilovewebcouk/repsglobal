@@ -33,7 +33,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: prof } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, full_name")
+        .select("full_name")
         .eq("id", userId)
         .maybeSingle();
       const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
@@ -41,7 +41,7 @@ export const saveInsurance = createServerFn({ method: "POST" })
         professionalId: userId,
         event: "insurance.rejected_expired",
         context: { expiry_date: data.expiry_date, doc_path: data.doc_path },
-        proName: profAny?.full_name ?? profAny?.full_name ?? undefined,
+        proName: profAny?.full_name ?? undefined,
         alsoEmail: true,
       });
       throw new Error(
@@ -76,13 +76,13 @@ export const saveInsurance = createServerFn({ method: "POST" })
       const proAny = pro as { identity_verified_name?: string | null; identity_status?: string | null } | null;
       const { data: prof } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, full_name")
+        .select("full_name")
         .eq("id", userId)
         .maybeSingle();
       const profAny = prof as { full_name?: string | null; full_name?: string | null } | null;
-      proName = profAny?.full_name ?? profAny?.full_name ?? null;
+      proName = profAny?.full_name ?? null;
       const identityName =
-        proAny?.identity_verified_name ?? profAny?.full_name ?? profAny?.full_name ?? null;
+        proAny?.identity_verified_name ?? profAny?.full_name ?? null;
       const identityApproved = proAny?.identity_status === "approved";
 
       const nameScore =
@@ -614,10 +614,10 @@ export const listInsurancePolicies = createServerFn({ method: "POST" })
     if (ids.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, full_name")
+        .select("id, full_name")
         .in("id", ids);
       for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; full_name: string | null }>) {
-        profilesById.set(p.id, { full_name: p.full_name, full_name: p.full_name });
+        profilesById.set(p.id, { full_name: p.full_name: p.full_name });
       }
     }
     return (rows ?? []).map((r) => ({

@@ -318,7 +318,7 @@ async function ensureInviteSentInternal(opts: {
   // Fetch pro display info
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("full_name, full_name")
+    .select("full_name")
     .eq("id", professionalId)
     .maybeSingle();
 

@@ -67,7 +67,7 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: pro }, { data: site }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, full_name, full_name, avatar_url")
+        .select("full_name, avatar_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -96,8 +96,6 @@ export const getMyDashboardProfile = createServerFn({ method: "GET" })
     ) as DashboardProfile["identity_status"];
 
     return {
-      full_name: (profRow.full_name as string | null) ?? "",
-      full_name: (profRow.full_name as string | null) ?? null,
       full_name: (profRow.full_name as string | null) ?? null,
       avatar_url: (profRow.avatar_url as string | null) ?? null,
       identity_status: idStatus,
@@ -165,8 +163,6 @@ function normaliseSocial(raw: string | null | undefined): string | null {
 }
 
 const UpdateInput = z.object({
-  full_name: z.string().trim().min(1).max(120),
-  full_name: z.string().trim().max(120).nullable().optional(),
   full_name: z.string().trim().max(120).nullable().optional(),
   headline: z.string().trim().max(160).nullable().optional(),
   primary_profession: ProfessionSlugSchema.nullable().optional(),

@@ -349,7 +349,7 @@ export const adminListProviderQueue = createServerFn({ method: "GET" })
 
     const ids = Array.from(new Set(list.map((r) => r.provider_id)));
     const [{ data: profiles }, { data: pros }, usersRes] = await Promise.all([
-      sa.from("profiles").select("id, full_name, full_name").in("id", ids),
+      sa.from("profiles").select("id, full_name").in("id", ids),
       sa.from("professionals").select("id, slug").in("id", ids),
       sa.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     ]);

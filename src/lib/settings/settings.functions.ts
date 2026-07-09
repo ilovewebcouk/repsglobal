@@ -66,7 +66,7 @@ export const getMySettings = createServerFn({ method: "GET" })
       await Promise.all([
         supabase
           .from("profiles")
-          .select("full_name, full_name, full_name, avatar_url")
+          .select("full_name, avatar_url")
           .eq("id", userId)
           .maybeSingle(),
         supabase
@@ -113,8 +113,6 @@ export const getMySettings = createServerFn({ method: "GET" })
         user_id: userId,
         email,
         full_name: (profRow.full_name as string | null) ?? null,
-        full_name: (profRow.full_name as string | null) ?? null,
-        full_name: (profRow.full_name as string | null) ?? null,
         avatar_url: (profRow.avatar_url as string | null) ?? null,
         contact_phone: (proRow.contact_phone as string | null) ?? null,
         timezone: (proRow.timezone as string | null) ?? "Europe/London",
@@ -148,8 +146,6 @@ export const getMySettings = createServerFn({ method: "GET" })
 /* -------------------------------------------------------------------------- */
 
 const AccountInput = z.object({
-  full_name: z.string().trim().min(1).max(120),
-  full_name: z.string().trim().max(120).nullable().optional(),
   full_name: z.string().trim().max(120).nullable().optional(),
   contact_phone: z
     .string()
@@ -177,7 +173,6 @@ export const updateMyAccount = createServerFn({ method: "POST" })
     const legalLocked = idStatus === "approved";
 
     const profilePatch: Record<string, unknown> = {
-      full_name: data.full_name ?? null,
       full_name: data.full_name ?? null,
     };
     if (!legalLocked) {

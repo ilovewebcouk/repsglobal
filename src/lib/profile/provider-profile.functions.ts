@@ -43,7 +43,7 @@ export const getMyProviderProfile = createServerFn({ method: "GET" })
     const [{ data: profile }, { data: pro }, { data: site }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, full_name, avatar_url")
+        .select("full_name, avatar_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase

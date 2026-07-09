@@ -45,7 +45,7 @@ export const createClientInvite = createServerFn({ method: "POST" })
     // Fetch pro display name + optional business name for the email
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name, full_name")
+      .select("full_name")
       .eq("id", userId)
       .maybeSingle();
 

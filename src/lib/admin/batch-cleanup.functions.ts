@@ -78,7 +78,7 @@ export const previewExpiredBdCleanup = createServerFn({ method: "POST" })
       const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(uid);
       const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("full_name, full_name")
+        .select("full_name")
         .eq("id", uid)
         .maybeSingle();
       const { data: bd } = await supabaseAdmin
@@ -118,7 +118,7 @@ export const executeExpiredBdCleanup = createServerFn({ method: "POST" })
 
         const { data: profile } = await supabaseAdmin
           .from("profiles")
-          .select("full_name, full_name")
+          .select("full_name")
           .eq("id", uid)
           .maybeSingle();
         const { data: professional } = await supabaseAdmin

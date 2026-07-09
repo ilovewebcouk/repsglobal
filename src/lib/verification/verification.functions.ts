@@ -102,9 +102,9 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
       .in("id", proIds);
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, full_name")
+      .select("id, full_name")
       .in("id", proIds);
-    const profileMap = new Map((profiles ?? []).map((p) => [p.id, { full_name: p.full_name, full_name: p.full_name }]));
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, { full_name: p.full_name: p.full_name }]));
     profByPro = Object.fromEntries(
       (pros ?? []).map((p) => [
         p.id,
@@ -584,10 +584,10 @@ export const sendVerificationReminder = createServerFn({ method: "POST" })
     if (!email) throw new Error("No email on file");
     const { data: pro } = await supabaseAdmin
       .from("profiles")
-      .select("full_name, full_name")
+      .select("full_name")
       .eq("id", data.professional_id)
       .maybeSingle();
-    const proName = pro?.full_name ?? pro?.full_name ?? null;
+    const proName = pro?.full_name ?? null;
     const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
     await sendTransactionalEmailServer({
       templateName: "verification-reminder",

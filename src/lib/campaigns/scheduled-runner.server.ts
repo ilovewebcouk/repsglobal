@@ -175,11 +175,11 @@ async function resolveTierRecipients(
     const ids = proSet.map((p: any) => p.id);
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, full_name")
+      .select("id, full_name")
       .in("id", ids);
     const names = new Map<string, string>();
     for (const pf of profiles ?? []) {
-      names.set(pf.id, (pf.full_name || pf.full_name || "") as string);
+      names.set(pf.id, (pf.full_name || "") as string);
     }
 
     for (const p of proSet) {

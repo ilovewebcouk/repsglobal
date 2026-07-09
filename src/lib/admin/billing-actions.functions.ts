@@ -261,7 +261,7 @@ export const findMemberByEmail = createServerFn({ method: "POST" })
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("full_name, full_name")
+      .select("full_name")
       .eq("id", matched.id)
       .maybeSingle();
 

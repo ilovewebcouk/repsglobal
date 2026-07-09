@@ -17,7 +17,7 @@ export const getDashboardStatus = createServerFn({ method: "GET" })
           .maybeSingle(),
         supabase
           .from("profiles")
-          .select("full_name, full_name, avatar_url")
+          .select("full_name, avatar_url")
           .eq("id", userId)
           .maybeSingle(),
         supabase

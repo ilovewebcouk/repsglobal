@@ -138,7 +138,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     if (ids.length > 0) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, full_name")
+        .select("id, full_name")
         .in("id", ids);
       for (const p of profs ?? []) {
         if (p.full_name) nameMap.set(p.id, p.full_name);
@@ -294,7 +294,7 @@ async function resolveTierRecipients(
   if (proSet.length > 0) {
     const { data: profs } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, full_name")
+      .select("id, full_name")
       .in("id", proSet.map((p: any) => p.id));
     for (const p of profs ?? []) {
       if (p.full_name) nameMap.set(p.id, p.full_name);

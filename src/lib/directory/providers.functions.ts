@@ -68,7 +68,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
     if (ids.length > 0) {
       const { data: profRows } = await supabaseAdmin
         .from("profiles")
-        .select("id, full_name, full_name, full_name, avatar_url")
+        .select("id, full_name, avatar_url")
         .in("id", ids);
       for (const p of profRows ?? []) {
         profilesById[p.id as string] = {

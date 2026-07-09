@@ -174,7 +174,7 @@ export async function _closeMembershipImpl(
 
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("full_name, full_name")
+    .select("full_name")
     .eq("id", input.user_id)
     .maybeSingle();
 

@@ -44,9 +44,7 @@ export function DeliveryModePanel() {
         throw new Error("Pick at least one — in-person or online.");
       return saveProfile({
         data: {
-          full_name: data.full_name,
-          full_name: data.full_name,
-          full_name: data.full_name,
+          full_name: data.full_name: data.full_name: data.full_name,
           headline: data.headline,
           primary_profession: data.primary_profession,
           specialisms: data.specialisms,

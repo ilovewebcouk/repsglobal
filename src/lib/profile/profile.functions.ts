@@ -49,10 +49,10 @@ export const saveMyProfile = createServerFn({ method: "POST" })
     // Derive slug from profiles.full_name / full_name (single source of truth).
     const { data: profileRow } = await supabase
       .from("profiles")
-      .select("full_name, full_name")
+      .select("full_name")
       .eq("id", userId)
       .maybeSingle();
-    const base = slugify(profileRow?.full_name ?? profileRow?.full_name ?? "coach") || "coach";
+    const base = slugify(profileRow?.full_name ?? "coach") || "coach";
 
     // Find an unused slug derived from the base (base, base-2, base-3…)
     let slug = base;

@@ -609,7 +609,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           )
           .eq("professional_id", pro.id)
           .maybeSingle(),
-        supabaseAdmin.from("profiles").select("full_name, full_name, avatar_url").eq("id", pro.id).maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", pro.id).maybeSingle(),
         supabaseAdmin
           .from("services")
           .select(
@@ -771,7 +771,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
       )
           .eq("id", userId)
           .maybeSingle(),
-        supabaseAdmin.from("profiles").select("full_name, full_name, avatar_url").eq("id", userId).maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
         supabaseAdmin
           .from("websites")
           .select(
