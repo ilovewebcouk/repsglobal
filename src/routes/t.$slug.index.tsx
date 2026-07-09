@@ -554,33 +554,28 @@ function ProviderProfilePage() {
                       sub="Once REPS has verified this provider's approved-centre status with the awarding body, their regulated qualifications will appear here."
                     />
                   ) : (
-                    <div className="mt-3 space-y-2.5">
+                    <div className="mt-3 space-y-4">
                       {accreditationsByBody.map((group) => (
-                        <div
-                          key={group.slug}
-                          className="rounded-[14px] border border-black/10 bg-white p-3.5"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-black/10 bg-white">
-                              {group.logo ? (
-                                <img
-                                  src={group.logo}
-                                  alt={group.name}
-                                  className="max-h-7 max-w-12 object-contain"
-                                />
-                              ) : (
-                                <span className="text-[10px] font-bold uppercase tracking-wide text-black/50">
-                                  {group.name.slice(0, 3)}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[14px] font-semibold text-black">{group.name}</p>
+                        <div key={group.slug} className="flex items-start gap-3">
+                          <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white">
+                            {group.logo ? (
+                              <img
+                                src={group.logo}
+                                alt={group.name}
+                                className="max-h-9 max-w-14 object-contain"
+                              />
+                            ) : (
+                              <span className="text-[10px] font-bold uppercase tracking-wide text-black/50">
+                                {group.name.slice(0, 3)}
+                              </span>
+                            )}
                           </div>
-                          <ul className="mt-3 divide-y divide-black/5 border-t border-black/5">
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <p className="text-[13.5px] font-semibold leading-tight text-black">{group.name}</p>
                             {group.items.map((it) => (
-                              <li
+                              <div
                                 key={it.id}
-                                className="flex flex-wrap items-center gap-2 py-2 text-[13.5px] text-black/75"
+                                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-black/75"
                               >
                                 {it.level ? (
                                   <span className="inline-flex h-5 items-center rounded-full bg-[#f2f1ec] px-2 text-[11px] font-bold text-black/60">
@@ -596,9 +591,9 @@ function ProviderProfilePage() {
                                     {it.ofqual_ref}
                                   </span>
                                 ) : null}
-                              </li>
+                              </div>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       ))}
                     </div>

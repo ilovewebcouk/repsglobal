@@ -1,24 +1,29 @@
-Trim redundant labels inside each awarding-body group on `/t/$slug` (Accreditations section) and restyle the Ofqual number pill to match the emerald "Approved centre" language elsewhere.
 
-## Changes in `src/routes/t.$slug.index.tsx`
+Restore the previous compact two-line row layout for each awarding body in the "Ofqual-regulated qualifications" section of `src/routes/t.$slug.index.tsx` (lines 556–605). Keep the emerald Ofqual pill; drop the card-per-body wrapper the last edit introduced.
 
-**1. Remove "Approved centre · Ofqual-regulated" sub-label (lines 576–579)**
+## Layout per body
 
-That block sits directly under each awarding-body name. The section already shows a big emerald "Approved centre" pill next to the "Ofqual-regulated qualifications" heading, so repeating it per body is noise. After the change, each body row shows just the logo + name.
+One horizontal row:
+- Left: awarding-body logo container, sized to match ~two lines of text so the logo reads at the correct scale next to a stacked "Body name / qualification" text block.
+  - `flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-black/10 bg-white`
+  - Logo `max-h-9 max-w-14 object-contain`
+- Right (flex column, `min-w-0`):
+  - Line 1: body name — `text-[13.5px] font-semibold text-black`
+  - Line 2: the qualification(s) as an inline flex-wrap list: optional level pill + title + emerald Ofqual pill, `text-[13px] text-black/75`, `gap-x-2 gap-y-1`.
+  - If a body has multiple qualifications, each qualification renders as its own line-2 row under the name (stacked, `space-y-1`), so the logo still visually aligns to the first two lines.
 
-**2. Recolour the Ofqual reference pill (lines 594–599)**
+## Container
 
-Currently a neutral cream/grey pill: `border-black/10 bg-[#f7f6f2] text-black/60` with an "Ofqual" caps prefix in `text-black/45`.
+- Replace the `mt-3 space-y-2.5` card list with `mt-3 space-y-4` (no per-body card, no border, no inner background) so it matches the original clean two-line look.
+- Remove the `<ul className="mt-3 divide-y ... border-t ...">` divider treatment.
 
-Change to emerald status styling (matches the REPS number badge in the dashboard and the "Approved centre" pill above):
+## Emerald Ofqual pill
 
-- Container: `border-emerald-400/30 bg-emerald-500/10 text-emerald-800`
-- "Ofqual" prefix: `text-emerald-700/70`
-
-No other visual changes — layout, spacing, and the section-level "Approved centre" pill stay exactly as they are.
+Keep exactly as it is now:
+```
+border-emerald-400/30 bg-emerald-500/10 text-emerald-800  (Ofqual prefix: text-emerald-700/70)
+```
 
 ## Out of scope
 
-- No change to the CPD block below.
-- No change to the section heading or intro copy.
-- No change to the dashboard qualifications list.
+No changes to: section heading, intro copy, section-level "Approved centre" pill, empty state, REPS-accredited CPD block, dashboard qualifications page.
