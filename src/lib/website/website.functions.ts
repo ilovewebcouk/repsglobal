@@ -771,7 +771,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
       )
           .eq("id", userId)
           .maybeSingle(),
-        supabaseAdmin.from("profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
+        supabaseAdmin.from("profiles").select("full_name, business_name, avatar_url").eq("id", userId).maybeSingle(),
         supabaseAdmin
           .from("websites")
           .select(
