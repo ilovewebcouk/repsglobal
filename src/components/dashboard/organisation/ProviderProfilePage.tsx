@@ -158,16 +158,6 @@ export function ProviderProfilePage() {
     mutationFn: async () => {
       if (!phoneValid) throw new Error("Phone number looks invalid.");
 
-
-      // Submit name change for admin approval when it differs from the
-      // currently approved name (and isn't already pending).
-      let nameSubmitted = false;
-      const requestedName = form.name.trim();
-      if (!namePending && requestedName && requestedName !== approvedName.trim()) {
-        const res = await submitName({ data: { requested_name: requestedName } });
-        if ((res as { submitted?: boolean }).submitted) nameSubmitted = true;
-      }
-
       const res = await saveProfile({
         data: {
           tagline: form.tagline || null,
@@ -186,15 +176,14 @@ export function ProviderProfilePage() {
       });
 
       const submitted = (res as { submitted?: number } | undefined)?.submitted ?? 0;
-      return { nameSubmitted, submitted };
+      return { submitted };
     },
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-      qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
       qc.invalidateQueries({ queryKey: ["my-provider-changes"] });
       qc.invalidateQueries({ queryKey: ["my-dashboard-profile"] });
       qc.invalidateQueries({ queryKey: ["website-public"] });
-      const total = (res?.submitted ?? 0) + (res?.nameSubmitted ? 1 : 0);
+      const total = res?.submitted ?? 0;
       if (total === 0) {
         toast.success("No changes to submit.");
       } else if (total === 1) {
@@ -205,6 +194,7 @@ export function ProviderProfilePage() {
     },
     onError: (e: Error) => toast.error(e.message || "Couldn't save profile"),
   });
+
 
 
 
