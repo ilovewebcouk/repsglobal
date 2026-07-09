@@ -51,14 +51,16 @@ import {
   type QualificationDoc,
 } from "./QualificationDocDrawer";
 
-type Status = "submitted" | "approved" | "rejected" | "changes_requested";
+type Status = "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
 
 const STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected"];
+const REGULATED_STATUS_TABS: readonly Status[] = ["submitted", "changes_requested", "approved", "rejected", "withdrawn"];
 const STATUS_LABEL: Record<Status, string> = {
   submitted: "Pending",
   changes_requested: "Changes",
   approved: "Approved",
   rejected: "Rejected",
+  withdrawn: "Withdrawn",
 };
 
 export function AdminProviderQualificationsTab() {
