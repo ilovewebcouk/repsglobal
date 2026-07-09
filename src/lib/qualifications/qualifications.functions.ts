@@ -425,7 +425,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
       .eq("status", data.status)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    return await hydrateProviderNames(rows ?? [], supabaseAdmin);
   });
 
 export const adminListCpdQueue = createServerFn({ method: "GET" })
@@ -444,8 +444,43 @@ export const adminListCpdQueue = createServerFn({ method: "GET" })
       .eq("status", data.status)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    return await hydrateProviderNames(rows ?? [], supabaseAdmin);
   });
+
+// Backfills provider.legal_entity_name from profiles (business_name / display_name /
+// full_name) when the professionals row hasn't captured a legal entity name yet —
+// otherwise the admin queue shows a generic "Provider" label.
+async function hydrateProviderNames<T extends { provider?: { id?: string | null; legal_entity_name?: string | null; identity_verified_name?: string | null } | null }>(
+  rows: T[],
+  supabaseAdmin: { from: (t: string) => { select: (c: string) => { in: (col: string, vals: string[]) => Promise<{ data: unknown }> } } },
+): Promise<T[]> {
+  const missingIds = Array.from(
+    new Set(
+      rows
+        .filter((r) => r.provider && !r.provider.legal_entity_name && !r.provider.identity_verified_name)
+        .map((r) => r.provider?.id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  );
+  if (missingIds.length === 0) return rows;
+  const { data: profs } = await supabaseAdmin
+    .from("profiles")
+    .select("id, business_name, display_name, full_name")
+    .in("id", missingIds);
+  const nameById = new Map<string, string>();
+  for (const p of ((profs as Array<{ id: string; business_name: string | null; display_name: string | null; full_name: string | null }> | null) ?? [])) {
+    const n = p.business_name?.trim() || p.display_name?.trim() || p.full_name?.trim();
+    if (n) nameById.set(p.id, n);
+  }
+  return rows.map((r) => {
+    if (r.provider && !r.provider.legal_entity_name && !r.provider.identity_verified_name) {
+      const n = nameById.get(r.provider.id ?? "");
+      if (n) return { ...r, provider: { ...r.provider, legal_entity_name: n } };
+    }
+    return r;
+  });
+}
+
 
 export const adminDecideRegulated = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
