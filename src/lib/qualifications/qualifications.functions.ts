@@ -452,7 +452,7 @@ export const adminListCpdQueue = createServerFn({ method: "GET" })
 // otherwise the admin queue shows a generic "Provider" label.
 async function hydrateProviderNames<T extends { provider?: { id?: string | null; legal_entity_name?: string | null; identity_verified_name?: string | null } | null }>(
   rows: T[],
-  supabaseAdmin: { from: (t: string) => { select: (c: string) => { in: (col: string, vals: string[]) => Promise<{ data: unknown }> } } },
+  supabaseAdmin: any,
 ): Promise<T[]> {
   const missingIds = Array.from(
     new Set(
