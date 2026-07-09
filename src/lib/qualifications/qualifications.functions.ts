@@ -203,6 +203,88 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
     return row;
   });
 
+// Batch: submit several Ofqual numbers sharing the same evidence documents.
+// One EQA report or approval letter usually covers multiple qualifications;
+// this creates one row per number, all tied together by submission_group_id.
+const submitRegulatedBatchInput = z.object({
+  ofqual_numbers: z.array(z.string().min(1).max(20)).min(1).max(10),
+  evidence_type: z.enum(["eqa_report", "centre_certificate", "approval_letter"]),
+  evidence_doc_paths: z.array(z.string().min(1)).min(1).max(5),
+  awarding_body_reference: z.string().max(120).optional().nullable(),
+});
+
+export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => submitRegulatedBatchInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    // Ownership: every doc must be under the caller's storage folder.
+    for (const p of data.evidence_doc_paths) {
+      if (!p.startsWith(`${userId}/`)) {
+        throw new Error("Forbidden: doc path does not belong to you");
+      }
+    }
+
+    // Normalise + dedupe + validate format.
+    const numbers = Array.from(
+      new Set(data.ofqual_numbers.map((n) => n.trim().toUpperCase()).filter(Boolean)),
+    );
+    if (numbers.length === 0) throw new Error("Add at least one Ofqual number");
+    for (const n of numbers) {
+      if (!OFQUAL_QUAL_NO_REGEX.test(n)) {
+        throw new Error(`Ofqual number ${n} must look like 601/3866/X`);
+      }
+    }
+
+    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
+
+    const { lookupOfqualQualification } = await import("@/lib/cpd/ofqual.server");
+    const groupId = crypto.randomUUID();
+    const insertedIds: string[] = [];
+
+    for (const ofqualNumber of numbers) {
+      const lookup = await lookupOfqualQualification(ofqualNumber);
+      const snapshot = lookup.record
+        ? {
+            qualificationNumber: lookup.record.qualificationNumber,
+            title: lookup.record.title,
+            awardingOrganisation: lookup.record.awardingOrganisation,
+            level: lookup.record.level,
+            status: lookup.record.status,
+          }
+        : null;
+
+      const { data: row, error } = await supabase
+        .from("provider_regulated_permissions")
+        .insert({
+          provider_id: userId,
+          ofqual_number: ofqualNumber,
+          ofqual_snapshot: snapshot as never,
+          ofqual_found: lookup.found,
+          submission_group_id: groupId,
+          evidence_type: data.evidence_type,
+          evidence_doc_paths: data.evidence_doc_paths,
+          awarding_body_reference: data.awarding_body_reference ?? null,
+        } as never)
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      insertedIds.push(row!.id);
+    }
+
+    // Kick off AI extraction per row (non-blocking; fails soft).
+    for (const id of insertedIds) {
+      try {
+        await runRegulatedAiExtraction(id);
+      } catch (e) {
+        console.error("[AI extraction — regulated batch] failed", e);
+      }
+    }
+
+    return { group_id: groupId, ids: insertedIds };
+  });
+
 export const listMyRegulatedPermissions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -338,7 +420,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, submission_group_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });

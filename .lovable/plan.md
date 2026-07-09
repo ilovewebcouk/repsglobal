@@ -1,84 +1,100 @@
-# Ofqual-number-first regulated qualifications
 
-Flip the regulated-qualification flow from "pick from a fixed list" to "type your Ofqual number, we verify + AI reads your approval evidence."
+## Goal
 
-## What changes
+Bring the **Admin → Verification → Training providers → Qualifications & CPD** tab up to the same standard as the Name/Domain queue, and let providers submit several qualifications in one go against a single set of evidence docs.
 
-### 1. Provider dashboard — Regulated submission form
-File: `src/routes/_authenticated/_professional/dashboard_.qualifications.tsx`
+Three problems today:
+1. Regulated & CPD submissions render as a flat card list — you can't tell at a glance *who* submitted what without opening each card.
+2. Clicking a document opens it in a new tab, so the qualification detail and the evidence are never on screen together.
+3. A single EQA report or approval letter usually covers multiple qualifications, but providers can only submit one Ofqual number per upload — so the same evidence gets uploaded 3–4 times and admins can't see they belong together.
 
-- **Remove** the `<Select>` dropdown backed by the `qualifications` catalogue table.
-- **Replace** with a single **Ofqual qualification number** input (e.g. `601/3866/X`), validated by the existing `OFQUAL_QUAL_NO_REGEX`.
-- On blur / debounced change, call a new server function `resolveOfqualNumber` that runs `lookupOfqualQualification()` (already exists in `src/lib/cpd/ofqual.server.ts`) and returns `{ found, title, awardingOrganisation, level, status }`.
-- Show a live resolution card under the field:
-  - **Green** — found on register: display title / awarding body / level / status. Auto-filled, read-only.
-  - **Amber** — not on register: show warning "We couldn't find this on the Ofqual register. Your submission will still be reviewed by our team — please make sure the number is correct." Allow submit.
-  - **Red** — invalid format: block submit with inline validation.
-- Evidence uploader unchanged (EQA report / centre approval letter / EQA certificate — as locked earlier).
+---
 
-### 2. Submission payload
-Change `submitRegulatedQualification` in `src/lib/qualifications/qualifications.functions.ts`:
+## 1. Admin queue — master-detail layout
 
-- Drop `qualificationId` (FK to catalogue). 
-- Accept `ofqualNumber: string` instead.
-- Snapshot the Ofqual register response into the submission row at submit-time (title, awarding body, level, status, `ofqual_matched: boolean`).
-- Trigger AI extraction (see step 3) inline after upload.
+Rewrite `src/components/admin/verification/AdminProviderQualificationsTab.tsx` to mirror `AdminProviderQueueTab.tsx`:
 
-### 3. AI extraction — expanded fields
-Update the Gemini 2.5 Pro prompt in the existing AI extractor to pull, from the uploaded EQA report / approval letter / certificate:
+```text
+┌─ Regulated | CPD ─┐  ┌─ Pending | Changes | Approved | Rejected ─┐
+┌──────── list (380px) ────────┬──────────── detail ────────────────┐
+│ Provider name                │ Provider header + email + submitted│
+│  ↳ qualification title       │                                    │
+│  ↳ Ofqual no · awarding body │ ┌─ Ofqual register ─┬─ AI evidence ┐│
+│  ↳ time · status chip        │ │ title, body, lvl  │ centre, dates││
+│                              │ └───────────────────┴──────────────┘│
+│ [selected] highlighted       │ Cross-check chips                  │
+│ ...                          │ Documents (open in drawer buttons) │
+│                              │ Admin note + Approve/Changes/Reject│
+└──────────────────────────────┴────────────────────────────────────┘
+```
 
-- Centre name + centre number
-- Awarding body name (as stated in the doc)
-- Approval status (Approved / Suspended / Withdrawn / Unclear)
-- Approval / report date
-- Approval expiry OR next EQA visit date (nullable)
-- List of qualifications the centre is approved to deliver (array of `{ title, qualNumber? }`)
-- EQA name (nullable)
-- `confidence: "high" | "medium" | "low" | "inconclusive"`
-- `flags: string[]` (e.g. "centre_number_missing", "qualification_not_listed_in_doc")
+- List row shows: provider name (bold), qualification title, Ofqual number (mono), awarding body, `TimeAgo`, status chip.
+- Add a **grouping affordance** in the list: submissions sharing the same `submission_group_id` (see §3) render as a single row with a `+N more` chip; selecting expands all rows in the group in the detail panel as tabs.
+- Right-side detail keeps the existing two-column *Ofqual register vs AI-extracted* panel and cross-check chips, plus a new **"Requested by"** block: provider legal entity name, contact email (mailto link), `/t/<slug>` public profile link, submitted-at absolute + relative.
+- Approve / Request changes / Reject buttons and admin-note textarea move into the detail panel footer, exactly like `AdminProviderQueueTab`.
 
-Add one derived cross-check computed server-side after extraction:
-- `qualification_in_doc: boolean` — does the submitted Ofqual number (or its title) appear in the AI-extracted list of approved qualifications?
+Refetch every 30s while the `submitted` tab is active (already in place).
 
-### 4. Admin queue — evidence panel
-File: `src/components/admin/verification/AdminProviderQualificationsTab.tsx`
+## 2. In-page document drawer
 
-Show three columns side-by-side per submission:
+New component `src/components/admin/verification/QualificationDocDrawer.tsx` using shadcn `Sheet` (right side, `sm:max-w-[720px]`, full height).
 
-1. **Ofqual register** (independent truth about the qualification itself): title, awarding body, level, status. Amber banner if not found.
-2. **AI-extracted evidence** (what the doc says about *this centre's* approval): centre name + number, awarding body per doc, approval status, dates, list of approved quals, EQA name, confidence, flags.
-3. **Cross-check verdict**: three chips —
-   - Ofqual register match (found / not-found)
-   - Awarding body match (register vs doc)
-   - Qualification listed in doc (yes / no / inconclusive)
+- Opens from any "Document N" button in the admin detail panel. Never `window.open`.
+- Fetches a signed URL via existing `getQualificationDocSignedUrl` server fn.
+- Renders:
+  - PDFs → `<iframe src={signedUrl} className="h-full w-full">`.
+  - Images → `<img>` with contain-fit.
+  - Anything else → a clean "Open in new tab" fallback (last resort only).
+- Multi-doc submissions get a top-of-sheet segmented control (Doc 1 / Doc 2 / …) so admin can flip between attachments without closing the drawer.
+- The list and detail stay interactive behind the sheet (modal=false), so admin can compare the doc against the AI-extracted panel side-by-side on wide screens.
 
-Admin decision buttons (Approve / Request changes / Reject) unchanged.
+Replace the two current `window.open(url, "_blank")` call sites in `AdminProviderQualificationsTab.tsx` (regulated + CPD) with `setDrawerPaths([...])`.
 
-### 5. Catalogue table
-- **Keep** `qualifications` table in the DB for now (historic submissions may reference it), but stop reading from it in the submission flow. Mark deprecated in a comment; remove in a later migration once no active rows depend on it.
-- **Drop** the FK column `qualification_id` from `provider_regulated_permissions` in a new migration; add columns:
-  - `ofqual_number text not null`
-  - `ofqual_snapshot jsonb` (title/body/level/status at submit time)
-  - `ofqual_found boolean not null default false`
-  - `ai_extraction jsonb` (full AI result incl. new fields)
-  - `ai_cross_check jsonb` (the 3 chip verdicts)
+## 3. Multi-qualification submission from provider
 
-### 6. Public `/t/$slug` rendering
-File: `src/routes/t.$slug.index.tsx` + `listPublicProviderQualifications`
+The provider dashboard dialog at `src/routes/_authenticated/_professional/dashboard_.qualifications.tsx` becomes multi-number:
 
-- Group by `ofqual_snapshot.awardingOrganisation` (fall back to AI-extracted body when register missed).
-- Show qualification title from the register snapshot; the Ofqual number becomes a small monospace chip under the title.
-- Logo rendering via `awardingBodyLogo()` continues to work via fuzzy match on the register's awarding organisation name → existing slug map.
+- **Ofqual numbers list** (chip input):
+  - Text input + `Add` button.
+  - On add: validate format, run `resolveOfqualNumber`, then push a chip showing `{number} — {title or "Not on register"}` with a green/amber dot.
+  - Each chip is removable. Minimum 1, maximum 10.
+- Evidence type + centre number + files are shared across all numbers in the batch.
+- Submit calls a new server fn `submitRegulatedPermissionBatch({ ofqual_numbers, evidence_type, evidence_doc_paths, awarding_body_reference })`:
+  - Inserts one `provider_regulated_permissions` row per number, all sharing:
+    - the same `evidence_doc_paths`
+    - a new column `submission_group_id UUID` (generated once per batch)
+  - Runs `runRegulatedAiExtraction` once per row (existing behaviour), so each row still gets its own Ofqual snapshot + cross-check.
+- Copy update in the dialog: "Add every Ofqual number this document covers — one EQA report often lists several qualifications."
 
-## Technical notes
+The single-number `submitRegulatedPermission` fn stays for back-compat but the UI only calls the batch fn.
 
-- Ofqual lookup already exists (`src/lib/cpd/ofqual.server.ts`) with a 7-day Postgres cache — no new infra.
-- AI extraction already exists via Lovable AI Gateway (`google/gemini-2.5-pro`) with the guarded `NoObjectGeneratedError` fallback pattern. Only the schema + prompt change.
-- Keep the `Output` schema flat and constraint-free (no `.min/.max`, no long enums) per `ai-sdk-lovable-gateway` rules; state limits in the prompt, clamp in code.
-- Amber "not on register" cases surface as a distinct admin filter alongside the existing "inconclusive" bucket so reviewers can triage them quickly.
+## Technical section
 
-## Out of scope (this pass)
+### DB migration
+```sql
+ALTER TABLE public.provider_regulated_permissions
+  ADD COLUMN IF NOT EXISTS submission_group_id uuid;
+CREATE INDEX IF NOT EXISTS idx_prp_submission_group
+  ON public.provider_regulated_permissions (submission_group_id);
+```
 
-- CPD flow is unchanged (syllabus + assessment criteria + tutor CV — no Ofqual lookup applies).
-- Removing the `qualifications` catalogue table (deferred until historic rows migrated).
-- Ofqual API rate-limit / bulk pre-warm — current per-submission cache is sufficient.
+Existing rows have `submission_group_id = NULL` and render as their own single-item group in the admin list.
+
+### Server functions (`src/lib/qualifications/qualifications.functions.ts`)
+- Add `submitRegulatedPermissionBatch` — schema: `{ ofqual_numbers: string[].min(1).max(10), evidence_type, evidence_doc_paths: string[].min(1).max(5), awarding_body_reference }`.
+  - Generates one `submission_group_id = crypto.randomUUID()`.
+  - Loops the existing insert + AI extraction per number.
+  - Deduplicates numbers, normalises to upper-case, rejects invalid formats up-front.
+- Extend `adminListRegulatedQueue` select to include `submission_group_id` and to also return the provider's `slug` (already present).
+- No change to `adminDecideRegulated`; admin still decides per-row, which is deliberate because each row is a distinct approval.
+
+### Client
+- Rewrite `AdminProviderQualificationsTab.tsx` to a two-column layout using `PPanel`, existing `TimeAgo`, and the existing evidence panels/cross-check chips (lift them into a shared `<RegulatedDetail>` and `<CpdDetail>`).
+- New `QualificationDocDrawer.tsx` using `Sheet` from `@/components/ui/sheet`.
+- Provider dialog gains an `<OfqualNumberChips>` sub-component that reuses the current debounced `resolveOfqualNumber` logic per chip.
+- CPD side gets the same master-detail treatment (single-course submissions, no batching, no group id).
+
+### Scope guard
+- No changes to public `/t/$slug` rendering, to CPD accreditation numbering, or to the RLS policies on `provider_regulated_permissions`.
+- No changes to the identity or insurance queues.
+- Existing single-number submissions continue to work; only the UI switches to batch.
