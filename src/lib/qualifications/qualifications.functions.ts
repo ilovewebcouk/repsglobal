@@ -505,7 +505,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
     z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested", "withdrawn"]).default("submitted") }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    await requireAdmin(context.userId);
+    await requireAdmin(context.realUserId ?? context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
       .from("provider_regulated_permissions")
@@ -524,7 +524,7 @@ export const adminListCpdQueue = createServerFn({ method: "GET" })
     z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested"]).default("submitted") }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    await requireAdmin(context.userId);
+    await requireAdmin(context.realUserId ?? context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
       .from("cpd_courses")
@@ -586,7 +586,7 @@ export const adminDecideRegulated = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await requireAdmin(context.userId);
+    await requireAdmin(context.realUserId ?? context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.decision !== "approved" && !data.admin_note?.trim()) {
       throw new Error("Admin note required when rejecting or requesting changes");
@@ -596,7 +596,7 @@ export const adminDecideRegulated = createServerFn({ method: "POST" })
       .update({
         status: data.decision,
         admin_note: data.admin_note?.trim() || null,
-        reviewed_by: context.userId,
+        reviewed_by: context.realUserId ?? context.userId,
         reviewed_at: new Date().toISOString(),
       } as never)
       .eq("id", data.id);
@@ -616,7 +616,7 @@ export const adminDecideCpd = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await requireAdmin(context.userId);
+    await requireAdmin(context.realUserId ?? context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.decision !== "approved" && !data.admin_note?.trim()) {
       throw new Error("Admin note required when rejecting or requesting changes");
@@ -626,7 +626,7 @@ export const adminDecideCpd = createServerFn({ method: "POST" })
       .update({
         status: data.decision,
         admin_note: data.admin_note?.trim() || null,
-        reviewed_by: context.userId,
+        reviewed_by: context.realUserId ?? context.userId,
         reviewed_at: new Date().toISOString(),
       } as never)
       .eq("id", data.id);
