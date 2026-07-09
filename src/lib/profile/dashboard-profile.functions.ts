@@ -276,12 +276,13 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
           .from("professionals")
           .select("id")
           .eq("slug", slug)
-
-        .neq("id", userId)
-        .maybeSingle();
-      if (!clash) break;
-      slug = `${base}-${i}`;
+          .neq("id", userId)
+          .maybeSingle();
+        if (!clash) break;
+        slug = `${base}-${i}`;
+      }
     }
+
 
     // Drop any specialism that isn't valid for the chosen profession.
     // The DB trigger only enforces the global allow-list; we enforce the
