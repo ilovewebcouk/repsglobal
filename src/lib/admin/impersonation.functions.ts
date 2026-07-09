@@ -121,7 +121,7 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
         .maybeSingle(),
       supabaseAdmin
         .from('profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, business_name, avatar_url')
         .eq('id', session.professional_id)
         .maybeSingle(),
       supabaseAdmin
