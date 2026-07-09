@@ -37,7 +37,7 @@ export function ProviderActivityTab({ userId }: { userId: string }) {
               {r.reason ? (
                 <div className="mt-1 text-[12px] text-white/60">Reason: {String(r.reason)}</div>
               ) : null}
-              {(r.before_state || r.after_state) && (
+              {Boolean(r.before_state || r.after_state) && (
                 <details className="mt-2 text-[12px] text-white/50">
                   <summary className="cursor-pointer select-none text-white/60">before / after</summary>
                   <pre className="mt-1 max-h-40 overflow-auto rounded-[8px] bg-black/30 p-2 font-mono text-[11px]">
