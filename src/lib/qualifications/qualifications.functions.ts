@@ -14,7 +14,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuthWithImpersonation as requireSupabaseAuth } from "@/integrations/supabase/auth-middleware-impersonation";
 import { OFQUAL_QUAL_NO_REGEX } from "@/lib/cpd/awarding-bodies";
 
 // ─────────────────────────────────────────────────────────────────────────────
