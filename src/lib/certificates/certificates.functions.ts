@@ -1032,24 +1032,187 @@ export const adminMarkBatchPrinted = createServerFn({ method: "POST" })
 
 export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        batch_id: z.string().uuid(),
+        service_code: z.enum(["TPN", "TPS"]).optional(),
+      })
+      .parse(d),
+  )
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{
+      ok: true;
+      tracking_number: string | null;
+      tracking_url: string | null;
+      label_pdf_path: string | null;
+    }> => {
+      const { supabase, userId } = context;
+      await assertAdmin(supabase, (context as any).realUserId ?? userId);
+
+      // Load batch + address snapshot
+      const { data: batch, error: bErr } = await supabase
+        .from("certificate_batches")
+        .select(
+          "id, provider_id, count, status, format, ship_to_address, shipped_at, tracking_number",
+        )
+        .eq("id", data.batch_id)
+        .maybeSingle();
+      if (bErr) throw new Error(bErr.message);
+      if (!batch) throw new Error("Batch not found.");
+      if (batch.format !== "printed_and_digital") {
+        throw new Error("Only UK printed batches are dispatched via Royal Mail.");
+      }
+      if (!["printed", "awaiting_print", "issued"].includes(batch.status as string)) {
+        throw new Error(`Batch is in status '${batch.status}' — cannot dispatch.`);
+      }
+      const address = batch.ship_to_address as ShipToAddressDTO | null;
+      if (!address) {
+        throw new Error(
+          "This batch has no shipping address on file. The provider must add one before dispatch.",
+        );
+      }
+
+      // Load default service if not supplied
+      const { data: pricing } = await supabase
+        .from("certificate_pricing")
+        .select("default_rm_service_code")
+        .eq("id", true)
+        .maybeSingle();
+      const serviceCode =
+        data.service_code ??
+        (pricing?.default_rm_service_code as string | undefined) ??
+        "TPN";
+
+      // Call Royal Mail
+      const {
+        createRoyalMailOrder,
+        generateRoyalMailLabel,
+        buildTrackingUrl,
+        estimateShipmentWeightGrams,
+      } = await import("@/lib/certificates/royal-mail.server");
+
+      const rmOrder = await createRoyalMailOrder({
+        orderReference: batch.id as string,
+        serviceCode,
+        recipient: address,
+        weightGrams: estimateShipmentWeightGrams(batch.count as number),
+        itemCount: batch.count as number,
+        specialInstructions: `REPS certificates x${batch.count}`,
+      });
+
+      // Fetch the label PDF and upload to storage
+      const labelBytes = await generateRoyalMailLabel(rmOrder.orderIdentifier);
+      const labelPath = `batches/${batch.id}/label.pdf`;
+
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: upErr } = await supabaseAdmin.storage
+        .from("certificates")
+        .upload(labelPath, labelBytes, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
+      if (upErr) throw new Error(`Could not save shipping label: ${upErr.message}`);
+
+      const trackingUrl = rmOrder.trackingNumber
+        ? buildTrackingUrl(rmOrder.trackingNumber)
+        : null;
+      const now = new Date().toISOString();
+
+      const { error: updErr } = await supabase
+        .from("certificate_batches")
+        .update({
+          status: "dispatched",
+          dispatched_at: now,
+          shipped_at: now,
+          rm_service_code: serviceCode,
+          rm_order_identifier: String(rmOrder.orderIdentifier),
+          rm_order_reference: rmOrder.orderReference,
+          tracking_number: rmOrder.trackingNumber ?? null,
+          tracking_url: trackingUrl,
+          label_pdf_path: labelPath,
+        } as never)
+        .eq("id", data.batch_id);
+      if (updErr) throw new Error(updErr.message);
+
+      await supabase
+        .from("certificate_registrations")
+        .update({ status: "dispatched", dispatched_at: now } as never)
+        .eq("batch_id", data.batch_id)
+        .eq("status", "issued");
+
+      return {
+        ok: true,
+        tracking_number: rmOrder.trackingNumber ?? null,
+        tracking_url: trackingUrl,
+        label_pdf_path: labelPath,
+      };
+    },
+  );
+
+export const adminDownloadShippingLabel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ url: string }> => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, (context as any).realUserId ?? userId);
-    const now = new Date().toISOString();
-    const { error } = await supabase
+    const { data: batch } = await supabase
       .from("certificate_batches")
-      .update({ status: "fulfilled", dispatched_at: now } as never)
+      .select("label_pdf_path")
       .eq("id", data.batch_id)
-      .in("status", ["printed", "awaiting_print"]);
-    if (error) throw new Error(error.message);
-    // Mark registrations as dispatched too
-    await supabase
-      .from("certificate_registrations")
-      .update({ status: "dispatched", dispatched_at: now } as never)
-      .eq("batch_id", data.batch_id)
-      .eq("status", "issued");
-    return { ok: true };
+      .maybeSingle();
+    if (!batch?.label_pdf_path) throw new Error("No shipping label on file for this batch.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("certificates")
+      .createSignedUrl(batch.label_pdf_path as string, 60 * 10);
+    if (error || !signed?.signedUrl) throw new Error(error?.message ?? "Could not sign URL");
+    return { url: signed.signedUrl };
+  });
+
+export type BatchTrackingDTO = {
+  batch_id: string;
+  format: string;
+  status: string;
+  rm_service_code: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  shipped_at: string | null;
+};
+
+export const getBatchTracking = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<BatchTrackingDTO | null> => {
+    const { supabase, userId } = context;
+    const { data: batch } = await supabase
+      .from("certificate_batches")
+      .select(
+        "id, provider_id, format, status, rm_service_code, tracking_number, tracking_url, shipped_at",
+      )
+      .eq("id", data.batch_id)
+      .maybeSingle();
+    if (!batch) return null;
+    if (batch.provider_id !== userId) {
+      // allow admin override
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: (context as any).realUserId ?? userId,
+        _role: "admin",
+      } as never);
+      if (!isAdmin) throw new Error("Forbidden");
+    }
+    return {
+      batch_id: batch.id as string,
+      format: batch.format as string,
+      status: batch.status as string,
+      rm_service_code: (batch.rm_service_code as string | null) ?? null,
+      tracking_number: (batch.tracking_number as string | null) ?? null,
+      tracking_url: (batch.tracking_url as string | null) ?? null,
+      shipped_at: (batch.shipped_at as string | null) ?? null,
+    };
   });
 
 export type AdminRegistrationSearchDTO = {
