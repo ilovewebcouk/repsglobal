@@ -54,11 +54,14 @@ import {
 } from "./QualificationDocDrawer";
 
 type Status = "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
+type CourseStatus = Status | "ai_drafted";
 
 const STATUS_TABS: readonly Status[] = ["submitted", "approved", "rejected", "withdrawn"];
 const REGULATED_STATUS_TABS: readonly Status[] = STATUS_TABS;
-const STATUS_LABEL: Record<Status, string> = {
-  submitted: "Pending",
+const COURSE_STATUS_TABS: readonly CourseStatus[] = ["submitted", "ai_drafted", "approved", "rejected", "withdrawn"];
+const STATUS_LABEL: Record<CourseStatus, string> = {
+  submitted: "New",
+  ai_drafted: "In review",
   changes_requested: "Changes",
   approved: "Approved",
   rejected: "Rejected",
