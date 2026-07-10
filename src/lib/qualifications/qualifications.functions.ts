@@ -1356,7 +1356,7 @@ function computeDeterministicFlags(input: {
   spec_prerequisites: string | null;
   spec_guided_learning_hours: number | null;
   spec_total_qualification_time: number | null;
-  spec_delivery_mode: RepsCourseDeliveryMode | null;
+  spec_delivery_mode: RepsCourseDeliveryMode | "online" | null;
   official_level: number | null;
 }): string[] {
   const flags: string[] = [];
