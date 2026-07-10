@@ -1,5 +1,5 @@
 /**
- * Admin queue for provider regulated qualifications & REPS-accredited courses.
+ * Admin queue for provider regulated qualifications & REPS-endorsed courses.
  *
  * Master-detail layout mirroring AdminProviderQueueTab (name / domain
  * queue): a left-hand list groups submissions by provider (and by
@@ -86,7 +86,7 @@ export function AdminProviderQualificationsTab() {
                 tab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
               }`}
             >
-              {t === "regulated" ? "Regulated qualifications" : "REPS-accredited courses"}
+              {t === "regulated" ? "Regulated qualifications" : "REPS-endorsed courses"}
             </button>
           ))}
         </div>
@@ -1001,7 +1001,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
         <div className="border-b border-reps-border px-5 py-4">
           <div className="flex flex-wrap items-center gap-2 text-[11.5px] text-white/60">
             <span className="rounded-full border border-amber-400/30 bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-amber-300">
-              REPS-accredited
+              REPS-endorsed
             </span>
             {row.reps_qual_number ? (
               <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
@@ -1120,7 +1120,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
           {/* RIGHT — publish spec form */}
           <div className="space-y-3 px-5 py-4">
             <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
-              Official accreditation spec
+              Official endorsement spec
             </div>
 
             <SpecField label="Official title">
