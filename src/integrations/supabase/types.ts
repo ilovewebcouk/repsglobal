@@ -789,6 +789,7 @@ export type Database = {
           currency: string
           default_rm_service_code: string
           id: boolean
+          international_postage_fee_pence: number
           postage_fee_pence: number
           unit_price_pence: number
           updated_at: string
@@ -798,6 +799,7 @@ export type Database = {
           currency?: string
           default_rm_service_code?: string
           id?: boolean
+          international_postage_fee_pence?: number
           postage_fee_pence?: number
           unit_price_pence?: number
           updated_at?: string
@@ -807,6 +809,7 @@ export type Database = {
           currency?: string
           default_rm_service_code?: string
           id?: boolean
+          international_postage_fee_pence?: number
           postage_fee_pence?: number
           unit_price_pence?: number
           updated_at?: string
