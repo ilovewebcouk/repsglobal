@@ -89,10 +89,16 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/q
   component: ProviderQualsPage,
 });
 
-type Tab = "regulated" | "cpd";
+type AddKind = "regulated" | "course";
+
+const parseLevel = (v: string | number | null | undefined): number | null => {
+  if (v == null) return null;
+  const m = String(v).match(/\d+/);
+  return m ? parseInt(m[0], 10) : null;
+};
 
 function ProviderQualsPage() {
-  const [tab, setTab] = React.useState<Tab>("regulated");
+  const [pickerOpen, setPickerOpen] = React.useState(false);
   const [regulatedOpen, setRegulatedOpen] = React.useState(false);
   const [cpdOpen, setCpdOpen] = React.useState(false);
 
@@ -102,41 +108,113 @@ function ProviderQualsPage() {
   const regQuery = useQuery({ queryKey: ["my-regulated-permissions"], queryFn: () => fetchMyReg() });
   const cpdQuery = useQuery({ queryKey: ["my-cpd-courses"], queryFn: () => fetchMyCpd() });
 
+  const loading = regQuery.isLoading || cpdQuery.isLoading;
+  const regRows = regQuery.data ?? [];
+  const cpdRows = cpdQuery.data ?? [];
+
+  type Merged =
+    | { kind: "regulated"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: RegulatedPermissionRow }
+    | { kind: "course"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: CpdCourseRow };
+
+  const merged: Merged[] = React.useMemo(() => {
+    const items: Merged[] = [];
+    for (const r of regRows) {
+      const snap = r.ofqual_snapshot;
+      const title = snap?.title ?? r.qualification?.title ?? "Awaiting Ofqual match";
+      const levelSrc = snap?.level ?? (r.qualification?.level != null ? `L${r.qualification.level}` : null);
+      items.push({
+        kind: "regulated",
+        id: r.id,
+        withdrawn: r.status === "withdrawn",
+        levelNum: parseLevel(levelSrc),
+        title,
+        row: r,
+      });
+    }
+    for (const c of cpdRows) {
+      items.push({
+        kind: "course",
+        id: c.id,
+        withdrawn: c.status === "withdrawn",
+        levelNum: parseLevel(c.level as unknown as number | string | null),
+        title: c.title,
+        row: c,
+      });
+    }
+    items.sort((a, b) => {
+      if (a.withdrawn !== b.withdrawn) return a.withdrawn ? 1 : -1;
+      const al = a.levelNum;
+      const bl = b.levelNum;
+      if (al == null && bl == null) return a.title.localeCompare(b.title);
+      if (al == null) return 1;
+      if (bl == null) return -1;
+      if (bl !== al) return bl - al;
+      return a.title.localeCompare(b.title);
+    });
+    return items;
+  }, [regRows, cpdRows]);
+
   return (
     <DashboardShell
       role="trainer"
       active="Qualifications & Courses"
       title="Qualifications & Courses"
-      subtitle="Prove approval to deliver regulated qualifications, and get your courses REPS-accredited."
+      subtitle="One list for both regulated qualifications you're approved to deliver and courses you'd like REPS to accredit."
     >
-      <div className="mb-5 inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
-        {(["regulated", "cpd"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition ${
-              tab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
-            }`}
-          >
-            {t === "regulated" ? "Regulated qualifications" : "REPS-accredited courses"}
-          </button>
-        ))}
-      </div>
+      <PPanel className="p-5">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-display text-[18px] font-bold text-white">
+              Your qualifications & courses
+            </h2>
+            <p className="mt-1 text-[13px] text-white/60">
+              Sorted by level, highest first. Each row shows its awarding body and verifiable reference number.
+            </p>
+          </div>
+          <Button onClick={() => setPickerOpen(true)} className="shrink-0">
+            <Plus data-icon /> Add qualification or course
+          </Button>
+        </div>
 
-      {tab === "regulated" ? (
-        <RegulatedSection
-          rows={regQuery.data ?? []}
-          loading={regQuery.isLoading}
-          onNew={() => setRegulatedOpen(true)}
-        />
-      ) : (
-        <CpdSection
-          rows={cpdQuery.data ?? []}
-          loading={cpdQuery.isLoading}
-          onNew={() => setCpdOpen(true)}
-        />
-      )}
+        {loading ? (
+          <div className="py-10 text-center text-[13px] text-white/55">
+            <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" /> Loading…
+          </div>
+        ) : merged.length === 0 ? (
+          <div className="rounded-[16px] border border-dashed border-reps-border p-8 text-center">
+            <GraduationCap className="mx-auto mb-3 h-8 w-8 text-white/40" />
+            <div className="text-[14px] font-semibold text-white">No qualifications or courses yet</div>
+            <div className="mt-1 text-[12.5px] text-white/55">
+              Add your first — we'll ask whether it's an Ofqual-regulated qualification you deliver, or a course you'd like REPS to accredit.
+            </div>
+            <Button onClick={() => setPickerOpen(true)} className="mt-4">
+              <Plus data-icon /> Add qualification or course
+            </Button>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {merged.map((m) =>
+              m.kind === "regulated" ? (
+                <RegulatedRow key={`r-${m.id}`} row={m.row} />
+              ) : (
+                <CpdRow key={`c-${m.id}`} row={m.row} />
+              ),
+            )}
+          </ul>
+        )}
+      </PPanel>
 
+      {pickerOpen ? (
+        <AddTypePickerDialog
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onPick={(kind: AddKind) => {
+            setPickerOpen(false);
+            if (kind === "regulated") setRegulatedOpen(true);
+            else setCpdOpen(true);
+          }}
+        />
+      ) : null}
       {regulatedOpen ? (
         <AddRegulatedDialog open={regulatedOpen} onClose={() => setRegulatedOpen(false)} />
       ) : null}
@@ -145,65 +223,90 @@ function ProviderQualsPage() {
   );
 }
 
-/* ─── Regulated ─────────────────────────────────────────────────────────── */
+/* ─── Type-picker (step 1 of Add flow) ──────────────────────────────────── */
 
-function RegulatedSection({
-  rows,
-  loading,
-  onNew,
+function AddTypePickerDialog({
+  open,
+  onClose,
+  onPick,
 }: {
-  rows: RegulatedPermissionRow[];
-  loading: boolean;
-  onNew: () => void;
+  open: boolean;
+  onClose: () => void;
+  onPick: (kind: AddKind) => void;
 }) {
+  const [choice, setChoice] = React.useState<AddKind | null>(null);
   return (
-    <PPanel className="p-5">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-[18px] font-bold text-white">
-            Regulated qualifications we deliver
-          </h2>
-          <p className="mt-1 text-[13px] text-white/60">
-            Prove you're an approved centre for a specific Ofqual-regulated qualification.
-            We only accept an EQA report, centre approval certificate, or an approval letter
-            from the awarding body on their letterhead.
-          </p>
-        </div>
-        <Button onClick={onNew} className="shrink-0">
-          <Plus data-icon /> Add qualification
-        </Button>
-      </div>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg bg-reps-panel border-reps-border text-white">
+        <DialogHeader>
+          <DialogTitle>Add qualification or course</DialogTitle>
+          <DialogDescription>
+            Which are you adding? Each has different evidence requirements.
+          </DialogDescription>
+        </DialogHeader>
 
-      {loading ? (
-        <div className="py-10 text-center text-[13px] text-white/55">
-          <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" /> Loading…
-        </div>
-      ) : rows.length === 0 ? (
-        <div className="rounded-[16px] border border-dashed border-reps-border p-8 text-center">
-          <GraduationCap className="mx-auto mb-3 h-8 w-8 text-white/40" />
-          <div className="text-[14px] font-semibold text-white">
-            No regulated qualifications yet
-          </div>
-          <div className="mt-1 text-[12.5px] text-white/55">
-            Add one to prove your centre is approved to deliver it.
-          </div>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {[...rows]
-            .sort(
-              (a, b) =>
-                (a.status === "withdrawn" ? 1 : 0) -
-                (b.status === "withdrawn" ? 1 : 0),
-            )
-            .map((r) => (
-              <RegulatedRow key={r.id} row={r} />
-            ))}
-        </ul>
-      )}
-    </PPanel>
+        <RadioGroup
+          value={choice ?? ""}
+          onValueChange={(v) => setChoice(v as AddKind)}
+          className="space-y-3"
+        >
+          <label
+            htmlFor="pick-regulated"
+            className={`flex cursor-pointer items-start gap-3 rounded-[12px] border p-4 transition ${
+              choice === "regulated"
+                ? "border-reps-orange bg-reps-orange-soft/20"
+                : "border-reps-border bg-white/5 hover:bg-white/[0.07]"
+            }`}
+          >
+            <RadioGroupItem id="pick-regulated" value="regulated" className="mt-0.5" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <GraduationCap className="h-4 w-4 text-white/80" />
+                <span className="text-[14px] font-semibold text-white">Ofqual-regulated qualification</span>
+              </div>
+              <p className="mt-1 text-[12.5px] text-white/60">
+                I'm an approved centre for a qualification on the Ofqual register (e.g. Active IQ Level 2 in Instructing Circuit Training). You'll need an EQA report, centre certificate, or approval letter.
+              </p>
+            </div>
+          </label>
+
+          <label
+            htmlFor="pick-course"
+            className={`flex cursor-pointer items-start gap-3 rounded-[12px] border p-4 transition ${
+              choice === "course"
+                ? "border-reps-orange bg-reps-orange-soft/20"
+                : "border-reps-border bg-white/5 hover:bg-white/[0.07]"
+            }`}
+          >
+            <RadioGroupItem id="pick-course" value="course" className="mt-0.5" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-white/80" />
+                <span className="text-[14px] font-semibold text-white">REPS-accredited course</span>
+              </div>
+              <p className="mt-1 text-[12.5px] text-white/60">
+                I've built my own course and want REPS to accredit it. You'll provide a syllabus, assessment criteria, and tutor CV.
+              </p>
+            </div>
+          </label>
+        </RadioGroup>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={() => choice && onPick(choice)} disabled={!choice}>
+            Continue
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
+
+
+/* ─── Regulated ─────────────────────────────────────────────────────────── */
+
 
 function RegulatedRow({ row }: { row: RegulatedPermissionRow }) {
   const qc = useQueryClient();
@@ -365,54 +468,6 @@ const EVIDENCE_LABEL: Record<RegulatedPermissionRow["evidence_type"], string> = 
 
 /* ─── CPD ───────────────────────────────────────────────────────────────── */
 
-function CpdSection({
-  rows,
-  loading,
-  onNew,
-}: {
-  rows: CpdCourseRow[];
-  loading: boolean;
-  onNew: () => void;
-}) {
-  return (
-    <PPanel className="p-5">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-[18px] font-bold text-white">
-            REPS-accredited courses
-          </h2>
-          <p className="mt-1 text-[13px] text-white/60">
-            REPS accredits courses you deliver. Submit a syllabus, assessment criteria and tutor CV.
-            Approved courses receive a REPS accreditation number and the accredited badge.
-          </p>
-        </div>
-        <Button onClick={onNew} className="shrink-0">
-          <Plus data-icon /> Request accreditation
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="py-10 text-center text-[13px] text-white/55">
-          <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" /> Loading…
-        </div>
-      ) : rows.length === 0 ? (
-        <div className="rounded-[16px] border border-dashed border-reps-border p-8 text-center">
-          <Sparkles className="mx-auto mb-3 h-8 w-8 text-white/40" />
-          <div className="text-[14px] font-semibold text-white">No courses yet</div>
-          <div className="mt-1 text-[12.5px] text-white/55">
-            Submit your first course for REPS accreditation.
-          </div>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {rows.map((r) => (
-            <CpdRow key={r.id} row={r} />
-          ))}
-        </ul>
-      )}
-    </PPanel>
-  );
-}
 
 function CpdRow({ row }: { row: CpdCourseRow }) {
   const qc = useQueryClient();
