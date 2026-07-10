@@ -702,13 +702,22 @@ export type Database = {
           format: string
           id: string
           issued_at: string | null
+          label_pdf_path: string | null
           paid_at: string | null
+          postage_fee_pence_snapshot: number
           printed_at: string | null
           provider_id: string
+          rm_order_identifier: string | null
+          rm_order_reference: string | null
+          rm_service_code: string | null
+          ship_to_address: Json | null
+          shipped_at: string | null
           status: string
           stripe_checkout_session_id: string | null
           stripe_payment_intent_id: string | null
           total_pence: number
+          tracking_number: string | null
+          tracking_url: string | null
           unit_price_pence: number
           updated_at: string
         }
@@ -722,13 +731,22 @@ export type Database = {
           format?: string
           id?: string
           issued_at?: string | null
+          label_pdf_path?: string | null
           paid_at?: string | null
+          postage_fee_pence_snapshot?: number
           printed_at?: string | null
           provider_id: string
+          rm_order_identifier?: string | null
+          rm_order_reference?: string | null
+          rm_service_code?: string | null
+          ship_to_address?: Json | null
+          shipped_at?: string | null
           status?: string
           stripe_checkout_session_id?: string | null
           stripe_payment_intent_id?: string | null
           total_pence?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           unit_price_pence: number
           updated_at?: string
         }
@@ -742,13 +760,22 @@ export type Database = {
           format?: string
           id?: string
           issued_at?: string | null
+          label_pdf_path?: string | null
           paid_at?: string | null
+          postage_fee_pence_snapshot?: number
           printed_at?: string | null
           provider_id?: string
+          rm_order_identifier?: string | null
+          rm_order_reference?: string | null
+          rm_service_code?: string | null
+          ship_to_address?: Json | null
+          shipped_at?: string | null
           status?: string
           stripe_checkout_session_id?: string | null
           stripe_payment_intent_id?: string | null
           total_pence?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           unit_price_pence?: number
           updated_at?: string
         }
@@ -757,21 +784,27 @@ export type Database = {
       certificate_pricing: {
         Row: {
           currency: string
+          default_rm_service_code: string
           id: boolean
+          postage_fee_pence: number
           unit_price_pence: number
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           currency?: string
+          default_rm_service_code?: string
           id?: boolean
+          postage_fee_pence?: number
           unit_price_pence?: number
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           currency?: string
+          default_rm_service_code?: string
           id?: boolean
+          postage_fee_pence?: number
           unit_price_pence?: number
           updated_at?: string
           updated_by?: string | null
