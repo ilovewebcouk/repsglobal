@@ -965,21 +965,18 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
     onError: (e) => toast.error(e instanceof Error ? e.message : "Redraft failed"),
   });
 
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [drawerDocs, setDrawerDocs] = React.useState<QualificationDoc[]>([]);
-  const openDocs = (docs: QualificationDoc[]) => {
-    setDrawerDocs(docs);
-    setDrawerOpen(true);
-  };
-
   const providerName =
     row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Unnamed provider";
 
-  const allDocs: QualificationDoc[] = [
-    { path: row.syllabus_doc_path, label: "Syllabus" },
-    { path: row.assessment_criteria_doc_path, label: "Assessment criteria" },
-    { path: row.tutor_cv_doc_path, label: "Tutor CV" },
-  ];
+  const deliveryLabel = (v: string | null): string => {
+    if (!v) return "—";
+    if (v === "in_person") return "In-person";
+    if (v === "online_live") return "Online — live";
+    if (v === "online_self_paced") return "Online — self-paced";
+    if (v === "blended") return "Blended";
+    if (v === "online") return "Online";
+    return v;
+  };
 
   const specComplete =
     Boolean(officialTitle.trim()) &&
@@ -1033,7 +1030,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2">
-          {/* LEFT — provider submission + docs + AI signal */}
+          {/* LEFT — provider's answers + AI signal */}
           <div className="space-y-4 border-b border-reps-border px-5 py-4 lg:border-b-0 lg:border-r">
             <div>
               <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
@@ -1043,26 +1040,27 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
             </div>
 
             <div>
-              <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
-                Evidence documents
+              <div className="mb-2 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+                Provider's answers
               </div>
-              <div className="flex flex-wrap gap-2">
-                {allDocs.map((d) => (
-                  <button
-                    key={d.path}
-                    onClick={() => openDocs([d])}
-                    className="inline-flex items-center gap-1.5 rounded-[8px] border border-reps-border bg-white/5 px-2.5 py-1 text-[11.5px] text-white/80 hover:bg-white/10"
-                  >
-                    <FileText className="h-3 w-3" /> {d.label}
-                  </button>
-                ))}
-                <button
-                  onClick={() => openDocs(allDocs)}
-                  className="inline-flex items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-orange/15 px-2.5 py-1 text-[11.5px] font-semibold text-reps-orange hover:bg-reps-orange/20"
-                >
-                  Open all
-                </button>
-              </div>
+              <dl className="space-y-2.5">
+                <AnswerBlock label="Who this course is for" value={row.proposed_who_for} />
+                <AnswerBlock label="What the course covers" value={row.proposed_what_covered} />
+                <AnswerBlock label="Rough learner outcomes" value={row.proposed_learner_outcomes} />
+                <div className="grid grid-cols-2 gap-3">
+                  <AnswerInline label="Delivery" value={deliveryLabel(row.proposed_delivery_mode)} />
+                  <AnswerInline
+                    label="Total hours"
+                    value={row.proposed_total_hours != null ? `${row.proposed_total_hours}h` : "—"}
+                  />
+                </div>
+                <AnswerBlock label="How learners are assessed" value={row.proposed_how_assessed} />
+                <AnswerBlock label="Prerequisites" value={row.proposed_prerequisites} />
+                <AnswerBlock label="Tutor name & credentials" value={row.proposed_tutor_credentials} />
+                {row.proposed_extra_notes ? (
+                  <AnswerBlock label="Extra notes" value={row.proposed_extra_notes} />
+                ) : null}
+              </dl>
             </div>
 
             {row.ai_red_flags.length > 0 ? (
@@ -1079,7 +1077,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
             {row.status === "submitted" && !row.ai_drafted_at ? (
               <div className="rounded-[10px] border border-white/10 bg-white/[0.02] p-3 text-[12px] text-white/60">
                 <Loader2 className="mr-1.5 inline h-3.5 w-3.5 animate-spin" />
-                AI is drafting the spec from the submitted documents. This usually takes 20–40 seconds.
+                AI is drafting the spec from the provider's answers. This usually takes 15–30 seconds.
               </div>
             ) : null}
 
