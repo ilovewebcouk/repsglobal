@@ -937,6 +937,11 @@ export type PrintQueueRowDTO = {
   count: number;
   paid_at: string | null;
   status: string;
+  ship_to_address: ShipToAddressDTO | null;
+  rm_service_code: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  shipped_at: string | null;
   learners: Array<{
     registration_id: string;
     certificate_number: string | null;
