@@ -964,41 +964,150 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
 
 /* ─── Add REPS-accredited course dialog ──────────────────────────────────── */
 
+type DeliveryMode = "in_person" | "online_live" | "online_self_paced" | "blended";
+type ExpandField =
+  | "proposed_who_for"
+  | "proposed_what_covered"
+  | "proposed_learner_outcomes"
+  | "proposed_how_assessed"
+  | "proposed_prerequisites"
+  | "proposed_tutor_credentials"
+  | "proposed_extra_notes";
+
+const DELIVERY_OPTIONS: Array<{ value: DeliveryMode; label: string; help: string }> = [
+  { value: "in_person", label: "In-person", help: "Everyone in the room together." },
+  { value: "online_live", label: "Online — live", help: "Scheduled sessions on Zoom / Teams." },
+  { value: "online_self_paced", label: "Online — self-paced", help: "Learners work through modules on their own schedule." },
+  { value: "blended", label: "Blended", help: "Mix of in-person and online." },
+];
+
 function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
-  const upload = useServerFn(uploadCertificateFile);
   const submit = useServerFn(submitRepsCourse);
+  const expand = useServerFn(
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("@/lib/qualifications/qualifications.functions").expandRepsCourseField,
+  );
 
   const [title, setTitle] = React.useState("");
-  const [syllabusFile, setSyllabusFile] = React.useState<File | null>(null);
-  const [assessmentFile, setAssessmentFile] = React.useState<File | null>(null);
-  const [tutorCvFile, setTutorCvFile] = React.useState<File | null>(null);
+  const [whoFor, setWhoFor] = React.useState("");
+  const [whatCovered, setWhatCovered] = React.useState("");
+  const [outcomes, setOutcomes] = React.useState("");
+  const [delivery, setDelivery] = React.useState<DeliveryMode | "">("");
+  const [totalHours, setTotalHours] = React.useState<string>("");
+  const [howAssessed, setHowAssessed] = React.useState("");
+  const [prerequisites, setPrerequisites] = React.useState("");
+  const [tutor, setTutor] = React.useState("");
+  const [extra, setExtra] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
+  const [expanding, setExpanding] = React.useState<ExpandField | null>(null);
+  const undoRef = React.useRef<Partial<Record<ExpandField, string>>>({});
+  const [expandedFields, setExpandedFields] = React.useState<Record<ExpandField, boolean>>({
+    proposed_who_for: false,
+    proposed_what_covered: false,
+    proposed_learner_outcomes: false,
+    proposed_how_assessed: false,
+    proposed_prerequisites: false,
+    proposed_tutor_credentials: false,
+    proposed_extra_notes: false,
+  });
+
+  const totalHoursNum = Number(totalHours);
+  const hoursValid = totalHours.trim() !== "" && Number.isFinite(totalHoursNum) && totalHoursNum >= 0.5 && totalHoursNum <= 2000;
 
   const canSubmit =
-    title.trim().length >= 3 && syllabusFile && assessmentFile && tutorCvFile && !submitting;
+    title.trim().length >= 3 &&
+    whoFor.trim().length >= 10 &&
+    whatCovered.trim().length >= 10 &&
+    outcomes.trim().length >= 10 &&
+    delivery !== "" &&
+    hoursValid &&
+    howAssessed.trim().length >= 5 &&
+    tutor.trim().length >= 10 &&
+    !submitting;
 
-  const uploadOne = async (f: File): Promise<string> => {
-    const dataUrl = await fileToDataUrl(f);
-    const { path } = await upload({ data: { file_data_url: dataUrl, filename: f.name } });
-    return path;
+  const fieldValue = (f: ExpandField): string => {
+    switch (f) {
+      case "proposed_who_for": return whoFor;
+      case "proposed_what_covered": return whatCovered;
+      case "proposed_learner_outcomes": return outcomes;
+      case "proposed_how_assessed": return howAssessed;
+      case "proposed_prerequisites": return prerequisites;
+      case "proposed_tutor_credentials": return tutor;
+      case "proposed_extra_notes": return extra;
+    }
+  };
+  const setFieldValue = (f: ExpandField, v: string) => {
+    switch (f) {
+      case "proposed_who_for": setWhoFor(v); break;
+      case "proposed_what_covered": setWhatCovered(v); break;
+      case "proposed_learner_outcomes": setOutcomes(v); break;
+      case "proposed_how_assessed": setHowAssessed(v); break;
+      case "proposed_prerequisites": setPrerequisites(v); break;
+      case "proposed_tutor_credentials": setTutor(v); break;
+      case "proposed_extra_notes": setExtra(v); break;
+    }
+  };
+
+  const runExpand = async (f: ExpandField) => {
+    const current = fieldValue(f);
+    if (current.trim().length < 15) {
+      toast.error("Write at least 15 characters first — AI needs something to work with.");
+      return;
+    }
+    setExpanding(f);
+    try {
+      const res = await expand({
+        data: {
+          field: f,
+          current_value: current,
+          context: {
+            proposed_title: title || null,
+            proposed_who_for: whoFor || null,
+            proposed_what_covered: whatCovered || null,
+            proposed_learner_outcomes: outcomes || null,
+            proposed_delivery_mode: delivery || null,
+            proposed_total_hours: hoursValid ? totalHoursNum : null,
+            proposed_how_assessed: howAssessed || null,
+            proposed_prerequisites: prerequisites || null,
+            proposed_tutor_credentials: tutor || null,
+          },
+        },
+      });
+      undoRef.current[f] = current;
+      setFieldValue(f, res.draft);
+      setExpandedFields((s) => ({ ...s, [f]: true }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI expand failed");
+    } finally {
+      setExpanding(null);
+    }
+  };
+
+  const undoExpand = (f: ExpandField) => {
+    const prev = undoRef.current[f];
+    if (prev == null) return;
+    setFieldValue(f, prev);
+    delete undoRef.current[f];
+    setExpandedFields((s) => ({ ...s, [f]: false }));
   };
 
   const onSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const [syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path] = await Promise.all([
-        uploadOne(syllabusFile!),
-        uploadOne(assessmentFile!),
-        uploadOne(tutorCvFile!),
-      ]);
       await submit({
         data: {
           proposed_title: title.trim(),
-          syllabus_doc_path,
-          assessment_criteria_doc_path,
-          tutor_cv_doc_path,
+          proposed_who_for: whoFor.trim(),
+          proposed_what_covered: whatCovered.trim(),
+          proposed_learner_outcomes: outcomes.trim(),
+          proposed_delivery_mode: delivery as DeliveryMode,
+          proposed_total_hours: totalHoursNum,
+          proposed_how_assessed: howAssessed.trim(),
+          proposed_prerequisites: prerequisites.trim() || null,
+          proposed_tutor_credentials: tutor.trim(),
+          proposed_extra_notes: extra.trim() || null,
         },
       });
       toast.success("Submitted — REPS AI is drafting your accreditation spec.");
@@ -1013,56 +1122,185 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg bg-reps-panel border-reps-border text-white">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-reps-panel border-reps-border text-white">
         <DialogHeader>
           <DialogTitle>Request REPS accreditation</DialogTitle>
           <DialogDescription>
-            Upload your syllabus, assessment criteria and tutor CV. REPS AI drafts the level,
-            official title and full specification from your documents; a REPS admin reviews and
-            publishes. Approved courses receive a unique <span className="font-mono">REPS-QUAL-</span>
-            number.
+            Answer 10 short questions about your course. REPS AI drafts the level, official title
+            and full specification from your answers; a REPS admin reviews and publishes. Approved
+            courses receive a unique <span className="font-mono">REPS-QUAL-</span>number.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Working title <span className="text-red-300">*</span>
-            </Label>
+        <div className="space-y-5">
+          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-3 text-[12px] text-emerald-100/85">
+            <div className="flex items-center gap-1.5 font-semibold text-emerald-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              What AI drafts from your answers
+            </div>
+            <p className="mt-1 text-emerald-100/70">
+              Level (1–7), formal learning outcomes with Bloom's verbs, guided learning hours,
+              total qualification time, and the polished public specification. Use{" "}
+              <span className="font-semibold">✨ Expand with AI</span> on any field to have AI
+              tidy up your rough answer before submitting.
+            </p>
+          </div>
+
+          <FormField label="Working title" required>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Kettlebell Coach"
             />
-            <p className="mt-1 text-[11.5px] text-white/45">
-              What you'd call it internally. REPS may refine the wording before publishing.
-            </p>
-          </div>
+            <FieldHelp>What you'd call it internally. REPS may refine the wording before publishing.</FieldHelp>
+          </FormField>
 
-          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-3 text-[12px] text-emerald-100/85">
-            <div className="flex items-center gap-1.5 font-semibold text-emerald-300">
-              <Sparkles className="h-3.5 w-3.5" />
-              What AI drafts from your documents
-            </div>
-            <p className="mt-1 text-emerald-100/70">
-              Level (1–7), learning outcomes, who it's for, how you'll study, how you're assessed,
-              prerequisites, guided learning hours, total qualification time, delivery mode.
-            </p>
-          </div>
+          <ExpandableField
+            label="Who this course is for"
+            required
+            field="proposed_who_for"
+            value={whoFor}
+            onChange={setWhoFor}
+            placeholder="e.g. New personal trainers who want to specialise in kettlebell coaching. No prior kettlebell experience assumed."
+            rows={3}
+            expanding={expanding}
+            expanded={expandedFields.proposed_who_for}
+            onExpand={() => runExpand("proposed_who_for")}
+            onUndo={() => undoExpand("proposed_who_for")}
+            canUndo={undoRef.current.proposed_who_for != null}
+          />
 
-          <FilePicker
-            label="Course syllabus"
+          <ExpandableField
+            label="What the course covers"
             required
-            file={syllabusFile}
-            onFile={setSyllabusFile}
+            field="proposed_what_covered"
+            value={whatCovered}
+            onChange={setWhatCovered}
+            placeholder="Topics or modules, one per line. e.g.\n- Safe kettlebell handling\n- Swing progressions\n- Programming for clients"
+            rows={5}
+            expanding={expanding}
+            expanded={expandedFields.proposed_what_covered}
+            onExpand={() => runExpand("proposed_what_covered")}
+            onUndo={() => undoExpand("proposed_what_covered")}
+            canUndo={undoRef.current.proposed_what_covered != null}
           />
-          <FilePicker
-            label="Assessment criteria"
+
+          <ExpandableField
+            label="What learners will be able to do afterwards"
             required
-            file={assessmentFile}
-            onFile={setAssessmentFile}
+            field="proposed_learner_outcomes"
+            value={outcomes}
+            onChange={setOutcomes}
+            placeholder="Rough outcomes — one per line. AI will rewrite as formal learning outcomes.\ne.g.\n- Coach a beginner through their first swing\n- Design a 6-week kettlebell programme"
+            rows={5}
+            expanding={expanding}
+            expanded={expandedFields.proposed_learner_outcomes}
+            onExpand={() => runExpand("proposed_learner_outcomes")}
+            onUndo={() => undoExpand("proposed_learner_outcomes")}
+            canUndo={undoRef.current.proposed_learner_outcomes != null}
           />
-          <FilePicker label="Tutor CV" required file={tutorCvFile} onFile={setTutorCvFile} />
+
+          <FormField label="How it's delivered" required>
+            <RadioGroup
+              value={delivery}
+              onValueChange={(v) => setDelivery(v as DeliveryMode)}
+              className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+            >
+              {DELIVERY_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`flex cursor-pointer items-start gap-2 rounded-[12px] border p-3 transition ${
+                    delivery === opt.value
+                      ? "border-reps-orange bg-reps-orange-soft/20"
+                      : "border-reps-border bg-white/[0.03] hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <RadioGroupItem value={opt.value} className="mt-0.5" />
+                  <div className="min-w-0">
+                    <div className="text-[13px] font-semibold text-white">{opt.label}</div>
+                    <div className="text-[11.5px] text-white/55">{opt.help}</div>
+                  </div>
+                </label>
+              ))}
+            </RadioGroup>
+          </FormField>
+
+          <FormField label="Total learning hours" required>
+            <Input
+              type="number"
+              min={0.5}
+              max={2000}
+              step={0.5}
+              value={totalHours}
+              onChange={(e) => setTotalHours(e.target.value)}
+              placeholder="e.g. 40"
+              className="max-w-[160px]"
+            />
+            <FieldHelp>
+              Your estimate for a typical learner (tutor time + self-study). AI splits this into
+              guided learning hours and total qualification time.
+            </FieldHelp>
+          </FormField>
+
+          <ExpandableField
+            label="How learners are assessed"
+            required
+            field="proposed_how_assessed"
+            value={howAssessed}
+            onChange={setHowAssessed}
+            placeholder="e.g. Written multiple-choice exam (30 questions, 70% pass) plus practical assessment observed by tutor."
+            rows={3}
+            expanding={expanding}
+            expanded={expandedFields.proposed_how_assessed}
+            onExpand={() => runExpand("proposed_how_assessed")}
+            onUndo={() => undoExpand("proposed_how_assessed")}
+            canUndo={undoRef.current.proposed_how_assessed != null}
+          />
+
+          <ExpandableField
+            label="Prerequisites"
+            optional
+            field="proposed_prerequisites"
+            value={prerequisites}
+            onChange={setPrerequisites}
+            placeholder="e.g. Level 2 Fitness Instructor qualification, aged 18+."
+            rows={2}
+            expanding={expanding}
+            expanded={expandedFields.proposed_prerequisites}
+            onExpand={() => runExpand("proposed_prerequisites")}
+            onUndo={() => undoExpand("proposed_prerequisites")}
+            canUndo={undoRef.current.proposed_prerequisites != null}
+          />
+
+          <ExpandableField
+            label="Tutor name & credentials"
+            required
+            field="proposed_tutor_credentials"
+            value={tutor}
+            onChange={setTutor}
+            placeholder="e.g. Sarah Jones — Level 4 Strength & Conditioning coach, 10 years' experience, StrongFirst SFG certified."
+            rows={3}
+            expanding={expanding}
+            expanded={expandedFields.proposed_tutor_credentials}
+            onExpand={() => runExpand("proposed_tutor_credentials")}
+            onUndo={() => undoExpand("proposed_tutor_credentials")}
+            canUndo={undoRef.current.proposed_tutor_credentials != null}
+          />
+
+          <ExpandableField
+            label="Anything else REPS should know"
+            optional
+            field="proposed_extra_notes"
+            value={extra}
+            onChange={setExtra}
+            placeholder="e.g. Insurance provider, awarding partners, unusual delivery arrangements."
+            rows={3}
+            expanding={expanding}
+            expanded={expandedFields.proposed_extra_notes}
+            onExpand={() => runExpand("proposed_extra_notes")}
+            onUndo={() => undoExpand("proposed_extra_notes")}
+            canUndo={undoRef.current.proposed_extra_notes != null}
+          />
         </div>
 
         <DialogFooter>
@@ -1078,35 +1316,110 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
-
-function FilePicker({
+function FormField({
   label,
   required,
-  file,
-  onFile,
+  optional,
+  children,
 }: {
   label: string;
   required?: boolean;
-  file: File | null;
-  onFile: (f: File | null) => void;
+  optional?: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <div>
       <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-        {label} {required ? <span className="text-red-300">*</span> : null}
+        {label}{" "}
+        {required ? <span className="text-red-300">*</span> : null}
+        {optional ? <span className="text-white/40 font-normal">(optional)</span> : null}
       </Label>
-      <label className="flex cursor-pointer items-center gap-3 rounded-[12px] border border-dashed border-reps-border p-3 hover:bg-white/[0.02]">
-        <Upload className="h-4 w-4 text-white/50" />
-        <span className="flex-1 truncate text-[12.5px] text-white/70">
-          {file ? file.name : "Click to upload PDF / DOC / image"}
-        </span>
-        <input
-          type="file"
-          accept=".pdf,.doc,.docx,image/jpeg,image/png"
-          className="hidden"
-          onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-        />
-      </label>
+      {children}
+    </div>
+  );
+}
+
+function FieldHelp({ children }: { children: React.ReactNode }) {
+  return <p className="mt-1 text-[11.5px] text-white/45">{children}</p>;
+}
+
+function ExpandableField({
+  label,
+  required,
+  optional,
+  field,
+  value,
+  onChange,
+  placeholder,
+  rows,
+  expanding,
+  expanded,
+  onExpand,
+  onUndo,
+  canUndo,
+}: {
+  label: string;
+  required?: boolean;
+  optional?: boolean;
+  field: ExpandField;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  rows?: number;
+  expanding: ExpandField | null;
+  expanded: boolean;
+  onExpand: () => void;
+  onUndo: () => void;
+  canUndo: boolean;
+}) {
+  const isExpandingThis = expanding === field;
+  const canExpand = value.trim().length >= 15 && expanding == null;
+  return (
+    <div>
+      <div className="mb-1.5 flex items-end justify-between gap-2">
+        <Label className="block text-[12px] font-semibold text-white/80">
+          {label}{" "}
+          {required ? <span className="text-red-300">*</span> : null}
+          {optional ? <span className="text-white/40 font-normal">(optional)</span> : null}
+        </Label>
+        <div className="flex items-center gap-1.5">
+          {expanded && canUndo ? (
+            <button
+              type="button"
+              onClick={onUndo}
+              className="text-[11px] text-white/50 hover:text-white/80 underline underline-offset-2"
+            >
+              Undo
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={onExpand}
+            disabled={!canExpand}
+            className="inline-flex items-center gap-1 rounded-[8px] border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isExpandingThis ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3" />
+            )}
+            {isExpandingThis ? "Expanding…" : "Expand with AI"}
+          </button>
+        </div>
+      </div>
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={rows ?? 3}
+        maxLength={4000}
+      />
+      {expanded ? (
+        <p className="mt-1 text-[11px] text-emerald-300/80">
+          <Sparkles className="mr-1 inline h-3 w-3" />
+          Expanded by AI — edit freely.
+        </p>
+      ) : null}
     </div>
   );
 }
