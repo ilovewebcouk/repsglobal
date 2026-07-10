@@ -121,7 +121,13 @@ function StudentsPage() {
   const certs = regs.filter((r) => r.status === "issued" || r.status === "dispatched");
 
   return (
-    <DashboardShell role="trainer" active="Students & Certificates">
+    <DashboardShell
+      role="trainer"
+      active="Students & Certificates"
+      title="Students & Certificates"
+      subtitle="Register learners on your approved courses, mark them passed, and issue REPS-verified certificates."
+    >
+
       <div className="mx-auto w-full max-w-6xl space-y-6 p-4 lg:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
