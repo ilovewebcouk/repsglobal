@@ -447,10 +447,22 @@ export const deleteMyRegulatedPermission = removeMyRegulatedPermission;
 
 const DELIVERY_MODES = ["in_person", "online_live", "online_self_paced", "blended"] as const;
 
+const REQUIRED_EVIDENCE_KINDS = [
+  "specification",
+  "sample_materials",
+  "assessment",
+  "tutor_cv",
+] as const;
+
+const moduleSchema = z.object({
+  title: z.string().min(2).max(200),
+  summary: z.string().min(2).max(500),
+  hours: z.number().min(0).max(500).nullable().optional(),
+});
+
 const submitRepsCourseInput = z.object({
   proposed_title: z.string().min(3).max(200),
   proposed_who_for: z.string().min(10).max(4000),
-  proposed_what_covered: z.string().min(10).max(4000),
   proposed_learner_outcomes: z.string().min(10).max(4000),
   proposed_delivery_mode: z.enum(DELIVERY_MODES),
   proposed_total_hours: z.number().min(0.5).max(2000),
@@ -458,6 +470,8 @@ const submitRepsCourseInput = z.object({
   proposed_prerequisites: z.string().max(2000).nullable().optional(),
   proposed_tutor_credentials: z.string().min(10).max(4000),
   proposed_extra_notes: z.string().max(4000).nullable().optional(),
+  spec_modules: z.array(moduleSchema).min(1).max(60),
+  evidence_ids: z.array(z.string().uuid()).min(4).max(40),
 });
 
 export const submitRepsCourse = createServerFn({ method: "POST" })
@@ -469,13 +483,45 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
 
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
+    // Verify evidence rows: all owned by user, not yet attached to a course,
+    // and cover every required kind.
+    const { data: evidence, error: evErr } = await supabase
+      .from("reps_course_evidence")
+      .select("id, file_kind, course_id, provider_id")
+      .in("id", data.evidence_ids);
+    if (evErr) throw new Error(evErr.message);
+    const rows = (evidence ?? []) as Array<{
+      id: string;
+      file_kind: string;
+      course_id: string | null;
+      provider_id: string;
+    }>;
+    if (rows.length !== data.evidence_ids.length) {
+      throw new Error("Some evidence files were not found");
+    }
+    for (const r of rows) {
+      if (r.provider_id !== userId) throw new Error("Forbidden: evidence file does not belong to you");
+    }
+    const kinds = new Set(rows.map((r) => r.file_kind));
+    for (const required of REQUIRED_EVIDENCE_KINDS) {
+      if (!kinds.has(required)) {
+        throw new Error(`Missing required evidence: ${required.replace("_", " ")}`);
+      }
+    }
+
+    // Derive a course "what covered" summary from the module list so existing
+    // downstream code that reads proposed_what_covered still works.
+    const whatCovered = data.spec_modules
+      .map((m, i) => `${i + 1}. ${m.title} — ${m.summary}${m.hours ? ` (${m.hours}h)` : ""}`)
+      .join("\n");
+
     const { data: row, error } = await supabase
       .from("reps_courses")
       .insert({
         provider_id: userId,
         proposed_title: data.proposed_title.trim(),
         proposed_who_for: data.proposed_who_for.trim(),
-        proposed_what_covered: data.proposed_what_covered.trim(),
+        proposed_what_covered: whatCovered,
         proposed_learner_outcomes: data.proposed_learner_outcomes.trim(),
         proposed_delivery_mode: data.proposed_delivery_mode,
         proposed_total_hours: data.proposed_total_hours,
@@ -483,21 +529,27 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
         proposed_prerequisites: data.proposed_prerequisites?.trim() || null,
         proposed_tutor_credentials: data.proposed_tutor_credentials.trim(),
         proposed_extra_notes: data.proposed_extra_notes?.trim() || null,
+        spec_modules: data.spec_modules as never,
       } as never)
       .select("id")
       .single();
     if (error) throw new Error(error.message);
 
-    // Fire-and-forget AI drafting — provider polls for the drafted state.
-    void runRepsCourseAiDraft((row as { id: string }).id).catch((e) => {
-      console.error("[AI draft — REPS course] failed", e);
-    });
+    const newCourseId = (row as { id: string }).id;
+
+    // Attach evidence rows to the new course
+    const { error: attachErr } = await supabase
+      .from("reps_course_evidence")
+      .update({ course_id: newCourseId } as never)
+      .in("id", data.evidence_ids)
+      .eq("provider_id", userId);
+    if (attachErr) throw new Error(attachErr.message);
 
     return row;
   });
 
 const REPS_COURSE_SELECT =
-  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at";
+  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, spec_modules, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at";
 
 export const listMyRepsCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
