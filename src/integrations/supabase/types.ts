@@ -783,6 +783,7 @@ export type Database = {
           batch_id: string | null
           certificate_number: string | null
           course_id: string
+          course_kind: string
           course_level: number | null
           course_title: string
           created_at: string
@@ -810,6 +811,7 @@ export type Database = {
           batch_id?: string | null
           certificate_number?: string | null
           course_id: string
+          course_kind?: string
           course_level?: number | null
           course_title: string
           created_at?: string
@@ -837,6 +839,7 @@ export type Database = {
           batch_id?: string | null
           certificate_number?: string | null
           course_id?: string
+          course_kind?: string
           course_level?: number | null
           course_title?: string
           created_at?: string
@@ -866,13 +869,6 @@ export type Database = {
             columns: ["batch_id"]
             isOneToOne: false
             referencedRelation: "certificate_batches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certificate_registrations_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "provider_regulated_permissions"
             referencedColumns: ["id"]
           },
           {
