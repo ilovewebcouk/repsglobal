@@ -581,7 +581,7 @@ export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
       .eq("status", data.status)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return await hydrateProviderNames(rows ?? [], supabaseAdmin);
+    return (await hydrateProviderNames((rows ?? []) as never, supabaseAdmin)) as unknown as typeof rows;
   });
 
 async function hydrateProviderNames<
