@@ -993,14 +993,6 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
 /* ─── Add REPS-accredited course dialog ──────────────────────────────────── */
 
 type DeliveryMode = "in_person" | "online_live" | "online_self_paced" | "blended";
-type ExpandField =
-  | "proposed_who_for"
-  | "proposed_what_covered"
-  | "proposed_learner_outcomes"
-  | "proposed_how_assessed"
-  | "proposed_prerequisites"
-  | "proposed_tutor_credentials"
-  | "proposed_extra_notes";
 
 const DELIVERY_OPTIONS: Array<{ value: DeliveryMode; label: string; help: string }> = [
   { value: "in_person", label: "In-person", help: "Everyone in the room together." },
@@ -1009,14 +1001,57 @@ const DELIVERY_OPTIONS: Array<{ value: DeliveryMode; label: string; help: string
   { value: "blended", label: "Blended", help: "Mix of in-person and online." },
 ];
 
+type ModuleDraft = { title: string; summary: string; hours: string };
+
+type EvidenceSlotKind = Extract<
+  RepsCourseEvidenceKind,
+  "specification" | "sample_materials" | "assessment" | "tutor_cv"
+>;
+
+type EvidenceSlotSpec = {
+  kind: EvidenceSlotKind;
+  label: string;
+  help: string;
+  accept: string;
+};
+
+const EVIDENCE_SLOTS: EvidenceSlotSpec[] = [
+  {
+    kind: "specification",
+    label: "Course specification / syllabus",
+    help: "The full document a learner would receive — modules, hours, outcomes, assessment.",
+    accept: ".pdf,.doc,.docx",
+  },
+  {
+    kind: "sample_materials",
+    label: "Sample learning materials (1–2 modules)",
+    help: "Slides, workbook or a short video sample. Proves the teaching exists at the claimed level.",
+    accept: ".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.zip",
+  },
+  {
+    kind: "assessment",
+    label: "Assessment plan + sample assessment",
+    help: "How learners are judged competent, plus one worked example.",
+    accept: ".pdf,.doc,.docx",
+  },
+  {
+    kind: "tutor_cv",
+    label: "Lead tutor CV",
+    help: "The credentials of whoever teaches or signs off the course.",
+    accept: ".pdf,.doc,.docx",
+  },
+];
+
+const MAX_EVIDENCE_BYTES = 25 * 1024 * 1024; // 25 MB per file
+
 function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const submit = useServerFn(submitRepsCourse);
-  const expand = useServerFn(expandRepsCourseField);
+  const uploadEvidence = useServerFn(uploadRepsCourseEvidence);
+  const removeEvidence = useServerFn(removeRepsCourseEvidence);
 
   const [title, setTitle] = React.useState("");
   const [whoFor, setWhoFor] = React.useState("");
-  const [whatCovered, setWhatCovered] = React.useState("");
   const [outcomes, setOutcomes] = React.useState("");
   const [delivery, setDelivery] = React.useState<DeliveryMode | "">("");
   const [totalHours, setTotalHours] = React.useState<string>("");
@@ -1025,107 +1060,110 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   const [tutor, setTutor] = React.useState("");
   const [extra, setExtra] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
-  const [expanding, setExpanding] = React.useState<ExpandField | null>(null);
-  const undoRef = React.useRef<Partial<Record<ExpandField, string>>>({});
-  const [expandedFields, setExpandedFields] = React.useState<Record<ExpandField, boolean>>({
-    proposed_who_for: false,
-    proposed_what_covered: false,
-    proposed_learner_outcomes: false,
-    proposed_how_assessed: false,
-    proposed_prerequisites: false,
-    proposed_tutor_credentials: false,
-    proposed_extra_notes: false,
+
+  const [modules, setModules] = React.useState<ModuleDraft[]>([
+    { title: "", summary: "", hours: "" },
+  ]);
+
+  const [evidenceByKind, setEvidenceByKind] = React.useState<
+    Record<EvidenceSlotKind, RepsCourseEvidenceRow[]>
+  >({
+    specification: [],
+    sample_materials: [],
+    assessment: [],
+    tutor_cv: [],
   });
+  const [uploading, setUploading] = React.useState<EvidenceSlotKind | null>(null);
 
   const totalHoursNum = Number(totalHours);
   const hoursValid = totalHours.trim() !== "" && Number.isFinite(totalHoursNum) && totalHoursNum >= 0.5 && totalHoursNum <= 2000;
 
+  const validModules = modules.filter(
+    (m) => m.title.trim().length >= 2 && m.summary.trim().length >= 2,
+  );
+
+  const allSlotsFilled = EVIDENCE_SLOTS.every((s) => evidenceByKind[s.kind].length > 0);
+
   const canSubmit =
     title.trim().length >= 3 &&
     whoFor.trim().length >= 10 &&
-    whatCovered.trim().length >= 10 &&
     outcomes.trim().length >= 10 &&
     delivery !== "" &&
     hoursValid &&
     howAssessed.trim().length >= 5 &&
     tutor.trim().length >= 10 &&
+    validModules.length >= 1 &&
+    allSlotsFilled &&
     !submitting;
 
-  const fieldValue = (f: ExpandField): string => {
-    switch (f) {
-      case "proposed_who_for": return whoFor;
-      case "proposed_what_covered": return whatCovered;
-      case "proposed_learner_outcomes": return outcomes;
-      case "proposed_how_assessed": return howAssessed;
-      case "proposed_prerequisites": return prerequisites;
-      case "proposed_tutor_credentials": return tutor;
-      case "proposed_extra_notes": return extra;
-    }
-  };
-  const setFieldValue = (f: ExpandField, v: string) => {
-    switch (f) {
-      case "proposed_who_for": setWhoFor(v); break;
-      case "proposed_what_covered": setWhatCovered(v); break;
-      case "proposed_learner_outcomes": setOutcomes(v); break;
-      case "proposed_how_assessed": setHowAssessed(v); break;
-      case "proposed_prerequisites": setPrerequisites(v); break;
-      case "proposed_tutor_credentials": setTutor(v); break;
-      case "proposed_extra_notes": setExtra(v); break;
-    }
+  const resetAll = () => {
+    setTitle("");
+    setWhoFor("");
+    setOutcomes("");
+    setDelivery("");
+    setTotalHours("");
+    setHowAssessed("");
+    setPrerequisites("");
+    setTutor("");
+    setExtra("");
+    setModules([{ title: "", summary: "", hours: "" }]);
+    setEvidenceByKind({ specification: [], sample_materials: [], assessment: [], tutor_cv: [] });
   };
 
-  const runExpand = async (f: ExpandField) => {
-    const current = fieldValue(f);
-    if (current.trim().length < 15) {
-      toast.error("Write at least 15 characters first — AI needs something to work with.");
+  const handleUpload = async (kind: EvidenceSlotKind, file: File) => {
+    if (file.size > MAX_EVIDENCE_BYTES) {
+      toast.error(`${file.name} is over 25 MB — please compress or split.`);
       return;
     }
-    setExpanding(f);
+    setUploading(kind);
     try {
-      const res = await expand({
+      const dataUrl = await fileToDataUrl(file);
+      const row = await uploadEvidence({
         data: {
-          field: f,
-          current_value: current,
-          context: {
-            proposed_title: title || null,
-            proposed_who_for: whoFor || null,
-            proposed_what_covered: whatCovered || null,
-            proposed_learner_outcomes: outcomes || null,
-            proposed_delivery_mode: delivery || null,
-            proposed_total_hours: hoursValid ? totalHoursNum : null,
-            proposed_how_assessed: howAssessed || null,
-            proposed_prerequisites: prerequisites || null,
-            proposed_tutor_credentials: tutor || null,
-          },
+          file_kind: kind,
+          file_data_url: dataUrl,
+          filename: file.name,
+          mime_type: file.type || null,
         },
       });
-      undoRef.current[f] = current;
-      setFieldValue(f, res.draft);
-      setExpandedFields((s) => ({ ...s, [f]: true }));
+      setEvidenceByKind((prev) => ({ ...prev, [kind]: [...prev[kind], row] }));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "AI expand failed");
+      toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
-      setExpanding(null);
+      setUploading(null);
     }
   };
 
-  const undoExpand = (f: ExpandField) => {
-    const prev = undoRef.current[f];
-    if (prev == null) return;
-    setFieldValue(f, prev);
-    delete undoRef.current[f];
-    setExpandedFields((s) => ({ ...s, [f]: false }));
+  const handleRemoveEvidence = async (kind: EvidenceSlotKind, id: string) => {
+    try {
+      await removeEvidence({ data: { id } });
+      setEvidenceByKind((prev) => ({
+        ...prev,
+        [kind]: prev[kind].filter((r) => r.id !== id),
+      }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Remove failed");
+    }
   };
+
+  const addModule = () =>
+    setModules((prev) => [...prev, { title: "", summary: "", hours: "" }]);
+  const removeModule = (idx: number) =>
+    setModules((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)));
+  const updateModule = (idx: number, patch: Partial<ModuleDraft>) =>
+    setModules((prev) => prev.map((m, i) => (i === idx ? { ...m, ...patch } : m)));
 
   const onSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
+      const evidenceIds = EVIDENCE_SLOTS.flatMap((s) =>
+        evidenceByKind[s.kind].map((r) => r.id),
+      );
       await submit({
         data: {
           proposed_title: title.trim(),
           proposed_who_for: whoFor.trim(),
-          proposed_what_covered: whatCovered.trim(),
           proposed_learner_outcomes: outcomes.trim(),
           proposed_delivery_mode: delivery as DeliveryMode,
           proposed_total_hours: totalHoursNum,
@@ -1133,10 +1171,17 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
           proposed_prerequisites: prerequisites.trim() || null,
           proposed_tutor_credentials: tutor.trim(),
           proposed_extra_notes: extra.trim() || null,
+          spec_modules: validModules.map((m) => ({
+            title: m.title.trim(),
+            summary: m.summary.trim(),
+            hours: m.hours.trim() ? Number(m.hours) : null,
+          })),
+          evidence_ids: evidenceIds,
         },
       });
-      toast.success("Submitted — REPS AI is drafting your accreditation spec.");
+      toast.success("Submitted for REPS admin review.");
       qc.invalidateQueries({ queryKey: ["my-reps-courses"] });
+      resetAll();
       onClose();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Submission failed");
@@ -1151,26 +1196,14 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
         <DialogHeader>
           <DialogTitle>Request REPS accreditation</DialogTitle>
           <DialogDescription>
-            Answer 10 short questions about your course. REPS AI drafts the level, official title
-            and full specification from your answers; a REPS admin reviews and publishes. Approved
-            courses receive a unique <span className="font-mono">REPS-QUAL-</span>number.
+            Submit your course for REPS accreditation. Answer in your own words and upload the
+            supporting evidence below. A REPS admin will review your submission and confirm the
+            level, official title and <span className="font-mono">REPS-QUAL-</span>number.
+            We don't rewrite your course — we verify it.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
-          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-3 text-[12px] text-emerald-100/85">
-            <div className="flex items-center gap-1.5 font-semibold text-emerald-300">
-              <Sparkles className="h-3.5 w-3.5" />
-              What AI drafts from your answers
-            </div>
-            <p className="mt-1 text-emerald-100/70">
-              Level (1–7), formal learning outcomes with Bloom's verbs, guided learning hours,
-              total qualification time, and the polished public specification. Use{" "}
-              <span className="font-semibold">✨ Expand with AI</span> on any field to have AI
-              tidy up your rough answer before submitting.
-            </p>
-          </div>
-
           <FormField label="Working title" required>
             <Input
               value={title}
@@ -1180,50 +1213,92 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             <FieldHelp>What you'd call it internally. REPS may refine the wording before publishing.</FieldHelp>
           </FormField>
 
-          <ExpandableField
-            label="Who this course is for"
-            required
-            field="proposed_who_for"
-            value={whoFor}
-            onChange={setWhoFor}
-            placeholder="e.g. New personal trainers who want to specialise in kettlebell coaching. No prior kettlebell experience assumed."
-            rows={3}
-            expanding={expanding}
-            expanded={expandedFields.proposed_who_for}
-            onExpand={() => runExpand("proposed_who_for")}
-            onUndo={() => undoExpand("proposed_who_for")}
-            canUndo={undoRef.current.proposed_who_for != null}
-          />
+          <FormField label="Who this course is for" required>
+            <Textarea
+              value={whoFor}
+              onChange={(e) => setWhoFor(e.target.value)}
+              placeholder="e.g. New personal trainers who want to specialise in kettlebell coaching. No prior kettlebell experience assumed."
+              rows={3}
+              maxLength={4000}
+            />
+          </FormField>
 
-          <ExpandableField
-            label="What the course covers"
-            required
-            field="proposed_what_covered"
-            value={whatCovered}
-            onChange={setWhatCovered}
-            placeholder="Topics or modules, one per line. e.g.\n- Safe kettlebell handling\n- Swing progressions\n- Programming for clients"
-            rows={5}
-            expanding={expanding}
-            expanded={expandedFields.proposed_what_covered}
-            onExpand={() => runExpand("proposed_what_covered")}
-            onUndo={() => undoExpand("proposed_what_covered")}
-            canUndo={undoRef.current.proposed_what_covered != null}
-          />
+          {/* ── Modules repeater ─────────────────────────────────────── */}
+          <div>
+            <div className="mb-2 flex items-end justify-between gap-2">
+              <div>
+                <Label className="block text-[12px] font-semibold text-white/80">
+                  Modules <span className="text-red-300">*</span>
+                </Label>
+                <p className="mt-0.5 text-[11.5px] text-white/45">
+                  List the modules or units that make up the course. Add as many as your course contains.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={addModule}
+                className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-white/80 hover:text-white"
+              >
+                <Plus className="h-3.5 w-3.5" /> Add module
+              </button>
+            </div>
+            <div className="space-y-2">
+              {modules.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-[12px] border border-reps-border bg-white/[0.03] p-3"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="text-[11px] font-semibold uppercase tracking-wider text-white/45">
+                      Module {idx + 1}
+                    </div>
+                    {modules.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => removeModule(idx)}
+                        className="text-white/40 hover:text-red-300"
+                        aria-label={`Remove module ${idx + 1}`}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-[2fr_1fr]">
+                    <Input
+                      value={m.title}
+                      onChange={(e) => updateModule(idx, { title: e.target.value })}
+                      placeholder="Module title — e.g. Safe kettlebell handling"
+                      maxLength={200}
+                    />
+                    <Input
+                      value={m.hours}
+                      onChange={(e) => updateModule(idx, { hours: e.target.value })}
+                      placeholder="Hours (optional)"
+                      inputMode="decimal"
+                    />
+                  </div>
+                  <Textarea
+                    value={m.summary}
+                    onChange={(e) => updateModule(idx, { summary: e.target.value })}
+                    placeholder="One-line summary of what this module covers."
+                    rows={2}
+                    maxLength={500}
+                    className="mt-2"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
 
-          <ExpandableField
-            label="What learners will be able to do afterwards"
-            required
-            field="proposed_learner_outcomes"
-            value={outcomes}
-            onChange={setOutcomes}
-            placeholder="Rough outcomes — one per line. AI will rewrite as formal learning outcomes.\ne.g.\n- Coach a beginner through their first swing\n- Design a 6-week kettlebell programme"
-            rows={5}
-            expanding={expanding}
-            expanded={expandedFields.proposed_learner_outcomes}
-            onExpand={() => runExpand("proposed_learner_outcomes")}
-            onUndo={() => undoExpand("proposed_learner_outcomes")}
-            canUndo={undoRef.current.proposed_learner_outcomes != null}
-          />
+          <FormField label="What learners will be able to do afterwards" required>
+            <Textarea
+              value={outcomes}
+              onChange={(e) => setOutcomes(e.target.value)}
+              placeholder="One outcome per line. e.g.\n- Coach a beginner through their first swing\n- Design a 6-week kettlebell programme"
+              rows={5}
+              maxLength={4000}
+            />
+          </FormField>
 
           <FormField label="How it's delivered" required>
             <RadioGroup
@@ -1261,71 +1336,127 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
               placeholder="e.g. 40"
               className="max-w-[160px]"
             />
-            <FieldHelp>
-              Your estimate for a typical learner (tutor time + self-study). AI splits this into
-              guided learning hours and total qualification time.
-            </FieldHelp>
+            <FieldHelp>Your estimate for a typical learner (tutor time + self-study).</FieldHelp>
           </FormField>
 
-          <ExpandableField
-            label="How learners are assessed"
-            required
-            field="proposed_how_assessed"
-            value={howAssessed}
-            onChange={setHowAssessed}
-            placeholder="e.g. Written multiple-choice exam (30 questions, 70% pass) plus practical assessment observed by tutor."
-            rows={3}
-            expanding={expanding}
-            expanded={expandedFields.proposed_how_assessed}
-            onExpand={() => runExpand("proposed_how_assessed")}
-            onUndo={() => undoExpand("proposed_how_assessed")}
-            canUndo={undoRef.current.proposed_how_assessed != null}
-          />
+          <FormField label="How learners are assessed" required>
+            <Textarea
+              value={howAssessed}
+              onChange={(e) => setHowAssessed(e.target.value)}
+              placeholder="e.g. Written multiple-choice exam (30 questions, 70% pass) plus practical assessment observed by tutor."
+              rows={3}
+              maxLength={4000}
+            />
+          </FormField>
 
-          <ExpandableField
-            label="Prerequisites"
-            optional
-            field="proposed_prerequisites"
-            value={prerequisites}
-            onChange={setPrerequisites}
-            placeholder="e.g. Level 2 Fitness Instructor qualification, aged 18+."
-            rows={2}
-            expanding={expanding}
-            expanded={expandedFields.proposed_prerequisites}
-            onExpand={() => runExpand("proposed_prerequisites")}
-            onUndo={() => undoExpand("proposed_prerequisites")}
-            canUndo={undoRef.current.proposed_prerequisites != null}
-          />
+          <FormField label="Prerequisites" optional>
+            <Textarea
+              value={prerequisites}
+              onChange={(e) => setPrerequisites(e.target.value)}
+              placeholder="e.g. Level 2 Fitness Instructor qualification, aged 18+."
+              rows={2}
+              maxLength={2000}
+            />
+          </FormField>
 
-          <ExpandableField
-            label="Tutor name & credentials"
-            required
-            field="proposed_tutor_credentials"
-            value={tutor}
-            onChange={setTutor}
-            placeholder="e.g. Sarah Jones — Level 4 Strength & Conditioning coach, 10 years' experience, StrongFirst SFG certified."
-            rows={3}
-            expanding={expanding}
-            expanded={expandedFields.proposed_tutor_credentials}
-            onExpand={() => runExpand("proposed_tutor_credentials")}
-            onUndo={() => undoExpand("proposed_tutor_credentials")}
-            canUndo={undoRef.current.proposed_tutor_credentials != null}
-          />
+          <FormField label="Tutor name & credentials" required>
+            <Textarea
+              value={tutor}
+              onChange={(e) => setTutor(e.target.value)}
+              placeholder="e.g. Sarah Jones — Level 4 Strength & Conditioning coach, 10 years' experience, StrongFirst SFG certified."
+              rows={3}
+              maxLength={4000}
+            />
+          </FormField>
 
-          <ExpandableField
-            label="Anything else REPS should know"
-            optional
-            field="proposed_extra_notes"
-            value={extra}
-            onChange={setExtra}
-            placeholder="e.g. Insurance provider, awarding partners, unusual delivery arrangements."
-            rows={3}
-            expanding={expanding}
-            expanded={expandedFields.proposed_extra_notes}
-            onExpand={() => runExpand("proposed_extra_notes")}
-            onUndo={() => undoExpand("proposed_extra_notes")}
-            canUndo={undoRef.current.proposed_extra_notes != null}
-          />
+          <FormField label="Anything else REPS should know" optional>
+            <Textarea
+              value={extra}
+              onChange={(e) => setExtra(e.target.value)}
+              placeholder="e.g. Insurance provider, awarding partners, unusual delivery arrangements."
+              rows={3}
+              maxLength={4000}
+            />
+          </FormField>
+
+          {/* ── Evidence uploads ────────────────────────────────────── */}
+          <div className="rounded-[12px] border border-white/10 bg-white/[0.03] p-4">
+            <div className="mb-1 flex items-center gap-1.5 text-[13px] font-semibold text-white">
+              <Paperclip className="h-3.5 w-3.5" />
+              Supporting evidence
+              <span className="ml-1 text-[11px] font-normal text-white/50">(all required)</span>
+            </div>
+            <p className="text-[11.5px] text-white/50">
+              Four documents help us verify the course is real, taught at the level you're claiming
+              and delivered by qualified people. Files are private to REPS admins.
+            </p>
+            <div className="mt-3 space-y-3">
+              {EVIDENCE_SLOTS.map((slot) => {
+                const files = evidenceByKind[slot.kind];
+                const isUploadingThis = uploading === slot.kind;
+                return (
+                  <div key={slot.kind} className="rounded-[10px] border border-reps-border bg-white/[0.02] p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-white">
+                          {slot.label}
+                          <span className="text-red-300">*</span>
+                        </div>
+                        <p className="mt-0.5 text-[11.5px] text-white/50">{slot.help}</p>
+                      </div>
+                      <label className="inline-flex cursor-pointer items-center gap-1 rounded-[8px] border border-reps-border bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-white/85 hover:text-white">
+                        {isUploadingThis ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="h-3.5 w-3.5" />
+                        )}
+                        {isUploadingThis ? "Uploading…" : files.length > 0 ? "Add another" : "Upload"}
+                        <input
+                          type="file"
+                          accept={slot.accept}
+                          className="hidden"
+                          disabled={isUploadingThis}
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = "";
+                            if (f) void handleUpload(slot.kind, f);
+                          }}
+                        />
+                      </label>
+                    </div>
+                    {files.length > 0 ? (
+                      <ul className="mt-2 space-y-1">
+                        {files.map((f) => (
+                          <li
+                            key={f.id}
+                            className="flex items-center justify-between gap-2 rounded-[8px] bg-white/[0.04] px-2.5 py-1.5 text-[11.5px] text-white/80"
+                          >
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              <FileText className="h-3.5 w-3.5 shrink-0 text-white/50" />
+                              <span className="truncate">{f.file_name}</span>
+                              {f.file_size_bytes != null ? (
+                                <span className="shrink-0 text-white/40">
+                                  {(f.file_size_bytes / (1024 * 1024)).toFixed(1)} MB
+                                </span>
+                              ) : null}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveEvidence(slot.kind, f.id)}
+                              className="text-white/40 hover:text-red-300"
+                              aria-label={`Remove ${f.file_name}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <DialogFooter>
@@ -1368,86 +1499,6 @@ function FieldHelp({ children }: { children: React.ReactNode }) {
   return <p className="mt-1 text-[11.5px] text-white/45">{children}</p>;
 }
 
-function ExpandableField({
-  label,
-  required,
-  optional,
-  field,
-  value,
-  onChange,
-  placeholder,
-  rows,
-  expanding,
-  expanded,
-  onExpand,
-  onUndo,
-  canUndo,
-}: {
-  label: string;
-  required?: boolean;
-  optional?: boolean;
-  field: ExpandField;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  rows?: number;
-  expanding: ExpandField | null;
-  expanded: boolean;
-  onExpand: () => void;
-  onUndo: () => void;
-  canUndo: boolean;
-}) {
-  const isExpandingThis = expanding === field;
-  const canExpand = value.trim().length >= 15 && expanding == null;
-  return (
-    <div>
-      <div className="mb-1.5 flex items-end justify-between gap-2">
-        <Label className="block text-[12px] font-semibold text-white/80">
-          {label}{" "}
-          {required ? <span className="text-red-300">*</span> : null}
-          {optional ? <span className="text-white/40 font-normal">(optional)</span> : null}
-        </Label>
-        <div className="flex items-center gap-1.5">
-          {expanded && canUndo ? (
-            <button
-              type="button"
-              onClick={onUndo}
-              className="text-[11px] text-white/50 hover:text-white/80 underline underline-offset-2"
-            >
-              Undo
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={onExpand}
-            disabled={!canExpand}
-            className="inline-flex items-center gap-1 rounded-[8px] border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {isExpandingThis ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <Sparkles className="h-3 w-3" />
-            )}
-            {isExpandingThis ? "Expanding…" : "Expand with AI"}
-          </button>
-        </div>
-      </div>
-      <Textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows ?? 3}
-        maxLength={4000}
-      />
-      {expanded ? (
-        <p className="mt-1 text-[11px] text-emerald-300/80">
-          <Sparkles className="mr-1 inline h-3 w-3" />
-          Expanded by AI — edit freely.
-        </p>
-      ) : null}
-    </div>
-  );
-}
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
