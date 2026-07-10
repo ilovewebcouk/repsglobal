@@ -590,15 +590,19 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       const { supabase, userId, claims } = context;
       const { country } = await assertProviderIsOrganisation(supabase, userId);
 
-      // Load pricing (unit + postage)
+      // Load pricing (unit + UK & international postage)
       const { data: pricing } = await supabase
         .from("certificate_pricing")
-        .select("unit_price_pence, postage_fee_pence, currency")
+        .select(
+          "unit_price_pence, postage_fee_pence, international_postage_fee_pence, currency",
+        )
         .eq("id", true)
         .maybeSingle();
       const unitPricePence = (pricing?.unit_price_pence as number | undefined) ?? 1500;
-      const postageFeePence =
+      const ukPostagePence =
         (pricing?.postage_fee_pence as number | undefined) ?? 650;
+      const intlPostagePence =
+        (pricing?.international_postage_fee_pence as number | undefined) ?? 1500;
       const currency = (pricing?.currency as string | undefined) ?? "gbp";
 
       // Validate registrations
@@ -620,18 +624,23 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       }
 
       const format = DEFAULT_CERT_FORMAT;
-      const isPrinted = format === "printed_and_digital";
       const count = regs.length;
 
-      // For UK/printed batches, require a shipping address up-front
-      if (isPrinted && !data.ship_to_address) {
+      // Every batch is printed + digital, so a shipping address is required.
+      if (!data.ship_to_address) {
         return {
           error:
-            "A UK postal address is required for printed certificates. Please add your shipping details before checking out.",
+            "A postal address is required for printed certificates. Please add your shipping details before checking out.",
         };
       }
 
-      const postageSnapshot = isPrinted ? postageFeePence : 0;
+      // Postage: GB = domestic rate, everywhere else = international flat rate.
+      const shipCc = (data.ship_to_address.countryCode ?? "GB").toUpperCase();
+      const isInternational = !isUkCountryCode(shipCc);
+      // Belt-and-braces: if the ship-to has no country but the provider looks UK, treat as UK.
+      const finalInternational =
+        isInternational && !isUkCountryName(country);
+      const postageSnapshot = finalInternational ? intlPostagePence : ukPostagePence;
       const totalPence = unitPricePence * count + postageSnapshot;
 
       // Create batch
@@ -679,24 +688,26 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
               currency,
               unit_amount: unitPricePence,
               product_data: {
-                name: isPrinted
-                  ? "REPS Certificate — printed + digital"
-                  : "REPS Certificate — digital",
+                name: "REPS Certificate — printed + digital",
                 description:
                   "Jointly-branded certificate of achievement and unit summary, QR-verified on repsuk.org.",
               },
             },
           },
         ];
-        if (isPrinted && postageSnapshot > 0) {
+        if (postageSnapshot > 0) {
           line_items.push({
             quantity: 1,
             price_data: {
               currency,
               unit_amount: postageSnapshot,
               product_data: {
-                name: "Postage & tracked delivery — Royal Mail",
-                description: "Tracked delivery of your printed certificates.",
+                name: finalInternational
+                  ? "International postage & tracked delivery — Royal Mail"
+                  : "Postage & tracked delivery — Royal Mail",
+                description: finalInternational
+                  ? "Royal Mail International Tracked delivery of your printed certificates."
+                  : "Tracked delivery of your printed certificates.",
               },
             },
           });
