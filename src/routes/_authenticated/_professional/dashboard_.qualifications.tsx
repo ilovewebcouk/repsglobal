@@ -962,30 +962,21 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
-/* ─── Add CPD dialog ────────────────────────────────────────────────────── */
+/* ─── Add REPS-accredited course dialog ──────────────────────────────────── */
 
 function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const upload = useServerFn(uploadCertificateFile);
-  const submit = useServerFn(submitCpdCourse);
+  const submit = useServerFn(submitRepsCourse);
 
   const [title, setTitle] = React.useState("");
-  const [level, setLevel] = React.useState("");
-  const [hours, setHours] = React.useState("");
-  const [deliveryMode, setDeliveryMode] =
-    React.useState<CpdCourseRow["delivery_mode"] | "">("");
-  const [summary, setSummary] = React.useState("");
   const [syllabusFile, setSyllabusFile] = React.useState<File | null>(null);
   const [assessmentFile, setAssessmentFile] = React.useState<File | null>(null);
   const [tutorCvFile, setTutorCvFile] = React.useState<File | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
   const canSubmit =
-    title.trim().length >= 3 &&
-    syllabusFile &&
-    assessmentFile &&
-    tutorCvFile &&
-    !submitting;
+    title.trim().length >= 3 && syllabusFile && assessmentFile && tutorCvFile && !submitting;
 
   const uploadOne = async (f: File): Promise<string> => {
     const dataUrl = await fileToDataUrl(f);
@@ -997,23 +988,21 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const [syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path] = await Promise.all(
-        [uploadOne(syllabusFile!), uploadOne(assessmentFile!), uploadOne(tutorCvFile!)],
-      );
+      const [syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path] = await Promise.all([
+        uploadOne(syllabusFile!),
+        uploadOne(assessmentFile!),
+        uploadOne(tutorCvFile!),
+      ]);
       await submit({
         data: {
-          title: title.trim(),
-          level: level ? Number(level) : null,
-          hours: hours ? Number(hours) : null,
-          delivery_mode: (deliveryMode || null) as CpdCourseRow["delivery_mode"],
-          summary: summary.trim() || null,
+          proposed_title: title.trim(),
           syllabus_doc_path,
           assessment_criteria_doc_path,
           tutor_cv_doc_path,
         },
       });
-      toast.success("Submitted for accreditation review");
-      qc.invalidateQueries({ queryKey: ["my-cpd-courses"] });
+      toast.success("Submitted — REPS AI is drafting your accreditation spec.");
+      qc.invalidateQueries({ queryKey: ["my-reps-courses"] });
       onClose();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Submission failed");
@@ -1028,69 +1017,37 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
         <DialogHeader>
           <DialogTitle>Request REPS accreditation</DialogTitle>
           <DialogDescription>
-            Submit your course syllabus, assessment criteria and tutor CV. Approved courses receive
-            a REPS accreditation number and the accredited badge.
+            Upload your syllabus, assessment criteria and tutor CV. REPS AI drafts the level,
+            official title and full specification from your documents; a REPS admin reviews and
+            publishes. Approved courses receive a unique <span className="font-mono">REPS-QUAL-</span>
+            number.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
             <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Course title <span className="text-red-300">*</span>
+              Working title <span className="text-red-300">*</span>
             </Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Kettlebell Coach Level 1" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-                Level <span className="text-white/40">(optional)</span>
-              </Label>
-              <Input
-                value={level}
-                onChange={(e) => setLevel(e.target.value.replace(/[^0-9]/g, ""))}
-                placeholder="2, 3, 4…"
-              />
-            </div>
-            <div>
-              <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-                Total hours <span className="text-white/40">(optional)</span>
-              </Label>
-              <Input
-                value={hours}
-                onChange={(e) => setHours(e.target.value.replace(/[^0-9.]/g, ""))}
-                placeholder="12"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">Delivery</Label>
-            <Select
-              value={deliveryMode ?? ""}
-              onValueChange={(v) => setDeliveryMode(v as CpdCourseRow["delivery_mode"])}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select delivery mode…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="in_person">In person</SelectItem>
-                <SelectItem value="online">Online</SelectItem>
-                <SelectItem value="blended">Blended</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Short summary <span className="text-white/40">(optional)</span>
-            </Label>
-            <Textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="Who's it for and what will they be able to do afterwards?"
-              rows={3}
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Kettlebell Coach"
             />
+            <p className="mt-1 text-[11.5px] text-white/45">
+              What you'd call it internally. REPS may refine the wording before publishing.
+            </p>
+          </div>
+
+          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-3 text-[12px] text-emerald-100/85">
+            <div className="flex items-center gap-1.5 font-semibold text-emerald-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              What AI drafts from your documents
+            </div>
+            <p className="mt-1 text-emerald-100/70">
+              Level (1–7), learning outcomes, who it's for, how you'll study, how you're assessed,
+              prerequisites, guided learning hours, total qualification time, delivery mode.
+            </p>
           </div>
 
           <FilePicker
@@ -1105,12 +1062,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             file={assessmentFile}
             onFile={setAssessmentFile}
           />
-          <FilePicker
-            label="Tutor CV"
-            required
-            file={tutorCvFile}
-            onFile={setTutorCvFile}
-          />
+          <FilePicker label="Tutor CV" required file={tutorCvFile} onFile={setTutorCvFile} />
         </div>
 
         <DialogFooter>
@@ -1125,6 +1077,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     </Dialog>
   );
 }
+
 
 function FilePicker({
   label,
