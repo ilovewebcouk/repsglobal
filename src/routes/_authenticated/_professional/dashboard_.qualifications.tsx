@@ -24,6 +24,7 @@ import {
   Loader2,
   Paperclip,
   Plus,
+  Sparkles,
   Trash2,
   Upload,
   X,
