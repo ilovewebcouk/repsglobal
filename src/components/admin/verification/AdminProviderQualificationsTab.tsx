@@ -886,7 +886,7 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
         <div className="border-b border-reps-border px-5 py-4">
           <div className="flex flex-wrap items-center gap-2 text-[11.5px] text-white/60">
             <span className="rounded-full border border-amber-400/30 bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-amber-300">
-              CPD accreditation
+              REPS-accredited
             </span>
             {row.reps_cpd_number ? (
               <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
