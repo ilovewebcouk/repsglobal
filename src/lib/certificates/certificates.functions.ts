@@ -860,6 +860,14 @@ export type AdminBatchDTO = BatchDTO & {
   provider_name: string | null;
   stripe_checkout_session_id: string | null;
   stripe_payment_intent_id: string | null;
+  postage_fee_pence_snapshot: number;
+  rm_service_code: string | null;
+  rm_order_identifier: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  label_pdf_path: string | null;
+  shipped_at: string | null;
+  ship_to_address: ShipToAddressDTO | null;
 };
 
 export const adminListBatches = createServerFn({ method: "GET" })
@@ -889,7 +897,7 @@ export const adminListBatches = createServerFn({ method: "GET" })
     let q = supabase
       .from("certificate_batches")
       .select(
-        "id, provider_id, status, count, unit_price_pence, total_pence, currency, format, paid_at, issued_at, dispatched_at, created_at, stripe_checkout_session_id, stripe_payment_intent_id",
+        "id, provider_id, status, count, unit_price_pence, total_pence, currency, format, paid_at, issued_at, dispatched_at, created_at, stripe_checkout_session_id, stripe_payment_intent_id, postage_fee_pence_snapshot, rm_service_code, rm_order_identifier, tracking_number, tracking_url, label_pdf_path, shipped_at, ship_to_address",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -911,6 +919,14 @@ export const adminListBatches = createServerFn({ method: "GET" })
       provider_name: nameById.get(r.provider_id) ?? null,
       stripe_checkout_session_id: r.stripe_checkout_session_id,
       stripe_payment_intent_id: r.stripe_payment_intent_id,
+      postage_fee_pence_snapshot: (r.postage_fee_pence_snapshot as number) ?? 0,
+      rm_service_code: r.rm_service_code ?? null,
+      rm_order_identifier: r.rm_order_identifier ?? null,
+      tracking_number: r.tracking_number ?? null,
+      tracking_url: r.tracking_url ?? null,
+      label_pdf_path: r.label_pdf_path ?? null,
+      shipped_at: r.shipped_at ?? null,
+      ship_to_address: (r.ship_to_address as ShipToAddressDTO | null) ?? null,
     }));
   });
 
