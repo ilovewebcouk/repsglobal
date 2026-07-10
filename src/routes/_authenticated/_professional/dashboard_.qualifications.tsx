@@ -1505,6 +1505,98 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
               })}
             </div>
           </div>
+
+          {/* ── Endorsement statement ─────────────────────────────────── */}
+          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-4">
+            <div className="mb-1 flex items-center gap-1.5 text-[13px] font-semibold text-white">
+              <BadgeCheck className="h-3.5 w-3.5 text-emerald-300" />
+              REPS endorsement statement
+              <span className="ml-1 text-[11px] font-normal text-white/50">(required)</span>
+            </div>
+            <p className="text-[11.5px] text-white/60">
+              If we endorse this course, you must display the statement below on the public page
+              that lists it. It makes clear to learners that REPS endorsement is a quality mark,
+              not an Ofqual-regulated qualification.
+            </p>
+            <blockquote className="mt-3 rounded-[10px] border border-white/10 bg-black/25 p-3 text-[12px] leading-relaxed text-white/85 italic">
+              {REPS_ENDORSEMENT_STATEMENT}
+            </blockquote>
+            <button
+              type="button"
+              onClick={() => {
+                void navigator.clipboard.writeText(REPS_ENDORSEMENT_STATEMENT);
+                toast.success("Statement copied to clipboard.");
+              }}
+              className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-200 hover:text-emerald-100"
+            >
+              Copy statement
+            </button>
+
+            <div className="mt-4 space-y-2">
+              <Label className="block text-[12px] font-semibold text-white/80">
+                URL of the page where you'll display it <span className="text-red-300">*</span>
+              </Label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  value={statementUrl}
+                  onChange={(e) => setStatementUrl(e.target.value)}
+                  placeholder="https://your-site.com/courses/kettlebell-coach"
+                  className="flex-1"
+                  maxLength={500}
+                />
+                <Button
+                  type="button"
+                  onClick={handleCheckStatement}
+                  disabled={!statementUrlValid || statementChecking}
+                  variant="ghost"
+                  className="sm:shrink-0"
+                >
+                  {statementChecking ? (
+                    <>
+                      <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> Checking…
+                    </>
+                  ) : (
+                    "Check now"
+                  )}
+                </Button>
+              </div>
+              <FieldHelp>
+                Paste the statement onto that page first, then click Check. We fetch the page and
+                look for the statement.
+              </FieldHelp>
+
+              {statementCheck ? (
+                statementCheck.ok && statementCheck.found ? (
+                  <div className="flex items-start gap-2 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-2.5 text-[12px] text-emerald-100">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                    <span>Statement found on that page. Admin will re-check during review.</span>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 rounded-[10px] border border-red-400/30 bg-red-500/10 p-2.5 text-[12px] text-red-100">
+                    <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-300" />
+                    <span>
+                      {statementCheck.ok
+                        ? "The statement isn't on that page. Paste it in verbatim and check again."
+                        : `Couldn't fetch: ${statementCheck.error ?? "unknown error"}`}
+                    </span>
+                  </div>
+                )
+              ) : null}
+            </div>
+
+            <label className="mt-4 flex cursor-pointer items-start gap-2 text-[12.5px] text-white/80">
+              <Checkbox
+                checked={statementAgreed}
+                onCheckedChange={(v) => setStatementAgreed(v === true)}
+                className="mt-0.5"
+              />
+              <span>
+                I agree to display the REPS endorsement statement, verbatim, on the page above for
+                as long as this course is endorsed by REPS. I understand admin verifies this
+                before and periodically after endorsement.
+              </span>
+            </label>
+          </div>
         </div>
 
         <DialogFooter>
