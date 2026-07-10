@@ -1036,12 +1036,7 @@ export const adminRevokeCertificate = createServerFn({ method: "POST" })
     await assertAdmin(supabase, userId);
     const { error } = await supabase
       .from("certificate_registrations")
-      .update({
-        status: "revoked",
-        revoked_at: new Date().toISOString(),
-        revoked_by: userId,
-        revoke_reason: data.reason ?? null,
-      } as never)
+      .update({ status: "revoked" } as never)
       .eq("id", data.registration_id)
       .in("status", ["issued", "dispatched"]);
     if (error) throw new Error(error.message);
