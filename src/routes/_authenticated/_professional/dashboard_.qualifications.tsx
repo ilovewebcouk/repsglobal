@@ -1448,7 +1448,33 @@ function ExpandableField({
   );
 }
 
-/* ─── Helpers ───────────────────────────────────────────────────────────── */
+function ReportDownloadButton({ courseId }: { courseId: string }) {
+  const getUrl = useServerFn(getCourseReportUrl);
+  const [busy, setBusy] = React.useState(false);
+  const onClick = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { url } = await getUrl({ data: { id: courseId } });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open report");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className="inline-flex items-center gap-1.5 rounded-[8px] border border-blue-400/30 bg-blue-500/10 px-2.5 py-1 text-[11.5px] font-semibold text-blue-200 transition hover:bg-blue-500/20 disabled:opacity-60"
+    >
+      <FileText className="h-3 w-3" />
+      {busy ? "Opening…" : "View assessment report (PDF)"}
+    </button>
+  );
+}
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
