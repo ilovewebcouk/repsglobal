@@ -1066,7 +1066,7 @@ async function runRepsCourseAiDraft(
   const { data: row, error } = await supabaseAdmin
     .from("reps_courses")
     .select(
-      "id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, status",
+      "id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, status",
     )
     .eq("id", id)
     .single();
@@ -1074,24 +1074,38 @@ async function runRepsCourseAiDraft(
   const r = row as {
     id: string;
     proposed_title: string;
-    syllabus_doc_path: string;
-    assessment_criteria_doc_path: string;
-    tutor_cv_doc_path: string;
+    proposed_who_for: string | null;
+    proposed_what_covered: string | null;
+    proposed_learner_outcomes: string | null;
+    proposed_delivery_mode: string | null;
+    proposed_total_hours: number | null;
+    proposed_how_assessed: string | null;
+    proposed_prerequisites: string | null;
+    proposed_tutor_credentials: string | null;
+    proposed_extra_notes: string | null;
     status: string;
   };
 
-  const urls: string[] = [];
-  for (const p of [r.syllabus_doc_path, r.assessment_criteria_doc_path, r.tutor_cv_doc_path]) {
-    const u = await signedUrlFor(p);
-    if (u) urls.push(u);
-  }
-  if (urls.length < 3) return;
+  const claim = [
+    `Working title: "${r.proposed_title}"`,
+    r.proposed_who_for ? `Who this course is for:\n${r.proposed_who_for}` : null,
+    r.proposed_what_covered ? `What the course covers:\n${r.proposed_what_covered}` : null,
+    r.proposed_learner_outcomes
+      ? `What learners will be able to do afterwards:\n${r.proposed_learner_outcomes}`
+      : null,
+    r.proposed_delivery_mode ? `Delivery mode: ${r.proposed_delivery_mode}` : null,
+    r.proposed_total_hours != null ? `Total learning hours (provider estimate): ${r.proposed_total_hours}` : null,
+    r.proposed_how_assessed ? `How learners are assessed:\n${r.proposed_how_assessed}` : null,
+    r.proposed_prerequisites ? `Prerequisites:\n${r.proposed_prerequisites}` : null,
+    r.proposed_tutor_credentials ? `Tutor name & credentials:\n${r.proposed_tutor_credentials}` : null,
+    r.proposed_extra_notes ? `Additional notes from the provider:\n${r.proposed_extra_notes}` : null,
+    "",
+    "Draft the full public specification per the schema. Split the provider's total learning hours into guided learning hours (tutor-led) and total qualification time (all learner time). Rewrite the provider's rough outcomes as formal learning outcomes using Bloom's verbs, starting with \"On completion, learners will…\".",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
-  const claim = `Provider's working title: "${r.proposed_title}". Files (in order): syllabus, assessment criteria, tutor CV. Draft the full public specification per the schema.`;
-  const parts: Array<{ text?: string } | { image_url: { url: string } }> = [{ text: claim }];
-  for (const url of urls) parts.push({ image_url: { url } });
-
-  const result = await callGemini(REPS_COURSE_SYSTEM, parts);
+  const result = await callGemini(REPS_COURSE_SYSTEM, [{ text: claim }]);
   if (!result) {
     await supabaseAdmin
       .from("reps_courses")
@@ -1113,9 +1127,13 @@ async function runRepsCourseAiDraft(
   const redFlags = clampStrArr(raw.red_flags, 20, 200) ?? [];
 
   const deliveryRaw = typeof raw.spec_delivery_mode === "string" ? raw.spec_delivery_mode : null;
-  const deliveryMode: "in_person" | "online" | "blended" | null =
-    deliveryRaw === "in_person" || deliveryRaw === "online" || deliveryRaw === "blended"
-      ? deliveryRaw
+  const deliveryMode: RepsCourseDeliveryMode | "online" | null =
+    deliveryRaw === "in_person" ||
+    deliveryRaw === "online_live" ||
+    deliveryRaw === "online_self_paced" ||
+    deliveryRaw === "online" ||
+    deliveryRaw === "blended"
+      ? (deliveryRaw as RepsCourseDeliveryMode | "online")
       : null;
 
   // Only overwrite the official/spec fields when the row is a fresh draft or
