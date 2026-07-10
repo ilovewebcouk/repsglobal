@@ -476,17 +476,20 @@ const EVIDENCE_LABEL: Record<RegulatedPermissionRow["evidence_type"], string> = 
   approval_letter: "Approval letter",
 };
 
-/* ─── CPD ───────────────────────────────────────────────────────────────── */
+/* ─── REPS-accredited course row ─────────────────────────────────────────── */
 
-
-function CpdRow({ row }: { row: CpdCourseRow }) {
+function CpdRow({ row }: { row: RepsCourseRow }) {
   const qc = useQueryClient();
-  const remove = useServerFn(deleteMyCpdCourse);
+  const remove = useServerFn(removeMyRepsCourse);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [reason, setReason] = React.useState("");
 
   const isWithdrawn = row.status === "withdrawn";
   const isApproved = row.status === "approved";
+  const isDrafting = row.status === "submitted";
+
+  const title = row.official_title ?? row.proposed_title;
+  const level = row.official_level;
 
   const mut = useMutation({
     mutationFn: () =>
@@ -495,7 +498,7 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
       toast.success(res?.mode === "withdrawn" ? "Removed from profile" : "Deleted");
       setConfirmOpen(false);
       setReason("");
-      qc.invalidateQueries({ queryKey: ["my-cpd-courses"] });
+      qc.invalidateQueries({ queryKey: ["my-reps-courses"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Remove failed"),
   });
@@ -508,28 +511,28 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-white">{row.title}</span>
-            {row.level != null ? (
-              <Badge className="border-white/15 bg-white/5 text-white/70">L{row.level}</Badge>
+            <span className="font-semibold text-white">{title}</span>
+            {level != null ? (
+              <Badge className="border-white/15 bg-white/5 text-white/70">L{level}</Badge>
             ) : null}
             <StatusBadge status={row.status} />
-            {row.reps_cpd_number ? (
-              <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
-                {row.reps_cpd_number}
+            {row.reps_qual_number ? (
+              <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300 font-mono">
+                {row.reps_qual_number}
               </Badge>
             ) : null}
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-white/55">
-            {row.hours != null ? <span>{row.hours}h</span> : null}
-            {row.delivery_mode ? (
-              <>
-                <span>·</span>
-                <span className="capitalize">{row.delivery_mode.replace("_", " ")}</span>
-              </>
-            ) : null}
-          </div>
-          {row.summary ? (
-            <p className="mt-1.5 line-clamp-2 text-[12.5px] text-white/70">{row.summary}</p>
+          {isDrafting ? (
+            <p className="mt-1.5 text-[12.5px] text-white/60">
+              <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />
+              AI is drafting the specification — usually under a minute.
+            </p>
+          ) : row.status === "ai_drafted" ? (
+            <p className="mt-1.5 text-[12.5px] text-white/60">
+              Draft ready — awaiting REPS review. You'll be notified once it's published.
+            </p>
+          ) : row.spec_who_for ? (
+            <p className="mt-1.5 line-clamp-2 text-[12.5px] text-white/70">{row.spec_who_for}</p>
           ) : null}
           {row.admin_note && !isWithdrawn ? (
             <div className="mt-2 rounded-[10px] border border-amber-500/25 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
@@ -556,17 +559,17 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
             </DialogTitle>
             <DialogDescription>
               {isApproved
-                ? `“${row.title}” will disappear from your public profile immediately. REPs keeps a record for audit purposes.`
+                ? `“${title}” will disappear from your public profile immediately. REPs keeps a record for audit purposes.`
                 : "This cannot be undone. The uploaded evidence will also be deleted."}
             </DialogDescription>
           </DialogHeader>
           {isApproved ? (
             <div className="space-y-2">
-              <Label htmlFor="withdraw-cpd-reason" className="text-[12px] text-white/70">
+              <Label htmlFor="withdraw-course-reason" className="text-[12px] text-white/70">
                 Reason (optional)
               </Label>
               <Textarea
-                id="withdraw-cpd-reason"
+                id="withdraw-course-reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="e.g. Course no longer offered, content retired…"
@@ -576,11 +579,7 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
             </div>
           ) : null}
           <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => setConfirmOpen(false)}
-              disabled={mut.isPending}
-            >
+            <Button variant="ghost" onClick={() => setConfirmOpen(false)} disabled={mut.isPending}>
               Cancel
             </Button>
             <Button
@@ -608,7 +607,11 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
 
 /* ─── Status badge ──────────────────────────────────────────────────────── */
 
-function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
+function StatusBadge({
+  status,
+}: {
+  status: RegulatedPermissionRow["status"] | RepsCourseRow["status"];
+}) {
   if (status === "approved")
     return (
       <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
@@ -616,6 +619,12 @@ function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
       </Badge>
     );
   if (status === "submitted")
+    return (
+      <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
+        <Sparkles className="mr-1 h-3 w-3" /> AI drafting
+      </Badge>
+    );
+  if (status === "ai_drafted")
     return (
       <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
         <Clock className="mr-1 h-3 w-3" /> In review
@@ -628,17 +637,14 @@ function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
       </Badge>
     );
   if (status === "withdrawn")
-    return (
-      <Badge className="border-white/15 bg-white/5 text-white/60">
-        Withdrawn
-      </Badge>
-    );
+    return <Badge className="border-white/15 bg-white/5 text-white/60">Withdrawn</Badge>;
   return (
     <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
       <Clock className="mr-1 h-3 w-3" /> Changes requested
     </Badge>
   );
 }
+
 
 /* ─── Add regulated dialog ──────────────────────────────────────────────── */
 
