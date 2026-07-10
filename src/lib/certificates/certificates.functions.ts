@@ -548,6 +548,19 @@ export const cancelRegistration = createServerFn({ method: "POST" })
 // ─────────────────────────────────────────────────────────────────────────────
 // Batch checkout
 
+const shipToAddressSchema = z.object({
+  fullName: z.string().trim().min(1).max(120),
+  companyName: z.string().trim().max(120).optional().nullable(),
+  addressLine1: z.string().trim().min(1).max(160),
+  addressLine2: z.string().trim().max(160).optional().nullable(),
+  city: z.string().trim().min(1).max(80),
+  county: z.string().trim().max(80).optional().nullable(),
+  postcode: z.string().trim().min(3).max(16),
+  countryCode: z.string().trim().length(2).default("GB"),
+  phoneNumber: z.string().trim().max(32).optional().nullable(),
+  emailAddress: z.string().trim().email().max(160).optional().nullable(),
+});
+
 export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -555,6 +568,7 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       .object({
         registration_ids: z.array(z.string().uuid()).min(1).max(100),
         environment: z.enum(["sandbox", "live"]),
+        ship_to_address: shipToAddressSchema.optional().nullable(),
       })
       .parse(d),
   )
@@ -563,13 +577,15 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       const { supabase, userId, claims } = context;
       const { country } = await assertProviderIsOrganisation(supabase, userId);
 
-      // Load pricing
+      // Load pricing (unit + postage)
       const { data: pricing } = await supabase
         .from("certificate_pricing")
-        .select("unit_price_pence, currency")
+        .select("unit_price_pence, postage_fee_pence, currency")
         .eq("id", true)
         .maybeSingle();
       const unitPricePence = (pricing?.unit_price_pence as number | undefined) ?? 1500;
+      const postageFeePence =
+        (pricing?.postage_fee_pence as number | undefined) ?? 650;
       const currency = (pricing?.currency as string | undefined) ?? "gbp";
 
       // Validate registrations
@@ -591,8 +607,19 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       }
 
       const format = formatForCountry(country);
+      const isPrinted = format === "printed_and_digital";
       const count = regs.length;
-      const totalPence = unitPricePence * count;
+
+      // For UK/printed batches, require a shipping address up-front
+      if (isPrinted && !data.ship_to_address) {
+        return {
+          error:
+            "A UK postal address is required for printed certificates. Please add your shipping details before checking out.",
+        };
+      }
+
+      const postageSnapshot = isPrinted ? postageFeePence : 0;
+      const totalPence = unitPricePence * count + postageSnapshot;
 
       // Create batch
       const { data: batch, error: batchErr } = await supabase
@@ -601,11 +628,13 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
           provider_id: userId,
           count,
           unit_price_pence: unitPricePence,
+          postage_fee_pence_snapshot: postageSnapshot,
           total_pence: totalPence,
           currency,
           format,
           environment: data.environment,
           status: "pending",
+          ship_to_address: data.ship_to_address ?? null,
         } as never)
         .select("id")
         .single();
@@ -630,26 +659,40 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       const email = (claims.email as string | undefined) ?? null;
 
       try {
+        const line_items: any[] = [
+          {
+            quantity: count,
+            price_data: {
+              currency,
+              unit_amount: unitPricePence,
+              product_data: {
+                name: isPrinted
+                  ? "REPS Certificate — printed + digital"
+                  : "REPS Certificate — digital",
+                description:
+                  "Jointly-branded certificate of achievement and unit summary, QR-verified on repsuk.org.",
+              },
+            },
+          },
+        ];
+        if (isPrinted && postageSnapshot > 0) {
+          line_items.push({
+            quantity: 1,
+            price_data: {
+              currency,
+              unit_amount: postageSnapshot,
+              product_data: {
+                name: "Postage & tracked delivery — Royal Mail",
+                description: "Tracked delivery of your printed certificates.",
+              },
+            },
+          });
+        }
+
         const session = await stripe.checkout.sessions.create({
           mode: "payment",
           customer_email: email ?? undefined,
-          line_items: [
-            {
-              quantity: count,
-              price_data: {
-                currency,
-                unit_amount: unitPricePence,
-                product_data: {
-                  name:
-                    format === "printed_and_digital"
-                      ? "REPS Certificate — printed + digital"
-                      : "REPS Certificate — digital",
-                  description:
-                    "Jointly-branded certificate of achievement and unit summary, QR-verified on repsuk.org.",
-                },
-              },
-            },
-          ],
+          line_items,
           success_url: `${origin}/dashboard/students?checkout=success&batch=${batch!.id}`,
           cancel_url: `${origin}/dashboard/students?checkout=canceled&batch=${batch!.id}`,
           metadata: {
@@ -660,7 +703,9 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
             environment: data.environment,
           },
           payment_intent_data: {
-            description: `REPS certificates — ${count} × ${(unitPricePence / 100).toFixed(2)}`,
+            description: `REPS certificates — ${count} × ${(unitPricePence / 100).toFixed(2)}${
+              postageSnapshot ? ` + £${(postageSnapshot / 100).toFixed(2)} postage` : ""
+            }`,
             metadata: { kind: "cert_batch", batch_id: batch!.id },
           },
         });
