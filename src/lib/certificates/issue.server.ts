@@ -135,4 +135,25 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
     .from("certificate_batches")
     .update({ status: nextStatus, issued_at: new Date().toISOString() } as never)
     .eq("id", batchId);
+
+  // Notify the provider that their certificates are ready.
+  try {
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(providerId);
+    const providerEmail = authUser?.user?.email ?? null;
+    if (providerEmail) {
+      const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+      await sendTransactionalEmailServer({
+        templateName: "certificates-ready",
+        recipientEmail: providerEmail,
+        idempotencyKey: `cert-batch-ready:${batchId}`,
+        templateData: {
+          providerName,
+          count: regs.length,
+          formatLabel: batch.format,
+        },
+      });
+    }
+  } catch (err) {
+    console.error("[cert-issue] provider notification failed", err);
+  }
 }

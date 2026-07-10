@@ -58,6 +58,7 @@ import { template as onboardingSignupLogIn3 } from './onboarding/signup-log-in-3
 import { template as onboardingSignupLogIn4 } from './onboarding/signup-log-in-4'
 import { template as onboardingSignupLogIn5 } from './onboarding/signup-log-in-5'
 import { template as onboardingSignupVerify1 } from './onboarding/signup-verify-1'
+import { template as certificatesReady } from './certificates-ready'
 
 
 
@@ -113,6 +114,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'onboarding-signup-log-in-4': onboardingSignupLogIn4,
   'onboarding-signup-log-in-5': onboardingSignupLogIn5,
   'onboarding-signup-verify-1': onboardingSignupVerify1,
+  'certificates-ready': certificatesReady,
 }
 
 
