@@ -201,9 +201,9 @@ const UPGRADE_BY_PATH: Record<string, UpgradeCopy> = {
     ],
   },
   "/dashboard/cpd": {
-    active: "Education & CPD",
-    title: "Education & CPD",
-    feature: "Education & CPD library",
+    active: "Education & courses",
+    title: "Education & courses",
+    feature: "Education & courses library",
     description:
       "Curated CPD modules and a logbook to keep your registration current.",
     bullets: [
