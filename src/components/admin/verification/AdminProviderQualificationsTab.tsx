@@ -91,7 +91,7 @@ export function AdminProviderQualificationsTab() {
           ))}
         </div>
         <div className="inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
-          {(tab === "regulated" ? REGULATED_STATUS_TABS : STATUS_TABS).map((s) => (
+          {(tab === "regulated" ? REGULATED_STATUS_TABS : COURSE_STATUS_TABS).map((s) => (
             <button
               key={s}
               onClick={() => setStatus(s)}
@@ -105,7 +105,11 @@ export function AdminProviderQualificationsTab() {
         </div>
       </div>
 
-      {tab === "regulated" ? <RegulatedQueue status={status} /> : <CpdQueue status={status} />}
+      {tab === "regulated" ? (
+        <RegulatedQueue status={status === "ai_drafted" ? "submitted" : status} />
+      ) : (
+        <CpdQueue status={status} />
+      )}
     </div>
   );
 }
