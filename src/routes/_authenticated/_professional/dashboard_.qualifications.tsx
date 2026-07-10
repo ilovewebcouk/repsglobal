@@ -72,6 +72,8 @@ import {
   removeMyRepsCourse,
   uploadRepsCourseEvidence,
   removeRepsCourseEvidence,
+  checkEndorsementStatement,
+  REPS_ENDORSEMENT_STATEMENT,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
   RepsCourseRow,
@@ -79,6 +81,7 @@ import type {
   RepsCourseEvidenceRow,
   RepsCourseEvidenceKind,
 } from "@/lib/qualifications/qualifications.functions";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/qualifications")({
   head: () => ({
