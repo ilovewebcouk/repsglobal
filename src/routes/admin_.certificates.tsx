@@ -420,19 +420,61 @@ function PrintQueuePanel() {
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge>{b.status}</Badge>
                     {b.status === "awaiting_print" && (
-                      <Button
-                        size="sm"
-                        variant="subtle"
-                        onClick={() => printedMut.mutate(b.batch_id)}
-                        disabled={printedMut.isPending}
-                      >
-                        <Printer className="h-3.5 w-3.5" /> Mark printed
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => openPack(b.batch_id, "merged")}
+                          disabled={downloading === `${b.batch_id}:merged`}
+                        >
+                          {downloading === `${b.batch_id}:merged` ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Download className="h-3.5 w-3.5" />
+                          )}{" "}
+                          Print pack
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => openPack(b.batch_id, "zip")}
+                          disabled={downloading === `${b.batch_id}:zip`}
+                          title="Download individual PDFs (ZIP)"
+                        >
+                          ZIP
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => printedMut.mutate(b.batch_id)}
+                          disabled={printedMut.isPending}
+                        >
+                          <Printer className="h-3.5 w-3.5" /> Mark printed
+                        </Button>
+                      </>
                     )}
-                    <Button size="sm" onClick={() => setDispatching(b)}>
-                      <Truck className="h-3.5 w-3.5" /> Create label &amp; dispatch
-                    </Button>
+                    {b.status === "printed" && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => openPack(b.batch_id, "merged")}
+                          disabled={downloading === `${b.batch_id}:merged`}
+                          title="Re-download print pack"
+                        >
+                          <Download className="h-3.5 w-3.5" /> Reprint
+                        </Button>
+                        <Button size="sm" onClick={() => setDispatching(b)}>
+                          <Truck className="h-3.5 w-3.5" /> Create label &amp; dispatch
+                        </Button>
+                      </>
+                    )}
                   </div>
+                </div>
+                {b.status === "printed" && b.printed_at && (
+                  <div className="text-[11.5px] text-emerald-300/80">
+                    Printed {new Date(b.printed_at).toLocaleString("en-GB")}
+                  </div>
+                )}
                 </div>
                 <div className="rounded-lg bg-white/[0.03] p-3 text-[12px] text-white/70">
                   {b.learners.map((l) => (
