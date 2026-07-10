@@ -475,7 +475,6 @@ function PrintQueuePanel() {
                     Printed {new Date(b.printed_at).toLocaleString("en-GB")}
                   </div>
                 )}
-                </div>
                 <div className="rounded-lg bg-white/[0.03] p-3 text-[12px] text-white/70">
                   {b.learners.map((l) => (
                     <div
