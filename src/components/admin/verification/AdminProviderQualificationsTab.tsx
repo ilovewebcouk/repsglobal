@@ -1012,6 +1012,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               </Badge>
             ) : null}
             <AiVerdictChip verdict={row.ai_verdict} flags={row.ai_red_flags} />
+            <ReportButton row={row} />
           </div>
           <h3 className="mt-2 text-[15px] font-semibold text-white">{providerName}</h3>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-white/60">
@@ -1070,11 +1071,31 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               </dl>
             </div>
 
+            {row.reviewer_notes ? (
+              <div className="rounded-[10px] border border-blue-400/25 bg-blue-500/10 p-2.5 text-[11.5px] text-blue-100">
+                <div className="mb-1 flex items-center gap-1.5 font-semibold">
+                  <Sparkles className="h-3 w-3" /> Reviewer summary (AI)
+                </div>
+                <p className="text-blue-100/90">{row.reviewer_notes}</p>
+              </div>
+            ) : null}
+
             {row.ai_red_flags.length > 0 ? (
               <div className="rounded-[10px] border border-red-500/30 bg-red-500/10 p-2.5 text-[11.5px] text-red-200">
                 <div className="mb-1 font-semibold">AI red flags</div>
                 <ul className="list-disc pl-4 space-y-0.5">
                   {row.ai_red_flags.map((f, i) => (
+                    <li key={i}>{f}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {row.ai_deterministic_flags && row.ai_deterministic_flags.length > 0 ? (
+              <div className="rounded-[10px] border border-amber-500/30 bg-amber-500/10 p-2.5 text-[11.5px] text-amber-100">
+                <div className="mb-1 font-semibold">Deterministic checks</div>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  {row.ai_deterministic_flags.map((f, i) => (
                     <li key={i}>{f}</li>
                   ))}
                 </ul>
