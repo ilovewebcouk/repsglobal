@@ -58,7 +58,7 @@ type CourseStatus = Status | "ai_drafted";
 
 const STATUS_TABS: readonly Status[] = ["submitted", "approved", "rejected", "withdrawn"];
 const REGULATED_STATUS_TABS: readonly Status[] = STATUS_TABS;
-const COURSE_STATUS_TABS: readonly CourseStatus[] = ["submitted", "ai_drafted", "approved", "rejected", "withdrawn"];
+const COURSE_STATUS_TABS: readonly CourseStatus[] = ["submitted", "approved", "rejected", "withdrawn"];
 const STATUS_LABEL: Record<CourseStatus, string> = {
   submitted: "New",
   ai_drafted: "In review",
@@ -69,14 +69,14 @@ const STATUS_LABEL: Record<CourseStatus, string> = {
 };
 
 export function AdminProviderQualificationsTab() {
-  const [tab, setTab] = React.useState<"regulated" | "cpd">("regulated");
+  const [tab, setTab] = React.useState<"regulated" | "courses">("regulated");
   const [status, setStatus] = React.useState<CourseStatus>("submitted");
 
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
-          {(["regulated", "cpd"] as const).map((t) => (
+          {(["regulated", "courses"] as const).map((t) => (
             <button
               key={t}
               onClick={() => {

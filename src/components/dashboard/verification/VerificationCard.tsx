@@ -105,8 +105,8 @@ function deriveSteps(t: TrustState | undefined): StepDef[] {
       label: "Qualifications",
       description:
         (t?.qualifications.count ?? 0) > 0
-          ? `${t!.qualifications.count} approved · managed in Education & CPD`
-          : "Upload a qualification certificate in Education & CPD.",
+          ? `${t!.qualifications.count} approved · managed in Education & courses`
+          : "Upload a qualification certificate in Education & courses.",
       status: qualStatus,
       cta: { label: qualStatus === "verified" ? "Manage" : "Add qualification", href: "/dashboard/cpd", external: true },
     },

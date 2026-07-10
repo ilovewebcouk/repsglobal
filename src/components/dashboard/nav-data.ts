@@ -49,7 +49,7 @@ export const VERIFIED_NAV = [
     items: [
       { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
-      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
+      { icon: GraduationCap, label: "Education & courses", to: "/dashboard/cpd" },
     ],
   },
   {
@@ -103,7 +103,7 @@ export const PRO_NAV = [
       { icon: FileText, label: "Content Studio", to: "/dashboard/content" },
       { icon: Users, label: "Community", to: "/dashboard/community" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
-      { icon: GraduationCap, label: "Education & CPD", to: "/dashboard/cpd" },
+      { icon: GraduationCap, label: "Education & courses", to: "/dashboard/cpd" },
     ],
   },
   {
@@ -185,7 +185,7 @@ export const ADMIN_NAV = [
     items: [
       { icon: Target, label: "Directory", to: "/admin/directory" },
       { icon: Building2, label: "Gyms", to: "/admin/gyms" },
-      { icon: GraduationCap, label: "CPD", to: "/admin/cpd" },
+      { icon: GraduationCap, label: "Courses", to: "/admin/cpd" },
 
 
       { icon: LineChart, label: "SEO", to: "/admin/seo" },

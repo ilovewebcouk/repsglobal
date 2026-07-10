@@ -8,9 +8,9 @@ export const Route = createFileRoute("/admin_/cpd")({
   beforeLoad: requireRole(['admin']),
   head: () => ({
     meta: [
-      { title: "CPD oversight — REPS Admin" },
+      { title: "Courses oversight — REPS Admin" },
       { name: "description", content: "Track CPD compliance, evidence audits and the course catalogue." },
-      { property: "og:title", content: "CPD oversight — REPS Admin" },
+      { property: "og:title", content: "Courses oversight — REPS Admin" },
       { property: "og:description", content: "Cycle compliance and evidence review for REPS professionals." },
     ],
   }),
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/admin_/cpd")({
 
 function AdminCpd() {
   return (
-    <DashboardShell role="admin" active="CPD" title="CPD oversight" subtitle="Current cycle: Jan 2026 – Dec 2026">
+    <DashboardShell role="admin" active="Courses" title="Courses oversight" subtitle="Current cycle: Jan 2026 – Dec 2026">
       <div className="grid gap-4 md:grid-cols-4">
         {[
           { l: "Compliance", v: "84%", d: "1,824 / 2,168 pros" },

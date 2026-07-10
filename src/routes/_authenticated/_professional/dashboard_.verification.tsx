@@ -250,7 +250,7 @@ function QualificationsCard({ trust }: { trust: TrustState | undefined }) {
       label: "Verified",
       cls: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
     };
-    subline = `${count} approved qualification${count === 1 ? "" : "s"} — managed in Education & CPD.`;
+    subline = `${count} approved qualification${count === 1 ? "" : "s"} — managed in Education & courses.`;
   } else if (pending > 0) {
     pill = {
       label: "Pending review",
@@ -262,19 +262,19 @@ function QualificationsCard({ trust }: { trust: TrustState | undefined }) {
       label: "Changes requested",
       cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
     };
-    subline = "Admin asked for more info on your certificate — open CPD to respond.";
+    subline = "Admin asked for more info on your certificate — open Education & courses to respond.";
   } else if (rejected > 0) {
     pill = {
       label: "Rejected",
       cls: "border-rose-400/30 bg-rose-500/15 text-rose-300",
     };
-    subline = "Your last certificate wasn't accepted. Upload a fresh one in Education & CPD.";
+    subline = "Your last certificate wasn't accepted. Upload a fresh one in Education & courses.";
   } else {
     pill = {
       label: "Not started",
       cls: "border-white/12 bg-white/[0.05] text-white/60",
     };
-    subline = "Upload your first certificate in Education & CPD. Approval unlocks your profession title.";
+    subline = "Upload your first certificate in Education & courses. Approval unlocks your profession title.";
   }
 
   return (
@@ -315,7 +315,7 @@ function QualificationsCard({ trust }: { trust: TrustState | undefined }) {
         to="/dashboard/cpd"
         className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-hover"
       >
-        {earned ? "Manage in Education & CPD" : "Add your first certificate"}
+        {earned ? "Manage in Education & courses" : "Add your first certificate"}
         <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </section>
