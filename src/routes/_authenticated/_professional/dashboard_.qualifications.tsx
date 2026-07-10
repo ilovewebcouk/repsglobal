@@ -48,12 +48,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DashboardSelect as Select,
+  DashboardSelectContent as SelectContent,
+  DashboardSelectItem as SelectItem,
+  DashboardSelectTrigger as SelectTrigger,
+  DashboardSelectValue as SelectValue,
+} from "@/components/dashboard/ui/select";
 import {
   RadioGroup,
   RadioGroupItem,
