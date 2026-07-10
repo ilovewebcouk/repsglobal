@@ -345,7 +345,116 @@ const registrationInput = z.object({
 });
 
 export const listMyRegistrations = createServerFn({ method: "GET" })
-...
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<RegistrationDTO[]> => {
+    const { supabase, userId } = context;
+    await assertProviderIsOrganisation(supabase, userId);
+    const { data, error } = await supabase
+      .from("certificate_registrations")
+      .select(
+        `id, learner_id, course_id, course_kind, course_title, course_level, reps_course_number,
+         status, batch_id, format, enrolled_at, passed_at, paid_at, issued_at,
+         dispatched_at, certificate_number, verification_token, price_pence_at_issue,
+         created_at,
+         learners!inner ( full_name, email )`,
+      )
+      .eq("provider_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r: any) => ({
+      id: r.id,
+      learner_id: r.learner_id,
+      learner_name: r.learners?.full_name ?? "",
+      learner_email: r.learners?.email ?? "",
+      course_id: r.course_id,
+      course_kind: r.course_kind,
+      course_title: r.course_title,
+      course_level: r.course_level,
+      reps_course_number: r.reps_course_number,
+      status: r.status,
+      batch_id: r.batch_id,
+      format: r.format,
+      enrolled_at: r.enrolled_at,
+      passed_at: r.passed_at,
+      paid_at: r.paid_at,
+      issued_at: r.issued_at,
+      dispatched_at: r.dispatched_at,
+      certificate_number: r.certificate_number,
+      verification_token: r.verification_token,
+      price_pence_at_issue: r.price_pence_at_issue,
+      created_at: r.created_at,
+    }));
+  });
+
+export const createRegistration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => registrationInput.parse(d))
+  .handler(async ({ data, context }): Promise<RegistrationDTO> => {
+    const { supabase, userId } = context;
+    const { country } = await assertProviderIsOrganisation(supabase, userId);
+
+    // Verify learner belongs to provider
+    const { data: learner } = await supabase
+      .from("learners")
+      .select("id, full_name, email")
+      .eq("id", data.learner_id)
+      .eq("provider_id", userId)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (!learner) throw new Error("Learner not found.");
+
+    // Look up course from the correct table based on kind
+    let courseTitle = "Untitled course";
+    let courseLevel: number | null = null;
+    let repsCourseNumber: string | null = null;
+
+    if (data.course_kind === "regulated") {
+      const { data: course } = await supabase
+        .from("provider_regulated_permissions")
+        .select("id, ofqual_snapshot, reps_qualification_number, status")
+        .eq("id", data.course_id)
+        .eq("provider_id", userId)
+        .maybeSingle();
+      if (!course) throw new Error("Course not found.");
+      if ((course as any).status !== "approved") {
+        throw new Error("This qualification isn't approved yet.");
+      }
+      const snap = ((course as any).ofqual_snapshot ?? {}) as { title?: string; level?: string };
+      courseTitle = snap.title ?? "Ofqual-regulated qualification";
+      courseLevel = snap.level && /\d+/.test(snap.level) ? Number(snap.level.match(/\d+/)![0]) : null;
+      repsCourseNumber = ((course as any).reps_qualification_number as string | null) ?? null;
+    } else {
+      const { data: course } = await supabase
+        .from("reps_courses")
+        .select("id, official_title, official_level, reps_qual_number, status")
+        .eq("id", data.course_id)
+        .eq("provider_id", userId)
+        .maybeSingle();
+      if (!course) throw new Error("Course not found.");
+      if ((course as any).status !== "approved") {
+        throw new Error("This REPS-endorsed course isn't approved yet.");
+      }
+      courseTitle = ((course as any).official_title as string | null) ?? "REPS-endorsed course";
+      courseLevel = ((course as any).official_level as number | null) ?? null;
+      repsCourseNumber = ((course as any).reps_qual_number as string | null) ?? null;
+    }
+
+    const { data: row, error } = await supabase
+      .from("certificate_registrations")
+      .insert({
+        provider_id: userId,
+        learner_id: data.learner_id,
+        course_id: data.course_id,
+        course_kind: data.course_kind,
+        course_title: courseTitle,
+        course_level: courseLevel,
+        reps_course_number: repsCourseNumber,
+        format: formatForCountry(country),
+        status: "enrolled",
+      } as never)
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
 
     return {
@@ -354,6 +463,7 @@ export const listMyRegistrations = createServerFn({ method: "GET" })
       learner_name: (learner as any).full_name,
       learner_email: (learner as any).email,
       course_id: row!.course_id as string,
+      course_kind: (row as any).course_kind,
       course_title: row!.course_title as string,
       course_level: row!.course_level as number | null,
       reps_course_number: row!.reps_course_number as string | null,
