@@ -46,6 +46,7 @@ import {
   adminListRegulatedQueue,
   adminSaveRepsCourseSpec,
   adminRedraftRepsCourse,
+  getCourseReportUrl,
 } from "@/lib/qualifications/qualifications.functions";
 
 import {
@@ -737,6 +738,10 @@ type CourseRow = {
   ai_drafted_at: string | null;
   official_title: string | null;
   official_level: number | null;
+  official_level_rationale: string | null;
+  official_level_confidence: "high" | "medium" | "low" | null;
+  reviewer_notes: string | null;
+  ai_deterministic_flags: string[] | null;
   reps_qual_number: string | null;
   spec_who_for: string | null;
   spec_learning_outcomes: string[] | null;
@@ -751,6 +756,8 @@ type CourseRow = {
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
+  report_pdf_path: string | null;
+  report_generated_at: string | null;
   provider: {
     id: string;
     slug: string | null;
