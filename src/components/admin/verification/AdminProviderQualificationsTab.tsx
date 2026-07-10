@@ -46,7 +46,6 @@ import {
   adminListRegulatedQueue,
   adminSaveRepsCourseSpec,
   adminRedraftRepsCourse,
-  getCourseReportUrl,
 } from "@/lib/qualifications/qualifications.functions";
 
 import {
@@ -756,8 +755,6 @@ type CourseRow = {
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
-  report_pdf_path: string | null;
-  report_generated_at: string | null;
   provider: {
     id: string;
     slug: string | null;
@@ -1012,7 +1009,6 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               </Badge>
             ) : null}
             <AiVerdictChip verdict={row.ai_verdict} flags={row.ai_red_flags} />
-            <ReportButton row={row} />
           </div>
           <h3 className="mt-2 text-[15px] font-semibold text-white">{providerName}</h3>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-white/60">
@@ -1528,34 +1524,5 @@ function LevelLadderField({
         </div>
       ) : null}
     </div>
-  );
-}
-
-function ReportButton({ row }: { row: CourseRow }) {
-  const getUrl = useServerFn(getCourseReportUrl);
-  const [busy, setBusy] = React.useState(false);
-  if (!row.report_pdf_path) return null;
-  const onClick = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const { url } = await getUrl({ data: { id: row.id } });
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not open report");
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={busy}
-      className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-blue-200 transition hover:bg-blue-500/25 disabled:opacity-60"
-    >
-      <FileText className="h-3 w-3" />
-      {busy ? "Opening…" : "Assessment report"}
-    </button>
   );
 }

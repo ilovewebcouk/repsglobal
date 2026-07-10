@@ -117,8 +117,6 @@ export type RepsCourseRow = {
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
-  report_pdf_path: string | null;
-  report_generated_at: string | null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -473,7 +471,7 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
   });
 
 const REPS_COURSE_SELECT =
-  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, report_pdf_path, report_generated_at";
+  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at";
 
 export const listMyRepsCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -721,33 +719,6 @@ export const adminDecideRepsCourse = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
 
-    // Build immutable snapshot + render report PDF. Fire-and-forget so the
-    // admin's UI response isn't blocked on PDF rendering.
-    void (async () => {
-      try {
-        const snapshot = await buildDecisionSnapshot({
-          courseId: data.id,
-          decision: data.decision,
-          reviewerId,
-          adminNote: data.admin_note?.trim() || null,
-          decidedAt,
-        });
-        const uploaded = await generateAndStoreCourseReport({
-          courseId: data.id,
-          snapshot,
-        });
-        await supabaseAdmin
-          .from("reps_courses")
-          .update({
-            decision_snapshot: snapshot as never,
-            report_pdf_path: uploaded?.path ?? null,
-            report_generated_at: uploaded ? new Date().toISOString() : null,
-          } as never)
-          .eq("id", data.id);
-      } catch (e) {
-        console.error("[adminDecideRepsCourse] report generation failed", e);
-      }
-    })();
     return { ok: true };
   });
 
@@ -1334,7 +1305,6 @@ async function runRepsCourseAiDraft(
 
   // Deterministic flag computer runs alongside the LLM — catches logical
   // inconsistencies the model may miss.
-  const { computeDeterministicFlags } = await import("./course-report.server");
   const deterministicFlags = computeDeterministicFlags({
     proposed_prerequisites: r.proposed_prerequisites,
     proposed_how_assessed: r.proposed_how_assessed,
@@ -1376,193 +1346,42 @@ async function runRepsCourseAiDraft(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Assessment report generation — Ofqual-style PDF, immutable at decision time.
+// Deterministic red-flag computer — cheap, reliable checks that catch logical
+// inconsistencies the LLM might miss.
 
-async function buildDecisionSnapshot(args: {
-  courseId: string;
-  decision: "approved" | "rejected" | "changes_requested";
-  reviewerId: string;
-  adminNote: string | null;
-  decidedAt: string;
-}) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: c, error } = await supabaseAdmin
-    .from("reps_courses")
-    .select(
-      "id, provider_id, proposed_title, proposed_delivery_mode, proposed_total_hours, proposed_prerequisites, proposed_tutor_credentials, proposed_how_assessed, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_verdict, ai_red_flags, ai_drafted_at, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, created_at",
-    )
-    .eq("id", args.courseId)
-    .single();
-  if (error || !c) throw new Error(error?.message ?? "Course not found");
-  const row = c as Record<string, unknown>;
-
-  // Provider trust context
-  const [{ data: pro }, { data: profile }, { data: domain }, { data: approvedCoursesRes }, { data: reviewer }] = await Promise.all([
-    supabaseAdmin
-      .from("professionals")
-      .select("id, slug, identity_status, identity_verified_at, insurance_valid_until")
-      .eq("id", row.provider_id as string)
-      .maybeSingle(),
-    supabaseAdmin
-      .from("profiles")
-      .select("full_name")
-      .eq("id", row.provider_id as string)
-      .maybeSingle(),
-    supabaseAdmin
-      .from("provider_domain_verifications")
-      .select("status")
-      .eq("professional_id", row.provider_id as string)
-      .eq("status", "verified")
-      .limit(1)
-      .maybeSingle(),
-    supabaseAdmin
-      .from("reps_courses")
-      .select("id", { count: "exact", head: true })
-      .eq("provider_id", row.provider_id as string)
-      .eq("status", "approved"),
-    supabaseAdmin
-      .from("profiles")
-      .select("id, full_name")
-      .eq("id", args.reviewerId)
-      .maybeSingle(),
-  ]);
-  const proAny = pro as Record<string, unknown> | null;
-  const identityVerified = (proAny?.identity_status as string | null) === "verified";
-  const identityVerifiedAt = (proAny?.identity_verified_at as string | null) ?? null;
-  const insuranceUntil = (proAny?.insurance_valid_until as string | null) ?? null;
-  const insuranceActive = !!(insuranceUntil && new Date(insuranceUntil) > new Date());
-
-  // approvedCoursesRes is null when head:true returns 0 — fetch count separately.
-  const { count: approvedCount } = await supabaseAdmin
-    .from("reps_courses")
-    .select("id", { count: "exact", head: true })
-    .eq("provider_id", row.provider_id as string)
-    .eq("status", "approved");
-  void approvedCoursesRes;
-
-  const documentId = crypto.randomUUID();
-  const generatedAt = new Date().toISOString();
-
-  return {
-    version: 1 as const,
-    generated_at: generatedAt,
-    document_id: documentId,
-    decision: args.decision,
-    decision_at: args.decidedAt,
-    reviewer: {
-      id: args.reviewerId,
-      email: null,
-      display_name: (reviewer as { full_name?: string | null } | null)?.full_name ?? null,
-    },
-    admin_note: args.adminNote,
-    course: {
-      id: row.id as string,
-      proposed_title: row.proposed_title as string,
-      proposed_delivery_mode: (row.proposed_delivery_mode as string | null) ?? null,
-      proposed_total_hours: (row.proposed_total_hours as number | null) ?? null,
-      proposed_prerequisites: (row.proposed_prerequisites as string | null) ?? null,
-      proposed_tutor_credentials: (row.proposed_tutor_credentials as string | null) ?? null,
-      official_title: (row.official_title as string | null) ?? null,
-      official_level: (row.official_level as number | null) ?? null,
-      reps_qual_number: (row.reps_qual_number as string | null) ?? null,
-      spec_who_for: (row.spec_who_for as string | null) ?? null,
-      spec_learning_outcomes: (row.spec_learning_outcomes as string[] | null) ?? null,
-      spec_how_youll_study: (row.spec_how_youll_study as string | null) ?? null,
-      spec_how_youre_assessed: (row.spec_how_youre_assessed as string | null) ?? null,
-      spec_prerequisites: (row.spec_prerequisites as string | null) ?? null,
-      spec_guided_learning_hours: (row.spec_guided_learning_hours as number | null) ?? null,
-      spec_total_qualification_time: (row.spec_total_qualification_time as number | null) ?? null,
-      spec_delivery_mode: (row.spec_delivery_mode as string | null) ?? null,
-    },
-    ai: {
-      verdict: (row.ai_verdict as string | null) ?? null,
-      red_flags: ((row.ai_red_flags as string[] | null) ?? []) as string[],
-      reviewer_notes: (row.reviewer_notes as string | null) ?? null,
-      level_rationale: (row.official_level_rationale as string | null) ?? null,
-      level_confidence: (row.official_level_confidence as string | null) ?? null,
-      deterministic_flags: ((row.ai_deterministic_flags as string[] | null) ?? []) as string[],
-    },
-    provider: {
-      id: row.provider_id as string,
-      legal_entity_name: (profile as { full_name?: string | null } | null)?.full_name ?? null,
-      slug: (proAny?.slug as string | null) ?? null,
-      trust: {
-        identity_verified: identityVerified,
-        identity_verified_at: identityVerifiedAt,
-        insurance_active: insuranceActive,
-        insurance_valid_until: insuranceUntil,
-        // Non-approved courses count toward "previous" so use approved - 1 if
-        // this row is already approved, otherwise plain count.
-        domain_verified: Boolean(domain),
-        previous_approved_courses: Math.max(0, (approvedCount ?? 0) - (args.decision === "approved" ? 1 : 0)),
-      },
-    },
-    audit: {
-      submitted_at: (row.created_at as string) ?? args.decidedAt,
-      ai_drafted_at: (row.ai_drafted_at as string | null) ?? null,
-      decided_at: args.decidedAt,
-    },
-  };
-}
-
-async function generateAndStoreCourseReport(args: {
-  courseId: string;
-  snapshot: Awaited<ReturnType<typeof buildDecisionSnapshot>>;
-}): Promise<{ path: string } | null> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { renderCourseAssessmentPdf } = await import("./course-report.server");
-  try {
-    const pdf = await renderCourseAssessmentPdf(args.snapshot as never, { isDraft: false });
-    const path = `${args.snapshot.provider.id}/${args.courseId}/${args.snapshot.document_id}.pdf`;
-    const { error: upErr } = await supabaseAdmin.storage
-      .from("course-reports")
-      .upload(path, pdf, { contentType: "application/pdf", upsert: true });
-    if (upErr) {
-      console.error("[course-report] upload failed", upErr);
-      return null;
-    }
-    return { path };
-  } catch (e) {
-    console.error("[course-report] render failed", e);
-    return null;
+function computeDeterministicFlags(input: {
+  proposed_prerequisites: string | null;
+  proposed_how_assessed: string | null;
+  proposed_tutor_credentials: string | null;
+  spec_prerequisites: string | null;
+  spec_guided_learning_hours: number | null;
+  spec_total_qualification_time: number | null;
+  spec_delivery_mode: RepsCourseDeliveryMode | "online" | null;
+  official_level: number | null;
+}): string[] {
+  const flags: string[] = [];
+  const prereq = (input.spec_prerequisites ?? input.proposed_prerequisites ?? "").trim().toLowerCase();
+  const noPrereq = prereq === "" || prereq === "none" || prereq === "n/a" || prereq === "no" || prereq === "-";
+  if (noPrereq && (input.official_level ?? 0) >= 4) {
+    flags.push("Prerequisites declared as none, but level is 4 or above.");
   }
+  if (
+    input.spec_guided_learning_hours != null &&
+    input.spec_total_qualification_time != null &&
+    input.spec_guided_learning_hours > input.spec_total_qualification_time
+  ) {
+    flags.push("Guided learning hours exceed total qualification time.");
+  }
+  const assessed = (input.proposed_how_assessed ?? "").toLowerCase();
+  if (
+    (input.spec_delivery_mode === "online_self_paced") &&
+    /(practical|observation|in[- ]person|face[- ]to[- ]face)/.test(assessed)
+  ) {
+    flags.push("Delivery is self-paced but assessment mentions in-person or practical observation.");
+  }
+  const tutor = (input.proposed_tutor_credentials ?? "").trim();
+  if (tutor.length > 0 && tutor.length < 30) {
+    flags.push("Tutor credentials are unusually thin.");
+  }
+  return flags;
 }
-
-export const getCourseReportUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: row, error } = await supabaseAdmin
-      .from("reps_courses")
-      .select("id, provider_id, report_pdf_path, decision_snapshot, status")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!row) throw new Error("Not found");
-    const r = row as {
-      provider_id: string;
-      report_pdf_path: string | null;
-      decision_snapshot: unknown;
-      status: string;
-    };
-
-    const isOwner = r.provider_id === userId;
-    let isAdmin = false;
-    if (!isOwner) {
-      const { data: adm } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-      isAdmin = Boolean(adm);
-    }
-    if (!isOwner && !isAdmin) throw new Error("Forbidden");
-
-    if (!r.report_pdf_path) {
-      throw new Error("Report is not available yet.");
-    }
-    const { data: signed, error: sErr } = await supabaseAdmin.storage
-      .from("course-reports")
-      .createSignedUrl(r.report_pdf_path, 60 * 10);
-    if (sErr || !signed) throw new Error(sErr?.message ?? "Sign failed");
-    return { url: signed.signedUrl };
-  });
