@@ -722,9 +722,15 @@ type CourseRow = {
   id: string;
   provider_id: string;
   proposed_title: string;
-  syllabus_doc_path: string;
-  assessment_criteria_doc_path: string;
-  tutor_cv_doc_path: string;
+  proposed_who_for: string | null;
+  proposed_what_covered: string | null;
+  proposed_learner_outcomes: string | null;
+  proposed_delivery_mode: "in_person" | "online_live" | "online_self_paced" | "blended" | null;
+  proposed_total_hours: number | null;
+  proposed_how_assessed: string | null;
+  proposed_prerequisites: string | null;
+  proposed_tutor_credentials: string | null;
+  proposed_extra_notes: string | null;
   ai_draft: Record<string, unknown> | null;
   ai_verdict: "recommend_approve" | "flagged" | "inconclusive" | null;
   ai_red_flags: string[];
