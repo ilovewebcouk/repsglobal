@@ -4383,7 +4383,6 @@ export type Database = {
           ai_red_flags: string[]
           ai_verdict: string | null
           created_at: string
-          decision_snapshot: Json | null
           id: string
           official_level: number | null
           official_level_confidence: string | null
@@ -4400,8 +4399,6 @@ export type Database = {
           proposed_what_covered: string | null
           proposed_who_for: string | null
           provider_id: string
-          report_generated_at: string | null
-          report_pdf_path: string | null
           reps_qual_number: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -4430,7 +4427,6 @@ export type Database = {
           ai_red_flags?: string[]
           ai_verdict?: string | null
           created_at?: string
-          decision_snapshot?: Json | null
           id?: string
           official_level?: number | null
           official_level_confidence?: string | null
@@ -4447,8 +4443,6 @@ export type Database = {
           proposed_what_covered?: string | null
           proposed_who_for?: string | null
           provider_id: string
-          report_generated_at?: string | null
-          report_pdf_path?: string | null
           reps_qual_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -4477,7 +4471,6 @@ export type Database = {
           ai_red_flags?: string[]
           ai_verdict?: string | null
           created_at?: string
-          decision_snapshot?: Json | null
           id?: string
           official_level?: number | null
           official_level_confidence?: string | null
@@ -4494,8 +4487,6 @@ export type Database = {
           proposed_what_covered?: string | null
           proposed_who_for?: string | null
           provider_id?: string
-          report_generated_at?: string | null
-          report_pdf_path?: string | null
           reps_qual_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
