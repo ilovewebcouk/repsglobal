@@ -1,0 +1,1 @@
+ALTER TABLE public.certificate_batches ADD COLUMN IF NOT EXISTS printed_by uuid;
