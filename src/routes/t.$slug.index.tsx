@@ -422,7 +422,7 @@ function ProviderProfilePage() {
             />
             <TrustTile
               icon={<Sparkles className="h-4 w-4" strokeWidth={2} />}
-              title="CPD tracking"
+              title="Course tracking"
               sub="Coming soon"
               muted
             />
@@ -465,7 +465,7 @@ function ProviderProfilePage() {
                 </div>
               </article>
 
-              {/* CPD moved into #accreditations below */}
+              {/* Courses moved into #accreditations below */}
 
               {/* Verified Professionals Trained */}
               <article
@@ -910,7 +910,7 @@ function ProviderProfilePage() {
 function StickyNav() {
   const items = [
     { id: "about", label: "About" },
-    { id: "accreditations", label: "Accreditations & CPD" },
+    { id: "accreditations", label: "Qualifications & Courses" },
     { id: "verified-pros", label: "Verified Pros" },
     { id: "reviews", label: "Reviews" },
     { id: "locations", label: "Locations" },
