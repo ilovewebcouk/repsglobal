@@ -10,7 +10,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  *  - Provider name changes: `provider_name_requests` (pending)
  *  - Provider domain changes: `provider_domain_verifications` (pending_admin_review)
  *  - Provider regulated qualifications: `provider_regulated_permissions` (submitted)
- *  - Provider CPD accreditation: `cpd_courses` (submitted)
+ *  - Provider REPS-accredited courses: `reps_courses` (submitted | ai_drafted)
  *
  * Powers the sidebar badge on /admin/verification and the admin slice of the
  * NotificationsBell.
@@ -31,7 +31,7 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         provider_names: 0,
         provider_domains: 0,
         provider_regulated: 0,
-        provider_cpd: 0,
+        provider_courses: 0,
         items: [],
       };
 
@@ -43,7 +43,7 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
       { count: nameCount },
       { count: domainCount },
       { count: regulatedCount },
-      { count: cpdCount },
+      { count: coursesCount },
     ] = await Promise.all([
       supabaseAdmin
         .from("verification_submissions")
@@ -72,9 +72,9 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         .select("id", { count: "exact", head: true })
         .eq("status", "submitted"),
       supabaseAdmin
-        .from("cpd_courses")
+        .from("reps_courses")
         .select("id", { count: "exact", head: true })
-        .eq("status", "submitted"),
+        .in("status", ["submitted", "ai_drafted"]),
     ]);
 
     const proIds = Array.from(
@@ -99,7 +99,6 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         if (n) nameById.set(p.id, n);
       }
     }
-
 
     type Item = {
       key: string;
@@ -147,7 +146,7 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
     const provider_names = nameCount ?? 0;
     const provider_domains = domainCount ?? 0;
     const provider_regulated = regulatedCount ?? 0;
-    const provider_cpd = cpdCount ?? 0;
+    const provider_courses = coursesCount ?? 0;
 
     return {
       total:
@@ -156,13 +155,13 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         provider_names +
         provider_domains +
         provider_regulated +
-        provider_cpd,
+        provider_courses,
       qualifications,
       insurance,
       provider_names,
       provider_domains,
       provider_regulated,
-      provider_cpd,
+      provider_courses,
       items: items.slice(0, 20),
     };
   });

@@ -1,15 +1,17 @@
 /**
- * Provider Qualifications & CPD — server functions
+ * Provider Qualifications & REPS-accredited courses — server functions.
  *
  * Two flows, one file:
- *  1. Regulated permission (provider proves they're approved to deliver an
- *     Ofqual-regulated qualification via EQA report / centre certificate /
- *     approval letter).
- *  2. CPD accreditation (REPS accredits the provider's own CPD course based
- *     on syllabus + assessment criteria + tutor CV).
+ *  1. Regulated permission — provider proves they're approved to deliver an
+ *     Ofqual-regulated qualification (EQA report / centre certificate /
+ *     approval letter). REPS's role is to verify the evidence.
+ *  2. REPS course accreditation — provider submits syllabus + assessment
+ *     criteria + tutor CV; AI drafts the full public spec (title, level,
+ *     learning outcomes, GLH, delivery mode, etc.); a REPS admin reviews,
+ *     edits and publishes. On approval the row gets a globally-unique
+ *     `REPS-QUAL-NNNNNN` number and the spec is what the public sees.
  *
- * Every submission runs a Lovable AI extraction pass. Failure is non-fatal:
- * the row lands with ai_verdict='inconclusive' and admin still reviews.
+ * The admin is the awarding body. Providers propose; REPS decides.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -64,21 +66,38 @@ export type RegulatedPermissionRow = {
   withdrawn_reason: string | null;
 };
 
-export type CpdCourseRow = {
+export type RepsCourseStatus =
+  | "submitted"
+  | "ai_drafted"
+  | "changes_requested"
+  | "approved"
+  | "rejected"
+  | "withdrawn";
+
+/** A REPS-accredited course, as seen by the provider dashboard. */
+export type RepsCourseRow = {
   id: string;
   provider_id: string;
-  title: string;
-  level: number | null;
-  hours: number | null;
-  delivery_mode: "in_person" | "online" | "blended" | null;
-  summary: string | null;
-  syllabus_doc_path: string | null;
-  assessment_criteria_doc_path: string | null;
-  tutor_cv_doc_path: string | null;
+  proposed_title: string;
+  syllabus_doc_path: string;
+  assessment_criteria_doc_path: string;
+  tutor_cv_doc_path: string;
   ai_verdict: "recommend_approve" | "flagged" | "inconclusive" | null;
   ai_red_flags: string[];
-  status: "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
-  reps_cpd_number: string | null;
+  ai_drafted_at: string | null;
+  official_title: string | null;
+  official_level: number | null;
+  reps_qual_number: string | null;
+  spec_who_for: string | null;
+  spec_learning_outcomes: string[] | null;
+  spec_how_youll_study: string | null;
+  spec_how_youre_assessed: string | null;
+  spec_prerequisites: string | null;
+  spec_guided_learning_hours: number | null;
+  spec_total_qualification_time: number | null;
+  spec_delivery_mode: "in_person" | "online" | "blended" | null;
+  spec_published_at: string | null;
+  status: RepsCourseStatus;
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
@@ -106,9 +125,8 @@ export const listQualifications = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-
 // ─────────────────────────────────────────────────────────────────────────────
-// Ofqual resolve (called by the provider dashboard as they type the number)
+// Ofqual resolve
 
 export const resolveOfqualNumber = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -138,19 +156,8 @@ export const resolveOfqualNumber = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Provider — regulated permission submission (Ofqual-number-first)
+// Provider guard
 
-const submitRegulatedInput = z.object({
-  ofqual_number: z.string().min(1).max(20),
-  evidence_type: z.enum(["eqa_report", "centre_certificate", "approval_letter"]),
-  evidence_doc_paths: z.array(z.string().min(1)).min(1).max(5),
-  awarding_body_reference: z.string().max(120).optional().nullable(),
-});
-
-// Gate: training PROVIDERS (organisations) must set a trading name
-// (profiles.full_name) before they can submit regulated qualifications
-// or CPD courses — otherwise the admin queue can't identify them.
-// Individual trainers submitting their own qualifications are exempt.
 async function assertProviderHasTradingName(supabase: any, userId: string) {
   const { data: pro } = await supabase
     .from("professionals")
@@ -168,35 +175,39 @@ async function assertProviderHasTradingName(supabase: any, userId: string) {
   const name = (data?.full_name as string | null | undefined)?.trim();
   if (!name) {
     throw new Error(
-      "Set your trading name on your Verification page before submitting qualifications or CPD.",
+      "Set your trading name on your Verification page before submitting qualifications or courses.",
     );
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Regulated permissions — submit / list / remove
+
+const submitRegulatedInput = z.object({
+  ofqual_number: z.string().min(1).max(20),
+  evidence_type: z.enum(["eqa_report", "centre_certificate", "approval_letter"]),
+  evidence_doc_paths: z.array(z.string().min(1)).min(1).max(5),
+  awarding_body_reference: z.string().max(120).optional().nullable(),
+});
 
 export const submitRegulatedPermission = createServerFn({ method: "POST" })
-
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => submitRegulatedInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertProviderHasTradingName(supabase, userId);
 
-
-
     const ofqualNumber = data.ofqual_number.trim().toUpperCase();
     if (!OFQUAL_QUAL_NO_REGEX.test(ofqualNumber)) {
       throw new Error("Ofqual qualification number must look like 601/3866/X");
     }
 
-    // Ownership: every doc must be under the caller's storage folder
     for (const p of data.evidence_doc_paths) {
       if (!p.startsWith(`${userId}/`)) {
         throw new Error("Forbidden: doc path does not belong to you");
       }
     }
 
-    // Snapshot the Ofqual register at submit time
     const { lookupOfqualQualification } = await import("@/lib/cpd/ofqual.server");
     const lookup = await lookupOfqualQualification(ofqualNumber);
     const snapshot = lookup.record
@@ -209,7 +220,6 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
         }
       : null;
 
-    // Ensure a professional row exists
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     const { data: row, error } = await supabase
@@ -227,7 +237,6 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    // Kick off AI extraction (non-blocking; fails soft)
     try {
       await runRegulatedAiExtraction(row!.id);
     } catch (e) {
@@ -237,9 +246,6 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
     return row;
   });
 
-// Batch: submit several Ofqual numbers sharing the same evidence documents.
-// One EQA report or approval letter usually covers multiple qualifications;
-// this creates one row per number, all tied together by submission_group_id.
 const submitRegulatedBatchInput = z.object({
   ofqual_numbers: z.array(z.string().min(1).max(20)).min(1).max(10),
   evidence_type: z.enum(["eqa_report", "centre_certificate", "approval_letter"]),
@@ -254,16 +260,12 @@ export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertProviderHasTradingName(supabase, userId);
 
-
-
-    // Ownership: every doc must be under the caller's storage folder.
     for (const p of data.evidence_doc_paths) {
       if (!p.startsWith(`${userId}/`)) {
         throw new Error("Forbidden: doc path does not belong to you");
       }
     }
 
-    // Normalise + dedupe + validate format.
     const numbers = Array.from(
       new Set(data.ofqual_numbers.map((n) => n.trim().toUpperCase()).filter(Boolean)),
     );
@@ -310,7 +312,6 @@ export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
       insertedIds.push(row!.id);
     }
 
-    // Kick off AI extraction per row (non-blocking; fails soft).
     for (const id of insertedIds) {
       try {
         await runRegulatedAiExtraction(id);
@@ -357,13 +358,12 @@ export const removeMyRegulatedPermission = createServerFn({ method: "POST" })
       .maybeSingle();
     if (readErr) throw new Error(readErr.message);
     if (!row) throw new Error("Not found");
-    if (row.provider_id !== userId) throw new Error("Forbidden");
+    if ((row as { provider_id: string }).provider_id !== userId) throw new Error("Forbidden");
 
-    if (row.status === "withdrawn") {
-      return { mode: "withdrawn" as const };
-    }
+    const rowStatus = (row as { status: string }).status;
+    if (rowStatus === "withdrawn") return { mode: "withdrawn" as const };
 
-    if (row.status === "approved") {
+    if (rowStatus === "approved") {
       const { error } = await supabase
         .from("provider_regulated_permissions")
         .update({
@@ -371,23 +371,21 @@ export const removeMyRegulatedPermission = createServerFn({ method: "POST" })
           withdrawn_at: new Date().toISOString(),
           withdrawn_reason: data.reason?.trim() || null,
         } as never)
-        .eq("id", row.id)
+        .eq("id", (row as { id: string }).id)
         .eq("provider_id", userId);
       if (error) throw new Error(error.message);
       return { mode: "withdrawn" as const };
     }
 
-    // submitted | changes_requested | rejected -> hard delete
     const { error } = await supabase
       .from("provider_regulated_permissions")
       .delete()
-      .eq("id", row.id)
+      .eq("id", (row as { id: string }).id)
       .eq("provider_id", userId);
     if (error) throw new Error(error.message);
 
-    // Best-effort: remove uploaded evidence docs from storage.
     try {
-      const paths = (row.evidence_doc_paths ?? []).filter(
+      const paths = ((row as { evidence_doc_paths: string[] }).evidence_doc_paths ?? []).filter(
         (p: string) => typeof p === "string" && p.startsWith(`${userId}/`),
       );
       if (paths.length > 0) {
@@ -400,33 +398,30 @@ export const removeMyRegulatedPermission = createServerFn({ method: "POST" })
     return { mode: "deleted" as const };
   });
 
-// Back-compat alias for older imports.
 export const deleteMyRegulatedPermission = removeMyRegulatedPermission;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Provider — CPD courses
+// REPS-accredited courses — submit / list / remove
 
-const submitCpdInput = z.object({
-  title: z.string().min(3).max(160),
-  level: z.number().int().min(1).max(7).optional().nullable(),
-  hours: z.number().min(0.5).max(500).optional().nullable(),
-  delivery_mode: z.enum(["in_person", "online", "blended"]).optional().nullable(),
-  summary: z.string().max(1500).optional().nullable(),
+const submitRepsCourseInput = z.object({
+  proposed_title: z.string().min(3).max(200),
   syllabus_doc_path: z.string().min(1),
   assessment_criteria_doc_path: z.string().min(1),
   tutor_cv_doc_path: z.string().min(1),
 });
 
-export const submitCpdCourse = createServerFn({ method: "POST" })
+export const submitRepsCourse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => submitCpdInput.parse(d))
+  .inputValidator((d: unknown) => submitRepsCourseInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertProviderHasTradingName(supabase, userId);
 
-
-
-    for (const p of [data.syllabus_doc_path, data.assessment_criteria_doc_path, data.tutor_cv_doc_path]) {
+    for (const p of [
+      data.syllabus_doc_path,
+      data.assessment_criteria_doc_path,
+      data.tutor_cv_doc_path,
+    ]) {
       if (!p.startsWith(`${userId}/`)) {
         throw new Error("Forbidden: doc path does not belong to you");
       }
@@ -435,14 +430,10 @@ export const submitCpdCourse = createServerFn({ method: "POST" })
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     const { data: row, error } = await supabase
-      .from("cpd_courses")
+      .from("reps_courses")
       .insert({
         provider_id: userId,
-        title: data.title,
-        level: data.level ?? null,
-        hours: data.hours ?? null,
-        delivery_mode: data.delivery_mode ?? null,
-        summary: data.summary ?? null,
+        proposed_title: data.proposed_title.trim(),
         syllabus_doc_path: data.syllabus_doc_path,
         assessment_criteria_doc_path: data.assessment_criteria_doc_path,
         tutor_cv_doc_path: data.tutor_cv_doc_path,
@@ -451,31 +442,30 @@ export const submitCpdCourse = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    try {
-      await runCpdAiExtraction(row!.id);
-    } catch (e) {
-      console.error("[AI extraction — CPD] failed", e);
-    }
+    // Fire-and-forget AI drafting — provider polls for the drafted state.
+    void runRepsCourseAiDraft((row as { id: string }).id).catch((e) => {
+      console.error("[AI draft — REPS course] failed", e);
+    });
 
     return row;
   });
 
-export const listMyCpdCourses = createServerFn({ method: "GET" })
+export const listMyRepsCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
-      .from("cpd_courses")
+      .from("reps_courses")
       .select(
-        "id, provider_id, title, level, hours, delivery_mode, summary, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_verdict, ai_red_flags, status, reps_cpd_number, accredited_at, admin_note, created_at",
+        "id, provider_id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at",
       )
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as CpdCourseRow[];
+    return (data ?? []) as unknown as RepsCourseRow[];
   });
 
-export const removeMyCpdCourse = createServerFn({ method: "POST" })
+export const removeMyRepsCourse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z
@@ -489,61 +479,58 @@ export const removeMyCpdCourse = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
 
     const { data: row, error: readErr } = await supabase
-      .from("cpd_courses")
+      .from("reps_courses")
       .select("id, provider_id, status, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path")
       .eq("id", data.id)
       .maybeSingle();
     if (readErr) throw new Error(readErr.message);
     if (!row) throw new Error("Not found");
-    if (row.provider_id !== userId) throw new Error("Forbidden");
+    const r = row as {
+      id: string;
+      provider_id: string;
+      status: string;
+      syllabus_doc_path: string;
+      assessment_criteria_doc_path: string;
+      tutor_cv_doc_path: string;
+    };
+    if (r.provider_id !== userId) throw new Error("Forbidden");
 
-    if (row.status === "withdrawn") {
-      return { mode: "withdrawn" as const };
-    }
+    if (r.status === "withdrawn") return { mode: "withdrawn" as const };
 
-    if (row.status === "approved") {
+    if (r.status === "approved") {
       const { error } = await supabase
-        .from("cpd_courses")
+        .from("reps_courses")
         .update({
           status: "withdrawn",
           withdrawn_at: new Date().toISOString(),
           withdrawn_reason: data.reason?.trim() || null,
         } as never)
-        .eq("id", row.id)
+        .eq("id", r.id)
         .eq("provider_id", userId);
       if (error) throw new Error(error.message);
       return { mode: "withdrawn" as const };
     }
 
-    // submitted | rejected | changes_requested -> hard delete
     const { error } = await supabase
-      .from("cpd_courses")
+      .from("reps_courses")
       .delete()
-      .eq("id", row.id)
+      .eq("id", r.id)
       .eq("provider_id", userId);
     if (error) throw new Error(error.message);
 
-    // Best-effort: remove uploaded certificate docs from storage.
     try {
-      const paths = [
-        row.syllabus_doc_path,
-        row.assessment_criteria_doc_path,
-        row.tutor_cv_doc_path,
-      ].filter(
+      const paths = [r.syllabus_doc_path, r.assessment_criteria_doc_path, r.tutor_cv_doc_path].filter(
         (p): p is string => typeof p === "string" && p.startsWith(`${userId}/`),
       );
       if (paths.length > 0) {
         await supabase.storage.from("verification-docs").remove(paths);
       }
     } catch (e) {
-      console.error("[removeMyCpdCourse] storage cleanup failed", e);
+      console.error("[removeMyRepsCourse] storage cleanup failed", e);
     }
 
     return { mode: "deleted" as const };
   });
-
-// Back-compat alias for older imports.
-export const deleteMyCpdCourse = removeMyCpdCourse;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Admin queues
@@ -574,18 +561,24 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
     return await hydrateProviderNames(rows ?? [], supabaseAdmin);
   });
 
-export const adminListCpdQueue = createServerFn({ method: "GET" })
+export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ status: z.enum(["submitted", "approved", "rejected", "changes_requested", "withdrawn"]).default("submitted") }).parse(d ?? {}),
+    z
+      .object({
+        status: z
+          .enum(["submitted", "ai_drafted", "changes_requested", "approved", "rejected", "withdrawn"])
+          .default("submitted"),
+      })
+      .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.realUserId ?? context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
-      .from("cpd_courses")
+      .from("reps_courses")
       .select(
-        "id, provider_id, title, level, hours, delivery_mode, summary, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_extraction, ai_verdict, ai_red_flags, status, reps_cpd_number, accredited_at, admin_note, created_at, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        "id, provider_id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_draft, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });
@@ -593,21 +586,15 @@ export const adminListCpdQueue = createServerFn({ method: "GET" })
     return await hydrateProviderNames(rows ?? [], supabaseAdmin);
   });
 
-// Provider display name comes from ONE column: profiles.full_name.
-// The joined `provider.legal_entity_name` field is overwritten with this
-// value so downstream UI keeps its existing shape, but the read path no
-// longer falls back through identity_verified_name / full_name /
-// full_name — those aren't the provider's public trading name.
-async function hydrateProviderNames<T extends { provider?: { id?: string | null; legal_entity_name?: string | null; identity_verified_name?: string | null } | null }>(
-  rows: T[],
-  supabaseAdmin: any,
-): Promise<T[]> {
+async function hydrateProviderNames<
+  T extends {
+    provider?:
+      | { id?: string | null; legal_entity_name?: string | null; identity_verified_name?: string | null }
+      | null;
+  },
+>(rows: T[], supabaseAdmin: any): Promise<T[]> {
   const ids = Array.from(
-    new Set(
-      rows
-        .map((r) => r.provider?.id)
-        .filter((id): id is string => Boolean(id)),
-    ),
+    new Set(rows.map((r) => r.provider?.id).filter((id): id is string => Boolean(id))),
   );
   if (ids.length === 0) return rows;
   const { data: profs } = await supabaseAdmin
@@ -615,20 +602,16 @@ async function hydrateProviderNames<T extends { provider?: { id?: string | null;
     .select("id, full_name")
     .in("id", ids);
   const nameById = new Map<string, string>();
-  for (const p of ((profs as Array<{ id: string; full_name: string | null }> | null) ?? [])) {
+  for (const p of (profs as Array<{ id: string; full_name: string | null }> | null) ?? []) {
     const n = p.full_name?.trim();
     if (n) nameById.set(p.id, n);
   }
   return rows.map((r) => {
     if (!r.provider?.id) return r;
     const n = nameById.get(r.provider.id);
-    // Always prefer full_name (the provider-editable trading name) over
-    // whatever legal_entity_name/identity_verified_name were stored.
     return { ...r, provider: { ...r.provider, legal_entity_name: n ?? null, identity_verified_name: null } };
   });
 }
-
-
 
 export const adminDecideRegulated = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -660,7 +643,47 @@ export const adminDecideRegulated = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const adminDecideCpd = createServerFn({ method: "POST" })
+// Admin edits the spec fields (typically after AI drafting, before approval).
+const specInput = z.object({
+  id: z.string().uuid(),
+  official_title: z.string().min(3).max(200).nullable(),
+  official_level: z.number().int().min(1).max(7).nullable(),
+  spec_who_for: z.string().max(2000).nullable(),
+  spec_learning_outcomes: z.array(z.string().min(1).max(500)).max(30).nullable(),
+  spec_how_youll_study: z.string().max(2000).nullable(),
+  spec_how_youre_assessed: z.string().max(2000).nullable(),
+  spec_prerequisites: z.string().max(1000).nullable(),
+  spec_guided_learning_hours: z.number().min(0).max(1000).nullable(),
+  spec_total_qualification_time: z.number().min(0).max(2000).nullable(),
+  spec_delivery_mode: z.enum(["in_person", "online", "blended"]).nullable(),
+});
+
+export const adminSaveRepsCourseSpec = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => specInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.realUserId ?? context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("reps_courses")
+      .update({
+        official_title: data.official_title,
+        official_level: data.official_level,
+        spec_who_for: data.spec_who_for,
+        spec_learning_outcomes: data.spec_learning_outcomes as never,
+        spec_how_youll_study: data.spec_how_youll_study,
+        spec_how_youre_assessed: data.spec_how_youre_assessed,
+        spec_prerequisites: data.spec_prerequisites,
+        spec_guided_learning_hours: data.spec_guided_learning_hours,
+        spec_total_qualification_time: data.spec_total_qualification_time,
+        spec_delivery_mode: data.spec_delivery_mode,
+      } as never)
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminDecideRepsCourse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z
@@ -678,7 +701,7 @@ export const adminDecideCpd = createServerFn({ method: "POST" })
       throw new Error("Admin note required when rejecting or requesting changes");
     }
     const { error } = await supabaseAdmin
-      .from("cpd_courses")
+      .from("reps_courses")
       .update({
         status: data.decision,
         admin_note: data.admin_note?.trim() || null,
@@ -690,85 +713,179 @@ export const adminDecideCpd = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// Redraft with AI (admin can rerun after provider re-uploads better docs).
+export const adminRedraftRepsCourse = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.realUserId ?? context.userId);
+    await runRepsCourseAiDraft(data.id, { overwrite: true });
+    return { ok: true };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Doc access (signed URLs)
+
+export const getQualificationDocSignedUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ path: z.string().min(1) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const isOwn = data.path.startsWith(`${userId}/`);
+    if (!isOwn) {
+      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (!isAdmin) throw new Error("Forbidden");
+    }
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("verification-docs")
+      .createSignedUrl(data.path, 60 * 10);
+    if (error || !signed) throw new Error(error?.message ?? "Sign failed");
+    return { url: signed.signedUrl };
+  });
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Public — approved rows for /t/$slug
 
-export const getProviderQualificationsForProfile = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ provider_id: z.string().uuid() }).parse(d))
-  .handler(async ({ data }) => {
+export type PublicProviderRegulatedRow = {
+  id: string;
+  ofqual_number: string | null;
+  ofqual_snapshot: OfqualSnapshot;
+  reps_qualification_number: string | null;
+  spec_who_for: string | null;
+  spec_learning_outcomes: string[] | null;
+  spec_how_youll_study: string | null;
+  spec_how_youre_assessed: string | null;
+  spec_prerequisites: string | null;
+  spec_guided_learning_hours: number | null;
+  spec_total_qualification_time: number | null;
+  qualification: {
+    id: string;
+    title: string;
+    level: number | null;
+    awarding_body_slug: string;
+    ofqual_ref: string | null;
+  } | null;
+};
+
+export type PublicProviderRepsCourseRow = {
+  id: string;
+  official_title: string | null;
+  official_level: number | null;
+  reps_qual_number: string | null;
+  spec_who_for: string | null;
+  spec_learning_outcomes: string[] | null;
+  spec_how_youll_study: string | null;
+  spec_how_youre_assessed: string | null;
+  spec_prerequisites: string | null;
+  spec_guided_learning_hours: number | null;
+  spec_total_qualification_time: number | null;
+  spec_delivery_mode: "in_person" | "online" | "blended" | null;
+  accredited_at: string | null;
+};
+
+export const listPublicProviderQualifications = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ providerId: z.string().uuid() }).parse(d))
+  .handler(async ({ data }): Promise<{
+    regulated: PublicProviderRegulatedRow[];
+    courses: PublicProviderRepsCourseRow[];
+    reps_member_id: string | null;
+  }> => {
     const { createClient } = await import("@supabase/supabase-js");
     const supabase = createClient(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_PUBLISHABLE_KEY!,
       { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
     );
-    const [reg, cpd] = await Promise.all([
+
+    const [reg, courses, pro] = await Promise.all([
       supabase
         .from("provider_regulated_permissions")
-        .select("id, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)")
-        .eq("provider_id", data.provider_id)
+        .select(
+          "id, ofqual_number, ofqual_snapshot, reps_qualification_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
+        )
+        .eq("provider_id", data.providerId)
         .eq("status", "approved"),
       supabase
-        .from("cpd_courses")
-        .select("id, title, level, hours, delivery_mode, summary, reps_cpd_number, accredited_at")
-        .eq("provider_id", data.provider_id)
+        .from("reps_courses")
+        .select(
+          "id, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, accredited_at",
+        )
+        .eq("provider_id", data.providerId)
         .eq("status", "approved")
         .order("accredited_at", { ascending: false }),
+      supabase
+        .from("professionals")
+        .select("reps_member_id")
+        .eq("id", data.providerId)
+        .maybeSingle(),
     ]);
-    if (reg.error) throw new Error(reg.error.message);
-    if (cpd.error) throw new Error(cpd.error.message);
+
     return {
-      regulated: (reg.data ?? []) as unknown as Array<{
-        id: string;
-        qualification: {
-          id: string;
-          title: string;
-          level: number | null;
-          awarding_body_slug: string;
-          ofqual_ref: string | null;
-        } | null;
-      }>,
-      cpd: cpd.data ?? [],
+      regulated: ((reg.data ?? []) as unknown) as PublicProviderRegulatedRow[],
+      courses: ((courses.data ?? []) as unknown) as PublicProviderRepsCourseRow[],
+      reps_member_id:
+        (pro.data as { reps_member_id?: string | null } | null)?.reps_member_id ?? null,
     };
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AI extraction (Lovable AI Gateway, gemini-2.5-pro)
+// AI drafting
 
 const REGULATED_SYSTEM = `You are an evidence reviewer for REPS, a professional register for fitness training providers. You inspect one PDF/image of provider evidence — an EQA report, centre approval certificate, or approval letter — and extract structured fields. Return ONLY valid JSON. Do not fabricate. If a field is not visible in the document, return null (or an empty array). Do not guess.
 
 Fields:
 - document_type: "eqa_report" | "centre_certificate" | "approval_letter" | "other"
-- awarding_body_detected: canonical awarding body name if visible (e.g. Active IQ, Focus Awards, YMCA Awards, NCFE, VTCT, Innovate Awarding, TQUK, 1st4sport, Pearson, City & Guilds), or the name as it appears on the document
-- centre_name_detected: the approved centre name as it appears on the document (this is the training provider being approved)
+- awarding_body_detected: canonical awarding body name if visible
+- centre_name_detected: the approved centre name as it appears on the document
 - centre_number_detected: the awarding body's centre number for that provider, if quoted
 - approval_status: "approved" | "suspended" | "withdrawn" | "unclear"
-- qualifications_listed: array of {title, ofqual_ref_if_visible}, listing every regulated qualification the document says this centre is approved to deliver
-- issue_date: YYYY-MM-DD if visible (report date or letter date)
-- expiry_date: YYYY-MM-DD if visible (expiry of approval, or next EQA visit / next review date)
+- qualifications_listed: array of {title, ofqual_ref_if_visible}
+- issue_date: YYYY-MM-DD if visible
+- expiry_date: YYYY-MM-DD if visible
 - eqa_name: External Quality Assurer's name if visible
 - signatory_name
 - signatory_role
 - confidence: 0..1 overall
-- red_flags: array of short strings such as "no letterhead", "expired", "template mismatch", "unreadable", "wrong document type", "centre_number_missing", "no dates present"`;
+- red_flags: array of short strings`;
 
-const CPD_SYSTEM = `You are a CPD accreditation reviewer for REPS. The provider is requesting REPS accreditation for a fitness/coaching CPD course. You inspect three uploaded files (syllabus, assessment criteria, tutor CV — you receive them in this order) and extract structured fields. Return ONLY valid JSON. Do not fabricate.
+const REPS_COURSE_SYSTEM = `You are the accreditation reviewer for REPS, a global register of exercise professionals. A provider has submitted a course for REPS accreditation, with three PDFs (in order): syllabus, assessment criteria, tutor CV. You must draft the same fields Ofqual publishes for a regulated qualification — REPS is the awarding body here, and the admin will edit and publish your draft as the public specification.
 
-Fields:
-- syllabus: {learning_outcomes: string[], total_hours: number|null, delivery_mode: "in_person"|"online"|"blended"|null, has_assessment_reference: boolean}
-- assessment: {assessment_methods: string[], pass_criteria: string|null, grading_rubric_present: boolean}
-- tutor: {name: string|null, highest_qualification_level: number|null, qualification_titles: string[], years_experience: number|null, domain_match_to_syllabus: boolean}
-- confidence: 0..1 overall
-- red_flags: array such as "file mislabelled", "tutor under-qualified", "missing assessment method", "syllabus too thin", "no learning outcomes"`;
+Only use facts present in the supplied documents. Never invent hours, learning outcomes, tutor credentials, or content. British English. No exclamation marks, no marketing jargon.
 
-async function callGemini(system: string, parts: Array<{ text?: string } | { image_url: { url: string } }>): Promise<{ verdict: "recommend_approve" | "flagged" | "inconclusive"; red_flags: string[]; raw: unknown } | null> {
+Return ONLY valid JSON with this exact shape:
+{
+  "official_title": string,                       // Clean, formal title. Prefer sentence case with proper nouns. e.g. "REPS Level 3 Kettlebell Coach". If the provider's working title is fine, keep it.
+  "official_level": number,                       // 1 to 7. Match learning depth: Lvl 2 = supporting, Lvl 3 = independent instructor, Lvl 4 = specialist/exercise referral, Lvl 5 = advanced specialist, Lvl 6 = degree-equivalent, Lvl 7 = postgraduate-equivalent.
+  "spec_who_for": string,                          // "This course is for..." — 2-4 sentences.
+  "spec_learning_outcomes": string[],              // 5-10 statements starting "On completion, learners will..." — one outcome per string.
+  "spec_how_youll_study": string,                  // Narrative combining hours, delivery mode, and structure. 2-4 sentences.
+  "spec_how_youre_assessed": string,               // Assessment methods and pass criteria, from the assessment doc. 2-4 sentences.
+  "spec_prerequisites": string,                    // What learners must hold or be able to do beforehand. Empty string if none.
+  "spec_guided_learning_hours": number,            // GLH — tutor-led hours only. 0 if not stated.
+  "spec_total_qualification_time": number,         // TQT — all learner time including self-study. 0 if not stated.
+  "spec_delivery_mode": "in_person" | "online" | "blended",
+  "verdict": "recommend_approve" | "flagged" | "inconclusive",
+  "red_flags": string[],                           // Concerns the admin must resolve before approving.
+  "reviewer_notes": string                         // 1-3 sentences summarising what you found and any concerns.
+}
+
+Length rules (enforce yourself — the schema does NOT):
+- Each learning outcome ≤ 200 chars.
+- Long-text fields ≤ 1500 chars.
+- If a document is thin/missing/unreadable, set verdict = "inconclusive" and list the gap in red_flags.`;
+
+async function callGemini(
+  system: string,
+  parts: Array<{ text?: string } | { image_url: { url: string } }>,
+): Promise<{ raw: Record<string, unknown>; text: string } | null> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) return null;
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: "google/gemini-2.5-pro",
+      model: "google/gemini-3-flash-preview",
       messages: [
         { role: "system", content: system },
         {
@@ -791,23 +908,12 @@ async function callGemini(system: string, parts: Array<{ text?: string } | { ima
     return null;
   }
   const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const content = json.choices?.[0]?.message?.content;
-  if (!content) return null;
-  let parsed: Record<string, unknown>;
+  const content = json.choices?.[0]?.message?.content ?? "";
   try {
-    parsed = JSON.parse(content);
+    return { raw: JSON.parse(content) as Record<string, unknown>, text: content };
   } catch {
     return null;
   }
-  const redFlags = Array.isArray(parsed.red_flags) ? (parsed.red_flags as string[]) : [];
-  const confidence = typeof parsed.confidence === "number" ? (parsed.confidence as number) : 0.5;
-  const verdict: "recommend_approve" | "flagged" | "inconclusive" =
-    redFlags.length > 0 || confidence < 0.6
-      ? "flagged"
-      : confidence >= 0.85
-        ? "recommend_approve"
-        : "inconclusive";
-  return { verdict, red_flags: redFlags, raw: parsed };
 }
 
 async function signedUrlFor(path: string): Promise<string | null> {
@@ -818,6 +924,30 @@ async function signedUrlFor(path: string): Promise<string | null> {
   if (error || !data) return null;
   return data.signedUrl;
 }
+
+// Clamp helpers — AI is prompted with limits but we still enforce in code.
+const clampStr = (v: unknown, max: number): string | null => {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return s ? s.slice(0, max) : null;
+};
+const clampNum = (v: unknown, min: number, max: number): number | null => {
+  const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
+  if (!Number.isFinite(n)) return null;
+  return Math.max(min, Math.min(max, n));
+};
+const clampInt = (v: unknown, min: number, max: number): number | null => {
+  const n = clampNum(v, min, max);
+  return n == null ? null : Math.round(n);
+};
+const clampStrArr = (v: unknown, maxItems: number, maxLen: number): string[] | null => {
+  if (!Array.isArray(v)) return null;
+  const out = v
+    .map((x) => clampStr(x, maxLen))
+    .filter((x): x is string => Boolean(x))
+    .slice(0, maxItems);
+  return out.length ? out : null;
+};
 
 async function runRegulatedAiExtraction(id: string): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -875,10 +1005,11 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
     return;
   }
 
-  // Cross-check: awarding body match + qualification listed in doc
   const raw = result.raw as {
     awarding_body_detected?: string | null;
     qualifications_listed?: Array<{ title?: string | null; ofqual_ref_if_visible?: string | null }> | null;
+    confidence?: number | null;
+    red_flags?: string[] | null;
   };
   const norm = (s: string | null | undefined) =>
     (s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
@@ -905,12 +1036,21 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
     qualificationInDoc = hit ? "yes" : "no";
   }
 
+  const redFlags = Array.isArray(raw.red_flags) ? (raw.red_flags as string[]) : [];
+  const confidence = typeof raw.confidence === "number" ? raw.confidence : 0.5;
+  const verdict: "recommend_approve" | "flagged" | "inconclusive" =
+    redFlags.length > 0 || confidence < 0.6
+      ? "flagged"
+      : confidence >= 0.85
+        ? "recommend_approve"
+        : "inconclusive";
+
   await supabaseAdmin
     .from("provider_regulated_permissions")
     .update({
       ai_extraction: result.raw as never,
-      ai_verdict: result.verdict as never,
-      ai_red_flags: result.red_flags as never,
+      ai_verdict: verdict as never,
+      ai_red_flags: redFlags as never,
       ai_cross_check: {
         ofqual_found: r.ofqual_found,
         awarding_body_match: awardingBodyMatch,
@@ -920,145 +1060,91 @@ async function runRegulatedAiExtraction(id: string): Promise<void> {
     .eq("id", id);
 }
 
-async function runCpdAiExtraction(id: string): Promise<void> {
+async function runRepsCourseAiDraft(
+  id: string,
+  options: { overwrite?: boolean } = {},
+): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: row, error } = await supabaseAdmin
-    .from("cpd_courses")
-    .select("id, title, level, hours, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path")
+    .from("reps_courses")
+    .select(
+      "id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, status",
+    )
     .eq("id", id)
     .single();
   if (error || !row) return;
+  const r = row as {
+    id: string;
+    proposed_title: string;
+    syllabus_doc_path: string;
+    assessment_criteria_doc_path: string;
+    tutor_cv_doc_path: string;
+    status: string;
+  };
 
-  const paths = [
-    (row as { syllabus_doc_path: string }).syllabus_doc_path,
-    (row as { assessment_criteria_doc_path: string }).assessment_criteria_doc_path,
-    (row as { tutor_cv_doc_path: string }).tutor_cv_doc_path,
-  ];
   const urls: string[] = [];
-  for (const p of paths) {
+  for (const p of [r.syllabus_doc_path, r.assessment_criteria_doc_path, r.tutor_cv_doc_path]) {
     const u = await signedUrlFor(p);
     if (u) urls.push(u);
   }
   if (urls.length < 3) return;
 
-  const claim = `Course claimed: "${(row as { title: string }).title}", level ${
-    (row as { level: number | null }).level ?? "unspecified"
-  }, ${(row as { hours: number | null }).hours ?? "unspecified"} hours. Files are (in order): syllabus, assessment criteria, tutor CV.`;
-
+  const claim = `Provider's working title: "${r.proposed_title}". Files (in order): syllabus, assessment criteria, tutor CV. Draft the full public specification per the schema.`;
   const parts: Array<{ text?: string } | { image_url: { url: string } }> = [{ text: claim }];
   for (const url of urls) parts.push({ image_url: { url } });
 
-  const result = await callGemini(CPD_SYSTEM, parts);
+  const result = await callGemini(REPS_COURSE_SYSTEM, parts);
   if (!result) {
     await supabaseAdmin
-      .from("cpd_courses")
-      .update({ ai_verdict: "inconclusive", ai_red_flags: [] } as never)
+      .from("reps_courses")
+      .update({
+        ai_verdict: "inconclusive",
+        ai_red_flags: ["AI drafting failed — retry from admin"],
+        status: r.status === "submitted" ? "ai_drafted" : r.status,
+      } as never)
       .eq("id", id);
     return;
   }
-  await supabaseAdmin
-    .from("cpd_courses")
-    .update({
-      ai_extraction: result.raw as never,
-      ai_verdict: result.verdict as never,
-      ai_red_flags: result.red_flags as never,
-    })
-    .eq("id", id);
+
+  const raw = result.raw as Record<string, unknown>;
+  const verdictRaw = typeof raw.verdict === "string" ? raw.verdict : "inconclusive";
+  const verdict =
+    verdictRaw === "recommend_approve" || verdictRaw === "flagged" || verdictRaw === "inconclusive"
+      ? verdictRaw
+      : "inconclusive";
+  const redFlags = clampStrArr(raw.red_flags, 20, 200) ?? [];
+
+  const deliveryRaw = typeof raw.spec_delivery_mode === "string" ? raw.spec_delivery_mode : null;
+  const deliveryMode: "in_person" | "online" | "blended" | null =
+    deliveryRaw === "in_person" || deliveryRaw === "online" || deliveryRaw === "blended"
+      ? deliveryRaw
+      : null;
+
+  // Only overwrite the official/spec fields when the row is a fresh draft or
+  // admin explicitly requested a redraft. Never clobber admin edits.
+  const shouldFillOfficial = options.overwrite || r.status === "submitted";
+
+  const update: Record<string, unknown> = {
+    ai_draft: raw as never,
+    ai_verdict: verdict,
+    ai_red_flags: redFlags,
+    ai_drafted_at: new Date().toISOString(),
+  };
+  if (shouldFillOfficial) {
+    update.official_title = clampStr(raw.official_title, 200) ?? r.proposed_title.slice(0, 200);
+    update.official_level = clampInt(raw.official_level, 1, 7);
+    update.spec_who_for = clampStr(raw.spec_who_for, 2000);
+    update.spec_learning_outcomes = clampStrArr(raw.spec_learning_outcomes, 30, 500);
+    update.spec_how_youll_study = clampStr(raw.spec_how_youll_study, 2000);
+    update.spec_how_youre_assessed = clampStr(raw.spec_how_youre_assessed, 2000);
+    update.spec_prerequisites = clampStr(raw.spec_prerequisites, 1000);
+    update.spec_guided_learning_hours = clampNum(raw.spec_guided_learning_hours, 0, 1000);
+    update.spec_total_qualification_time = clampNum(raw.spec_total_qualification_time, 0, 2000);
+    update.spec_delivery_mode = deliveryMode;
+  }
+  if (r.status === "submitted") {
+    update.status = "ai_drafted";
+  }
+
+  await supabaseAdmin.from("reps_courses").update(update as never).eq("id", id);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Signed URLs for provider viewing their own docs + admin viewing any
-
-export const getQualificationDocSignedUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ path: z.string().min(1) }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const isOwn = data.path.startsWith(`${userId}/`);
-    if (!isOwn) {
-      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-      if (!isAdmin) throw new Error("Forbidden");
-    }
-    const { data: signed, error } = await supabaseAdmin.storage
-      .from("verification-docs")
-      .createSignedUrl(data.path, 60 * 10);
-    if (error || !signed) throw new Error(error?.message ?? "Sign failed");
-    return { url: signed.signedUrl };
-  });
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Public — approved qualifications & CPD for a provider (read-only, anon-safe)
-
-export type PublicProviderRegulatedRow = {
-  id: string;
-  ofqual_number: string | null;
-  ofqual_snapshot: OfqualSnapshot;
-  reps_qualification_number: string | null;
-  // Historic rows may still link to the deprecated catalogue table.
-  qualification: {
-    id: string;
-    title: string;
-    level: number | null;
-    awarding_body_slug: string;
-    ofqual_ref: string | null;
-  } | null;
-};
-
-export type PublicProviderCpdRow = {
-  id: string;
-  title: string;
-  level: number | null;
-  hours: number | null;
-  delivery_mode: "in_person" | "online" | "blended" | null;
-  summary: string | null;
-  reps_cpd_number: string | null;
-  accredited_at: string | null;
-};
-
-export const listPublicProviderQualifications = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) =>
-    z.object({ providerId: z.string().uuid() }).parse(d),
-  )
-  .handler(async ({ data }): Promise<{
-    regulated: PublicProviderRegulatedRow[];
-    cpd: PublicProviderCpdRow[];
-    reps_member_id: string | null;
-  }> => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_PUBLISHABLE_KEY!,
-      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-    );
-
-    const [reg, cpd, pro] = await Promise.all([
-      supabase
-        .from("provider_regulated_permissions")
-        .select(
-          "id, ofqual_number, ofqual_snapshot, reps_qualification_number, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref)",
-        )
-        .eq("provider_id", data.providerId)
-        .eq("status", "approved"),
-      supabase
-        .from("cpd_courses")
-        .select(
-          "id, title, level, hours, delivery_mode, summary, reps_cpd_number, accredited_at",
-        )
-        .eq("provider_id", data.providerId)
-        .eq("status", "approved")
-        .order("accredited_at", { ascending: false }),
-      supabase
-        .from("professionals")
-        .select("reps_member_id")
-        .eq("id", data.providerId)
-        .maybeSingle(),
-    ]);
-
-    return {
-      regulated: ((reg.data ?? []) as unknown) as PublicProviderRegulatedRow[],
-      cpd: ((cpd.data ?? []) as unknown) as PublicProviderCpdRow[],
-      reps_member_id:
-        (pro.data as { reps_member_id?: string | null } | null)?.reps_member_id ?? null,
-    };
-  });

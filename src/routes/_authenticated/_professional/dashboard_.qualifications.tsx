@@ -1,13 +1,12 @@
 /**
  * /dashboard/qualifications — provider qualifications & REPS-accredited courses.
  *
- * Two sub-sections:
- *   A. Regulated qualifications we deliver (Ofqual)
- *      — Pick from catalogue, upload EQA report / centre certificate /
- *        approval letter, admin approves.
- *   B. REPS-accredited courses
- *      — Provider defines their own course, uploads syllabus + assessment
- *        criteria + tutor CV, admin approves, REPS assigns a CPD number.
+ * Two sub-flows behind a single unified list:
+ *   A. Regulated qualifications we deliver (Ofqual) — pick from catalogue,
+ *      upload EQA report / centre certificate / approval letter, admin approves.
+ *   B. REPS-accredited courses — provider uploads syllabus + assessment
+ *      criteria + tutor CV; AI drafts the full spec; admin edits and
+ *      publishes; row gets a global REPS-QUAL-NNNNNN number.
  */
 
 import * as React from "react";
@@ -63,15 +62,15 @@ import { awardingBodyName, awardingBodyLogo, awardingBodyLogoByName, OFQUAL_QUAL
 import { uploadCertificateFile } from "@/lib/cpd/cpd.functions";
 import {
   listMyRegulatedPermissions,
-  listMyCpdCourses,
+  listMyRepsCourses,
   resolveOfqualNumber,
   submitRegulatedPermissionBatch,
-  submitCpdCourse,
+  submitRepsCourse,
   removeMyRegulatedPermission,
-  deleteMyCpdCourse,
+  removeMyRepsCourse,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
-  CpdCourseRow,
+  RepsCourseRow,
   RegulatedPermissionRow,
 } from "@/lib/qualifications/qualifications.functions";
 
@@ -105,18 +104,26 @@ function ProviderQualsPage() {
   const [cpdOpen, setCpdOpen] = React.useState(false);
 
   const fetchMyReg = useServerFn(listMyRegulatedPermissions);
-  const fetchMyCpd = useServerFn(listMyCpdCourses);
+  const fetchMyCourses = useServerFn(listMyRepsCourses);
 
   const regQuery = useQuery({ queryKey: ["my-regulated-permissions"], queryFn: () => fetchMyReg() });
-  const cpdQuery = useQuery({ queryKey: ["my-cpd-courses"], queryFn: () => fetchMyCpd() });
+  const courseQuery = useQuery({
+    queryKey: ["my-reps-courses"],
+    queryFn: () => fetchMyCourses(),
+    // While a course is being AI-drafted we want the UI to catch up quickly.
+    refetchInterval: (q) => {
+      const rows = (q.state.data ?? []) as RepsCourseRow[];
+      return rows.some((r) => r.status === "submitted") ? 4000 : false;
+    },
+  });
 
-  const loading = regQuery.isLoading || cpdQuery.isLoading;
+  const loading = regQuery.isLoading || courseQuery.isLoading;
   const regRows = regQuery.data ?? [];
-  const cpdRows = cpdQuery.data ?? [];
+  const courseRows = courseQuery.data ?? [];
 
   type Merged =
     | { kind: "regulated"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: RegulatedPermissionRow }
-    | { kind: "course"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: CpdCourseRow };
+    | { kind: "course"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: RepsCourseRow };
 
   const merged: Merged[] = React.useMemo(() => {
     const items: Merged[] = [];
@@ -133,13 +140,13 @@ function ProviderQualsPage() {
         row: r,
       });
     }
-    for (const c of cpdRows) {
+    for (const c of courseRows) {
       items.push({
         kind: "course",
         id: c.id,
         withdrawn: c.status === "withdrawn",
-        levelNum: parseLevel(c.level as unknown as number | string | null),
-        title: c.title,
+        levelNum: c.official_level ?? null,
+        title: c.official_title ?? c.proposed_title,
         row: c,
       });
     }
@@ -154,7 +161,7 @@ function ProviderQualsPage() {
       return a.title.localeCompare(b.title);
     });
     return items;
-  }, [regRows, cpdRows]);
+  }, [regRows, courseRows]);
 
   return (
     <DashboardShell
@@ -469,17 +476,20 @@ const EVIDENCE_LABEL: Record<RegulatedPermissionRow["evidence_type"], string> = 
   approval_letter: "Approval letter",
 };
 
-/* ─── CPD ───────────────────────────────────────────────────────────────── */
+/* ─── REPS-accredited course row ─────────────────────────────────────────── */
 
-
-function CpdRow({ row }: { row: CpdCourseRow }) {
+function CpdRow({ row }: { row: RepsCourseRow }) {
   const qc = useQueryClient();
-  const remove = useServerFn(deleteMyCpdCourse);
+  const remove = useServerFn(removeMyRepsCourse);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [reason, setReason] = React.useState("");
 
   const isWithdrawn = row.status === "withdrawn";
   const isApproved = row.status === "approved";
+  const isDrafting = row.status === "submitted";
+
+  const title = row.official_title ?? row.proposed_title;
+  const level = row.official_level;
 
   const mut = useMutation({
     mutationFn: () =>
@@ -488,7 +498,7 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
       toast.success(res?.mode === "withdrawn" ? "Removed from profile" : "Deleted");
       setConfirmOpen(false);
       setReason("");
-      qc.invalidateQueries({ queryKey: ["my-cpd-courses"] });
+      qc.invalidateQueries({ queryKey: ["my-reps-courses"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Remove failed"),
   });
@@ -501,28 +511,28 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-white">{row.title}</span>
-            {row.level != null ? (
-              <Badge className="border-white/15 bg-white/5 text-white/70">L{row.level}</Badge>
+            <span className="font-semibold text-white">{title}</span>
+            {level != null ? (
+              <Badge className="border-white/15 bg-white/5 text-white/70">L{level}</Badge>
             ) : null}
             <StatusBadge status={row.status} />
-            {row.reps_cpd_number ? (
-              <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
-                {row.reps_cpd_number}
+            {row.reps_qual_number ? (
+              <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300 font-mono">
+                {row.reps_qual_number}
               </Badge>
             ) : null}
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-white/55">
-            {row.hours != null ? <span>{row.hours}h</span> : null}
-            {row.delivery_mode ? (
-              <>
-                <span>·</span>
-                <span className="capitalize">{row.delivery_mode.replace("_", " ")}</span>
-              </>
-            ) : null}
-          </div>
-          {row.summary ? (
-            <p className="mt-1.5 line-clamp-2 text-[12.5px] text-white/70">{row.summary}</p>
+          {isDrafting ? (
+            <p className="mt-1.5 text-[12.5px] text-white/60">
+              <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />
+              AI is drafting the specification — usually under a minute.
+            </p>
+          ) : row.status === "ai_drafted" ? (
+            <p className="mt-1.5 text-[12.5px] text-white/60">
+              Draft ready — awaiting REPS review. You'll be notified once it's published.
+            </p>
+          ) : row.spec_who_for ? (
+            <p className="mt-1.5 line-clamp-2 text-[12.5px] text-white/70">{row.spec_who_for}</p>
           ) : null}
           {row.admin_note && !isWithdrawn ? (
             <div className="mt-2 rounded-[10px] border border-amber-500/25 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
@@ -549,17 +559,17 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
             </DialogTitle>
             <DialogDescription>
               {isApproved
-                ? `“${row.title}” will disappear from your public profile immediately. REPs keeps a record for audit purposes.`
+                ? `“${title}” will disappear from your public profile immediately. REPs keeps a record for audit purposes.`
                 : "This cannot be undone. The uploaded evidence will also be deleted."}
             </DialogDescription>
           </DialogHeader>
           {isApproved ? (
             <div className="space-y-2">
-              <Label htmlFor="withdraw-cpd-reason" className="text-[12px] text-white/70">
+              <Label htmlFor="withdraw-course-reason" className="text-[12px] text-white/70">
                 Reason (optional)
               </Label>
               <Textarea
-                id="withdraw-cpd-reason"
+                id="withdraw-course-reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="e.g. Course no longer offered, content retired…"
@@ -569,11 +579,7 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
             </div>
           ) : null}
           <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => setConfirmOpen(false)}
-              disabled={mut.isPending}
-            >
+            <Button variant="ghost" onClick={() => setConfirmOpen(false)} disabled={mut.isPending}>
               Cancel
             </Button>
             <Button
@@ -601,7 +607,11 @@ function CpdRow({ row }: { row: CpdCourseRow }) {
 
 /* ─── Status badge ──────────────────────────────────────────────────────── */
 
-function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
+function StatusBadge({
+  status,
+}: {
+  status: RegulatedPermissionRow["status"] | RepsCourseRow["status"];
+}) {
   if (status === "approved")
     return (
       <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
@@ -609,6 +619,12 @@ function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
       </Badge>
     );
   if (status === "submitted")
+    return (
+      <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
+        <Sparkles className="mr-1 h-3 w-3" /> AI drafting
+      </Badge>
+    );
+  if (status === "ai_drafted")
     return (
       <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
         <Clock className="mr-1 h-3 w-3" /> In review
@@ -621,17 +637,14 @@ function StatusBadge({ status }: { status: RegulatedPermissionRow["status"] }) {
       </Badge>
     );
   if (status === "withdrawn")
-    return (
-      <Badge className="border-white/15 bg-white/5 text-white/60">
-        Withdrawn
-      </Badge>
-    );
+    return <Badge className="border-white/15 bg-white/5 text-white/60">Withdrawn</Badge>;
   return (
     <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">
       <Clock className="mr-1 h-3 w-3" /> Changes requested
     </Badge>
   );
 }
+
 
 /* ─── Add regulated dialog ──────────────────────────────────────────────── */
 
@@ -949,30 +962,21 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
-/* ─── Add CPD dialog ────────────────────────────────────────────────────── */
+/* ─── Add REPS-accredited course dialog ──────────────────────────────────── */
 
 function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const upload = useServerFn(uploadCertificateFile);
-  const submit = useServerFn(submitCpdCourse);
+  const submit = useServerFn(submitRepsCourse);
 
   const [title, setTitle] = React.useState("");
-  const [level, setLevel] = React.useState("");
-  const [hours, setHours] = React.useState("");
-  const [deliveryMode, setDeliveryMode] =
-    React.useState<CpdCourseRow["delivery_mode"] | "">("");
-  const [summary, setSummary] = React.useState("");
   const [syllabusFile, setSyllabusFile] = React.useState<File | null>(null);
   const [assessmentFile, setAssessmentFile] = React.useState<File | null>(null);
   const [tutorCvFile, setTutorCvFile] = React.useState<File | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
   const canSubmit =
-    title.trim().length >= 3 &&
-    syllabusFile &&
-    assessmentFile &&
-    tutorCvFile &&
-    !submitting;
+    title.trim().length >= 3 && syllabusFile && assessmentFile && tutorCvFile && !submitting;
 
   const uploadOne = async (f: File): Promise<string> => {
     const dataUrl = await fileToDataUrl(f);
@@ -984,23 +988,21 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const [syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path] = await Promise.all(
-        [uploadOne(syllabusFile!), uploadOne(assessmentFile!), uploadOne(tutorCvFile!)],
-      );
+      const [syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path] = await Promise.all([
+        uploadOne(syllabusFile!),
+        uploadOne(assessmentFile!),
+        uploadOne(tutorCvFile!),
+      ]);
       await submit({
         data: {
-          title: title.trim(),
-          level: level ? Number(level) : null,
-          hours: hours ? Number(hours) : null,
-          delivery_mode: (deliveryMode || null) as CpdCourseRow["delivery_mode"],
-          summary: summary.trim() || null,
+          proposed_title: title.trim(),
           syllabus_doc_path,
           assessment_criteria_doc_path,
           tutor_cv_doc_path,
         },
       });
-      toast.success("Submitted for accreditation review");
-      qc.invalidateQueries({ queryKey: ["my-cpd-courses"] });
+      toast.success("Submitted — REPS AI is drafting your accreditation spec.");
+      qc.invalidateQueries({ queryKey: ["my-reps-courses"] });
       onClose();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Submission failed");
@@ -1015,69 +1017,37 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
         <DialogHeader>
           <DialogTitle>Request REPS accreditation</DialogTitle>
           <DialogDescription>
-            Submit your course syllabus, assessment criteria and tutor CV. Approved courses receive
-            a REPS accreditation number and the accredited badge.
+            Upload your syllabus, assessment criteria and tutor CV. REPS AI drafts the level,
+            official title and full specification from your documents; a REPS admin reviews and
+            publishes. Approved courses receive a unique <span className="font-mono">REPS-QUAL-</span>
+            number.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
             <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Course title <span className="text-red-300">*</span>
+              Working title <span className="text-red-300">*</span>
             </Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Kettlebell Coach Level 1" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-                Level <span className="text-white/40">(optional)</span>
-              </Label>
-              <Input
-                value={level}
-                onChange={(e) => setLevel(e.target.value.replace(/[^0-9]/g, ""))}
-                placeholder="2, 3, 4…"
-              />
-            </div>
-            <div>
-              <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-                Total hours <span className="text-white/40">(optional)</span>
-              </Label>
-              <Input
-                value={hours}
-                onChange={(e) => setHours(e.target.value.replace(/[^0-9.]/g, ""))}
-                placeholder="12"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">Delivery</Label>
-            <Select
-              value={deliveryMode ?? ""}
-              onValueChange={(v) => setDeliveryMode(v as CpdCourseRow["delivery_mode"])}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select delivery mode…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="in_person">In person</SelectItem>
-                <SelectItem value="online">Online</SelectItem>
-                <SelectItem value="blended">Blended</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Short summary <span className="text-white/40">(optional)</span>
-            </Label>
-            <Textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="Who's it for and what will they be able to do afterwards?"
-              rows={3}
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Kettlebell Coach"
             />
+            <p className="mt-1 text-[11.5px] text-white/45">
+              What you'd call it internally. REPS may refine the wording before publishing.
+            </p>
+          </div>
+
+          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-3 text-[12px] text-emerald-100/85">
+            <div className="flex items-center gap-1.5 font-semibold text-emerald-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              What AI drafts from your documents
+            </div>
+            <p className="mt-1 text-emerald-100/70">
+              Level (1–7), learning outcomes, who it's for, how you'll study, how you're assessed,
+              prerequisites, guided learning hours, total qualification time, delivery mode.
+            </p>
           </div>
 
           <FilePicker
@@ -1092,12 +1062,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             file={assessmentFile}
             onFile={setAssessmentFile}
           />
-          <FilePicker
-            label="Tutor CV"
-            required
-            file={tutorCvFile}
-            onFile={setTutorCvFile}
-          />
+          <FilePicker label="Tutor CV" required file={tutorCvFile} onFile={setTutorCvFile} />
         </div>
 
         <DialogFooter>
@@ -1112,6 +1077,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     </Dialog>
   );
 }
+
 
 function FilePicker({
   label,

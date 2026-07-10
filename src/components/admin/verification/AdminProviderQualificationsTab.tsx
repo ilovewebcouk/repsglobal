@@ -40,9 +40,9 @@ import { TimeAgo } from "@/components/verification/TimeAgo";
 import { absoluteDateTime } from "@/lib/verification/format-time";
 import { awardingBodyName, awardingBodyLogo, awardingBodyLogoByName } from "@/lib/cpd/awarding-bodies";
 import {
-  adminDecideCpd,
+  adminDecideRepsCourse as adminDecideCpd,
   adminDecideRegulated,
-  adminListCpdQueue,
+  adminListRepsCourseQueue as adminListCpdQueue,
   adminListRegulatedQueue,
 } from "@/lib/qualifications/qualifications.functions";
 

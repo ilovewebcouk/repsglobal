@@ -33,7 +33,7 @@ export function useAdminVerificationPending(options: { enabled?: boolean } = {})
       .on("postgres_changes", { event: "*", schema: "public", table: "provider_name_requests" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "provider_domain_verifications" }, () => query.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "provider_regulated_permissions" }, () => query.refetch())
-      .on("postgres_changes", { event: "*", schema: "public", table: "cpd_courses" }, () => query.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "reps_courses" }, () => query.refetch())
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
