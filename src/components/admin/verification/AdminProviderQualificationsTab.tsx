@@ -40,10 +40,12 @@ import { TimeAgo } from "@/components/verification/TimeAgo";
 import { absoluteDateTime } from "@/lib/verification/format-time";
 import { awardingBodyName, awardingBodyLogo, awardingBodyLogoByName } from "@/lib/cpd/awarding-bodies";
 import {
-  adminDecideRepsCourse as adminDecideCpd,
+  adminDecideRepsCourse,
   adminDecideRegulated,
-  adminListRepsCourseQueue as adminListCpdQueue,
+  adminListRepsCourseQueue,
   adminListRegulatedQueue,
+  adminSaveRepsCourseSpec,
+  adminRedraftRepsCourse,
 } from "@/lib/qualifications/qualifications.functions";
 
 import {
@@ -52,11 +54,14 @@ import {
 } from "./QualificationDocDrawer";
 
 type Status = "submitted" | "approved" | "rejected" | "changes_requested" | "withdrawn";
+type CourseStatus = Status | "ai_drafted";
 
 const STATUS_TABS: readonly Status[] = ["submitted", "approved", "rejected", "withdrawn"];
 const REGULATED_STATUS_TABS: readonly Status[] = STATUS_TABS;
-const STATUS_LABEL: Record<Status, string> = {
-  submitted: "Pending",
+const COURSE_STATUS_TABS: readonly CourseStatus[] = ["submitted", "ai_drafted", "approved", "rejected", "withdrawn"];
+const STATUS_LABEL: Record<CourseStatus, string> = {
+  submitted: "New",
+  ai_drafted: "In review",
   changes_requested: "Changes",
   approved: "Approved",
   rejected: "Rejected",
@@ -65,7 +70,7 @@ const STATUS_LABEL: Record<Status, string> = {
 
 export function AdminProviderQualificationsTab() {
   const [tab, setTab] = React.useState<"regulated" | "cpd">("regulated");
-  const [status, setStatus] = React.useState<Status>("submitted");
+  const [status, setStatus] = React.useState<CourseStatus>("submitted");
 
   return (
     <div>
@@ -86,7 +91,7 @@ export function AdminProviderQualificationsTab() {
           ))}
         </div>
         <div className="inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
-          {(tab === "regulated" ? REGULATED_STATUS_TABS : STATUS_TABS).map((s) => (
+          {(tab === "regulated" ? REGULATED_STATUS_TABS : COURSE_STATUS_TABS).map((s) => (
             <button
               key={s}
               onClick={() => setStatus(s)}
@@ -100,7 +105,11 @@ export function AdminProviderQualificationsTab() {
         </div>
       </div>
 
-      {tab === "regulated" ? <RegulatedQueue status={status} /> : <CpdQueue status={status} />}
+      {tab === "regulated" ? (
+        <RegulatedQueue status={status === "ai_drafted" ? "submitted" : status} />
+      ) : (
+        <CpdQueue status={status} />
+      )}
     </div>
   );
 }
@@ -703,22 +712,36 @@ function RegulatedDetail({
    CPD
    ═══════════════════════════════════════════════════════════════════════════ */
 
-type CpdRow = {
+/* ═══════════════════════════════════════════════════════════════════════════
+   REPS-ACCREDITED COURSES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+type DeliveryMode = "in_person" | "online" | "blended";
+
+type CourseRow = {
   id: string;
   provider_id: string;
-  title: string;
-  level: number | null;
-  hours: number | null;
-  delivery_mode: "in_person" | "online" | "blended" | null;
-  summary: string | null;
-  syllabus_doc_path: string | null;
-  assessment_criteria_doc_path: string | null;
-  tutor_cv_doc_path: string | null;
-  ai_extraction: Record<string, unknown> | null;
+  proposed_title: string;
+  syllabus_doc_path: string;
+  assessment_criteria_doc_path: string;
+  tutor_cv_doc_path: string;
+  ai_draft: Record<string, unknown> | null;
   ai_verdict: "recommend_approve" | "flagged" | "inconclusive" | null;
   ai_red_flags: string[];
-  status: Status;
-  reps_cpd_number: string | null;
+  ai_drafted_at: string | null;
+  official_title: string | null;
+  official_level: number | null;
+  reps_qual_number: string | null;
+  spec_who_for: string | null;
+  spec_learning_outcomes: string[] | null;
+  spec_how_youll_study: string | null;
+  spec_how_youre_assessed: string | null;
+  spec_prerequisites: string | null;
+  spec_guided_learning_hours: number | null;
+  spec_total_qualification_time: number | null;
+  spec_delivery_mode: DeliveryMode | null;
+  spec_published_at: string | null;
+  status: CourseStatus;
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
@@ -731,16 +754,16 @@ type CpdRow = {
   } | null;
 };
 
-function CpdQueue({ status }: { status: Status }) {
+function CpdQueue({ status }: { status: CourseStatus }) {
   const qc = useQueryClient();
-  const fetchList = useServerFn(adminListCpdQueue);
+  const fetchList = useServerFn(adminListRepsCourseQueue);
   const listQ = useQuery({
-    queryKey: ["admin-cpd-queue", status],
+    queryKey: ["admin-course-queue", status],
     queryFn: () => fetchList({ data: { status } }),
-    refetchInterval: status === "submitted" ? 30_000 : false,
+    refetchInterval: status === "submitted" || status === "ai_drafted" ? 15_000 : false,
   });
 
-  const rows = (listQ.data ?? []) as unknown as CpdRow[];
+  const rows = (listQ.data ?? []) as unknown as CourseRow[];
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const selected = React.useMemo(
     () => rows.find((r) => r.id === selectedId) ?? rows[0] ?? null,
@@ -764,7 +787,7 @@ function CpdQueue({ status }: { status: Status }) {
             </span>
           </div>
           <p className="mt-0.5 text-[11.5px] text-white/55">
-            Providers submitting their own courses for REPS accreditation.
+            Provider-submitted courses. AI drafts the spec; you review and publish.
           </p>
         </div>
         <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
@@ -777,7 +800,7 @@ function CpdQueue({ status }: { status: Status }) {
             </li>
           )}
           {rows.map((r) => (
-            <CpdListItem
+            <CourseListItem
               key={r.id}
               row={r}
               selected={selected?.id === r.id}
@@ -796,14 +819,14 @@ function CpdQueue({ status }: { status: Status }) {
               </EmptyIcon>
               <EmptyTitle>Select a course submission</EmptyTitle>
               <EmptyDescription>
-                Approve to assign a REPS accreditation number, or reject with a note.
+                Review the AI-drafted spec, edit anything that's wrong, then approve to assign a REPS number.
               </EmptyDescription>
             </Empty>
           </PPanel>
         ) : (
-          <CpdDetail
+          <CourseDetail
             row={selected}
-            onDecided={() => qc.invalidateQueries({ queryKey: ["admin-cpd-queue"] })}
+            onDecided={() => qc.invalidateQueries({ queryKey: ["admin-course-queue"] })}
           />
         )}
       </div>
@@ -811,17 +834,18 @@ function CpdQueue({ status }: { status: Status }) {
   );
 }
 
-function CpdListItem({
+function CourseListItem({
   row,
   selected,
   onSelect,
 }: {
-  row: CpdRow;
+  row: CourseRow;
   selected: boolean;
   onSelect: () => void;
 }) {
   const providerName =
     row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Unnamed provider";
+  const title = row.official_title || row.proposed_title;
   return (
     <li>
       <button
@@ -831,11 +855,16 @@ function CpdListItem({
         }`}
       >
         <div className="truncate text-[13px] font-semibold text-white">{providerName}</div>
-        <div className="mt-0.5 truncate text-[11.5px] text-white/70">{row.title}</div>
-        <div className="mt-0.5 text-[11px] text-white/55">
-          {row.level != null ? `L${row.level}` : "—"}
-          {row.hours != null ? ` · ${row.hours}h` : ""}
-          {row.delivery_mode ? ` · ${row.delivery_mode.replace("_", " ")}` : ""}
+        <div className="mt-0.5 truncate text-[11.5px] text-white/70">{title}</div>
+        <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-white/55">
+          {row.official_level != null ? <span>L{row.official_level}</span> : null}
+          {row.reps_qual_number ? (
+            <span className="text-emerald-300">{row.reps_qual_number}</span>
+          ) : row.status === "ai_drafted" ? (
+            <span className="text-amber-300">AI drafted</span>
+          ) : row.status === "submitted" ? (
+            <span className="text-white/45">AI drafting…</span>
+          ) : null}
         </div>
         <div className="mt-1 text-[10px] text-white/45">
           <TimeAgo iso={row.created_at} className="text-white/45" />
@@ -846,20 +875,88 @@ function CpdListItem({
   );
 }
 
-function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
-  const decide = useServerFn(adminDecideCpd);
+function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => void }) {
+  const decide = useServerFn(adminDecideRepsCourse);
+  const saveSpec = useServerFn(adminSaveRepsCourseSpec);
+  const redraft = useServerFn(adminRedraftRepsCourse);
+
+  // Editable spec state — seeded from row, reset when a different row is selected.
+  const [officialTitle, setOfficialTitle] = React.useState(row.official_title ?? row.proposed_title);
+  const [officialLevel, setOfficialLevel] = React.useState<number | null>(row.official_level);
+  const [whoFor, setWhoFor] = React.useState(row.spec_who_for ?? "");
+  const [outcomes, setOutcomes] = React.useState((row.spec_learning_outcomes ?? []).join("\n"));
+  const [howStudy, setHowStudy] = React.useState(row.spec_how_youll_study ?? "");
+  const [howAssessed, setHowAssessed] = React.useState(row.spec_how_youre_assessed ?? "");
+  const [prereq, setPrereq] = React.useState(row.spec_prerequisites ?? "");
+  const [glh, setGlh] = React.useState<number | null>(row.spec_guided_learning_hours);
+  const [tqt, setTqt] = React.useState<number | null>(row.spec_total_qualification_time);
+  const [delivery, setDelivery] = React.useState<DeliveryMode | null>(row.spec_delivery_mode);
   const [note, setNote] = React.useState("");
-  React.useEffect(() => setNote(""), [row.id]);
+
+  React.useEffect(() => {
+    setOfficialTitle(row.official_title ?? row.proposed_title);
+    setOfficialLevel(row.official_level);
+    setWhoFor(row.spec_who_for ?? "");
+    setOutcomes((row.spec_learning_outcomes ?? []).join("\n"));
+    setHowStudy(row.spec_how_youll_study ?? "");
+    setHowAssessed(row.spec_how_youre_assessed ?? "");
+    setPrereq(row.spec_prerequisites ?? "");
+    setGlh(row.spec_guided_learning_hours);
+    setTqt(row.spec_total_qualification_time);
+    setDelivery(row.spec_delivery_mode);
+    setNote("");
+  }, [row.id]);
+
+  const buildSpecPayload = () => ({
+    id: row.id,
+    official_title: officialTitle.trim() || null,
+    official_level: officialLevel,
+    spec_who_for: whoFor.trim() || null,
+    spec_learning_outcomes:
+      outcomes
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean).length > 0
+        ? outcomes
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : null,
+    spec_how_youll_study: howStudy.trim() || null,
+    spec_how_youre_assessed: howAssessed.trim() || null,
+    spec_prerequisites: prereq.trim() || null,
+    spec_guided_learning_hours: glh,
+    spec_total_qualification_time: tqt,
+    spec_delivery_mode: delivery,
+  });
+
+  const saveMut = useMutation({
+    mutationFn: () => saveSpec({ data: buildSpecPayload() }),
+    onSuccess: () => toast.success("Draft saved"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
+  });
 
   const decideMut = useMutation({
-    mutationFn: (decision: "approved" | "rejected" | "changes_requested") =>
-      decide({ data: { id: row.id, decision, admin_note: note.trim() || null } }),
+    mutationFn: async (decision: "approved" | "rejected" | "changes_requested") => {
+      if (decision === "approved") {
+        await saveSpec({ data: buildSpecPayload() });
+      }
+      return decide({ data: { id: row.id, decision, admin_note: note.trim() || null } });
+    },
     onSuccess: () => {
       toast.success("Decision saved");
-      setNote("");
       onDecided();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Decision failed"),
+  });
+
+  const redraftMut = useMutation({
+    mutationFn: () => redraft({ data: { id: row.id } }),
+    onSuccess: () => {
+      toast.success("Redrafting with AI…");
+      onDecided();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Redraft failed"),
   });
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -873,12 +970,23 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
     row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Unnamed provider";
 
   const allDocs: QualificationDoc[] = [
-    row.syllabus_doc_path ? { path: row.syllabus_doc_path, label: "Syllabus" } : null,
-    row.assessment_criteria_doc_path
-      ? { path: row.assessment_criteria_doc_path, label: "Assessment criteria" }
-      : null,
-    row.tutor_cv_doc_path ? { path: row.tutor_cv_doc_path, label: "Tutor CV" } : null,
-  ].filter((d): d is QualificationDoc => !!d);
+    { path: row.syllabus_doc_path, label: "Syllabus" },
+    { path: row.assessment_criteria_doc_path, label: "Assessment criteria" },
+    { path: row.tutor_cv_doc_path, label: "Tutor CV" },
+  ];
+
+  const specComplete =
+    Boolean(officialTitle.trim()) &&
+    officialLevel != null &&
+    Boolean(whoFor.trim()) &&
+    outcomes.split("\n").map((s) => s.trim()).filter(Boolean).length >= 1 &&
+    Boolean(howStudy.trim()) &&
+    Boolean(howAssessed.trim()) &&
+    glh != null &&
+    tqt != null &&
+    delivery != null;
+
+  const editable = row.status === "submitted" || row.status === "ai_drafted" || row.status === "changes_requested";
 
   return (
     <>
@@ -888,11 +996,12 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
             <span className="rounded-full border border-amber-400/30 bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-amber-300">
               REPS-accredited
             </span>
-            {row.reps_cpd_number ? (
+            {row.reps_qual_number ? (
               <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
-                {row.reps_cpd_number}
+                {row.reps_qual_number}
               </Badge>
             ) : null}
+            <AiVerdictChip verdict={row.ai_verdict} flags={row.ai_red_flags} />
           </div>
           <h3 className="mt-2 text-[15px] font-semibold text-white">{providerName}</h3>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-white/60">
@@ -917,25 +1026,16 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
           </div>
         </div>
 
-        <div className="space-y-4 px-5 py-4">
-          <div>
-            <div className="text-[14px] font-semibold text-white">{row.title}</div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11.5px] text-white/60">
-              {row.level != null ? (
-                <Badge className="border-white/15 bg-white/5 text-white/75">L{row.level}</Badge>
-              ) : null}
-              {row.hours != null ? <span>{row.hours}h</span> : null}
-              {row.delivery_mode ? (
-                <span className="capitalize">{row.delivery_mode.replace("_", " ")}</span>
-              ) : null}
-              <AiVerdictChip verdict={row.ai_verdict} flags={row.ai_red_flags} />
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          {/* LEFT — provider submission + docs + AI signal */}
+          <div className="space-y-4 border-b border-reps-border px-5 py-4 lg:border-b-0 lg:border-r">
+            <div>
+              <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+                Provider's working title
+              </div>
+              <div className="text-[13.5px] text-white/90">{row.proposed_title}</div>
             </div>
-            {row.summary ? (
-              <p className="mt-2 text-[12.5px] text-white/70">{row.summary}</p>
-            ) : null}
-          </div>
 
-          {allDocs.length > 0 ? (
             <div>
               <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
                 Evidence documents
@@ -950,82 +1050,244 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
                     <FileText className="h-3 w-3" /> {d.label}
                   </button>
                 ))}
-                {allDocs.length > 1 ? (
-                  <button
-                    onClick={() => openDocs(allDocs)}
-                    className="inline-flex items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-orange/15 px-2.5 py-1 text-[11.5px] font-semibold text-reps-orange hover:bg-reps-orange/20"
-                  >
-                    Open all
-                  </button>
-                ) : null}
+                <button
+                  onClick={() => openDocs(allDocs)}
+                  className="inline-flex items-center gap-1.5 rounded-[8px] border border-reps-border bg-reps-orange/15 px-2.5 py-1 text-[11.5px] font-semibold text-reps-orange hover:bg-reps-orange/20"
+                >
+                  Open all
+                </button>
               </div>
             </div>
-          ) : null}
 
-          {row.ai_red_flags.length > 0 ? (
-            <div className="rounded-[10px] border border-red-500/30 bg-red-500/10 p-2 text-[11.5px] text-red-200">
-              <span className="font-semibold">AI flags:</span> {row.ai_red_flags.join(" · ")}
+            {row.ai_red_flags.length > 0 ? (
+              <div className="rounded-[10px] border border-red-500/30 bg-red-500/10 p-2.5 text-[11.5px] text-red-200">
+                <div className="mb-1 font-semibold">AI red flags</div>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  {row.ai_red_flags.map((f, i) => (
+                    <li key={i}>{f}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {row.status === "submitted" && !row.ai_drafted_at ? (
+              <div className="rounded-[10px] border border-white/10 bg-white/[0.02] p-3 text-[12px] text-white/60">
+                <Loader2 className="mr-1.5 inline h-3.5 w-3.5 animate-spin" />
+                AI is drafting the spec from the submitted documents. This usually takes 20–40 seconds.
+              </div>
+            ) : null}
+
+            {editable ? (
+              <Button
+                variant="ghost"
+                onClick={() => redraftMut.mutate()}
+                disabled={redraftMut.isPending}
+              >
+                <Sparkles data-icon />
+                {redraftMut.isPending ? "Redrafting…" : "Redraft with AI"}
+              </Button>
+            ) : null}
+          </div>
+
+          {/* RIGHT — publish spec form */}
+          <div className="space-y-3 px-5 py-4">
+            <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+              Official accreditation spec
             </div>
-          ) : null}
+
+            <SpecField label="Official title">
+              <input
+                value={officialTitle}
+                onChange={(e) => setOfficialTitle(e.target.value)}
+                disabled={!editable}
+                className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white placeholder:text-white/35"
+              />
+            </SpecField>
+
+            <div className="grid grid-cols-2 gap-2">
+              <SpecField label="Level (1–7)">
+                <select
+                  value={officialLevel ?? ""}
+                  onChange={(e) => setOfficialLevel(e.target.value ? Number(e.target.value) : null)}
+                  disabled={!editable}
+                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
+                >
+                  <option value="">—</option>
+                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                    <option key={n} value={n}>
+                      Level {n}
+                    </option>
+                  ))}
+                </select>
+              </SpecField>
+              <SpecField label="Delivery mode">
+                <select
+                  value={delivery ?? ""}
+                  onChange={(e) => setDelivery((e.target.value || null) as DeliveryMode | null)}
+                  disabled={!editable}
+                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
+                >
+                  <option value="">—</option>
+                  <option value="in_person">In person</option>
+                  <option value="online">Online</option>
+                  <option value="blended">Blended</option>
+                </select>
+              </SpecField>
+            </div>
+
+            <SpecField label="Who this course is for">
+              <Textarea
+                value={whoFor}
+                onChange={(e) => setWhoFor(e.target.value)}
+                disabled={!editable}
+                rows={2}
+              />
+            </SpecField>
+
+            <SpecField label="Learning outcomes (one per line)">
+              <Textarea
+                value={outcomes}
+                onChange={(e) => setOutcomes(e.target.value)}
+                disabled={!editable}
+                rows={5}
+                placeholder="On completion, learners will…"
+              />
+            </SpecField>
+
+            <SpecField label="How you'll study">
+              <Textarea
+                value={howStudy}
+                onChange={(e) => setHowStudy(e.target.value)}
+                disabled={!editable}
+                rows={2}
+              />
+            </SpecField>
+
+            <SpecField label="How you're assessed">
+              <Textarea
+                value={howAssessed}
+                onChange={(e) => setHowAssessed(e.target.value)}
+                disabled={!editable}
+                rows={2}
+              />
+            </SpecField>
+
+            <SpecField label="Prerequisites">
+              <Textarea
+                value={prereq}
+                onChange={(e) => setPrereq(e.target.value)}
+                disabled={!editable}
+                rows={2}
+              />
+            </SpecField>
+
+            <div className="grid grid-cols-2 gap-2">
+              <SpecField label="Guided learning hours">
+                <input
+                  type="number"
+                  min={0}
+                  value={glh ?? ""}
+                  onChange={(e) => setGlh(e.target.value === "" ? null : Number(e.target.value))}
+                  disabled={!editable}
+                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
+                />
+              </SpecField>
+              <SpecField label="Total qualification time">
+                <input
+                  type="number"
+                  min={0}
+                  value={tqt ?? ""}
+                  onChange={(e) => setTqt(e.target.value === "" ? null : Number(e.target.value))}
+                  disabled={!editable}
+                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
+                />
+              </SpecField>
+            </div>
+
+            {editable ? (
+              <>
+                <label className="mt-2 block text-[12px] font-semibold text-white/80">
+                  Admin note (required for reject or changes)
+                </label>
+                <Textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g. Assessment criteria don't map to the stated outcomes."
+                  rows={2}
+                />
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    onClick={() => decideMut.mutate("approved")}
+                    disabled={decideMut.isPending || !specComplete}
+                    className="bg-emerald-500 text-white hover:bg-emerald-600"
+                  >
+                    <CheckCircle2 data-icon />
+                    {decideMut.isPending ? "Publishing…" : "Approve & publish"}
+                  </Button>
+                  <Button
+                    onClick={() => saveMut.mutate()}
+                    disabled={saveMut.isPending}
+                    variant="ghost"
+                  >
+                    {saveMut.isPending ? "Saving…" : "Save draft"}
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      note.trim() ? decideMut.mutate("changes_requested") : toast.error("Note required")
+                    }
+                    disabled={decideMut.isPending}
+                    variant="ghost"
+                  >
+                    <Clock data-icon /> Request changes
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      note.trim() ? decideMut.mutate("rejected") : toast.error("Note required")
+                    }
+                    disabled={decideMut.isPending}
+                    variant="ghost"
+                    className="text-red-300 hover:bg-red-500/10"
+                  >
+                    <XCircle data-icon /> Reject
+                  </Button>
+                </div>
+                {!specComplete ? (
+                  <p className="pt-1 text-[11px] text-white/45">
+                    Fill every field to enable Approve. Level, GLH, TQT, delivery mode and at least one learning outcome are required.
+                  </p>
+                ) : null}
+              </>
+            ) : row.admin_note ? (
+              <div className="mt-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12px] text-white/70">
+                <span className="font-semibold text-white/85">Admin note:</span> {row.admin_note}
+              </div>
+            ) : null}
+          </div>
         </div>
-
-        {row.status === "submitted" || row.status === "changes_requested" ? (
-          <div className="border-t border-reps-border px-5 py-4">
-            <label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-              Admin note (required for reject or changes)
-            </label>
-            <Textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Assessment criteria don't map to the stated outcomes."
-              rows={2}
-            />
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button
-                onClick={() => decideMut.mutate("approved")}
-                disabled={decideMut.isPending}
-                className="bg-emerald-500 text-white hover:bg-emerald-600"
-              >
-                <CheckCircle2 data-icon /> Approve & assign REPS number
-              </Button>
-              <Button
-                onClick={() =>
-                  note.trim() ? decideMut.mutate("changes_requested") : toast.error("Note required")
-                }
-                disabled={decideMut.isPending}
-                variant="ghost"
-              >
-                <Clock data-icon /> Request changes
-              </Button>
-              <Button
-                onClick={() =>
-                  note.trim() ? decideMut.mutate("rejected") : toast.error("Note required")
-                }
-                disabled={decideMut.isPending}
-                variant="ghost"
-                className="text-red-300 hover:bg-red-500/10"
-              >
-                <XCircle data-icon /> Reject
-              </Button>
-            </div>
-          </div>
-        ) : row.admin_note ? (
-          <div className="border-t border-reps-border px-5 py-4 text-[12px] text-white/70">
-            <span className="font-semibold text-white/85">Admin note:</span> {row.admin_note}
-          </div>
-        ) : null}
       </PPanel>
 
       <QualificationDocDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         docs={drawerDocs}
-        title={row.title}
+        title={row.official_title || row.proposed_title}
         subtitle={providerName}
       />
     </>
   );
 }
+
+function SpecField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Shared bits
