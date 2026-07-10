@@ -79,8 +79,23 @@ export type BatchDTO = {
 
 export type CertificatePricingDTO = {
   unit_price_pence: number;
+  postage_fee_pence: number;
+  default_rm_service_code: string;
   currency: string;
   updated_at: string;
+};
+
+export type ShipToAddressDTO = {
+  fullName: string;
+  companyName?: string | null;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city: string;
+  county?: string | null;
+  postcode: string;
+  countryCode: string;
+  phoneNumber?: string | null;
+  emailAddress?: string | null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
