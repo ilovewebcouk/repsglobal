@@ -1374,7 +1374,7 @@ function computeDeterministicFlags(input: {
   }
   const assessed = (input.proposed_how_assessed ?? "").toLowerCase();
   if (
-    input.spec_delivery_mode === "self_paced" &&
+    (input.spec_delivery_mode === "online_self_paced") &&
     /(practical|observation|in[- ]person|face[- ]to[- ]face)/.test(assessed)
   ) {
     flags.push("Delivery is self-paced but assessment mentions in-person or practical observation.");
