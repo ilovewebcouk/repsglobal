@@ -536,7 +536,12 @@ function BasketTab({
 }: {
   basket: RegistrationDTO[];
   pricing:
-    | { unit_price_pence: number; postage_fee_pence?: number; currency: string }
+    | {
+        unit_price_pence: number;
+        postage_fee_pence?: number;
+        international_postage_fee_pence?: number;
+        currency: string;
+      }
     | undefined;
 }) {
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
@@ -548,20 +553,12 @@ function BasketTab({
   }, [basket.length]);
 
   const unit = pricing?.unit_price_pence ?? 1500;
-  const postage = pricing?.postage_fee_pence ?? 650;
+  const ukPostage = pricing?.postage_fee_pence ?? 650;
+  const intlPostage = pricing?.international_postage_fee_pence ?? 1500;
   const count = selected.size;
 
-  // A batch is "printed" if ANY of the selected registrations needs a printed cert.
-  const requiresShipping = React.useMemo(
-    () =>
-      basket
-        .filter((b) => selected.has(b.id))
-        .some((b) => b.format === "printed_and_digital"),
-    [basket, selected],
-  );
-
-  const postageOnBatch = requiresShipping ? postage : 0;
-  const total = unit * count + postageOnBatch;
+  // Every training-provider batch is printed + digital, so shipping is always required.
+  const requiresShipping = true;
 
   // Ship-to address — persisted locally so providers don't re-type each time
   const [addr, setAddr] = React.useState({
@@ -571,6 +568,7 @@ function BasketTab({
     addressLine2: "",
     city: "",
     postcode: "",
+    countryCode: "GB",
     phoneNumber: "",
   });
   React.useEffect(() => {
@@ -582,34 +580,35 @@ function BasketTab({
     }
   }, []);
 
+  const cc = (addr.countryCode || "GB").toUpperCase();
+  const isInternational = cc !== "GB" && cc !== "UK";
+  const postageOnBatch = isInternational ? intlPostage : ukPostage;
+  const total = unit * count + postageOnBatch;
+
   const addressComplete =
-    !requiresShipping ||
-    (addr.fullName.trim() &&
-      addr.addressLine1.trim() &&
-      addr.city.trim() &&
-      addr.postcode.trim());
+    addr.fullName.trim() &&
+    addr.addressLine1.trim() &&
+    addr.city.trim() &&
+    addr.postcode.trim() &&
+    addr.countryCode.trim().length === 2;
 
   const mut = useMutation({
     mutationFn: () => {
-      const shipTo = requiresShipping
-        ? {
-            fullName: addr.fullName.trim(),
-            companyName: addr.companyName.trim() || null,
-            addressLine1: addr.addressLine1.trim(),
-            addressLine2: addr.addressLine2.trim() || null,
-            city: addr.city.trim(),
-            postcode: addr.postcode.trim(),
-            countryCode: "GB",
-            phoneNumber: addr.phoneNumber.trim() || null,
-          }
-        : null;
+      const shipTo = {
+        fullName: addr.fullName.trim(),
+        companyName: addr.companyName.trim() || null,
+        addressLine1: addr.addressLine1.trim(),
+        addressLine2: addr.addressLine2.trim() || null,
+        city: addr.city.trim(),
+        postcode: addr.postcode.trim(),
+        countryCode: cc,
+        phoneNumber: addr.phoneNumber.trim() || null,
+      };
 
-      if (requiresShipping && shipTo) {
-        try {
-          localStorage.setItem("reps-cert-ship-to", JSON.stringify(shipTo));
-        } catch {
-          /* ignore */
-        }
+      try {
+        localStorage.setItem("reps-cert-ship-to", JSON.stringify(shipTo));
+      } catch {
+        /* ignore */
       }
 
       return checkout({
