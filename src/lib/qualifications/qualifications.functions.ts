@@ -105,7 +105,7 @@ export type RepsCourseEvidenceRow = {
   created_at: string;
 };
 
-/** A REPS-accredited course, as seen by the provider dashboard. */
+/** A REPS-endorsed course, as seen by the provider dashboard. */
 export type RepsCourseRow = {
   id: string;
   provider_id: string;
@@ -143,7 +143,29 @@ export type RepsCourseRow = {
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
+  endorsement_statement_url: string | null;
+  endorsement_statement_agreed: boolean;
+  endorsement_statement_last_checked_at: string | null;
+  endorsement_statement_found: boolean | null;
+  endorsement_statement_check_error: string | null;
 };
+
+/**
+ * The verbatim statement providers must display on the page that lists the
+ * endorsed course. Admin verifies it is present before endorsing.
+ */
+export const REPS_ENDORSEMENT_STATEMENT =
+  "This course has been endorsed by the REPs for its high-quality, non-regulated provision and training programmes. This course is not regulated by Ofqual and is not an accredited qualification. We will be able to advise you on any further recognition, for example progression routes into further and/or higher education. For further information please visit the Learner FAQs on the REPs website.";
+
+/**
+ * Two signature phrases we look for in the provider's fetched HTML. Requiring
+ * both keeps the check robust to minor punctuation/wording tweaks without
+ * accepting an unrelated page.
+ */
+const REPS_ENDORSEMENT_SIGNATURES = [
+  "endorsed by the reps",
+  "not regulated by ofqual",
+] as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Catalogue (public read)
