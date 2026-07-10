@@ -99,6 +99,7 @@ const parseLevel = (v: string | number | null | undefined): number | null => {
 };
 
 function ProviderQualsPage() {
+  const tier = useTrainerTier();
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [regulatedOpen, setRegulatedOpen] = React.useState(false);
   const [cpdOpen, setCpdOpen] = React.useState(false);
