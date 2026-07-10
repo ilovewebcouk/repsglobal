@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { GraduationCap, Loader2, Printer, Search, ShieldOff, Truck } from "lucide-react";
+import { Loader2, Printer, Search, ShieldOff, Truck } from "lucide-react";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
