@@ -68,6 +68,7 @@ import {
   submitRepsCourse,
   removeMyRegulatedPermission,
   removeMyRepsCourse,
+  expandRepsCourseField,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
   RepsCourseRow,
