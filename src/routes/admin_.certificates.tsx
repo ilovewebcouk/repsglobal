@@ -561,7 +561,17 @@ function DispatchDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const [service, setService] = useState<"TPN" | "TPS">("TPN");
+  const addr = batch.ship_to_address;
+  const isIntl =
+    !!addr?.countryCode &&
+    addr.countryCode.toUpperCase() !== "GB" &&
+    addr.countryCode.toUpperCase() !== "UK";
+  const serviceOpts = isIntl
+    ? RM_SERVICE_OPTS.filter((s) => s.code === "MTM" || s.code === "MTL")
+    : RM_SERVICE_OPTS.filter((s) => s.code === "TPN" || s.code === "TPS");
+  const [service, setService] = useState<RmServiceCode>(
+    isIntl ? "MTM" : "TPN",
+  );
   const dispatch = useServerFn(adminMarkBatchDispatched);
   const downloadLabel = useServerFn(adminDownloadShippingLabel);
 
