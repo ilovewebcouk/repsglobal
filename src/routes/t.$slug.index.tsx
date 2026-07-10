@@ -520,17 +520,17 @@ function ProviderProfilePage() {
                       });
                     }
                   }
-                  for (const c of cpdRows) {
+                  for (const c of courseRows) {
                     items.push({
                       key: `r:${c.id}`,
                       kind: "reps",
                       bodyName: "REPS",
                       logo: repsLogo,
-                      title: c.title,
-                      levelLabel: c.level != null ? `Level ${c.level}` : null,
-                      levelNum: parseLevel(c.level as unknown as string | number | null),
+                      title: c.official_title ?? "REPS-accredited course",
+                      levelLabel: c.official_level != null ? `Level ${c.official_level}` : null,
+                      levelNum: c.official_level ?? null,
                       ofqual_ref: null,
-                      reps_ref: c.reps_cpd_number,
+                      reps_ref: c.reps_qual_number,
                     });
                   }
                   items.sort((a, b) => {
