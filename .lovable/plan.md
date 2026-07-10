@@ -1,87 +1,89 @@
-# REPS Accreditation — QLS-style rework
+# REPS Endorsement — QLS-style rework
 
-Reshape the "Request REPS accreditation" flow so providers submit their own words + real evidence, and AI only assists admin reviewers (internal, no public spec produced).
+Reshape the "Request REPS endorsement" flow (formerly "accreditation") so
+providers submit their own words + real evidence + a public endorsement
+statement, and AI only assists admin reviewers (internal, no public spec).
 
-## 1. Provider-facing modal (`dashboard_.qualifications.tsx`)
+## Terminology
 
-**Remove entirely:**
-- "✨ Expand with AI" button on every field
-- The green "What AI drafts from your answers" callout at the top of the modal
-- The `handleExpand` server-fn call and its usage tracking
-- The "REPS AI is drafting your accreditation spec" toast — replace with "Submitted for REPS admin review."
+- User-facing: **endorsed / endorsement** everywhere. `accredited` and
+  `accreditation` are banned in provider/admin UI, emails, help articles,
+  and marketing copy.
+- Internal names (DB columns like `accredited_at`, storage bucket
+  `course-accreditations`, table `course_accreditation_files`) stay as-is
+  to avoid a churn-heavy migration.
 
-**Rewrite the intro copy:**
-> Submit your course for REPS accreditation. Answer in your own words and upload the supporting evidence below. A REPS admin will review your submission and confirm the level, official title and REPS-QUAL number. We do not rewrite your course — we verify it.
+## Endorsement statement (new — landed 2026-07-10)
 
-**Replace free-text "What the course covers" with a Modules repeater:**
-- Each module row: `title` (required) + `summary` (1-line, required) + `learning_hours` (optional)
-- "+ Add module" button appends a new empty row
-- Minimum 1 module, no upper cap
-- Stored as `spec_modules jsonb` on `reps_courses` (new column — see §4)
+Every provider agrees to display this verbatim on the page that lists the
+course, before REPS endorses it:
 
-**Keep as plain textareas (no AI helper):**
-- Working title
-- Who this course is for
-- What learners will be able to do afterwards
-- How it's delivered (radio — unchanged)
-- Prerequisites, Total hours, Assessment, Tutor credentials, Extra notes (unchanged)
+> This course has been endorsed by the REPs for its high-quality,
+> non-regulated provision and training programmes. This course is not
+> regulated by Ofqual and is not an accredited qualification. We will be
+> able to advise you on any further recognition, for example progression
+> routes into further and/or higher education. For further information
+> please visit the Learner FAQs on the REPs website.
 
-## 2. Required evidence uploads (Core 4)
+Enforced by:
 
-New "Evidence" section at the bottom of the modal, above Submit. All four required before submit is enabled:
+- Provider modal captures the URL where the statement will live + explicit
+  agreement checkbox.
+- Server fn `checkEndorsementStatement` (auth'd) fetches the URL, strips
+  markup and asserts two signature phrases (`endorsed by the reps`,
+  `not regulated by ofqual`) are both present.
+- Submit is blocked until: URL is valid, checkbox is ticked, and the
+  auto-check has returned `found === true`.
+- Admin can re-run the check with `adminRecheckEndorsementStatement`,
+  which persists `endorsement_statement_last_checked_at`, `_found`,
+  `_check_error`.
 
-| Slot | `file_kind` | Accepts |
-|---|---|---|
-| Course specification / syllabus | `specification` | PDF, DOCX |
-| Sample learning materials (1–2 modules) | `sample_materials` | PDF, DOCX, PPTX, MP4, ZIP |
-| Assessment plan + sample assessment | `assessment` | PDF, DOCX |
-| Lead tutor CV | `tutor_cv` | PDF, DOCX |
+New columns on `reps_courses`:
+- `endorsement_statement_url text`
+- `endorsement_statement_agreed boolean` (default false, set true on submit)
+- `endorsement_statement_last_checked_at timestamptz`
+- `endorsement_statement_found boolean`
+- `endorsement_statement_check_error text`
+- `admin_reviewer_aide jsonb` + `admin_reviewer_aide_generated_at` — reserved
+  for Phase 2 AI reviewer aide (admin-only).
 
-- Uploads go to existing `course-accreditation` storage bucket (or create one — see §4)
-- Recorded in existing `course_accreditation_files` table (already has `file_kind` column — reuse it)
-- Multiple files allowed per slot; each slot needs at least one file
-- Show filename + size + remove button per uploaded file
-- 25 MB per file cap, client-side check
+## Shipped in Phase 1 (this pass)
 
-Submit button disabled until: required text fields filled + ≥1 module + all 4 evidence slots populated.
+- DB migration: statement columns + reviewer-aide columns.
+- Provider modal (`dashboard_.qualifications.tsx`):
+  - Removed all "Expand with AI" — earlier pass.
+  - Modules repeater — earlier pass.
+  - Core 4 evidence uploads — earlier pass.
+  - **New:** Endorsement-statement section (statement, copy button, URL
+    field, "Check now" button + result badge, agreement checkbox).
+  - Submit gate now includes statement-ready check.
+  - User-facing strings renamed to "endorsement".
+- Server functions (`qualifications.functions.ts`):
+  - `REPS_ENDORSEMENT_STATEMENT` constant.
+  - `checkEndorsementStatement` (provider pre-flight).
+  - `adminRecheckEndorsementStatement` (admin, persists result).
+  - `submitRepsCourse` accepts + stores statement URL and agreement.
+  - Types extended.
+- Admin tab (`AdminProviderQualificationsTab.tsx`): user-facing strings
+  renamed.
 
-## 3. Admin review (internal only, no public spec)
+## Phase 2 — still to build
 
-Admin qualifications review UI (`AdminProviderQualificationsTab.tsx`) gains:
+- **Admin evidence viewer** — Evidence panel on the admin review row with
+  signed-URL "Open" links per file kind + a statement-verify badge
+  (green "Statement live" / red "Not on page") with a manual re-check
+  button wired to `adminRecheckEndorsementStatement`.
+- **Admin AI reviewer aide** — `analyseEndorsementSubmission` server fn
+  (admin-only, `has_role` gate). Reads intake, module list, evidence text,
+  returns internal aide: level suggestion + rationale, module-vs-spec
+  consistency, Bloom's-verb consistency, red flags. Persists to
+  `admin_reviewer_aide`. Rendered in a collapsed panel; never surfaced to
+  providers.
+- **Wider terminology sweep** — Rename user-facing "accredit*" across
+  marketing pages (`/cpd`, `/find-a-training-provider`, `/specialisms`,
+  public provider `/t/$slug` course tiles) and help articles.
 
-- **Evidence panel** — lists all uploaded files grouped by `file_kind`, each with a signed-URL "Open" link
-- **AI assist button (admin-only)** — "Analyse submission with AI". Calls a new authenticated server fn `analyseAccreditationSubmission` that:
-  - Reads the intake answers + module list
-  - Extracts text from the uploaded specification + assessment PDFs (server-side, pdf-parse on worker)
-  - Returns an internal reviewer aide: suggested level (1–7) + rationale, module-vs-spec consistency check, Bloom's-verb check on outcomes, red flags (missing GLH, mismatched level claims, tutor CV level vs course level)
-  - Persists to existing `ai_draft` / `ai_red_flags` / `ai_deterministic_flags` columns
-- **AI output is admin-only**, rendered in a collapsed "Reviewer aide" panel. Not exposed to provider. Not published.
-- Admin still manually sets `official_title`, `official_level`, `reps_qual_number` and clicks Approve — AI never auto-approves.
-- Drop the "public spec" (`spec_who_for`, `spec_learning_outcomes`, etc.) publishing step. What's shown publicly on the course tile stays limited to: title, level, provider, module list, hours, delivery mode.
+## Out of scope
 
-## 4. Database (one migration)
-
-```sql
-alter table public.reps_courses
-  add column if not exists spec_modules jsonb;  -- [{title, summary, hours}]
-
--- course_accreditation_files already exists with file_kind — no schema change
--- Add a CHECK-style trigger (not CHECK constraint) if we want to enforce known kinds:
---   'specification' | 'sample_materials' | 'assessment' | 'tutor_cv' | 'other'
-```
-
-Storage: reuse existing `course-accreditation` bucket if present; otherwise create private bucket with RLS scoping files to `provider_id`'s owner + admins.
-
-## 5. Files touched
-
-- `src/routes/_authenticated/_professional/dashboard_.qualifications.tsx` — strip AI, add modules repeater, add evidence uploader
-- `src/components/admin/verification/AdminProviderQualificationsTab.tsx` — evidence panel + reviewer-aide panel + Analyse button
-- `src/lib/qualifications/qualifications.functions.ts` — remove `expandField`; add `analyseAccreditationSubmission` (admin-only, role-checked); update `submitAccreditationRequest` to accept `modules[]` and require ≥1 evidence file per required kind
-- New migration: `spec_modules` column + optional file_kind check trigger
-
-## Out of scope (this pass)
-
-- Full 8 evidence pack (QA policy, learner handbook, insurance, certificate template) — deferred until Level 3+ regulated flow
-- Tiered evidence-by-level rules
-- Public course spec page redesign
-- Provider notification emails on approval/rejection copy changes
+- Full 8 evidence pack, tiered rules by level, public course spec
+  redesign, notification email copy updates.

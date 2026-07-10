@@ -1,10 +1,10 @@
 /**
- * /dashboard/qualifications — provider qualifications & REPS-accredited courses.
+ * /dashboard/qualifications — provider qualifications & REPS-endorsed courses.
  *
  * Two sub-flows behind a single unified list:
  *   A. Regulated qualifications we deliver (Ofqual) — pick from catalogue,
  *      upload EQA report / centre certificate / approval letter, admin approves.
- *   B. REPS-accredited courses — provider uploads syllabus + assessment
+ *   B. REPS-endorsed courses — provider uploads syllabus + assessment
  *      criteria + tutor CV; AI drafts the full spec; admin edits and
  *      publishes; row gets a global REPS-QUAL-NNNNNN number.
  */
@@ -72,6 +72,8 @@ import {
   removeMyRepsCourse,
   uploadRepsCourseEvidence,
   removeRepsCourseEvidence,
+  checkEndorsementStatement,
+  REPS_ENDORSEMENT_STATEMENT,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
   RepsCourseRow,
@@ -79,6 +81,7 @@ import type {
   RepsCourseEvidenceRow,
   RepsCourseEvidenceKind,
 } from "@/lib/qualifications/qualifications.functions";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/qualifications")({
   head: () => ({
@@ -87,7 +90,7 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/q
       {
         name: "description",
         content:
-          "Prove you're approved to deliver regulated qualifications and get your courses REPS-accredited.",
+          "Prove you're approved to deliver regulated qualifications and get your courses REPS-endorsed.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -175,7 +178,7 @@ function ProviderQualsPage() {
       tier={tier}
       active="Qualifications & Courses"
       title="Qualifications & Courses"
-      subtitle="One list for both regulated qualifications you're approved to deliver and courses you'd like REPS to accredit."
+      subtitle="One list for both regulated qualifications you're approved to deliver and courses you'd like REPS to endorse."
     >
       <PPanel className="p-5">
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -201,7 +204,7 @@ function ProviderQualsPage() {
             <GraduationCap className="mx-auto mb-3 h-8 w-8 text-white/40" />
             <div className="text-[14px] font-semibold text-white">No qualifications or courses yet</div>
             <div className="mt-1 text-[12.5px] text-white/55">
-              Add your first — we'll ask whether it's an Ofqual-regulated qualification you deliver, or a course you'd like REPS to accredit.
+              Add your first — we'll ask whether it's an Ofqual-regulated qualification you deliver, or a course you'd like REPS to endorse.
             </div>
             <Button onClick={() => setPickerOpen(true)} className="mt-4">
               <Plus data-icon /> Add qualification or course
@@ -298,10 +301,10 @@ function AddTypePickerDialog({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-white/80" />
-                <span className="text-[14px] font-semibold text-white">REPS-accredited course</span>
+                <span className="text-[14px] font-semibold text-white">REPS-endorsed course</span>
               </div>
               <p className="mt-1 text-[12.5px] text-white/60">
-                I've built my own course and want REPS to accredit it. You'll provide a syllabus, assessment criteria, and tutor CV.
+                I've built my own course and want REPS to endorse it. You'll provide a syllabus, assessment criteria, and tutor CV.
               </p>
             </div>
           </label>
@@ -482,7 +485,7 @@ const EVIDENCE_LABEL: Record<RegulatedPermissionRow["evidence_type"], string> = 
   approval_letter: "Approval letter",
 };
 
-/* ─── REPS-accredited course row ─────────────────────────────────────────── */
+/* ─── REPS-endorsed course row ─────────────────────────────────────────── */
 
 function CpdRow({ row }: { row: RepsCourseRow }) {
   const qc = useQueryClient();
@@ -990,7 +993,7 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
-/* ─── Add REPS-accredited course dialog ──────────────────────────────────── */
+/* ─── Add REPS-endorsed course dialog ──────────────────────────────────── */
 
 type DeliveryMode = "in_person" | "online_live" | "online_self_paced" | "blended";
 
@@ -1075,6 +1078,22 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   });
   const [uploading, setUploading] = React.useState<EvidenceSlotKind | null>(null);
 
+  // Endorsement statement — provider must display verbatim on their course
+  // page + agree to it. We fetch the URL server-side to confirm before submit.
+  const runStatementCheck = useServerFn(checkEndorsementStatement);
+  const [statementUrl, setStatementUrl] = React.useState("");
+  const [statementAgreed, setStatementAgreed] = React.useState(false);
+  const [statementChecking, setStatementChecking] = React.useState(false);
+  const [statementCheck, setStatementCheck] = React.useState<
+    | { ok: boolean; found: boolean; fetched_status: number | null; error: string | null; checked_at: string }
+    | null
+  >(null);
+  const statementUrlValid = /^https?:\/\/.+\..+/i.test(statementUrl.trim());
+  // Reset the check whenever the URL changes so the badge can't lie.
+  React.useEffect(() => {
+    setStatementCheck(null);
+  }, [statementUrl]);
+
   const totalHoursNum = Number(totalHours);
   const hoursValid = totalHours.trim() !== "" && Number.isFinite(totalHoursNum) && totalHoursNum >= 0.5 && totalHoursNum <= 2000;
 
@@ -1083,6 +1102,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   );
 
   const allSlotsFilled = EVIDENCE_SLOTS.every((s) => evidenceByKind[s.kind].length > 0);
+
+  const statementReady = statementUrlValid && statementAgreed && statementCheck?.ok === true && statementCheck.found === true;
 
   const canSubmit =
     title.trim().length >= 3 &&
@@ -1094,6 +1115,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     tutor.trim().length >= 10 &&
     validModules.length >= 1 &&
     allSlotsFilled &&
+    statementReady &&
     !submitting;
 
   const resetAll = () => {
@@ -1108,7 +1130,31 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     setExtra("");
     setModules([{ title: "", summary: "", hours: "" }]);
     setEvidenceByKind({ specification: [], sample_materials: [], assessment: [], tutor_cv: [] });
+    setStatementUrl("");
+    setStatementAgreed(false);
+    setStatementCheck(null);
   };
+
+  const handleCheckStatement = async () => {
+    if (!statementUrlValid) return;
+    setStatementChecking(true);
+    try {
+      const res = await runStatementCheck({ data: { url: statementUrl.trim() } });
+      setStatementCheck(res);
+      if (res.ok && res.found) {
+        toast.success("Endorsement statement found on your page.");
+      } else if (res.ok && !res.found) {
+        toast.error("We couldn't find the statement on that page. Paste it in verbatim and re-check.");
+      } else {
+        toast.error(res.error ?? "We couldn't fetch that page.");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Check failed");
+    } finally {
+      setStatementChecking(false);
+    }
+  };
+
 
   const handleUpload = async (kind: EvidenceSlotKind, file: File) => {
     if (file.size > MAX_EVIDENCE_BYTES) {
@@ -1177,6 +1223,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             hours: m.hours.trim() ? Number(m.hours) : null,
           })),
           evidence_ids: evidenceIds,
+          endorsement_statement_url: statementUrl.trim(),
+          endorsement_statement_agreed: true,
         },
       });
       toast.success("Submitted for REPS admin review.");
@@ -1194,9 +1242,9 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-reps-panel border-reps-border text-white">
         <DialogHeader>
-          <DialogTitle>Request REPS accreditation</DialogTitle>
+          <DialogTitle>Request REPS endorsement</DialogTitle>
           <DialogDescription>
-            Submit your course for REPS accreditation. Answer in your own words and upload the
+            Submit your course for REPS endorsement. Answer in your own words and upload the
             supporting evidence below. A REPS admin will review your submission and confirm the
             level, official title and <span className="font-mono">REPS-QUAL-</span>number.
             We don't rewrite your course — we verify it.
@@ -1457,6 +1505,98 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
               })}
             </div>
           </div>
+
+          {/* ── Endorsement statement ─────────────────────────────────── */}
+          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-4">
+            <div className="mb-1 flex items-center gap-1.5 text-[13px] font-semibold text-white">
+              <BadgeCheck className="h-3.5 w-3.5 text-emerald-300" />
+              REPS endorsement statement
+              <span className="ml-1 text-[11px] font-normal text-white/50">(required)</span>
+            </div>
+            <p className="text-[11.5px] text-white/60">
+              If we endorse this course, you must display the statement below on the public page
+              that lists it. It makes clear to learners that REPS endorsement is a quality mark,
+              not an Ofqual-regulated qualification.
+            </p>
+            <blockquote className="mt-3 rounded-[10px] border border-white/10 bg-black/25 p-3 text-[12px] leading-relaxed text-white/85 italic">
+              {REPS_ENDORSEMENT_STATEMENT}
+            </blockquote>
+            <button
+              type="button"
+              onClick={() => {
+                void navigator.clipboard.writeText(REPS_ENDORSEMENT_STATEMENT);
+                toast.success("Statement copied to clipboard.");
+              }}
+              className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-200 hover:text-emerald-100"
+            >
+              Copy statement
+            </button>
+
+            <div className="mt-4 space-y-2">
+              <Label className="block text-[12px] font-semibold text-white/80">
+                URL of the page where you'll display it <span className="text-red-300">*</span>
+              </Label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  value={statementUrl}
+                  onChange={(e) => setStatementUrl(e.target.value)}
+                  placeholder="https://your-site.com/courses/kettlebell-coach"
+                  className="flex-1"
+                  maxLength={500}
+                />
+                <Button
+                  type="button"
+                  onClick={handleCheckStatement}
+                  disabled={!statementUrlValid || statementChecking}
+                  variant="ghost"
+                  className="sm:shrink-0"
+                >
+                  {statementChecking ? (
+                    <>
+                      <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> Checking…
+                    </>
+                  ) : (
+                    "Check now"
+                  )}
+                </Button>
+              </div>
+              <FieldHelp>
+                Paste the statement onto that page first, then click Check. We fetch the page and
+                look for the statement.
+              </FieldHelp>
+
+              {statementCheck ? (
+                statementCheck.ok && statementCheck.found ? (
+                  <div className="flex items-start gap-2 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-2.5 text-[12px] text-emerald-100">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                    <span>Statement found on that page. Admin will re-check during review.</span>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 rounded-[10px] border border-red-400/30 bg-red-500/10 p-2.5 text-[12px] text-red-100">
+                    <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-300" />
+                    <span>
+                      {statementCheck.ok
+                        ? "The statement isn't on that page. Paste it in verbatim and check again."
+                        : `Couldn't fetch: ${statementCheck.error ?? "unknown error"}`}
+                    </span>
+                  </div>
+                )
+              ) : null}
+            </div>
+
+            <label className="mt-4 flex cursor-pointer items-start gap-2 text-[12.5px] text-white/80">
+              <Checkbox
+                checked={statementAgreed}
+                onCheckedChange={(v) => setStatementAgreed(v === true)}
+                className="mt-0.5"
+              />
+              <span>
+                I agree to display the REPS endorsement statement, verbatim, on the page above for
+                as long as this course is endorsed by REPS. I understand admin verifies this
+                before and periodically after endorsement.
+              </span>
+            </label>
+          </div>
         </div>
 
         <DialogFooter>
@@ -1464,7 +1604,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={!canSubmit}>
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit for accreditation"}
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit for endorsement"}
           </Button>
         </DialogFooter>
       </DialogContent>
