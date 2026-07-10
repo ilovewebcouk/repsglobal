@@ -1078,6 +1078,22 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   });
   const [uploading, setUploading] = React.useState<EvidenceSlotKind | null>(null);
 
+  // Endorsement statement — provider must display verbatim on their course
+  // page + agree to it. We fetch the URL server-side to confirm before submit.
+  const runStatementCheck = useServerFn(checkEndorsementStatement);
+  const [statementUrl, setStatementUrl] = React.useState("");
+  const [statementAgreed, setStatementAgreed] = React.useState(false);
+  const [statementChecking, setStatementChecking] = React.useState(false);
+  const [statementCheck, setStatementCheck] = React.useState<
+    | { ok: boolean; found: boolean; fetched_status: number | null; error: string | null; checked_at: string }
+    | null
+  >(null);
+  const statementUrlValid = /^https?:\/\/.+\..+/i.test(statementUrl.trim());
+  // Reset the check whenever the URL changes so the badge can't lie.
+  React.useEffect(() => {
+    setStatementCheck(null);
+  }, [statementUrl]);
+
   const totalHoursNum = Number(totalHours);
   const hoursValid = totalHours.trim() !== "" && Number.isFinite(totalHoursNum) && totalHoursNum >= 0.5 && totalHoursNum <= 2000;
 
@@ -1086,6 +1102,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   );
 
   const allSlotsFilled = EVIDENCE_SLOTS.every((s) => evidenceByKind[s.kind].length > 0);
+
+  const statementReady = statementUrlValid && statementAgreed && statementCheck?.ok === true && statementCheck.found === true;
 
   const canSubmit =
     title.trim().length >= 3 &&
@@ -1097,6 +1115,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     tutor.trim().length >= 10 &&
     validModules.length >= 1 &&
     allSlotsFilled &&
+    statementReady &&
     !submitting;
 
   const resetAll = () => {
@@ -1111,7 +1130,31 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     setExtra("");
     setModules([{ title: "", summary: "", hours: "" }]);
     setEvidenceByKind({ specification: [], sample_materials: [], assessment: [], tutor_cv: [] });
+    setStatementUrl("");
+    setStatementAgreed(false);
+    setStatementCheck(null);
   };
+
+  const handleCheckStatement = async () => {
+    if (!statementUrlValid) return;
+    setStatementChecking(true);
+    try {
+      const res = await runStatementCheck({ data: { url: statementUrl.trim() } });
+      setStatementCheck(res);
+      if (res.ok && res.found) {
+        toast.success("Endorsement statement found on your page.");
+      } else if (res.ok && !res.found) {
+        toast.error("We couldn't find the statement on that page. Paste it in verbatim and re-check.");
+      } else {
+        toast.error(res.error ?? "We couldn't fetch that page.");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Check failed");
+    } finally {
+      setStatementChecking(false);
+    }
+  };
+
 
   const handleUpload = async (kind: EvidenceSlotKind, file: File) => {
     if (file.size > MAX_EVIDENCE_BYTES) {
