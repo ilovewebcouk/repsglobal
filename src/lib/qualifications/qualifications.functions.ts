@@ -415,11 +415,19 @@ export const deleteMyRegulatedPermission = removeMyRegulatedPermission;
 // ─────────────────────────────────────────────────────────────────────────────
 // REPS-accredited courses — submit / list / remove
 
+const DELIVERY_MODES = ["in_person", "online_live", "online_self_paced", "blended"] as const;
+
 const submitRepsCourseInput = z.object({
   proposed_title: z.string().min(3).max(200),
-  syllabus_doc_path: z.string().min(1),
-  assessment_criteria_doc_path: z.string().min(1),
-  tutor_cv_doc_path: z.string().min(1),
+  proposed_who_for: z.string().min(10).max(4000),
+  proposed_what_covered: z.string().min(10).max(4000),
+  proposed_learner_outcomes: z.string().min(10).max(4000),
+  proposed_delivery_mode: z.enum(DELIVERY_MODES),
+  proposed_total_hours: z.number().min(0.5).max(2000),
+  proposed_how_assessed: z.string().min(5).max(4000),
+  proposed_prerequisites: z.string().max(2000).nullable().optional(),
+  proposed_tutor_credentials: z.string().min(10).max(4000),
+  proposed_extra_notes: z.string().max(4000).nullable().optional(),
 });
 
 export const submitRepsCourse = createServerFn({ method: "POST" })
@@ -429,16 +437,6 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertProviderHasTradingName(supabase, userId);
 
-    for (const p of [
-      data.syllabus_doc_path,
-      data.assessment_criteria_doc_path,
-      data.tutor_cv_doc_path,
-    ]) {
-      if (!p.startsWith(`${userId}/`)) {
-        throw new Error("Forbidden: doc path does not belong to you");
-      }
-    }
-
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     const { data: row, error } = await supabase
@@ -446,9 +444,15 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
       .insert({
         provider_id: userId,
         proposed_title: data.proposed_title.trim(),
-        syllabus_doc_path: data.syllabus_doc_path,
-        assessment_criteria_doc_path: data.assessment_criteria_doc_path,
-        tutor_cv_doc_path: data.tutor_cv_doc_path,
+        proposed_who_for: data.proposed_who_for.trim(),
+        proposed_what_covered: data.proposed_what_covered.trim(),
+        proposed_learner_outcomes: data.proposed_learner_outcomes.trim(),
+        proposed_delivery_mode: data.proposed_delivery_mode,
+        proposed_total_hours: data.proposed_total_hours,
+        proposed_how_assessed: data.proposed_how_assessed.trim(),
+        proposed_prerequisites: data.proposed_prerequisites?.trim() || null,
+        proposed_tutor_credentials: data.proposed_tutor_credentials.trim(),
+        proposed_extra_notes: data.proposed_extra_notes?.trim() || null,
       } as never)
       .select("id")
       .single();
@@ -462,20 +466,44 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
     return row;
   });
 
+const REPS_COURSE_SELECT =
+  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at";
+
 export const listMyRepsCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("reps_courses")
-      .select(
-        "id, provider_id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at",
-      )
+      .select(REPS_COURSE_SELECT)
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as RepsCourseRow[];
   });
+
+export const removeMyRepsCourse = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        reason: z.string().max(500).optional().nullable(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const { data: row, error: readErr } = await supabase
+      .from("reps_courses")
+      .select("id, provider_id, status")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    if (!row) throw new Error("Not found");
+    const r = row as { id: string; provider_id: string; status: string };
+    if (r.provider_id !== userId) throw new Error("Forbidden");
 
 export const removeMyRepsCourse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
