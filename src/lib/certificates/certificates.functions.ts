@@ -812,7 +812,7 @@ export const adminListBatches = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }): Promise<AdminBatchDTO[]> => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
     let q = supabase
       .from("certificate_batches")
       .select(
@@ -863,7 +863,7 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PrintQueueRowDTO[]> => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
 
     const { data: batches, error } = await supabase
       .from("certificate_batches")
@@ -919,7 +919,7 @@ export const adminMarkBatchPrinted = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
     const { error } = await supabase
       .from("certificate_batches")
       .update({ status: "printed" } as never)
@@ -934,7 +934,7 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
     const now = new Date().toISOString();
     const { error } = await supabase
       .from("certificate_batches")
@@ -972,7 +972,7 @@ export const adminSearchRegistrations = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }): Promise<AdminRegistrationSearchDTO[]> => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
 
     let query = supabase
       .from("certificate_registrations")
@@ -1033,7 +1033,7 @@ export const adminRevokeCertificate = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
     const { error } = await supabase
       .from("certificate_registrations")
       .update({ status: "revoked" } as never)
