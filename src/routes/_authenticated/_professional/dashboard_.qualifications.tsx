@@ -527,11 +527,6 @@ function CpdRow({ row }: { row: RepsCourseRow }) {
               </Badge>
             ) : null}
             <StatusBadge status={row.status} />
-            {row.reps_qual_number ? (
-              <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300 font-mono">
-                {row.reps_qual_number}
-              </Badge>
-            ) : null}
           </div>
           {isDrafting ? (
             <p className="mt-1.5 text-[12.5px] text-white/60">
@@ -542,8 +537,12 @@ function CpdRow({ row }: { row: RepsCourseRow }) {
             <p className="mt-1.5 text-[12.5px] text-white/60">
               Draft ready — awaiting REPS review. You'll be notified once it's published.
             </p>
-          ) : row.spec_who_for ? (
-            <p className="mt-1.5 line-clamp-2 text-[12.5px] text-white/70">{row.spec_who_for}</p>
+          ) : row.reps_qual_number ? (
+            <p className="mt-1.5 text-[12.5px] text-white/60">
+              <span>REPS</span>
+              <span className="mx-1.5 text-white/30">·</span>
+              <span className="font-mono text-emerald-300">{row.reps_qual_number}</span>
+            </p>
           ) : null}
           {row.admin_note && !isWithdrawn ? (
             <div className="mt-2 rounded-[10px] border border-amber-500/25 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
