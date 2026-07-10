@@ -13,7 +13,7 @@
  *   - `InsuranceProfileCard` numbered profile card (step 06) — public liability.
  *
  * No "Core vs Pro" copy. No "What you unlock". Qualifications is NOT
- * editable here — its status mirrors what Education & CPD says.
+ * editable here — its status mirrors what Education & courses says.
  */
 
 import { useEffect, useState } from "react";

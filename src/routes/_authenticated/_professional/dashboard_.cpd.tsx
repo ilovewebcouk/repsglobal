@@ -16,7 +16,7 @@ import { myCertificates, deletePendingCertificate } from "@/lib/cpd/cpd.function
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/cpd")({
   head: () => ({
     meta: [
-      { title: "Education & CPD — REPS Professional" },
+      { title: "Education & courses — REPS Professional" },
       { name: "description", content: "Upload certificates and track your verified qualifications." },
     ],
     links: [{ rel: "canonical", href: "/dashboard/cpd" }],
@@ -85,8 +85,8 @@ function CpdPage() {
     <DashboardShell
       role="trainer"
       tier={tier === "verified" ? "verified" : "pro"}
-      active="Education & CPD"
-      title="Education & CPD"
+      active="Education & courses"
+      title="Education & courses"
       subtitle="Upload certificates, earn titles, keep them current."
       actions={
         <button
