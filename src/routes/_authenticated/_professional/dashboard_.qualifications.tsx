@@ -1223,6 +1223,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             hours: m.hours.trim() ? Number(m.hours) : null,
           })),
           evidence_ids: evidenceIds,
+          endorsement_statement_url: statementUrl.trim(),
+          endorsement_statement_agreed: true,
         },
       });
       toast.success("Submitted for REPS admin review.");
