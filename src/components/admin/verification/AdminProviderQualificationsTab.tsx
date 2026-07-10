@@ -1270,13 +1270,6 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
         </div>
       </PPanel>
 
-      <QualificationDocDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        docs={drawerDocs}
-        title={row.official_title || row.proposed_title}
-        subtitle={providerName}
-      />
     </>
   );
 }
