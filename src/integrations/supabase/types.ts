@@ -706,6 +706,7 @@ export type Database = {
           paid_at: string | null
           postage_fee_pence_snapshot: number
           printed_at: string | null
+          printed_by: string | null
           provider_id: string
           rm_order_identifier: string | null
           rm_order_reference: string | null
@@ -735,6 +736,7 @@ export type Database = {
           paid_at?: string | null
           postage_fee_pence_snapshot?: number
           printed_at?: string | null
+          printed_by?: string | null
           provider_id: string
           rm_order_identifier?: string | null
           rm_order_reference?: string | null
@@ -764,6 +766,7 @@ export type Database = {
           paid_at?: string | null
           postage_fee_pence_snapshot?: number
           printed_at?: string | null
+          printed_by?: string | null
           provider_id?: string
           rm_order_identifier?: string | null
           rm_order_reference?: string | null

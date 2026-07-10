@@ -937,6 +937,8 @@ export type PrintQueueRowDTO = {
   count: number;
   paid_at: string | null;
   status: string;
+  printed_at: string | null;
+  printed_by: string | null;
   ship_to_address: ShipToAddressDTO | null;
   rm_service_code: string | null;
   tracking_number: string | null;
@@ -962,7 +964,7 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
     const { data: batches, error } = await supabase
       .from("certificate_batches")
       .select(
-        "id, provider_id, count, paid_at, status, ship_to_address, rm_service_code, tracking_number, tracking_url, shipped_at",
+        "id, provider_id, count, paid_at, status, printed_at, printed_by, ship_to_address, rm_service_code, tracking_number, tracking_url, shipped_at",
       )
       .in("status", ["awaiting_print", "printed"])
       .eq("format", "printed_and_digital")
@@ -996,6 +998,8 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
       count: b.count,
       paid_at: b.paid_at,
       status: b.status,
+      printed_at: b.printed_at ?? null,
+      printed_by: b.printed_by ?? null,
       ship_to_address: (b.ship_to_address as ShipToAddressDTO | null) ?? null,
       rm_service_code: b.rm_service_code ?? null,
       tracking_number: b.tracking_number ?? null,
@@ -1020,14 +1024,47 @@ export const adminMarkBatchPrinted = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, (context as any).realUserId ?? userId);
+    const actor = (context as any).realUserId ?? userId;
+    await assertAdmin(supabase, actor);
     const { error } = await supabase
       .from("certificate_batches")
-      .update({ status: "printed" } as never)
+      .update({
+        status: "printed",
+        printed_at: new Date().toISOString(),
+        printed_by: actor,
+      } as never)
       .eq("id", data.batch_id)
       .eq("status", "awaiting_print");
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const adminDownloadPrintPack = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        batch_id: z.string().uuid(),
+        format: z.enum(["merged", "zip"]).default("merged"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ url: string }> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
+    const { buildMergedPrintPack, buildIndividualZip } = await import(
+      "@/lib/certificates/print-pack.server"
+    );
+    const path =
+      data.format === "zip"
+        ? await buildIndividualZip(data.batch_id)
+        : await buildMergedPrintPack(data.batch_id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("certificates")
+      .createSignedUrl(path, 60 * 15);
+    if (error || !signed?.signedUrl) throw new Error(error?.message ?? "Could not sign URL");
+    return { url: signed.signedUrl };
   });
 
 export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
@@ -1066,8 +1103,12 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
       if (batch.format !== "printed_and_digital") {
         throw new Error("Only UK printed batches are dispatched via Royal Mail.");
       }
-      if (!["printed", "awaiting_print", "issued"].includes(batch.status as string)) {
-        throw new Error(`Batch is in status '${batch.status}' — cannot dispatch.`);
+      if (batch.status !== "printed") {
+        throw new Error(
+          batch.status === "awaiting_print"
+            ? "Mark this batch as printed before generating a Royal Mail label."
+            : `Batch is in status '${batch.status}' — cannot dispatch.`,
+        );
       }
       const address = batch.ship_to_address as ShipToAddressDTO | null;
       if (!address) {
