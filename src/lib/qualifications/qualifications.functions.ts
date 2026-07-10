@@ -703,21 +703,51 @@ export const adminDecideRepsCourse = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await requireAdmin(context.realUserId ?? context.userId);
+    const reviewerId = context.realUserId ?? context.userId;
+    await requireAdmin(reviewerId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.decision !== "approved" && !data.admin_note?.trim()) {
       throw new Error("Admin note required when rejecting or requesting changes");
     }
+    const decidedAt = new Date().toISOString();
     const { error } = await supabaseAdmin
       .from("reps_courses")
       .update({
         status: data.decision,
         admin_note: data.admin_note?.trim() || null,
-        reviewed_by: context.realUserId ?? context.userId,
-        reviewed_at: new Date().toISOString(),
+        reviewed_by: reviewerId,
+        reviewed_at: decidedAt,
       } as never)
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+
+    // Build immutable snapshot + render report PDF. Fire-and-forget so the
+    // admin's UI response isn't blocked on PDF rendering.
+    void (async () => {
+      try {
+        const snapshot = await buildDecisionSnapshot({
+          courseId: data.id,
+          decision: data.decision,
+          reviewerId,
+          adminNote: data.admin_note?.trim() || null,
+          decidedAt,
+        });
+        const uploaded = await generateAndStoreCourseReport({
+          courseId: data.id,
+          snapshot,
+        });
+        await supabaseAdmin
+          .from("reps_courses")
+          .update({
+            decision_snapshot: snapshot as never,
+            report_pdf_path: uploaded?.path ?? null,
+            report_generated_at: uploaded ? new Date().toISOString() : null,
+          } as never)
+          .eq("id", data.id);
+      } catch (e) {
+        console.error("[adminDecideRepsCourse] report generation failed", e);
+      }
+    })();
     return { ok: true };
   });
 
