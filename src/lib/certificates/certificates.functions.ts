@@ -1020,14 +1020,47 @@ export const adminMarkBatchPrinted = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, (context as any).realUserId ?? userId);
+    const actor = (context as any).realUserId ?? userId;
+    await assertAdmin(supabase, actor);
     const { error } = await supabase
       .from("certificate_batches")
-      .update({ status: "printed" } as never)
+      .update({
+        status: "printed",
+        printed_at: new Date().toISOString(),
+        printed_by: actor,
+      } as never)
       .eq("id", data.batch_id)
       .eq("status", "awaiting_print");
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const adminDownloadPrintPack = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        batch_id: z.string().uuid(),
+        format: z.enum(["merged", "zip"]).default("merged"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ url: string }> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
+    const { buildMergedPrintPack, buildIndividualZip } = await import(
+      "@/lib/certificates/print-pack.server"
+    );
+    const path =
+      data.format === "zip"
+        ? await buildIndividualZip(data.batch_id)
+        : await buildMergedPrintPack(data.batch_id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("certificates")
+      .createSignedUrl(path, 60 * 15);
+    if (error || !signed?.signedUrl) throw new Error(error?.message ?? "Could not sign URL");
+    return { url: signed.signedUrl };
   });
 
 export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
