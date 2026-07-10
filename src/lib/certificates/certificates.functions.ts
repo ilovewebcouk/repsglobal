@@ -115,10 +115,20 @@ async function assertProviderIsOrganisation(supabase: any, userId: string) {
   return { country: (data?.country as string | null) ?? null };
 }
 
-function formatForCountry(country: string | null): "digital" | "printed_and_digital" {
-  if (!country) return "digital";
+// Every training-provider batch is now printed + digital. The postage fee
+// varies by destination (UK vs international) — see checkout below.
+const DEFAULT_CERT_FORMAT: "printed_and_digital" = "printed_and_digital";
+
+function isUkCountryCode(cc: string | null | undefined): boolean {
+  if (!cc) return false;
+  const c = cc.trim().toUpperCase();
+  return c === "GB" || c === "UK";
+}
+
+function isUkCountryName(country: string | null | undefined): boolean {
+  if (!country) return false;
   const c = country.trim().toLowerCase();
-  if (
+  return (
     c === "gb" ||
     c === "uk" ||
     c === "united kingdom" ||
@@ -127,10 +137,7 @@ function formatForCountry(country: string | null): "digital" | "printed_and_digi
     c === "scotland" ||
     c === "wales" ||
     c === "northern ireland"
-  ) {
-    return "printed_and_digital";
-  }
-  return "digital";
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
