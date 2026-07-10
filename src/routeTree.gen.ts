@@ -40,7 +40,6 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ComingSoonRouteImport } from './routes/coming-soon'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AccreditationMethodologyRouteImport } from './routes/accreditation-methodology'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as SplatRouteImport } from './routes/$'
@@ -338,12 +337,6 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccreditationMethodologyRoute =
-  AccreditationMethodologyRouteImport.update({
-    id: '/accreditation-methodology',
-    path: '/accreditation-methodology',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AcceptInviteRoute = AcceptInviteRouteImport.update({
   id: '/accept-invite',
   path: '/accept-invite',
@@ -1108,7 +1101,6 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
-  '/accreditation-methodology': typeof AccreditationMethodologyRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/coming-soon': typeof ComingSoonRoute
@@ -1280,7 +1272,6 @@ export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
-  '/accreditation-methodology': typeof AccreditationMethodologyRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/coming-soon': typeof ComingSoonRoute
@@ -1448,7 +1439,6 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
   '/accept-invite': typeof AcceptInviteRoute
-  '/accreditation-methodology': typeof AccreditationMethodologyRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/coming-soon': typeof ComingSoonRoute
@@ -1624,7 +1614,6 @@ export interface FileRouteTypes {
     | '/$'
     | '/about'
     | '/accept-invite'
-    | '/accreditation-methodology'
     | '/admin'
     | '/auth'
     | '/coming-soon'
@@ -1796,7 +1785,6 @@ export interface FileRouteTypes {
     | '/$'
     | '/about'
     | '/accept-invite'
-    | '/accreditation-methodology'
     | '/admin'
     | '/auth'
     | '/coming-soon'
@@ -1963,7 +1951,6 @@ export interface FileRouteTypes {
     | '/$'
     | '/about'
     | '/accept-invite'
-    | '/accreditation-methodology'
     | '/admin'
     | '/auth'
     | '/coming-soon'
@@ -2139,7 +2126,6 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   AboutRoute: typeof AboutRoute
   AcceptInviteRoute: typeof AcceptInviteRoute
-  AccreditationMethodologyRoute: typeof AccreditationMethodologyRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   ComingSoonRoute: typeof ComingSoonRoute
@@ -2476,13 +2462,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/accreditation-methodology': {
-      id: '/accreditation-methodology'
-      path: '/accreditation-methodology'
-      fullPath: '/accreditation-methodology'
-      preLoaderRoute: typeof AccreditationMethodologyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accept-invite': {
@@ -3756,7 +3735,6 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   AboutRoute: AboutRoute,
   AcceptInviteRoute: AcceptInviteRoute,
-  AccreditationMethodologyRoute: AccreditationMethodologyRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ComingSoonRoute: ComingSoonRoute,
