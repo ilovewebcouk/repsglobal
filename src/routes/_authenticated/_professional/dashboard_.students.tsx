@@ -535,7 +535,9 @@ function BasketTab({
   pricing,
 }: {
   basket: RegistrationDTO[];
-  pricing: { unit_price_pence: number; currency: string } | undefined;
+  pricing:
+    | { unit_price_pence: number; postage_fee_pence?: number; currency: string }
+    | undefined;
 }) {
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const checkout = useServerFn(createCertificateBatchCheckout);
@@ -546,17 +548,78 @@ function BasketTab({
   }, [basket.length]);
 
   const unit = pricing?.unit_price_pence ?? 1500;
+  const postage = pricing?.postage_fee_pence ?? 650;
   const count = selected.size;
-  const total = unit * count;
+
+  // A batch is "printed" if ANY of the selected registrations needs a printed cert.
+  const requiresShipping = React.useMemo(
+    () =>
+      basket
+        .filter((b) => selected.has(b.id))
+        .some((b) => b.format === "printed_and_digital"),
+    [basket, selected],
+  );
+
+  const postageOnBatch = requiresShipping ? postage : 0;
+  const total = unit * count + postageOnBatch;
+
+  // Ship-to address — persisted locally so providers don't re-type each time
+  const [addr, setAddr] = React.useState({
+    fullName: "",
+    companyName: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    postcode: "",
+    phoneNumber: "",
+  });
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem("reps-cert-ship-to");
+      if (raw) setAddr((a) => ({ ...a, ...JSON.parse(raw) }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const addressComplete =
+    !requiresShipping ||
+    (addr.fullName.trim() &&
+      addr.addressLine1.trim() &&
+      addr.city.trim() &&
+      addr.postcode.trim());
 
   const mut = useMutation({
-    mutationFn: () =>
-      checkout({
+    mutationFn: () => {
+      const shipTo = requiresShipping
+        ? {
+            fullName: addr.fullName.trim(),
+            companyName: addr.companyName.trim() || null,
+            addressLine1: addr.addressLine1.trim(),
+            addressLine2: addr.addressLine2.trim() || null,
+            city: addr.city.trim(),
+            postcode: addr.postcode.trim(),
+            countryCode: "GB",
+            phoneNumber: addr.phoneNumber.trim() || null,
+          }
+        : null;
+
+      if (requiresShipping && shipTo) {
+        try {
+          localStorage.setItem("reps-cert-ship-to", JSON.stringify(shipTo));
+        } catch {
+          /* ignore */
+        }
+      }
+
+      return checkout({
         data: {
           registration_ids: Array.from(selected),
           environment: getStripeEnvironment(),
+          ship_to_address: shipTo,
         },
-      }),
+      });
+    },
     onSuccess: (res: any) => {
       if ("url" in res && res.url) window.location.assign(res.url);
       else toast.error(res?.error ?? "Could not start checkout.");
@@ -569,8 +632,9 @@ function BasketTab({
       <div className="border-b border-reps-border p-4">
         <h2 className="text-[15px] font-semibold text-white">Basket</h2>
         <p className="mt-0.5 text-[12.5px] text-white/55">
-          Ready to claim certificates for these learners. Payment goes to REPS; we'll issue the
-          e-certificates and, for UK providers, post printed copies to your address on file.
+          Ready to claim certificates for these learners. Payment goes to REPS; we'll email
+          each learner a QR-verified digital certificate, and post any printed copies via
+          Royal Mail tracked delivery.
         </p>
       </div>
       {basket.length === 0 ? (
@@ -598,22 +662,87 @@ function BasketTab({
                   <div className="text-[12.5px] text-white/60">
                     {r.course_level ? `Level ${r.course_level} · ` : ""}
                     {r.course_title}
+                    {r.format === "printed_and_digital" ? (
+                      <span className="ml-2 text-white/45">· Printed + digital</span>
+                    ) : (
+                      <span className="ml-2 text-white/45">· Digital</span>
+                    )}
                   </div>
                 </div>
                 <div className="text-[13px] text-white/70">£{(unit / 100).toFixed(2)}</div>
               </li>
             ))}
           </ul>
+
+          {requiresShipping && (
+            <div className="border-t border-reps-border p-4 space-y-3">
+              <div>
+                <h3 className="text-[13.5px] font-semibold text-white">
+                  UK shipping address
+                </h3>
+                <p className="text-[12px] text-white/55 mt-0.5">
+                  Printed certificates ship in one bundle via Royal Mail tracked delivery
+                  (£{(postage / 100).toFixed(2)} per batch). We save this address for next
+                  time.
+                </p>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input
+                  placeholder="Contact name"
+                  value={addr.fullName}
+                  onChange={(e) => setAddr({ ...addr, fullName: e.target.value })}
+                />
+                <Input
+                  placeholder="Company / organisation (optional)"
+                  value={addr.companyName}
+                  onChange={(e) => setAddr({ ...addr, companyName: e.target.value })}
+                />
+                <Input
+                  className="sm:col-span-2"
+                  placeholder="Address line 1"
+                  value={addr.addressLine1}
+                  onChange={(e) => setAddr({ ...addr, addressLine1: e.target.value })}
+                />
+                <Input
+                  className="sm:col-span-2"
+                  placeholder="Address line 2 (optional)"
+                  value={addr.addressLine2}
+                  onChange={(e) => setAddr({ ...addr, addressLine2: e.target.value })}
+                />
+                <Input
+                  placeholder="City / town"
+                  value={addr.city}
+                  onChange={(e) => setAddr({ ...addr, city: e.target.value })}
+                />
+                <Input
+                  placeholder="Postcode"
+                  value={addr.postcode}
+                  onChange={(e) => setAddr({ ...addr, postcode: e.target.value })}
+                />
+                <Input
+                  className="sm:col-span-2"
+                  placeholder="Phone (optional — for the courier)"
+                  value={addr.phoneNumber}
+                  onChange={(e) => setAddr({ ...addr, phoneNumber: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between border-t border-reps-border p-4">
             <div>
               <div className="text-[12.5px] text-white/55">
                 {count} certificate{count === 1 ? "" : "s"} × £{(unit / 100).toFixed(2)}
+                {requiresShipping ? ` + £${(postage / 100).toFixed(2)} postage` : ""}
               </div>
               <div className="mt-1 font-display text-[22px] font-bold text-white">
                 £{(total / 100).toFixed(2)}
               </div>
             </div>
-            <Button onClick={() => mut.mutate()} disabled={count === 0 || mut.isPending}>
+            <Button
+              onClick={() => mut.mutate()}
+              disabled={count === 0 || mut.isPending || !addressComplete}
+            >
               {mut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
               Check out {count} certificate{count === 1 ? "" : "s"}
             </Button>
