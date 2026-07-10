@@ -4442,10 +4442,12 @@ export type Database = {
           official_level_confidence: string | null
           official_level_rationale: string | null
           official_title: string | null
+          proposed_credential_type: string | null
           proposed_delivery_mode: string | null
           proposed_extra_notes: string | null
           proposed_how_assessed: string | null
           proposed_learner_outcomes: string | null
+          proposed_level: number | null
           proposed_prerequisites: string | null
           proposed_title: string
           proposed_total_hours: number | null
@@ -4494,10 +4496,12 @@ export type Database = {
           official_level_confidence?: string | null
           official_level_rationale?: string | null
           official_title?: string | null
+          proposed_credential_type?: string | null
           proposed_delivery_mode?: string | null
           proposed_extra_notes?: string | null
           proposed_how_assessed?: string | null
           proposed_learner_outcomes?: string | null
+          proposed_level?: number | null
           proposed_prerequisites?: string | null
           proposed_title: string
           proposed_total_hours?: number | null
@@ -4546,10 +4550,12 @@ export type Database = {
           official_level_confidence?: string | null
           official_level_rationale?: string | null
           official_title?: string | null
+          proposed_credential_type?: string | null
           proposed_delivery_mode?: string | null
           proposed_extra_notes?: string | null
           proposed_how_assessed?: string | null
           proposed_learner_outcomes?: string | null
+          proposed_level?: number | null
           proposed_prerequisites?: string | null
           proposed_title?: string
           proposed_total_hours?: number | null
