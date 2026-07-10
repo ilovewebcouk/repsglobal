@@ -104,18 +104,26 @@ function ProviderQualsPage() {
   const [cpdOpen, setCpdOpen] = React.useState(false);
 
   const fetchMyReg = useServerFn(listMyRegulatedPermissions);
-  const fetchMyCpd = useServerFn(listMyCpdCourses);
+  const fetchMyCourses = useServerFn(listMyRepsCourses);
 
   const regQuery = useQuery({ queryKey: ["my-regulated-permissions"], queryFn: () => fetchMyReg() });
-  const cpdQuery = useQuery({ queryKey: ["my-cpd-courses"], queryFn: () => fetchMyCpd() });
+  const courseQuery = useQuery({
+    queryKey: ["my-reps-courses"],
+    queryFn: () => fetchMyCourses(),
+    // While a course is being AI-drafted we want the UI to catch up quickly.
+    refetchInterval: (q) => {
+      const rows = (q.state.data ?? []) as RepsCourseRow[];
+      return rows.some((r) => r.status === "submitted") ? 4000 : false;
+    },
+  });
 
-  const loading = regQuery.isLoading || cpdQuery.isLoading;
+  const loading = regQuery.isLoading || courseQuery.isLoading;
   const regRows = regQuery.data ?? [];
-  const cpdRows = cpdQuery.data ?? [];
+  const courseRows = courseQuery.data ?? [];
 
   type Merged =
     | { kind: "regulated"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: RegulatedPermissionRow }
-    | { kind: "course"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: CpdCourseRow };
+    | { kind: "course"; id: string; withdrawn: boolean; levelNum: number | null; title: string; row: RepsCourseRow };
 
   const merged: Merged[] = React.useMemo(() => {
     const items: Merged[] = [];
@@ -132,13 +140,13 @@ function ProviderQualsPage() {
         row: r,
       });
     }
-    for (const c of cpdRows) {
+    for (const c of courseRows) {
       items.push({
         kind: "course",
         id: c.id,
         withdrawn: c.status === "withdrawn",
-        levelNum: parseLevel(c.level as unknown as number | string | null),
-        title: c.title,
+        levelNum: c.official_level ?? null,
+        title: c.official_title ?? c.proposed_title,
         row: c,
       });
     }
@@ -153,7 +161,7 @@ function ProviderQualsPage() {
       return a.title.localeCompare(b.title);
     });
     return items;
-  }, [regRows, cpdRows]);
+  }, [regRows, courseRows]);
 
   return (
     <DashboardShell
