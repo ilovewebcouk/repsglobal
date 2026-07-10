@@ -484,6 +484,11 @@ const moduleSchema = z.object({
 
 const submitRepsCourseInput = z.object({
   proposed_title: z.string().min(3).max(200),
+  proposed_level: z.number().int().min(1).max(7).nullable().optional(),
+  proposed_credential_type: z
+    .enum(["award", "certificate", "diploma", "course", "not_sure"])
+    .nullable()
+    .optional(),
   proposed_who_for: z.string().min(10).max(4000),
   proposed_learner_outcomes: z.string().min(10).max(4000),
   proposed_delivery_mode: z.enum(DELIVERY_MODES),
