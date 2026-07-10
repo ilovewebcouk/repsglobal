@@ -576,7 +576,7 @@ export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("reps_courses")
       .select(
-        "id, provider_id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_draft, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        REPS_COURSE_SELECT + ", ai_draft, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });
