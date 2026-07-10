@@ -1097,7 +1097,7 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
     z
       .object({
         batch_id: z.string().uuid(),
-        service_code: z.enum(["TPN", "TPS"]).optional(),
+        service_code: z.enum(["TPN", "TPS", "MTM", "MTL"]).optional(),
       })
       .parse(d),
   )
@@ -1125,7 +1125,7 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
       if (bErr) throw new Error(bErr.message);
       if (!batch) throw new Error("Batch not found.");
       if (batch.format !== "printed_and_digital") {
-        throw new Error("Only UK printed batches are dispatched via Royal Mail.");
+        throw new Error("This batch has no printed component to dispatch.");
       }
       if (batch.status !== "printed") {
         throw new Error(
@@ -1140,17 +1140,31 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
           "This batch has no shipping address on file. The provider must add one before dispatch.",
         );
       }
+      const isIntl = !isUkCountryCode(address.countryCode);
 
-      // Load default service if not supplied
+      // Load default service if not supplied — pick UK vs intl default.
       const { data: pricing } = await supabase
         .from("certificate_pricing")
         .select("default_rm_service_code")
         .eq("id", true)
         .maybeSingle();
+      const defaultDomestic =
+        (pricing?.default_rm_service_code as string | undefined) ?? "TPN";
       const serviceCode =
-        data.service_code ??
-        (pricing?.default_rm_service_code as string | undefined) ??
-        "TPN";
+        data.service_code ?? (isIntl ? "MTM" : defaultDomestic);
+
+      // Guard mismatched service/destination
+      const isIntlService = serviceCode === "MTM" || serviceCode === "MTL";
+      if (isIntl && !isIntlService) {
+        throw new Error(
+          "This is an international batch — pick an International Tracked service.",
+        );
+      }
+      if (!isIntl && isIntlService) {
+        throw new Error(
+          "This is a UK batch — pick Royal Mail Tracked 24 or 48.",
+        );
+      }
 
       // Call Royal Mail
       const {
