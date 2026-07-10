@@ -22,11 +22,11 @@ import {
   FileText,
   GraduationCap,
   Loader2,
+  Paperclip,
   Plus,
-  
-  Sparkles,
   Trash2,
   Upload,
+  X,
   XCircle,
 } from "lucide-react";
 import repsLogoWhite from "@/assets/brand/logo.svg";
@@ -69,11 +69,14 @@ import {
   submitRepsCourse,
   removeMyRegulatedPermission,
   removeMyRepsCourse,
-  expandRepsCourseField,
+  uploadRepsCourseEvidence,
+  removeRepsCourseEvidence,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
   RepsCourseRow,
   RegulatedPermissionRow,
+  RepsCourseEvidenceRow,
+  RepsCourseEvidenceKind,
 } from "@/lib/qualifications/qualifications.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/qualifications")({
