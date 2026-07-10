@@ -1,13 +1,12 @@
 /**
  * /dashboard/qualifications — provider qualifications & REPS-accredited courses.
  *
- * Two sub-sections:
- *   A. Regulated qualifications we deliver (Ofqual)
- *      — Pick from catalogue, upload EQA report / centre certificate /
- *        approval letter, admin approves.
- *   B. REPS-accredited courses
- *      — Provider defines their own course, uploads syllabus + assessment
- *        criteria + tutor CV, admin approves, REPS assigns a CPD number.
+ * Two sub-flows behind a single unified list:
+ *   A. Regulated qualifications we deliver (Ofqual) — pick from catalogue,
+ *      upload EQA report / centre certificate / approval letter, admin approves.
+ *   B. REPS-accredited courses — provider uploads syllabus + assessment
+ *      criteria + tutor CV; AI drafts the full spec; admin edits and
+ *      publishes; row gets a global REPS-QUAL-NNNNNN number.
  */
 
 import * as React from "react";
