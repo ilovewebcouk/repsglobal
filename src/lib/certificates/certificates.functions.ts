@@ -80,6 +80,7 @@ export type BatchDTO = {
 export type CertificatePricingDTO = {
   unit_price_pence: number;
   postage_fee_pence: number;
+  international_postage_fee_pence: number;
   default_rm_service_code: string;
   currency: string;
   updated_at: string;
@@ -115,10 +116,20 @@ async function assertProviderIsOrganisation(supabase: any, userId: string) {
   return { country: (data?.country as string | null) ?? null };
 }
 
-function formatForCountry(country: string | null): "digital" | "printed_and_digital" {
-  if (!country) return "digital";
+// Every training-provider batch is now printed + digital. The postage fee
+// varies by destination (UK vs international) — see checkout below.
+const DEFAULT_CERT_FORMAT: "printed_and_digital" = "printed_and_digital";
+
+function isUkCountryCode(cc: string | null | undefined): boolean {
+  if (!cc) return false;
+  const c = cc.trim().toUpperCase();
+  return c === "GB" || c === "UK";
+}
+
+function isUkCountryName(country: string | null | undefined): boolean {
+  if (!country) return false;
   const c = country.trim().toLowerCase();
-  if (
+  return (
     c === "gb" ||
     c === "uk" ||
     c === "united kingdom" ||
@@ -127,10 +138,7 @@ function formatForCountry(country: string | null): "digital" | "printed_and_digi
     c === "scotland" ||
     c === "wales" ||
     c === "northern ireland"
-  ) {
-    return "printed_and_digital";
-  }
-  return "digital";
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -142,7 +150,7 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("certificate_pricing")
       .select(
-        "unit_price_pence, postage_fee_pence, default_rm_service_code, currency, updated_at",
+        "unit_price_pence, postage_fee_pence, international_postage_fee_pence, default_rm_service_code, currency, updated_at",
       )
       .eq("id", true)
       .maybeSingle();
@@ -150,6 +158,8 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
     return {
       unit_price_pence: (data?.unit_price_pence as number | undefined) ?? 1500,
       postage_fee_pence: (data?.postage_fee_pence as number | undefined) ?? 650,
+      international_postage_fee_pence:
+        (data?.international_postage_fee_pence as number | undefined) ?? 1500,
       default_rm_service_code:
         (data?.default_rm_service_code as string | undefined) ?? "TPN",
       currency: (data?.currency as string | undefined) ?? "gbp",
@@ -160,7 +170,8 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
 const setPricingInput = z.object({
   unit_price_pence: z.number().int().min(0).max(50000).optional(),
   postage_fee_pence: z.number().int().min(0).max(10000).optional(),
-  default_rm_service_code: z.enum(["TPN", "TPS"]).optional(),
+  international_postage_fee_pence: z.number().int().min(0).max(20000).optional(),
+  default_rm_service_code: z.enum(["TPN", "TPS", "MTM", "MTL"]).optional(),
 });
 
 export const setCertificatePricing = createServerFn({ method: "POST" })
@@ -183,6 +194,8 @@ export const setCertificatePricing = createServerFn({ method: "POST" })
       patch.unit_price_pence = data.unit_price_pence;
     if (typeof data.postage_fee_pence === "number")
       patch.postage_fee_pence = data.postage_fee_pence;
+    if (typeof data.international_postage_fee_pence === "number")
+      patch.international_postage_fee_pence = data.international_postage_fee_pence;
     if (data.default_rm_service_code)
       patch.default_rm_service_code = data.default_rm_service_code;
 
@@ -479,7 +492,7 @@ export const createRegistration = createServerFn({ method: "POST" })
         course_title: courseTitle,
         course_level: courseLevel,
         reps_course_number: repsCourseNumber,
-        format: formatForCountry(country),
+        format: DEFAULT_CERT_FORMAT,
         status: "enrolled",
       } as never)
       .select("*")
@@ -577,15 +590,19 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       const { supabase, userId, claims } = context;
       const { country } = await assertProviderIsOrganisation(supabase, userId);
 
-      // Load pricing (unit + postage)
+      // Load pricing (unit + UK & international postage)
       const { data: pricing } = await supabase
         .from("certificate_pricing")
-        .select("unit_price_pence, postage_fee_pence, currency")
+        .select(
+          "unit_price_pence, postage_fee_pence, international_postage_fee_pence, currency",
+        )
         .eq("id", true)
         .maybeSingle();
       const unitPricePence = (pricing?.unit_price_pence as number | undefined) ?? 1500;
-      const postageFeePence =
+      const ukPostagePence =
         (pricing?.postage_fee_pence as number | undefined) ?? 650;
+      const intlPostagePence =
+        (pricing?.international_postage_fee_pence as number | undefined) ?? 1500;
       const currency = (pricing?.currency as string | undefined) ?? "gbp";
 
       // Validate registrations
@@ -606,19 +623,24 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
         };
       }
 
-      const format = formatForCountry(country);
-      const isPrinted = format === "printed_and_digital";
+      const format = DEFAULT_CERT_FORMAT;
       const count = regs.length;
 
-      // For UK/printed batches, require a shipping address up-front
-      if (isPrinted && !data.ship_to_address) {
+      // Every batch is printed + digital, so a shipping address is required.
+      if (!data.ship_to_address) {
         return {
           error:
-            "A UK postal address is required for printed certificates. Please add your shipping details before checking out.",
+            "A postal address is required for printed certificates. Please add your shipping details before checking out.",
         };
       }
 
-      const postageSnapshot = isPrinted ? postageFeePence : 0;
+      // Postage: GB = domestic rate, everywhere else = international flat rate.
+      const shipCc = (data.ship_to_address.countryCode ?? "GB").toUpperCase();
+      const isInternational = !isUkCountryCode(shipCc);
+      // Belt-and-braces: if the ship-to has no country but the provider looks UK, treat as UK.
+      const finalInternational =
+        isInternational && !isUkCountryName(country);
+      const postageSnapshot = finalInternational ? intlPostagePence : ukPostagePence;
       const totalPence = unitPricePence * count + postageSnapshot;
 
       // Create batch
@@ -666,24 +688,26 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
               currency,
               unit_amount: unitPricePence,
               product_data: {
-                name: isPrinted
-                  ? "REPS Certificate — printed + digital"
-                  : "REPS Certificate — digital",
+                name: "REPS Certificate — printed + digital",
                 description:
                   "Jointly-branded certificate of achievement and unit summary, QR-verified on repsuk.org.",
               },
             },
           },
         ];
-        if (isPrinted && postageSnapshot > 0) {
+        if (postageSnapshot > 0) {
           line_items.push({
             quantity: 1,
             price_data: {
               currency,
               unit_amount: postageSnapshot,
               product_data: {
-                name: "Postage & tracked delivery — Royal Mail",
-                description: "Tracked delivery of your printed certificates.",
+                name: finalInternational
+                  ? "International postage & tracked delivery — Royal Mail"
+                  : "Postage & tracked delivery — Royal Mail",
+                description: finalInternational
+                  ? "Royal Mail International Tracked delivery of your printed certificates."
+                  : "Tracked delivery of your printed certificates.",
               },
             },
           });
@@ -1073,7 +1097,7 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
     z
       .object({
         batch_id: z.string().uuid(),
-        service_code: z.enum(["TPN", "TPS"]).optional(),
+        service_code: z.enum(["TPN", "TPS", "MTM", "MTL"]).optional(),
       })
       .parse(d),
   )
@@ -1101,7 +1125,7 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
       if (bErr) throw new Error(bErr.message);
       if (!batch) throw new Error("Batch not found.");
       if (batch.format !== "printed_and_digital") {
-        throw new Error("Only UK printed batches are dispatched via Royal Mail.");
+        throw new Error("This batch has no printed component to dispatch.");
       }
       if (batch.status !== "printed") {
         throw new Error(
@@ -1116,17 +1140,31 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
           "This batch has no shipping address on file. The provider must add one before dispatch.",
         );
       }
+      const isIntl = !isUkCountryCode(address.countryCode);
 
-      // Load default service if not supplied
+      // Load default service if not supplied — pick UK vs intl default.
       const { data: pricing } = await supabase
         .from("certificate_pricing")
         .select("default_rm_service_code")
         .eq("id", true)
         .maybeSingle();
+      const defaultDomestic =
+        (pricing?.default_rm_service_code as string | undefined) ?? "TPN";
       const serviceCode =
-        data.service_code ??
-        (pricing?.default_rm_service_code as string | undefined) ??
-        "TPN";
+        data.service_code ?? (isIntl ? "MTM" : defaultDomestic);
+
+      // Guard mismatched service/destination
+      const isIntlService = serviceCode === "MTM" || serviceCode === "MTL";
+      if (isIntl && !isIntlService) {
+        throw new Error(
+          "This is an international batch — pick an International Tracked service.",
+        );
+      }
+      if (!isIntl && isIntlService) {
+        throw new Error(
+          "This is a UK batch — pick Royal Mail Tracked 24 or 48.",
+        );
+      }
 
       // Call Royal Mail
       const {
@@ -1202,7 +1240,14 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
             templateData: {
               providerName: (prof?.full_name as string | null) ?? null,
               count: batch.count,
-              serviceLabel: serviceCode === "TPS" ? "Royal Mail Tracked 24" : "Royal Mail Tracked 48",
+              serviceLabel:
+                serviceCode === "TPS"
+                  ? "Royal Mail Tracked 24"
+                  : serviceCode === "MTM"
+                  ? "Royal Mail International Tracked"
+                  : serviceCode === "MTL"
+                  ? "Royal Mail International Tracked & Signed"
+                  : "Royal Mail Tracked 48",
               trackingNumber: rmOrder.trackingNumber ?? null,
               trackingUrl,
             },

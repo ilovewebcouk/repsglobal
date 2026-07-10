@@ -86,9 +86,12 @@ function AdminCertificatesPage() {
 // ─────────────────────────────────────────────────────────────── Pricing
 
 const RM_SERVICE_OPTS = [
-  { code: "TPN", label: "Royal Mail Tracked 48" },
-  { code: "TPS", label: "Royal Mail Tracked 24" },
+  { code: "TPN", label: "Royal Mail Tracked 48 (UK)" },
+  { code: "TPS", label: "Royal Mail Tracked 24 (UK)" },
+  { code: "MTM", label: "Royal Mail International Tracked" },
+  { code: "MTL", label: "Royal Mail International Tracked & Signed" },
 ] as const;
+type RmServiceCode = (typeof RM_SERVICE_OPTS)[number]["code"];
 
 function PricingPanel() {
   const qc = useQueryClient();
@@ -100,22 +103,26 @@ function PricingPanel() {
   });
   const [unit, setUnit] = useState<string>("");
   const [postage, setPostage] = useState<string>("");
+  const [intlPostage, setIntlPostage] = useState<string>("");
   const [service, setService] = useState<string>("");
 
   const currentUnit = data?.unit_price_pence ?? 1500;
   const currentPostage = data?.postage_fee_pence ?? 650;
+  const currentIntlPostage = data?.international_postage_fee_pence ?? 1500;
   const currentService = data?.default_rm_service_code ?? "TPN";
 
   const save = useMutation({
     mutationFn: (payload: {
       unit_price_pence?: number;
       postage_fee_pence?: number;
-      default_rm_service_code?: "TPN" | "TPS";
+      international_postage_fee_pence?: number;
+      default_rm_service_code?: RmServiceCode;
     }) => savePricing({ data: payload }),
     onSuccess: () => {
       toast.success("Pricing updated");
       setUnit("");
       setPostage("");
+      setIntlPostage("");
       setService("");
       qc.invalidateQueries({ queryKey: ["admin-cert-pricing"] });
     },
@@ -162,8 +169,7 @@ function PricingPanel() {
             <span className="text-sm text-white/40">/ batch</span>
           </div>
           <p className="mt-1 text-[12px] text-white/50">
-            Charged once per UK batch regardless of how many certificates are inside. Non-UK
-            batches are digital only and pay no postage.
+            Charged once per UK batch regardless of how many certificates are inside.
           </p>
           <div className="mt-2">
             <label className="text-[12px] text-white/50">New postage fee (£)</label>
@@ -190,12 +196,50 @@ function PricingPanel() {
         </div>
 
         <div className="border-t border-white/5 pt-6">
-          <div className="text-[13px] text-white/60">Default Royal Mail service</div>
+          <div className="text-[13px] text-white/60">
+            International postage per batch
+          </div>
+          <div className="mt-1 font-display text-3xl">
+            £{(currentIntlPostage / 100).toFixed(2)}{" "}
+            <span className="text-sm text-white/40">/ batch</span>
+          </div>
+          <p className="mt-1 text-[12px] text-white/50">
+            Flat fee charged once per non-UK batch. Covers Royal Mail International Tracked.
+          </p>
+          <div className="mt-2">
+            <label className="text-[12px] text-white/50">
+              New international postage fee (£)
+            </label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder={(currentIntlPostage / 100).toFixed(2)}
+              value={intlPostage}
+              onChange={(e) => setIntlPostage(e.target.value)}
+            />
+          </div>
+          <Button
+            className="mt-3"
+            disabled={save.isPending || !intlPostage}
+            onClick={() => {
+              const n = Number(intlPostage);
+              if (!Number.isFinite(n) || n < 0) return;
+              save.mutate({ international_postage_fee_pence: Math.round(n * 100) });
+            }}
+          >
+            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save international postage"}
+          </Button>
+        </div>
+
+        <div className="border-t border-white/5 pt-6">
+          <div className="text-[13px] text-white/60">Default UK Royal Mail service</div>
           <div className="mt-1 font-display text-xl">
             {RM_SERVICE_OPTS.find((s) => s.code === currentService)?.label ?? currentService}
           </div>
           <p className="mt-1 text-[12px] text-white/50">
-            Used by default when generating shipping labels. Admin can override per batch.
+            Used by default for UK batches. International batches default to International
+            Tracked. Admin can override per batch at dispatch time.
           </p>
           <div className="mt-2">
             <label className="text-[12px] text-white/50">Change default</label>
@@ -204,7 +248,7 @@ function PricingPanel() {
               value={service || currentService}
               onChange={(e) => setService(e.target.value)}
             >
-              {RM_SERVICE_OPTS.map((s) => (
+              {RM_SERVICE_OPTS.filter((s) => s.code === "TPN" || s.code === "TPS").map((s) => (
                 <option key={s.code} value={s.code}>
                   {s.label}
                 </option>
@@ -216,7 +260,7 @@ function PricingPanel() {
             disabled={save.isPending || !service || service === currentService}
             onClick={() =>
               save.mutate({
-                default_rm_service_code: service as "TPN" | "TPS",
+                default_rm_service_code: service as RmServiceCode,
               })
             }
           >
@@ -517,7 +561,17 @@ function DispatchDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const [service, setService] = useState<"TPN" | "TPS">("TPN");
+  const addr = batch.ship_to_address;
+  const isIntl =
+    !!addr?.countryCode &&
+    addr.countryCode.toUpperCase() !== "GB" &&
+    addr.countryCode.toUpperCase() !== "UK";
+  const serviceOpts = isIntl
+    ? RM_SERVICE_OPTS.filter((s) => s.code === "MTM" || s.code === "MTL")
+    : RM_SERVICE_OPTS.filter((s) => s.code === "TPN" || s.code === "TPS");
+  const [service, setService] = useState<RmServiceCode>(
+    isIntl ? "MTM" : "TPN",
+  );
   const dispatch = useServerFn(adminMarkBatchDispatched);
   const downloadLabel = useServerFn(adminDownloadShippingLabel);
 
@@ -538,7 +592,8 @@ function DispatchDialog({
     onError: (e: any) => toast.error(e?.message ?? "Royal Mail failed"),
   });
 
-  const addr = batch.ship_to_address;
+
+
 
   return (
     <div

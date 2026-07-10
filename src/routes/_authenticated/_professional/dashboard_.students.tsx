@@ -536,7 +536,12 @@ function BasketTab({
 }: {
   basket: RegistrationDTO[];
   pricing:
-    | { unit_price_pence: number; postage_fee_pence?: number; currency: string }
+    | {
+        unit_price_pence: number;
+        postage_fee_pence?: number;
+        international_postage_fee_pence?: number;
+        currency: string;
+      }
     | undefined;
 }) {
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
@@ -548,20 +553,12 @@ function BasketTab({
   }, [basket.length]);
 
   const unit = pricing?.unit_price_pence ?? 1500;
-  const postage = pricing?.postage_fee_pence ?? 650;
+  const ukPostage = pricing?.postage_fee_pence ?? 650;
+  const intlPostage = pricing?.international_postage_fee_pence ?? 1500;
   const count = selected.size;
 
-  // A batch is "printed" if ANY of the selected registrations needs a printed cert.
-  const requiresShipping = React.useMemo(
-    () =>
-      basket
-        .filter((b) => selected.has(b.id))
-        .some((b) => b.format === "printed_and_digital"),
-    [basket, selected],
-  );
-
-  const postageOnBatch = requiresShipping ? postage : 0;
-  const total = unit * count + postageOnBatch;
+  // Every training-provider batch is printed + digital, so shipping is always required.
+  const requiresShipping = true;
 
   // Ship-to address — persisted locally so providers don't re-type each time
   const [addr, setAddr] = React.useState({
@@ -571,6 +568,7 @@ function BasketTab({
     addressLine2: "",
     city: "",
     postcode: "",
+    countryCode: "GB",
     phoneNumber: "",
   });
   React.useEffect(() => {
@@ -582,34 +580,35 @@ function BasketTab({
     }
   }, []);
 
+  const cc = (addr.countryCode || "GB").toUpperCase();
+  const isInternational = cc !== "GB" && cc !== "UK";
+  const postageOnBatch = isInternational ? intlPostage : ukPostage;
+  const total = unit * count + postageOnBatch;
+
   const addressComplete =
-    !requiresShipping ||
-    (addr.fullName.trim() &&
-      addr.addressLine1.trim() &&
-      addr.city.trim() &&
-      addr.postcode.trim());
+    addr.fullName.trim() &&
+    addr.addressLine1.trim() &&
+    addr.city.trim() &&
+    addr.postcode.trim() &&
+    addr.countryCode.trim().length === 2;
 
   const mut = useMutation({
     mutationFn: () => {
-      const shipTo = requiresShipping
-        ? {
-            fullName: addr.fullName.trim(),
-            companyName: addr.companyName.trim() || null,
-            addressLine1: addr.addressLine1.trim(),
-            addressLine2: addr.addressLine2.trim() || null,
-            city: addr.city.trim(),
-            postcode: addr.postcode.trim(),
-            countryCode: "GB",
-            phoneNumber: addr.phoneNumber.trim() || null,
-          }
-        : null;
+      const shipTo = {
+        fullName: addr.fullName.trim(),
+        companyName: addr.companyName.trim() || null,
+        addressLine1: addr.addressLine1.trim(),
+        addressLine2: addr.addressLine2.trim() || null,
+        city: addr.city.trim(),
+        postcode: addr.postcode.trim(),
+        countryCode: cc,
+        phoneNumber: addr.phoneNumber.trim() || null,
+      };
 
-      if (requiresShipping && shipTo) {
-        try {
-          localStorage.setItem("reps-cert-ship-to", JSON.stringify(shipTo));
-        } catch {
-          /* ignore */
-        }
+      try {
+        localStorage.setItem("reps-cert-ship-to", JSON.stringify(shipTo));
+      } catch {
+        /* ignore */
       }
 
       return checkout({
@@ -678,12 +677,13 @@ function BasketTab({
             <div className="border-t border-reps-border p-4 space-y-3">
               <div>
                 <h3 className="text-[13.5px] font-semibold text-white">
-                  UK shipping address
+                  Shipping address
                 </h3>
                 <p className="text-[12px] text-white/55 mt-0.5">
                   Printed certificates ship in one bundle via Royal Mail tracked delivery
-                  (£{(postage / 100).toFixed(2)} per batch). We save this address for next
-                  time.
+                  (UK £{(ukPostage / 100).toFixed(2)} / international £
+                  {(intlPostage / 100).toFixed(2)} per batch). We save this address for
+                  next time.
                 </p>
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -715,12 +715,22 @@ function BasketTab({
                   onChange={(e) => setAddr({ ...addr, city: e.target.value })}
                 />
                 <Input
-                  placeholder="Postcode"
+                  placeholder="Postal / ZIP code"
                   value={addr.postcode}
                   onChange={(e) => setAddr({ ...addr, postcode: e.target.value })}
                 />
                 <Input
-                  className="sm:col-span-2"
+                  placeholder="Country code (2 letters, e.g. GB, US, ES)"
+                  maxLength={2}
+                  value={addr.countryCode}
+                  onChange={(e) =>
+                    setAddr({
+                      ...addr,
+                      countryCode: e.target.value.toUpperCase().slice(0, 2),
+                    })
+                  }
+                />
+                <Input
                   placeholder="Phone (optional — for the courier)"
                   value={addr.phoneNumber}
                   onChange={(e) => setAddr({ ...addr, phoneNumber: e.target.value })}
@@ -733,7 +743,11 @@ function BasketTab({
             <div>
               <div className="text-[12.5px] text-white/55">
                 {count} certificate{count === 1 ? "" : "s"} × £{(unit / 100).toFixed(2)}
-                {requiresShipping ? ` + £${(postage / 100).toFixed(2)} postage` : ""}
+                {postageOnBatch > 0
+                  ? ` + £${(postageOnBatch / 100).toFixed(2)} ${
+                      isInternational ? "international " : ""
+                    }postage`
+                  : ""}
               </div>
               <div className="mt-1 font-display text-[22px] font-bold text-white">
                 £{(total / 100).toFixed(2)}
