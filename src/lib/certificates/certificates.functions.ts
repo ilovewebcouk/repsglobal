@@ -141,21 +141,26 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<CertificatePricingDTO> => {
     const { data, error } = await context.supabase
       .from("certificate_pricing")
-      .select("unit_price_pence, currency, updated_at")
+      .select(
+        "unit_price_pence, postage_fee_pence, default_rm_service_code, currency, updated_at",
+      )
       .eq("id", true)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return (
-      data ?? {
-        unit_price_pence: 1500,
-        currency: "gbp",
-        updated_at: new Date().toISOString(),
-      }
-    );
+    return {
+      unit_price_pence: (data?.unit_price_pence as number | undefined) ?? 1500,
+      postage_fee_pence: (data?.postage_fee_pence as number | undefined) ?? 650,
+      default_rm_service_code:
+        (data?.default_rm_service_code as string | undefined) ?? "TPN",
+      currency: (data?.currency as string | undefined) ?? "gbp",
+      updated_at: (data?.updated_at as string | undefined) ?? new Date().toISOString(),
+    };
   });
 
 const setPricingInput = z.object({
-  unit_price_pence: z.number().int().min(0).max(50000),
+  unit_price_pence: z.number().int().min(0).max(50000).optional(),
+  postage_fee_pence: z.number().int().min(0).max(10000).optional(),
+  default_rm_service_code: z.enum(["TPN", "TPS"]).optional(),
 });
 
 export const setCertificatePricing = createServerFn({ method: "POST" })
@@ -170,13 +175,20 @@ export const setCertificatePricing = createServerFn({ method: "POST" })
     } as never);
     if (!isAdmin) throw new Error("Forbidden");
 
+    const patch: Record<string, unknown> = {
+      updated_by: userId,
+      updated_at: new Date().toISOString(),
+    };
+    if (typeof data.unit_price_pence === "number")
+      patch.unit_price_pence = data.unit_price_pence;
+    if (typeof data.postage_fee_pence === "number")
+      patch.postage_fee_pence = data.postage_fee_pence;
+    if (data.default_rm_service_code)
+      patch.default_rm_service_code = data.default_rm_service_code;
+
     const { error } = await supabase
       .from("certificate_pricing")
-      .update({
-        unit_price_pence: data.unit_price_pence,
-        updated_by: userId,
-        updated_at: new Date().toISOString(),
-      } as never)
+      .update(patch as never)
       .eq("id", true);
     if (error) throw new Error(error.message);
     return { ok: true };
