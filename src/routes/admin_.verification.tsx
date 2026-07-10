@@ -1603,7 +1603,7 @@ function ProvidersAudience() {
               sub === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
             }`}
           >
-            {t === "change_requests" ? "Name & domain changes" : "Qualifications & CPD"}
+            {t === "change_requests" ? "Name & domain changes" : "Qualifications & courses"}
           </button>
         ))}
       </div>
