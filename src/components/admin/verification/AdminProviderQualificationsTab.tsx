@@ -1136,22 +1136,17 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               />
             </SpecField>
 
+            {/* Level ladder — AI suggestion highlighted with rationale */}
+            <LevelLadderField
+              value={officialLevel}
+              aiSuggested={row.official_level}
+              rationale={row.official_level_rationale}
+              confidence={row.official_level_confidence}
+              disabled={!editable}
+              onChange={setOfficialLevel}
+            />
+
             <div className="grid grid-cols-2 gap-2">
-              <SpecField label="Level (1–7)">
-                <select
-                  value={officialLevel ?? ""}
-                  onChange={(e) => setOfficialLevel(e.target.value ? Number(e.target.value) : null)}
-                  disabled={!editable}
-                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
-                >
-                  <option value="">—</option>
-                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                    <option key={n} value={n}>
-                      Level {n}
-                    </option>
-                  ))}
-                </select>
-              </SpecField>
               <SpecField label="Delivery mode">
                 <select
                   value={delivery ?? ""}
