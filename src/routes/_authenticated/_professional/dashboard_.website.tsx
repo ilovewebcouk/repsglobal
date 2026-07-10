@@ -193,11 +193,10 @@ function WebsiteEditorPage() {
   const navigate = Route.useNavigate();
   const blocked = false;
 
-  // Training providers use a dedicated editor for /t/$slug — route them away
-  // from the coach website editor so they never see coach-only content.
+  // Training providers don't use the coach website editor — send them home.
   React.useEffect(() => {
     if (tier === "training_provider") {
-      navigate({ to: "/dashboard/provider-website", replace: true });
+      navigate({ to: "/dashboard", replace: true });
     }
   }, [tier, navigate]);
 

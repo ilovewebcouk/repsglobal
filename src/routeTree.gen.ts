@@ -156,7 +156,6 @@ import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from '
 import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
 import { Route as AuthenticatedProfessionalDashboardReviewsRouteImport } from './routes/_authenticated/_professional/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalDashboardQualificationsRouteImport } from './routes/_authenticated/_professional/dashboard_.qualifications'
-import { Route as AuthenticatedProfessionalDashboardProviderWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.provider-website'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
 import { Route as AuthenticatedProfessionalDashboardEnquiriesRouteImport } from './routes/_authenticated/_professional/dashboard_.enquiries'
 import { Route as AuthenticatedProfessionalDashboardCpdRouteImport } from './routes/_authenticated/_professional/dashboard_.cpd'
@@ -946,12 +945,6 @@ const AuthenticatedProfessionalDashboardQualificationsRoute =
     path: '/dashboard/qualifications',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
-const AuthenticatedProfessionalDashboardProviderWebsiteRoute =
-  AuthenticatedProfessionalDashboardProviderWebsiteRouteImport.update({
-    id: '/dashboard_/provider-website',
-    path: '/dashboard/provider-website',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
 const AuthenticatedProfessionalDashboardProfileRoute =
   AuthenticatedProfessionalDashboardProfileRouteImport.update({
     id: '/dashboard_/profile',
@@ -1227,7 +1220,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
-  '/dashboard/provider-website': typeof AuthenticatedProfessionalDashboardProviderWebsiteRoute
   '/dashboard/qualifications': typeof AuthenticatedProfessionalDashboardQualificationsRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -1394,7 +1386,6 @@ export interface FileRoutesByTo {
   '/dashboard/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/dashboard/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
-  '/dashboard/provider-website': typeof AuthenticatedProfessionalDashboardProviderWebsiteRoute
   '/dashboard/qualifications': typeof AuthenticatedProfessionalDashboardQualificationsRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -1569,7 +1560,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/cpd': typeof AuthenticatedProfessionalDashboardCpdRoute
   '/_authenticated/_professional/dashboard_/enquiries': typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
-  '/_authenticated/_professional/dashboard_/provider-website': typeof AuthenticatedProfessionalDashboardProviderWebsiteRoute
   '/_authenticated/_professional/dashboard_/qualifications': typeof AuthenticatedProfessionalDashboardQualificationsRoute
   '/_authenticated/_professional/dashboard_/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
   '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -1743,7 +1733,6 @@ export interface FileRouteTypes {
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
     | '/dashboard/profile'
-    | '/dashboard/provider-website'
     | '/dashboard/qualifications'
     | '/dashboard/reviews'
     | '/dashboard/services'
@@ -1910,7 +1899,6 @@ export interface FileRouteTypes {
     | '/dashboard/cpd'
     | '/dashboard/enquiries'
     | '/dashboard/profile'
-    | '/dashboard/provider-website'
     | '/dashboard/qualifications'
     | '/dashboard/reviews'
     | '/dashboard/services'
@@ -2084,7 +2072,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/cpd'
     | '/_authenticated/_professional/dashboard_/enquiries'
     | '/_authenticated/_professional/dashboard_/profile'
-    | '/_authenticated/_professional/dashboard_/provider-website'
     | '/_authenticated/_professional/dashboard_/qualifications'
     | '/_authenticated/_professional/dashboard_/reviews'
     | '/_authenticated/_professional/dashboard_/services'
@@ -3289,13 +3276,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardQualificationsRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
-    '/_authenticated/_professional/dashboard_/provider-website': {
-      id: '/_authenticated/_professional/dashboard_/provider-website'
-      path: '/dashboard/provider-website'
-      fullPath: '/dashboard/provider-website'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardProviderWebsiteRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
     '/_authenticated/_professional/dashboard_/profile': {
       id: '/_authenticated/_professional/dashboard_/profile'
       path: '/dashboard/profile'
@@ -3583,7 +3563,6 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardCpdRoute: typeof AuthenticatedProfessionalDashboardCpdRoute
   AuthenticatedProfessionalDashboardEnquiriesRoute: typeof AuthenticatedProfessionalDashboardEnquiriesRoute
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
-  AuthenticatedProfessionalDashboardProviderWebsiteRoute: typeof AuthenticatedProfessionalDashboardProviderWebsiteRoute
   AuthenticatedProfessionalDashboardQualificationsRoute: typeof AuthenticatedProfessionalDashboardQualificationsRoute
   AuthenticatedProfessionalDashboardReviewsRoute: typeof AuthenticatedProfessionalDashboardReviewsRoute
   AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
@@ -3608,8 +3587,6 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardEnquiriesRoute,
     AuthenticatedProfessionalDashboardProfileRoute:
       AuthenticatedProfessionalDashboardProfileRoute,
-    AuthenticatedProfessionalDashboardProviderWebsiteRoute:
-      AuthenticatedProfessionalDashboardProviderWebsiteRoute,
     AuthenticatedProfessionalDashboardQualificationsRoute:
       AuthenticatedProfessionalDashboardQualificationsRoute,
     AuthenticatedProfessionalDashboardReviewsRoute:

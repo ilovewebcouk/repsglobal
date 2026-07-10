@@ -392,7 +392,7 @@ export function ProviderWelcomeBanner({
             </>
           ) : (
             <DashboardButton asChild size="sm" variant="primary">
-              <Link to="/dashboard/provider-website">Finish profile</Link>
+              <Link to="/dashboard/profile">Finish profile</Link>
             </DashboardButton>
           )}
         </div>

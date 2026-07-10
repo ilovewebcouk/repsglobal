@@ -20,7 +20,6 @@ const GATE_ALLOWLIST = [
   "/dashboard/settings",
   "/dashboard/support",
   "/dashboard/syncing",
-  "/dashboard/provider-website",
 ];
 
 function isAllowlisted(pathname: string) {

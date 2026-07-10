@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
@@ -98,6 +99,7 @@ const parseLevel = (v: string | number | null | undefined): number | null => {
 };
 
 function ProviderQualsPage() {
+  const tier = useTrainerTier();
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [regulatedOpen, setRegulatedOpen] = React.useState(false);
   const [cpdOpen, setCpdOpen] = React.useState(false);
@@ -157,6 +159,7 @@ function ProviderQualsPage() {
   return (
     <DashboardShell
       role="trainer"
+      tier={tier}
       active="Qualifications & Courses"
       title="Qualifications & Courses"
       subtitle="One list for both regulated qualifications you're approved to deliver and courses you'd like REPS to accredit."
