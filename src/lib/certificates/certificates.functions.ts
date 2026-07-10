@@ -1144,6 +1144,33 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
         .eq("batch_id", data.batch_id)
         .eq("status", "issued");
 
+      // Notify the provider that the parcel is on the way.
+      try {
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(
+          batch.provider_id as string,
+        );
+        const providerEmail = authUser?.user?.email ?? null;
+        if (providerEmail) {
+          const { data: prof } = await supabaseAdmin
+            .from("profiles").select("full_name").eq("id", batch.provider_id as string).maybeSingle();
+          const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+          await sendTransactionalEmailServer({
+            templateName: "certificates-shipped",
+            recipientEmail: providerEmail,
+            idempotencyKey: `cert-batch-shipped:${data.batch_id}`,
+            templateData: {
+              providerName: (prof?.full_name as string | null) ?? null,
+              count: batch.count,
+              serviceLabel: serviceCode === "TPS" ? "Royal Mail Tracked 24" : "Royal Mail Tracked 48",
+              trackingNumber: rmOrder.trackingNumber ?? null,
+              trackingUrl,
+            },
+          });
+        }
+      } catch (err) {
+        console.error("[cert-dispatch] provider notification failed", err);
+      }
+
       return {
         ok: true,
         tracking_number: rmOrder.trackingNumber ?? null,

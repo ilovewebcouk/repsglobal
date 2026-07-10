@@ -127,6 +127,32 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
         pdf_path: path,
       } as never)
       .eq("id", (reg as any).id);
+
+    // Email the learner directly with a signed download link
+    try {
+      const learnerEmail = (learner?.email as string | null) ?? null;
+      if (learnerEmail) {
+        const { data: signed } = await supabaseAdmin.storage
+          .from("certificates")
+          .createSignedUrl(path, 60 * 60 * 24 * 30); // 30 days
+        const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+        await sendTransactionalEmailServer({
+          templateName: "learner-certificate-issued",
+          recipientEmail: learnerEmail,
+          idempotencyKey: `learner-cert-issued:${(reg as any).id}`,
+          templateData: {
+            learnerName: (learner?.full_name as string | null) ?? null,
+            courseTitle: (reg as any).course_title,
+            providerName,
+            certificateNumber,
+            downloadUrl: signed?.signedUrl ?? verificationUrl,
+            verificationUrl,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("[cert-issue] learner notification failed", err);
+    }
   }
 
   // Batch status: UK/printed batches queue for admin print; digital-only closes as issued
