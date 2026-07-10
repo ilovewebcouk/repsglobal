@@ -121,7 +121,7 @@ function StudentsPage() {
   const certs = regs.filter((r) => r.status === "issued" || r.status === "dispatched");
 
   return (
-    <DashboardShell role="professional" active="Students & Certificates">
+    <DashboardShell role="trainer" active="Students & Certificates">
       <div className="mx-auto w-full max-w-6xl space-y-6 p-4 lg:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
