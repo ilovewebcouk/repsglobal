@@ -811,112 +811,168 @@ export const adminRedraftRepsCourse = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AI-assisted field expansion (used by the provider dialog).
+// Evidence uploads (provider) — Core 4 supporting documents
 
-const EXPAND_FIELDS = [
-  "proposed_who_for",
-  "proposed_what_covered",
-  "proposed_learner_outcomes",
-  "proposed_how_assessed",
-  "proposed_prerequisites",
-  "proposed_tutor_credentials",
-  "proposed_extra_notes",
+const EVIDENCE_KINDS = [
+  "specification",
+  "sample_materials",
+  "assessment",
+  "tutor_cv",
+  "other",
 ] as const;
 
-export type ExpandCourseField = (typeof EXPAND_FIELDS)[number];
+const evidenceUploadInput = z.object({
+  file_kind: z.enum(EVIDENCE_KINDS),
+  file_data_url: z.string().startsWith("data:").max(35_000_000),
+  filename: z.string().min(1).max(200),
+  mime_type: z.string().max(200).optional().nullable(),
+  course_id: z.string().uuid().optional().nullable(),
+});
 
-const FIELD_PROMPTS: Record<ExpandCourseField, string> = {
-  proposed_who_for:
-    "Polish this into a clear 2-4 sentence description of who this course is for. Name the target learner (e.g. new instructors, existing coaches specialising), typical prior experience, and typical goals. British English. No marketing jargon.",
-  proposed_what_covered:
-    "Turn the provider's rough list into a well-structured summary of what the course covers, ordered logically. Use short paragraphs or bullet-ready lines. Keep it factual — do not add topics the provider did not mention. British English.",
-  proposed_learner_outcomes:
-    "Rewrite these into 5-8 clear learning outcomes, one per line, each starting with a Bloom's verb (demonstrate, apply, evaluate, design, coach, assess, plan, adapt). Do not fabricate outcomes; only rewrite what the provider gave you.",
-  proposed_how_assessed:
-    "Rewrite this into 2-4 sentences describing how learners are assessed, including assessment methods and pass criteria. Be specific and factual. British English.",
-  proposed_prerequisites:
-    "Rewrite this as a concise list of prerequisites (qualifications, age, experience, physical requirements). One per line. Do not invent prerequisites the provider did not mention.",
-  proposed_tutor_credentials:
-    "Polish this into a clear 2-4 sentence paragraph about who teaches the course and why they are qualified — qualifications, years of experience, specialisms. Stick to what the provider said.",
-  proposed_extra_notes:
-    "Polish this into clear, professional notes for the REPS reviewer. Keep it concise and factual.",
-};
-
-export const expandRepsCourseField = createServerFn({ method: "POST" })
+export const uploadRepsCourseEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z
-      .object({
-        field: z.enum(EXPAND_FIELDS),
-        current_value: z.string().min(15).max(4000),
-        context: z
-          .object({
-            proposed_title: z.string().max(200).optional().nullable(),
-            proposed_who_for: z.string().max(4000).optional().nullable(),
-            proposed_what_covered: z.string().max(4000).optional().nullable(),
-            proposed_learner_outcomes: z.string().max(4000).optional().nullable(),
-            proposed_delivery_mode: z.string().max(50).optional().nullable(),
-            proposed_total_hours: z.number().nullable().optional(),
-            proposed_how_assessed: z.string().max(4000).optional().nullable(),
-            proposed_prerequisites: z.string().max(4000).optional().nullable(),
-            proposed_tutor_credentials: z.string().max(4000).optional().nullable(),
-          })
-          .optional(),
-      })
-      .parse(d),
-  )
-  .handler(async ({ data }): Promise<{ draft: string }> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("AI is temporarily unavailable");
+  .inputValidator((d: unknown) => evidenceUploadInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
 
-    const fieldPrompt = FIELD_PROMPTS[data.field];
-    const ctx = data.context ?? {};
-    const contextLines = [
-      ctx.proposed_title ? `Working title: ${ctx.proposed_title}` : null,
-      ctx.proposed_delivery_mode ? `Delivery mode: ${ctx.proposed_delivery_mode}` : null,
-      ctx.proposed_total_hours != null ? `Total learning hours: ${ctx.proposed_total_hours}` : null,
-      ctx.proposed_who_for && data.field !== "proposed_who_for"
-        ? `Who this course is for:\n${ctx.proposed_who_for}`
-        : null,
-      ctx.proposed_what_covered && data.field !== "proposed_what_covered"
-        ? `What the course covers:\n${ctx.proposed_what_covered}`
-        : null,
-      ctx.proposed_learner_outcomes && data.field !== "proposed_learner_outcomes"
-        ? `Rough learner outcomes:\n${ctx.proposed_learner_outcomes}`
-        : null,
-    ].filter(Boolean);
+    const match = data.file_data_url.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) throw new Error("Invalid file payload");
+    const [, mime, b64] = match;
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
+    const sha256 = Array.from(new Uint8Array(hashBuf), (b) => b.toString(16).padStart(2, "0")).join("");
+    const ext = data.filename.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+    const path = `${userId}/${Date.now()}-${sha256.slice(0, 8)}.${ext}`;
 
-    const system = `You polish rough answers a training provider has typed into a REPS course accreditation form. You NEVER invent facts. You only rewrite what the provider gave you into clearer, more professional prose or a structured list. British English. No exclamation marks. No marketing jargon. Return ONLY the polished text — no preamble, no explanation, no quotes.`;
+    const { error: upErr } = await supabase.storage
+      .from("course-accreditations")
+      .upload(path, bytes, { contentType: mime, upsert: false });
+    if (upErr) throw new Error(upErr.message);
 
-    const user = [
-      contextLines.length ? `Context so far:\n${contextLines.join("\n\n")}\n\n` : "",
-      `Field: ${data.field}\n\nInstructions: ${fieldPrompt}\n\nProvider's current answer:\n${data.current_value}`,
-    ].join("");
-
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-      }),
-    });
-    if (!res.ok) {
-      if (res.status === 429) throw new Error("Too many AI requests — try again in a moment.");
-      if (res.status === 402) throw new Error("AI credits exhausted — contact REPS support.");
-      throw new Error("AI request failed");
+    // If a course_id is provided, verify ownership. Otherwise the evidence is
+    // pending — will be attached to the row that submitRepsCourse creates.
+    if (data.course_id) {
+      const { data: course } = await supabase
+        .from("reps_courses")
+        .select("id, provider_id")
+        .eq("id", data.course_id)
+        .maybeSingle();
+      if (!course || (course as { provider_id: string }).provider_id !== userId) {
+        throw new Error("Forbidden: course does not belong to you");
+      }
     }
-    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const raw = json.choices?.[0]?.message?.content ?? "";
-    const draft = raw.trim().replace(/^["']|["']$/g, "").slice(0, 2000);
-    if (!draft) throw new Error("AI returned an empty draft — try again");
-    return { draft };
+
+    const { data: row, error } = await supabase
+      .from("reps_course_evidence")
+      .insert({
+        course_id: data.course_id ?? null,
+        provider_id: userId,
+        file_kind: data.file_kind,
+        file_path: path,
+        file_name: data.filename.slice(0, 200),
+        file_size_bytes: bytes.length,
+        mime_type: data.mime_type ?? mime,
+        uploaded_by: userId,
+      } as never)
+      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .single();
+    if (error) throw new Error(error.message);
+
+    return row as unknown as RepsCourseEvidenceRow;
   });
+
+export const removeRepsCourseEvidence = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row, error: readErr } = await supabase
+      .from("reps_course_evidence")
+      .select("id, provider_id, file_path, course_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    if (!row) return { ok: true };
+    const r = row as { id: string; provider_id: string; file_path: string; course_id: string | null };
+    if (r.provider_id !== userId) throw new Error("Forbidden");
+
+    // Once attached to a course that is not still in draft, admins own it.
+    if (r.course_id) {
+      const { data: course } = await supabase
+        .from("reps_courses")
+        .select("status")
+        .eq("id", r.course_id)
+        .maybeSingle();
+      const status = (course as { status?: string } | null)?.status;
+      if (status && status !== "submitted" && status !== "changes_requested") {
+        throw new Error("Cannot remove evidence after the course has been reviewed");
+      }
+    }
+
+    const { error } = await supabase
+      .from("reps_course_evidence")
+      .delete()
+      .eq("id", r.id)
+      .eq("provider_id", userId);
+    if (error) throw new Error(error.message);
+
+    try {
+      if (r.file_path.startsWith(`${userId}/`)) {
+        await supabase.storage.from("course-accreditations").remove([r.file_path]);
+      }
+    } catch (e) {
+      console.error("[removeRepsCourseEvidence] storage cleanup failed", e);
+    }
+    return { ok: true };
+  });
+
+export const listRepsCourseEvidence = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ course_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    // Ownership check: either the course belongs to the caller, or they are admin.
+    const { data: course } = await supabase
+      .from("reps_courses")
+      .select("id, provider_id")
+      .eq("id", data.course_id)
+      .maybeSingle();
+    if (!course) return [] as RepsCourseEvidenceRow[];
+    const isOwner = (course as { provider_id: string }).provider_id === userId;
+    if (!isOwner) {
+      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (!isAdmin) throw new Error("Forbidden");
+    }
+    const { data: rows, error } = await supabase
+      .from("reps_course_evidence")
+      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .eq("course_id", data.course_id)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (rows ?? []) as unknown as RepsCourseEvidenceRow[];
+  });
+
+export const getRepsCourseEvidenceSignedUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ path: z.string().min(1) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const isOwn = data.path.startsWith(`${userId}/`);
+    if (!isOwn) {
+      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (!isAdmin) throw new Error("Forbidden");
+    }
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("course-accreditations")
+      .createSignedUrl(data.path, 60 * 15);
+    if (error || !signed) throw new Error(error?.message ?? "Sign failed");
+    return { url: signed.signedUrl };
+  });
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Doc access (signed URLs)
+
 
 export const getQualificationDocSignedUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
