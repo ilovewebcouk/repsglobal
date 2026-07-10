@@ -159,6 +159,7 @@ function ProviderQualsPage() {
   return (
     <DashboardShell
       role="trainer"
+      tier={tier}
       active="Qualifications & Courses"
       title="Qualifications & Courses"
       subtitle="One list for both regulated qualifications you're approved to deliver and courses you'd like REPS to accredit."
