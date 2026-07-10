@@ -29,6 +29,7 @@ import {
   Upload,
   XCircle,
 } from "lucide-react";
+import repsLogoWhite from "@/assets/brand/logo.svg";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
@@ -507,8 +508,8 @@ function CpdRow({ row }: { row: RepsCourseRow }) {
   return (
     <li>
       <PCard className={`flex items-start gap-4 ${isWithdrawn ? "opacity-60" : ""}`}>
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] border border-emerald-500/30 bg-emerald-500/10">
-          <BadgeCheck className="h-5 w-5 text-emerald-300" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] border border-emerald-500/30 bg-emerald-500/10 p-2">
+          <img src={repsLogoWhite} alt="REPS" className="max-h-6 max-w-full object-contain" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
