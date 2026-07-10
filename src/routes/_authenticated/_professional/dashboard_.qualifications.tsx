@@ -62,15 +62,15 @@ import { awardingBodyName, awardingBodyLogo, awardingBodyLogoByName, OFQUAL_QUAL
 import { uploadCertificateFile } from "@/lib/cpd/cpd.functions";
 import {
   listMyRegulatedPermissions,
-  listMyCpdCourses,
+  listMyRepsCourses,
   resolveOfqualNumber,
   submitRegulatedPermissionBatch,
-  submitCpdCourse,
+  submitRepsCourse,
   removeMyRegulatedPermission,
-  deleteMyCpdCourse,
+  removeMyRepsCourse,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
-  CpdCourseRow,
+  RepsCourseRow,
   RegulatedPermissionRow,
 } from "@/lib/qualifications/qualifications.functions";
 
