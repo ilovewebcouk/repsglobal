@@ -1,11 +1,11 @@
 /**
- * /dashboard/qualifications — provider qualifications & CPD accreditation.
+ * /dashboard/qualifications — provider qualifications & REPS-accredited courses.
  *
  * Two sub-sections:
  *   A. Regulated qualifications we deliver (Ofqual)
  *      — Pick from catalogue, upload EQA report / centre certificate /
  *        approval letter, admin approves.
- *   B. REPS-accredited CPD courses
+ *   B. REPS-accredited courses
  *      — Provider defines their own course, uploads syllabus + assessment
  *        criteria + tutor CV, admin approves, REPS assigns a CPD number.
  */
@@ -81,7 +81,7 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/q
       {
         name: "description",
         content:
-          "Prove you're approved to deliver regulated qualifications and get your CPD courses REPS-accredited.",
+          "Prove you're approved to deliver regulated qualifications and get your courses REPS-accredited.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -107,7 +107,7 @@ function ProviderQualsPage() {
       role="trainer"
       active="Qualifications & Courses"
       title="Qualifications & Courses"
-      subtitle="Prove approval to deliver regulated qualifications, and get your CPD courses REPS-accredited."
+      subtitle="Prove approval to deliver regulated qualifications, and get your courses REPS-accredited."
     >
       <div className="mb-5 inline-flex rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
         {(["regulated", "cpd"] as const).map((t) => (
@@ -118,7 +118,7 @@ function ProviderQualsPage() {
               tab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
             }`}
           >
-            {t === "regulated" ? "Regulated qualifications" : "REPS-accredited CPD"}
+            {t === "regulated" ? "Regulated qualifications" : "REPS-accredited courses"}
           </button>
         ))}
       </div>
@@ -379,11 +379,11 @@ function CpdSection({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="font-display text-[18px] font-bold text-white">
-            REPS-accredited CPD courses
+            REPS-accredited courses
           </h2>
           <p className="mt-1 text-[13px] text-white/60">
-            REPS accredits your own CPD. Submit a syllabus, assessment criteria and tutor CV.
-            Approved courses receive a REPS CPD number and the accredited badge.
+            REPS accredits courses you deliver. Submit a syllabus, assessment criteria and tutor CV.
+            Approved courses receive a REPS accreditation number and the accredited badge.
           </p>
         </div>
         <Button onClick={onNew} className="shrink-0">
@@ -398,7 +398,7 @@ function CpdSection({
       ) : rows.length === 0 ? (
         <div className="rounded-[16px] border border-dashed border-reps-border p-8 text-center">
           <Sparkles className="mx-auto mb-3 h-8 w-8 text-white/40" />
-          <div className="text-[14px] font-semibold text-white">No CPD courses yet</div>
+          <div className="text-[14px] font-semibold text-white">No courses yet</div>
           <div className="mt-1 text-[12.5px] text-white/55">
             Submit your first course for REPS accreditation.
           </div>
@@ -955,10 +955,10 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg bg-reps-panel border-reps-border text-white">
         <DialogHeader>
-          <DialogTitle>Request REPS CPD accreditation</DialogTitle>
+          <DialogTitle>Request REPS accreditation</DialogTitle>
           <DialogDescription>
             Submit your course syllabus, assessment criteria and tutor CV. Approved courses receive
-            a REPS CPD number and the accredited badge.
+            a REPS accreditation number and the accredited badge.
           </DialogDescription>
         </DialogHeader>
 

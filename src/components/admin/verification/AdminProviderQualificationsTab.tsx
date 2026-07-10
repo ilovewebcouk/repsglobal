@@ -1,5 +1,5 @@
 /**
- * Admin queue for provider regulated qualifications & CPD accreditation.
+ * Admin queue for provider regulated qualifications & REPS-accredited courses.
  *
  * Master-detail layout mirroring AdminProviderQueueTab (name / domain
  * queue): a left-hand list groups submissions by provider (and by
@@ -81,7 +81,7 @@ export function AdminProviderQualificationsTab() {
                 tab === t ? "bg-reps-orange text-white" : "text-white/60 hover:text-white"
               }`}
             >
-              {t === "regulated" ? "Regulated qualifications" : "CPD accreditation"}
+              {t === "regulated" ? "Regulated qualifications" : "REPS-accredited courses"}
             </button>
           ))}
         </div>
@@ -757,14 +757,14 @@ function CpdQueue({ status }: { status: Status }) {
         <div className="border-b border-reps-border px-4 py-3">
           <div className="flex items-center justify-between">
             <h3 className="text-[13px] font-semibold text-white">
-              {STATUS_LABEL[status]} CPD courses
+              {STATUS_LABEL[status]} courses
             </h3>
             <span className="rounded-full border border-amber-400/30 bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-amber-300">
               {rows.length}
             </span>
           </div>
           <p className="mt-0.5 text-[11.5px] text-white/55">
-            Providers submitting their own CPD courses for REPS accreditation.
+            Providers submitting their own courses for REPS accreditation.
           </p>
         </div>
         <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
@@ -773,7 +773,7 @@ function CpdQueue({ status }: { status: Status }) {
           )}
           {!listQ.isLoading && rows.length === 0 && (
             <li className="p-6 text-center text-[12px] text-white/55">
-              No {STATUS_LABEL[status].toLowerCase()} CPD submissions.
+              No {STATUS_LABEL[status].toLowerCase()} course submissions.
             </li>
           )}
           {rows.map((r) => (
@@ -794,9 +794,9 @@ function CpdQueue({ status }: { status: Status }) {
               <EmptyIcon>
                 <Sparkles />
               </EmptyIcon>
-              <EmptyTitle>Select a CPD submission</EmptyTitle>
+              <EmptyTitle>Select a course submission</EmptyTitle>
               <EmptyDescription>
-                Approve to assign a REPS CPD number, or reject with a note.
+                Approve to assign a REPS accreditation number, or reject with a note.
               </EmptyDescription>
             </Empty>
           </PPanel>
@@ -886,7 +886,7 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
         <div className="border-b border-reps-border px-5 py-4">
           <div className="flex flex-wrap items-center gap-2 text-[11.5px] text-white/60">
             <span className="rounded-full border border-amber-400/30 bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-amber-300">
-              CPD accreditation
+              REPS-accredited
             </span>
             {row.reps_cpd_number ? (
               <Badge className="border-emerald-400/30 bg-emerald-500/15 text-emerald-300">
@@ -986,7 +986,7 @@ function CpdDetail({ row, onDecided }: { row: CpdRow; onDecided: () => void }) {
                 disabled={decideMut.isPending}
                 className="bg-emerald-500 text-white hover:bg-emerald-600"
               >
-                <CheckCircle2 data-icon /> Approve & assign CPD number
+                <CheckCircle2 data-icon /> Approve & assign REPS number
               </Button>
               <Button
                 onClick={() =>
