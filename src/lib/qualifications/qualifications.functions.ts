@@ -722,6 +722,111 @@ export const adminRedraftRepsCourse = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AI-assisted field expansion (used by the provider dialog).
+
+const EXPAND_FIELDS = [
+  "proposed_who_for",
+  "proposed_what_covered",
+  "proposed_learner_outcomes",
+  "proposed_how_assessed",
+  "proposed_prerequisites",
+  "proposed_tutor_credentials",
+  "proposed_extra_notes",
+] as const;
+
+export type ExpandCourseField = (typeof EXPAND_FIELDS)[number];
+
+const FIELD_PROMPTS: Record<ExpandCourseField, string> = {
+  proposed_who_for:
+    "Polish this into a clear 2-4 sentence description of who this course is for. Name the target learner (e.g. new instructors, existing coaches specialising), typical prior experience, and typical goals. British English. No marketing jargon.",
+  proposed_what_covered:
+    "Turn the provider's rough list into a well-structured summary of what the course covers, ordered logically. Use short paragraphs or bullet-ready lines. Keep it factual — do not add topics the provider did not mention. British English.",
+  proposed_learner_outcomes:
+    "Rewrite these into 5-8 clear learning outcomes, one per line, each starting with a Bloom's verb (demonstrate, apply, evaluate, design, coach, assess, plan, adapt). Do not fabricate outcomes; only rewrite what the provider gave you.",
+  proposed_how_assessed:
+    "Rewrite this into 2-4 sentences describing how learners are assessed, including assessment methods and pass criteria. Be specific and factual. British English.",
+  proposed_prerequisites:
+    "Rewrite this as a concise list of prerequisites (qualifications, age, experience, physical requirements). One per line. Do not invent prerequisites the provider did not mention.",
+  proposed_tutor_credentials:
+    "Polish this into a clear 2-4 sentence paragraph about who teaches the course and why they are qualified — qualifications, years of experience, specialisms. Stick to what the provider said.",
+  proposed_extra_notes:
+    "Polish this into clear, professional notes for the REPS reviewer. Keep it concise and factual.",
+};
+
+export const expandRepsCourseField = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        field: z.enum(EXPAND_FIELDS),
+        current_value: z.string().min(15).max(4000),
+        context: z
+          .object({
+            proposed_title: z.string().max(200).optional().nullable(),
+            proposed_who_for: z.string().max(4000).optional().nullable(),
+            proposed_what_covered: z.string().max(4000).optional().nullable(),
+            proposed_learner_outcomes: z.string().max(4000).optional().nullable(),
+            proposed_delivery_mode: z.string().max(50).optional().nullable(),
+            proposed_total_hours: z.number().nullable().optional(),
+            proposed_how_assessed: z.string().max(4000).optional().nullable(),
+            proposed_prerequisites: z.string().max(4000).optional().nullable(),
+            proposed_tutor_credentials: z.string().max(4000).optional().nullable(),
+          })
+          .optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }): Promise<{ draft: string }> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("AI is temporarily unavailable");
+
+    const fieldPrompt = FIELD_PROMPTS[data.field];
+    const ctx = data.context ?? {};
+    const contextLines = [
+      ctx.proposed_title ? `Working title: ${ctx.proposed_title}` : null,
+      ctx.proposed_delivery_mode ? `Delivery mode: ${ctx.proposed_delivery_mode}` : null,
+      ctx.proposed_total_hours != null ? `Total learning hours: ${ctx.proposed_total_hours}` : null,
+      ctx.proposed_who_for && data.field !== "proposed_who_for"
+        ? `Who this course is for:\n${ctx.proposed_who_for}`
+        : null,
+      ctx.proposed_what_covered && data.field !== "proposed_what_covered"
+        ? `What the course covers:\n${ctx.proposed_what_covered}`
+        : null,
+      ctx.proposed_learner_outcomes && data.field !== "proposed_learner_outcomes"
+        ? `Rough learner outcomes:\n${ctx.proposed_learner_outcomes}`
+        : null,
+    ].filter(Boolean);
+
+    const system = `You polish rough answers a training provider has typed into a REPS course accreditation form. You NEVER invent facts. You only rewrite what the provider gave you into clearer, more professional prose or a structured list. British English. No exclamation marks. No marketing jargon. Return ONLY the polished text — no preamble, no explanation, no quotes.`;
+
+    const user = [
+      contextLines.length ? `Context so far:\n${contextLines.join("\n\n")}\n\n` : "",
+      `Field: ${data.field}\n\nInstructions: ${fieldPrompt}\n\nProvider's current answer:\n${data.current_value}`,
+    ].join("");
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      if (res.status === 429) throw new Error("Too many AI requests — try again in a moment.");
+      if (res.status === 402) throw new Error("AI credits exhausted — contact REPS support.");
+      throw new Error("AI request failed");
+    }
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const raw = json.choices?.[0]?.message?.content ?? "";
+    const draft = raw.trim().replace(/^["']|["']$/g, "").slice(0, 2000);
+    if (!draft) throw new Error("AI returned an empty draft — try again");
+    return { draft };
+  });
+// ─────────────────────────────────────────────────────────────────────────────
 // Doc access (signed URLs)
 
 export const getQualificationDocSignedUrl = createServerFn({ method: "POST" })
