@@ -110,6 +110,8 @@ export type RepsCourseRow = {
   id: string;
   provider_id: string;
   proposed_title: string;
+  proposed_level: number | null;
+  proposed_credential_type: "award" | "certificate" | "diploma" | "course" | "not_sure" | null;
   proposed_who_for: string | null;
   proposed_what_covered: string | null;
   proposed_learner_outcomes: string | null;
@@ -484,6 +486,11 @@ const moduleSchema = z.object({
 
 const submitRepsCourseInput = z.object({
   proposed_title: z.string().min(3).max(200),
+  proposed_level: z.number().int().min(1).max(7).nullable().optional(),
+  proposed_credential_type: z
+    .enum(["award", "certificate", "diploma", "course", "not_sure"])
+    .nullable()
+    .optional(),
   proposed_who_for: z.string().min(10).max(4000),
   proposed_learner_outcomes: z.string().min(10).max(4000),
   proposed_delivery_mode: z.enum(DELIVERY_MODES),
@@ -550,6 +557,8 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
       .insert({
         provider_id: userId,
         proposed_title: data.proposed_title.trim(),
+        proposed_level: data.proposed_level ?? null,
+        proposed_credential_type: data.proposed_credential_type ?? null,
         proposed_who_for: data.proposed_who_for.trim(),
         proposed_what_covered: whatCovered,
         proposed_learner_outcomes: data.proposed_learner_outcomes.trim(),
@@ -581,7 +590,7 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
   });
 
 const REPS_COURSE_SELECT =
-  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, spec_modules, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, endorsement_statement_url, endorsement_statement_agreed, endorsement_statement_last_checked_at, endorsement_statement_found, endorsement_statement_check_error";
+  "id, provider_id, proposed_title, proposed_level, proposed_credential_type, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, spec_modules, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, endorsement_statement_url, endorsement_statement_agreed, endorsement_statement_last_checked_at, endorsement_statement_found, endorsement_statement_check_error";
 
 export const listMyRepsCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

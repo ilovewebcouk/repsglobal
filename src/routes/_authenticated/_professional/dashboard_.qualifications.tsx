@@ -1054,6 +1054,10 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   const removeEvidence = useServerFn(removeRepsCourseEvidence);
 
   const [title, setTitle] = React.useState("");
+  const [proposedLevel, setProposedLevel] = React.useState<string>("");
+  const [credentialType, setCredentialType] = React.useState<
+    "award" | "certificate" | "diploma" | "course" | "not_sure" | ""
+  >("");
   const [whoFor, setWhoFor] = React.useState("");
   const [outcomes, setOutcomes] = React.useState("");
   const [delivery, setDelivery] = React.useState<DeliveryMode | "">("");
@@ -1120,6 +1124,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
 
   const resetAll = () => {
     setTitle("");
+    setProposedLevel("");
+    setCredentialType("");
     setWhoFor("");
     setOutcomes("");
     setDelivery("");
@@ -1209,6 +1215,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
       await submit({
         data: {
           proposed_title: title.trim(),
+          proposed_level: proposedLevel ? Number(proposedLevel) : null,
+          proposed_credential_type: credentialType || null,
           proposed_who_for: whoFor.trim(),
           proposed_learner_outcomes: outcomes.trim(),
           proposed_delivery_mode: delivery as DeliveryMode,
@@ -1260,6 +1268,45 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             />
             <FieldHelp>What you'd call it internally. REPS may refine the wording before publishing.</FieldHelp>
           </FormField>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField label="Proposed level">
+              <Select value={proposedLevel} onValueChange={setProposedLevel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Not sure" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2">Level 2 — introductory</SelectItem>
+                  <SelectItem value="3">Level 3 — practitioner (e.g. PT)</SelectItem>
+                  <SelectItem value="4">Level 4 — advanced practitioner</SelectItem>
+                  <SelectItem value="5">Level 5 — specialist</SelectItem>
+                  <SelectItem value="6">Level 6 — degree-equivalent</SelectItem>
+                  <SelectItem value="7">Level 7 — master's-equivalent</SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldHelp>What you think the course sits at. REPS admin confirms the final level.</FieldHelp>
+            </FormField>
+
+            <FormField label="Credential type">
+              <Select
+                value={credentialType}
+                onValueChange={(v) => setCredentialType(v as typeof credentialType)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Not sure" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="award">Award — short, single topic</SelectItem>
+                  <SelectItem value="certificate">Certificate — full practitioner course</SelectItem>
+                  <SelectItem value="diploma">Diploma — extended / multi-unit</SelectItem>
+                  <SelectItem value="course">Course — CPD / short course</SelectItem>
+                  <SelectItem value="not_sure">Not sure — REPS to advise</SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldHelp>How you'd like the endorsement titled (e.g. "Certificate in Kettlebell Coaching").</FieldHelp>
+            </FormField>
+          </div>
+
 
           <FormField label="Who this course is for" required>
             <Textarea
