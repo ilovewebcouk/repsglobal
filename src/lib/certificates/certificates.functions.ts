@@ -79,8 +79,23 @@ export type BatchDTO = {
 
 export type CertificatePricingDTO = {
   unit_price_pence: number;
+  postage_fee_pence: number;
+  default_rm_service_code: string;
   currency: string;
   updated_at: string;
+};
+
+export type ShipToAddressDTO = {
+  fullName: string;
+  companyName?: string | null;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city: string;
+  county?: string | null;
+  postcode: string;
+  countryCode: string;
+  phoneNumber?: string | null;
+  emailAddress?: string | null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -126,21 +141,26 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<CertificatePricingDTO> => {
     const { data, error } = await context.supabase
       .from("certificate_pricing")
-      .select("unit_price_pence, currency, updated_at")
+      .select(
+        "unit_price_pence, postage_fee_pence, default_rm_service_code, currency, updated_at",
+      )
       .eq("id", true)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return (
-      data ?? {
-        unit_price_pence: 1500,
-        currency: "gbp",
-        updated_at: new Date().toISOString(),
-      }
-    );
+    return {
+      unit_price_pence: (data?.unit_price_pence as number | undefined) ?? 1500,
+      postage_fee_pence: (data?.postage_fee_pence as number | undefined) ?? 650,
+      default_rm_service_code:
+        (data?.default_rm_service_code as string | undefined) ?? "TPN",
+      currency: (data?.currency as string | undefined) ?? "gbp",
+      updated_at: (data?.updated_at as string | undefined) ?? new Date().toISOString(),
+    };
   });
 
 const setPricingInput = z.object({
-  unit_price_pence: z.number().int().min(0).max(50000),
+  unit_price_pence: z.number().int().min(0).max(50000).optional(),
+  postage_fee_pence: z.number().int().min(0).max(10000).optional(),
+  default_rm_service_code: z.enum(["TPN", "TPS"]).optional(),
 });
 
 export const setCertificatePricing = createServerFn({ method: "POST" })
@@ -155,13 +175,20 @@ export const setCertificatePricing = createServerFn({ method: "POST" })
     } as never);
     if (!isAdmin) throw new Error("Forbidden");
 
+    const patch: Record<string, unknown> = {
+      updated_by: userId,
+      updated_at: new Date().toISOString(),
+    };
+    if (typeof data.unit_price_pence === "number")
+      patch.unit_price_pence = data.unit_price_pence;
+    if (typeof data.postage_fee_pence === "number")
+      patch.postage_fee_pence = data.postage_fee_pence;
+    if (data.default_rm_service_code)
+      patch.default_rm_service_code = data.default_rm_service_code;
+
     const { error } = await supabase
       .from("certificate_pricing")
-      .update({
-        unit_price_pence: data.unit_price_pence,
-        updated_by: userId,
-        updated_at: new Date().toISOString(),
-      } as never)
+      .update(patch as never)
       .eq("id", true);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -521,6 +548,19 @@ export const cancelRegistration = createServerFn({ method: "POST" })
 // ─────────────────────────────────────────────────────────────────────────────
 // Batch checkout
 
+const shipToAddressSchema = z.object({
+  fullName: z.string().trim().min(1).max(120),
+  companyName: z.string().trim().max(120).optional().nullable(),
+  addressLine1: z.string().trim().min(1).max(160),
+  addressLine2: z.string().trim().max(160).optional().nullable(),
+  city: z.string().trim().min(1).max(80),
+  county: z.string().trim().max(80).optional().nullable(),
+  postcode: z.string().trim().min(3).max(16),
+  countryCode: z.string().trim().length(2).default("GB"),
+  phoneNumber: z.string().trim().max(32).optional().nullable(),
+  emailAddress: z.string().trim().email().max(160).optional().nullable(),
+});
+
 export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -528,6 +568,7 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       .object({
         registration_ids: z.array(z.string().uuid()).min(1).max(100),
         environment: z.enum(["sandbox", "live"]),
+        ship_to_address: shipToAddressSchema.optional().nullable(),
       })
       .parse(d),
   )
@@ -536,13 +577,15 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       const { supabase, userId, claims } = context;
       const { country } = await assertProviderIsOrganisation(supabase, userId);
 
-      // Load pricing
+      // Load pricing (unit + postage)
       const { data: pricing } = await supabase
         .from("certificate_pricing")
-        .select("unit_price_pence, currency")
+        .select("unit_price_pence, postage_fee_pence, currency")
         .eq("id", true)
         .maybeSingle();
       const unitPricePence = (pricing?.unit_price_pence as number | undefined) ?? 1500;
+      const postageFeePence =
+        (pricing?.postage_fee_pence as number | undefined) ?? 650;
       const currency = (pricing?.currency as string | undefined) ?? "gbp";
 
       // Validate registrations
@@ -564,8 +607,19 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       }
 
       const format = formatForCountry(country);
+      const isPrinted = format === "printed_and_digital";
       const count = regs.length;
-      const totalPence = unitPricePence * count;
+
+      // For UK/printed batches, require a shipping address up-front
+      if (isPrinted && !data.ship_to_address) {
+        return {
+          error:
+            "A UK postal address is required for printed certificates. Please add your shipping details before checking out.",
+        };
+      }
+
+      const postageSnapshot = isPrinted ? postageFeePence : 0;
+      const totalPence = unitPricePence * count + postageSnapshot;
 
       // Create batch
       const { data: batch, error: batchErr } = await supabase
@@ -574,11 +628,13 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
           provider_id: userId,
           count,
           unit_price_pence: unitPricePence,
+          postage_fee_pence_snapshot: postageSnapshot,
           total_pence: totalPence,
           currency,
           format,
           environment: data.environment,
           status: "pending",
+          ship_to_address: data.ship_to_address ?? null,
         } as never)
         .select("id")
         .single();
@@ -603,26 +659,40 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       const email = (claims.email as string | undefined) ?? null;
 
       try {
+        const line_items: any[] = [
+          {
+            quantity: count,
+            price_data: {
+              currency,
+              unit_amount: unitPricePence,
+              product_data: {
+                name: isPrinted
+                  ? "REPS Certificate — printed + digital"
+                  : "REPS Certificate — digital",
+                description:
+                  "Jointly-branded certificate of achievement and unit summary, QR-verified on repsuk.org.",
+              },
+            },
+          },
+        ];
+        if (isPrinted && postageSnapshot > 0) {
+          line_items.push({
+            quantity: 1,
+            price_data: {
+              currency,
+              unit_amount: postageSnapshot,
+              product_data: {
+                name: "Postage & tracked delivery — Royal Mail",
+                description: "Tracked delivery of your printed certificates.",
+              },
+            },
+          });
+        }
+
         const session = await stripe.checkout.sessions.create({
           mode: "payment",
           customer_email: email ?? undefined,
-          line_items: [
-            {
-              quantity: count,
-              price_data: {
-                currency,
-                unit_amount: unitPricePence,
-                product_data: {
-                  name:
-                    format === "printed_and_digital"
-                      ? "REPS Certificate — printed + digital"
-                      : "REPS Certificate — digital",
-                  description:
-                    "Jointly-branded certificate of achievement and unit summary, QR-verified on repsuk.org.",
-                },
-              },
-            },
-          ],
+          line_items,
           success_url: `${origin}/dashboard/students?checkout=success&batch=${batch!.id}`,
           cancel_url: `${origin}/dashboard/students?checkout=canceled&batch=${batch!.id}`,
           metadata: {
@@ -633,7 +703,9 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
             environment: data.environment,
           },
           payment_intent_data: {
-            description: `REPS certificates — ${count} × ${(unitPricePence / 100).toFixed(2)}`,
+            description: `REPS certificates — ${count} × ${(unitPricePence / 100).toFixed(2)}${
+              postageSnapshot ? ` + £${(postageSnapshot / 100).toFixed(2)} postage` : ""
+            }`,
             metadata: { kind: "cert_batch", batch_id: batch!.id },
           },
         });
@@ -788,6 +860,14 @@ export type AdminBatchDTO = BatchDTO & {
   provider_name: string | null;
   stripe_checkout_session_id: string | null;
   stripe_payment_intent_id: string | null;
+  postage_fee_pence_snapshot: number;
+  rm_service_code: string | null;
+  rm_order_identifier: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  label_pdf_path: string | null;
+  shipped_at: string | null;
+  ship_to_address: ShipToAddressDTO | null;
 };
 
 export const adminListBatches = createServerFn({ method: "GET" })
@@ -817,7 +897,7 @@ export const adminListBatches = createServerFn({ method: "GET" })
     let q = supabase
       .from("certificate_batches")
       .select(
-        "id, provider_id, status, count, unit_price_pence, total_pence, currency, format, paid_at, issued_at, dispatched_at, created_at, stripe_checkout_session_id, stripe_payment_intent_id",
+        "id, provider_id, status, count, unit_price_pence, total_pence, currency, format, paid_at, issued_at, dispatched_at, created_at, stripe_checkout_session_id, stripe_payment_intent_id, postage_fee_pence_snapshot, rm_service_code, rm_order_identifier, tracking_number, tracking_url, label_pdf_path, shipped_at, ship_to_address",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -839,6 +919,14 @@ export const adminListBatches = createServerFn({ method: "GET" })
       provider_name: nameById.get(r.provider_id) ?? null,
       stripe_checkout_session_id: r.stripe_checkout_session_id,
       stripe_payment_intent_id: r.stripe_payment_intent_id,
+      postage_fee_pence_snapshot: (r.postage_fee_pence_snapshot as number) ?? 0,
+      rm_service_code: r.rm_service_code ?? null,
+      rm_order_identifier: r.rm_order_identifier ?? null,
+      tracking_number: r.tracking_number ?? null,
+      tracking_url: r.tracking_url ?? null,
+      label_pdf_path: r.label_pdf_path ?? null,
+      shipped_at: r.shipped_at ?? null,
+      ship_to_address: (r.ship_to_address as ShipToAddressDTO | null) ?? null,
     }));
   });
 
@@ -849,6 +937,11 @@ export type PrintQueueRowDTO = {
   count: number;
   paid_at: string | null;
   status: string;
+  ship_to_address: ShipToAddressDTO | null;
+  rm_service_code: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  shipped_at: string | null;
   learners: Array<{
     registration_id: string;
     certificate_number: string | null;
@@ -868,7 +961,9 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
 
     const { data: batches, error } = await supabase
       .from("certificate_batches")
-      .select("id, provider_id, count, paid_at, status")
+      .select(
+        "id, provider_id, count, paid_at, status, ship_to_address, rm_service_code, tracking_number, tracking_url, shipped_at",
+      )
       .in("status", ["awaiting_print", "printed"])
       .eq("format", "printed_and_digital")
       .order("paid_at", { ascending: true })
@@ -901,6 +996,11 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
       count: b.count,
       paid_at: b.paid_at,
       status: b.status,
+      ship_to_address: (b.ship_to_address as ShipToAddressDTO | null) ?? null,
+      rm_service_code: b.rm_service_code ?? null,
+      tracking_number: b.tracking_number ?? null,
+      tracking_url: b.tracking_url ?? null,
+      shipped_at: b.shipped_at ?? null,
       learners: (regs ?? [])
         .filter((r: any) => r.batch_id === b.id)
         .map((r: any) => ({
@@ -932,24 +1032,187 @@ export const adminMarkBatchPrinted = createServerFn({ method: "POST" })
 
 export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        batch_id: z.string().uuid(),
+        service_code: z.enum(["TPN", "TPS"]).optional(),
+      })
+      .parse(d),
+  )
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{
+      ok: true;
+      tracking_number: string | null;
+      tracking_url: string | null;
+      label_pdf_path: string | null;
+    }> => {
+      const { supabase, userId } = context;
+      await assertAdmin(supabase, (context as any).realUserId ?? userId);
+
+      // Load batch + address snapshot
+      const { data: batch, error: bErr } = await supabase
+        .from("certificate_batches")
+        .select(
+          "id, provider_id, count, status, format, ship_to_address, shipped_at, tracking_number",
+        )
+        .eq("id", data.batch_id)
+        .maybeSingle();
+      if (bErr) throw new Error(bErr.message);
+      if (!batch) throw new Error("Batch not found.");
+      if (batch.format !== "printed_and_digital") {
+        throw new Error("Only UK printed batches are dispatched via Royal Mail.");
+      }
+      if (!["printed", "awaiting_print", "issued"].includes(batch.status as string)) {
+        throw new Error(`Batch is in status '${batch.status}' — cannot dispatch.`);
+      }
+      const address = batch.ship_to_address as ShipToAddressDTO | null;
+      if (!address) {
+        throw new Error(
+          "This batch has no shipping address on file. The provider must add one before dispatch.",
+        );
+      }
+
+      // Load default service if not supplied
+      const { data: pricing } = await supabase
+        .from("certificate_pricing")
+        .select("default_rm_service_code")
+        .eq("id", true)
+        .maybeSingle();
+      const serviceCode =
+        data.service_code ??
+        (pricing?.default_rm_service_code as string | undefined) ??
+        "TPN";
+
+      // Call Royal Mail
+      const {
+        createRoyalMailOrder,
+        generateRoyalMailLabel,
+        buildTrackingUrl,
+        estimateShipmentWeightGrams,
+      } = await import("@/lib/certificates/royal-mail.server");
+
+      const rmOrder = await createRoyalMailOrder({
+        orderReference: batch.id as string,
+        serviceCode,
+        recipient: address,
+        weightGrams: estimateShipmentWeightGrams(batch.count as number),
+        itemCount: batch.count as number,
+        specialInstructions: `REPS certificates x${batch.count}`,
+      });
+
+      // Fetch the label PDF and upload to storage
+      const labelBytes = await generateRoyalMailLabel(rmOrder.orderIdentifier);
+      const labelPath = `batches/${batch.id}/label.pdf`;
+
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: upErr } = await supabaseAdmin.storage
+        .from("certificates")
+        .upload(labelPath, labelBytes, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
+      if (upErr) throw new Error(`Could not save shipping label: ${upErr.message}`);
+
+      const trackingUrl = rmOrder.trackingNumber
+        ? buildTrackingUrl(rmOrder.trackingNumber)
+        : null;
+      const now = new Date().toISOString();
+
+      const { error: updErr } = await supabase
+        .from("certificate_batches")
+        .update({
+          status: "dispatched",
+          dispatched_at: now,
+          shipped_at: now,
+          rm_service_code: serviceCode,
+          rm_order_identifier: String(rmOrder.orderIdentifier),
+          rm_order_reference: rmOrder.orderReference,
+          tracking_number: rmOrder.trackingNumber ?? null,
+          tracking_url: trackingUrl,
+          label_pdf_path: labelPath,
+        } as never)
+        .eq("id", data.batch_id);
+      if (updErr) throw new Error(updErr.message);
+
+      await supabase
+        .from("certificate_registrations")
+        .update({ status: "dispatched", dispatched_at: now } as never)
+        .eq("batch_id", data.batch_id)
+        .eq("status", "issued");
+
+      return {
+        ok: true,
+        tracking_number: rmOrder.trackingNumber ?? null,
+        tracking_url: trackingUrl,
+        label_pdf_path: labelPath,
+      };
+    },
+  );
+
+export const adminDownloadShippingLabel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ url: string }> => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, (context as any).realUserId ?? userId);
-    const now = new Date().toISOString();
-    const { error } = await supabase
+    const { data: batch } = await supabase
       .from("certificate_batches")
-      .update({ status: "fulfilled", dispatched_at: now } as never)
+      .select("label_pdf_path")
       .eq("id", data.batch_id)
-      .in("status", ["printed", "awaiting_print"]);
-    if (error) throw new Error(error.message);
-    // Mark registrations as dispatched too
-    await supabase
-      .from("certificate_registrations")
-      .update({ status: "dispatched", dispatched_at: now } as never)
-      .eq("batch_id", data.batch_id)
-      .eq("status", "issued");
-    return { ok: true };
+      .maybeSingle();
+    if (!batch?.label_pdf_path) throw new Error("No shipping label on file for this batch.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("certificates")
+      .createSignedUrl(batch.label_pdf_path as string, 60 * 10);
+    if (error || !signed?.signedUrl) throw new Error(error?.message ?? "Could not sign URL");
+    return { url: signed.signedUrl };
+  });
+
+export type BatchTrackingDTO = {
+  batch_id: string;
+  format: string;
+  status: string;
+  rm_service_code: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  shipped_at: string | null;
+};
+
+export const getBatchTracking = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<BatchTrackingDTO | null> => {
+    const { supabase, userId } = context;
+    const { data: batch } = await supabase
+      .from("certificate_batches")
+      .select(
+        "id, provider_id, format, status, rm_service_code, tracking_number, tracking_url, shipped_at",
+      )
+      .eq("id", data.batch_id)
+      .maybeSingle();
+    if (!batch) return null;
+    if (batch.provider_id !== userId) {
+      // allow admin override
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: (context as any).realUserId ?? userId,
+        _role: "admin",
+      } as never);
+      if (!isAdmin) throw new Error("Forbidden");
+    }
+    return {
+      batch_id: batch.id as string,
+      format: batch.format as string,
+      status: batch.status as string,
+      rm_service_code: (batch.rm_service_code as string | null) ?? null,
+      tracking_number: (batch.tracking_number as string | null) ?? null,
+      tracking_url: (batch.tracking_url as string | null) ?? null,
+      shipped_at: (batch.shipped_at as string | null) ?? null,
+    };
   });
 
 export type AdminRegistrationSearchDTO = {
