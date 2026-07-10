@@ -80,6 +80,7 @@ export type BatchDTO = {
 export type CertificatePricingDTO = {
   unit_price_pence: number;
   postage_fee_pence: number;
+  international_postage_fee_pence: number;
   default_rm_service_code: string;
   currency: string;
   updated_at: string;
