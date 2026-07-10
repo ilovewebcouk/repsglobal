@@ -653,7 +653,7 @@ const specInput = z.object({
   spec_prerequisites: z.string().max(1000).nullable(),
   spec_guided_learning_hours: z.number().min(0).max(1000).nullable(),
   spec_total_qualification_time: z.number().min(0).max(2000).nullable(),
-  spec_delivery_mode: z.enum(["in_person", "online", "blended"]).nullable(),
+  spec_delivery_mode: z.enum(["in_person", "online_live", "online_self_paced", "online", "blended"]).nullable(),
 });
 
 export const adminSaveRepsCourseSpec = createServerFn({ method: "POST" })
