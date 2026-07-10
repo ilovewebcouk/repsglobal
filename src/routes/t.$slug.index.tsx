@@ -144,7 +144,7 @@ function ProviderProfilePage() {
   const ratingCount = reviewsData?.count ?? 0;
 
   const regulatedRows = qualsData?.regulated ?? [];
-  const cpdRows = qualsData?.cpd ?? [];
+  const courseRows = qualsData?.courses ?? [];
   const repsMemberId = qualsData?.reps_member_id ?? null;
 
   const providerName = sf.full_name?.trim() || "Training Provider";
