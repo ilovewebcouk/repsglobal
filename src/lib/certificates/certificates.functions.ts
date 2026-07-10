@@ -273,13 +273,16 @@ export const deleteLearner = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Approved courses lookup — for the "register learner on course" form
+// Approved courses lookup — union of Ofqual-regulated permissions AND
+// REPS-endorsed courses (both live in different tables).
 
 export type ProviderCourseOptionDTO = {
   id: string;
+  kind: "regulated" | "reps_course";
   title: string;
   level: number | null;
   reps_course_number: string | null;
+  ofqual_number: string | null;
 };
 
 export const listMyApprovedCourses = createServerFn({ method: "GET" })
@@ -287,27 +290,49 @@ export const listMyApprovedCourses = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<ProviderCourseOptionDTO[]> => {
     const { supabase, userId } = context;
     await assertProviderIsOrganisation(supabase, userId);
-    // Both approved regulated permissions and approved REPS-endorsed courses
-    // live in `provider_regulated_permissions` with status = 'approved'.
-    const { data, error } = await supabase
+
+    // Ofqual-regulated permissions the provider has approval for
+    const { data: regulated, error: regErr } = await supabase
       .from("provider_regulated_permissions")
-      .select("id, official_title, official_level, reps_qual_number, ofqual_snapshot")
+      .select("id, ofqual_number, ofqual_snapshot, reps_qualification_number, created_at")
       .eq("provider_id", userId)
       .eq("status", "approved")
       .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return (data ?? []).map((r: any) => {
-      const snapTitle = r.ofqual_snapshot?.title as string | undefined;
-      const snapLevel = r.ofqual_snapshot?.level as string | undefined;
-      const parsedSnapLevel =
-        snapLevel && /\d+/.test(snapLevel) ? Number(snapLevel.match(/\d+/)![0]) : null;
+    if (regErr) throw new Error(regErr.message);
+
+    // REPS-endorsed courses the provider has had accredited
+    const { data: repsCourses, error: rcErr } = await supabase
+      .from("reps_courses")
+      .select("id, official_title, official_level, reps_qual_number, created_at")
+      .eq("provider_id", userId)
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
+    if (rcErr) throw new Error(rcErr.message);
+
+    const regulatedRows: ProviderCourseOptionDTO[] = (regulated ?? []).map((r: any) => {
+      const snap = (r.ofqual_snapshot ?? {}) as { title?: string; level?: string };
+      const parsedLevel =
+        snap.level && /\d+/.test(snap.level) ? Number(snap.level.match(/\d+/)![0]) : null;
       return {
         id: r.id,
-        title: (r.official_title as string | null) ?? snapTitle ?? "Untitled course",
-        level: (r.official_level as number | null) ?? parsedSnapLevel,
-        reps_course_number: r.reps_qual_number as string | null,
+        kind: "regulated",
+        title: snap.title ?? "Ofqual-regulated qualification",
+        level: parsedLevel,
+        reps_course_number: (r.reps_qualification_number as string | null) ?? null,
+        ofqual_number: (r.ofqual_number as string | null) ?? null,
       };
     });
+
+    const repsRows: ProviderCourseOptionDTO[] = (repsCourses ?? []).map((r: any) => ({
+      id: r.id,
+      kind: "reps_course",
+      title: (r.official_title as string | null) ?? "REPS-endorsed course",
+      level: (r.official_level as number | null) ?? null,
+      reps_course_number: (r.reps_qual_number as string | null) ?? null,
+      ofqual_number: null,
+    }));
+
+    return [...regulatedRows, ...repsRows];
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -316,98 +341,11 @@ export const listMyApprovedCourses = createServerFn({ method: "GET" })
 const registrationInput = z.object({
   learner_id: z.string().uuid(),
   course_id: z.string().uuid(),
+  course_kind: z.enum(["regulated", "reps_course"]),
 });
 
 export const listMyRegistrations = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<RegistrationDTO[]> => {
-    const { supabase, userId } = context;
-    await assertProviderIsOrganisation(supabase, userId);
-    const { data, error } = await supabase
-      .from("certificate_registrations")
-      .select(
-        `id, learner_id, course_id, course_title, course_level, reps_course_number,
-         status, batch_id, format, enrolled_at, passed_at, paid_at, issued_at,
-         dispatched_at, certificate_number, verification_token, price_pence_at_issue,
-         created_at,
-         learners!inner ( full_name, email )`,
-      )
-      .eq("provider_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1000);
-    if (error) throw new Error(error.message);
-    return (data ?? []).map((r: any) => ({
-      id: r.id,
-      learner_id: r.learner_id,
-      learner_name: r.learners?.full_name ?? "",
-      learner_email: r.learners?.email ?? "",
-      course_id: r.course_id,
-      course_title: r.course_title,
-      course_level: r.course_level,
-      reps_course_number: r.reps_course_number,
-      status: r.status,
-      batch_id: r.batch_id,
-      format: r.format,
-      enrolled_at: r.enrolled_at,
-      passed_at: r.passed_at,
-      paid_at: r.paid_at,
-      issued_at: r.issued_at,
-      dispatched_at: r.dispatched_at,
-      certificate_number: r.certificate_number,
-      verification_token: r.verification_token,
-      price_pence_at_issue: r.price_pence_at_issue,
-      created_at: r.created_at,
-    }));
-  });
-
-export const createRegistration = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => registrationInput.parse(d))
-  .handler(async ({ data, context }): Promise<RegistrationDTO> => {
-    const { supabase, userId } = context;
-    const { country } = await assertProviderIsOrganisation(supabase, userId);
-
-    // Verify learner + course both belong to provider and course is approved
-    const { data: learner } = await supabase
-      .from("learners")
-      .select("id, full_name, email")
-      .eq("id", data.learner_id)
-      .eq("provider_id", userId)
-      .is("deleted_at", null)
-      .maybeSingle();
-    if (!learner) throw new Error("Learner not found.");
-
-    const { data: course } = await supabase
-      .from("provider_regulated_permissions")
-      .select("id, official_title, official_level, reps_qual_number, ofqual_snapshot, status")
-      .eq("id", data.course_id)
-      .eq("provider_id", userId)
-      .maybeSingle();
-    if (!course) throw new Error("Course not found.");
-    if (course.status !== "approved") {
-      throw new Error("This course isn't approved yet — certificates can't be registered against it.");
-    }
-
-    const snapTitle = (course.ofqual_snapshot as any)?.title as string | undefined;
-    const snapLevel = (course.ofqual_snapshot as any)?.level as string | undefined;
-    const parsedSnapLevel =
-      snapLevel && /\d+/.test(snapLevel) ? Number(snapLevel.match(/\d+/)![0]) : null;
-
-    const { data: row, error } = await supabase
-      .from("certificate_registrations")
-      .insert({
-        provider_id: userId,
-        learner_id: data.learner_id,
-        course_id: data.course_id,
-        course_title:
-          (course.official_title as string | null) ?? snapTitle ?? "Untitled course",
-        course_level: (course.official_level as number | null) ?? parsedSnapLevel,
-        reps_course_number: (course.reps_qual_number as string | null) ?? null,
-        format: formatForCountry(country),
-        status: "enrolled",
-      } as never)
-      .select("*")
-      .single();
+...
     if (error) throw new Error(error.message);
 
     return {
