@@ -964,7 +964,7 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
     const { data: batches, error } = await supabase
       .from("certificate_batches")
       .select(
-        "id, provider_id, count, paid_at, status, ship_to_address, rm_service_code, tracking_number, tracking_url, shipped_at",
+        "id, provider_id, count, paid_at, status, printed_at, printed_by, ship_to_address, rm_service_code, tracking_number, tracking_url, shipped_at",
       )
       .in("status", ["awaiting_print", "printed"])
       .eq("format", "printed_and_digital")
