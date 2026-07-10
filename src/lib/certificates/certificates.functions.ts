@@ -998,6 +998,8 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
       count: b.count,
       paid_at: b.paid_at,
       status: b.status,
+      printed_at: b.printed_at ?? null,
+      printed_by: b.printed_by ?? null,
       ship_to_address: (b.ship_to_address as ShipToAddressDTO | null) ?? null,
       rm_service_code: b.rm_service_code ?? null,
       tracking_number: b.tracking_number ?? null,
