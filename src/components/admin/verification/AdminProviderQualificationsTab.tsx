@@ -1434,3 +1434,128 @@ function CrossCheckChip({
     </Badge>
   );
 }
+
+/* ─── Level ladder + report button ──────────────────────────────────────── */
+
+const LEVEL_LABELS: Record<number, string> = {
+  1: "Awareness",
+  2: "Supporting",
+  3: "Independent instructor",
+  4: "Specialist",
+  5: "Advanced specialist",
+  6: "Degree-equivalent",
+  7: "Postgraduate-equivalent",
+};
+
+function LevelLadderField({
+  value,
+  aiSuggested,
+  rationale,
+  confidence,
+  disabled,
+  onChange,
+}: {
+  value: number | null;
+  aiSuggested: number | null;
+  rationale: string | null;
+  confidence: "high" | "medium" | "low" | null;
+  disabled: boolean;
+  onChange: (n: number | null) => void;
+}) {
+  const confidenceTone =
+    confidence === "high"
+      ? "text-emerald-300"
+      : confidence === "medium"
+        ? "text-amber-300"
+        : confidence === "low"
+          ? "text-red-300"
+          : "text-white/50";
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between">
+        <div className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+          Level (1–7)
+        </div>
+        {aiSuggested != null ? (
+          <div className="text-[10.5px] text-white/55">
+            <Sparkles className="mr-1 inline h-3 w-3 text-white/60" />
+            AI suggests <span className="font-semibold text-white">L{aiSuggested}</span>
+            {confidence ? (
+              <>
+                {" · "}
+                <span className={`font-semibold ${confidenceTone}`}>{confidence} confidence</span>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {[1, 2, 3, 4, 5, 6, 7].map((n) => {
+          const selected = value === n;
+          const suggested = aiSuggested === n;
+          return (
+            <button
+              key={n}
+              type="button"
+              onClick={() => !disabled && onChange(selected ? null : n)}
+              disabled={disabled}
+              className={`relative rounded-[8px] border px-2 py-1.5 text-[11.5px] font-semibold transition ${
+                selected
+                  ? "border-reps-orange bg-reps-orange text-white"
+                  : suggested
+                    ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20"
+                    : "border-reps-border bg-white/[0.03] text-white/60 hover:bg-white/10"
+              } disabled:cursor-not-allowed disabled:opacity-60`}
+              title={LEVEL_LABELS[n]}
+            >
+              L{n}
+              {suggested && !selected ? (
+                <Sparkles className="absolute -right-1 -top-1 h-2.5 w-2.5 text-emerald-300" />
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      {value != null ? (
+        <div className="mt-1 text-[11px] text-white/60">
+          <span className="font-semibold text-white/85">L{value}</span> · {LEVEL_LABELS[value]}
+        </div>
+      ) : null}
+      {rationale ? (
+        <div className="mt-2 rounded-[10px] border border-white/10 bg-white/[0.03] p-2.5 text-[11.5px] leading-snug text-white/75">
+          <span className="font-semibold text-white/85">AI rationale — </span>
+          {rationale}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ReportButton({ row }: { row: CourseRow }) {
+  const getUrl = useServerFn(getCourseReportUrl);
+  const [busy, setBusy] = React.useState(false);
+  if (!row.report_pdf_path) return null;
+  const onClick = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { url } = await getUrl({ data: { id: row.id } });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open report");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-blue-200 transition hover:bg-blue-500/25 disabled:opacity-60"
+    >
+      <FileText className="h-3 w-3" />
+      {busy ? "Opening…" : "Assessment report"}
+    </button>
+  );
+}
