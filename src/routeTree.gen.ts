@@ -45,8 +45,10 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VerifyIndexRouteImport } from './routes/verify.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as HelpIndexRouteImport } from './routes/help.index'
+import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as RenewCancelledRouteImport } from './routes/renew.cancelled'
@@ -151,6 +153,7 @@ import { Route as AdminBillingDisputesDisputeIdRouteImport } from './routes/admi
 import { Route as AuthenticatedProfessionalDashboardWebsiteRouteImport } from './routes/_authenticated/_professional/dashboard_.website'
 import { Route as AuthenticatedProfessionalDashboardVerificationRouteImport } from './routes/_authenticated/_professional/dashboard_.verification'
 import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from './routes/_authenticated/_professional/dashboard_.support'
+import { Route as AuthenticatedProfessionalDashboardStudentsRouteImport } from './routes/_authenticated/_professional/dashboard_.students'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
 import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
@@ -361,6 +364,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyIndexRoute = VerifyIndexRouteImport.update({
+  id: '/verify/',
+  path: '/verify/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   id: '/resources/',
   path: '/resources/',
@@ -370,6 +378,11 @@ const HelpIndexRoute = HelpIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => HelpRoute,
+} as any)
+const VerifyTokenRoute = VerifyTokenRouteImport.update({
+  id: '/verify/$token',
+  path: '/verify/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TSlugRoute = TSlugRouteImport.update({
   id: '/t/$slug',
@@ -915,6 +928,12 @@ const AuthenticatedProfessionalDashboardSupportRoute =
     path: '/dashboard/support',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
+const AuthenticatedProfessionalDashboardStudentsRoute =
+  AuthenticatedProfessionalDashboardStudentsRouteImport.update({
+    id: '/dashboard_/students',
+    path: '/dashboard/students',
+    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardShopFrontRoute =
   AuthenticatedProfessionalDashboardShopFrontRouteImport.update({
     id: '/dashboard_/shop-front',
@@ -1190,8 +1209,10 @@ export interface FileRoutesByFullPath {
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/t/$slug': typeof TSlugRouteWithChildren
+  '/verify/$token': typeof VerifyTokenRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/verify/': typeof VerifyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
@@ -1225,6 +1246,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
+  '/dashboard/students': typeof AuthenticatedProfessionalDashboardStudentsRoute
   '/dashboard/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -1356,8 +1378,10 @@ export interface FileRoutesByTo {
   '/renew/$token': typeof RenewTokenRoute
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/help': typeof HelpIndexRoute
   '/resources': typeof ResourcesIndexRoute
+  '/verify': typeof VerifyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
@@ -1391,6 +1415,7 @@ export interface FileRoutesByTo {
   '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
+  '/dashboard/students': typeof AuthenticatedProfessionalDashboardStudentsRoute
   '/dashboard/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/dashboard/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
   '/admin/billing/disputes/$disputeId': typeof AdminBillingDisputesDisputeIdRoute
@@ -1529,8 +1554,10 @@ export interface FileRoutesById {
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/t/$slug': typeof TSlugRouteWithChildren
+  '/verify/$token': typeof VerifyTokenRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/verify/': typeof VerifyIndexRoute
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -1565,6 +1592,7 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
+  '/_authenticated/_professional/dashboard_/students': typeof AuthenticatedProfessionalDashboardStudentsRoute
   '/_authenticated/_professional/dashboard_/support': typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   '/_authenticated/_professional/dashboard_/verification': typeof AuthenticatedProfessionalDashboardVerificationRoute
   '/_authenticated/_professional/dashboard_/website': typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -1703,8 +1731,10 @@ export interface FileRouteTypes {
     | '/renew/cancelled'
     | '/resources/$slug'
     | '/t/$slug'
+    | '/verify/$token'
     | '/help/'
     | '/resources/'
+    | '/verify/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard'
@@ -1738,6 +1768,7 @@ export interface FileRouteTypes {
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
+    | '/dashboard/students'
     | '/dashboard/support'
     | '/dashboard/verification'
     | '/dashboard/website'
@@ -1869,8 +1900,10 @@ export interface FileRouteTypes {
     | '/renew/$token'
     | '/renew/cancelled'
     | '/resources/$slug'
+    | '/verify/$token'
     | '/help'
     | '/resources'
+    | '/verify'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard'
@@ -1904,6 +1937,7 @@ export interface FileRouteTypes {
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
+    | '/dashboard/students'
     | '/dashboard/verification'
     | '/dashboard/website'
     | '/admin/billing/disputes/$disputeId'
@@ -2041,8 +2075,10 @@ export interface FileRouteTypes {
     | '/renew/cancelled'
     | '/resources/$slug'
     | '/t/$slug'
+    | '/verify/$token'
     | '/help/'
     | '/resources/'
+    | '/verify/'
     | '/_authenticated/_professional/_pro'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -2077,6 +2113,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/services'
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/shop-front'
+    | '/_authenticated/_professional/dashboard_/students'
     | '/_authenticated/_professional/dashboard_/support'
     | '/_authenticated/_professional/dashboard_/verification'
     | '/_authenticated/_professional/dashboard_/website'
@@ -2214,7 +2251,9 @@ export interface RootRouteChildren {
   RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   TSlugRoute: typeof TSlugRouteWithChildren
+  VerifyTokenRoute: typeof VerifyTokenRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
+  VerifyIndexRoute: typeof VerifyIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
@@ -2499,6 +2538,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify/': {
+      id: '/verify/'
+      path: '/verify'
+      fullPath: '/verify/'
+      preLoaderRoute: typeof VerifyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resources/': {
       id: '/resources/'
       path: '/resources'
@@ -2512,6 +2558,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/help/'
       preLoaderRoute: typeof HelpIndexRouteImport
       parentRoute: typeof HelpRoute
+    }
+    '/verify/$token': {
+      id: '/verify/$token'
+      path: '/verify/$token'
+      fullPath: '/verify/$token'
+      preLoaderRoute: typeof VerifyTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/t/$slug': {
       id: '/t/$slug'
@@ -3241,6 +3294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSupportRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
+    '/_authenticated/_professional/dashboard_/students': {
+      id: '/_authenticated/_professional/dashboard_/students'
+      path: '/dashboard/students'
+      fullPath: '/dashboard/students'
+      preLoaderRoute: typeof AuthenticatedProfessionalDashboardStudentsRouteImport
+      parentRoute: typeof AuthenticatedProfessionalRouteRoute
+    }
     '/_authenticated/_professional/dashboard_/shop-front': {
       id: '/_authenticated/_professional/dashboard_/shop-front'
       path: '/dashboard/shop-front'
@@ -3568,6 +3628,7 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
   AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
+  AuthenticatedProfessionalDashboardStudentsRoute: typeof AuthenticatedProfessionalDashboardStudentsRoute
   AuthenticatedProfessionalDashboardSupportRoute: typeof AuthenticatedProfessionalDashboardSupportRouteWithChildren
   AuthenticatedProfessionalDashboardVerificationRoute: typeof AuthenticatedProfessionalDashboardVerificationRoute
   AuthenticatedProfessionalDashboardWebsiteRoute: typeof AuthenticatedProfessionalDashboardWebsiteRoute
@@ -3597,6 +3658,8 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardSettingsRoute,
     AuthenticatedProfessionalDashboardShopFrontRoute:
       AuthenticatedProfessionalDashboardShopFrontRoute,
+    AuthenticatedProfessionalDashboardStudentsRoute:
+      AuthenticatedProfessionalDashboardStudentsRoute,
     AuthenticatedProfessionalDashboardSupportRoute:
       AuthenticatedProfessionalDashboardSupportRouteWithChildren,
     AuthenticatedProfessionalDashboardVerificationRoute:
@@ -3824,7 +3887,9 @@ const rootRouteChildren: RootRouteChildren = {
   RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   TSlugRoute: TSlugRouteWithChildren,
+  VerifyTokenRoute: VerifyTokenRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
+  VerifyIndexRoute: VerifyIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
