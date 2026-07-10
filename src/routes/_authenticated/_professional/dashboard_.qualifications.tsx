@@ -1124,6 +1124,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
 
   const resetAll = () => {
     setTitle("");
+    setProposedLevel("");
+    setCredentialType("");
     setWhoFor("");
     setOutcomes("");
     setDelivery("");
