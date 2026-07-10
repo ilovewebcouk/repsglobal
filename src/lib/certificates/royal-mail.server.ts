@@ -17,6 +17,8 @@ const RM_BASE = "https://api.parcel.royalmail.com/api/v1";
 export const RM_SERVICE = {
   TPN: { code: "TPN", label: "Royal Mail Tracked 48" },
   TPS: { code: "TPS", label: "Royal Mail Tracked 24" },
+  MTM: { code: "MTM", label: "Royal Mail International Tracked" },
+  MTL: { code: "MTL", label: "Royal Mail International Tracked & Signed" },
 } as const;
 export type RmServiceCode = keyof typeof RM_SERVICE;
 
