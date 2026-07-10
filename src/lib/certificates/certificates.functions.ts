@@ -150,7 +150,7 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("certificate_pricing")
       .select(
-        "unit_price_pence, postage_fee_pence, default_rm_service_code, currency, updated_at",
+        "unit_price_pence, postage_fee_pence, international_postage_fee_pence, default_rm_service_code, currency, updated_at",
       )
       .eq("id", true)
       .maybeSingle();
@@ -158,6 +158,8 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
     return {
       unit_price_pence: (data?.unit_price_pence as number | undefined) ?? 1500,
       postage_fee_pence: (data?.postage_fee_pence as number | undefined) ?? 650,
+      international_postage_fee_pence:
+        (data?.international_postage_fee_pence as number | undefined) ?? 1500,
       default_rm_service_code:
         (data?.default_rm_service_code as string | undefined) ?? "TPN",
       currency: (data?.currency as string | undefined) ?? "gbp",
@@ -168,7 +170,8 @@ export const getCertificatePricing = createServerFn({ method: "GET" })
 const setPricingInput = z.object({
   unit_price_pence: z.number().int().min(0).max(50000).optional(),
   postage_fee_pence: z.number().int().min(0).max(10000).optional(),
-  default_rm_service_code: z.enum(["TPN", "TPS"]).optional(),
+  international_postage_fee_pence: z.number().int().min(0).max(20000).optional(),
+  default_rm_service_code: z.enum(["TPN", "TPS", "MTM", "MTL"]).optional(),
 });
 
 export const setCertificatePricing = createServerFn({ method: "POST" })
@@ -191,6 +194,8 @@ export const setCertificatePricing = createServerFn({ method: "POST" })
       patch.unit_price_pence = data.unit_price_pence;
     if (typeof data.postage_fee_pence === "number")
       patch.postage_fee_pence = data.postage_fee_pence;
+    if (typeof data.international_postage_fee_pence === "number")
+      patch.international_postage_fee_pence = data.international_postage_fee_pence;
     if (data.default_rm_service_code)
       patch.default_rm_service_code = data.default_rm_service_code;
 
