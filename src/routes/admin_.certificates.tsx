@@ -2,7 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Loader2, Printer, Search, ShieldOff, Truck } from "lucide-react";
+import {
+  Download,
+  ExternalLink,
+  Loader2,
+  Printer,
+  Search,
+  ShieldOff,
+  Truck,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -11,6 +20,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import {
+  adminDownloadShippingLabel,
   adminListBatches,
   adminListPrintQueue,
   adminMarkBatchDispatched,
@@ -19,6 +29,7 @@ import {
   adminSearchRegistrations,
   getCertificatePricing,
   setCertificatePricing,
+  type PrintQueueRowDTO,
 } from "@/lib/certificates/certificates.functions";
 
 export const Route = createFileRoute("/admin_/certificates")({
@@ -48,7 +59,7 @@ function AdminCertificatesPage() {
       role="admin"
       active="Certificates"
       title="Certificates"
-      subtitle="Certificate pricing, batches, print fulfilment and revocation."
+      subtitle="Certificate pricing, batches, Royal Mail dispatch and revocation."
     >
       <div className="mb-4 flex flex-wrap gap-1 rounded-xl bg-white/[0.04] p-1">
         {tabs.map((t) => (
@@ -71,6 +82,13 @@ function AdminCertificatesPage() {
   );
 }
 
+// ─────────────────────────────────────────────────────────────── Pricing
+
+const RM_SERVICE_OPTS = [
+  { code: "TPN", label: "Royal Mail Tracked 48" },
+  { code: "TPS", label: "Royal Mail Tracked 24" },
+] as const;
+
 function PricingPanel() {
   const qc = useQueryClient();
   const fetchPricing = useServerFn(getCertificatePricing);
@@ -79,61 +97,166 @@ function PricingPanel() {
     queryKey: ["admin-cert-pricing"],
     queryFn: () => fetchPricing({ data: undefined as never }),
   });
-  const [pounds, setPounds] = useState<string>("");
-  const cur = data?.unit_price_pence ?? 1500;
+  const [unit, setUnit] = useState<string>("");
+  const [postage, setPostage] = useState<string>("");
+  const [service, setService] = useState<string>("");
+
+  const currentUnit = data?.unit_price_pence ?? 1500;
+  const currentPostage = data?.postage_fee_pence ?? 650;
+  const currentService = data?.default_rm_service_code ?? "TPN";
+
   const save = useMutation({
-    mutationFn: (pence: number) => savePricing({ data: { unit_price_pence: pence } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-cert-pricing"] }),
+    mutationFn: (payload: {
+      unit_price_pence?: number;
+      postage_fee_pence?: number;
+      default_rm_service_code?: "TPN" | "TPS";
+    }) => savePricing({ data: payload }),
+    onSuccess: () => {
+      toast.success("Pricing updated");
+      setUnit("");
+      setPostage("");
+      setService("");
+      qc.invalidateQueries({ queryKey: ["admin-cert-pricing"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not save"),
   });
 
   return (
     <PCard>
-      <div className="p-6 max-w-md space-y-4">
+      <div className="p-6 max-w-lg space-y-6">
         <div>
-          <div className="text-[13px] text-white/60">Current unit price</div>
+          <div className="text-[13px] text-white/60">Certificate unit price</div>
           <div className="mt-1 font-display text-3xl">
-            £{(cur / 100).toFixed(2)} <span className="text-sm text-white/40">/ certificate</span>
+            £{(currentUnit / 100).toFixed(2)}{" "}
+            <span className="text-sm text-white/40">/ certificate</span>
           </div>
+          <div className="mt-2">
+            <label className="text-[12px] text-white/50">New price (£)</label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder={(currentUnit / 100).toFixed(2)}
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+            />
+          </div>
+          <Button
+            className="mt-3"
+            disabled={isLoading || save.isPending || !unit}
+            onClick={() => {
+              const n = Number(unit);
+              if (!Number.isFinite(n) || n < 0) return;
+              save.mutate({ unit_price_pence: Math.round(n * 100) });
+            }}
+          >
+            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save unit price"}
+          </Button>
         </div>
-        <div>
-          <label className="text-[13px] text-white/60">New price (£)</label>
-          <Input
-            type="number"
-            min={0}
-            step="0.01"
-            placeholder={(cur / 100).toFixed(2)}
-            value={pounds}
-            onChange={(e) => setPounds(e.target.value)}
-          />
+
+        <div className="border-t border-white/5 pt-6">
+          <div className="text-[13px] text-white/60">Postage per UK batch</div>
+          <div className="mt-1 font-display text-3xl">
+            £{(currentPostage / 100).toFixed(2)}{" "}
+            <span className="text-sm text-white/40">/ batch</span>
+          </div>
+          <p className="mt-1 text-[12px] text-white/50">
+            Charged once per UK batch regardless of how many certificates are inside. Non-UK
+            batches are digital only and pay no postage.
+          </p>
+          <div className="mt-2">
+            <label className="text-[12px] text-white/50">New postage fee (£)</label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder={(currentPostage / 100).toFixed(2)}
+              value={postage}
+              onChange={(e) => setPostage(e.target.value)}
+            />
+          </div>
+          <Button
+            className="mt-3"
+            disabled={save.isPending || !postage}
+            onClick={() => {
+              const n = Number(postage);
+              if (!Number.isFinite(n) || n < 0) return;
+              save.mutate({ postage_fee_pence: Math.round(n * 100) });
+            }}
+          >
+            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save postage fee"}
+          </Button>
         </div>
-        <Button
-          disabled={isLoading || save.isPending || !pounds}
-          onClick={() => {
-            const n = Number(pounds);
-            if (!Number.isFinite(n) || n < 0) return;
-            save.mutate(Math.round(n * 100));
-          }}
-        >
-          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save price"}
-        </Button>
-        <p className="text-[12px] text-white/50">
-          Snapshotted per registration at checkout — historic batches keep their original price.
-        </p>
+
+        <div className="border-t border-white/5 pt-6">
+          <div className="text-[13px] text-white/60">Default Royal Mail service</div>
+          <div className="mt-1 font-display text-xl">
+            {RM_SERVICE_OPTS.find((s) => s.code === currentService)?.label ?? currentService}
+          </div>
+          <p className="mt-1 text-[12px] text-white/50">
+            Used by default when generating shipping labels. Admin can override per batch.
+          </p>
+          <div className="mt-2">
+            <label className="text-[12px] text-white/50">Change default</label>
+            <select
+              className="mt-1 w-full rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2 text-[13px] text-white"
+              value={service || currentService}
+              onChange={(e) => setService(e.target.value)}
+            >
+              {RM_SERVICE_OPTS.map((s) => (
+                <option key={s.code} value={s.code}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Button
+            className="mt-3"
+            disabled={save.isPending || !service || service === currentService}
+            onClick={() =>
+              save.mutate({
+                default_rm_service_code: service as "TPN" | "TPS",
+              })
+            }
+          >
+            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save default service"}
+          </Button>
+        </div>
       </div>
     </PCard>
   );
 }
 
+// ─────────────────────────────────────────────────────────────── Batches
+
 function BatchesPanel() {
   const fetchBatches = useServerFn(adminListBatches);
   const [status, setStatus] = useState<
-    "all" | "pending" | "paid" | "issued" | "awaiting_print" | "printed" | "dispatched" | "fulfilled" | "canceled"
+    | "all"
+    | "pending"
+    | "paid"
+    | "issued"
+    | "awaiting_print"
+    | "printed"
+    | "dispatched"
+    | "fulfilled"
+    | "canceled"
   >("all");
   const { data, isLoading } = useQuery({
     queryKey: ["admin-batches", status],
     queryFn: () => fetchBatches({ data: { status } }),
   });
-  const statuses = ["all", "pending", "paid", "issued", "awaiting_print", "printed", "fulfilled", "canceled"] as const;
+  const statuses = [
+    "all",
+    "pending",
+    "paid",
+    "issued",
+    "awaiting_print",
+    "printed",
+    "dispatched",
+    "fulfilled",
+    "canceled",
+  ] as const;
   return (
     <PCard>
       <div className="p-4 flex flex-wrap gap-1 border-b border-white/5">
@@ -160,8 +283,25 @@ function BatchesPanel() {
               <div className="min-w-0">
                 <div className="font-medium truncate">{b.provider_name ?? b.provider_id}</div>
                 <div className="text-white/50 text-[12px]">
-                  {b.count} × £{(b.unit_price_pence / 100).toFixed(2)} = £{(b.total_pence / 100).toFixed(2)} · {b.format}
+                  {b.count} × £{(b.unit_price_pence / 100).toFixed(2)}
+                  {b.postage_fee_pence_snapshot > 0
+                    ? ` + £${(b.postage_fee_pence_snapshot / 100).toFixed(2)} postage`
+                    : ""}{" "}
+                  = £{(b.total_pence / 100).toFixed(2)} · {b.format}
                 </div>
+                {b.tracking_number && (
+                  <div className="text-white/50 text-[12px] mt-1">
+                    {b.rm_service_code === "TPS" ? "Tracked 24" : "Tracked 48"} ·{" "}
+                    <a
+                      href={b.tracking_url ?? "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-reps-orange hover:underline inline-flex items-center gap-1"
+                    >
+                      {b.tracking_number} <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                )}
                 <div className="text-white/40 text-[11px] font-mono truncate">{b.id}</div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -178,11 +318,12 @@ function BatchesPanel() {
   );
 }
 
+// ─────────────────────────────────────────────────────────────── Print queue
+
 function PrintQueuePanel() {
   const qc = useQueryClient();
   const fetchQueue = useServerFn(adminListPrintQueue);
   const markPrinted = useServerFn(adminMarkBatchPrinted);
-  const markDispatched = useServerFn(adminMarkBatchDispatched);
   const { data, isLoading } = useQuery({
     queryKey: ["admin-print-queue"],
     queryFn: () => fetchQueue({ data: undefined as never }),
@@ -191,16 +332,15 @@ function PrintQueuePanel() {
   const printedMut = useMutation({
     mutationFn: (batch_id: string) => markPrinted({ data: { batch_id } }),
     onSuccess: invalidate,
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
-  const dispatchedMut = useMutation({
-    mutationFn: (batch_id: string) => markDispatched({ data: { batch_id } }),
-    onSuccess: invalidate,
-  });
+
+  const [dispatching, setDispatching] = useState<PrintQueueRowDTO | null>(null);
 
   const csv = useMemo(() => {
     if (!data) return "";
     const rows: string[] = [
-      "provider,batch_id,certificate_number,learner_name,learner_email,course",
+      "provider,batch_id,certificate_number,learner_name,learner_email,course,service,tracking_number,shipped_at",
     ];
     for (const b of data) {
       for (const l of b.learners) {
@@ -212,6 +352,9 @@ function PrintQueuePanel() {
             l.learner_name,
             l.learner_email,
             l.course_title.replace(/,/g, ";"),
+            b.rm_service_code ?? "",
+            b.tracking_number ?? "",
+            b.shipped_at ?? "",
           ]
             .map((v) => `"${String(v).replace(/"/g, '""')}"`)
             .join(","),
@@ -222,73 +365,199 @@ function PrintQueuePanel() {
   }, [data]);
 
   return (
-    <PCard>
-      <div className="p-4 flex items-center justify-between border-b border-white/5">
-        <div className="text-[13px] text-white/70">
-          UK batches awaiting print &amp; dispatch
+    <>
+      <PCard>
+        <div className="p-4 flex items-center justify-between border-b border-white/5">
+          <div className="text-[13px] text-white/70">
+            UK batches awaiting print &amp; dispatch
+          </div>
+          <a
+            href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
+            download="reps-print-queue.csv"
+            className="text-[12px] text-reps-orange hover:underline"
+          >
+            Export CSV
+          </a>
         </div>
-        <a
-          href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
-          download="reps-print-queue.csv"
-          className="text-[12px] text-reps-orange hover:underline"
-        >
-          Export CSV
-        </a>
-      </div>
-      {isLoading ? (
-        <div className="p-8 text-center text-white/50">Loading…</div>
-      ) : !data || data.length === 0 ? (
-        <div className="p-8 text-center text-white/50">Print queue is clear.</div>
-      ) : (
-        <div className="divide-y divide-white/5">
-          {data.map((b) => (
-            <div key={b.batch_id} className="p-4 space-y-3">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="font-medium">{b.provider_name ?? b.provider_id}</div>
-                  <div className="text-white/50 text-[12px]">
-                    {b.count} certificates · paid{" "}
-                    {b.paid_at ? new Date(b.paid_at).toLocaleDateString("en-GB") : "—"}
+        {isLoading ? (
+          <div className="p-8 text-center text-white/50">Loading…</div>
+        ) : !data || data.length === 0 ? (
+          <div className="p-8 text-center text-white/50">Print queue is clear.</div>
+        ) : (
+          <div className="divide-y divide-white/5">
+            {data.map((b) => (
+              <div key={b.batch_id} className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">
+                      {b.provider_name ?? b.provider_id}
+                    </div>
+                    <div className="text-white/50 text-[12px]">
+                      {b.count} certificates · paid{" "}
+                      {b.paid_at ? new Date(b.paid_at).toLocaleDateString("en-GB") : "—"}
+                    </div>
+                    {b.ship_to_address && (
+                      <div className="text-white/50 text-[12px] mt-1">
+                        {b.ship_to_address.fullName}, {b.ship_to_address.addressLine1},{" "}
+                        {b.ship_to_address.city} {b.ship_to_address.postcode}
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge>{b.status}</Badge>
-                  {b.status === "awaiting_print" && (
-                    <Button
-                      size="sm"
-                      variant="subtle"
-                      onClick={() => printedMut.mutate(b.batch_id)}
-                      disabled={printedMut.isPending}
-                    >
-                      <Printer className="h-3.5 w-3.5" /> Mark printed
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge>{b.status}</Badge>
+                    {b.status === "awaiting_print" && (
+                      <Button
+                        size="sm"
+                        variant="subtle"
+                        onClick={() => printedMut.mutate(b.batch_id)}
+                        disabled={printedMut.isPending}
+                      >
+                        <Printer className="h-3.5 w-3.5" /> Mark printed
+                      </Button>
+                    )}
+                    <Button size="sm" onClick={() => setDispatching(b)}>
+                      <Truck className="h-3.5 w-3.5" /> Create label &amp; dispatch
                     </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    onClick={() => dispatchedMut.mutate(b.batch_id)}
-                    disabled={dispatchedMut.isPending}
-                  >
-                    <Truck className="h-3.5 w-3.5" /> Mark dispatched
-                  </Button>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] p-3 text-[12px] text-white/70">
+                  {b.learners.map((l) => (
+                    <div
+                      key={l.registration_id}
+                      className="flex justify-between gap-4 py-0.5"
+                    >
+                      <span className="truncate">
+                        {l.certificate_number ?? "—"} · {l.learner_name}
+                      </span>
+                      <span className="text-white/40 truncate">{l.course_title}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="rounded-lg bg-white/[0.03] p-3 text-[12px] text-white/70">
-                {b.learners.map((l) => (
-                  <div key={l.registration_id} className="flex justify-between gap-4 py-0.5">
-                    <span className="truncate">
-                      {l.certificate_number ?? "—"} · {l.learner_name}
-                    </span>
-                    <span className="text-white/40 truncate">{l.course_title}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+      </PCard>
+
+      {dispatching && (
+        <DispatchDialog
+          batch={dispatching}
+          onClose={() => setDispatching(null)}
+          onDone={() => {
+            setDispatching(null);
+            invalidate();
+          }}
+        />
       )}
-    </PCard>
+    </>
   );
 }
+
+function DispatchDialog({
+  batch,
+  onClose,
+  onDone,
+}: {
+  batch: PrintQueueRowDTO;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [service, setService] = useState<"TPN" | "TPS">("TPN");
+  const dispatch = useServerFn(adminMarkBatchDispatched);
+  const downloadLabel = useServerFn(adminDownloadShippingLabel);
+
+  const mut = useMutation({
+    mutationFn: () =>
+      dispatch({ data: { batch_id: batch.batch_id, service_code: service } }),
+    onSuccess: async (res) => {
+      toast.success("Royal Mail order created");
+      // Open the label PDF for printing immediately
+      try {
+        const { url } = await downloadLabel({ data: { batch_id: batch.batch_id } });
+        window.open(url, "_blank", "noopener");
+      } catch {
+        /* ignore — admin can re-download from the batches list */
+      }
+      onDone();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Royal Mail failed"),
+  });
+
+  const addr = batch.ship_to_address;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-reps-panel border border-white/10 p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div>
+          <h2 className="font-display text-xl">Create Royal Mail label</h2>
+          <p className="text-[12px] text-white/50 mt-1">
+            {batch.count} certificate{batch.count === 1 ? "" : "s"} to{" "}
+            {batch.provider_name ?? "provider"}
+          </p>
+        </div>
+
+        {addr ? (
+          <div className="rounded-lg bg-white/[0.03] p-3 text-[12.5px] text-white/75">
+            <div className="font-medium text-white">{addr.fullName}</div>
+            {addr.companyName && <div>{addr.companyName}</div>}
+            <div>{addr.addressLine1}</div>
+            {addr.addressLine2 && <div>{addr.addressLine2}</div>}
+            <div>
+              {addr.city}
+              {addr.county ? `, ${addr.county}` : ""}
+            </div>
+            <div className="font-mono">{addr.postcode}</div>
+            {addr.phoneNumber && <div className="text-white/50">{addr.phoneNumber}</div>}
+          </div>
+        ) : (
+          <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-[12.5px] text-red-200">
+            No shipping address on this batch. Ask the provider to add one before dispatching.
+          </div>
+        )}
+
+        <div>
+          <label className="text-[12px] text-white/60">Service</label>
+          <select
+            className="mt-1 w-full rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2 text-[13px] text-white"
+            value={service}
+            onChange={(e) => setService(e.target.value as "TPN" | "TPS")}
+          >
+            {RM_SERVICE_OPTS.map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="subtle" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={() => mut.mutate()} disabled={!addr || mut.isPending}>
+            {mut.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Calling Royal Mail…
+              </>
+            ) : (
+              <>
+                <Truck className="h-4 w-4" /> Create label &amp; dispatch
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────── Search
 
 function SearchPanel() {
   const qc = useQueryClient();
@@ -332,7 +601,10 @@ function SearchPanel() {
       ) : (
         <div className="divide-y divide-white/5">
           {data.map((r) => (
-            <div key={r.id} className="p-4 flex items-center justify-between gap-4 text-[13px]">
+            <div
+              key={r.id}
+              className="p-4 flex items-center justify-between gap-4 text-[13px]"
+            >
               <div className="min-w-0">
                 <div className="font-medium truncate">
                   {r.certificate_number ?? "—"} · {r.learner_name}
@@ -367,3 +639,6 @@ function SearchPanel() {
     </PCard>
   );
 }
+
+// Keep Download imported for future label re-download UI; suppress unused warning
+void Download;
