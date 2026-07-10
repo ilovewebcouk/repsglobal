@@ -4376,14 +4376,18 @@ export type Database = {
         Row: {
           accredited_at: string | null
           admin_note: string | null
+          ai_deterministic_flags: Json
           ai_draft: Json | null
           ai_drafted_at: string | null
           ai_expand_usage: Json
           ai_red_flags: string[]
           ai_verdict: string | null
           created_at: string
+          decision_snapshot: Json | null
           id: string
           official_level: number | null
+          official_level_confidence: string | null
+          official_level_rationale: string | null
           official_title: string | null
           proposed_delivery_mode: string | null
           proposed_extra_notes: string | null
@@ -4396,9 +4400,12 @@ export type Database = {
           proposed_what_covered: string | null
           proposed_who_for: string | null
           provider_id: string
+          report_generated_at: string | null
+          report_pdf_path: string | null
           reps_qual_number: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          reviewer_notes: string | null
           spec_delivery_mode: string | null
           spec_guided_learning_hours: number | null
           spec_how_youll_study: string | null
@@ -4416,14 +4423,18 @@ export type Database = {
         Insert: {
           accredited_at?: string | null
           admin_note?: string | null
+          ai_deterministic_flags?: Json
           ai_draft?: Json | null
           ai_drafted_at?: string | null
           ai_expand_usage?: Json
           ai_red_flags?: string[]
           ai_verdict?: string | null
           created_at?: string
+          decision_snapshot?: Json | null
           id?: string
           official_level?: number | null
+          official_level_confidence?: string | null
+          official_level_rationale?: string | null
           official_title?: string | null
           proposed_delivery_mode?: string | null
           proposed_extra_notes?: string | null
@@ -4436,9 +4447,12 @@ export type Database = {
           proposed_what_covered?: string | null
           proposed_who_for?: string | null
           provider_id: string
+          report_generated_at?: string | null
+          report_pdf_path?: string | null
           reps_qual_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          reviewer_notes?: string | null
           spec_delivery_mode?: string | null
           spec_guided_learning_hours?: number | null
           spec_how_youll_study?: string | null
@@ -4456,14 +4470,18 @@ export type Database = {
         Update: {
           accredited_at?: string | null
           admin_note?: string | null
+          ai_deterministic_flags?: Json
           ai_draft?: Json | null
           ai_drafted_at?: string | null
           ai_expand_usage?: Json
           ai_red_flags?: string[]
           ai_verdict?: string | null
           created_at?: string
+          decision_snapshot?: Json | null
           id?: string
           official_level?: number | null
+          official_level_confidence?: string | null
+          official_level_rationale?: string | null
           official_title?: string | null
           proposed_delivery_mode?: string | null
           proposed_extra_notes?: string | null
@@ -4476,9 +4494,12 @@ export type Database = {
           proposed_what_covered?: string | null
           proposed_who_for?: string | null
           provider_id?: string
+          report_generated_at?: string | null
+          report_pdf_path?: string | null
           reps_qual_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          reviewer_notes?: string | null
           spec_delivery_mode?: string | null
           spec_guided_learning_hours?: number | null
           spec_how_youll_study?: string | null

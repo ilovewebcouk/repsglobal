@@ -99,6 +99,10 @@ export type RepsCourseRow = {
   ai_drafted_at: string | null;
   official_title: string | null;
   official_level: number | null;
+  official_level_rationale: string | null;
+  official_level_confidence: "high" | "medium" | "low" | null;
+  reviewer_notes: string | null;
+  ai_deterministic_flags: string[];
   reps_qual_number: string | null;
   spec_who_for: string | null;
   spec_learning_outcomes: string[] | null;
@@ -113,6 +117,8 @@ export type RepsCourseRow = {
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
+  report_pdf_path: string | null;
+  report_generated_at: string | null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -467,7 +473,7 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
   });
 
 const REPS_COURSE_SELECT =
-  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at";
+  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, report_pdf_path, report_generated_at";
 
 export const listMyRepsCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -960,10 +966,42 @@ const REPS_COURSE_SYSTEM = `You are the accreditation reviewer for REPS, a globa
 
 Only use facts present in the provider's answers. Never invent hours, learning outcomes, tutor credentials, or content. British English. No exclamation marks, no marketing jargon.
 
+LEVEL RUBRIC — apply this deterministic checklist to choose official_level.
+Work through each checkpoint in order; the highest level for which ALL checkpoints hold wins.
+
+  Level 2 — Supporting / assistant roles:
+    (a) No formal prerequisites required.
+    (b) Outcomes use "remember / describe / demonstrate under supervision" verbs.
+    (c) TQT typically < 40 hours.
+
+  Level 3 — Independent instructor (baseline PT, group ex):
+    (a) Prerequisites: 16+ or Level 2 baseline in an adjacent area.
+    (b) Outcomes use "apply / plan / deliver" verbs; independent delivery is expected.
+    (c) TQT typically 40–200 hours.
+    (d) Tutor holds Level 3 or higher and 1+ years teaching.
+
+  Level 4 — Specialist (exercise referral, adv strength & conditioning):
+    (a) Prerequisites: Level 3 baseline in the same domain.
+    (b) Outcomes use "analyse / adapt / evaluate case / prescribe" verbs.
+    (c) TQT typically 60–400 hours.
+    (d) Tutor holds Level 4 or higher with a clinical/specialist background.
+
+  Level 5 — Advanced specialist / lead:
+    (a) Prerequisites: Level 4 or degree in a related field.
+    (b) Outcomes use "critically evaluate / design programmes / lead teams" verbs.
+    (c) TQT typically 150+ hours.
+
+  Level 6 — Degree-equivalent.
+  Level 7 — Postgraduate-equivalent.
+
+If the provider's answers do not clearly satisfy every checkpoint at a level, pick the highest level whose checkpoints ARE satisfied and set official_level_confidence = "medium" or "low". Never round up "because the provider called it advanced".
+
 Return ONLY valid JSON with this exact shape:
 {
   "official_title": string,                       // Clean, formal title. Prefer sentence case with proper nouns. e.g. "REPS Level 3 Kettlebell Coach". If the provider's working title is fine, keep it.
-  "official_level": number,                       // 1 to 7. Match learning depth: Lvl 2 = supporting, Lvl 3 = independent instructor, Lvl 4 = specialist/exercise referral, Lvl 5 = advanced specialist, Lvl 6 = degree-equivalent, Lvl 7 = postgraduate-equivalent.
+  "official_level": number,                       // 1 to 7, chosen by applying the rubric above.
+  "official_level_rationale": string,             // 1-2 sentences explaining which rubric checkpoints you matched. Reference prerequisites, verb depth, hours band, tutor credential floor. Do NOT be generic.
+  "official_level_confidence": "high" | "medium" | "low",  // high = all rubric checkpoints clearly satisfied; medium = one gap; low = two or more gaps or contradictions.
   "spec_who_for": string,                          // "This course is for..." — 2-4 sentences.
   "spec_learning_outcomes": string[],              // 5-10 statements starting "On completion, learners will..." — one outcome per string. Use Bloom's verbs (demonstrate, apply, evaluate, design, coach, assess).
   "spec_how_youll_study": string,                  // Narrative combining hours, delivery mode, and structure. 2-4 sentences.
@@ -980,6 +1018,7 @@ Return ONLY valid JSON with this exact shape:
 Length rules (enforce yourself — the schema does NOT):
 - Each learning outcome ≤ 200 chars.
 - Long-text fields ≤ 1500 chars.
+- level_rationale ≤ 500 chars.
 - If the provider's answers are thin, contradictory, or leave gaps you cannot fill honestly, set verdict = "inconclusive" and list the gap in red_flags.`;
 
 async function callGemini(
@@ -1245,26 +1284,58 @@ async function runRepsCourseAiDraft(
       ? (deliveryRaw as RepsCourseDeliveryMode | "online")
       : null;
 
+  const confidenceRaw =
+    typeof raw.official_level_confidence === "string"
+      ? raw.official_level_confidence.toLowerCase()
+      : null;
+  const confidence: "high" | "medium" | "low" | null =
+    confidenceRaw === "high" || confidenceRaw === "medium" || confidenceRaw === "low"
+      ? confidenceRaw
+      : null;
+
   // Only overwrite the official/spec fields when the row is a fresh draft or
   // admin explicitly requested a redraft. Never clobber admin edits.
   const shouldFillOfficial = options.overwrite || r.status === "submitted";
+
+  const officialLevel = clampInt(raw.official_level, 1, 7);
+  const glh = clampNum(raw.spec_guided_learning_hours, 0, 1000);
+  const tqt = clampNum(raw.spec_total_qualification_time, 0, 2000);
+  const specPrereq = clampStr(raw.spec_prerequisites, 1000);
+
+  // Deterministic flag computer runs alongside the LLM — catches logical
+  // inconsistencies the model may miss.
+  const { computeDeterministicFlags } = await import("./course-report.server");
+  const deterministicFlags = computeDeterministicFlags({
+    proposed_prerequisites: r.proposed_prerequisites,
+    proposed_how_assessed: r.proposed_how_assessed,
+    proposed_tutor_credentials: r.proposed_tutor_credentials,
+    spec_prerequisites: specPrereq,
+    spec_guided_learning_hours: glh,
+    spec_total_qualification_time: tqt,
+    spec_delivery_mode: deliveryMode,
+    official_level: officialLevel,
+  });
 
   const update: Record<string, unknown> = {
     ai_draft: raw as never,
     ai_verdict: verdict,
     ai_red_flags: redFlags,
     ai_drafted_at: new Date().toISOString(),
+    ai_deterministic_flags: deterministicFlags as never,
+    reviewer_notes: clampStr(raw.reviewer_notes, 1500),
   };
   if (shouldFillOfficial) {
     update.official_title = clampStr(raw.official_title, 200) ?? r.proposed_title.slice(0, 200);
-    update.official_level = clampInt(raw.official_level, 1, 7);
+    update.official_level = officialLevel;
+    update.official_level_rationale = clampStr(raw.official_level_rationale, 500);
+    update.official_level_confidence = confidence;
     update.spec_who_for = clampStr(raw.spec_who_for, 2000);
     update.spec_learning_outcomes = clampStrArr(raw.spec_learning_outcomes, 30, 500);
     update.spec_how_youll_study = clampStr(raw.spec_how_youll_study, 2000);
     update.spec_how_youre_assessed = clampStr(raw.spec_how_youre_assessed, 2000);
-    update.spec_prerequisites = clampStr(raw.spec_prerequisites, 1000);
-    update.spec_guided_learning_hours = clampNum(raw.spec_guided_learning_hours, 0, 1000);
-    update.spec_total_qualification_time = clampNum(raw.spec_total_qualification_time, 0, 2000);
+    update.spec_prerequisites = specPrereq;
+    update.spec_guided_learning_hours = glh;
+    update.spec_total_qualification_time = tqt;
     update.spec_delivery_mode = deliveryMode;
   }
   if (r.status === "submitted") {
@@ -1273,3 +1344,195 @@ async function runRepsCourseAiDraft(
 
   await supabaseAdmin.from("reps_courses").update(update as never).eq("id", id);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Assessment report generation — Ofqual-style PDF, immutable at decision time.
+
+async function buildDecisionSnapshot(args: {
+  courseId: string;
+  decision: "approved" | "rejected" | "changes_requested";
+  reviewerId: string;
+  adminNote: string | null;
+  decidedAt: string;
+}) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: c, error } = await supabaseAdmin
+    .from("reps_courses")
+    .select(
+      "id, provider_id, proposed_title, proposed_delivery_mode, proposed_total_hours, proposed_prerequisites, proposed_tutor_credentials, proposed_how_assessed, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_verdict, ai_red_flags, ai_drafted_at, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, created_at",
+    )
+    .eq("id", args.courseId)
+    .single();
+  if (error || !c) throw new Error(error?.message ?? "Course not found");
+  const row = c as Record<string, unknown>;
+
+  // Provider trust context
+  const [{ data: pro }, { data: profile }, { data: domain }, { data: approvedCoursesRes }, { data: reviewer }] = await Promise.all([
+    supabaseAdmin
+      .from("professionals")
+      .select("id, slug, identity_status, identity_verified_at, insurance_valid_until")
+      .eq("id", row.provider_id as string)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("profiles")
+      .select("full_name")
+      .eq("id", row.provider_id as string)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("provider_domain_verifications")
+      .select("status")
+      .eq("professional_id", row.provider_id as string)
+      .eq("status", "verified")
+      .limit(1)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("reps_courses")
+      .select("id", { count: "exact", head: true })
+      .eq("provider_id", row.provider_id as string)
+      .eq("status", "approved"),
+    supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .eq("id", args.reviewerId)
+      .maybeSingle(),
+  ]);
+  const proAny = pro as Record<string, unknown> | null;
+  const identityVerified = (proAny?.identity_status as string | null) === "verified";
+  const identityVerifiedAt = (proAny?.identity_verified_at as string | null) ?? null;
+  const insuranceUntil = (proAny?.insurance_valid_until as string | null) ?? null;
+  const insuranceActive = !!(insuranceUntil && new Date(insuranceUntil) > new Date());
+
+  // approvedCoursesRes is null when head:true returns 0 — fetch count separately.
+  const { count: approvedCount } = await supabaseAdmin
+    .from("reps_courses")
+    .select("id", { count: "exact", head: true })
+    .eq("provider_id", row.provider_id as string)
+    .eq("status", "approved");
+  void approvedCoursesRes;
+
+  const documentId = crypto.randomUUID();
+  const generatedAt = new Date().toISOString();
+
+  return {
+    version: 1 as const,
+    generated_at: generatedAt,
+    document_id: documentId,
+    decision: args.decision,
+    decision_at: args.decidedAt,
+    reviewer: {
+      id: args.reviewerId,
+      email: null,
+      display_name: (reviewer as { full_name?: string | null } | null)?.full_name ?? null,
+    },
+    admin_note: args.adminNote,
+    course: {
+      id: row.id as string,
+      proposed_title: row.proposed_title as string,
+      proposed_delivery_mode: (row.proposed_delivery_mode as string | null) ?? null,
+      proposed_total_hours: (row.proposed_total_hours as number | null) ?? null,
+      proposed_prerequisites: (row.proposed_prerequisites as string | null) ?? null,
+      proposed_tutor_credentials: (row.proposed_tutor_credentials as string | null) ?? null,
+      official_title: (row.official_title as string | null) ?? null,
+      official_level: (row.official_level as number | null) ?? null,
+      reps_qual_number: (row.reps_qual_number as string | null) ?? null,
+      spec_who_for: (row.spec_who_for as string | null) ?? null,
+      spec_learning_outcomes: (row.spec_learning_outcomes as string[] | null) ?? null,
+      spec_how_youll_study: (row.spec_how_youll_study as string | null) ?? null,
+      spec_how_youre_assessed: (row.spec_how_youre_assessed as string | null) ?? null,
+      spec_prerequisites: (row.spec_prerequisites as string | null) ?? null,
+      spec_guided_learning_hours: (row.spec_guided_learning_hours as number | null) ?? null,
+      spec_total_qualification_time: (row.spec_total_qualification_time as number | null) ?? null,
+      spec_delivery_mode: (row.spec_delivery_mode as string | null) ?? null,
+    },
+    ai: {
+      verdict: (row.ai_verdict as string | null) ?? null,
+      red_flags: ((row.ai_red_flags as string[] | null) ?? []) as string[],
+      reviewer_notes: (row.reviewer_notes as string | null) ?? null,
+      level_rationale: (row.official_level_rationale as string | null) ?? null,
+      level_confidence: (row.official_level_confidence as string | null) ?? null,
+      deterministic_flags: ((row.ai_deterministic_flags as string[] | null) ?? []) as string[],
+    },
+    provider: {
+      id: row.provider_id as string,
+      legal_entity_name: (profile as { full_name?: string | null } | null)?.full_name ?? null,
+      slug: (proAny?.slug as string | null) ?? null,
+      trust: {
+        identity_verified: identityVerified,
+        identity_verified_at: identityVerifiedAt,
+        insurance_active: insuranceActive,
+        insurance_valid_until: insuranceUntil,
+        // Non-approved courses count toward "previous" so use approved - 1 if
+        // this row is already approved, otherwise plain count.
+        domain_verified: Boolean(domain),
+        previous_approved_courses: Math.max(0, (approvedCount ?? 0) - (args.decision === "approved" ? 1 : 0)),
+      },
+    },
+    audit: {
+      submitted_at: (row.created_at as string) ?? args.decidedAt,
+      ai_drafted_at: (row.ai_drafted_at as string | null) ?? null,
+      decided_at: args.decidedAt,
+    },
+  };
+}
+
+async function generateAndStoreCourseReport(args: {
+  courseId: string;
+  snapshot: Awaited<ReturnType<typeof buildDecisionSnapshot>>;
+}): Promise<{ path: string } | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { renderCourseAssessmentPdf } = await import("./course-report.server");
+  try {
+    const pdf = await renderCourseAssessmentPdf(args.snapshot as never, { isDraft: false });
+    const path = `${args.snapshot.provider.id}/${args.courseId}/${args.snapshot.document_id}.pdf`;
+    const { error: upErr } = await supabaseAdmin.storage
+      .from("course-reports")
+      .upload(path, pdf, { contentType: "application/pdf", upsert: true });
+    if (upErr) {
+      console.error("[course-report] upload failed", upErr);
+      return null;
+    }
+    return { path };
+  } catch (e) {
+    console.error("[course-report] render failed", e);
+    return null;
+  }
+}
+
+export const getCourseReportUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: row, error } = await supabaseAdmin
+      .from("reps_courses")
+      .select("id, provider_id, report_pdf_path, decision_snapshot, status")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Not found");
+    const r = row as {
+      provider_id: string;
+      report_pdf_path: string | null;
+      decision_snapshot: unknown;
+      status: string;
+    };
+
+    const isOwner = r.provider_id === userId;
+    let isAdmin = false;
+    if (!isOwner) {
+      const { data: adm } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      isAdmin = Boolean(adm);
+    }
+    if (!isOwner && !isAdmin) throw new Error("Forbidden");
+
+    if (!r.report_pdf_path) {
+      throw new Error("Report is not available yet.");
+    }
+    const { data: signed, error: sErr } = await supabaseAdmin.storage
+      .from("course-reports")
+      .createSignedUrl(r.report_pdf_path, 60 * 10);
+    if (sErr || !signed) throw new Error(sErr?.message ?? "Sign failed");
+    return { url: signed.signedUrl };
+  });
