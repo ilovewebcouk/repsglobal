@@ -1146,23 +1146,21 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               onChange={setOfficialLevel}
             />
 
-            <div className="grid grid-cols-2 gap-2">
-              <SpecField label="Delivery mode">
-                <select
-                  value={delivery ?? ""}
-                  onChange={(e) => setDelivery((e.target.value || null) as DeliveryMode | null)}
-                  disabled={!editable}
-                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
-                >
-                  <option value="">—</option>
-                  <option value="in_person">In person</option>
-                  <option value="online_live">Online — live</option>
-                  <option value="online_self_paced">Online — self-paced</option>
-                  <option value="blended">Blended</option>
-                  <option value="online">Online (legacy)</option>
-                </select>
-              </SpecField>
-            </div>
+            <SpecField label="Delivery mode">
+              <select
+                value={delivery ?? ""}
+                onChange={(e) => setDelivery((e.target.value || null) as DeliveryMode | null)}
+                disabled={!editable}
+                className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
+              >
+                <option value="">—</option>
+                <option value="in_person">In person</option>
+                <option value="online_live">Online — live</option>
+                <option value="online_self_paced">Online — self-paced</option>
+                <option value="blended">Blended</option>
+                <option value="online">Online (legacy)</option>
+              </select>
+            </SpecField>
 
             <SpecField label="Who this course is for">
               <Textarea
