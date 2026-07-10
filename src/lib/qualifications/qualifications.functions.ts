@@ -500,7 +500,7 @@ const submitRepsCourseInput = z.object({
     .url("Enter a full URL including https://")
     .max(500),
   endorsement_statement_agreed: z.literal(true, {
-    errorMap: () => ({ message: "You must agree to display the REPS endorsement statement." }),
+    message: "You must agree to display the REPS endorsement statement.",
   }),
 });
 
