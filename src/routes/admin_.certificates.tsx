@@ -256,7 +256,7 @@ function PrintQueuePanel() {
                   {b.status === "awaiting_print" && (
                     <Button
                       size="sm"
-                      variant="secondary"
+                      variant="subtle"
                       onClick={() => printedMut.mutate(b.batch_id)}
                       disabled={printedMut.isPending}
                     >
@@ -348,7 +348,7 @@ function SearchPanel() {
                 {(r.status === "issued" || r.status === "dispatched") && (
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="destructive-ghost"
                     onClick={() => {
                       if (confirm(`Revoke ${r.certificate_number ?? "this certificate"}?`)) {
                         revokeMut.mutate(r.id);
