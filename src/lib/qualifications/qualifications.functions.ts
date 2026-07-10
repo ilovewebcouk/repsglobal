@@ -645,6 +645,118 @@ export const removeMyRepsCourse = createServerFn({ method: "POST" })
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Endorsement statement — automated presence check
+//
+// Providers must display a verbatim REPS endorsement statement on the course
+// page they submit. This fn fetches that URL server-side, strips markup and
+// looks for two signature phrases. Both must be present.
+//
+// Used in two places:
+//   1. Provider modal — pre-flight "Check now" button (returns the result).
+//   2. Admin review — same server fn, re-run on demand before endorsing.
+
+type EndorsementCheckResult = {
+  ok: boolean;
+  found: boolean;
+  fetched_status: number | null;
+  error: string | null;
+  checked_at: string;
+};
+
+async function fetchAndCheckStatement(url: string): Promise<EndorsementCheckResult> {
+  const checked_at = new Date().toISOString();
+  try {
+    // Basic hardening: only allow http/https, block obvious localhost/private hosts.
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return { ok: false, found: false, fetched_status: null, error: "URL must be http(s).", checked_at };
+    }
+    const host = parsed.hostname.toLowerCase();
+    if (
+      host === "localhost" ||
+      host.endsWith(".localhost") ||
+      host.startsWith("127.") ||
+      host.startsWith("10.") ||
+      host.startsWith("192.168.") ||
+      host.startsWith("169.254.")
+    ) {
+      return { ok: false, found: false, fetched_status: null, error: "URL points to a private host.", checked_at };
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(parsed.toString(), {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: { "User-Agent": "REPS-EndorsementCheck/1.0 (+https://repsuk.org)" },
+    }).finally(() => clearTimeout(timeout));
+
+    if (!res.ok) {
+      return { ok: false, found: false, fetched_status: res.status, error: `HTTP ${res.status}`, checked_at };
+    }
+    const raw = await res.text();
+    // Strip tags + collapse whitespace + lowercase for lenient substring match.
+    const text = raw
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+    const found = REPS_ENDORSEMENT_SIGNATURES.every((sig) => text.includes(sig));
+    return { ok: true, found, fetched_status: res.status, error: null, checked_at };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Fetch failed";
+    return { ok: false, found: false, fetched_status: null, error: msg, checked_at };
+  }
+}
+
+/**
+ * Pre-flight statement check called from the provider modal before submit.
+ * Doesn't require a course row to exist yet — just returns the result.
+ */
+export const checkEndorsementStatement = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ url: z.string().trim().url().max(500) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    return await fetchAndCheckStatement(data.url);
+  });
+
+/**
+ * Admin-side re-check on an existing course row. Persists the result to
+ * `reps_courses.endorsement_statement_*`.
+ */
+export const adminRecheckEndorsementStatement = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ course_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.realUserId ?? context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error: rErr } = await supabaseAdmin
+      .from("reps_courses")
+      .select("id, endorsement_statement_url")
+      .eq("id", data.course_id)
+      .maybeSingle();
+    if (rErr) throw new Error(rErr.message);
+    if (!row) throw new Error("Not found");
+    const url = (row as { endorsement_statement_url: string | null }).endorsement_statement_url;
+    if (!url) throw new Error("This course has no endorsement statement URL on record.");
+    const result = await fetchAndCheckStatement(url);
+    const { error: uErr } = await supabaseAdmin
+      .from("reps_courses")
+      .update({
+        endorsement_statement_last_checked_at: result.checked_at,
+        endorsement_statement_found: result.ok ? result.found : null,
+        endorsement_statement_check_error: result.error,
+      } as never)
+      .eq("id", data.course_id);
+    if (uErr) throw new Error(uErr.message);
+    return result;
+  });
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Admin queues
 
 async function requireAdmin(userId: string) {
