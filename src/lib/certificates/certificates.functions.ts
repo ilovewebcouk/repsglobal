@@ -1099,8 +1099,12 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
       if (batch.format !== "printed_and_digital") {
         throw new Error("Only UK printed batches are dispatched via Royal Mail.");
       }
-      if (!["printed", "awaiting_print", "issued"].includes(batch.status as string)) {
-        throw new Error(`Batch is in status '${batch.status}' — cannot dispatch.`);
+      if (batch.status !== "printed") {
+        throw new Error(
+          batch.status === "awaiting_print"
+            ? "Mark this batch as printed before generating a Royal Mail label."
+            : `Batch is in status '${batch.status}' — cannot dispatch.`,
+        );
       }
       const address = batch.ship_to_address as ShipToAddressDTO | null;
       if (!address) {
