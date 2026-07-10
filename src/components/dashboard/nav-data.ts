@@ -135,6 +135,7 @@ export const TRAINING_PROVIDER_NAV = [
       { icon: Building2, label: "Profile", to: "/dashboard/profile" },
       { icon: ShieldCheck, label: "Verification", to: "/dashboard/verification" },
       { icon: GraduationCap, label: "Qualifications & Courses", to: "/dashboard/qualifications" },
+      { icon: Users, label: "Students & Certificates", to: "/dashboard/students" },
     ],
   },
   {

@@ -691,6 +691,195 @@ export type Database = {
           },
         ]
       }
+      certificate_batches: {
+        Row: {
+          admin_note: string | null
+          count: number
+          created_at: string
+          currency: string
+          dispatched_at: string | null
+          environment: string
+          format: string
+          id: string
+          issued_at: string | null
+          paid_at: string | null
+          printed_at: string | null
+          provider_id: string
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          total_pence: number
+          unit_price_pence: number
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          count?: number
+          created_at?: string
+          currency?: string
+          dispatched_at?: string | null
+          environment?: string
+          format?: string
+          id?: string
+          issued_at?: string | null
+          paid_at?: string | null
+          printed_at?: string | null
+          provider_id: string
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          total_pence?: number
+          unit_price_pence: number
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          count?: number
+          created_at?: string
+          currency?: string
+          dispatched_at?: string | null
+          environment?: string
+          format?: string
+          id?: string
+          issued_at?: string | null
+          paid_at?: string | null
+          printed_at?: string | null
+          provider_id?: string
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          total_pence?: number
+          unit_price_pence?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      certificate_pricing: {
+        Row: {
+          currency: string
+          id: boolean
+          unit_price_pence: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          currency?: string
+          id?: boolean
+          unit_price_pence?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          currency?: string
+          id?: boolean
+          unit_price_pence?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      certificate_registrations: {
+        Row: {
+          batch_id: string | null
+          certificate_number: string | null
+          course_id: string
+          course_kind: string
+          course_level: number | null
+          course_title: string
+          created_at: string
+          dispatched_at: string | null
+          enrolled_at: string
+          format: string | null
+          id: string
+          issued_at: string | null
+          learner_id: string
+          marked_passed_by: string | null
+          paid_at: string | null
+          passed_at: string | null
+          pdf_path: string | null
+          price_pence_at_issue: number | null
+          provider_id: string
+          reps_course_number: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          status: string
+          unit_summary_pdf_path: string | null
+          updated_at: string
+          verification_token: string | null
+        }
+        Insert: {
+          batch_id?: string | null
+          certificate_number?: string | null
+          course_id: string
+          course_kind?: string
+          course_level?: number | null
+          course_title: string
+          created_at?: string
+          dispatched_at?: string | null
+          enrolled_at?: string
+          format?: string | null
+          id?: string
+          issued_at?: string | null
+          learner_id: string
+          marked_passed_by?: string | null
+          paid_at?: string | null
+          passed_at?: string | null
+          pdf_path?: string | null
+          price_pence_at_issue?: number | null
+          provider_id: string
+          reps_course_number?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          unit_summary_pdf_path?: string | null
+          updated_at?: string
+          verification_token?: string | null
+        }
+        Update: {
+          batch_id?: string | null
+          certificate_number?: string | null
+          course_id?: string
+          course_kind?: string
+          course_level?: number | null
+          course_title?: string
+          created_at?: string
+          dispatched_at?: string | null
+          enrolled_at?: string
+          format?: string | null
+          id?: string
+          issued_at?: string | null
+          learner_id?: string
+          marked_passed_by?: string | null
+          paid_at?: string | null
+          passed_at?: string | null
+          pdf_path?: string | null
+          price_pence_at_issue?: number | null
+          provider_id?: string
+          reps_course_number?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          unit_summary_pdf_path?: string | null
+          updated_at?: string
+          verification_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_registrations_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "certificate_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificate_registrations_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificate_upload_sessions: {
         Row: {
           created_at: string
@@ -2234,6 +2423,45 @@ export type Database = {
             referencedColumns: ["professional_id"]
           },
         ]
+      }
+      learners: {
+        Row: {
+          country: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          dob: string | null
+          email: string
+          full_name: string
+          id: string
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dob?: string | null
+          email: string
+          full_name: string
+          id?: string
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dob?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       legacy_redirects: {
         Row: {
@@ -6722,6 +6950,7 @@ export type Database = {
         }
         Returns: number
       }
+      next_certificate_number: { Args: never; Returns: string }
       next_reps_qual_number: { Args: never; Returns: string }
       ops_admin_emails: {
         Args: never
