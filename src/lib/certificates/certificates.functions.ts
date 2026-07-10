@@ -148,8 +148,9 @@ export const setCertificatePricing = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => setPricingInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const adminId = (context as any).realUserId ?? userId;
     const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userId,
+      _user_id: adminId,
       _role: "admin",
     } as never);
     if (!isAdmin) throw new Error("Forbidden");
