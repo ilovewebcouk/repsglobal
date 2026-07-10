@@ -515,7 +515,9 @@ function CpdRow({ row }: { row: RepsCourseRow }) {
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-white">{title}</span>
             {level != null ? (
-              <Badge className="border-white/15 bg-white/5 text-white/70">L{level}</Badge>
+              <Badge className="border-reps-orange/30 bg-reps-orange-soft text-reps-orange">
+                Level {level}
+              </Badge>
             ) : null}
             <StatusBadge status={row.status} />
             {row.reps_qual_number ? (
