@@ -1240,7 +1240,14 @@ export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
             templateData: {
               providerName: (prof?.full_name as string | null) ?? null,
               count: batch.count,
-              serviceLabel: serviceCode === "TPS" ? "Royal Mail Tracked 24" : "Royal Mail Tracked 48",
+              serviceLabel:
+                serviceCode === "TPS"
+                  ? "Royal Mail Tracked 24"
+                  : serviceCode === "MTM"
+                  ? "Royal Mail International Tracked"
+                  : serviceCode === "MTL"
+                  ? "Royal Mail International Tracked & Signed"
+                  : "Royal Mail Tracked 48",
               trackingNumber: rmOrder.trackingNumber ?? null,
               trackingUrl,
             },
