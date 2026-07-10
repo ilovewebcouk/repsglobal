@@ -307,63 +307,6 @@ function AddTypePickerDialog({
 
 /* ─── Regulated ─────────────────────────────────────────────────────────── */
 
-function RegulatedSection({
-  rows,
-  loading,
-  onNew,
-}: {
-  rows: RegulatedPermissionRow[];
-  loading: boolean;
-  onNew: () => void;
-}) {
-  return (
-    <PPanel className="p-5">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-[18px] font-bold text-white">
-            Regulated qualifications we deliver
-          </h2>
-          <p className="mt-1 text-[13px] text-white/60">
-            Prove you're an approved centre for a specific Ofqual-regulated qualification.
-            We only accept an EQA report, centre approval certificate, or an approval letter
-            from the awarding body on their letterhead.
-          </p>
-        </div>
-        <Button onClick={onNew} className="shrink-0">
-          <Plus data-icon /> Add qualification
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="py-10 text-center text-[13px] text-white/55">
-          <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" /> Loading…
-        </div>
-      ) : rows.length === 0 ? (
-        <div className="rounded-[16px] border border-dashed border-reps-border p-8 text-center">
-          <GraduationCap className="mx-auto mb-3 h-8 w-8 text-white/40" />
-          <div className="text-[14px] font-semibold text-white">
-            No regulated qualifications yet
-          </div>
-          <div className="mt-1 text-[12.5px] text-white/55">
-            Add one to prove your centre is approved to deliver it.
-          </div>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {[...rows]
-            .sort(
-              (a, b) =>
-                (a.status === "withdrawn" ? 1 : 0) -
-                (b.status === "withdrawn" ? 1 : 0),
-            )
-            .map((r) => (
-              <RegulatedRow key={r.id} row={r} />
-            ))}
-        </ul>
-      )}
-    </PPanel>
-  );
-}
 
 function RegulatedRow({ row }: { row: RegulatedPermissionRow }) {
   const qc = useQueryClient();
@@ -525,54 +468,6 @@ const EVIDENCE_LABEL: Record<RegulatedPermissionRow["evidence_type"], string> = 
 
 /* ─── CPD ───────────────────────────────────────────────────────────────── */
 
-function CpdSection({
-  rows,
-  loading,
-  onNew,
-}: {
-  rows: CpdCourseRow[];
-  loading: boolean;
-  onNew: () => void;
-}) {
-  return (
-    <PPanel className="p-5">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-[18px] font-bold text-white">
-            REPS-accredited courses
-          </h2>
-          <p className="mt-1 text-[13px] text-white/60">
-            REPS accredits courses you deliver. Submit a syllabus, assessment criteria and tutor CV.
-            Approved courses receive a REPS accreditation number and the accredited badge.
-          </p>
-        </div>
-        <Button onClick={onNew} className="shrink-0">
-          <Plus data-icon /> Request accreditation
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="py-10 text-center text-[13px] text-white/55">
-          <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" /> Loading…
-        </div>
-      ) : rows.length === 0 ? (
-        <div className="rounded-[16px] border border-dashed border-reps-border p-8 text-center">
-          <Sparkles className="mx-auto mb-3 h-8 w-8 text-white/40" />
-          <div className="text-[14px] font-semibold text-white">No courses yet</div>
-          <div className="mt-1 text-[12.5px] text-white/55">
-            Submit your first course for REPS accreditation.
-          </div>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {rows.map((r) => (
-            <CpdRow key={r.id} row={r} />
-          ))}
-        </ul>
-      )}
-    </PPanel>
-  );
-}
 
 function CpdRow({ row }: { row: CpdCourseRow }) {
   const qc = useQueryClient();
