@@ -1,10 +1,10 @@
 /**
- * /dashboard/qualifications — provider qualifications & REPS-accredited courses.
+ * /dashboard/qualifications — provider qualifications & REPS-endorsed courses.
  *
  * Two sub-flows behind a single unified list:
  *   A. Regulated qualifications we deliver (Ofqual) — pick from catalogue,
  *      upload EQA report / centre certificate / approval letter, admin approves.
- *   B. REPS-accredited courses — provider uploads syllabus + assessment
+ *   B. REPS-endorsed courses — provider uploads syllabus + assessment
  *      criteria + tutor CV; AI drafts the full spec; admin edits and
  *      publishes; row gets a global REPS-QUAL-NNNNNN number.
  */
@@ -87,7 +87,7 @@ export const Route = createFileRoute("/_authenticated/_professional/dashboard_/q
       {
         name: "description",
         content:
-          "Prove you're approved to deliver regulated qualifications and get your courses REPS-accredited.",
+          "Prove you're approved to deliver regulated qualifications and get your courses REPS-endorsed.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -175,7 +175,7 @@ function ProviderQualsPage() {
       tier={tier}
       active="Qualifications & Courses"
       title="Qualifications & Courses"
-      subtitle="One list for both regulated qualifications you're approved to deliver and courses you'd like REPS to accredit."
+      subtitle="One list for both regulated qualifications you're approved to deliver and courses you'd like REPS to endorse."
     >
       <PPanel className="p-5">
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -201,7 +201,7 @@ function ProviderQualsPage() {
             <GraduationCap className="mx-auto mb-3 h-8 w-8 text-white/40" />
             <div className="text-[14px] font-semibold text-white">No qualifications or courses yet</div>
             <div className="mt-1 text-[12.5px] text-white/55">
-              Add your first — we'll ask whether it's an Ofqual-regulated qualification you deliver, or a course you'd like REPS to accredit.
+              Add your first — we'll ask whether it's an Ofqual-regulated qualification you deliver, or a course you'd like REPS to endorse.
             </div>
             <Button onClick={() => setPickerOpen(true)} className="mt-4">
               <Plus data-icon /> Add qualification or course
@@ -298,10 +298,10 @@ function AddTypePickerDialog({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-white/80" />
-                <span className="text-[14px] font-semibold text-white">REPS-accredited course</span>
+                <span className="text-[14px] font-semibold text-white">REPS-endorsed course</span>
               </div>
               <p className="mt-1 text-[12.5px] text-white/60">
-                I've built my own course and want REPS to accredit it. You'll provide a syllabus, assessment criteria, and tutor CV.
+                I've built my own course and want REPS to endorse it. You'll provide a syllabus, assessment criteria, and tutor CV.
               </p>
             </div>
           </label>
@@ -482,7 +482,7 @@ const EVIDENCE_LABEL: Record<RegulatedPermissionRow["evidence_type"], string> = 
   approval_letter: "Approval letter",
 };
 
-/* ─── REPS-accredited course row ─────────────────────────────────────────── */
+/* ─── REPS-endorsed course row ─────────────────────────────────────────── */
 
 function CpdRow({ row }: { row: RepsCourseRow }) {
   const qc = useQueryClient();
@@ -990,7 +990,7 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
-/* ─── Add REPS-accredited course dialog ──────────────────────────────────── */
+/* ─── Add REPS-endorsed course dialog ──────────────────────────────────── */
 
 type DeliveryMode = "in_person" | "online_live" | "online_self_paced" | "blended";
 
@@ -1194,9 +1194,9 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-reps-panel border-reps-border text-white">
         <DialogHeader>
-          <DialogTitle>Request REPS accreditation</DialogTitle>
+          <DialogTitle>Request REPS endorsement</DialogTitle>
           <DialogDescription>
-            Submit your course for REPS accreditation. Answer in your own words and upload the
+            Submit your course for REPS endorsement. Answer in your own words and upload the
             supporting evidence below. A REPS admin will review your submission and confirm the
             level, official title and <span className="font-mono">REPS-QUAL-</span>number.
             We don't rewrite your course — we verify it.
@@ -1464,7 +1464,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={!canSubmit}>
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit for accreditation"}
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit for endorsement"}
           </Button>
         </DialogFooter>
       </DialogContent>
