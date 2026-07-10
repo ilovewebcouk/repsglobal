@@ -1215,6 +1215,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
       await submit({
         data: {
           proposed_title: title.trim(),
+          proposed_level: proposedLevel ? Number(proposedLevel) : null,
+          proposed_credential_type: credentialType || null,
           proposed_who_for: whoFor.trim(),
           proposed_learner_outcomes: outcomes.trim(),
           proposed_delivery_mode: delivery as DeliveryMode,
