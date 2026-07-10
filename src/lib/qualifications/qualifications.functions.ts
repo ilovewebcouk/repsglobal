@@ -555,6 +555,8 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
       .insert({
         provider_id: userId,
         proposed_title: data.proposed_title.trim(),
+        proposed_level: data.proposed_level ?? null,
+        proposed_credential_type: data.proposed_credential_type ?? null,
         proposed_who_for: data.proposed_who_for.trim(),
         proposed_what_covered: whatCovered,
         proposed_learner_outcomes: data.proposed_learner_outcomes.trim(),
