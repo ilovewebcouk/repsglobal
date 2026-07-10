@@ -770,3 +770,280 @@ export const verifyCertificateByToken = createServerFn({ method: "GET" })
       status: row.status as "issued" | "dispatched" | "revoked",
     };
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin surfaces
+
+async function assertAdmin(supabase: any, userId: string) {
+  const { data: isAdmin } = await supabase.rpc("has_role", {
+    _user_id: userId,
+    _role: "admin",
+  } as never);
+  if (!isAdmin) throw new Error("Forbidden");
+}
+
+export type AdminBatchDTO = BatchDTO & {
+  provider_id: string;
+  provider_name: string | null;
+  stripe_checkout_session_id: string | null;
+  stripe_payment_intent_id: string | null;
+};
+
+export const adminListBatches = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        status: z
+          .enum([
+            "all",
+            "pending",
+            "paid",
+            "issued",
+            "awaiting_print",
+            "printed",
+            "dispatched",
+            "fulfilled",
+            "canceled",
+          ])
+          .default("all"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<AdminBatchDTO[]> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    let q = supabase
+      .from("certificate_batches")
+      .select(
+        "id, provider_id, status, count, unit_price_pence, total_pence, currency, format, paid_at, issued_at, dispatched_at, created_at, stripe_checkout_session_id, stripe_payment_intent_id",
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (data.status !== "all") q = q.eq("status", data.status);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+
+    const providerIds = Array.from(new Set((rows ?? []).map((r: any) => r.provider_id)));
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", providerIds);
+    const nameById = new Map<string, string | null>(
+      (profs ?? []).map((p: any) => [p.id, p.full_name ?? null]),
+    );
+    return (rows ?? []).map((r: any) => ({
+      ...(r as BatchDTO),
+      provider_id: r.provider_id,
+      provider_name: nameById.get(r.provider_id) ?? null,
+      stripe_checkout_session_id: r.stripe_checkout_session_id,
+      stripe_payment_intent_id: r.stripe_payment_intent_id,
+    }));
+  });
+
+export type PrintQueueRowDTO = {
+  batch_id: string;
+  provider_id: string;
+  provider_name: string | null;
+  count: number;
+  paid_at: string | null;
+  status: string;
+  learners: Array<{
+    registration_id: string;
+    certificate_number: string | null;
+    learner_name: string;
+    learner_email: string;
+    course_title: string;
+    course_level: number | null;
+    pdf_path: string | null;
+  }>;
+};
+
+export const adminListPrintQueue = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PrintQueueRowDTO[]> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const { data: batches, error } = await supabase
+      .from("certificate_batches")
+      .select("id, provider_id, count, paid_at, status")
+      .in("status", ["awaiting_print", "printed"])
+      .eq("format", "printed_and_digital")
+      .order("paid_at", { ascending: true })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    const batchIds = (batches ?? []).map((b: any) => b.id);
+    if (batchIds.length === 0) return [];
+
+    const { data: regs } = await supabase
+      .from("certificate_registrations")
+      .select(
+        "id, batch_id, certificate_number, course_title, course_level, pdf_path, learners!inner(full_name, email)",
+      )
+      .in("batch_id", batchIds);
+
+    const providerIds = Array.from(new Set((batches ?? []).map((b: any) => b.provider_id)));
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", providerIds);
+    const nameById = new Map<string, string | null>(
+      (profs ?? []).map((p: any) => [p.id, p.full_name ?? null]),
+    );
+
+    return (batches ?? []).map((b: any) => ({
+      batch_id: b.id,
+      provider_id: b.provider_id,
+      provider_name: nameById.get(b.provider_id) ?? null,
+      count: b.count,
+      paid_at: b.paid_at,
+      status: b.status,
+      learners: (regs ?? [])
+        .filter((r: any) => r.batch_id === b.id)
+        .map((r: any) => ({
+          registration_id: r.id,
+          certificate_number: r.certificate_number,
+          learner_name: r.learners?.full_name ?? "",
+          learner_email: r.learners?.email ?? "",
+          course_title: r.course_title,
+          course_level: r.course_level,
+          pdf_path: r.pdf_path,
+        })),
+    }));
+  });
+
+export const adminMarkBatchPrinted = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { error } = await supabase
+      .from("certificate_batches")
+      .update({ status: "printed" } as never)
+      .eq("id", data.batch_id)
+      .eq("status", "awaiting_print");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminMarkBatchDispatched = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("certificate_batches")
+      .update({ status: "fulfilled", dispatched_at: now } as never)
+      .eq("id", data.batch_id)
+      .in("status", ["printed", "awaiting_print"]);
+    if (error) throw new Error(error.message);
+    // Mark registrations as dispatched too
+    await supabase
+      .from("certificate_registrations")
+      .update({ status: "dispatched", dispatched_at: now } as never)
+      .eq("batch_id", data.batch_id)
+      .eq("status", "issued");
+    return { ok: true };
+  });
+
+export type AdminRegistrationSearchDTO = {
+  id: string;
+  provider_id: string;
+  provider_name: string | null;
+  learner_name: string;
+  learner_email: string;
+  course_title: string;
+  course_level: number | null;
+  status: RegistrationStatus;
+  certificate_number: string | null;
+  verification_token: string | null;
+  issued_at: string | null;
+};
+
+export const adminSearchRegistrations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ q: z.string().trim().max(120).optional().default("") }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<AdminRegistrationSearchDTO[]> => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    let query = supabase
+      .from("certificate_registrations")
+      .select(
+        "id, provider_id, status, certificate_number, verification_token, issued_at, course_title, course_level, learners!inner(full_name, email)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    const q = data.q.trim();
+    if (q) {
+      // Try cert-number exact-ish match first, else fall back to email/name contains via learners join
+      if (/^REPS-CERT-/i.test(q)) {
+        query = query.ilike("certificate_number", `${q}%`);
+      } else if (q.includes("@")) {
+        query = query.filter("learners.email", "ilike", `%${q}%`);
+      } else {
+        query = query.filter("learners.full_name", "ilike", `%${q}%`);
+      }
+    }
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+
+    const providerIds = Array.from(new Set((rows ?? []).map((r: any) => r.provider_id)));
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", providerIds);
+    const nameById = new Map<string, string | null>(
+      (profs ?? []).map((p: any) => [p.id, p.full_name ?? null]),
+    );
+
+    return (rows ?? []).map((r: any) => ({
+      id: r.id,
+      provider_id: r.provider_id,
+      provider_name: nameById.get(r.provider_id) ?? null,
+      learner_name: r.learners?.full_name ?? "",
+      learner_email: r.learners?.email ?? "",
+      course_title: r.course_title,
+      course_level: r.course_level,
+      status: r.status,
+      certificate_number: r.certificate_number,
+      verification_token: r.verification_token,
+      issued_at: r.issued_at,
+    }));
+  });
+
+export const adminRevokeCertificate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        registration_id: z.string().uuid(),
+        reason: z.string().trim().max(500).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { error } = await supabase
+      .from("certificate_registrations")
+      .update({
+        status: "revoked",
+        revoked_at: new Date().toISOString(),
+        revoked_by: userId,
+        revoke_reason: data.reason ?? null,
+      } as never)
+      .eq("id", data.registration_id)
+      .in("status", ["issued", "dispatched"]);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
