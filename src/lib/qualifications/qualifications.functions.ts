@@ -573,12 +573,16 @@ export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     await requireAdmin(context.realUserId ?? context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // "submitted" is the admin's NEW bucket — includes rows the AI has already
+    // drafted (ai_drafted) since both are pre-human-review.
+    const statuses =
+      data.status === "submitted" ? ["submitted", "ai_drafted"] : [data.status];
     const { data: rows, error } = await supabaseAdmin
       .from("reps_courses")
       .select(
         REPS_COURSE_SELECT + ", ai_draft, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
-      .eq("status", data.status)
+      .in("status", statuses)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (await hydrateProviderNames((rows ?? []) as never, supabaseAdmin)) as unknown as typeof rows;
