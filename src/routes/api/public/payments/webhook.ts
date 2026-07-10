@@ -551,6 +551,34 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   if (error) throw error;
                   userId = topupUserId;
                 }
+              } else if (meta.kind === "cert_batch" && meta.batch_id) {
+                // Certificate batch — mark paid, then issue PDFs.
+                const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                await supabaseAdmin
+                  .from("certificate_batches")
+                  .update({
+                    status: "paid",
+                    paid_at: new Date().toISOString(),
+                    stripe_payment_intent_id:
+                      typeof session.payment_intent === "string"
+                        ? session.payment_intent
+                        : (session.payment_intent?.id ?? null),
+                  } as never)
+                  .eq("id", meta.batch_id);
+                await supabaseAdmin
+                  .from("certificate_registrations")
+                  .update({ status: "paid", paid_at: new Date().toISOString() } as never)
+                  .eq("batch_id", meta.batch_id)
+                  .eq("status", "pending_payment");
+                try {
+                  const { issueCertificatesForBatch } = await import(
+                    "@/lib/certificates/issue.server"
+                  );
+                  await issueCertificatesForBatch(meta.batch_id);
+                } catch (e) {
+                  console.error("[cert-batch] issuance failed", e);
+                }
+                userId = meta.provider_id || null;
               } else if (session.mode === "subscription" && session.subscription) {
                 // Deferred signup (Option 1): if this checkout was started
                 // from /signup before any auth.users row existed, mint the
