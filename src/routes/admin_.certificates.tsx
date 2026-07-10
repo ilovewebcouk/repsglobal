@@ -592,7 +592,8 @@ function DispatchDialog({
     onError: (e: any) => toast.error(e?.message ?? "Royal Mail failed"),
   });
 
-  const addr = batch.ship_to_address;
+
+
 
   return (
     <div
