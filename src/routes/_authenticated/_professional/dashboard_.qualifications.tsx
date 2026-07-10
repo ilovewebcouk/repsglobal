@@ -985,10 +985,7 @@ const DELIVERY_OPTIONS: Array<{ value: DeliveryMode; label: string; help: string
 function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const submit = useServerFn(submitRepsCourse);
-  const expand = useServerFn(
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require("@/lib/qualifications/qualifications.functions").expandRepsCourseField,
-  );
+  const expand = useServerFn(expandRepsCourseField);
 
   const [title, setTitle] = React.useState("");
   const [whoFor, setWhoFor] = React.useState("");
