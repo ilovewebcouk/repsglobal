@@ -45,9 +45,10 @@ function AdminCertificatesPage() {
   ];
   return (
     <DashboardShell
+      role="admin"
+      active="Certificates"
       title="Certificates"
-      description="Certificate pricing, batches, print fulfilment and revocation."
-      icon={GraduationCap}
+      subtitle="Certificate pricing, batches, print fulfilment and revocation."
     >
       <div className="mb-4 flex flex-wrap gap-1 rounded-xl bg-white/[0.04] p-1">
         {tabs.map((t) => (
