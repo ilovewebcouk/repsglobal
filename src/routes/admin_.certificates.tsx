@@ -20,6 +20,7 @@ import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardInput as Input } from "@/components/dashboard/ui/input";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
 import {
+  adminDownloadPrintPack,
   adminDownloadShippingLabel,
   adminListBatches,
   adminListPrintQueue,
