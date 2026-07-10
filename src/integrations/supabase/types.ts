@@ -4372,6 +4372,53 @@ export type Database = {
         }
         Relationships: []
       }
+      reps_course_evidence: {
+        Row: {
+          course_id: string
+          created_at: string
+          file_kind: string
+          file_name: string
+          file_path: string
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          provider_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          file_kind: string
+          file_name: string
+          file_path: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          provider_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          file_kind?: string
+          file_name?: string
+          file_path?: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          provider_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reps_course_evidence_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "reps_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reps_courses: {
         Row: {
           accredited_at: string | null
@@ -4408,6 +4455,7 @@ export type Database = {
           spec_how_youll_study: string | null
           spec_how_youre_assessed: string | null
           spec_learning_outcomes: Json | null
+          spec_modules: Json | null
           spec_prerequisites: string | null
           spec_published_at: string | null
           spec_total_qualification_time: number | null
@@ -4452,6 +4500,7 @@ export type Database = {
           spec_how_youll_study?: string | null
           spec_how_youre_assessed?: string | null
           spec_learning_outcomes?: Json | null
+          spec_modules?: Json | null
           spec_prerequisites?: string | null
           spec_published_at?: string | null
           spec_total_qualification_time?: number | null
@@ -4496,6 +4545,7 @@ export type Database = {
           spec_how_youll_study?: string | null
           spec_how_youre_assessed?: string | null
           spec_learning_outcomes?: Json | null
+          spec_modules?: Json | null
           spec_prerequisites?: string | null
           spec_published_at?: string | null
           spec_total_qualification_time?: number | null
