@@ -1054,6 +1054,10 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   const removeEvidence = useServerFn(removeRepsCourseEvidence);
 
   const [title, setTitle] = React.useState("");
+  const [proposedLevel, setProposedLevel] = React.useState<string>("");
+  const [credentialType, setCredentialType] = React.useState<
+    "award" | "certificate" | "diploma" | "course" | "not_sure" | ""
+  >("");
   const [whoFor, setWhoFor] = React.useState("");
   const [outcomes, setOutcomes] = React.useState("");
   const [delivery, setDelivery] = React.useState<DeliveryMode | "">("");
