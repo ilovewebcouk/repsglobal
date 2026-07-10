@@ -4378,14 +4378,23 @@ export type Database = {
           admin_note: string | null
           ai_draft: Json | null
           ai_drafted_at: string | null
+          ai_expand_usage: Json
           ai_red_flags: string[]
           ai_verdict: string | null
-          assessment_criteria_doc_path: string
           created_at: string
           id: string
           official_level: number | null
           official_title: string | null
+          proposed_delivery_mode: string | null
+          proposed_extra_notes: string | null
+          proposed_how_assessed: string | null
+          proposed_learner_outcomes: string | null
+          proposed_prerequisites: string | null
           proposed_title: string
+          proposed_total_hours: number | null
+          proposed_tutor_credentials: string | null
+          proposed_what_covered: string | null
+          proposed_who_for: string | null
           provider_id: string
           reps_qual_number: string | null
           reviewed_at: string | null
@@ -4400,8 +4409,6 @@ export type Database = {
           spec_total_qualification_time: number | null
           spec_who_for: string | null
           status: string
-          syllabus_doc_path: string
-          tutor_cv_doc_path: string
           updated_at: string
           withdrawn_at: string | null
           withdrawn_reason: string | null
@@ -4411,14 +4418,23 @@ export type Database = {
           admin_note?: string | null
           ai_draft?: Json | null
           ai_drafted_at?: string | null
+          ai_expand_usage?: Json
           ai_red_flags?: string[]
           ai_verdict?: string | null
-          assessment_criteria_doc_path: string
           created_at?: string
           id?: string
           official_level?: number | null
           official_title?: string | null
+          proposed_delivery_mode?: string | null
+          proposed_extra_notes?: string | null
+          proposed_how_assessed?: string | null
+          proposed_learner_outcomes?: string | null
+          proposed_prerequisites?: string | null
           proposed_title: string
+          proposed_total_hours?: number | null
+          proposed_tutor_credentials?: string | null
+          proposed_what_covered?: string | null
+          proposed_who_for?: string | null
           provider_id: string
           reps_qual_number?: string | null
           reviewed_at?: string | null
@@ -4433,8 +4449,6 @@ export type Database = {
           spec_total_qualification_time?: number | null
           spec_who_for?: string | null
           status?: string
-          syllabus_doc_path: string
-          tutor_cv_doc_path: string
           updated_at?: string
           withdrawn_at?: string | null
           withdrawn_reason?: string | null
@@ -4444,14 +4458,23 @@ export type Database = {
           admin_note?: string | null
           ai_draft?: Json | null
           ai_drafted_at?: string | null
+          ai_expand_usage?: Json
           ai_red_flags?: string[]
           ai_verdict?: string | null
-          assessment_criteria_doc_path?: string
           created_at?: string
           id?: string
           official_level?: number | null
           official_title?: string | null
+          proposed_delivery_mode?: string | null
+          proposed_extra_notes?: string | null
+          proposed_how_assessed?: string | null
+          proposed_learner_outcomes?: string | null
+          proposed_prerequisites?: string | null
           proposed_title?: string
+          proposed_total_hours?: number | null
+          proposed_tutor_credentials?: string | null
+          proposed_what_covered?: string | null
+          proposed_who_for?: string | null
           provider_id?: string
           reps_qual_number?: string | null
           reviewed_at?: string | null
@@ -4466,8 +4489,6 @@ export type Database = {
           spec_total_qualification_time?: number | null
           spec_who_for?: string | null
           status?: string
-          syllabus_doc_path?: string
-          tutor_cv_doc_path?: string
           updated_at?: string
           withdrawn_at?: string | null
           withdrawn_reason?: string | null
