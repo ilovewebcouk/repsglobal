@@ -1190,99 +1190,6 @@ export type Database = {
         }
         Relationships: []
       }
-      cpd_courses: {
-        Row: {
-          accredited_at: string | null
-          admin_note: string | null
-          ai_extraction: Json | null
-          ai_red_flags: string[]
-          ai_verdict: string | null
-          assessment_criteria_doc_path: string | null
-          created_at: string
-          delivery_mode: string | null
-          hours: number | null
-          id: string
-          level: number | null
-          provider_id: string
-          reps_cpd_number: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          summary: string | null
-          syllabus_doc_path: string | null
-          title: string
-          tutor_cv_doc_path: string | null
-          updated_at: string
-          withdrawn_at: string | null
-          withdrawn_reason: string | null
-        }
-        Insert: {
-          accredited_at?: string | null
-          admin_note?: string | null
-          ai_extraction?: Json | null
-          ai_red_flags?: string[]
-          ai_verdict?: string | null
-          assessment_criteria_doc_path?: string | null
-          created_at?: string
-          delivery_mode?: string | null
-          hours?: number | null
-          id?: string
-          level?: number | null
-          provider_id: string
-          reps_cpd_number?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          summary?: string | null
-          syllabus_doc_path?: string | null
-          title: string
-          tutor_cv_doc_path?: string | null
-          updated_at?: string
-          withdrawn_at?: string | null
-          withdrawn_reason?: string | null
-        }
-        Update: {
-          accredited_at?: string | null
-          admin_note?: string | null
-          ai_extraction?: Json | null
-          ai_red_flags?: string[]
-          ai_verdict?: string | null
-          assessment_criteria_doc_path?: string | null
-          created_at?: string
-          delivery_mode?: string | null
-          hours?: number | null
-          id?: string
-          level?: number | null
-          provider_id?: string
-          reps_cpd_number?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          summary?: string | null
-          syllabus_doc_path?: string | null
-          title?: string
-          tutor_cv_doc_path?: string | null
-          updated_at?: string
-          withdrawn_at?: string | null
-          withdrawn_reason?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cpd_courses_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "professionals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cpd_courses_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "v_identity_review_queue"
-            referencedColumns: ["professional_id"]
-          },
-        ]
-      }
       credit_transactions: {
         Row: {
           action: string
@@ -3995,6 +3902,8 @@ export type Database = {
         Row: {
           admin_note: string | null
           ai_cross_check: Json | null
+          ai_draft: Json | null
+          ai_drafted_at: string | null
           ai_extraction: Json | null
           ai_red_flags: string[]
           ai_verdict: string | null
@@ -4013,6 +3922,14 @@ export type Database = {
           reps_qualification_number: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          spec_guided_learning_hours: number | null
+          spec_how_youll_study: string | null
+          spec_how_youre_assessed: string | null
+          spec_learning_outcomes: Json | null
+          spec_prerequisites: string | null
+          spec_published_at: string | null
+          spec_total_qualification_time: number | null
+          spec_who_for: string | null
           status: string
           submission_group_id: string | null
           updated_at: string
@@ -4022,6 +3939,8 @@ export type Database = {
         Insert: {
           admin_note?: string | null
           ai_cross_check?: Json | null
+          ai_draft?: Json | null
+          ai_drafted_at?: string | null
           ai_extraction?: Json | null
           ai_red_flags?: string[]
           ai_verdict?: string | null
@@ -4040,6 +3959,14 @@ export type Database = {
           reps_qualification_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          spec_guided_learning_hours?: number | null
+          spec_how_youll_study?: string | null
+          spec_how_youre_assessed?: string | null
+          spec_learning_outcomes?: Json | null
+          spec_prerequisites?: string | null
+          spec_published_at?: string | null
+          spec_total_qualification_time?: number | null
+          spec_who_for?: string | null
           status?: string
           submission_group_id?: string | null
           updated_at?: string
@@ -4049,6 +3976,8 @@ export type Database = {
         Update: {
           admin_note?: string | null
           ai_cross_check?: Json | null
+          ai_draft?: Json | null
+          ai_drafted_at?: string | null
           ai_extraction?: Json | null
           ai_red_flags?: string[]
           ai_verdict?: string | null
@@ -4067,6 +3996,14 @@ export type Database = {
           reps_qualification_number?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          spec_guided_learning_hours?: number | null
+          spec_how_youll_study?: string | null
+          spec_how_youre_assessed?: string | null
+          spec_learning_outcomes?: Json | null
+          spec_prerequisites?: string | null
+          spec_published_at?: string | null
+          spec_total_qualification_time?: number | null
+          spec_who_for?: string | null
           status?: string
           submission_group_id?: string | null
           updated_at?: string
@@ -4434,6 +4371,123 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      reps_courses: {
+        Row: {
+          accredited_at: string | null
+          admin_note: string | null
+          ai_draft: Json | null
+          ai_drafted_at: string | null
+          ai_red_flags: string[]
+          ai_verdict: string | null
+          assessment_criteria_doc_path: string
+          created_at: string
+          id: string
+          official_level: number | null
+          official_title: string | null
+          proposed_title: string
+          provider_id: string
+          reps_qual_number: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          spec_delivery_mode: string | null
+          spec_guided_learning_hours: number | null
+          spec_how_youll_study: string | null
+          spec_how_youre_assessed: string | null
+          spec_learning_outcomes: Json | null
+          spec_prerequisites: string | null
+          spec_published_at: string | null
+          spec_total_qualification_time: number | null
+          spec_who_for: string | null
+          status: string
+          syllabus_doc_path: string
+          tutor_cv_doc_path: string
+          updated_at: string
+          withdrawn_at: string | null
+          withdrawn_reason: string | null
+        }
+        Insert: {
+          accredited_at?: string | null
+          admin_note?: string | null
+          ai_draft?: Json | null
+          ai_drafted_at?: string | null
+          ai_red_flags?: string[]
+          ai_verdict?: string | null
+          assessment_criteria_doc_path: string
+          created_at?: string
+          id?: string
+          official_level?: number | null
+          official_title?: string | null
+          proposed_title: string
+          provider_id: string
+          reps_qual_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          spec_delivery_mode?: string | null
+          spec_guided_learning_hours?: number | null
+          spec_how_youll_study?: string | null
+          spec_how_youre_assessed?: string | null
+          spec_learning_outcomes?: Json | null
+          spec_prerequisites?: string | null
+          spec_published_at?: string | null
+          spec_total_qualification_time?: number | null
+          spec_who_for?: string | null
+          status?: string
+          syllabus_doc_path: string
+          tutor_cv_doc_path: string
+          updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
+        }
+        Update: {
+          accredited_at?: string | null
+          admin_note?: string | null
+          ai_draft?: Json | null
+          ai_drafted_at?: string | null
+          ai_red_flags?: string[]
+          ai_verdict?: string | null
+          assessment_criteria_doc_path?: string
+          created_at?: string
+          id?: string
+          official_level?: number | null
+          official_title?: string | null
+          proposed_title?: string
+          provider_id?: string
+          reps_qual_number?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          spec_delivery_mode?: string | null
+          spec_guided_learning_hours?: number | null
+          spec_how_youll_study?: string | null
+          spec_how_youre_assessed?: string | null
+          spec_learning_outcomes?: Json | null
+          spec_prerequisites?: string | null
+          spec_published_at?: string | null
+          spec_total_qualification_time?: number | null
+          spec_who_for?: string | null
+          status?: string
+          syllabus_doc_path?: string
+          tutor_cv_doc_path?: string
+          updated_at?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reps_courses_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reps_courses_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
       }
       review_notifications: {
         Row: {
@@ -6558,6 +6612,7 @@ export type Database = {
         }
         Returns: number
       }
+      next_reps_qual_number: { Args: never; Returns: string }
       ops_admin_emails: {
         Args: never
         Returns: {
