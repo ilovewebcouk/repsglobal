@@ -486,7 +486,7 @@ export const createRegistration = createServerFn({ method: "POST" })
         course_title: courseTitle,
         course_level: courseLevel,
         reps_course_number: repsCourseNumber,
-        format: formatForCountry(country),
+        format: DEFAULT_CERT_FORMAT,
         status: "enrolled",
       } as never)
       .select("*")
@@ -613,7 +613,7 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
         };
       }
 
-      const format = formatForCountry(country);
+      const format = DEFAULT_CERT_FORMAT;
       const isPrinted = format === "printed_and_digital";
       const count = regs.length;
 
