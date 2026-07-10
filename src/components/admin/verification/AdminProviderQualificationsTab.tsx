@@ -716,7 +716,7 @@ function RegulatedDetail({
    REPS-ACCREDITED COURSES
    ═══════════════════════════════════════════════════════════════════════════ */
 
-type DeliveryMode = "in_person" | "online" | "blended";
+type DeliveryMode = "in_person" | "online_live" | "online_self_paced" | "online" | "blended";
 
 type CourseRow = {
   id: string;
@@ -1133,8 +1133,10 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
                 >
                   <option value="">—</option>
                   <option value="in_person">In person</option>
-                  <option value="online">Online</option>
+                  <option value="online_live">Online — live</option>
+                  <option value="online_self_paced">Online — self-paced</option>
                   <option value="blended">Blended</option>
+                  <option value="online">Online (legacy)</option>
                 </select>
               </SpecField>
             </div>
