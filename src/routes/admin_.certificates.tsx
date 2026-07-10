@@ -325,6 +325,7 @@ function PrintQueuePanel() {
   const qc = useQueryClient();
   const fetchQueue = useServerFn(adminListPrintQueue);
   const markPrinted = useServerFn(adminMarkBatchPrinted);
+  const downloadPack = useServerFn(adminDownloadPrintPack);
   const { data, isLoading } = useQuery({
     queryKey: ["admin-print-queue"],
     queryFn: () => fetchQueue({ data: undefined as never }),
@@ -335,6 +336,18 @@ function PrintQueuePanel() {
     onSuccess: invalidate,
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const openPack = async (batch_id: string, format: "merged" | "zip") => {
+    setDownloading(`${batch_id}:${format}`);
+    try {
+      const { url } = await downloadPack({ data: { batch_id, format } });
+      window.open(url, "_blank", "noopener");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not build print pack");
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const [dispatching, setDispatching] = useState<PrintQueueRowDTO | null>(null);
 
