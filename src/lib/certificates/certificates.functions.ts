@@ -45,6 +45,7 @@ export type RegistrationDTO = {
   learner_name: string;
   learner_email: string;
   course_id: string;
+  course_kind: "regulated" | "reps_course";
   course_title: string;
   course_level: number | null;
   reps_course_number: string | null;
