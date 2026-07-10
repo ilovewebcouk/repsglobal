@@ -262,7 +262,7 @@ function QualificationsCard({ trust }: { trust: TrustState | undefined }) {
       label: "Changes requested",
       cls: "border-amber-400/30 bg-amber-500/15 text-amber-300",
     };
-    subline = "Admin asked for more info on your certificate — open CPD to respond.";
+    subline = "Admin asked for more info on your certificate — open Education & courses to respond.";
   } else if (rejected > 0) {
     pill = {
       label: "Rejected",
