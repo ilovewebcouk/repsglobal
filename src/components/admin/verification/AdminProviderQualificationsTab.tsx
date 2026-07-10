@@ -46,6 +46,7 @@ import {
   adminListRegulatedQueue,
   adminSaveRepsCourseSpec,
   adminRedraftRepsCourse,
+  getCourseReportUrl,
 } from "@/lib/qualifications/qualifications.functions";
 
 import {
@@ -737,6 +738,10 @@ type CourseRow = {
   ai_drafted_at: string | null;
   official_title: string | null;
   official_level: number | null;
+  official_level_rationale: string | null;
+  official_level_confidence: "high" | "medium" | "low" | null;
+  reviewer_notes: string | null;
+  ai_deterministic_flags: string[] | null;
   reps_qual_number: string | null;
   spec_who_for: string | null;
   spec_learning_outcomes: string[] | null;
@@ -751,6 +756,8 @@ type CourseRow = {
   accredited_at: string | null;
   admin_note: string | null;
   created_at: string;
+  report_pdf_path: string | null;
+  report_generated_at: string | null;
   provider: {
     id: string;
     slug: string | null;
@@ -1005,6 +1012,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               </Badge>
             ) : null}
             <AiVerdictChip verdict={row.ai_verdict} flags={row.ai_red_flags} />
+            <ReportButton row={row} />
           </div>
           <h3 className="mt-2 text-[15px] font-semibold text-white">{providerName}</h3>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-white/60">
@@ -1063,11 +1071,31 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               </dl>
             </div>
 
+            {row.reviewer_notes ? (
+              <div className="rounded-[10px] border border-blue-400/25 bg-blue-500/10 p-2.5 text-[11.5px] text-blue-100">
+                <div className="mb-1 flex items-center gap-1.5 font-semibold">
+                  <Sparkles className="h-3 w-3" /> Reviewer summary (AI)
+                </div>
+                <p className="text-blue-100/90">{row.reviewer_notes}</p>
+              </div>
+            ) : null}
+
             {row.ai_red_flags.length > 0 ? (
               <div className="rounded-[10px] border border-red-500/30 bg-red-500/10 p-2.5 text-[11.5px] text-red-200">
                 <div className="mb-1 font-semibold">AI red flags</div>
                 <ul className="list-disc pl-4 space-y-0.5">
                   {row.ai_red_flags.map((f, i) => (
+                    <li key={i}>{f}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {row.ai_deterministic_flags && row.ai_deterministic_flags.length > 0 ? (
+              <div className="rounded-[10px] border border-amber-500/30 bg-amber-500/10 p-2.5 text-[11.5px] text-amber-100">
+                <div className="mb-1 font-semibold">Deterministic checks</div>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  {row.ai_deterministic_flags.map((f, i) => (
                     <li key={i}>{f}</li>
                   ))}
                 </ul>
@@ -1108,38 +1136,31 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               />
             </SpecField>
 
-            <div className="grid grid-cols-2 gap-2">
-              <SpecField label="Level (1–7)">
-                <select
-                  value={officialLevel ?? ""}
-                  onChange={(e) => setOfficialLevel(e.target.value ? Number(e.target.value) : null)}
-                  disabled={!editable}
-                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
-                >
-                  <option value="">—</option>
-                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                    <option key={n} value={n}>
-                      Level {n}
-                    </option>
-                  ))}
-                </select>
-              </SpecField>
-              <SpecField label="Delivery mode">
-                <select
-                  value={delivery ?? ""}
-                  onChange={(e) => setDelivery((e.target.value || null) as DeliveryMode | null)}
-                  disabled={!editable}
-                  className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
-                >
-                  <option value="">—</option>
-                  <option value="in_person">In person</option>
-                  <option value="online_live">Online — live</option>
-                  <option value="online_self_paced">Online — self-paced</option>
-                  <option value="blended">Blended</option>
-                  <option value="online">Online (legacy)</option>
-                </select>
-              </SpecField>
-            </div>
+            {/* Level ladder — AI suggestion highlighted with rationale */}
+            <LevelLadderField
+              value={officialLevel}
+              aiSuggested={row.official_level}
+              rationale={row.official_level_rationale}
+              confidence={row.official_level_confidence}
+              disabled={!editable}
+              onChange={setOfficialLevel}
+            />
+
+            <SpecField label="Delivery mode">
+              <select
+                value={delivery ?? ""}
+                onChange={(e) => setDelivery((e.target.value || null) as DeliveryMode | null)}
+                disabled={!editable}
+                className="w-full rounded-[10px] border border-reps-border bg-white/5 px-3 py-2 text-[12.5px] text-white"
+              >
+                <option value="">—</option>
+                <option value="in_person">In person</option>
+                <option value="online_live">Online — live</option>
+                <option value="online_self_paced">Online — self-paced</option>
+                <option value="blended">Blended</option>
+                <option value="online">Online (legacy)</option>
+              </select>
+            </SpecField>
 
             <SpecField label="Who this course is for">
               <Textarea
@@ -1411,5 +1432,130 @@ function CrossCheckChip({
     <Badge className="border-red-500/30 bg-red-500/15 text-red-300">
       <XCircle className="mr-1 h-3 w-3" /> {labelBad}
     </Badge>
+  );
+}
+
+/* ─── Level ladder + report button ──────────────────────────────────────── */
+
+const LEVEL_LABELS: Record<number, string> = {
+  1: "Awareness",
+  2: "Supporting",
+  3: "Independent instructor",
+  4: "Specialist",
+  5: "Advanced specialist",
+  6: "Degree-equivalent",
+  7: "Postgraduate-equivalent",
+};
+
+function LevelLadderField({
+  value,
+  aiSuggested,
+  rationale,
+  confidence,
+  disabled,
+  onChange,
+}: {
+  value: number | null;
+  aiSuggested: number | null;
+  rationale: string | null;
+  confidence: "high" | "medium" | "low" | null;
+  disabled: boolean;
+  onChange: (n: number | null) => void;
+}) {
+  const confidenceTone =
+    confidence === "high"
+      ? "text-emerald-300"
+      : confidence === "medium"
+        ? "text-amber-300"
+        : confidence === "low"
+          ? "text-red-300"
+          : "text-white/50";
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between">
+        <div className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
+          Level (1–7)
+        </div>
+        {aiSuggested != null ? (
+          <div className="text-[10.5px] text-white/55">
+            <Sparkles className="mr-1 inline h-3 w-3 text-white/60" />
+            AI suggests <span className="font-semibold text-white">L{aiSuggested}</span>
+            {confidence ? (
+              <>
+                {" · "}
+                <span className={`font-semibold ${confidenceTone}`}>{confidence} confidence</span>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {[1, 2, 3, 4, 5, 6, 7].map((n) => {
+          const selected = value === n;
+          const suggested = aiSuggested === n;
+          return (
+            <button
+              key={n}
+              type="button"
+              onClick={() => !disabled && onChange(selected ? null : n)}
+              disabled={disabled}
+              className={`relative rounded-[8px] border px-2 py-1.5 text-[11.5px] font-semibold transition ${
+                selected
+                  ? "border-reps-orange bg-reps-orange text-white"
+                  : suggested
+                    ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20"
+                    : "border-reps-border bg-white/[0.03] text-white/60 hover:bg-white/10"
+              } disabled:cursor-not-allowed disabled:opacity-60`}
+              title={LEVEL_LABELS[n]}
+            >
+              L{n}
+              {suggested && !selected ? (
+                <Sparkles className="absolute -right-1 -top-1 h-2.5 w-2.5 text-emerald-300" />
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      {value != null ? (
+        <div className="mt-1 text-[11px] text-white/60">
+          <span className="font-semibold text-white/85">L{value}</span> · {LEVEL_LABELS[value]}
+        </div>
+      ) : null}
+      {rationale ? (
+        <div className="mt-2 rounded-[10px] border border-white/10 bg-white/[0.03] p-2.5 text-[11.5px] leading-snug text-white/75">
+          <span className="font-semibold text-white/85">AI rationale — </span>
+          {rationale}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ReportButton({ row }: { row: CourseRow }) {
+  const getUrl = useServerFn(getCourseReportUrl);
+  const [busy, setBusy] = React.useState(false);
+  if (!row.report_pdf_path) return null;
+  const onClick = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { url } = await getUrl({ data: { id: row.id } });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open report");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-blue-200 transition hover:bg-blue-500/25 disabled:opacity-60"
+    >
+      <FileText className="h-3 w-3" />
+      {busy ? "Opening…" : "Assessment report"}
+    </button>
   );
 }

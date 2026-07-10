@@ -69,6 +69,7 @@ import {
   removeMyRegulatedPermission,
   removeMyRepsCourse,
   expandRepsCourseField,
+  getCourseReportUrl,
 } from "@/lib/qualifications/qualifications.functions";
 import type {
   RepsCourseRow,
@@ -537,7 +538,32 @@ function CpdRow({ row }: { row: RepsCourseRow }) {
           ) : null}
           {row.admin_note && !isWithdrawn ? (
             <div className="mt-2 rounded-[10px] border border-amber-500/25 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
-              <span className="font-semibold">Admin note:</span> {row.admin_note}
+              <span className="font-semibold">Reviewer's note:</span> {row.admin_note}
+            </div>
+          ) : null}
+          {(row.status === "changes_requested" || row.status === "rejected") && row.reviewer_notes ? (
+            <div className="mt-2 rounded-[10px] border border-blue-400/25 bg-blue-500/10 p-2.5 text-[12px] text-blue-100">
+              <div className="mb-0.5 flex items-center gap-1.5 font-semibold">
+                <Sparkles className="h-3 w-3" /> Summary from REPS review
+              </div>
+              <p className="text-blue-100/90">{row.reviewer_notes}</p>
+            </div>
+          ) : null}
+          {(row.status === "changes_requested" || row.status === "rejected") &&
+          row.ai_deterministic_flags &&
+          row.ai_deterministic_flags.length > 0 ? (
+            <div className="mt-2 rounded-[10px] border border-amber-500/30 bg-amber-500/10 p-2.5 text-[12px] text-amber-100">
+              <div className="mb-1 font-semibold">What to fix</div>
+              <ul className="list-disc space-y-0.5 pl-4">
+                {row.ai_deterministic_flags.map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {row.report_pdf_path ? (
+            <div className="mt-2">
+              <ReportDownloadButton courseId={row.id} />
             </div>
           ) : null}
         </div>
@@ -1422,7 +1448,33 @@ function ExpandableField({
   );
 }
 
-/* ─── Helpers ───────────────────────────────────────────────────────────── */
+function ReportDownloadButton({ courseId }: { courseId: string }) {
+  const getUrl = useServerFn(getCourseReportUrl);
+  const [busy, setBusy] = React.useState(false);
+  const onClick = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { url } = await getUrl({ data: { id: courseId } });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open report");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className="inline-flex items-center gap-1.5 rounded-[8px] border border-blue-400/30 bg-blue-500/10 px-2.5 py-1 text-[11.5px] font-semibold text-blue-200 transition hover:bg-blue-500/20 disabled:opacity-60"
+    >
+      <FileText className="h-3 w-3" />
+      {busy ? "Opening…" : "View assessment report (PDF)"}
+    </button>
+  );
+}
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
