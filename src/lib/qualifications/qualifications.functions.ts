@@ -110,6 +110,8 @@ export type RepsCourseRow = {
   id: string;
   provider_id: string;
   proposed_title: string;
+  proposed_level: number | null;
+  proposed_credential_type: "award" | "certificate" | "diploma" | "course" | "not_sure" | null;
   proposed_who_for: string | null;
   proposed_what_covered: string | null;
   proposed_learner_outcomes: string | null;
