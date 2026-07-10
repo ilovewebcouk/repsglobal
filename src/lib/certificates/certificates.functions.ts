@@ -937,6 +937,8 @@ export type PrintQueueRowDTO = {
   count: number;
   paid_at: string | null;
   status: string;
+  printed_at: string | null;
+  printed_by: string | null;
   ship_to_address: ShipToAddressDTO | null;
   rm_service_code: string | null;
   tracking_number: string | null;
