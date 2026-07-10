@@ -70,7 +70,7 @@ const STATUS_LABEL: Record<CourseStatus, string> = {
 
 export function AdminProviderQualificationsTab() {
   const [tab, setTab] = React.useState<"regulated" | "cpd">("regulated");
-  const [status, setStatus] = React.useState<Status>("submitted");
+  const [status, setStatus] = React.useState<CourseStatus>("submitted");
 
   return (
     <div>
