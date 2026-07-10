@@ -80,6 +80,31 @@ export type RepsCourseDeliveryMode =
   | "online_self_paced"
   | "blended";
 
+export type RepsCourseModule = {
+  title: string;
+  summary: string;
+  hours?: number | null;
+};
+
+export type RepsCourseEvidenceKind =
+  | "specification"
+  | "sample_materials"
+  | "assessment"
+  | "tutor_cv"
+  | "other";
+
+export type RepsCourseEvidenceRow = {
+  id: string;
+  course_id: string;
+  provider_id: string;
+  file_kind: RepsCourseEvidenceKind;
+  file_path: string;
+  file_name: string;
+  file_size_bytes: number | null;
+  mime_type: string | null;
+  created_at: string;
+};
+
 /** A REPS-accredited course, as seen by the provider dashboard. */
 export type RepsCourseRow = {
   id: string;
@@ -94,6 +119,7 @@ export type RepsCourseRow = {
   proposed_prerequisites: string | null;
   proposed_tutor_credentials: string | null;
   proposed_extra_notes: string | null;
+  spec_modules: RepsCourseModule[] | null;
   ai_verdict: "recommend_approve" | "flagged" | "inconclusive" | null;
   ai_red_flags: string[];
   ai_drafted_at: string | null;
