@@ -74,14 +74,26 @@ export type RepsCourseStatus =
   | "rejected"
   | "withdrawn";
 
+export type RepsCourseDeliveryMode =
+  | "in_person"
+  | "online_live"
+  | "online_self_paced"
+  | "blended";
+
 /** A REPS-accredited course, as seen by the provider dashboard. */
 export type RepsCourseRow = {
   id: string;
   provider_id: string;
   proposed_title: string;
-  syllabus_doc_path: string;
-  assessment_criteria_doc_path: string;
-  tutor_cv_doc_path: string;
+  proposed_who_for: string | null;
+  proposed_what_covered: string | null;
+  proposed_learner_outcomes: string | null;
+  proposed_delivery_mode: RepsCourseDeliveryMode | null;
+  proposed_total_hours: number | null;
+  proposed_how_assessed: string | null;
+  proposed_prerequisites: string | null;
+  proposed_tutor_credentials: string | null;
+  proposed_extra_notes: string | null;
   ai_verdict: "recommend_approve" | "flagged" | "inconclusive" | null;
   ai_red_flags: string[];
   ai_drafted_at: string | null;
@@ -95,7 +107,7 @@ export type RepsCourseRow = {
   spec_prerequisites: string | null;
   spec_guided_learning_hours: number | null;
   spec_total_qualification_time: number | null;
-  spec_delivery_mode: "in_person" | "online" | "blended" | null;
+  spec_delivery_mode: RepsCourseDeliveryMode | "online" | null;
   spec_published_at: string | null;
   status: RepsCourseStatus;
   accredited_at: string | null;
@@ -403,11 +415,19 @@ export const deleteMyRegulatedPermission = removeMyRegulatedPermission;
 // ─────────────────────────────────────────────────────────────────────────────
 // REPS-accredited courses — submit / list / remove
 
+const DELIVERY_MODES = ["in_person", "online_live", "online_self_paced", "blended"] as const;
+
 const submitRepsCourseInput = z.object({
   proposed_title: z.string().min(3).max(200),
-  syllabus_doc_path: z.string().min(1),
-  assessment_criteria_doc_path: z.string().min(1),
-  tutor_cv_doc_path: z.string().min(1),
+  proposed_who_for: z.string().min(10).max(4000),
+  proposed_what_covered: z.string().min(10).max(4000),
+  proposed_learner_outcomes: z.string().min(10).max(4000),
+  proposed_delivery_mode: z.enum(DELIVERY_MODES),
+  proposed_total_hours: z.number().min(0.5).max(2000),
+  proposed_how_assessed: z.string().min(5).max(4000),
+  proposed_prerequisites: z.string().max(2000).nullable().optional(),
+  proposed_tutor_credentials: z.string().min(10).max(4000),
+  proposed_extra_notes: z.string().max(4000).nullable().optional(),
 });
 
 export const submitRepsCourse = createServerFn({ method: "POST" })
@@ -417,16 +437,6 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertProviderHasTradingName(supabase, userId);
 
-    for (const p of [
-      data.syllabus_doc_path,
-      data.assessment_criteria_doc_path,
-      data.tutor_cv_doc_path,
-    ]) {
-      if (!p.startsWith(`${userId}/`)) {
-        throw new Error("Forbidden: doc path does not belong to you");
-      }
-    }
-
     await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     const { data: row, error } = await supabase
@@ -434,9 +444,15 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
       .insert({
         provider_id: userId,
         proposed_title: data.proposed_title.trim(),
-        syllabus_doc_path: data.syllabus_doc_path,
-        assessment_criteria_doc_path: data.assessment_criteria_doc_path,
-        tutor_cv_doc_path: data.tutor_cv_doc_path,
+        proposed_who_for: data.proposed_who_for.trim(),
+        proposed_what_covered: data.proposed_what_covered.trim(),
+        proposed_learner_outcomes: data.proposed_learner_outcomes.trim(),
+        proposed_delivery_mode: data.proposed_delivery_mode,
+        proposed_total_hours: data.proposed_total_hours,
+        proposed_how_assessed: data.proposed_how_assessed.trim(),
+        proposed_prerequisites: data.proposed_prerequisites?.trim() || null,
+        proposed_tutor_credentials: data.proposed_tutor_credentials.trim(),
+        proposed_extra_notes: data.proposed_extra_notes?.trim() || null,
       } as never)
       .select("id")
       .single();
@@ -450,15 +466,16 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
     return row;
   });
 
+const REPS_COURSE_SELECT =
+  "id, provider_id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at";
+
 export const listMyRepsCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("reps_courses")
-      .select(
-        "id, provider_id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at",
-      )
+      .select(REPS_COURSE_SELECT)
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -480,21 +497,13 @@ export const removeMyRepsCourse = createServerFn({ method: "POST" })
 
     const { data: row, error: readErr } = await supabase
       .from("reps_courses")
-      .select("id, provider_id, status, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path")
+      .select("id, provider_id, status")
       .eq("id", data.id)
       .maybeSingle();
     if (readErr) throw new Error(readErr.message);
     if (!row) throw new Error("Not found");
-    const r = row as {
-      id: string;
-      provider_id: string;
-      status: string;
-      syllabus_doc_path: string;
-      assessment_criteria_doc_path: string;
-      tutor_cv_doc_path: string;
-    };
+    const r = row as { id: string; provider_id: string; status: string };
     if (r.provider_id !== userId) throw new Error("Forbidden");
-
     if (r.status === "withdrawn") return { mode: "withdrawn" as const };
 
     if (r.status === "approved") {
@@ -517,17 +526,6 @@ export const removeMyRepsCourse = createServerFn({ method: "POST" })
       .eq("id", r.id)
       .eq("provider_id", userId);
     if (error) throw new Error(error.message);
-
-    try {
-      const paths = [r.syllabus_doc_path, r.assessment_criteria_doc_path, r.tutor_cv_doc_path].filter(
-        (p): p is string => typeof p === "string" && p.startsWith(`${userId}/`),
-      );
-      if (paths.length > 0) {
-        await supabase.storage.from("verification-docs").remove(paths);
-      }
-    } catch (e) {
-      console.error("[removeMyRepsCourse] storage cleanup failed", e);
-    }
 
     return { mode: "deleted" as const };
   });
@@ -578,12 +576,12 @@ export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("reps_courses")
       .select(
-        "id, provider_id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, ai_draft, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        REPS_COURSE_SELECT + ", ai_draft, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return await hydrateProviderNames(rows ?? [], supabaseAdmin);
+    return (await hydrateProviderNames((rows ?? []) as never, supabaseAdmin)) as unknown as typeof rows;
   });
 
 async function hydrateProviderNames<
@@ -655,7 +653,7 @@ const specInput = z.object({
   spec_prerequisites: z.string().max(1000).nullable(),
   spec_guided_learning_hours: z.number().min(0).max(1000).nullable(),
   spec_total_qualification_time: z.number().min(0).max(2000).nullable(),
-  spec_delivery_mode: z.enum(["in_person", "online", "blended"]).nullable(),
+  spec_delivery_mode: z.enum(["in_person", "online_live", "online_self_paced", "online", "blended"]).nullable(),
 });
 
 export const adminSaveRepsCourseSpec = createServerFn({ method: "POST" })
@@ -723,6 +721,111 @@ export const adminRedraftRepsCourse = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// AI-assisted field expansion (used by the provider dialog).
+
+const EXPAND_FIELDS = [
+  "proposed_who_for",
+  "proposed_what_covered",
+  "proposed_learner_outcomes",
+  "proposed_how_assessed",
+  "proposed_prerequisites",
+  "proposed_tutor_credentials",
+  "proposed_extra_notes",
+] as const;
+
+export type ExpandCourseField = (typeof EXPAND_FIELDS)[number];
+
+const FIELD_PROMPTS: Record<ExpandCourseField, string> = {
+  proposed_who_for:
+    "Polish this into a clear 2-4 sentence description of who this course is for. Name the target learner (e.g. new instructors, existing coaches specialising), typical prior experience, and typical goals. British English. No marketing jargon.",
+  proposed_what_covered:
+    "Turn the provider's rough list into a well-structured summary of what the course covers, ordered logically. Use short paragraphs or bullet-ready lines. Keep it factual — do not add topics the provider did not mention. British English.",
+  proposed_learner_outcomes:
+    "Rewrite these into 5-8 clear learning outcomes, one per line, each starting with a Bloom's verb (demonstrate, apply, evaluate, design, coach, assess, plan, adapt). Do not fabricate outcomes; only rewrite what the provider gave you.",
+  proposed_how_assessed:
+    "Rewrite this into 2-4 sentences describing how learners are assessed, including assessment methods and pass criteria. Be specific and factual. British English.",
+  proposed_prerequisites:
+    "Rewrite this as a concise list of prerequisites (qualifications, age, experience, physical requirements). One per line. Do not invent prerequisites the provider did not mention.",
+  proposed_tutor_credentials:
+    "Polish this into a clear 2-4 sentence paragraph about who teaches the course and why they are qualified — qualifications, years of experience, specialisms. Stick to what the provider said.",
+  proposed_extra_notes:
+    "Polish this into clear, professional notes for the REPS reviewer. Keep it concise and factual.",
+};
+
+export const expandRepsCourseField = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        field: z.enum(EXPAND_FIELDS),
+        current_value: z.string().min(15).max(4000),
+        context: z
+          .object({
+            proposed_title: z.string().max(200).optional().nullable(),
+            proposed_who_for: z.string().max(4000).optional().nullable(),
+            proposed_what_covered: z.string().max(4000).optional().nullable(),
+            proposed_learner_outcomes: z.string().max(4000).optional().nullable(),
+            proposed_delivery_mode: z.string().max(50).optional().nullable(),
+            proposed_total_hours: z.number().nullable().optional(),
+            proposed_how_assessed: z.string().max(4000).optional().nullable(),
+            proposed_prerequisites: z.string().max(4000).optional().nullable(),
+            proposed_tutor_credentials: z.string().max(4000).optional().nullable(),
+          })
+          .optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }): Promise<{ draft: string }> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("AI is temporarily unavailable");
+
+    const fieldPrompt = FIELD_PROMPTS[data.field];
+    const ctx = data.context ?? {};
+    const contextLines = [
+      ctx.proposed_title ? `Working title: ${ctx.proposed_title}` : null,
+      ctx.proposed_delivery_mode ? `Delivery mode: ${ctx.proposed_delivery_mode}` : null,
+      ctx.proposed_total_hours != null ? `Total learning hours: ${ctx.proposed_total_hours}` : null,
+      ctx.proposed_who_for && data.field !== "proposed_who_for"
+        ? `Who this course is for:\n${ctx.proposed_who_for}`
+        : null,
+      ctx.proposed_what_covered && data.field !== "proposed_what_covered"
+        ? `What the course covers:\n${ctx.proposed_what_covered}`
+        : null,
+      ctx.proposed_learner_outcomes && data.field !== "proposed_learner_outcomes"
+        ? `Rough learner outcomes:\n${ctx.proposed_learner_outcomes}`
+        : null,
+    ].filter(Boolean);
+
+    const system = `You polish rough answers a training provider has typed into a REPS course accreditation form. You NEVER invent facts. You only rewrite what the provider gave you into clearer, more professional prose or a structured list. British English. No exclamation marks. No marketing jargon. Return ONLY the polished text — no preamble, no explanation, no quotes.`;
+
+    const user = [
+      contextLines.length ? `Context so far:\n${contextLines.join("\n\n")}\n\n` : "",
+      `Field: ${data.field}\n\nInstructions: ${fieldPrompt}\n\nProvider's current answer:\n${data.current_value}`,
+    ].join("");
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      if (res.status === 429) throw new Error("Too many AI requests — try again in a moment.");
+      if (res.status === 402) throw new Error("AI credits exhausted — contact REPS support.");
+      throw new Error("AI request failed");
+    }
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const raw = json.choices?.[0]?.message?.content ?? "";
+    const draft = raw.trim().replace(/^["']|["']$/g, "").slice(0, 2000);
+    if (!draft) throw new Error("AI returned an empty draft — try again");
+    return { draft };
+  });
 // ─────────────────────────────────────────────────────────────────────────────
 // Doc access (signed URLs)
 
@@ -849,22 +952,22 @@ Fields:
 - confidence: 0..1 overall
 - red_flags: array of short strings`;
 
-const REPS_COURSE_SYSTEM = `You are the accreditation reviewer for REPS, a global register of exercise professionals. A provider has submitted a course for REPS accreditation, with three PDFs (in order): syllabus, assessment criteria, tutor CV. You must draft the same fields Ofqual publishes for a regulated qualification — REPS is the awarding body here, and the admin will edit and publish your draft as the public specification.
+const REPS_COURSE_SYSTEM = `You are the accreditation reviewer for REPS, a global register of exercise professionals. A provider has filled in a structured 10-field form describing a course they want REPS to accredit. You must draft the same fields Ofqual publishes for a regulated qualification — REPS is the awarding body here, and the admin will edit and publish your draft as the public specification.
 
-Only use facts present in the supplied documents. Never invent hours, learning outcomes, tutor credentials, or content. British English. No exclamation marks, no marketing jargon.
+Only use facts present in the provider's answers. Never invent hours, learning outcomes, tutor credentials, or content. British English. No exclamation marks, no marketing jargon.
 
 Return ONLY valid JSON with this exact shape:
 {
   "official_title": string,                       // Clean, formal title. Prefer sentence case with proper nouns. e.g. "REPS Level 3 Kettlebell Coach". If the provider's working title is fine, keep it.
   "official_level": number,                       // 1 to 7. Match learning depth: Lvl 2 = supporting, Lvl 3 = independent instructor, Lvl 4 = specialist/exercise referral, Lvl 5 = advanced specialist, Lvl 6 = degree-equivalent, Lvl 7 = postgraduate-equivalent.
   "spec_who_for": string,                          // "This course is for..." — 2-4 sentences.
-  "spec_learning_outcomes": string[],              // 5-10 statements starting "On completion, learners will..." — one outcome per string.
+  "spec_learning_outcomes": string[],              // 5-10 statements starting "On completion, learners will..." — one outcome per string. Use Bloom's verbs (demonstrate, apply, evaluate, design, coach, assess).
   "spec_how_youll_study": string,                  // Narrative combining hours, delivery mode, and structure. 2-4 sentences.
-  "spec_how_youre_assessed": string,               // Assessment methods and pass criteria, from the assessment doc. 2-4 sentences.
+  "spec_how_youre_assessed": string,               // Assessment methods and pass criteria. 2-4 sentences.
   "spec_prerequisites": string,                    // What learners must hold or be able to do beforehand. Empty string if none.
-  "spec_guided_learning_hours": number,            // GLH — tutor-led hours only. 0 if not stated.
-  "spec_total_qualification_time": number,         // TQT — all learner time including self-study. 0 if not stated.
-  "spec_delivery_mode": "in_person" | "online" | "blended",
+  "spec_guided_learning_hours": number,            // GLH — tutor-led hours only. Estimate from the total learning hours the provider gave; typically 40-70% for in-person, lower for self-paced.
+  "spec_total_qualification_time": number,         // TQT — all learner time including self-study. Use the provider's total learning hours if provided.
+  "spec_delivery_mode": "in_person" | "online_live" | "online_self_paced" | "blended",
   "verdict": "recommend_approve" | "flagged" | "inconclusive",
   "red_flags": string[],                           // Concerns the admin must resolve before approving.
   "reviewer_notes": string                         // 1-3 sentences summarising what you found and any concerns.
@@ -873,7 +976,7 @@ Return ONLY valid JSON with this exact shape:
 Length rules (enforce yourself — the schema does NOT):
 - Each learning outcome ≤ 200 chars.
 - Long-text fields ≤ 1500 chars.
-- If a document is thin/missing/unreadable, set verdict = "inconclusive" and list the gap in red_flags.`;
+- If the provider's answers are thin, contradictory, or leave gaps you cannot fill honestly, set verdict = "inconclusive" and list the gap in red_flags.`;
 
 async function callGemini(
   system: string,
@@ -1068,7 +1171,7 @@ async function runRepsCourseAiDraft(
   const { data: row, error } = await supabaseAdmin
     .from("reps_courses")
     .select(
-      "id, proposed_title, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path, status",
+      "id, proposed_title, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, status",
     )
     .eq("id", id)
     .single();
@@ -1076,24 +1179,38 @@ async function runRepsCourseAiDraft(
   const r = row as {
     id: string;
     proposed_title: string;
-    syllabus_doc_path: string;
-    assessment_criteria_doc_path: string;
-    tutor_cv_doc_path: string;
+    proposed_who_for: string | null;
+    proposed_what_covered: string | null;
+    proposed_learner_outcomes: string | null;
+    proposed_delivery_mode: string | null;
+    proposed_total_hours: number | null;
+    proposed_how_assessed: string | null;
+    proposed_prerequisites: string | null;
+    proposed_tutor_credentials: string | null;
+    proposed_extra_notes: string | null;
     status: string;
   };
 
-  const urls: string[] = [];
-  for (const p of [r.syllabus_doc_path, r.assessment_criteria_doc_path, r.tutor_cv_doc_path]) {
-    const u = await signedUrlFor(p);
-    if (u) urls.push(u);
-  }
-  if (urls.length < 3) return;
+  const claim = [
+    `Working title: "${r.proposed_title}"`,
+    r.proposed_who_for ? `Who this course is for:\n${r.proposed_who_for}` : null,
+    r.proposed_what_covered ? `What the course covers:\n${r.proposed_what_covered}` : null,
+    r.proposed_learner_outcomes
+      ? `What learners will be able to do afterwards:\n${r.proposed_learner_outcomes}`
+      : null,
+    r.proposed_delivery_mode ? `Delivery mode: ${r.proposed_delivery_mode}` : null,
+    r.proposed_total_hours != null ? `Total learning hours (provider estimate): ${r.proposed_total_hours}` : null,
+    r.proposed_how_assessed ? `How learners are assessed:\n${r.proposed_how_assessed}` : null,
+    r.proposed_prerequisites ? `Prerequisites:\n${r.proposed_prerequisites}` : null,
+    r.proposed_tutor_credentials ? `Tutor name & credentials:\n${r.proposed_tutor_credentials}` : null,
+    r.proposed_extra_notes ? `Additional notes from the provider:\n${r.proposed_extra_notes}` : null,
+    "",
+    "Draft the full public specification per the schema. Split the provider's total learning hours into guided learning hours (tutor-led) and total qualification time (all learner time). Rewrite the provider's rough outcomes as formal learning outcomes using Bloom's verbs, starting with \"On completion, learners will…\".",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
-  const claim = `Provider's working title: "${r.proposed_title}". Files (in order): syllabus, assessment criteria, tutor CV. Draft the full public specification per the schema.`;
-  const parts: Array<{ text?: string } | { image_url: { url: string } }> = [{ text: claim }];
-  for (const url of urls) parts.push({ image_url: { url } });
-
-  const result = await callGemini(REPS_COURSE_SYSTEM, parts);
+  const result = await callGemini(REPS_COURSE_SYSTEM, [{ text: claim }]);
   if (!result) {
     await supabaseAdmin
       .from("reps_courses")
@@ -1115,9 +1232,13 @@ async function runRepsCourseAiDraft(
   const redFlags = clampStrArr(raw.red_flags, 20, 200) ?? [];
 
   const deliveryRaw = typeof raw.spec_delivery_mode === "string" ? raw.spec_delivery_mode : null;
-  const deliveryMode: "in_person" | "online" | "blended" | null =
-    deliveryRaw === "in_person" || deliveryRaw === "online" || deliveryRaw === "blended"
-      ? deliveryRaw
+  const deliveryMode: RepsCourseDeliveryMode | "online" | null =
+    deliveryRaw === "in_person" ||
+    deliveryRaw === "online_live" ||
+    deliveryRaw === "online_self_paced" ||
+    deliveryRaw === "online" ||
+    deliveryRaw === "blended"
+      ? (deliveryRaw as RepsCourseDeliveryMode | "online")
       : null;
 
   // Only overwrite the official/spec fields when the row is a fresh draft or
