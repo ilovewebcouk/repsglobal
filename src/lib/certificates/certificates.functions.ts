@@ -961,7 +961,9 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
 
     const { data: batches, error } = await supabase
       .from("certificate_batches")
-      .select("id, provider_id, count, paid_at, status")
+      .select(
+        "id, provider_id, count, paid_at, status, ship_to_address, rm_service_code, tracking_number, tracking_url, shipped_at",
+      )
       .in("status", ["awaiting_print", "printed"])
       .eq("format", "printed_and_digital")
       .order("paid_at", { ascending: true })
@@ -994,6 +996,11 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
       count: b.count,
       paid_at: b.paid_at,
       status: b.status,
+      ship_to_address: (b.ship_to_address as ShipToAddressDTO | null) ?? null,
+      rm_service_code: b.rm_service_code ?? null,
+      tracking_number: b.tracking_number ?? null,
+      tracking_url: b.tracking_url ?? null,
+      shipped_at: b.shipped_at ?? null,
       learners: (regs ?? [])
         .filter((r: any) => r.batch_id === b.id)
         .map((r: any) => ({
