@@ -4423,6 +4423,8 @@ export type Database = {
         Row: {
           accredited_at: string | null
           admin_note: string | null
+          admin_reviewer_aide: Json | null
+          admin_reviewer_aide_generated_at: string | null
           ai_deterministic_flags: Json
           ai_draft: Json | null
           ai_drafted_at: string | null
@@ -4430,6 +4432,11 @@ export type Database = {
           ai_red_flags: string[]
           ai_verdict: string | null
           created_at: string
+          endorsement_statement_agreed: boolean
+          endorsement_statement_check_error: string | null
+          endorsement_statement_found: boolean | null
+          endorsement_statement_last_checked_at: string | null
+          endorsement_statement_url: string | null
           id: string
           official_level: number | null
           official_level_confidence: string | null
@@ -4468,6 +4475,8 @@ export type Database = {
         Insert: {
           accredited_at?: string | null
           admin_note?: string | null
+          admin_reviewer_aide?: Json | null
+          admin_reviewer_aide_generated_at?: string | null
           ai_deterministic_flags?: Json
           ai_draft?: Json | null
           ai_drafted_at?: string | null
@@ -4475,6 +4484,11 @@ export type Database = {
           ai_red_flags?: string[]
           ai_verdict?: string | null
           created_at?: string
+          endorsement_statement_agreed?: boolean
+          endorsement_statement_check_error?: string | null
+          endorsement_statement_found?: boolean | null
+          endorsement_statement_last_checked_at?: string | null
+          endorsement_statement_url?: string | null
           id?: string
           official_level?: number | null
           official_level_confidence?: string | null
@@ -4513,6 +4527,8 @@ export type Database = {
         Update: {
           accredited_at?: string | null
           admin_note?: string | null
+          admin_reviewer_aide?: Json | null
+          admin_reviewer_aide_generated_at?: string | null
           ai_deterministic_flags?: Json
           ai_draft?: Json | null
           ai_drafted_at?: string | null
@@ -4520,6 +4536,11 @@ export type Database = {
           ai_red_flags?: string[]
           ai_verdict?: string | null
           created_at?: string
+          endorsement_statement_agreed?: boolean
+          endorsement_statement_check_error?: string | null
+          endorsement_statement_found?: boolean | null
+          endorsement_statement_last_checked_at?: string | null
+          endorsement_statement_url?: string | null
           id?: string
           official_level?: number | null
           official_level_confidence?: string | null
