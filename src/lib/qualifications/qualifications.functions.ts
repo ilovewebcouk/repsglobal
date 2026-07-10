@@ -504,37 +504,6 @@ export const removeMyRepsCourse = createServerFn({ method: "POST" })
     if (!row) throw new Error("Not found");
     const r = row as { id: string; provider_id: string; status: string };
     if (r.provider_id !== userId) throw new Error("Forbidden");
-
-export const removeMyRepsCourse = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z
-      .object({
-        id: z.string().uuid(),
-        reason: z.string().max(500).optional().nullable(),
-      })
-      .parse(d),
-  )
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    const { data: row, error: readErr } = await supabase
-      .from("reps_courses")
-      .select("id, provider_id, status, syllabus_doc_path, assessment_criteria_doc_path, tutor_cv_doc_path")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (readErr) throw new Error(readErr.message);
-    if (!row) throw new Error("Not found");
-    const r = row as {
-      id: string;
-      provider_id: string;
-      status: string;
-      syllabus_doc_path: string;
-      assessment_criteria_doc_path: string;
-      tutor_cv_doc_path: string;
-    };
-    if (r.provider_id !== userId) throw new Error("Forbidden");
-
     if (r.status === "withdrawn") return { mode: "withdrawn" as const };
 
     if (r.status === "approved") {
@@ -557,17 +526,6 @@ export const removeMyRepsCourse = createServerFn({ method: "POST" })
       .eq("id", r.id)
       .eq("provider_id", userId);
     if (error) throw new Error(error.message);
-
-    try {
-      const paths = [r.syllabus_doc_path, r.assessment_criteria_doc_path, r.tutor_cv_doc_path].filter(
-        (p): p is string => typeof p === "string" && p.startsWith(`${userId}/`),
-      );
-      if (paths.length > 0) {
-        await supabase.storage.from("verification-docs").remove(paths);
-      }
-    } catch (e) {
-      console.error("[removeMyRepsCourse] storage cleanup failed", e);
-    }
 
     return { mode: "deleted" as const };
   });
