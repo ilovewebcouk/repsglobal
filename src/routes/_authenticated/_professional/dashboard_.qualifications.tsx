@@ -379,7 +379,7 @@ function CpdSection({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="font-display text-[18px] font-bold text-white">
-            REPS-accredited CPD courses
+            REPS-accredited courses
           </h2>
           <p className="mt-1 text-[13px] text-white/60">
             REPS accredits courses you deliver. Submit a syllabus, assessment criteria and tutor CV.
@@ -958,7 +958,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
           <DialogTitle>Request REPS accreditation</DialogTitle>
           <DialogDescription>
             Submit your course syllabus, assessment criteria and tutor CV. Approved courses receive
-            a REPS CPD number and the accredited badge.
+            a REPS accreditation number and the accredited badge.
           </DialogDescription>
         </DialogHeader>
 
