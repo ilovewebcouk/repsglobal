@@ -1285,6 +1285,27 @@ function SpecField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
+function AnswerBlock({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div>
+      <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">{label}</dt>
+      <dd className="mt-0.5 whitespace-pre-wrap text-[12.5px] leading-snug text-white/85">
+        {value?.trim() ? value : <span className="text-white/40">—</span>}
+      </dd>
+    </div>
+  );
+}
+
+function AnswerInline({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-white/45">{label}</dt>
+      <dd className="mt-0.5 text-[12.5px] text-white/85">{value}</dd>
+    </div>
+  );
+}
+
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Shared bits
