@@ -677,12 +677,13 @@ function BasketTab({
             <div className="border-t border-reps-border p-4 space-y-3">
               <div>
                 <h3 className="text-[13.5px] font-semibold text-white">
-                  UK shipping address
+                  Shipping address
                 </h3>
                 <p className="text-[12px] text-white/55 mt-0.5">
                   Printed certificates ship in one bundle via Royal Mail tracked delivery
-                  (£{(postage / 100).toFixed(2)} per batch). We save this address for next
-                  time.
+                  (UK £{(ukPostage / 100).toFixed(2)} / international £
+                  {(intlPostage / 100).toFixed(2)} per batch). We save this address for
+                  next time.
                 </p>
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -714,12 +715,22 @@ function BasketTab({
                   onChange={(e) => setAddr({ ...addr, city: e.target.value })}
                 />
                 <Input
-                  placeholder="Postcode"
+                  placeholder="Postal / ZIP code"
                   value={addr.postcode}
                   onChange={(e) => setAddr({ ...addr, postcode: e.target.value })}
                 />
                 <Input
-                  className="sm:col-span-2"
+                  placeholder="Country code (2 letters, e.g. GB, US, ES)"
+                  maxLength={2}
+                  value={addr.countryCode}
+                  onChange={(e) =>
+                    setAddr({
+                      ...addr,
+                      countryCode: e.target.value.toUpperCase().slice(0, 2),
+                    })
+                  }
+                />
+                <Input
                   placeholder="Phone (optional — for the courier)"
                   value={addr.phoneNumber}
                   onChange={(e) => setAddr({ ...addr, phoneNumber: e.target.value })}
@@ -732,7 +743,11 @@ function BasketTab({
             <div>
               <div className="text-[12.5px] text-white/55">
                 {count} certificate{count === 1 ? "" : "s"} × £{(unit / 100).toFixed(2)}
-                {requiresShipping ? ` + £${(postage / 100).toFixed(2)} postage` : ""}
+                {postageOnBatch > 0
+                  ? ` + £${(postageOnBatch / 100).toFixed(2)} ${
+                      isInternational ? "international " : ""
+                    }postage`
+                  : ""}
               </div>
               <div className="mt-1 font-display text-[22px] font-bold text-white">
                 £{(total / 100).toFixed(2)}
