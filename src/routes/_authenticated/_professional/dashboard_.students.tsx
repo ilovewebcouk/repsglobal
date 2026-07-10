@@ -129,18 +129,12 @@ function StudentsPage() {
     >
 
       <div className="mx-auto w-full max-w-6xl space-y-6 p-4 lg:p-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-display text-[28px] font-bold text-white">Students & Certificates</h1>
-            <p className="mt-1 text-[13.5px] text-white/60">
-              Register learners on your approved courses, mark them as passed, and issue REPS-verified
-              certificates. QR codes on every certificate link back to a public REPS verify page.
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center justify-end gap-3">
           <Button onClick={() => setTab("learners")}>
             <UserPlus className="mr-1 h-4 w-4" /> Add a learner
           </Button>
         </div>
+
 
         {/* Segmented tabs */}
         <div className="inline-flex rounded-[10px] border border-reps-border bg-reps-panel p-1">
