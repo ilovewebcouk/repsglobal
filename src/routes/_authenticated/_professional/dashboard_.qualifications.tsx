@@ -29,6 +29,7 @@ import {
   Upload,
   XCircle,
 } from "lucide-react";
+import repsLogoWhite from "@/assets/brand/logo.svg";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
