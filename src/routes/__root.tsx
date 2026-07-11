@@ -109,6 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -134,7 +135,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             "repsuk.org",
           ],
           url: "https://repsuk.org",
-          logo: "https://repsuk.org/favicon.ico",
+          logo: "https://repsuk.org/favicon.svg",
           sameAs: ["https://repsuk.org", "https://www.repsuk.org"],
         }),
       },
