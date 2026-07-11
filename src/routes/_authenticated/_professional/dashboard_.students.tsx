@@ -535,10 +535,20 @@ function RegisterOnCourseDialog({
           </div>
           <div>
             <label className="text-[12px] text-white/70">Course</label>
-            <Select value={coursePick} onValueChange={setCoursePick}>
-              <SelectTrigger><SelectValue placeholder="Choose an approved course" /></SelectTrigger>
+            <Select value={coursePick} onValueChange={setCoursePick} disabled={!learnerId}>
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    !learnerId
+                      ? "Pick a learner first"
+                      : availableCourses.length === 0
+                        ? "No remaining courses for this learner"
+                        : "Choose an approved course"
+                  }
+                />
+              </SelectTrigger>
               <SelectContent>
-                {courses.map((c) => (
+                {availableCourses.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.level ? `L${c.level} · ` : ""}
                     {c.title}
@@ -546,6 +556,11 @@ function RegisterOnCourseDialog({
                 ))}
               </SelectContent>
             </Select>
+            {learnerId && takenCourseIds.size > 0 ? (
+              <p className="mt-1 text-[11px] text-white/50">
+                Hiding {takenCourseIds.size} course{takenCourseIds.size === 1 ? "" : "s"} this learner is already registered on.
+              </p>
+            ) : null}
           </div>
         </div>
         <DialogFooter>
