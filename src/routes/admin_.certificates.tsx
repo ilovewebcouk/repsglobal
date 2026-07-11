@@ -337,7 +337,9 @@ function BatchesPanel() {
           {data.map((b) => (
             <div key={b.id} className="p-4 flex items-center justify-between gap-4 text-[13px]">
               <div className="min-w-0">
-                <div className="font-medium truncate">{b.provider_name ?? b.provider_id}</div>
+                <div className="font-medium truncate">
+                  {b.provider_name ?? "Unknown provider"}
+                </div>
                 <div className="text-white/50 text-[12px]">
                   {b.count} × £{(b.unit_price_pence / 100).toFixed(2)}
                   {b.postage_fee_pence_snapshot > 0
@@ -358,7 +360,16 @@ function BatchesPanel() {
                     </a>
                   </div>
                 )}
-                <div className="text-white/40 text-[11px] font-mono truncate">{b.id}</div>
+                <div
+                  className="text-white/30 text-[11px] mt-1 font-mono truncate cursor-pointer"
+                  title={`Batch ID: ${b.id} (click to copy)`}
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(b.id);
+                    toast.success("Batch ID copied");
+                  }}
+                >
+                  Batch ID · {b.id.slice(0, 8)}…
+                </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Badge>{b.status}</Badge>
@@ -367,6 +378,7 @@ function BatchesPanel() {
                 </span>
               </div>
             </div>
+
           ))}
         </div>
       )}
