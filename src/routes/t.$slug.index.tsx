@@ -140,6 +140,21 @@ function ProviderProfilePage() {
     enabled: !!sf.professional_id,
   });
 
+  const fetchCertCount = useServerFn(getPublicProviderIssuedCertificateCount);
+  const { data: certCountData } = useQuery({
+    queryKey: ["public-provider-cert-count", sf.professional_id],
+    queryFn: () => fetchCertCount({ data: { providerId: sf.professional_id } }),
+    staleTime: 60_000,
+    enabled: !!sf.professional_id,
+  });
+  const certCount = certCountData?.count ?? 0;
+  const learnersTrained =
+    certCount > 0
+      ? certCount >= 1000
+        ? `${(certCount / 1000).toFixed(certCount >= 10_000 ? 0 : 1)}k`
+        : String(certCount)
+      : "—";
+
   const reviews = reviewsData?.reviews ?? [];
   const ratingAvg = reviewsData?.average ?? 0;
   const ratingCount = reviewsData?.count ?? 0;
