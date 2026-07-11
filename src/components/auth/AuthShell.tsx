@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import signupHeroBg from "@/assets/signup-hero-bg.jpg";
-import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { RepsLockup } from "@/components/brand/RepsLockup";
 import { SiteBanner } from "@/components/SiteBanner";
 
 export function AuthShell({
@@ -21,13 +21,8 @@ export function AuthShell({
       <header className="relative z-30">
         <SiteBanner />
         <div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
-          <Link to="/" className="flex items-center gap-3">
-            <RepsWordmark className="h-[25px] text-white" />
-            <span className="hidden border-l border-white/15 pl-3 text-[11px] leading-tight text-white/70 sm:block">
-              The Register of
-              <br />
-              Exercise Professionals
-            </span>
+          <Link to="/" className="flex items-center">
+            <RepsLockup className="h-[48px]" />
           </Link>
           <div className="text-[14px] text-white/70">{topRight}</div>
         </div>
