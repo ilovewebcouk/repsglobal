@@ -404,27 +404,98 @@ function RegistrationsTab({
 
   return (
     <PPanel>
-      <div className="flex items-center justify-between border-b border-reps-border p-4">
-        <div>
-          <h2 className="text-[15px] font-semibold text-white">Registrations</h2>
-          <p className="mt-0.5 text-[12.5px] text-white/55">
-            One row per learner + course. Mark them as passed when they've completed the course.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {selected.size > 0 ? (
-            <Button
-              onClick={() => markMut.mutate(Array.from(selected))}
-              disabled={markMut.isPending}
-            >
-              {markMut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-1 h-4 w-4" />}
-              Mark {selected.size} passed
+      <div className="flex flex-col gap-3 border-b border-reps-border p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-[15px] font-semibold text-white">Registrations</h2>
+            <p className="mt-0.5 text-[12.5px] text-white/55">
+              One row per learner + course. Mark them as passed when they've completed the course.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {selected.size > 0 ? (
+              <Button
+                onClick={() => markMut.mutate(Array.from(selected))}
+                disabled={markMut.isPending}
+              >
+                {markMut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-1 h-4 w-4" />}
+                Mark {selected.size} passed
+              </Button>
+            ) : null}
+            <Button onClick={() => setOpen(true)} disabled={learners.length === 0 || courses.length === 0}>
+              <Plus className="mr-1 h-4 w-4" /> Register learner on course
             </Button>
-          ) : null}
-          <Button onClick={() => setOpen(true)} disabled={learners.length === 0 || courses.length === 0}>
-            <Plus className="mr-1 h-4 w-4" /> Register learner on course
-          </Button>
+          </div>
         </div>
+
+        {regs.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <div ref={searchRef} className="relative flex-1 min-w-[220px] max-w-md">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <Input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setShowSuggest(true);
+                }}
+                onFocus={() => setShowSuggest(true)}
+                placeholder="Search by learner, email, or course"
+                className="pl-8 pr-8"
+              />
+              {query ? (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setQuery("");
+                    setShowSuggest(false);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-white/40 hover:text-white/80"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+              {showSuggest && suggestions.length > 0 ? (
+                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-[10px] border border-reps-border bg-reps-panel shadow-xl">
+                  <ul className="max-h-72 overflow-y-auto py-1 text-[13px]">
+                    {suggestions.map((s) => (
+                      <li key={s.key}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuery(s.value);
+                            setShowSuggest(false);
+                          }}
+                          className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-white/85 hover:bg-white/5"
+                        >
+                          <span className="truncate">{s.label}</span>
+                          {s.sub ? (
+                            <span className="shrink-0 text-[11.5px] text-white/45">{s.sub}</span>
+                          ) : null}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(query || statusFilter !== "all") && (
+              <div className="text-[12px] text-white/50">
+                {filteredRegs.length} of {regs.length}
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {loading ? (
@@ -436,6 +507,10 @@ function RegistrationsTab({
             : courses.length === 0
               ? "You'll need at least one approved course before you can register learners."
               : "No registrations yet."}
+        </div>
+      ) : filteredRegs.length === 0 ? (
+        <div className="p-8 text-center text-[13px] text-white/55">
+          No registrations match your filters.
         </div>
       ) : (
         <div className="overflow-x-auto">
