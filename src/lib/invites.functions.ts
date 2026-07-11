@@ -51,7 +51,7 @@ export const createClientInvite = createServerFn({ method: "POST" })
       invite: { id: invite.id, email: invite.email, expires_at: invite.expires_at },
       acceptUrl,
       professional_name: (profile?.full_name as string | null) ?? "Your coach",
-      trading_name: (profile?.full_name as string | null) ?? null,
+      
       client_name: (invite.full_name as string | null) ?? null,
     };
   });
