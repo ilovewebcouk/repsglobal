@@ -101,13 +101,25 @@ export const createCertificateTemplate = createServerFn({ method: "POST" })
         is_default: data.set_default,
         certificate_pdf_path: certPath,
         unit_summary_pdf_path: unitPath,
-        field_map: data.field_map ?? {},
+        field_map: JSON.parse(data.field_map_json || "{}"),
         notes: data.notes ?? null,
       } as never)
       .select()
       .single();
     if (error) throw error;
-    return row as CertificateTemplateDTO;
+    const r = row as any;
+    return {
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      is_default: r.is_default,
+      certificate_pdf_path: r.certificate_pdf_path,
+      unit_summary_pdf_path: r.unit_summary_pdf_path,
+      field_map_json: JSON.stringify(r.field_map ?? {}),
+      notes: r.notes,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    };
   });
 
 export const setDefaultCertificateTemplate = createServerFn({ method: "POST" })
@@ -127,13 +139,13 @@ export const setDefaultCertificateTemplate = createServerFn({ method: "POST" })
 
 export const updateCertificateTemplateFieldMap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ id: z.string().uuid(), field_map: z.record(z.string(), z.unknown()) }).parse(i))
+  .inputValidator((i) => z.object({ id: z.string().uuid(), field_map_json: z.string() }).parse(i))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("certificate_templates")
-      .update({ field_map: data.field_map } as never)
+      .update({ field_map: JSON.parse(data.field_map_json || "{}") } as never)
       .eq("id", data.id);
     if (error) throw error;
     return { ok: true };
