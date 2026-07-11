@@ -1,50 +1,52 @@
+# Roll out the new REPS logo everywhere
 
-## Logo lock-up rollout
+You've given us the full logo family, so we can retire the old `RepsWordmark` SVG entirely and use your artwork in every spot — including the compact places we previously kept on the old mark.
 
-Adopt the uploaded full REPS lock-up ("REPS" wordmark + tagline lines) as the primary brand logo on the website. Keep the existing compact wordmark as a fallback for tight spaces (favicon, avatar chips, tiny UI).
+## Assets to add (via `lovable-assets`, not committed binaries)
 
-### Assets to add
+From `/mnt/user-uploads/`:
 
-1. `src/assets/brand/logo-lockup.svg` — copy from `user-uploads://reps_logo_horizontal.svg`. White fills (for dark UI — matches our dark-first site).
-2. `src/assets/brand/logo-lockup-dark.svg` — same artwork, black/`#0a0a0a` fills. Used on:
-   - Certificate PDF (page 1 header)
-   - Unit summary PDF (page 2 header)
-   - Any future light-background printable
-3. Keep existing `logo.svg` / `logo-dark.svg` (compact wordmark) untouched — still used for favicon, small chrome, `RepsWordmark` component fallback.
+| Upload | Purpose | Saved as |
+|---|---|---|
+| `reps_logo.svg` | Full lock-up, white (dark UI) | `src/assets/brand/logo-lockup.svg` *(replaces existing)* |
+| `reps_logo_dark.svg` | Full lock-up, dark (light bg / print) | `src/assets/brand/logo-lockup-dark.svg` *(replaces existing)* |
+| `reps_logo_min.svg` | Wordmark only, dark | `src/assets/brand/logo-wordmark-dark.svg` |
+| `reps_logo_min_alt.svg` | Wordmark only, white | `src/assets/brand/logo-wordmark.svg` |
+| `favicon.svg` | Icon-only mark, dark | `src/assets/brand/logo-mark-dark.svg` + `public/favicon.svg` |
+| `favicon_alt.svg` | Icon-only mark, white | `src/assets/brand/logo-mark.svg` |
 
-### Website wiring
+## Component updates
 
-- **Navbar** — swap current wordmark for the lock-up. Because the lock-up is taller (tagline underneath), the nav logo height goes from ~20px to ~36–40px. Verify header padding still balances; adjust nav row height if it feels cramped.
-- **Footer** — use the lock-up (larger, ~56px tall) so the tagline reinforces authority at page bottom.
-- **Auth shell / marketing hero corners** — lock-up.
-- **Dashboard sidebar** — keep compact wordmark (space-constrained).
-- **Favicon, og:image, avatar chips, small badges** — keep compact wordmark.
+1. **`RepsLockup.tsx`** — repoint to the new `logo-lockup(-dark).svg`. No API change.
+2. **`RepsWordmark.tsx`** — replace the hand-inlined old-logo `<path>`s with an `<img>` pointing to `logo-wordmark(-dark).svg`. Keeps the `variant?: "light"|"dark"` API so every existing call site (~40 files) picks up the new artwork with zero churn.
+3. **New `RepsMark.tsx`** — icon-only component using `logo-mark(-dark).svg`, `variant`, `title`. For badge titles, list bullets, award icons — anywhere the compact 1:1 mark reads better than a wordmark.
 
-Create a shared `<RepsLockup />` component next to `RepsWordmark.tsx` that inlines the SVG (so it inherits `currentColor` and scales cleanly). Existing `RepsWordmark` stays for compact usage.
+## Targeted spots you called out
 
-### Certificate wiring (ties into in-flight template work)
+- **Dashboard** (sidebar, shell, demo content) — driven by `RepsWordmark` → picks up new wordmark automatically.
+- **Checkout credits header** — swap `RepsWordmark` → new wordmark automatically; verify header height still balances.
+- **Core certificate landing page inline marks** — swap inline `RepsWordmark` refs; check size (bump to `h-5` if the new wordmark reads smaller).
+- **Competitor comparison tables** — REPS column header uses `RepsWordmark`; picks up automatically. Confirm it still fits the column.
+- **"Replace your stack" tile grid** — REPS tile uses `RepsWordmark`; picks up automatically.
+- **Qualifications page badge titles + awarding body list icons** — currently text or generic icons. Switch to new `<RepsMark />` at `h-4`/`h-5` for the badge titles and awarding-body list bullets, per your suggestion.
+- **Campaign email headers** ("brutal honest truth", onboarding, etc.) — currently render "REPS" as inline text (email clients strip SVG-in-`img` unreliably, and 15KB inline is bad for deliverability). Best path: keep as text but style it to match, OR embed the wordmark as a hosted PNG served from CDN. I'll go with the hosted-PNG option (lovable-assets serves stable URLs) at ~140×30 for retina, since you want visual consistency.
+- **Favicon** — replace `public/favicon.ico` with `public/favicon.svg` (icon-only mark) + update `__root.tsx` `head().links`. Delete the old `.ico`.
 
-- Add a `logo-lockup-dark.svg` reference at the top of the Adobe certificate template you're designing. Since we're doing coordinate-mapped overlay, the logo is baked into the PDF template artwork itself — you'll place it in Illustrator, not overlay it at render time. No code change needed beyond having the dark SVG available for you to place in Illustrator.
-- If you'd rather render it dynamically (so we can swap logos later without re-uploading the template), we'd add a `reps_logo` image field to the `field_map` and stamp it at issue time. Slower to iterate but more flexible. I'd recommend **baking it into the template** — the whole point of the Adobe approach was print-quality artwork.
+## Not touched
 
-### Files touched
+- `og:image` — separate hero art, not the logo.
+- Certificate PDF templates — you're baking the dark lock-up into Illustrator directly.
+- JSON-LD structured-data `logo` field — will point at the new hosted lock-up URL.
+- Transactional Supabase auth emails (signup/recovery/reauth) — no REPS branding today; out of scope unless you want it.
 
-- `src/assets/brand/logo-lockup.svg` (new, from upload)
-- `src/assets/brand/logo-lockup-dark.svg` (new, recoloured fills)
-- `src/components/brand/RepsLockup.tsx` (new)
-- Navbar component (swap logo)
-- Footer component (swap logo)
-- Auth shell (swap logo)
+## Verification
 
-### Not touched
+- `bun run build` after asset swap.
+- Playwright screenshot pass: navbar, footer, dashboard sidebar, `/checkout`, `/certificate/*`, `/compare/*`, `/qualifications`, and one campaign email preview via `render-email.mjs`.
+- Spot-check that no route still references `logo.svg` / `logo-dark.svg` (old files) — remove them if orphaned.
 
-- `RepsWordmark.tsx`, existing `logo.svg` / `logo-dark.svg`
-- Favicon, og:image, avatar/monogram components
-- Dashboard sidebar logo
-- Any locked marketing page structure (only the logo swaps within existing header/footer slots)
+## Rough size
 
-### Verification
+~8 files created (assets + `RepsMark`), 3 edited (`RepsLockup`, `RepsWordmark`, `__root.tsx`), 1 deleted (`favicon.ico`). All existing `<RepsWordmark />` call sites (~40) update visually with no code changes.
 
-After the swap, screenshot the navbar and footer at desktop + mobile via Playwright to confirm the tagline is legible and the lock-up doesn't crowd nav items. If the tagline goes sub-legible on mobile (<640px), fall back to the compact wordmark below that breakpoint via a responsive `hidden sm:block` / `sm:hidden` pair.
-
-Approve and I'll build it, then return to the certificate template work.
+Approve and I'll ship it.
