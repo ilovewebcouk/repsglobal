@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
-import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { RepsLockup } from "@/components/brand/RepsLockup";
 import { SiteBanner } from "@/components/SiteBanner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -224,7 +224,7 @@ function LoginPage() {
               aria-label="REPs — back to home"
               className="inline-flex items-center text-white"
             >
-              <RepsWordmark className="h-7 w-auto" />
+              <RepsLockup className="h-[44px] w-auto" />
             </Link>
           </div>
           <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.6)] backdrop-blur-sm">
