@@ -45,12 +45,13 @@ export const Route = createFileRoute("/admin_/certificates")({
   component: AdminCertificatesPage,
 });
 
-type Tab = "pricing" | "batches" | "print" | "search";
+type Tab = "pricing" | "templates" | "batches" | "print" | "search";
 
 function AdminCertificatesPage() {
   const [tab, setTab] = useState<Tab>("pricing");
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: "pricing", label: "Pricing" },
+    { id: "templates", label: "Templates" },
     { id: "batches", label: "Batches" },
     { id: "print", label: "Print queue" },
     { id: "search", label: "Search & revoke" },
@@ -60,7 +61,7 @@ function AdminCertificatesPage() {
       role="admin"
       active="Certificates"
       title="Certificates"
-      subtitle="Certificate pricing, batches, Royal Mail dispatch and revocation."
+      subtitle="Certificate pricing, PDF templates, batches, Royal Mail dispatch and revocation."
     >
       <div className="mb-4 flex flex-wrap gap-1 rounded-xl bg-white/[0.04] p-1">
         {tabs.map((t) => (
@@ -76,6 +77,7 @@ function AdminCertificatesPage() {
         ))}
       </div>
       {tab === "pricing" && <PricingPanel />}
+      {tab === "templates" && <TemplatesPanel />}
       {tab === "batches" && <BatchesPanel />}
       {tab === "print" && <PrintQueuePanel />}
       {tab === "search" && <SearchPanel />}
