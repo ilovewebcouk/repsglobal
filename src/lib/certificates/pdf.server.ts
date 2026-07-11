@@ -140,14 +140,11 @@ export async function generateCertificatePdf(input: CertificatePdfInput): Promis
   if (unitPdfBytes && fieldMap.unit_summary) {
     const unitDoc = await PDFDocument.load(unitPdfBytes);
     const [copied] = await output.copyPages(unitDoc, [0]);
-    const page2Index = output.addPage(copied).getPageIndex ? 0 : 0;
-    // addPage(copied) returns the added page reference directly
-    const page2 = output.getPage(output.getPageCount() - 1);
+    const page2 = output.addPage(copied);
     overlayPage(page2, fieldMap.unit_summary, values, fonts, {
       qr: qrImage,
       provider_logo: providerLogoImage,
     });
-    void page2Index;
   }
 
   return await output.save();
