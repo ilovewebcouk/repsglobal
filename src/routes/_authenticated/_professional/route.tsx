@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  getAccountLandingFallback,
   getPrimaryRole,
   landingPathForRole,
   userHasRole,
@@ -65,42 +64,6 @@ export const Route = createFileRoute("/_authenticated/_professional")({
     }
 
     if (!isProfessional) {
-      const fallback = await getAccountLandingFallback(user.id);
-      if (fallback === "/dashboard") {
-        const { data: sub } = await supabase
-          .from("subscriptions")
-          .select("tier,status,payment_standing")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (sub) {
-          const isPaid =
-            PAID_TIERS.includes(sub.tier as string) &&
-            LIVE_STATUSES.includes(sub.status as string);
-
-          if (!isPaid) {
-            throw redirect({ to: "/pricing" });
-          }
-
-          if (
-            sub.payment_standing === "payment_disputed" ||
-            sub.payment_standing === "chargeback_lost"
-          ) {
-            throw redirect({ to: "/account/suspended" });
-          }
-
-          return {
-            user,
-            role: "professional" as const,
-            trainerTier: sub.tier as "verified" | "pro" | "studio" | "training_provider",
-          };
-        }
-
-        throw redirect({ to: "/pricing" });
-      }
-
       const role = await getPrimaryRole(user.id);
       throw redirect({ to: landingPathForRole(role) });
     }
