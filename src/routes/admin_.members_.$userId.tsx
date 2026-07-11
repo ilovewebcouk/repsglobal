@@ -45,7 +45,7 @@ import { getMemberSessions, type MemberSessionRow } from "@/lib/admin/member-ses
 import { DntGpcBadge } from "@/components/admin/DntGpcBadge";
 
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
-import { getMemberPasswordResetInfo, type PasswordResetInfo } from "@/lib/admin/password-reset.functions";
+import { getMemberPasswordResetInfo, adminSetMemberPassword, type PasswordResetInfo } from "@/lib/admin/password-reset.functions";
 import {
   closeMembership,
   type CancelReason,
