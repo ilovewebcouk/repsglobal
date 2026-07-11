@@ -131,7 +131,7 @@ export async function generateCertificatePdf(input: CertificatePdfInput): Promis
 
   // ── Overlay page 1 (certificate)
   const page1 = output.getPage(0);
-  overlayPage(page1, fieldMap.certificate ?? {}, values, fonts, {
+  overlayPage(page1, fieldMap.certificate ?? {}, values, input.unitSummary, fonts, {
     qr: qrImage,
     provider_logo: providerLogoImage,
   });
@@ -141,7 +141,7 @@ export async function generateCertificatePdf(input: CertificatePdfInput): Promis
     const unitDoc = await PDFDocument.load(unitPdfBytes);
     const [copied] = await output.copyPages(unitDoc, [0]);
     const page2 = output.addPage(copied);
-    overlayPage(page2, fieldMap.unit_summary, values, fonts, {
+    overlayPage(page2, fieldMap.unit_summary, values, input.unitSummary, fonts, {
       qr: qrImage,
       provider_logo: providerLogoImage,
     });
