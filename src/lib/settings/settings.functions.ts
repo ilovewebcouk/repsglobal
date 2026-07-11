@@ -119,6 +119,13 @@ export const getMySettings = createServerFn({ method: "GET" })
         contact_phone: (proRow.contact_phone as string | null) ?? null,
         timezone: (proRow.timezone as string | null) ?? "Europe/London",
         locale: (proRow.locale as string | null) ?? "en-GB",
+        account_type:
+          ((proRow.account_type as string | null) === "organisation"
+            ? "organisation"
+            : "individual"),
+        legal_entity_name: (proRow.legal_entity_name as string | null) ?? null,
+        contact_first_name: (proRow.contact_first_name as string | null) ?? null,
+        contact_last_name: (proRow.contact_last_name as string | null) ?? null,
         identity_status: idStatus,
         legal_name_locked: idStatus === "approved",
       },
