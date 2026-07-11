@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { useTrainerTier } from "@/lib/dashboard/useTrainerTier";
 import { PCard, PPanel } from "@/components/dashboard/primitives";
 import { DashboardButton as Button } from "@/components/dashboard/ui/button";
 import { DashboardBadge as Badge } from "@/components/dashboard/ui/badge";
@@ -86,6 +87,7 @@ function StudentsPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const qc = useQueryClient();
+  const tier = useTrainerTier();
   const [tab, setTab] = React.useState<Tab>(search.tab ?? "learners");
 
   const learnersFn = useServerFn(listMyLearners);
@@ -123,6 +125,7 @@ function StudentsPage() {
   return (
     <DashboardShell
       role="trainer"
+      tier={tier}
       active="Students & Certificates"
       title="Students & Certificates"
       subtitle="Register learners on your approved courses, mark them passed, and issue REPS-verified certificates."
