@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 
-import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { RepsLockup } from "@/components/brand/RepsLockup";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,7 +119,7 @@ function ForgotPasswordPage() {
               aria-label="REPs — back to home"
               className="inline-flex items-center text-white"
             >
-              <RepsWordmark className="h-7 w-auto" />
+              <RepsLockup className="h-[44px] w-auto" />
             </Link>
           </div>
 

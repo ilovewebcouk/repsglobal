@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
+import { RepsLockup } from "@/components/brand/RepsLockup";
 import {
   Activity,
   Calendar,
@@ -754,9 +755,8 @@ export function BottomRow({ isLocked = false }: { isLocked?: boolean }) {
 export function DashboardFooter() {
   return (
     <footer className="mt-8 flex flex-col items-center justify-between gap-3 px-8 py-6 text-[12px] text-white/55 sm:flex-row">
-      <div className="flex items-center gap-3">
-        <span className="font-display text-[18px] font-bold tracking-tight text-white">REPS</span>
-        <span className="border-l border-white/15 pl-3 text-[10px] leading-tight">The Register of<br />Exercise Professionals</span>
+      <div className="flex items-center">
+        <RepsLockup className="h-[40px]" />
       </div>
       <div className="flex items-center gap-5">
         <span>© 2026 REPS. All rights reserved.</span>
