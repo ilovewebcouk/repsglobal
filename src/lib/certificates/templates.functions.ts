@@ -18,7 +18,7 @@ export type CertificateTemplateDTO = {
   is_default: boolean;
   certificate_pdf_path: string;
   unit_summary_pdf_path: string | null;
-  field_map: Record<string, unknown>;
+  field_map_json: string;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -39,7 +39,18 @@ export const listCertificateTemplates = createServerFn({ method: "GET" })
       .select("*")
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []) as CertificateTemplateDTO[];
+    return ((data ?? []) as any[]).map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      is_default: r.is_default,
+      certificate_pdf_path: r.certificate_pdf_path,
+      unit_summary_pdf_path: r.unit_summary_pdf_path,
+      field_map_json: JSON.stringify(r.field_map ?? {}),
+      notes: r.notes,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    }));
   });
 
 const uploadSchema = z.object({
@@ -47,7 +58,7 @@ const uploadSchema = z.object({
   name: z.string().min(2).max(120),
   certificate_pdf_b64: z.string().min(100),
   unit_summary_pdf_b64: z.string().nullable().optional(),
-  field_map: z.record(z.string(), z.unknown()),
+  field_map_json: z.string(),
   notes: z.string().nullable().optional(),
   set_default: z.boolean().default(false),
 });
