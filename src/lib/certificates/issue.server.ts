@@ -103,6 +103,7 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
       repsCourseNumber: (reg as any).reps_course_number,
       ofqualNumber,
       providerName,
+      providerLogoUrl,
       issuedAt,
       verificationUrl,
       unitSummary,
