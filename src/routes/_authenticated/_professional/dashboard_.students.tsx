@@ -305,6 +305,20 @@ function RegistrationsTab({
   const qc = useQueryClient();
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const [query, setQuery] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
+  const [showSuggest, setShowSuggest] = React.useState(false);
+  const searchRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Close suggestions on outside click
+  React.useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!searchRef.current) return;
+      if (!searchRef.current.contains(e.target as Node)) setShowSuggest(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
 
   const markFn = useServerFn(markRegistrationsPassed);
   const markMut = useMutation({
@@ -333,8 +347,58 @@ function RegistrationsTab({
       return n;
     });
 
-  const selectableIds = regs.filter((r) => r.status === "enrolled").map((r) => r.id);
+  // Apply search + status filters
+  const q = query.trim().toLowerCase();
+  const filteredRegs = React.useMemo(() => {
+    return regs.filter((r) => {
+      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
+        (r.learner_name ?? "").toLowerCase().includes(q) ||
+        (r.learner_email ?? "").toLowerCase().includes(q) ||
+        (r.course_title ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [regs, statusFilter, q]);
+
+  // Type-ahead suggestions: learners (name/email) + course titles
+  const suggestions = React.useMemo(() => {
+    if (!q) return [];
+    const out: { key: string; label: string; sub?: string; value: string }[] = [];
+    for (const l of learners) {
+      const nameHit = l.full_name?.toLowerCase().includes(q);
+      const emailHit = l.email?.toLowerCase().includes(q);
+      if (nameHit || emailHit) {
+        out.push({ key: `l-${l.id}`, label: l.full_name, sub: l.email, value: l.full_name });
+      }
+      if (out.length >= 8) break;
+    }
+    const seenCourse = new Set<string>();
+    for (const c of courses) {
+      const title = c.title ?? "";
+      if (title.toLowerCase().includes(q) && !seenCourse.has(title)) {
+        seenCourse.add(title);
+        out.push({ key: `c-${c.id}`, label: title, sub: c.level ? `Level ${c.level}` : undefined, value: title });
+      }
+      if (out.length >= 12) break;
+    }
+    return out;
+  }, [q, learners, courses]);
+
+  const selectableIds = filteredRegs.filter((r) => r.status === "enrolled").map((r) => r.id);
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id));
+
+  const statusOptions: { value: string; label: string }[] = [
+    { value: "all", label: "All statuses" },
+    { value: "enrolled", label: "Enrolled" },
+    { value: "passed", label: "Passed" },
+    { value: "pending_payment", label: "Awaiting payment" },
+    { value: "issued", label: "Issued" },
+    { value: "dispatched", label: "Dispatched" },
+    { value: "canceled", label: "Canceled" },
+    { value: "revoked", label: "Revoked" },
+  ];
+
 
   return (
     <PPanel>
