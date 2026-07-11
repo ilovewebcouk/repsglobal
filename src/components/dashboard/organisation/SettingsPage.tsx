@@ -9,6 +9,7 @@ import {
   Bell,
   CreditCard,
   Download,
+  Eye,
   EyeOff,
   Loader2,
   Lock,
