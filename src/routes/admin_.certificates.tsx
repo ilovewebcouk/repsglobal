@@ -32,6 +32,15 @@ import {
   setCertificatePricing,
   type PrintQueueRowDTO,
 } from "@/lib/certificates/certificates.functions";
+import {
+  createCertificateTemplate,
+  deleteCertificateTemplate,
+  listCertificateTemplates,
+  previewCertificateTemplate,
+  setDefaultCertificateTemplate,
+  updateCertificateTemplateFieldMap,
+  type CertificateTemplateDTO,
+} from "@/lib/certificates/templates.functions";
 
 export const Route = createFileRoute("/admin_/certificates")({
   head: () => ({
@@ -45,12 +54,13 @@ export const Route = createFileRoute("/admin_/certificates")({
   component: AdminCertificatesPage,
 });
 
-type Tab = "pricing" | "batches" | "print" | "search";
+type Tab = "pricing" | "templates" | "batches" | "print" | "search";
 
 function AdminCertificatesPage() {
   const [tab, setTab] = useState<Tab>("pricing");
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: "pricing", label: "Pricing" },
+    { id: "templates", label: "Templates" },
     { id: "batches", label: "Batches" },
     { id: "print", label: "Print queue" },
     { id: "search", label: "Search & revoke" },
@@ -60,7 +70,7 @@ function AdminCertificatesPage() {
       role="admin"
       active="Certificates"
       title="Certificates"
-      subtitle="Certificate pricing, batches, Royal Mail dispatch and revocation."
+      subtitle="Certificate pricing, PDF templates, batches, Royal Mail dispatch and revocation."
     >
       <div className="mb-4 flex flex-wrap gap-1 rounded-xl bg-white/[0.04] p-1">
         {tabs.map((t) => (
@@ -76,6 +86,7 @@ function AdminCertificatesPage() {
         ))}
       </div>
       {tab === "pricing" && <PricingPanel />}
+      {tab === "templates" && <TemplatesPanel />}
       {tab === "batches" && <BatchesPanel />}
       {tab === "print" && <PrintQueuePanel />}
       {tab === "search" && <SearchPanel />}
@@ -752,3 +763,351 @@ function SearchPanel() {
 
 // Keep Download imported for future label re-download UI; suppress unused warning
 void Download;
+
+// ─────────────────────────────────────────────────────────────── Templates
+
+const DEFAULT_FIELD_MAP_TEMPLATE = `{
+  "certificate": {
+    "text": [
+      { "field": "learner_name",       "x": 421, "y": 360, "align": "center", "fontSize": 40, "fontWeight": "bold", "color": "#111111", "maxWidth": 700 },
+      { "field": "course_line",        "x": 421, "y": 300, "align": "center", "fontSize": 20, "fontWeight": "bold", "color": "#333333", "maxWidth": 700 },
+      { "field": "provider_name",      "x": 421, "y": 268, "align": "center", "fontSize": 12, "color": "#555555" },
+      { "field": "issue_date",         "x": 60,  "y": 70,  "fontSize": 10, "color": "#555555", "prefix": "Issued " },
+      { "field": "certificate_number", "x": 780, "y": 70,  "align": "right", "fontSize": 10, "color": "#555555", "prefix": "No. " },
+      { "field": "reps_course_number", "x": 60,  "y": 55,  "fontSize": 9,  "color": "#666666", "prefix": "REPS Course: " },
+      { "field": "ofqual_number",      "x": 60,  "y": 40,  "fontSize": 9,  "color": "#666666", "prefix": "Ofqual: " },
+      { "field": "verify_url",         "x": 700, "y": 90,  "align": "right", "fontSize": 9, "color": "#555555", "prefix": "Verify at " }
+    ],
+    "images": [
+      { "field": "qr_code",       "x": 720, "y": 30,  "width": 90,  "height": 90 },
+      { "field": "provider_logo", "x": 60,  "y": 460, "width": 160, "height": 60 }
+    ]
+  },
+  "unit_summary": {
+    "text": [
+      { "field": "learner_name",       "x": 48, "y": 760, "fontSize": 14, "fontWeight": "bold", "color": "#111111" },
+      { "field": "course_line",        "x": 48, "y": 740, "fontSize": 11, "color": "#333333" },
+      { "field": "certificate_number", "x": 48, "y": 722, "fontSize": 10, "color": "#555555", "prefix": "Certificate No. " },
+      { "field": "issue_date",         "x": 48, "y": 706, "fontSize": 10, "color": "#555555", "prefix": "Issued " }
+    ],
+    "images": [
+      { "field": "qr_code", "x": 470, "y": 40, "width": 72, "height": 72 }
+    ],
+    "list": {
+      "field": "unit_summary",
+      "x": 62, "y": 660, "maxWidth": 470, "lineHeight": 14, "fontSize": 10, "color": "#111111", "bullet": "•", "bulletColor": "#e97316"
+    }
+  }
+}`;
+
+function TemplatesPanel() {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listCertificateTemplates);
+  const createFn = useServerFn(createCertificateTemplate);
+  const setDefaultFn = useServerFn(setDefaultCertificateTemplate);
+  const updateMapFn = useServerFn(updateCertificateTemplateFieldMap);
+  const deleteFn = useServerFn(deleteCertificateTemplate);
+  const previewFn = useServerFn(previewCertificateTemplate);
+
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["cert-templates"],
+    queryFn: () => listFn(),
+  });
+
+  const [showForm, setShowForm] = useState(false);
+
+  return (
+    <PCard>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <div className="text-[13px] font-medium text-white">Certificate PDF templates</div>
+          <div className="text-[12px] text-white/60">
+            Upload the Adobe-designed print-ready PDFs and the coordinate map. The default template is
+            overlaid with learner data at issue time. QR code and provider logo are stamped into their
+            slots automatically.
+          </div>
+        </div>
+        <Button onClick={() => setShowForm((v) => !v)}>{showForm ? "Cancel" : "Upload template"}</Button>
+      </div>
+
+      {showForm && (
+        <UploadTemplateForm
+          onSubmit={async (payload) => {
+            try {
+              await createFn({ data: payload });
+              toast.success("Template uploaded");
+              setShowForm(false);
+              qc.invalidateQueries({ queryKey: ["cert-templates"] });
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Upload failed");
+            }
+          }}
+        />
+      )}
+
+      {isLoading && <div className="text-[12px] text-white/60">Loading…</div>}
+      {!isLoading && rows.length === 0 && (
+        <div className="rounded-lg border border-dashed border-white/10 p-6 text-center text-[12px] text-white/60">
+          No templates uploaded yet. The legacy code-drawn renderer will be used until you upload one and mark it default.
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {rows.map((t) => (
+          <TemplateRow
+            key={t.id}
+            template={t}
+            onSetDefault={async () => {
+              try {
+                await setDefaultFn({ data: { id: t.id } });
+                toast.success("Default template updated");
+                qc.invalidateQueries({ queryKey: ["cert-templates"] });
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Failed");
+              }
+            }}
+            onSaveMap={async (json) => {
+              try {
+                await updateMapFn({ data: { id: t.id, field_map_json: json } });
+                toast.success("Field map saved");
+                qc.invalidateQueries({ queryKey: ["cert-templates"] });
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Failed");
+              }
+            }}
+            onDelete={async () => {
+              if (!window.confirm("Delete this template? Existing certs stay intact.")) return;
+              try {
+                await deleteFn({ data: { id: t.id } });
+                toast.success("Template deleted");
+                qc.invalidateQueries({ queryKey: ["cert-templates"] });
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Failed");
+              }
+            }}
+            onPreview={async () => {
+              try {
+                const { pdf_b64 } = await previewFn({ data: { id: t.id } });
+                const bytes = Uint8Array.from(atob(pdf_b64), (c) => c.charCodeAt(0));
+                const blob = new Blob([bytes], { type: "application/pdf" });
+                const url = URL.createObjectURL(blob);
+                window.open(url, "_blank");
+                setTimeout(() => URL.revokeObjectURL(url), 60_000);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Preview failed");
+              }
+            }}
+          />
+        ))}
+      </div>
+    </PCard>
+  );
+}
+
+function UploadTemplateForm({
+  onSubmit,
+}: {
+  onSubmit: (payload: {
+    slug: string;
+    name: string;
+    certificate_pdf_b64: string;
+    unit_summary_pdf_b64: string | null;
+    field_map_json: string;
+    notes: string | null;
+    set_default: boolean;
+  }) => Promise<void>;
+}) {
+  const [slug, setSlug] = useState("reps-default-v1");
+  const [name, setName] = useState("REPS default v1");
+  const [certFile, setCertFile] = useState<File | null>(null);
+  const [unitFile, setUnitFile] = useState<File | null>(null);
+  const [fieldMapJson, setFieldMapJson] = useState(DEFAULT_FIELD_MAP_TEMPLATE);
+  const [notes, setNotes] = useState("");
+  const [setDefault, setSetDefault] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certFile) {
+      toast.error("Certificate PDF is required");
+      return;
+    }
+    try {
+      JSON.parse(fieldMapJson);
+    } catch {
+      toast.error("Field map is not valid JSON");
+      return;
+    }
+    setBusy(true);
+    try {
+      const certB64 = await fileToBase64(certFile);
+      const unitB64 = unitFile ? await fileToBase64(unitFile) : null;
+      await onSubmit({
+        slug,
+        name,
+        certificate_pdf_b64: certB64,
+        unit_summary_pdf_b64: unitB64,
+        field_map_json: fieldMapJson,
+        notes: notes.trim() || null,
+        set_default: setDefault,
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="mb-4 space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-[11px] text-white/60">Slug</span>
+          <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[11px] text-white/60">Name</span>
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[11px] text-white/60">Certificate PDF (A4 landscape)</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setCertFile(e.target.files?.[0] ?? null)}
+            className="block w-full text-[12px] text-white/80"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[11px] text-white/60">Unit summary PDF (optional, A4 portrait)</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setUnitFile(e.target.files?.[0] ?? null)}
+            className="block w-full text-[12px] text-white/80"
+          />
+        </label>
+      </div>
+
+      <label className="block">
+        <span className="mb-1 block text-[11px] text-white/60">
+          Field map (JSON) — coordinates in pdf-lib points from bottom-left
+        </span>
+        <textarea
+          value={fieldMapJson}
+          onChange={(e) => setFieldMapJson(e.target.value)}
+          rows={16}
+          className="w-full rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-[11px] text-white/90"
+        />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-[11px] text-white/60">Notes (optional)</span>
+        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </label>
+
+      <label className="flex items-center gap-2 text-[12px] text-white/80">
+        <input type="checkbox" checked={setDefault} onChange={(e) => setSetDefault(e.target.checked)} />
+        Make this the default template
+      </label>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={busy}>
+          {busy && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+          Upload
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function TemplateRow({
+  template,
+  onSetDefault,
+  onSaveMap,
+  onDelete,
+  onPreview,
+}: {
+  template: CertificateTemplateDTO;
+  onSetDefault: () => Promise<void>;
+  onSaveMap: (json: string) => Promise<void>;
+  onDelete: () => Promise<void>;
+  onPreview: () => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [json, setJson] = useState(() => {
+    try {
+      return JSON.stringify(JSON.parse(template.field_map_json), null, 2);
+    } catch {
+      return template.field_map_json;
+    }
+  });
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-medium text-white">{template.name}</span>
+            {template.is_default && <Badge>Default</Badge>}
+          </div>
+          <div className="text-[11px] text-white/50">
+            slug: {template.slug} · updated {new Date(template.updated_at).toLocaleString("en-GB")}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" onClick={onPreview}>
+            Preview
+          </Button>
+          {!template.is_default && (
+            <Button variant="ghost" onClick={onSetDefault}>
+              Set as default
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => setEditing((v) => !v)}>
+            {editing ? "Cancel" : "Edit field map"}
+          </Button>
+          <Button variant="ghost" onClick={onDelete}>
+            <ShieldOff className="mr-1 h-3.5 w-3.5" />
+            Delete
+          </Button>
+        </div>
+      </div>
+
+      {editing && (
+        <div className="mt-3 space-y-2">
+          <textarea
+            value={json}
+            onChange={(e) => setJson(e.target.value)}
+            rows={16}
+            className="w-full rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-[11px] text-white/90"
+          />
+          <div className="flex justify-end">
+            <Button
+              onClick={async () => {
+                try {
+                  JSON.parse(json);
+                } catch {
+                  toast.error("Not valid JSON");
+                  return;
+                }
+                await onSaveMap(json);
+                setEditing(false);
+              }}
+            >
+              Save field map
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  let s = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < buf.length; i += chunk) {
+    s += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + chunk)));
+  }
+  return btoa(s);
+}

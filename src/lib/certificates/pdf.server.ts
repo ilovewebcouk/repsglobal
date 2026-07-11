@@ -1,15 +1,21 @@
 /**
- * Certificate PDF + QR generator.
+ * Certificate PDF renderer — template-driven.
  *
- * Server-only. Renders a jointly-branded REPS certificate of achievement
- * on page 1 and a learner unit summary on page 2. QR encodes the public
- * verification URL. Uses pdf-lib (Worker-safe) and qrcode.
+ * Loads an admin-uploaded, Adobe-designed print-ready PDF from the
+ * `certificate-templates` storage bucket and overlays the variable data
+ * (learner name, course, dates, cert number, QR, provider logo) at the
+ * coordinates defined in the template's `field_map` JSON.
  *
- * The visual template here is intentionally clean and typographic — the
- * final REPS-approved artwork will replace it later, keeping the same
- * data contract.
+ * Falls back to the legacy code-drawn renderer when no default template
+ * exists so certificates keep issuing on day one.
+ *
+ * Coordinate system: pdf-lib native — points from the bottom-left of the
+ * page. Illustrator's ruler is top-left, so document the flip in the
+ * template-authoring cheat sheet.
+ *
+ * Server-only.
  */
-import { PDFDocument, StandardFonts, rgb, PageSizes } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "qrcode";
 
 export type CertificatePdfInput = {
@@ -20,177 +26,283 @@ export type CertificatePdfInput = {
   repsCourseNumber: string | null;
   ofqualNumber: string | null;
   providerName: string;
+  providerLogoUrl?: string | null;
   issuedAt: Date;
   verificationUrl: string;
-  unitSummary: string[]; // learning outcomes / modules
+  unitSummary: string[];
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Field-map schema (stored as jsonb on certificate_templates.field_map)
+
+type Align = "left" | "center" | "right";
+type FontWeight = "regular" | "bold" | "italic";
+
+type TextField = {
+  field: string;            // 'learner_name' | 'course_title' | 'course_line' | 'issue_date' | 'certificate_number' | 'reps_course_number' | 'ofqual_number' | 'provider_name' | 'verify_url'
+  x: number;                // pdf-lib points from bottom-left
+  y: number;
+  maxWidth?: number;
+  align?: Align;            // default "left"
+  fontSize?: number;        // default 12
+  fontWeight?: FontWeight;  // default "regular"
+  color?: string;           // hex, default "#111111"
+  prefix?: string;
+  suffix?: string;
+  uppercase?: boolean;
+};
+
+type ImageField = {
+  field: "qr_code" | "provider_logo";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type ListField = {
+  field: "unit_summary";
+  x: number;
+  y: number;              // top of the list block (bottom-left origin; list flows downward)
+  maxWidth: number;
+  lineHeight?: number;    // default 14
+  fontSize?: number;      // default 10
+  color?: string;         // default "#111111"
+  bullet?: string;        // default "•"
+  bulletColor?: string;   // default "#e97316"
+  maxItems?: number;
+};
+
+type PageMap = {
+  text?: TextField[];
+  images?: ImageField[];
+  list?: ListField;       // unit summary page usually
+};
+
+export type CertificateFieldMap = {
+  certificate: PageMap;
+  unit_summary?: PageMap;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function generateCertificatePdf(input: CertificatePdfInput): Promise<Uint8Array> {
-  const pdf = await PDFDocument.create();
-  pdf.setTitle(`REPS Certificate ${input.certificateNumber}`);
-  pdf.setAuthor("REPS");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const helv = await pdf.embedFont(StandardFonts.Helvetica);
-  const helvBold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const helvOblique = await pdf.embedFont(StandardFonts.HelveticaOblique);
+  // Load default template
+  const { data: tpl } = await supabaseAdmin
+    .from("certificate_templates")
+    .select("id, certificate_pdf_path, unit_summary_pdf_path, field_map")
+    .eq("is_default", true)
+    .maybeSingle();
 
-  const orange = rgb(0.92, 0.45, 0.1);
-  const dark = rgb(0.08, 0.08, 0.1);
-  const muted = rgb(0.35, 0.35, 0.4);
-  const line = rgb(0.85, 0.85, 0.88);
+  if (!tpl) {
+    // Fallback: legacy code-drawn renderer
+    const { generateCertificatePdfLegacy } = await import("./pdf-legacy.server");
+    return await generateCertificatePdfLegacy(input);
+  }
 
-  // ── Page 1 — Certificate of Achievement (A4 landscape) ────────────────
-  const page = pdf.addPage([PageSizes.A4[1], PageSizes.A4[0]]);
-  const { width: W, height: H } = page.getSize();
+  const fieldMap = ((tpl as any).field_map ?? {}) as CertificateFieldMap;
 
-  // Border
-  page.drawRectangle({
-    x: 24, y: 24, width: W - 48, height: H - 48,
-    borderColor: orange, borderWidth: 2,
-  });
-  page.drawRectangle({
-    x: 32, y: 32, width: W - 64, height: H - 64,
-    borderColor: line, borderWidth: 0.5,
-  });
+  // Fetch template PDFs
+  const certPdfBytes = await downloadTemplateBytes((tpl as any).certificate_pdf_path as string);
+  const unitPdfBytes = (tpl as any).unit_summary_pdf_path
+    ? await downloadTemplateBytes((tpl as any).unit_summary_pdf_path as string)
+    : null;
 
-  // Header
-  page.drawText("REPS", { x: 60, y: H - 80, size: 28, font: helvBold, color: orange });
-  page.drawText("Register of Exercise Professionals", { x: 60, y: H - 100, size: 10, font: helv, color: muted });
-  const rightHeader = `Certificate No. ${input.certificateNumber}`;
-  const rightHeaderW = helv.widthOfTextAtSize(rightHeader, 10);
-  page.drawText(rightHeader, { x: W - 60 - rightHeaderW, y: H - 80, size: 10, font: helv, color: muted });
+  // Start from the certificate template so its artwork/fonts are preserved
+  const output = await PDFDocument.load(certPdfBytes);
+  output.setTitle(`REPS Certificate ${input.certificateNumber}`);
+  output.setAuthor("REPS");
 
-  // Title
-  const title = "Certificate of Achievement";
-  const titleSize = 36;
-  const titleW = helvBold.widthOfTextAtSize(title, titleSize);
-  page.drawText(title, { x: (W - titleW) / 2, y: H - 190, size: titleSize, font: helvBold, color: dark });
+  const fonts = {
+    regular: await output.embedFont(StandardFonts.Helvetica),
+    bold: await output.embedFont(StandardFonts.HelveticaBold),
+    italic: await output.embedFont(StandardFonts.HelveticaOblique),
+  };
 
-  // "Presented to"
-  const presented = "This is to certify that";
-  const presentedW = helvOblique.widthOfTextAtSize(presented, 14);
-  page.drawText(presented, { x: (W - presentedW) / 2, y: H - 230, size: 14, font: helvOblique, color: muted });
+  // Build overlay data (values keyed by field name)
+  const values = buildFieldValues(input);
 
-  // Learner name
-  const nameSize = 32;
-  const nameW = helvBold.widthOfTextAtSize(input.learnerName, nameSize);
-  page.drawText(input.learnerName, {
-    x: (W - nameW) / 2, y: H - 280, size: nameSize, font: helvBold, color: dark,
-  });
-  page.drawLine({
-    start: { x: (W - Math.max(nameW, 300)) / 2 - 20, y: H - 296 },
-    end: { x: (W + Math.max(nameW, 300)) / 2 + 20, y: H - 296 },
-    thickness: 0.75, color: line,
+  // Prepare shared images
+  const qrPng = await renderQrPng(input.verificationUrl);
+  const qrImage = await output.embedPng(qrPng);
+  const providerLogoImage = await tryEmbedImageFromUrl(output, input.providerLogoUrl ?? null);
+
+  // ── Overlay page 1 (certificate)
+  const page1 = output.getPage(0);
+  overlayPage(page1, fieldMap.certificate ?? {}, values, input.unitSummary, fonts, {
+    qr: qrImage,
+    provider_logo: providerLogoImage,
   });
 
-  // Achievement line
-  const hasCompleted = "has successfully completed";
-  const hasW = helv.widthOfTextAtSize(hasCompleted, 13);
-  page.drawText(hasCompleted, { x: (W - hasW) / 2, y: H - 320, size: 13, font: helv, color: muted });
+  // ── Overlay page 2 (unit summary) if present
+  if (unitPdfBytes && fieldMap.unit_summary) {
+    const unitDoc = await PDFDocument.load(unitPdfBytes);
+    const [copied] = await output.copyPages(unitDoc, [0]);
+    const page2 = output.addPage(copied);
+    overlayPage(page2, fieldMap.unit_summary, values, input.unitSummary, fonts, {
+      qr: qrImage,
+      provider_logo: providerLogoImage,
+    });
+  }
 
-  // Course title + level
+  return await output.save();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function downloadTemplateBytes(path: string): Promise<Uint8Array> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin.storage.from("certificate-templates").download(path);
+  if (error || !data) throw new Error(`Failed to load certificate template ${path}: ${error?.message ?? "no data"}`);
+  const ab = await data.arrayBuffer();
+  return new Uint8Array(ab);
+}
+
+function buildFieldValues(input: CertificatePdfInput): Record<string, string> {
+  const dateStr = input.issuedAt.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
   const levelLabel = input.courseLevel ? `Level ${input.courseLevel} — ` : "";
-  const courseLine = `${levelLabel}${input.courseTitle}`;
-  const courseSize = 20;
-  const courseW = helvBold.widthOfTextAtSize(courseLine, courseSize);
-  page.drawText(courseLine, {
-    x: Math.max(60, (W - courseW) / 2), y: H - 355, size: courseSize, font: helvBold, color: dark,
-    maxWidth: W - 120,
-  });
+  return {
+    learner_name: input.learnerName,
+    course_title: input.courseTitle,
+    course_line: `${levelLabel}${input.courseTitle}`,
+    course_level: input.courseLevel ? `Level ${input.courseLevel}` : "",
+    issue_date: dateStr,
+    certificate_number: input.certificateNumber,
+    reps_course_number: input.repsCourseNumber ?? "",
+    ofqual_number: input.ofqualNumber ?? "",
+    provider_name: input.providerName,
+    verify_url: input.verificationUrl.replace(/^https?:\/\//, ""),
+  };
+}
 
-  // Awarded by
-  const awardedBy = `Awarded by ${input.providerName}, in association with REPS`;
-  const awardedW = helv.widthOfTextAtSize(awardedBy, 12);
-  page.drawText(awardedBy, {
-    x: (W - awardedW) / 2, y: H - 390, size: 12, font: helv, color: muted,
-  });
+async function renderQrPng(url: string): Promise<Uint8Array> {
+  const dataUrl = await QRCode.toDataURL(url, { margin: 1, width: 400, errorCorrectionLevel: "M" });
+  return Uint8Array.from(atob(dataUrl.split(",")[1]), (c) => c.charCodeAt(0));
+}
 
-  // Footer — issued date + numbers
-  const issuedText = `Issued ${input.issuedAt.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`;
-  page.drawText(issuedText, { x: 60, y: 70, size: 10, font: helv, color: muted });
-  if (input.repsCourseNumber) {
-    page.drawText(`REPS Course: ${input.repsCourseNumber}`, { x: 60, y: 55, size: 9, font: helv, color: muted });
-  }
-  if (input.ofqualNumber) {
-    page.drawText(`Ofqual: ${input.ofqualNumber}`, { x: 60, y: 40, size: 9, font: helv, color: muted });
-  }
-
-  // QR code (bottom right)
-  const qrDataUrl = await QRCode.toDataURL(input.verificationUrl, {
-    margin: 1, width: 300, errorCorrectionLevel: "M",
-  });
-  const qrBytes = Uint8Array.from(atob(qrDataUrl.split(",")[1]), (c) => c.charCodeAt(0));
-  const qrImg = await pdf.embedPng(qrBytes);
-  const qrSize = 96;
-  page.drawImage(qrImg, { x: W - 60 - qrSize, y: 40, width: qrSize, height: qrSize });
-  const verifyLabel = "Verify at";
-  page.drawText(verifyLabel, {
-    x: W - 60 - qrSize - 100, y: 90, size: 9, font: helv, color: muted,
-  });
-  page.drawText("repsuk.org/verify", {
-    x: W - 60 - qrSize - 100, y: 76, size: 10, font: helvBold, color: dark,
-  });
-  page.drawText(input.certificateNumber, {
-    x: W - 60 - qrSize - 100, y: 62, size: 9, font: helv, color: muted,
-  });
-
-  // ── Page 2 — Unit Summary (A4 portrait) ───────────────────────────────
-  const page2 = pdf.addPage([PageSizes.A4[0], PageSizes.A4[1]]);
-  const { width: PW, height: PH } = page2.getSize();
-
-  page2.drawText("REPS", { x: 48, y: PH - 60, size: 22, font: helvBold, color: orange });
-  page2.drawText("Learner Unit Summary", { x: 48, y: PH - 84, size: 18, font: helvBold, color: dark });
-  page2.drawLine({
-    start: { x: 48, y: PH - 92 }, end: { x: PW - 48, y: PH - 92 },
-    thickness: 0.5, color: line,
-  });
-
-  // Metadata block
-  const meta: Array<[string, string]> = [
-    ["Learner", input.learnerName],
-    ["Course", input.courseTitle],
-    ...(input.courseLevel ? [["Level", `Level ${input.courseLevel}`] as [string, string]] : []),
-    ["Certificate No.", input.certificateNumber],
-    ["Issued", input.issuedAt.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })],
-    ["Provider", input.providerName],
-    ...(input.repsCourseNumber ? [["REPS Course No.", input.repsCourseNumber] as [string, string]] : []),
-    ...(input.ofqualNumber ? [["Ofqual No.", input.ofqualNumber] as [string, string]] : []),
-  ];
-  let mY = PH - 120;
-  for (const [k, v] of meta) {
-    page2.drawText(k, { x: 48, y: mY, size: 9, font: helv, color: muted });
-    page2.drawText(v, { x: 160, y: mY, size: 10, font: helvBold, color: dark, maxWidth: PW - 220 });
-    mY -= 18;
-  }
-
-  mY -= 16;
-  page2.drawLine({ start: { x: 48, y: mY }, end: { x: PW - 48, y: mY }, thickness: 0.5, color: line });
-  mY -= 22;
-
-  page2.drawText("Units achieved", { x: 48, y: mY, size: 12, font: helvBold, color: dark });
-  mY -= 20;
-
-  const units = input.unitSummary.length > 0 ? input.unitSummary : ["Successful completion of all assessed units for this course."];
-  for (const unit of units) {
-    if (mY < 80) break;
-    page2.drawText("•", { x: 48, y: mY, size: 10, font: helv, color: orange });
-    const lines = wrapText(unit, 90);
-    for (const l of lines) {
-      page2.drawText(l, { x: 62, y: mY, size: 10, font: helv, color: dark, maxWidth: PW - 110 });
-      mY -= 14;
+async function tryEmbedImageFromUrl(
+  doc: PDFDocument,
+  url: string | null,
+): Promise<Awaited<ReturnType<PDFDocument["embedPng"]>> | null> {
+  if (!url) return null;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = new Uint8Array(await res.arrayBuffer());
+    const ct = res.headers.get("content-type") ?? "";
+    if (ct.includes("jpeg") || ct.includes("jpg")) {
+      return (await doc.embedJpg(buf)) as never;
     }
-    mY -= 4;
+    return await doc.embedPng(buf);
+  } catch (err) {
+    console.error("[cert-pdf] provider logo embed failed", err);
+    return null;
   }
+}
 
-  // Footer QR mini + verify text
-  page2.drawImage(qrImg, { x: PW - 48 - 72, y: 48, width: 72, height: 72 });
-  page2.drawText("Verify authenticity", { x: 48, y: 96, size: 10, font: helvBold, color: dark });
-  page2.drawText(`repsuk.org/verify/${input.certificateNumber}`, { x: 48, y: 82, size: 9, font: helv, color: muted });
-  page2.drawText("Scan the QR to confirm this certificate is on the REPS register.", {
-    x: 48, y: 66, size: 9, font: helv, color: muted,
-  });
+// ─────────────────────────────────────────────────────────────────────────────
+// Rendering
 
-  return await pdf.save();
+type EmbeddedFonts = {
+  regular: Awaited<ReturnType<PDFDocument["embedFont"]>>;
+  bold: Awaited<ReturnType<PDFDocument["embedFont"]>>;
+  italic: Awaited<ReturnType<PDFDocument["embedFont"]>>;
+};
+
+function overlayPage(
+  page: ReturnType<PDFDocument["getPage"]>,
+  map: PageMap,
+  values: Record<string, string>,
+  units: string[],
+  fonts: EmbeddedFonts,
+  images: {
+    qr: Awaited<ReturnType<PDFDocument["embedPng"]>>;
+    provider_logo: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
+  },
+): void {
+  for (const t of map.text ?? []) {
+    const raw = values[t.field];
+    if (raw == null || raw === "") continue;
+    drawText(page, t, raw, fonts);
+  }
+  for (const img of map.images ?? []) {
+    if (img.field === "qr_code") {
+      page.drawImage(images.qr, { x: img.x, y: img.y, width: img.width, height: img.height });
+    } else if (img.field === "provider_logo" && images.provider_logo) {
+      const src = images.provider_logo;
+      const scale = Math.min(img.width / src.width, img.height / src.height);
+      const w = src.width * scale;
+      const h = src.height * scale;
+      const cx = img.x + (img.width - w) / 2;
+      const cy = img.y + (img.height - h) / 2;
+      page.drawImage(src, { x: cx, y: cy, width: w, height: h });
+    }
+  }
+  if (map.list && map.list.field === "unit_summary") {
+    drawList(page, map.list, units, fonts);
+  }
+}
+
+function drawText(
+  page: ReturnType<PDFDocument["getPage"]>,
+  t: TextField,
+  raw: string,
+  fonts: EmbeddedFonts,
+): void {
+  const font =
+    t.fontWeight === "bold" ? fonts.bold : t.fontWeight === "italic" ? fonts.italic : fonts.regular;
+  const size = t.fontSize ?? 12;
+  const text = (t.uppercase ? raw.toUpperCase() : raw);
+  const full = `${t.prefix ?? ""}${text}${t.suffix ?? ""}`;
+  const color = hexToRgb(t.color ?? "#111111");
+  const width = font.widthOfTextAtSize(full, size);
+  const align: Align = t.align ?? "left";
+  let x = t.x;
+  if (align === "center") x = t.x - width / 2;
+  else if (align === "right") x = t.x - width;
+  page.drawText(full, { x, y: t.y, size, font, color, maxWidth: t.maxWidth });
+}
+
+function drawList(
+  page: ReturnType<PDFDocument["getPage"]>,
+  l: ListField,
+  items: string[] | undefined,
+  fonts: EmbeddedFonts,
+): void {
+  const list = (items ?? []).slice(0, l.maxItems ?? 40);
+  if (list.length === 0) return;
+  const size = l.fontSize ?? 10;
+  const lh = l.lineHeight ?? 14;
+  const color = hexToRgb(l.color ?? "#111111");
+  const bulletColor = hexToRgb(l.bulletColor ?? "#e97316");
+  const font = fonts.regular;
+  const bullet = l.bullet ?? "•";
+  const bulletWidth = font.widthOfTextAtSize(bullet + "  ", size);
+  let y = l.y;
+  const maxCharsPerLine = Math.max(20, Math.floor((l.maxWidth - bulletWidth) / (size * 0.5)));
+  for (const raw of list) {
+    const lines = wrapText(raw, maxCharsPerLine);
+    for (let i = 0; i < lines.length; i++) {
+      if (i === 0) {
+        page.drawText(bullet, { x: l.x, y, size, font, color: bulletColor });
+      }
+      page.drawText(lines[i], { x: l.x + bulletWidth, y, size, font, color, maxWidth: l.maxWidth - bulletWidth });
+      y -= lh;
+    }
+    y -= 4;
+  }
+}
+
+function hexToRgb(hex: string) {
+  const clean = hex.replace("#", "");
+  const n = parseInt(clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean, 16);
+  return rgb(((n >> 16) & 0xff) / 255, ((n >> 8) & 0xff) / 255, (n & 0xff) / 255);
 }
 
 function wrapText(text: string, maxCharsPerLine: number): string[] {

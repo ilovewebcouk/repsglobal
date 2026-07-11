@@ -919,6 +919,45 @@ export type Database = {
           },
         ]
       }
+      certificate_templates: {
+        Row: {
+          certificate_pdf_path: string
+          created_at: string
+          field_map: Json
+          id: string
+          is_default: boolean
+          name: string
+          notes: string | null
+          slug: string
+          unit_summary_pdf_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          certificate_pdf_path: string
+          created_at?: string
+          field_map?: Json
+          id?: string
+          is_default?: boolean
+          name: string
+          notes?: string | null
+          slug: string
+          unit_summary_pdf_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          certificate_pdf_path?: string
+          created_at?: string
+          field_map?: Json
+          id?: string
+          is_default?: boolean
+          name?: string
+          notes?: string | null
+          slug?: string
+          unit_summary_pdf_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       certificate_upload_sessions: {
         Row: {
           created_at: string
@@ -3901,6 +3940,7 @@ export type Database = {
           avatar_qa_source: string | null
           avatar_qa_status: string
           avatar_url: string | null
+          certificate_logo_url: string | null
           created_at: string
           full_name: string | null
           id: string
@@ -3911,6 +3951,7 @@ export type Database = {
           avatar_qa_source?: string | null
           avatar_qa_status?: string
           avatar_url?: string | null
+          certificate_logo_url?: string | null
           created_at?: string
           full_name?: string | null
           id: string
@@ -3921,6 +3962,7 @@ export type Database = {
           avatar_qa_source?: string | null
           avatar_qa_status?: string
           avatar_url?: string | null
+          certificate_logo_url?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
