@@ -133,6 +133,12 @@ function LoginPage() {
         password,
       });
       if (signInError) throw signInError;
+      // Defensive: Supabase can return { data: { user: null }, error: null } in
+      // edge cases (rate-limit soft-fails, network re-tries eating the error).
+      // Never fall through silently — surface a friendly error.
+      if (!data?.user) {
+        throw new Error("Sign-in didn't complete. Please try again.");
+      }
       if (data.user) {
         // F1 — post sign_in inline BEFORE redirect so the beacon can't race the
         // navigation. Best-effort; never blocks login. useActivityBeacon's
