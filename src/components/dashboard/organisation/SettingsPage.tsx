@@ -630,13 +630,13 @@ function SecurityTab({ data: _data }: { data: SettingsBundle }) {
       <PPanel>
         <PanelHeader title="Password" subtitle="Use 8+ characters. We check against known breached passwords." />
         <Row label="Current password">
-          <TextInput type="password" value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="••••••••" />
+          <PasswordInput value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
         </Row>
         <Row label="New password">
-          <TextInput type="password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="At least 8 characters" />
+          <PasswordInput value={next} onChange={(e) => setNext(e.target.value)} placeholder="At least 8 characters" autoComplete="new-password" />
         </Row>
         <Row label="Confirm new password">
-          <TextInput type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat new password" />
+          <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat new password" autoComplete="new-password" />
         </Row>
         <div className="flex items-center justify-end gap-3 px-5 py-4">
           <button
