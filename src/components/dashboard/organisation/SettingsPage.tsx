@@ -353,6 +353,42 @@ function AccountTab({ data }: { data: SettingsBundle }) {
         />
       </Row>
 
+      {isOrganisation ? (
+        <>
+          <Row
+            label="Organisation name"
+            hint="Your training provider or business name. Shown on your public profile."
+          >
+            <TextInput
+              value={legalEntityName}
+              onChange={(e) => setLegalEntityName(e.target.value)}
+              placeholder="Northline Fitness Academy"
+            />
+          </Row>
+          <Row
+            label="Contact first name"
+            hint="The person running this account. Used for identity verification. Never shown publicly."
+          >
+            <TextInput
+              value={contactFirstName}
+              onChange={(e) => setContactFirstName(e.target.value)}
+              placeholder="Jane"
+            />
+          </Row>
+          <Row
+            label="Contact last name"
+            hint="Must match the ID you use for the Stripe Identity check."
+          >
+            <TextInput
+              value={contactLastName}
+              onChange={(e) => setContactLastName(e.target.value)}
+              placeholder="Smith"
+            />
+          </Row>
+        </>
+      ) : null}
+
+
       <Row label="Phone" hint="Internal only. Never shown publicly.">
         <PhoneField
           value={phone}
