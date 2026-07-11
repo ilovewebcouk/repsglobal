@@ -206,6 +206,29 @@ function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
+function PasswordInput(props: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+  const [show, setShow] = React.useState(false);
+  return (
+    <div className="relative">
+      <input
+        {...props}
+        type={show ? "text" : "password"}
+        className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft pl-3 pr-10 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange disabled:cursor-not-allowed disabled:opacity-60"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        aria-label={show ? "Hide password" : "Show password"}
+        aria-pressed={show}
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-white/50 hover:text-white/90 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
+
 function Toggle({
   on,
   onChange,
