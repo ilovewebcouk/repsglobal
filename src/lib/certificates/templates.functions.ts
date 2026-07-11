@@ -18,7 +18,7 @@ export type CertificateTemplateDTO = {
   is_default: boolean;
   certificate_pdf_path: string;
   unit_summary_pdf_path: string | null;
-  field_map: unknown;
+  field_map: Record<string, unknown>;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -47,7 +47,7 @@ const uploadSchema = z.object({
   name: z.string().min(2).max(120),
   certificate_pdf_b64: z.string().min(100),
   unit_summary_pdf_b64: z.string().nullable().optional(),
-  field_map: z.unknown(),
+  field_map: z.record(z.string(), z.unknown()),
   notes: z.string().nullable().optional(),
   set_default: z.boolean().default(false),
 });
@@ -116,7 +116,7 @@ export const setDefaultCertificateTemplate = createServerFn({ method: "POST" })
 
 export const updateCertificateTemplateFieldMap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ id: z.string().uuid(), field_map: z.unknown() }).parse(i))
+  .inputValidator((i) => z.object({ id: z.string().uuid(), field_map: z.record(z.string(), z.unknown()) }).parse(i))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
