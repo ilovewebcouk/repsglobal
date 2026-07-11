@@ -20,9 +20,11 @@ import {
   ExternalLink,
   Loader2,
   Plus,
+  Search,
   Trash2,
   UserPlus,
   Users,
+  X,
 } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
