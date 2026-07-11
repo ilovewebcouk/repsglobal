@@ -84,12 +84,21 @@ export const Route = createFileRoute("/_authenticated/_professional")({
             throw redirect({ to: "/pricing" });
           }
 
+          if (
+            sub.payment_standing === "payment_disputed" ||
+            sub.payment_standing === "chargeback_lost"
+          ) {
+            throw redirect({ to: "/account/suspended" });
+          }
+
           return {
             user,
             role: "professional" as const,
             trainerTier: sub.tier as "verified" | "pro" | "studio" | "training_provider",
           };
         }
+
+        throw redirect({ to: "/pricing" });
       }
 
       const role = await getPrimaryRole(user.id);
