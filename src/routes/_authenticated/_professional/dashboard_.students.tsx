@@ -445,6 +445,7 @@ function RegistrationsTab({
           onClose={() => setOpen(false)}
           learners={learners}
           courses={courses}
+          registrations={regs}
         />
       ) : null}
     </PPanel>
