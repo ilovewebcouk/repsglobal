@@ -280,6 +280,16 @@ function AccountTab({ data }: { data: SettingsBundle }) {
   const [phone, setPhone] = React.useState(data.account.contact_phone ?? "");
   const [timezone, setTimezone] = React.useState(data.account.timezone);
   const [locale, setLocale] = React.useState(data.account.locale);
+  const isOrganisation = data.account.account_type === "organisation";
+  const [legalEntityName, setLegalEntityName] = React.useState(
+    data.account.legal_entity_name ?? "",
+  );
+  const [contactFirstName, setContactFirstName] = React.useState(
+    data.account.contact_first_name ?? "",
+  );
+  const [contactLastName, setContactLastName] = React.useState(
+    data.account.contact_last_name ?? "",
+  );
 
   const [newEmail, setNewEmail] = React.useState("");
   const [emailLoading, setEmailLoading] = React.useState(false);
@@ -292,6 +302,13 @@ function AccountTab({ data }: { data: SettingsBundle }) {
           contact_phone: phone || null,
           timezone,
           locale,
+          ...(isOrganisation
+            ? {
+                legal_entity_name: legalEntityName.trim() || null,
+                contact_first_name: contactFirstName.trim() || null,
+                contact_last_name: contactLastName.trim() || null,
+              }
+            : {}),
         },
       }),
     onSuccess: () => {
@@ -335,6 +352,42 @@ function AccountTab({ data }: { data: SettingsBundle }) {
           placeholder="Jane Smith"
         />
       </Row>
+
+      {isOrganisation ? (
+        <>
+          <Row
+            label="Organisation name"
+            hint="Your training provider or business name. Shown on your public profile."
+          >
+            <TextInput
+              value={legalEntityName}
+              onChange={(e) => setLegalEntityName(e.target.value)}
+              placeholder="Northline Fitness Academy"
+            />
+          </Row>
+          <Row
+            label="Contact first name"
+            hint="The person running this account. Used for identity verification. Never shown publicly."
+          >
+            <TextInput
+              value={contactFirstName}
+              onChange={(e) => setContactFirstName(e.target.value)}
+              placeholder="Jane"
+            />
+          </Row>
+          <Row
+            label="Contact last name"
+            hint="Must match the ID you use for the Stripe Identity check."
+          >
+            <TextInput
+              value={contactLastName}
+              onChange={(e) => setContactLastName(e.target.value)}
+              placeholder="Smith"
+            />
+          </Row>
+        </>
+      ) : null}
+
 
       <Row label="Phone" hint="Internal only. Never shown publicly.">
         <PhoneField

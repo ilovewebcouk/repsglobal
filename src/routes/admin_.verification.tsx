@@ -616,6 +616,25 @@ function AdminVerificationPage() {
                       <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
                       <div><span className="text-white/45">Doc</span> · {id.doc_type || "—"}{id.doc_country ? ` (${id.doc_country})` : ""}</div>
                       <div><span className="text-white/45">Expiry</span> · {id.doc_expiry || "—"}</div>
+                      {(() => {
+                        const proAny = pro as {
+                          account_type?: string | null;
+                          legal_entity_name?: string | null;
+                          contact_first_name?: string | null;
+                          contact_last_name?: string | null;
+                        } | null;
+                        if (proAny?.account_type !== "organisation") return null;
+                        const contact = [proAny.contact_first_name, proAny.contact_last_name]
+                          .filter(Boolean)
+                          .join(" ")
+                          .trim();
+                        return (
+                          <>
+                            <div><span className="text-white/45">Organisation</span> · {proAny.legal_entity_name || "—"}</div>
+                            <div><span className="text-white/45">Contact</span> · {contact || "—"}</div>
+                          </>
+                        );
+                      })()}
                       {id.vendor === "stripe" && id.stripe_reason && (
                         <div className="sm:col-span-2 mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
                           {id.stripe_reason}
