@@ -1052,14 +1052,10 @@ export const adminListPrintQueue = createServerFn({ method: "GET" })
       )
       .in("batch_id", batchIds);
 
-    const providerIds = Array.from(new Set((batches ?? []).map((b: any) => b.provider_id)));
-    const { data: profs } = await supabase
-      .from("profiles")
-      .select("id, full_name")
-      .in("id", providerIds);
-    const nameById = new Map<string, string | null>(
-      (profs ?? []).map((p: any) => [p.id, p.full_name ?? null]),
+    const nameById = await resolveProviderNames(
+      (batches ?? []).map((b: any) => b.provider_id),
     );
+
 
     return (batches ?? []).map((b: any) => ({
       batch_id: b.id,
