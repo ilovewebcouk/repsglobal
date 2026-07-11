@@ -280,6 +280,16 @@ function AccountTab({ data }: { data: SettingsBundle }) {
   const [phone, setPhone] = React.useState(data.account.contact_phone ?? "");
   const [timezone, setTimezone] = React.useState(data.account.timezone);
   const [locale, setLocale] = React.useState(data.account.locale);
+  const isOrganisation = data.account.account_type === "organisation";
+  const [legalEntityName, setLegalEntityName] = React.useState(
+    data.account.legal_entity_name ?? "",
+  );
+  const [contactFirstName, setContactFirstName] = React.useState(
+    data.account.contact_first_name ?? "",
+  );
+  const [contactLastName, setContactLastName] = React.useState(
+    data.account.contact_last_name ?? "",
+  );
 
   const [newEmail, setNewEmail] = React.useState("");
   const [emailLoading, setEmailLoading] = React.useState(false);
@@ -292,6 +302,13 @@ function AccountTab({ data }: { data: SettingsBundle }) {
           contact_phone: phone || null,
           timezone,
           locale,
+          ...(isOrganisation
+            ? {
+                legal_entity_name: legalEntityName.trim() || null,
+                contact_first_name: contactFirstName.trim() || null,
+                contact_last_name: contactLastName.trim() || null,
+              }
+            : {}),
         },
       }),
     onSuccess: () => {
