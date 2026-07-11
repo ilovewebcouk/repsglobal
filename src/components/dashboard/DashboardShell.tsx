@@ -90,7 +90,7 @@ function TopBar({
           aria-label="REPS dashboard home"
           className="shrink-0 sm:hidden"
         >
-          <RepsWordmark className="h-3 text-white" />
+          <RepsWordmark className="h-5 text-white" />
         </Link>
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-display text-[17px] font-bold leading-tight text-white sm:text-[20px] md:text-[22px]">
