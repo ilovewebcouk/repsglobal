@@ -47,6 +47,7 @@ import {
 import { RESOURCE_ARTICLES, getFeaturedArticles, getLatestArticles, type ResourceCategory } from "@/lib/resources";
 import { cn } from "@/lib/utils";
 import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { RepsLockup } from "@/components/brand/RepsLockup";
 import { SiteBanner } from "@/components/SiteBanner";
 import { useSessionUser, type SessionUser } from "@/hooks/use-session-user";
 import { UserAccountMenu } from "@/components/account/UserAccountMenu";
@@ -188,7 +189,7 @@ export function PublicHeader({
           <div className="flex h-[72px] items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-3" aria-label="REPS home">
-                <RepsWordmark className="h-[22px] text-white" />
+                <RepsLockup className="h-[44px] sm:h-[48px]" />
               </Link>
 
             </div>
@@ -831,7 +832,7 @@ function MobileDrawer({
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-5 py-4 shadow-[0_6px_16px_-12px_rgba(0,0,0,0.6)]">
         <Link to="/" onClick={onNavigate} className="flex items-center gap-2" aria-label="REPS home">
-          <RepsWordmark className="h-[19px] text-white" />
+          <RepsLockup className="h-[38px]" />
         </Link>
         <SheetClose asChild>
           <button

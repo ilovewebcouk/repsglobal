@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { RepsWordmark } from "@/components/brand/RepsWordmark";
+import { RepsLockup } from "@/components/brand/RepsLockup";
 import {
   Tooltip,
   TooltipContent,
@@ -85,13 +85,8 @@ export function PublicFooter() {
       <div className="mx-auto max-w-[1320px] px-6 py-16 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
-            <div className="flex items-center gap-3">
-              <RepsWordmark className="h-[20px] text-white" />
-              <span className="border-l border-white/15 pl-3 text-[11px] leading-tight text-white/60">
-                The Register of
-                <br />
-                Exercise Professionals
-              </span>
+            <div className="flex items-center">
+              <RepsLockup className="h-[56px]" />
             </div>
             <p className="mt-5 max-w-[320px] text-[14px] leading-relaxed text-reps-muted">
               The global professional standard for fitness. Verified credentials, public reviews
