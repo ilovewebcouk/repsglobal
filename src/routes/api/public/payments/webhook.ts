@@ -337,6 +337,8 @@ async function handleIdentityEvent(
       patch.admin_note = "Auto-flagged: name mismatch with profile";
     }
   }
+
+  const finalStatus = patch.status as string;
   if (finalStatus === "approved" || finalStatus === "rejected" || finalStatus === "needs_more_info") {
     patch.reviewed_at = new Date().toISOString();
   }
