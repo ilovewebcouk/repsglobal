@@ -534,7 +534,7 @@ function RegistrationsTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-reps-border">
-              {regs.map((r) => (
+              {filteredRegs.map((r) => (
                 <tr key={r.id} className="text-white/85">
                   <td className="p-3">
                     {r.status === "enrolled" ? (
