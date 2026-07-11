@@ -87,6 +87,7 @@ function StudentsPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const qc = useQueryClient();
+  const tier = useTrainerTier();
   const [tab, setTab] = React.useState<Tab>(search.tab ?? "learners");
 
   const learnersFn = useServerFn(listMyLearners);
