@@ -18,6 +18,26 @@ export async function getPrimaryRole(userId: string): Promise<AppRole | null> {
   return null;
 }
 
+export async function getAccountLandingFallback(userId: string): Promise<string> {
+  const [{ data: professional }, { data: subscription }] = await Promise.all([
+    supabase
+      .from("professionals")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase
+      .from("subscriptions")
+      .select("tier,status")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  if (professional || subscription?.tier === "training_provider") return "/dashboard";
+  return "/portal";
+}
+
 export function landingPathForRole(role: AppRole | null): string {
   switch (role) {
     case "admin":
@@ -33,5 +53,6 @@ export function landingPathForRole(role: AppRole | null): string {
 
 export async function redirectAfterAuth(userId: string): Promise<string> {
   const role = await getPrimaryRole(userId);
+  if (!role) return getAccountLandingFallback(userId);
   return landingPathForRole(role);
 }

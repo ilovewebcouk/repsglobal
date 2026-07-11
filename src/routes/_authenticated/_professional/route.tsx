@@ -4,7 +4,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { userHasRole, getPrimaryRole, landingPathForRole } from "@/lib/auth-redirect";
+import {
+  getAccountLandingFallback,
+  getPrimaryRole,
+  landingPathForRole,
+  userHasRole,
+} from "@/lib/auth-redirect";
 import { getImpersonationStatus } from "@/lib/admin/impersonation.functions";
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { IdentityGateWall } from "@/components/dashboard/verification/IdentityGateWall";
@@ -60,6 +65,33 @@ export const Route = createFileRoute("/_authenticated/_professional")({
     }
 
     if (!isProfessional) {
+      const fallback = await getAccountLandingFallback(user.id);
+      if (fallback === "/dashboard") {
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("tier,status,payment_standing")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (sub) {
+          const isPaid =
+            PAID_TIERS.includes(sub.tier as string) &&
+            LIVE_STATUSES.includes(sub.status as string);
+
+          if (!isPaid) {
+            throw redirect({ to: "/pricing" });
+          }
+
+          return {
+            user,
+            role: "professional" as const,
+            trainerTier: sub.tier as "verified" | "pro" | "studio" | "training_provider",
+          };
+        }
+      }
+
       const role = await getPrimaryRole(user.id);
       throw redirect({ to: landingPathForRole(role) });
     }
