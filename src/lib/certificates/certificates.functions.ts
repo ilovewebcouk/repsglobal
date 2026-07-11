@@ -1416,14 +1416,10 @@ export const adminSearchRegistrations = createServerFn({ method: "GET" })
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
 
-    const providerIds = Array.from(new Set((rows ?? []).map((r: any) => r.provider_id)));
-    const { data: profs } = await supabase
-      .from("profiles")
-      .select("id, full_name")
-      .in("id", providerIds);
-    const nameById = new Map<string, string | null>(
-      (profs ?? []).map((p: any) => [p.id, p.full_name ?? null]),
+    const nameById = await resolveProviderNames(
+      (rows ?? []).map((r: any) => r.provider_id),
     );
+
 
     return (rows ?? []).map((r: any) => ({
       id: r.id,
