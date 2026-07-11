@@ -898,12 +898,58 @@ function fmtDateTimeGB(iso: string | null | undefined) {
   });
 }
 
-function PasswordResetPane({ data, loading }: { data: PasswordResetInfo | undefined; loading: boolean }) {
+function PasswordResetPane({ data, loading, userId }: { data: PasswordResetInfo | undefined; loading: boolean; userId: string }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState("");
+  const [show, setShow] = useState(false);
+  const [pending, setPending] = useState(false);
+  const setPassword = useServerFn(adminSetMemberPassword);
+
+  const generate = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let out = "";
+    const bytes = new Uint32Array(16);
+    crypto.getRandomValues(bytes);
+    for (let i = 0; i < 16; i++) out += chars[bytes[i] % chars.length];
+    setPw(out);
+    setShow(true);
+  };
+
+  const submit = async () => {
+    if (pw.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setPending(true);
+    try {
+      await setPassword({ data: { user_id: userId, password: pw } });
+      await navigator.clipboard.writeText(pw).catch(() => {});
+      toast.success("Password updated — copied to clipboard");
+      setOpen(false);
+      setPw("");
+      setShow(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to set password");
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
     <section className={PANEL}>
       <PanelHeader
         title="Password reset"
         description="Whether the member has requested a reset and whether the email actually left the platform."
+        actions={
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 rounded-[10px] border-reps-border bg-reps-panel/60 text-[12.5px] text-white hover:bg-reps-panel"
+            onClick={() => setOpen(true)}
+          >
+            Set new password
+          </Button>
+        }
       />
       <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
         <div className="grid gap-2.5 md:grid-cols-2">
