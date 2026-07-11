@@ -9,6 +9,7 @@ import {
   Bell,
   CreditCard,
   Download,
+  Eye,
   EyeOff,
   Loader2,
   Lock,
@@ -204,6 +205,29 @@ function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
     />
   );
 }
+
+function PasswordInput(props: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+  const [show, setShow] = React.useState(false);
+  return (
+    <div className="relative">
+      <input
+        {...props}
+        type={show ? "text" : "password"}
+        className="h-10 w-full rounded-[12px] border border-reps-border bg-reps-panel-soft pl-3 pr-10 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange disabled:cursor-not-allowed disabled:opacity-60"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        aria-label={show ? "Hide password" : "Show password"}
+        aria-pressed={show}
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-white/50 hover:text-white/90 focus:outline-none focus:ring-1 focus:ring-reps-orange"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 
 function Toggle({
   on,
@@ -606,13 +630,13 @@ function SecurityTab({ data: _data }: { data: SettingsBundle }) {
       <PPanel>
         <PanelHeader title="Password" subtitle="Use 8+ characters. We check against known breached passwords." />
         <Row label="Current password">
-          <TextInput type="password" value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="••••••••" />
+          <PasswordInput value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
         </Row>
         <Row label="New password">
-          <TextInput type="password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="At least 8 characters" />
+          <PasswordInput value={next} onChange={(e) => setNext(e.target.value)} placeholder="At least 8 characters" autoComplete="new-password" />
         </Row>
         <Row label="Confirm new password">
-          <TextInput type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat new password" />
+          <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat new password" autoComplete="new-password" />
         </Row>
         <div className="flex items-center justify-end gap-3 px-5 py-4">
           <button
