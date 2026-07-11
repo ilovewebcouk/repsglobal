@@ -45,7 +45,7 @@ import { getMemberSessions, type MemberSessionRow } from "@/lib/admin/member-ses
 import { DntGpcBadge } from "@/components/admin/DntGpcBadge";
 
 import { getMemberTimeline } from "@/lib/ops/timeline.functions";
-import { getMemberPasswordResetInfo, type PasswordResetInfo } from "@/lib/admin/password-reset.functions";
+import { getMemberPasswordResetInfo, adminSetMemberPassword, type PasswordResetInfo } from "@/lib/admin/password-reset.functions";
 import {
   closeMembership,
   type CancelReason,
@@ -170,7 +170,7 @@ function MemberPage() {
 
           <TabsContent value="overview" className="flex flex-col gap-4">
             {snap.data ? <OverviewPane snapshot={snap.data} /> : <PaneSkeleton />}
-            <PasswordResetPane data={resetInfo.data} loading={resetInfo.isLoading} />
+            <PasswordResetPane data={resetInfo.data} loading={resetInfo.isLoading} userId={userId} />
           </TabsContent>
 
           <TabsContent value="billing" className="flex flex-col gap-4">
@@ -460,11 +460,14 @@ function ProviderVisibilityAction({ userId, suspended }: { userId: string; suspe
 
 /* ───────────────────────── Panes ───────────────────────── */
 
-function PanelHeader({ title, description }: { title: string; description?: string }) {
+function PanelHeader({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) {
   return (
-    <div className={PANEL_HEADER}>
-      <h3 className={PANEL_TITLE}>{title}</h3>
-      {description && <p className={PANEL_DESC}>{description}</p>}
+    <div className={cn(PANEL_HEADER, actions && "flex items-start justify-between gap-3")}>
+      <div>
+        <h3 className={PANEL_TITLE}>{title}</h3>
+        {description && <p className={PANEL_DESC}>{description}</p>}
+      </div>
+      {actions}
     </div>
   );
 }
@@ -898,12 +901,58 @@ function fmtDateTimeGB(iso: string | null | undefined) {
   });
 }
 
-function PasswordResetPane({ data, loading }: { data: PasswordResetInfo | undefined; loading: boolean }) {
+function PasswordResetPane({ data, loading, userId }: { data: PasswordResetInfo | undefined; loading: boolean; userId: string }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState("");
+  const [show, setShow] = useState(false);
+  const [pending, setPending] = useState(false);
+  const setPassword = useServerFn(adminSetMemberPassword);
+
+  const generate = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let out = "";
+    const bytes = new Uint32Array(16);
+    crypto.getRandomValues(bytes);
+    for (let i = 0; i < 16; i++) out += chars[bytes[i] % chars.length];
+    setPw(out);
+    setShow(true);
+  };
+
+  const submit = async () => {
+    if (pw.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setPending(true);
+    try {
+      await setPassword({ data: { user_id: userId, password: pw } });
+      await navigator.clipboard.writeText(pw).catch(() => {});
+      toast.success("Password updated — copied to clipboard");
+      setOpen(false);
+      setPw("");
+      setShow(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to set password");
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
     <section className={PANEL}>
       <PanelHeader
         title="Password reset"
         description="Whether the member has requested a reset and whether the email actually left the platform."
+        actions={
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 rounded-[10px] border-reps-border bg-reps-panel/60 text-[12.5px] text-white hover:bg-reps-panel"
+            onClick={() => setOpen(true)}
+          >
+            Set new password
+          </Button>
+        }
       />
       <div className={cn(PANEL_BODY, "flex flex-col gap-4")}>
         <div className="grid gap-2.5 md:grid-cols-2">
@@ -962,6 +1011,53 @@ function PasswordResetPane({ data, loading }: { data: PasswordResetInfo | undefi
           </ol>
         )}
       </div>
+
+      <Dialog open={open} onOpenChange={(o) => !pending && setOpen(o)}>
+        <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-[440px]">
+          <DialogHeader>
+            <DialogTitle>Set new password</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Immediately replaces this member's password. They will not be notified. Use only when the member has requested this or you are logging in as them for support.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Label className="text-[12.5px] text-white/70">New password</Label>
+            <div className="relative">
+              <Input
+                type={show ? "text" : "password"}
+                value={pw}
+                onChange={(e) => setPw(e.target.value)}
+                placeholder="min. 8 characters"
+                className="pr-10"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setShow((s) => !s)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                aria-label={show ? "Hide password" : "Show password"}
+              >
+                {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={generate}
+              className="h-8 self-start rounded-[10px] border-reps-border bg-reps-panel/60 text-[12.5px] text-white hover:bg-reps-panel"
+            >
+              Generate strong password
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button>
+            <Button onClick={submit} disabled={pending || pw.length < 8}>
+              {pending ? "Saving…" : "Set password"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

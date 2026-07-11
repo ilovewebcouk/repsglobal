@@ -49,3 +49,39 @@ export const getMemberPasswordResetInfo = createServerFn({ method: "GET" })
       attempts: (logRes.data as PasswordResetAttempt[] | null) ?? [],
     };
   });
+
+/* ───────────────────────── Set password (admin) ───────────────────────── */
+
+const SetPasswordInput = z.object({
+  user_id: z.string().uuid(),
+  password: z.string().min(8).max(128),
+});
+
+export const adminSetMemberPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => SetPasswordInput.parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+      password: data.password,
+    });
+    if (error) throw new Error(error.message);
+
+    await supabaseAdmin.from("admin_audit_log").insert({
+      actor_id: userId,
+      action: "password_set",
+      target_table: "auth.users",
+      target_id: data.user_id,
+      reason: "Admin set new password directly",
+    });
+
+    return { ok: true };
+  });
