@@ -26,6 +26,7 @@ import {
 } from "@/lib/website/website.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
+import { getPublicProviderIssuedCertificateCount } from "@/lib/providers/public-stats.functions";
 import repsLogo from "@/assets/brand/logo-dark.svg";
 import { AWARDING_BODIES, awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
 import { PublicHeader } from "@/components/public/PublicHeader";
