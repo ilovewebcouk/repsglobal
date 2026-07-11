@@ -460,11 +460,14 @@ function ProviderVisibilityAction({ userId, suspended }: { userId: string; suspe
 
 /* ───────────────────────── Panes ───────────────────────── */
 
-function PanelHeader({ title, description }: { title: string; description?: string }) {
+function PanelHeader({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) {
   return (
-    <div className={PANEL_HEADER}>
-      <h3 className={PANEL_TITLE}>{title}</h3>
-      {description && <p className={PANEL_DESC}>{description}</p>}
+    <div className={cn(PANEL_HEADER, actions && "flex items-start justify-between gap-3")}>
+      <div>
+        <h3 className={PANEL_TITLE}>{title}</h3>
+        {description && <p className={PANEL_DESC}>{description}</p>}
+      </div>
+      {actions}
     </div>
   );
 }
