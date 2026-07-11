@@ -3697,6 +3697,8 @@ export type Database = {
           company_number: string | null
           company_registration: string | null
           contact_email: string | null
+          contact_first_name: string | null
+          contact_last_name: string | null
           contact_phone: string | null
           country: string | null
           cover_url: string | null
@@ -3763,6 +3765,8 @@ export type Database = {
           company_number?: string | null
           company_registration?: string | null
           contact_email?: string | null
+          contact_first_name?: string | null
+          contact_last_name?: string | null
           contact_phone?: string | null
           country?: string | null
           cover_url?: string | null
@@ -3829,6 +3833,8 @@ export type Database = {
           company_number?: string | null
           company_registration?: string | null
           contact_email?: string | null
+          contact_first_name?: string | null
+          contact_last_name?: string | null
           contact_phone?: string | null
           country?: string | null
           cover_url?: string | null
