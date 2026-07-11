@@ -25,7 +25,7 @@ export type CertificatePdfInput = {
   unitSummary: string[]; // learning outcomes / modules
 };
 
-export async function generateCertificatePdf(input: CertificatePdfInput): Promise<Uint8Array> {
+export async function generateCertificatePdfLegacy(input: CertificatePdfInput): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   pdf.setTitle(`REPS Certificate ${input.certificateNumber}`);
   pdf.setAuthor("REPS");
