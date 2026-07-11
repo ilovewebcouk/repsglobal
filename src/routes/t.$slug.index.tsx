@@ -477,7 +477,7 @@ function ProviderProfilePage() {
                     label="Years established"
                     value={yearsEstablished ? `${yearsEstablished}+` : "New"}
                   />
-                  <StatTile label="Learners trained" value="—" />
+                  <StatTile label="Learners trained" value={learnersTrained} />
                   <StatTile label="Verified since" value={verifiedSince} accent />
                 </div>
               </article>
