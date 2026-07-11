@@ -786,7 +786,7 @@ export const adminListRegulatedQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("provider_regulated_permissions")
       .select(
-        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, reps_qualification_number, submission_group_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, withdrawn_at, withdrawn_reason, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        "id, provider_id, ofqual_number, ofqual_snapshot, ofqual_found, reps_qualification_number, submission_group_id, qualification_id, evidence_type, evidence_doc_paths, awarding_body_reference, ai_extraction, ai_verdict, ai_red_flags, ai_cross_check, status, admin_note, evidence_issued_at, evidence_expires_at, created_at, reviewed_at, withdrawn_at, withdrawn_reason, qualification:qualification_id (id, title, level, awarding_body_slug, ofqual_ref), provider:provider_id (id, slug, contact_email)",
       )
       .eq("status", data.status)
       .order("created_at", { ascending: false });
@@ -815,7 +815,7 @@ export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("reps_courses")
       .select(
-        REPS_COURSE_SELECT + ", ai_draft, provider:provider_id (id, slug, legal_entity_name, identity_verified_name, contact_email)",
+        REPS_COURSE_SELECT + ", ai_draft, provider:provider_id (id, slug, contact_email)",
       )
       .in("status", statuses)
       .order("created_at", { ascending: false });
@@ -823,10 +823,20 @@ export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
     return (await hydrateProviderNames((rows ?? []) as never, supabaseAdmin)) as unknown as typeof rows;
   });
 
+/**
+ * Hydrate provider display names from the canonical source (`profiles.full_name`).
+ *
+ * SINGLE SOURCE OF TRUTH: `profiles.full_name` — never `legal_entity_name`,
+ * never `identity_verified_name` — see mem://index.md.
+ *
+ * The Postgres FK-embed select returns `professionals` columns nested under
+ * `provider`; we overwrite that shape with a normalised `{ id, slug, full_name,
+ * contact_email }` object so UI code has one canonical field to read.
+ */
 async function hydrateProviderNames<
   T extends {
     provider?:
-      | { id?: string | null; legal_entity_name?: string | null; identity_verified_name?: string | null }
+      | { id?: string | null; slug?: string | null; contact_email?: string | null }
       | null;
   },
 >(rows: T[], supabaseAdmin: any): Promise<T[]> {
@@ -838,15 +848,22 @@ async function hydrateProviderNames<
     .from("profiles")
     .select("id, full_name")
     .in("id", ids);
-  const nameById = new Map<string, string>();
+  const nameById = new Map<string, string | null>();
   for (const p of (profs as Array<{ id: string; full_name: string | null }> | null) ?? []) {
     const n = p.full_name?.trim();
-    if (n) nameById.set(p.id, n);
+    nameById.set(p.id, n && n.length ? n : null);
   }
   return rows.map((r) => {
     if (!r.provider?.id) return r;
-    const n = nameById.get(r.provider.id);
-    return { ...r, provider: { ...r.provider, legal_entity_name: n ?? null, identity_verified_name: null } };
+    return {
+      ...r,
+      provider: {
+        id: r.provider.id,
+        slug: r.provider.slug ?? null,
+        contact_email: r.provider.contact_email ?? null,
+        full_name: nameById.get(r.provider.id) ?? null,
+      },
+    } as T;
   });
 }
 

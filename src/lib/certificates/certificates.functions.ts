@@ -895,10 +895,14 @@ async function assertAdmin(supabase: any, userId: string) {
 
 /**
  * Resolve display names for a set of provider user-ids.
- * Prefers the professional's legal/business entity name (providers are
- * organisations), then falls back to the profile's full name. Uses the
- * service-role client so RLS on `profiles`/`professionals` can't hide
- * rows from admin views.
+ *
+ * SINGLE SOURCE OF TRUTH: `profiles.full_name` is the canonical provider
+ * display name across every REPs surface (admin, dashboard, PDFs, emails,
+ * public pages). `professionals.legal_entity_name` is compliance-only and
+ * MUST NEVER be surfaced as a display name — see mem://index.md.
+ *
+ * Uses the service-role client so RLS on `profiles` can't hide rows from
+ * admin views.
  */
 async function resolveProviderNames(
   providerIds: string[],
@@ -907,22 +911,16 @@ async function resolveProviderNames(
   const nameById = new Map<string, string | null>();
   if (ids.length === 0) return nameById;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const [{ data: pros }, { data: profs }] = await Promise.all([
-    supabaseAdmin
-      .from("professionals")
-      .select("id, legal_entity_name, account_type")
-      .in("id", ids),
-    supabaseAdmin.from("profiles").select("id, full_name").in("id", ids),
-  ]);
-  const proById = new Map<string, any>((pros ?? []).map((p: any) => [p.id, p]));
-  const profById = new Map<string, any>((profs ?? []).map((p: any) => [p.id, p]));
+  const { data: profs } = await supabaseAdmin
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", ids);
+  const profById = new Map<string, { full_name: string | null }>(
+    (profs ?? []).map((p: any) => [p.id, p]),
+  );
   for (const id of ids) {
-    const pro = proById.get(id);
-    const prof = profById.get(id);
-    const name =
-      (pro?.legal_entity_name && String(pro.legal_entity_name).trim()) ||
-      (prof?.full_name && String(prof.full_name).trim()) ||
-      null;
+    const full = profById.get(id)?.full_name;
+    const name = full && String(full).trim() ? String(full).trim() : null;
     nameById.set(id, name);
   }
   return nameById;

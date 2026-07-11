@@ -94,7 +94,7 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
   if (error) throw new Error(error.message);
 
   const proIds = Array.from(new Set((data ?? []).map((r) => r.professional_id)));
-  let profByPro: Record<string, { full_name: string | null; trading_name: string | null; city: string | null }> = {};
+  let profByPro: Record<string, { full_name: string | null; city: string | null }> = {};
   if (proIds.length) {
     const { data: pros } = await supabaseAdmin
       .from("professionals")
@@ -108,7 +108,7 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
     profByPro = Object.fromEntries(
       (pros ?? []).map((p) => [
         p.id,
-        { full_name: profileMap.get(p.id)?.full_name ?? null, trading_name: profileMap.get(p.id)?.full_name ?? null, city: p.city,  },
+        { full_name: profileMap.get(p.id)?.full_name ?? null, city: p.city },
       ]),
     );
   }

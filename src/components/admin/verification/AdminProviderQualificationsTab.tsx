@@ -177,8 +177,7 @@ type RegRow = {
   provider: {
     id: string;
     slug: string | null;
-    legal_entity_name: string | null;
-    identity_verified_name: string | null;
+    full_name: string | null;
     contact_email: string | null;
   } | null;
 };
@@ -309,8 +308,7 @@ function RegulatedListItem({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const providerName =
-    group.provider?.legal_entity_name || group.provider?.identity_verified_name || "Unnamed provider";
+  const providerName = group.provider?.full_name || "Unnamed provider";
   const first = group.rows[0];
   const firstTitle = first.ofqual_snapshot?.title ?? first.qualification?.title ?? "Awaiting Ofqual match";
   const bodyLabel =
@@ -367,8 +365,7 @@ function RegulatedDetail({
   }, [group.key]);
   const row = group.rows[Math.min(activeRowIdx, group.rows.length - 1)];
 
-  const providerName =
-    group.provider?.legal_entity_name || group.provider?.identity_verified_name || "Unnamed provider";
+  const providerName = group.provider?.full_name || "Unnamed provider";
 
   const decide = useServerFn(adminDecideRegulated);
   const [note, setNote] = React.useState("");
@@ -758,8 +755,7 @@ type CourseRow = {
   provider: {
     id: string;
     slug: string | null;
-    legal_entity_name: string | null;
-    identity_verified_name: string | null;
+    full_name: string | null;
     contact_email: string | null;
   } | null;
 };
@@ -853,8 +849,7 @@ function CourseListItem({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const providerName =
-    row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Unnamed provider";
+  const providerName = row.provider?.full_name || "Unnamed provider";
   const title = row.official_title || row.proposed_title;
   return (
     <li>
@@ -969,8 +964,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
     onError: (e) => toast.error(e instanceof Error ? e.message : "Redraft failed"),
   });
 
-  const providerName =
-    row.provider?.legal_entity_name || row.provider?.identity_verified_name || "Unnamed provider";
+  const providerName = row.provider?.full_name || "Unnamed provider";
 
   const deliveryLabel = (v: string | null): string => {
     if (!v) return "—";

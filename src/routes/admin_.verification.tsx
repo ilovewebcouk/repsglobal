@@ -388,7 +388,7 @@ function AdminVerificationPage() {
               const sel = r.id === selectedId;
               const isPending = r.status === "submitted" || r.status === "changes_requested";
               const sla = isPending ? slaRemaining(r.created_at) : null;
-              const name = r.professional?.full_name || r.professional?.trading_name || "Unnamed";
+              const name = r.professional?.full_name || "Unnamed";
               const claimed = (r as { claimed_by?: string | null }).claimed_by;
               const reviewedAt = (r as { reviewed_at?: string | null }).reviewed_at;
               return (
