@@ -272,7 +272,11 @@ async function handleIdentityEvent(
       });
       const out = full.verified_outputs;
       if (out) {
-        const name = [out.first_name, out.last_name].filter(Boolean).join("").trim();
+        const name = [out.first_name, out.last_name]
+          .filter(Boolean)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
         if (name) {
           patch.name_on_doc = name;
           docName = name;
