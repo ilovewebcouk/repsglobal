@@ -46,7 +46,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RESOURCE_ARTICLES, getFeaturedArticles, getLatestArticles, type ResourceCategory } from "@/lib/resources";
 import { cn } from "@/lib/utils";
-import { RepsWordmark } from "@/components/brand/RepsWordmark";
 import { RepsLockup } from "@/components/brand/RepsLockup";
 import { SiteBanner } from "@/components/SiteBanner";
 import { useSessionUser, type SessionUser } from "@/hooks/use-session-user";
