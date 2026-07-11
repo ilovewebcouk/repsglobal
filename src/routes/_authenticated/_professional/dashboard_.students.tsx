@@ -125,6 +125,7 @@ function StudentsPage() {
   return (
     <DashboardShell
       role="trainer"
+      tier={tier}
       active="Students & Certificates"
       title="Students & Certificates"
       subtitle="Register learners on your approved courses, mark them passed, and issue REPS-verified certificates."
