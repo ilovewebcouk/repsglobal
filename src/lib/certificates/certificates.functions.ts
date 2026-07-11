@@ -482,6 +482,20 @@ export const createRegistration = createServerFn({ method: "POST" })
       repsCourseNumber = ((course as any).reps_qual_number as string | null) ?? null;
     }
 
+    // Prevent duplicate active registrations for the same (learner, course).
+    const { data: existing } = await supabase
+      .from("certificate_registrations")
+      .select("id, status")
+      .eq("provider_id", userId)
+      .eq("learner_id", data.learner_id)
+      .eq("course_id", data.course_id)
+      .not("status", "in", "(canceled,revoked)")
+      .limit(1);
+    if (existing && existing.length > 0) {
+      throw new Error("This learner is already registered on this course.");
+    }
+
+
     const { data: row, error } = await supabase
       .from("certificate_registrations")
       .insert({

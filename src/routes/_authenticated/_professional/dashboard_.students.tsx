@@ -445,6 +445,7 @@ function RegistrationsTab({
           onClose={() => setOpen(false)}
           learners={learners}
           courses={courses}
+          registrations={regs}
         />
       ) : null}
     </PPanel>
@@ -456,16 +457,44 @@ function RegisterOnCourseDialog({
   onClose,
   learners,
   courses,
+  registrations,
 }: {
   open: boolean;
   onClose: () => void;
   learners: LearnerDTO[];
   courses: ProviderCourseOptionDTO[];
+  registrations: RegistrationDTO[];
 }) {
   const qc = useQueryClient();
   const create = useServerFn(createRegistration);
   const [learnerId, setLearnerId] = React.useState("");
   const [coursePick, setCoursePick] = React.useState("");
+
+  // Courses the selected learner is already actively registered on (any state
+  // except canceled/revoked). Prevents duplicate enrolments.
+  const takenCourseIds = React.useMemo(() => {
+    if (!learnerId) return new Set<string>();
+    return new Set(
+      registrations
+        .filter(
+          (r) =>
+            r.learner_id === learnerId &&
+            r.status !== "canceled" &&
+            r.status !== "revoked",
+        )
+        .map((r) => r.course_id),
+    );
+  }, [registrations, learnerId]);
+
+  const availableCourses = React.useMemo(
+    () => courses.filter((c) => !takenCourseIds.has(c.id)),
+    [courses, takenCourseIds],
+  );
+
+  // If learner changes and current pick is now taken, clear it.
+  React.useEffect(() => {
+    if (coursePick && takenCourseIds.has(coursePick)) setCoursePick("");
+  }, [takenCourseIds, coursePick]);
 
   const mut = useMutation({
     mutationFn: () => {
@@ -506,10 +535,20 @@ function RegisterOnCourseDialog({
           </div>
           <div>
             <label className="text-[12px] text-white/70">Course</label>
-            <Select value={coursePick} onValueChange={setCoursePick}>
-              <SelectTrigger><SelectValue placeholder="Choose an approved course" /></SelectTrigger>
+            <Select value={coursePick} onValueChange={setCoursePick} disabled={!learnerId}>
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    !learnerId
+                      ? "Pick a learner first"
+                      : availableCourses.length === 0
+                        ? "No remaining courses for this learner"
+                        : "Choose an approved course"
+                  }
+                />
+              </SelectTrigger>
               <SelectContent>
-                {courses.map((c) => (
+                {availableCourses.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.level ? `L${c.level} · ` : ""}
                     {c.title}
@@ -517,6 +556,11 @@ function RegisterOnCourseDialog({
                 ))}
               </SelectContent>
             </Select>
+            {learnerId && takenCourseIds.size > 0 ? (
+              <p className="mt-1 text-[11px] text-white/50">
+                Hiding {takenCourseIds.size} course{takenCourseIds.size === 1 ? "" : "s"} this learner is already registered on.
+              </p>
+            ) : null}
           </div>
         </div>
         <DialogFooter>
