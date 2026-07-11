@@ -457,16 +457,44 @@ function RegisterOnCourseDialog({
   onClose,
   learners,
   courses,
+  registrations,
 }: {
   open: boolean;
   onClose: () => void;
   learners: LearnerDTO[];
   courses: ProviderCourseOptionDTO[];
+  registrations: RegistrationDTO[];
 }) {
   const qc = useQueryClient();
   const create = useServerFn(createRegistration);
   const [learnerId, setLearnerId] = React.useState("");
   const [coursePick, setCoursePick] = React.useState("");
+
+  // Courses the selected learner is already actively registered on (any state
+  // except canceled/revoked). Prevents duplicate enrolments.
+  const takenCourseIds = React.useMemo(() => {
+    if (!learnerId) return new Set<string>();
+    return new Set(
+      registrations
+        .filter(
+          (r) =>
+            r.learner_id === learnerId &&
+            r.status !== "canceled" &&
+            r.status !== "revoked",
+        )
+        .map((r) => r.course_id),
+    );
+  }, [registrations, learnerId]);
+
+  const availableCourses = React.useMemo(
+    () => courses.filter((c) => !takenCourseIds.has(c.id)),
+    [courses, takenCourseIds],
+  );
+
+  // If learner changes and current pick is now taken, clear it.
+  React.useEffect(() => {
+    if (coursePick && takenCourseIds.has(coursePick)) setCoursePick("");
+  }, [takenCourseIds, coursePick]);
 
   const mut = useMutation({
     mutationFn: () => {
