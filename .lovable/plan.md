@@ -1,52 +1,73 @@
-# Roll out the new REPS logo everywhere
+## Goal
 
-You've given us the full logo family, so we can retire the old `RepsWordmark` SVG entirely and use your artwork in every spot — including the compact places we previously kept on the old mark.
+On the public training-provider page `/t/$slug`, replace the hardcoded `"—"` in the About card's "Learners trained" stat (line 464 of `src/routes/t.$slug.index.tsx`) with a live count of certificates the provider has issued.
 
-## Assets to add (via `lovable-assets`, not committed binaries)
+## Definition of "Learners trained"
 
-From `/mnt/user-uploads/`:
+Count rows in `certificate_registrations` where:
+- `provider_id = <this provider>`
+- `status = 'issued'`
 
-| Upload | Purpose | Saved as |
-|---|---|---|
-| `reps_logo.svg` | Full lock-up, white (dark UI) | `src/assets/brand/logo-lockup.svg` *(replaces existing)* |
-| `reps_logo_dark.svg` | Full lock-up, dark (light bg / print) | `src/assets/brand/logo-lockup-dark.svg` *(replaces existing)* |
-| `reps_logo_min.svg` | Wordmark only, dark | `src/assets/brand/logo-wordmark-dark.svg` |
-| `reps_logo_min_alt.svg` | Wordmark only, white | `src/assets/brand/logo-wordmark.svg` |
-| `favicon.svg` | Icon-only mark, dark | `src/assets/brand/logo-mark-dark.svg` + `public/favicon.svg` |
-| `favicon_alt.svg` | Icon-only mark, white | `src/assets/brand/logo-mark.svg` |
+This is the count of certificates the provider has actually issued to learners (one row per learner-per-course). It excludes draft/paid-but-not-yet-issued rows and refunded/void rows.
 
-## Component updates
+If we later want unique learners instead of certificates, we can swap the RPC to `count(distinct learner_id)` — flag this as a small follow-up decision, not a blocker.
 
-1. **`RepsLockup.tsx`** — repoint to the new `logo-lockup(-dark).svg`. No API change.
-2. **`RepsWordmark.tsx`** — replace the hand-inlined old-logo `<path>`s with an `<img>` pointing to `logo-wordmark(-dark).svg`. Keeps the `variant?: "light"|"dark"` API so every existing call site (~40 files) picks up the new artwork with zero churn.
-3. **New `RepsMark.tsx`** — icon-only component using `logo-mark(-dark).svg`, `variant`, `title`. For badge titles, list bullets, award icons — anywhere the compact 1:1 mark reads better than a wordmark.
+## Changes
 
-## Targeted spots you called out
+### 1. Migration — public counter RPC
 
-- **Dashboard** (sidebar, shell, demo content) — driven by `RepsWordmark` → picks up new wordmark automatically.
-- **Checkout credits header** — swap `RepsWordmark` → new wordmark automatically; verify header height still balances.
-- **Core certificate landing page inline marks** — swap inline `RepsWordmark` refs; check size (bump to `h-5` if the new wordmark reads smaller).
-- **Competitor comparison tables** — REPS column header uses `RepsWordmark`; picks up automatically. Confirm it still fits the column.
-- **"Replace your stack" tile grid** — REPS tile uses `RepsWordmark`; picks up automatically.
-- **Qualifications page badge titles + awarding body list icons** — currently text or generic icons. Switch to new `<RepsMark />` at `h-4`/`h-5` for the badge titles and awarding-body list bullets, per your suggestion.
-- **Campaign email headers** ("brutal honest truth", onboarding, etc.) — currently render "REPS" as inline text (email clients strip SVG-in-`img` unreliably, and 15KB inline is bad for deliverability). Best path: keep as text but style it to match, OR embed the wordmark as a hosted PNG served from CDN. I'll go with the hosted-PNG option (lovable-assets serves stable URLs) at ~140×30 for retina, since you want visual consistency.
-- **Favicon** — replace `public/favicon.ico` with `public/favicon.svg` (icon-only mark) + update `__root.tsx` `head().links`. Delete the old `.ico`.
+Add a SECURITY DEFINER function that anyone (including `anon`) can call, so the public page can read the number without exposing the underlying rows:
 
-## Not touched
+```sql
+create or replace function public.count_provider_issued_certificates(_provider_id uuid)
+returns integer
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select count(*)::int
+  from public.certificate_registrations
+  where provider_id = _provider_id
+    and status = 'issued'
+$$;
 
-- `og:image` — separate hero art, not the logo.
-- Certificate PDF templates — you're baking the dark lock-up into Illustrator directly.
-- JSON-LD structured-data `logo` field — will point at the new hosted lock-up URL.
-- Transactional Supabase auth emails (signup/recovery/reauth) — no REPS branding today; out of scope unless you want it.
+grant execute on function public.count_provider_issued_certificates(uuid) to anon, authenticated;
+```
+
+No table policies change; `certificate_registrations` stays locked down.
+
+### 2. Public server function
+
+Add `getPublicProviderIssuedCertificateCount` in a new small file (e.g. `src/lib/providers/public-stats.functions.ts`) that:
+- Uses the server publishable client (`SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`, no session).
+- Zod-validates `{ providerId: string (uuid) }`.
+- Calls `supabase.rpc("count_provider_issued_certificates", { _provider_id: providerId })`.
+- Returns `{ count: number }` (0 on error, never throws to the page).
+
+### 3. Wire into the profile page
+
+In `src/routes/t.$slug.index.tsx`:
+- Add a `useQuery` next to the existing `public-provider-quals` query, keyed on `["public-provider-cert-count", sf.professional_id]`, enabled only when `sf.professional_id` is present. Stale 60s.
+- Replace line 464:
+
+  ```tsx
+  <StatTile
+    label="Learners trained"
+    value={certCount != null && certCount > 0 ? formatCompact(certCount) : "—"}
+  />
+  ```
+
+  `formatCompact` = small local helper: `< 1000` → plain number, `>= 1000` → `1.2k` style. Keeps the tile from looking odd for large providers.
+- Leave the dash for providers with 0 issued certificates so it doesn't advertise "0 learners".
+
+### 4. No changes to
+
+- Loader / SSR: count is fetched client-side so the initial paint stays fast and the loader stays cheap. SEO isn't affected — the number isn't in metadata.
+- Any other stat tile, RLS policy, or admin surface.
 
 ## Verification
 
-- `bun run build` after asset swap.
-- Playwright screenshot pass: navbar, footer, dashboard sidebar, `/checkout`, `/certificate/*`, `/compare/*`, `/qualifications`, and one campaign email preview via `render-email.mjs`.
-- Spot-check that no route still references `logo.svg` / `logo-dark.svg` (old files) — remove them if orphaned.
-
-## Rough size
-
-~8 files created (assets + `RepsMark`), 3 edited (`RepsLockup`, `RepsWordmark`, `__root.tsx`), 1 deleted (`favicon.ico`). All existing `<RepsWordmark />` call sites (~40) update visually with no code changes.
-
-Approve and I'll ship it.
+- Build passes.
+- On `/t/test-profile`: tile shows the real count if any `certificate_registrations` rows exist with that provider_id + `status='issued'`, otherwise `—`.
+- Spot-check with `psql`: `select count(*) from certificate_registrations where provider_id = '<id>' and status='issued'` matches the tile.

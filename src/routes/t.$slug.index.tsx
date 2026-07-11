@@ -26,6 +26,7 @@ import {
 } from "@/lib/website/website.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
+import { getPublicProviderIssuedCertificateCount } from "@/lib/providers/public-stats.functions";
 import repsLogo from "@/assets/brand/logo-dark.svg";
 import { AWARDING_BODIES, awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -138,6 +139,21 @@ function ProviderProfilePage() {
     staleTime: 60_000,
     enabled: !!sf.professional_id,
   });
+
+  const fetchCertCount = useServerFn(getPublicProviderIssuedCertificateCount);
+  const { data: certCountData } = useQuery({
+    queryKey: ["public-provider-cert-count", sf.professional_id],
+    queryFn: () => fetchCertCount({ data: { providerId: sf.professional_id } }),
+    staleTime: 60_000,
+    enabled: !!sf.professional_id,
+  });
+  const certCount = certCountData?.count ?? 0;
+  const learnersTrained =
+    certCount > 0
+      ? certCount >= 1000
+        ? `${(certCount / 1000).toFixed(certCount >= 10_000 ? 0 : 1)}k`
+        : String(certCount)
+      : "—";
 
   const reviews = reviewsData?.reviews ?? [];
   const ratingAvg = reviewsData?.average ?? 0;
@@ -461,7 +477,7 @@ function ProviderProfilePage() {
                     label="Years established"
                     value={yearsEstablished ? `${yearsEstablished}+` : "New"}
                   />
-                  <StatTile label="Learners trained" value="—" />
+                  <StatTile label="Learners trained" value={learnersTrained} />
                   <StatTile label="Verified since" value={verifiedSince} accent />
                 </div>
               </article>

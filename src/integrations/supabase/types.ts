@@ -6760,6 +6760,10 @@ export type Database = {
         }[]
       }
       count_orphan_subscriptions: { Args: never; Returns: number }
+      count_provider_issued_certificates: {
+        Args: { _provider_id: string }
+        Returns: number
+      }
       credit_tier_policy: {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: {
