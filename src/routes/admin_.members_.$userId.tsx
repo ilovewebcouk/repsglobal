@@ -1011,6 +1011,53 @@ function PasswordResetPane({ data, loading, userId }: { data: PasswordResetInfo 
           </ol>
         )}
       </div>
+
+      <Dialog open={open} onOpenChange={(o) => !pending && setOpen(o)}>
+        <DialogContent className="border-reps-border bg-reps-panel text-white sm:max-w-[440px]">
+          <DialogHeader>
+            <DialogTitle>Set new password</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Immediately replaces this member's password. They will not be notified. Use only when the member has requested this or you are logging in as them for support.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Label className="text-[12.5px] text-white/70">New password</Label>
+            <div className="relative">
+              <Input
+                type={show ? "text" : "password"}
+                value={pw}
+                onChange={(e) => setPw(e.target.value)}
+                placeholder="min. 8 characters"
+                className="pr-10"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setShow((s) => !s)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                aria-label={show ? "Hide password" : "Show password"}
+              >
+                {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={generate}
+              className="h-8 self-start rounded-[10px] border-reps-border bg-reps-panel/60 text-[12.5px] text-white hover:bg-reps-panel"
+            >
+              Generate strong password
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button>
+            <Button onClick={submit} disabled={pending || pw.length < 8}>
+              {pending ? "Saving…" : "Set password"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
