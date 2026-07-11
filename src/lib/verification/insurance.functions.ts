@@ -81,6 +81,9 @@ export const saveInsurance = createServerFn({ method: "POST" })
         .maybeSingle();
       const profAny = prof as { full_name?: string | null} | null;
       proName = profAny?.full_name ?? null;
+      // Name-matching still uses the KYC-locked identity name when present —
+      // that IS the point of identity_verified_name — but display always uses
+      // profiles.full_name (see mem://index.md, single source of truth).
       const identityName =
         proAny?.identity_verified_name ?? profAny?.full_name ?? null;
       const identityApproved = proAny?.identity_status === "approved";

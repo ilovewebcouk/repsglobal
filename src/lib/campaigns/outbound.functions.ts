@@ -168,7 +168,6 @@ export const searchTrainers = createServerFn({ method: "POST" })
     let rows = (pros ?? []).map((p: any) => ({
       id: p.id,
       full_name: nameMap.get(p.id) ?? businessMap.get(p.id) ?? "Unnamed",
-      trading_name: businessMap.get(p.id) ?? null,
       email: emailById.get(p.id) ?? "",
       tier: tierMap.get(p.id) ?? ("free" as Tier),
       profession: p.primary_profession,
@@ -177,7 +176,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
 
     if (q.length >= 2) {
       rows = rows.filter((r) =>
-        [r.id, r.full_name, r.trading_name, r.city, r.profession, r.email]
+        [r.id, r.full_name, r.city, r.profession, r.email]
           .filter(Boolean)
           .some((v: string) => v.toLowerCase().includes(needle)),
       );

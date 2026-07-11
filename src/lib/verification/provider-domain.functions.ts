@@ -137,12 +137,22 @@ export const startProviderDomainVerification = createServerFn({ method: "POST" }
       throw new Error("That doesn't look like a valid email address.");
     }
 
-    // Load provider website
+    // Load provider website + canonical display name (profiles.full_name).
     const { data: pro } = await supabase
       .from("professionals")
-      .select("website, legal_entity_name")
+      .select("website")
       .eq("id", userId)
       .maybeSingle();
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .maybeSingle();
+    const providerDisplayName =
+      ((prof as { full_name?: string | null } | null)?.full_name ?? "").trim() ||
+      "Your organisation";
+
+
 
     const rawWebsite = (pro?.website as string | null) ?? null;
     const expectedDomain = domainFromWebsite(rawWebsite);
@@ -241,7 +251,7 @@ export const startProviderDomainVerification = createServerFn({ method: "POST" }
       recipientEmail: email,
       idempotencyKey: `provider-domain-${userId}-${tokenHash.slice(0, 12)}`,
       templateData: {
-        providerName: (pro?.legal_entity_name as string | null) ?? "Your organisation",
+        providerName: providerDisplayName,
         domain: expectedDomain,
         confirmUrl,
         expiresInHours: CONFIRM_TTL_HOURS,

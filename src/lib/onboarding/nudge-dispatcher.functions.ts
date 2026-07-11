@@ -113,9 +113,20 @@ async function resolveCandidates(): Promise<Candidate[]> {
   // for now, fetch professionals + resolve stage per-row via the SQL function.
   const { data: pros, error } = await supabaseAdmin
     .from("professionals")
-    .select("id, identity_verified_name");
+    .select("id");
   if (error) throw error;
   if (!pros?.length) return [];
+
+  // Canonical display name = profiles.full_name (see mem://index.md).
+  const proIds = pros.map((p: { id: string }) => p.id);
+  const { data: profs } = await supabaseAdmin
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", proIds);
+  const fullNameById = new Map<string, string | null>();
+  for (const p of (profs as Array<{ id: string; full_name: string | null }> | null) ?? []) {
+    fullNameById.set(p.id, p.full_name ?? null);
+  }
 
   // Fetch auth users (email + confirmed_at) in one call to filter admins/demo
   // and to compute cohort (legacy vs new-signup) per user.
@@ -191,7 +202,7 @@ async function resolveCandidates(): Promise<Candidate[]> {
     const requiredDay = cadence[nextStep - 1] ?? 0;
     if (daysInStage < requiredDay) continue;
 
-    const proName = extractFirstName(p.identity_verified_name);
+    const proName = extractFirstName(fullNameById.get(userId) ?? null);
     out.push({
       userId, email, proName,
       stage, stageEnteredAt,
