@@ -219,6 +219,7 @@ function overlayPage(
   page: ReturnType<PDFDocument["getPage"]>,
   map: PageMap,
   values: Record<string, string>,
+  units: string[],
   fonts: EmbeddedFonts,
   images: {
     qr: Awaited<ReturnType<PDFDocument["embedPng"]>>;
@@ -234,7 +235,6 @@ function overlayPage(
     if (img.field === "qr_code") {
       page.drawImage(images.qr, { x: img.x, y: img.y, width: img.width, height: img.height });
     } else if (img.field === "provider_logo" && images.provider_logo) {
-      // Preserve aspect ratio inside the box
       const src = images.provider_logo;
       const scale = Math.min(img.width / src.width, img.height / src.height);
       const w = src.width * scale;
@@ -245,7 +245,7 @@ function overlayPage(
     }
   }
   if (map.list && map.list.field === "unit_summary") {
-    drawList(page, map.list, (values as Record<string, unknown>).unit_summary as string[] | undefined, fonts);
+    drawList(page, map.list, units, fonts);
   }
 }
 
