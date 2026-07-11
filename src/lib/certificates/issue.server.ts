@@ -25,10 +25,11 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
 
   const providerId = batch.provider_id as string;
 
-  // Provider name (public trading name)
+  // Provider name (public trading name) + certificate logo
   const { data: providerProfile } = await supabaseAdmin
-    .from("profiles").select("full_name").eq("id", providerId).maybeSingle();
+    .from("profiles").select("full_name, certificate_logo_url").eq("id", providerId).maybeSingle();
   const providerName = (providerProfile?.full_name as string | null) ?? "Training provider";
+  const providerLogoUrl = ((providerProfile as any)?.certificate_logo_url as string | null) ?? null;
 
   // Load all registrations in this batch
   const { data: regs } = await supabaseAdmin
