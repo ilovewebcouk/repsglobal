@@ -74,7 +74,7 @@ export const getMySettings = createServerFn({ method: "GET" })
         supabase
           .from("professionals")
           .select(
-            "contact_phone, timezone, locale, identity_status, is_published",
+            "contact_phone, timezone, locale, identity_status, is_published, account_type, legal_entity_name, contact_first_name, contact_last_name",
           )
           .eq("id", userId)
           .maybeSingle(),
