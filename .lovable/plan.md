@@ -1,73 +1,44 @@
-## Goal
+## What the two long numbers actually are
 
-On the public training-provider page `/t/$slug`, replace the hardcoded `"—"` in the About card's "Learners trained" stat (line 464 of `src/routes/t.$slug.index.tsx`) with a live count of certificates the provider has issued.
+In the Batches list, each row currently shows three lines:
 
-## Definition of "Learners trained"
-
-Count rows in `certificate_registrations` where:
-- `provider_id = <this provider>`
-- `status = 'issued'`
-
-This is the count of certificates the provider has actually issued to learners (one row per learner-per-course). It excludes draft/paid-but-not-yet-issued rows and refunded/void rows.
-
-If we later want unique learners instead of certificates, we can swap the RPC to `count(distinct learner_id)` — flag this as a small follow-up decision, not a blocker.
-
-## Changes
-
-### 1. Migration — public counter RPC
-
-Add a SECURITY DEFINER function that anyone (including `anon`) can call, so the public page can read the number without exposing the underlying rows:
-
-```sql
-create or replace function public.count_provider_issued_certificates(_provider_id uuid)
-returns integer
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select count(*)::int
-  from public.certificate_registrations
-  where provider_id = _provider_id
-    and status = 'issued'
-$$;
-
-grant execute on function public.count_provider_issued_certificates(uuid) to anon, authenticated;
+```
+Test Profile / <provider UUID>      ← bold: provider_name ?? provider_id
+1 × £15.00 = £15.00 · printed_and_digital
+<batch UUID>                        ← dim mono: batch id
 ```
 
-No table policies change; `certificate_registrations` stays locked down.
+- **Bold long number (`11111111-…002`)** — the *training provider's user id*. It's the fallback in `provider_name ?? provider_id`. It appears whenever `adminListBatches` can't resolve a display name for the provider. This should be the training provider's name (business/trading name), not a UUID.
+- **Dim mono number (`91fb10cf-…`)** — the *batch id*. Only useful for support/debug, not for admins scanning the list.
 
-### 2. Public server function
+## Why the provider name is missing
 
-Add `getPublicProviderIssuedCertificateCount` in a new small file (e.g. `src/lib/providers/public-stats.functions.ts`) that:
-- Uses the server publishable client (`SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`, no session).
-- Zod-validates `{ providerId: string (uuid) }`.
-- Calls `supabase.rpc("count_provider_issued_certificates", { _provider_id: providerId })`.
-- Returns `{ count: number }` (0 on error, never throws to the page).
+`adminListBatches` reads `profiles.full_name` via the *user-scoped* Supabase client (`requireSupabaseAuth`). For this batch, `profiles.full_name` is `"Test Profile"` in the DB, so either:
+1. Profiles RLS is filtering out other users' profile rows for the admin session (most likely — admins read via `has_role`, but the policy may not cover this SELECT), or
+2. The provider genuinely has no `full_name` set.
 
-### 3. Wire into the profile page
+Either way, the current fallback (raw UUID) is wrong. The training-provider display name should come from the professional record (business/trading name), not `profiles.full_name`, since providers are organisations.
 
-In `src/routes/t.$slug.index.tsx`:
-- Add a `useQuery` next to the existing `public-provider-quals` query, keyed on `["public-provider-cert-count", sf.professional_id]`, enabled only when `sf.professional_id` is present. Stale 60s.
-- Replace line 464:
+## Plan
 
-  ```tsx
-  <StatTile
-    label="Learners trained"
-    value={certCount != null && certCount > 0 ? formatCompact(certCount) : "—"}
-  />
-  ```
+1. **Fix the name source in `adminListBatches`** (`src/lib/certificates/certificates.functions.ts`)
+   - Look up provider display name from `professionals` (business/trading name — check the actual column, likely `business_name` / `display_name` / `trading_as`) with a fallback chain: `professionals.business_name → profiles.full_name → email → "Unknown provider"`.
+   - Do the lookup with `supabaseAdmin` (loaded inside the handler) so RLS on `profiles`/`professionals` can't hide rows from admin views.
+   - Apply the same fix to `adminListPrintQueue` and any sibling admin fn that maps `provider_id → provider_name` (lines ~957, ~1035, ~1403).
 
-  `formatCompact` = small local helper: `< 1000` → plain number, `>= 1000` → `1.2k` style. Keeps the tile from looking odd for large providers.
-- Leave the dash for providers with 0 issued certificates so it doesn't advertise "0 learners".
+2. **Clean up the Batches row UI** (`src/routes/admin_.certificates.tsx`, ~line 337–370)
+   - Line 1: provider display name (always human-readable now).
+   - Line 2: `N × £price = £total · format` (unchanged).
+   - Line 3: keep the batch id but move it behind a small "Batch ID" label and shorten to the first 8 chars with a copy-on-click / tooltip showing the full id — no more naked UUID as a headline.
+   - Remove the tracking line's redundancy where it duplicates info.
 
-### 4. No changes to
+3. **QA pass**
+   - Verify column names on `professionals` before wiring the fallback.
+   - Load `/admin/certificates → Batches` as admin, confirm the seed batch shows "Test Profile" (or the provider's business name) instead of a UUID.
+   - Check `pending`, `paid`, `awaiting_print`, `dispatched` filters all render names correctly.
+   - Confirm Print queue rows show the same provider name.
 
-- Loader / SSR: count is fetched client-side so the initial paint stays fast and the loader stays cheap. SEO isn't affected — the number isn't in metadata.
-- Any other stat tile, RLS policy, or admin surface.
+## Out of scope
 
-## Verification
-
-- Build passes.
-- On `/t/test-profile`: tile shows the real count if any `certificate_registrations` rows exist with that provider_id + `status='issued'`, otherwise `—`.
-- Spot-check with `psql`: `select count(*) from certificate_registrations where provider_id = '<id>' and status='issued'` matches the tile.
+- No schema changes, no changes to how batches are created, priced, or dispatched.
+- No changes to member/professional-facing certificate UI.
