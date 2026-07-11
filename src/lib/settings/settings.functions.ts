@@ -16,6 +16,10 @@ export type SettingsBundle = {
     timezone: string;
     locale: string;
     legal_name_locked: boolean;
+    account_type: "individual" | "organisation";
+    legal_entity_name: string | null;
+    contact_first_name: string | null;
+    contact_last_name: string | null;
     identity_status:
       | "none"
       | "pending"
