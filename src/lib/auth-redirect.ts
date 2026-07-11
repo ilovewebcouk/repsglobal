@@ -27,7 +27,7 @@ export function landingPathForRole(role: AppRole | null): string {
     case "client":
       return "/portal";
     default:
-      return "/dashboard";
+      return "/pricing";
   }
 }
 

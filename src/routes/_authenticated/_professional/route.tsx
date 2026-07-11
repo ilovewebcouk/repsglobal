@@ -4,7 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { userHasRole, getPrimaryRole, landingPathForRole } from "@/lib/auth-redirect";
+import {
+  getPrimaryRole,
+  landingPathForRole,
+  userHasRole,
+} from "@/lib/auth-redirect";
 import { getImpersonationStatus } from "@/lib/admin/impersonation.functions";
 import { getTrustState } from "@/lib/verification/trust.functions";
 import { IdentityGateWall } from "@/components/dashboard/verification/IdentityGateWall";
