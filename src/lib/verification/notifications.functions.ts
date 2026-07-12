@@ -187,10 +187,19 @@ function titleFor(event: VerificationEvent, threshold?: number | null): string {
       return "Domain verification approved";
     case "provider_domain.rejected":
       return "Domain verification rejected";
+    case "identity.approved":
+      return "Identity verified";
+    case "identity.rejected":
+      return "Identity check failed";
+    case "identity.needs_more_info":
+      return "Identity check needs more info";
   }
 }
 
 function hrefFor(event: VerificationEvent): string {
+  if (event === "identity.approved" || event === "identity.rejected" || event === "identity.needs_more_info") {
+    return "/dashboard/verification";
+  }
   if (event.startsWith("provider_")) return "/dashboard/profile";
   return "/dashboard/verification";
 }
