@@ -4,12 +4,12 @@ import { parseEmailWebhookPayload } from '@lovable.dev/email-js'
 import { WebhookError, verifyWebhookRequest } from '@lovable.dev/webhooks-js'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
-import { SignupEmail } from '@/lib/email-templates/signup'
-import { InviteEmail } from '@/lib/email-templates/invite'
-import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
-import { RecoveryEmail } from '@/lib/email-templates/recovery'
-import { EmailChangeEmail } from '@/lib/email-templates/email-change'
-import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
+import { SignupEmail } from '@/lib/email-templates/auth/signup'
+import { InviteEmail } from '@/lib/email-templates/auth/invite'
+import { MagicLinkEmail } from '@/lib/email-templates/auth/magic-link'
+import { RecoveryEmail } from '@/lib/email-templates/auth/recovery'
+import { EmailChangeEmail } from '@/lib/email-templates/auth/email-change'
+import { ReauthenticationEmail } from '@/lib/email-templates/auth/reauthentication'
 
 const EMAIL_SUBJECTS: Record<string, string> = {
   signup: 'Confirm your email',
