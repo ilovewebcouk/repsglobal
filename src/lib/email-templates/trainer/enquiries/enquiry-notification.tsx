@@ -10,7 +10,7 @@ import {
   Text,
   Button,
 } from "@react-email/components";
-import type { TemplateEntry } from "./registry";
+import type { TemplateEntry } from "../../registry";
 
 interface EnquiryNotificationProps {
   proFirstName?: string;

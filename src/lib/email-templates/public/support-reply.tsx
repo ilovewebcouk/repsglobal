@@ -8,7 +8,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type { TemplateEntry } from "./registry";
+import type { TemplateEntry } from "../registry";
 
 interface SupportReplyProps {
   ticketNumber?: string;

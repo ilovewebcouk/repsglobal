@@ -1,7 +1,7 @@
 import {
   Body, Button, Container, Head, Hr, Html, Preview, Section, Text,
 } from "@react-email/components";
-import type { TemplateEntry } from "./registry";
+import type { TemplateEntry } from "../../registry";
 
 interface Props {
   proName?: string;

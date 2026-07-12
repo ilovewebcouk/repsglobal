@@ -1,7 +1,7 @@
 import {
   Body, Button, Container, Head, Heading, Hr, Html, Preview, Section, Text,
 } from "@react-email/components";
-import type { TemplateEntry } from "./registry";
+import type { TemplateEntry } from "../../registry";
 
 type Missing = "identity" | "selfie" | "insurance" | "cert";
 interface Props { proName?: string; missing?: Missing[] }
