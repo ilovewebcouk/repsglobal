@@ -365,7 +365,7 @@ function DomainEmailCard({
           </p>
         </div>
         <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/60">
-          02
+          03
         </span>
       </div>
 
