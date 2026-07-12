@@ -898,8 +898,7 @@ async function assertAdmin(supabase: any, userId: string) {
  *
  * SINGLE SOURCE OF TRUTH: `profiles.full_name` is the canonical provider
  * display name across every REPs surface (admin, dashboard, PDFs, emails,
- * public pages). `professionals.legal_entity_name` is compliance-only and
- * MUST NEVER be surfaced as a display name — see mem://index.md.
+ * public pages) — see mem://index.md.
  *
  * Uses the service-role client so RLS on `profiles` can't hide rows from
  * admin views.

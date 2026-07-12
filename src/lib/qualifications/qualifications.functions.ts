@@ -826,8 +826,8 @@ export const adminListRepsCourseQueue = createServerFn({ method: "GET" })
 /**
  * Hydrate provider display names from the canonical source (`profiles.full_name`).
  *
- * SINGLE SOURCE OF TRUTH: `profiles.full_name` — never `legal_entity_name`,
- * never `identity_verified_name` — see mem://index.md.
+ * SINGLE SOURCE OF TRUTH: `profiles.full_name` — never
+ * `identity_verified_name` — see mem://index.md.
  *
  * The Postgres FK-embed select returns `professionals` columns nested under
  * `provider`; we overwrite that shape with a normalised `{ id, slug, full_name,
