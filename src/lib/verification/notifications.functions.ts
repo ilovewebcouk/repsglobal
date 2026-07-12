@@ -142,6 +142,38 @@ export async function notifyVerificationEvent(params: InsertParams) {
           dashboardUrl: "https://repsuk.org/dashboard/verification",
         },
       });
+    } else if (
+      params.event === "identity.approved" ||
+      params.event === "identity.rejected" ||
+      params.event === "identity.needs_more_info" ||
+      params.event === "provider_name.approved" ||
+      params.event === "provider_name.rejected" ||
+      params.event === "provider_domain.approved" ||
+      params.event === "provider_domain.rejected" ||
+      params.event === "provider_change.approved" ||
+      params.event === "provider_change.rejected"
+    ) {
+      const dashboardUrl =
+        params.event.startsWith("provider_change") || params.event.startsWith("provider_name")
+          ? "https://repsuk.org/dashboard/profile"
+          : "https://repsuk.org/dashboard/verification";
+      await sendTransactionalEmailServer({
+        templateName: "verification-decision",
+        recipientEmail: email,
+        idempotencyKey: `verif:${params.professionalId}:${params.event}:${(params.context?.request_id as string | undefined) ?? "none"}`,
+        templateData: {
+          kind: params.event,
+          proName: params.proName ?? undefined,
+          detail:
+            (params.context?.domain as string | undefined) ??
+            (params.context?.requested_name as string | undefined) ??
+            (params.context?.field_label as string | undefined) ??
+            (params.context?.field_key as string | undefined) ??
+            null,
+          adminNote: (params.context?.admin_note as string | undefined) ?? null,
+          dashboardUrl,
+        },
+      });
     }
   } catch (e) {
     console.error("[verification.notify] email failed", (e as Error).message);
