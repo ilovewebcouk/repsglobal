@@ -1,69 +1,76 @@
-Two related fixes for training-provider (organisation) accounts and the identity check that surfaces "SCOTT CAMERONMCKAY".
+# Training providers only — one name, one source of truth
 
-## 1. Fix the merged-name bug (quick win)
+**Scope: training provider accounts (`account_type = 'organisation'`) only. Individual trainers are NOT touched — their existing behaviour (`profiles.full_name` = person's name, `identity_verified_name` from Stripe) stays exactly as-is.**
 
-The Stripe Identity webhook at `src/routes/api/public/payments/webhook.ts:275` builds the verified name with:
+## The rule for training providers
 
-```ts
-const name = [out.first_name, out.last_name].filter(Boolean).join("").trim();
+- **`profiles.full_name`** = the provider's display name (e.g. "Northline Fitness Academy"). One source of truth. Shown on public profile, dashboard, admin. Editable on the profile page (already exists).
+- **`professionals.identity_verified_name`** = whatever Stripe Identity returned for the person who ran the ID check. Compliance/audit only. Never edited by the user. Never shown publicly. No comparison against the profile name — Stripe sets it, we accept it.
+- **Nothing else.** No `legal_entity_name`, no `contact_first_name`, no `contact_last_name`, no "Legal name" input, no "Organisation name" input, no admin "Organisation / Contact" rows.
+
+## Changes
+
+### 1. Database migration
+
+Drop three columns from `public.professionals`:
+- `contact_first_name` (added yesterday)
+- `contact_last_name` (added yesterday)
+- `legal_entity_name` (added 2026‑07‑06)
+
+Before dropping `legal_entity_name` I'll sweep every SECURITY DEFINER function / view / RPC that references it (notably the `admin_provider_*` upsert in `20260706132157...`) and update them in the same migration so nothing breaks.
+
+### 2. `src/routes/api/public/payments/webhook.ts`
+
+- **Keep** the `.join(" ")` fix (line 275). That's the actual bug — Stripe returns `first_name` / `last_name` separately; joining without a space produced `SCOTT CAMERONMCKAY`. This applies to both individuals and organisations, but it doesn't change semantics for individuals — same field, same code path, just correctly spaced. **No behaviour change for trainers.**
+- **Remove** the organisation-branch name-match lookup I added yesterday (~lines 296–320): the `contact_first_name`/`contact_last_name` fetch and the org-vs-individual comparison.
+- **For organisation accounts specifically**, skip the profile-name mismatch flag. Trainer (individual) name-match against `profiles.full_name` stays unchanged.
+
+### 3. `src/lib/settings/settings.functions.ts`
+
+- Remove `legal_entity_name`, `contact_first_name`, `contact_last_name` from `SettingsBundle`, the SELECT, the validator, and the update handler.
+- `account_type` can stay in the bundle if other UI needs it, but the settings mutation no longer writes any provider-name field. Provider name is edited on the profile page like today.
+
+### 4. `src/components/dashboard/organisation/SettingsPage.tsx`
+
+- Delete the "Legal name", "Organisation name", "Contact first name", "Contact last name" fields and their state. (This page is provider‑only — `dashboard/organisation/…` — so trainer settings are not touched.)
+
+### 5. `src/lib/verification/verification.functions.ts`
+
+- Drop `legal_entity_name, contact_first_name, contact_last_name` from the `listPendingVerifications` SELECT (line 525). `identity_verified_name` stays.
+
+### 6. `src/routes/admin_.verification.tsx`
+
+- Remove the "Organisation" and "Contact" rows I added yesterday to the identity card (~lines 613–635). Identity card renders the same two-line shape for every account: profile display name (from `profiles.full_name`) + Stripe identity name (`identity_verified_name`). No organisation-specific branch.
+
+### 7. Comment / doc cleanup
+
+- Update comments in `src/lib/admin/providers.functions.ts` (line 6) and `src/lib/certificates/certificates.functions.ts` (line 901) that reference `legal_entity_name` as "compliance-only" — the column no longer exists.
+- Keep the existing "SINGLE SOURCE OF TRUTH: `profiles.full_name`" comment in `src/lib/qualifications/qualifications.functions.ts` (line 829) — that's already correct and now matches reality.
+
+## QA sweep (before I say done)
+
+Grep the repo and confirm zero non-historical references to:
 ```
+legal_entity_name
+contact_first_name
+contact_last_name
+"Legal name"
+"Organisation name"
+"Contact first name"
+"Contact last name"
+```
+(Historical `supabase/migrations/*.sql` obviously keep their old references — that's fine.)
 
-Stripe returns `first_name: "SCOTT CAMERON"` and `last_name: "MCKAY"` as two fields — joining with `""` produces `"SCOTT CAMERONMCKAY"`. Change the separator to `" "` so it becomes `"SCOTT CAMERON MCKAY"`. This also collapses to `.replace(/\s+/g, " ")` in case a field already has trailing whitespace.
+Then a typecheck, then a click-through with Playwright of:
+- Provider settings page (`/dashboard/settings` while signed in as a provider) — screenshot to confirm no name inputs remain
+- Admin verification panel — screenshot to confirm identity card is back to the two-line shape
+- Provider profile edit page — screenshot to confirm the single "Provider name" field is present and edits `profiles.full_name`
 
-This retroactively affects new verifications only. For SCOTT specifically, once he restarts the ID check the name will store correctly and the name-mismatch auto-flag will re-evaluate.
+## Explicitly untouched (trainer side)
 
-Nothing else needs to change for this bug — `identity_verified_name` is a single free-text field used only for display and mismatch comparison.
+- `src/components/dashboard/…` non-organisation settings — not read, not written.
+- Trainer profile editor — not read, not written.
+- Trainer verification/identity flow — not read, not written.
+- `identity_verified_name` write path for trainers — unchanged (same `.join(" ")` fix, but that's a strict improvement).
 
-## 2. Add contact-person + organisation-name split for provider accounts
-
-Today `professionals` has:
-- `legal_entity_name` — the org/business legal name
-- `identity_verified_name` — the individual's name from Stripe Identity
-- `account_type` — `individual` | `organisation`
-
-Missing: a stored **contact person full name** for organisation accounts (the human running the account, distinct from the org). Right now organisation accounts reuse `profiles.full_name`, which is why "Northline Fitness Academy" ends up as a person's name and vice versa.
-
-### Schema change (migration)
-
-Add two columns to `public.professionals` (nullable, only meaningful when `account_type = 'organisation'`):
-
-- `contact_first_name text`
-- `contact_last_name text`
-
-Rationale for two columns instead of one `contact_full_name`: mirrors Stripe's `first_name` / `last_name` shape so the ID check comparison is deterministic, and avoids the same merge bug for future admin-entered names.
-
-No RLS changes needed — the existing owner + admin policies cover these columns.
-
-### Where the fields appear
-
-Per your answer: **admin/verification only + provider dashboard/account settings**. NOT on the public profile.
-
-- **Provider dashboard → Account settings** (organisation accounts only): two inputs "Contact first name" / "Contact last name" alongside the existing "Organisation name" (`legal_entity_name`). Individual accounts do not see these — they continue to use their profile name.
-- **Admin verification panel** (`src/routes/admin_.verification.tsx`): for organisation accounts, show "Contact: {first} {last}" under the org name in the identity card, and use the concatenated `{first} {last}` (not `profiles.full_name`) as the "profile name" that the Stripe-Identity name-match compares against.
-- **Public profile / directory / coach website**: unchanged — the org name is what's shown.
-
-### Name-match logic (organisation accounts)
-
-In `webhook.ts` name-mismatch check (line 302 area):
-
-- If `account_type = 'organisation'` and both `contact_first_name` and `contact_last_name` are set → compare `docName` against `"{contact_first_name} {contact_last_name}"`.
-- Otherwise → compare against `profiles.full_name` (current behaviour).
-
-This means an organisation's Stripe Identity check compares the ID against the actual human running the account, not against the org name (which would always mismatch).
-
-## 3. Files touched
-
-- `supabase/migrations/<new>.sql` — add `contact_first_name`, `contact_last_name` columns
-- `src/routes/api/public/payments/webhook.ts` — fix `.join(" ")` and switch mismatch comparison to contact name for organisations
-- `src/routes/_authenticated/.../account settings` — the provider account settings page (locate the existing organisation-name field, add the two contact fields beside it). I'll find the exact route during implementation.
-- `src/routes/admin_.verification.tsx` — display contact name for organisation accounts in the identity card
-- Server fn(s) that write org profile fields — extend the validator/handler to accept and persist the two new fields
-
-## 4. Out of scope
-
-- No changes to `identity_verified_name` semantics or storage (still one free-text field from Stripe)
-- No public-profile changes
-- No signup-flow changes — contact-person fields are edited from account settings after signup (can be added to signup as a follow-up if you want)
-- No backfill for existing organisation accounts — fields start null; admin/owner fills them in when they next visit settings
-
-Confirm this scope and I'll implement it.
+Confirm and I'll execute.
