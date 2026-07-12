@@ -39,6 +39,7 @@ import { template as memberCancelled } from './member-cancelled'
 import { template as disputeWonResubscribe } from './dispute-won-resubscribe'
 import { template as adminInvite } from './admin-invite'
 import { template as providerDomainConfirm } from './provider-domain-confirm'
+import { template as verificationDecision } from './verification-decision'
 import { template as onboardingLogIn1 } from './onboarding/log-in-1'
 import { template as onboardingLogIn2 } from './onboarding/log-in-2'
 import { template as onboardingLogIn3 } from './onboarding/log-in-3'
@@ -97,6 +98,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'dispute-won-resubscribe': disputeWonResubscribe,
   'admin-invite': adminInvite,
   'provider-domain-confirm': providerDomainConfirm,
+  'verification-decision': verificationDecision,
   'onboarding-log-in-1': onboardingLogIn1,
   'onboarding-log-in-2': onboardingLogIn2,
   'onboarding-log-in-3': onboardingLogIn3,
