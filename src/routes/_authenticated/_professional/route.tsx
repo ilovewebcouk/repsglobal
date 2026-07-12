@@ -11,8 +11,11 @@ import {
 } from "@/lib/auth-redirect";
 import { getImpersonationStatus } from "@/lib/admin/impersonation.functions";
 import { getTrustState } from "@/lib/verification/trust.functions";
+import { getProviderVerificationSummary } from "@/lib/verification/provider-verification.functions";
 import { IdentityGateWall } from "@/components/dashboard/verification/IdentityGateWall";
 import { VerificationPromptDialog } from "@/components/dashboard/verification/VerificationPromptDialog";
+import { ProviderGateWall } from "@/components/dashboard/verification/ProviderGateWall";
+import { ProviderVerificationPromptDialog } from "@/components/dashboard/verification/ProviderVerificationPromptDialog";
 
 const LIVE_STATUSES = ["active", "trialing", "past_due", "unpaid"];
 const PAID_TIERS = ["verified", "pro", "studio", "training_provider"];
