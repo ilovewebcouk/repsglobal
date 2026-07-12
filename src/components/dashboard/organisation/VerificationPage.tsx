@@ -250,7 +250,17 @@ function Hero({
         </div>
 
         <div className="relative z-10 flex flex-col items-start gap-3 lg:items-end">
-          <VerifiedBadge tier={badgeTier} size="lg" profession={null} />
+          <VerifiedBadge
+            tier={badgeTier}
+            size="lg"
+            label={
+              badgeTier === "full"
+                ? "Identity · Name · Domain"
+                : badgeTier === "identity"
+                  ? "Identity verified"
+                  : "Not yet verified"
+            }
+          />
           <p className="text-[11px] text-white/45 lg:text-right">
             {allDone
               ? "Live on every public surface."
