@@ -53,7 +53,7 @@ export const getProviderDomainVerification = createServerFn({ method: "GET" })
     const [{ data: pro }, { data: row }] = await Promise.all([
       supabase
         .from("professionals")
-        .select("website")
+        .select("website_url")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -65,7 +65,7 @@ export const getProviderDomainVerification = createServerFn({ method: "GET" })
         .maybeSingle(),
     ]);
 
-    const rawWebsite = (pro?.website as string | null) ?? null;
+    const rawWebsite = ((pro as { website_url?: string | null } | null)?.website_url) ?? null;
     const expectedDomain = domainFromWebsite(rawWebsite);
 
     return {
@@ -111,7 +111,7 @@ export const setProviderWebsite = createServerFn({ method: "POST" })
 
     const { error } = await supabase
       .from("professionals")
-      .update({ website: raw })
+      .update({ website_url: raw })
       .eq("id", userId);
     if (error) throw new Error(error.message);
 
@@ -140,7 +140,7 @@ export const startProviderDomainVerification = createServerFn({ method: "POST" }
     // Load provider website + canonical display name (profiles.full_name).
     const { data: pro } = await supabase
       .from("professionals")
-      .select("website")
+      .select("website_url")
       .eq("id", userId)
       .maybeSingle();
     const { data: prof } = await supabase
@@ -154,7 +154,7 @@ export const startProviderDomainVerification = createServerFn({ method: "POST" }
 
 
 
-    const rawWebsite = (pro?.website as string | null) ?? null;
+    const rawWebsite = ((pro as { website_url?: string | null } | null)?.website_url) ?? null;
     const expectedDomain = domainFromWebsite(rawWebsite);
     if (!expectedDomain) {
       throw new Error(
@@ -296,42 +296,6 @@ export const adminListProviderDomainQueue = createServerFn({ method: "GET" })
     return rows ?? [];
   });
 
-const AdminDecideInput = z.object({
-  id: z.string().uuid(),
-  decision: z.enum(["approve", "reject"]),
-  reason: z.string().trim().max(500).optional(),
-  notes: z.string().trim().max(2000).optional(),
-});
-
-export const adminDecideProviderDomain = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => AdminDecideInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const nowIso = new Date().toISOString();
-    const newStatus: ProviderDomainStatus =
-      data.decision === "approve" ? "approved" : "rejected";
-
-    const { error } = await supabaseAdmin
-      .from("provider_domain_verifications")
-      .update({
-        status: newStatus,
-        admin_reviewed_at: nowIso,
-        admin_reviewer_id: userId,
-        admin_decision_reason: data.reason ?? null,
-        admin_notes: data.notes ?? null,
-      })
-      .eq("id", data.id);
-
-    if (error) throw new Error(error.message);
-
-    return { ok: true, status: newStatus };
-  });
+// NOTE: `adminDecideProviderDomain` was removed. All provider admin decisions
+// (change / name / domain) now flow through `adminDecideProviderChange` in
+// `provider-changes.functions.ts`, which fires the bell + email notification.
