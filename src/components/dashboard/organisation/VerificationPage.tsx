@@ -1,13 +1,17 @@
 /**
  * /dashboard/verification — training provider variant.
  *
- * Two-stage flow (purpose-built for training providers):
- *   Stage 01 — Identity: Stripe Identity (reuses existing IdentityProfileCard)
- *   Stage 02 — Domain email: confirm an email on the provider's website domain
- *              → admin then approves the domain itself.
+ * Three-step lock-in flow (purpose-built for training providers). Every
+ * step is permanent once submitted — the provider cannot self-edit
+ * afterwards.
+ *   Stage 01 — Identity: Stripe Identity → locks identity name.
+ *   Stage 02 — Provider name: one-time free-text lock-in → locks
+ *              profiles.full_name and the public /t/<slug> URL.
+ *   Stage 03 — Provider domain: confirm an email on the provider's
+ *              website → admin approves the domain.
  *
- * Insurance and qualifications are intentionally NOT shown here — they belong
- * to the individual-trainer flow, not the training-provider flow.
+ * Insurance and qualifications are intentionally NOT shown here — they
+ * belong to the individual-trainer flow.
  */
 
 import * as React from "react";
@@ -21,6 +25,7 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
+  Lock,
   Mail,
   RefreshCw,
   ShieldCheck,
@@ -29,7 +34,8 @@ import {
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
-import { getTrustState } from "@/lib/verification/trust.functions";
+import { getProviderVerificationSummary } from "@/lib/verification/provider-verification.functions";
+import { lockInProviderName } from "@/lib/verification/provider-name-lockin.functions";
 import { IdentityProfileCard } from "@/components/dashboard/verification/TrustBlock";
 import { VerifiedBadge, type VerifiedTier } from "@/components/verification/VerifiedBadge";
 import {
