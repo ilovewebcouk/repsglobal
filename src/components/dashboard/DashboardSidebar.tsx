@@ -104,7 +104,7 @@ function VerificationCountBadge() {
   const effective = useEffectiveIdentity();
   const fetchAcctType = useServerFn(getMyAccountType);
   const fetchTrust = useServerFn(getTrustState);
-  const fetchDomain = useServerFn(getProviderDomainVerification);
+  const fetchProviderSummary = useServerFn(getProviderVerificationSummary);
   const queryScope = effective.id ?? user?.id ?? "anon";
 
   const acctTypeQ = useQuery({
@@ -120,12 +120,12 @@ function VerificationCountBadge() {
     queryKey: ["my-trust-state", queryScope],
     queryFn: () => fetchTrust(),
     staleTime: 30_000,
-    enabled: !!user,
+    enabled: !!user && !isOrganisation,
   });
 
-  const domainQ = useQuery({
-    queryKey: ["my-provider-domain-status", queryScope],
-    queryFn: () => fetchDomain(),
+  const providerSummaryQ = useQuery({
+    queryKey: ["provider-verification-summary", queryScope],
+    queryFn: () => fetchProviderSummary(),
     staleTime: 30_000,
     enabled: !!user && isOrganisation,
   });
@@ -135,15 +135,13 @@ function VerificationCountBadge() {
   if (accountType === undefined) return null;
 
   if (isOrganisation) {
-    const identityDone = !!trustQ.data?.ticks.identity;
-    const domainStatus = domainQ.data?.status ?? "unstarted";
-    const domainDone = domainStatus === "approved";
-    const completed = (Number(identityDone) + Number(domainDone)) as 0 | 1 | 2;
+    const s = providerSummaryQ.data;
+    const completed = (s?.completedCount ?? 0) as 0 | 1 | 2 | 3;
     const pending =
-      domainStatus === "pending_admin_review" ||
-      domainStatus === "email_sent" ||
-      domainStatus === "email_confirmed";
-    return <VerifiedCountChip completed={completed} total={2} pending={pending} />;
+      s?.domain.status === "pending_admin_review" ||
+      s?.domain.status === "email_sent" ||
+      s?.domain.status === "email_confirmed";
+    return <VerifiedCountChip completed={completed} total={3} pending={pending} />;
   }
 
   const completed = (trustQ.data?.completedCount ?? 0) as 0 | 1 | 2 | 3;
