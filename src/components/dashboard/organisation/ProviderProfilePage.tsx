@@ -641,3 +641,49 @@ function Field({
     </label>
   );
 }
+
+function LockedRow({
+  label,
+  value,
+  missingHint,
+  hint,
+  pending,
+}: {
+  label: string;
+  value: string | null;
+  missingHint: string;
+  hint?: React.ReactNode;
+  pending?: string | null;
+}) {
+  const hasValue = !!value && value.trim().length > 0;
+  return (
+    <div className="flex flex-col gap-1.5 px-5 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-[12.5px] font-medium text-white/85">{label}</span>
+        {hasValue ? (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-300">
+            <Check className="h-3 w-3" /> Locked
+          </span>
+        ) : (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-2 py-0.5 text-[10.5px] font-semibold text-white/60">
+            Not yet locked
+          </span>
+        )}
+      </div>
+      <div
+        className={`text-[14px] font-semibold ${
+          hasValue ? "text-white" : "text-white/40"
+        }`}
+      >
+        {hasValue ? value : missingHint}
+      </div>
+      {hint ? <span className="text-[11.5px] text-white/45">{hint}</span> : null}
+      {pending ? (
+        <span className="mt-1 inline-flex items-center gap-1.5 rounded-[8px] border border-amber-400/25 bg-amber-500/10 px-2.5 py-1 text-[11.5px] font-semibold text-amber-200">
+          <Clock className="h-3 w-3" /> {pending}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
