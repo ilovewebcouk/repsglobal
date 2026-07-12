@@ -15,6 +15,9 @@ import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/au
 import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 
 export type VerificationEvent =
+  | "identity.approved"
+  | "identity.rejected"
+  | "identity.needs_more_info"
   | "insurance.rejected_expired"
   | "insurance.flagged_low_cover"
   | "insurance.flagged_name_mismatch"
@@ -139,6 +142,38 @@ export async function notifyVerificationEvent(params: InsertParams) {
           dashboardUrl: "https://repsuk.org/dashboard/verification",
         },
       });
+    } else if (
+      params.event === "identity.approved" ||
+      params.event === "identity.rejected" ||
+      params.event === "identity.needs_more_info" ||
+      params.event === "provider_name.approved" ||
+      params.event === "provider_name.rejected" ||
+      params.event === "provider_domain.approved" ||
+      params.event === "provider_domain.rejected" ||
+      params.event === "provider_change.approved" ||
+      params.event === "provider_change.rejected"
+    ) {
+      const dashboardUrl =
+        params.event.startsWith("provider_change") || params.event.startsWith("provider_name")
+          ? "https://repsuk.org/dashboard/profile"
+          : "https://repsuk.org/dashboard/verification";
+      await sendTransactionalEmailServer({
+        templateName: "verification-decision",
+        recipientEmail: email,
+        idempotencyKey: `verif:${params.professionalId}:${params.event}:${(params.context?.request_id as string | undefined) ?? "none"}`,
+        templateData: {
+          kind: params.event,
+          proName: params.proName ?? undefined,
+          detail:
+            (params.context?.domain as string | undefined) ??
+            (params.context?.requested_name as string | undefined) ??
+            (params.context?.field_label as string | undefined) ??
+            (params.context?.field_key as string | undefined) ??
+            null,
+          adminNote: (params.context?.admin_note as string | undefined) ?? null,
+          dashboardUrl,
+        },
+      });
     }
   } catch (e) {
     console.error("[verification.notify] email failed", (e as Error).message);
@@ -184,10 +219,19 @@ function titleFor(event: VerificationEvent, threshold?: number | null): string {
       return "Domain verification approved";
     case "provider_domain.rejected":
       return "Domain verification rejected";
+    case "identity.approved":
+      return "Identity verified";
+    case "identity.rejected":
+      return "Identity check failed";
+    case "identity.needs_more_info":
+      return "Identity check needs more info";
   }
 }
 
 function hrefFor(event: VerificationEvent): string {
+  if (event === "identity.approved" || event === "identity.rejected" || event === "identity.needs_more_info") {
+    return "/dashboard/verification";
+  }
   if (event.startsWith("provider_")) return "/dashboard/profile";
   return "/dashboard/verification";
 }

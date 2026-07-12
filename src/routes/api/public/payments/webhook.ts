@@ -373,6 +373,41 @@ async function handleIdentityEvent(
     .from("professionals")
     .update(proPatch as never)
     .eq("id", row.professional_id);
+
+  // Fire bell + email for terminal identity states (skip if we suppressed a downgrade).
+  if (
+    (finalStatus === "approved" && currentStatus !== "approved") ||
+    ((finalStatus === "rejected" || finalStatus === "needs_more_info") && currentStatus !== "approved")
+  ) {
+    try {
+      const { notifyVerificationEvent } = await import(
+        "@/lib/verification/notifications.functions"
+      );
+      const { data: prof } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", row.professional_id)
+        .maybeSingle();
+      const event =
+        finalStatus === "approved"
+          ? "identity.approved"
+          : finalStatus === "rejected"
+            ? "identity.rejected"
+            : "identity.needs_more_info";
+      await notifyVerificationEvent({
+        professionalId: row.professional_id,
+        event,
+        context: {
+          stripe_reason: (patch.stripe_reason as string | undefined) ?? null,
+          admin_note: (patch.admin_note as string | undefined) ?? null,
+        },
+        proName: (prof as { full_name?: string | null } | null)?.full_name ?? undefined,
+        alsoEmail: true,
+      });
+    } catch (e) {
+      console.error("[webhook.identity.notify] failed", (e as Error).message);
+    }
+  }
 }
 
 
