@@ -111,7 +111,7 @@ export const template = {
     const name = (data?.senderName as string) || "A potential client";
     return `New enquiry from ${name} — ${SITE_NAME}`;
   },
-  displayName: "Enquiry notification",
+  displayName: "Trainer · Enquiries — New enquiry",
   previewData: {
     proFirstName: "James",
     senderName: "Sarah Mitchell",

@@ -79,7 +79,7 @@ export const template = {
     if (days <= 0) return "Your insurance cover has lapsed";
     return `Your insurance expires in ${days} day${days === 1 ? "" : "s"}`;
   },
-  displayName: "Insurance renewal due",
+  displayName: "Trainer · Verification — Insurance renewal due",
   previewData: {
     proName: "Jordon",
     expiryDate: "2027-01-15",

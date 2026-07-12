@@ -89,7 +89,7 @@ const ReviewRemovedEmail = ({
 export const template = {
   component: ReviewRemovedEmail,
   subject: "A review on your profile was removed",
-  displayName: "Review removed (moderation)",
+  displayName: "Trainer · Reviews — Review removed",
   previewData: {
     proName: "Katie",
     clientName: "Arnie B.",

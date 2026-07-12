@@ -34,7 +34,7 @@ const ProfessionalReinstatedEmail = ({ proName }: Props) => {
 export const template = {
   component: ProfessionalReinstatedEmail,
   subject: () => `Your ${SITE_NAME} profile has been reinstated`,
-  displayName: "Professional reinstated",
+  displayName: "Trainer · Moderation — Reinstated",
   previewData: { proName: "Sam" },
 } satisfies TemplateEntry;
 

@@ -55,7 +55,7 @@ export const template = {
     const n = Number(d?.count ?? 1);
     return `Your REPS ${n === 1 ? "certificate is" : `${n} certificates are`} on the way`;
   },
-  displayName: "Certificates shipped",
+  displayName: "Provider · Certificates shipped",
   previewData: {
     providerName: "Forge Academy",
     count: 3,

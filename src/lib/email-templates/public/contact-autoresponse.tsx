@@ -71,7 +71,7 @@ export const template = {
       ? `We've got your message [${ticket}]`
       : `We've got your message`;
   },
-  displayName: "Contact form auto-response",
+  displayName: "Public · Contact form auto-response",
   previewData: {
     firstName: "Jane",
     ticketNumber: "TKT-4912",

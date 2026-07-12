@@ -57,7 +57,7 @@ export const template = {
   component: Email,
   subject: (d: Record<string, unknown>) =>
     `Your REPS membership renews on ${d.renewalDate ?? "soon"} — add a card to continue`,
-  displayName: "Renewal — card needed",
+  displayName: "Trainer · Billing — Renewal, card needed",
   previewData: {
     proName: "Jordon",
     renewalDate: "12 July 2026",

@@ -50,7 +50,7 @@ const ProfessionalSuspendedEmail = ({
 export const template = {
   component: ProfessionalSuspendedEmail,
   subject: () => `Your ${SITE_NAME} profile has been suspended`,
-  displayName: "Professional suspended",
+  displayName: "Trainer · Moderation — Suspended",
   previewData: { proName: "Sam", reason: "Profile content under review." },
 } satisfies TemplateEntry;
 

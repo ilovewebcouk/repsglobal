@@ -89,7 +89,7 @@ export const template = {
     const pro = (data?.proName as string) || "Your coach";
     return `${pro} invited you to train on ${SITE_NAME}`;
   },
-  displayName: "Client invite",
+  displayName: "Client · Invite to portal",
   previewData: {
     proName: "James Carter",
     tradingName: "Carter Strength",

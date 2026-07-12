@@ -73,7 +73,7 @@ export const template = {
     const proName = (data?.proName as string) || "your trainer";
     return `${proName} asked for your review on REPS`;
   },
-  displayName: "Review request",
+  displayName: "Trainer · Reviews — Review request",
   previewData: {
     proName: "James Wilson",
     reviewUrl: "https://repsuk.org/r/abc123",

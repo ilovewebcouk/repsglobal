@@ -107,7 +107,7 @@ export const template = {
     const title = (data?.title as string) || "Coaching proposal";
     return `${pro} sent you a proposal: ${title}`;
   },
-  displayName: "Proposal sent",
+  displayName: "Trainer · Enquiries — Proposal sent",
   previewData: {
     clientFirstName: "Sarah",
     proName: "James Wilson",

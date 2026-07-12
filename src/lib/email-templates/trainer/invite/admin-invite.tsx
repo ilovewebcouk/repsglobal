@@ -68,7 +68,7 @@ const AdminInviteEmail = ({
 export const template = {
   component: AdminInviteEmail,
   subject: () => `You've been granted admin access to ${SITE_NAME}`,
-  displayName: "Admin invite",
+  displayName: "Trainer · Invite — Admin console access",
   previewData: {
     inviteeName: "Kate",
     inviterName: "Cruz at REPs",

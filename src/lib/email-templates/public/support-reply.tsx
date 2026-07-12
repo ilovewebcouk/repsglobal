@@ -55,7 +55,7 @@ export const template = {
     const ticket = (data?.ticketNumber as string) || "";
     return ticket ? `Re: ${subj} [${ticket}]` : `Re: ${subj}`;
   },
-  displayName: "Support reply",
+  displayName: "Public · Support reply",
   previewData: {
     ticketNumber: "TKT-4901",
     agentName: "Emma at REPS",

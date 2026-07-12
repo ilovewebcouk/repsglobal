@@ -48,7 +48,7 @@ const CancellationConfirmationEmail = ({ proName, tierLabel = "REPS Core", endsA
 export const template = {
   component: CancellationConfirmationEmail,
   subject: (d: Record<string, any>) => `Your ${d?.tierLabel ?? "REPS"} cancellation is confirmed`,
-  displayName: "Cancellation confirmation",
+  displayName: "Trainer · Billing — Cancellation confirmation",
   previewData: { proName: "Sam", tierLabel: "REPS Core", endsAt: "2027-01-01" },
 } satisfies TemplateEntry;
 

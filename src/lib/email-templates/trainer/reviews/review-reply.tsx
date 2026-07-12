@@ -75,7 +75,7 @@ export const template = {
     const proName = (data?.proName as string) || "Your trainer";
     return `${proName} replied to your review`;
   },
-  displayName: "Review reply",
+  displayName: "Trainer · Reviews — Review reply",
   previewData: {
     proName: "Katie Gibbs",
     proSlug: "katie-gibbs",

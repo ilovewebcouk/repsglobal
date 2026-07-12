@@ -60,7 +60,7 @@ export const template = {
   component: LearnerCertificateIssuedEmail,
   subject: (d: Record<string, any>) =>
     `Your REPS certificate for ${d?.courseTitle ?? "your course"} is ready`,
-  displayName: "Learner certificate issued",
+  displayName: "Learner · Certificate issued",
   previewData: {
     learnerName: "Alex Morgan",
     courseTitle: "Level 3 Personal Trainer",

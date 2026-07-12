@@ -53,7 +53,7 @@ export const template = {
     const n = Number(d?.count ?? 1);
     return `Your REPS ${n === 1 ? "certificate is" : `${n} certificates are`} ready`;
   },
-  displayName: "Certificates ready",
+  displayName: "Provider · Certificates ready",
   previewData: { providerName: "Forge Academy", count: 3, formatLabel: "printed_and_digital" },
 } satisfies TemplateEntry;
 

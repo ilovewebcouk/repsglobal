@@ -61,7 +61,7 @@ const ProfessionalInviteEmail = ({
 export const template = {
   component: ProfessionalInviteEmail,
   subject: () => `You've been invited to join ${SITE_NAME}`,
-  displayName: "Professional invite",
+  displayName: "Trainer · Invite — Join REPs",
   previewData: {
     inviteeName: "Sam",
     inviterName: "Cruz at REPs",

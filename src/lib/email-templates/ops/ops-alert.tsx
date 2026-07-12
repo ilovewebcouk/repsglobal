@@ -78,7 +78,7 @@ export const template = {
     const kind = (data?.kind as string) || "alert";
     return `[${sev}] REPS ops: ${kind}`;
   },
-  displayName: "Ops alert notification",
+  displayName: "Ops · Alert notification",
   previewData: {
     kind: "payments.failed_active",
     severity: "crit",

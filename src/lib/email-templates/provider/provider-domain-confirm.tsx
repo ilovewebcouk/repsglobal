@@ -67,7 +67,7 @@ export const template = {
     const d = (data.domain as string | undefined) ?? "your provider";
     return `Confirm your ${d} email for ${SITE_NAME}`;
   },
-  displayName: "Provider domain confirm",
+  displayName: "Provider · Domain confirm",
   previewData: {
     providerName: "Northline Academy",
     domain: "northlineacademy.com",

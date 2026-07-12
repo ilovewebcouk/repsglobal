@@ -44,7 +44,7 @@ const Email = ({
 export const template = {
   component: Email,
   subject: "Reactivate your REPS profile",
-  displayName: "Win-back — lapsed",
+  displayName: "Trainer · Lifecycle — Win-back (lapsed)",
   previewData: {
     proName: "Jordon",
     renewUrl: "https://repsuk.org/renew/example",

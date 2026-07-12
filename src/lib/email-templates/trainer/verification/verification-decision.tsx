@@ -117,7 +117,7 @@ export const template = {
     const kind = (data.kind as Kind | undefined) ?? "provider_domain.approved";
     return `${COPY[kind]?.title ?? "Verification update"} — ${SITE_NAME}`;
   },
-  displayName: "Verification decision",
+  displayName: "Trainer · Verification — Decision",
   previewData: {
     kind: "provider_domain.approved",
     proName: "Northline Academy",

@@ -50,7 +50,7 @@ const WelcomeSignupEmail = ({ proName }: Props) => {
 export const template = {
   component: WelcomeSignupEmail,
   subject: () => "Welcome to REPS — let's get you verified",
-  displayName: "Welcome (sign-up)",
+  displayName: "Trainer · Lifecycle — Welcome (sign-up)",
   previewData: { proName: "Sam" },
 } satisfies TemplateEntry;
 

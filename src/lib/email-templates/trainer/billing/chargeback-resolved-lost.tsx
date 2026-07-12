@@ -40,7 +40,7 @@ const ChargebackResolvedLostEmail = ({ proName }: Props) => {
 export const template = {
   component: ChargebackResolvedLostEmail,
   subject: () => "Your REPS payment dispute has been closed",
-  displayName: "Chargeback resolved — lost",
+  displayName: "Trainer · Billing — Chargeback lost",
   previewData: { proName: "Sam" },
 } satisfies TemplateEntry;
 

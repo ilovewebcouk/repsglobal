@@ -47,7 +47,7 @@ const ChargebackReceivedEmail = ({ proName, amount }: Props) => {
 export const template = {
   component: ChargebackReceivedEmail,
   subject: () => "We've received a payment dispute on your REPS membership",
-  displayName: "Chargeback received",
+  displayName: "Trainer · Billing — Chargeback received",
   previewData: { proName: "Sam", amount: "£34.00" },
 } satisfies TemplateEntry;
 

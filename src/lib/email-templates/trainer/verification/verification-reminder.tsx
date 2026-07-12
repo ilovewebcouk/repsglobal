@@ -49,7 +49,7 @@ const VerificationReminderEmail = ({ proName, missing = [] }: Props) => {
 export const template = {
   component: VerificationReminderEmail,
   subject: () => `Finish your ${SITE_NAME} verification`,
-  displayName: "Verification reminder",
+  displayName: "Trainer · Verification — Reminder",
   previewData: { proName: "Sam", missing: ["insurance", "cert"] },
 } satisfies TemplateEntry;
 

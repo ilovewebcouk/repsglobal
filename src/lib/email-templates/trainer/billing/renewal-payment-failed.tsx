@@ -52,7 +52,7 @@ const Email = ({
 export const template = {
   component: Email,
   subject: "Your REPS payment didn't go through — update your card",
-  displayName: "Renewal — payment failed",
+  displayName: "Trainer · Billing — Renewal, payment failed",
   previewData: {
     proName: "Jordon",
     amount: "£34",

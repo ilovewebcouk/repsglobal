@@ -111,7 +111,7 @@ export const template = {
         InsuranceBlockedProps["reason"]
       >
     ],
-  displayName: "Insurance blocked (verification)",
+  displayName: "Trainer · Verification — Insurance blocked",
   previewData: {
     proName: "Jordon",
     reason: "expired" as const,

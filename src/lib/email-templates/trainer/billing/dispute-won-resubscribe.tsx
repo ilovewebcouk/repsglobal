@@ -64,7 +64,7 @@ const DisputeWonResubscribeEmail = ({ proName }: Props) => {
 export const template = {
   component: DisputeWonResubscribeEmail,
   subject: "Your REPS dispute is resolved — welcome back",
-  displayName: "Dispute won — resubscribe",
+  displayName: "Trainer · Billing — Dispute won, resubscribe",
   previewData: { proName: "Sam" },
 } satisfies TemplateEntry;
 

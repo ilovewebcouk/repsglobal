@@ -50,7 +50,7 @@ const PurchaseConfirmationEmail = ({
 export const template = {
   component: PurchaseConfirmationEmail,
   subject: (d: Record<string, any>) => `Welcome to ${d?.tierLabel ?? "REPS Core"}`,
-  displayName: "Purchase confirmation",
+  displayName: "Trainer · Billing — Purchase confirmation",
   previewData: { proName: "Sam", tierLabel: "REPS Core", amountText: "£34", periodText: "/year" },
 } satisfies TemplateEntry;
 

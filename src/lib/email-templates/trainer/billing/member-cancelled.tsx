@@ -73,7 +73,7 @@ const MemberCancelledEmail = ({ proName, reasonLabel }: Props) => {
 export const template = {
   component: MemberCancelledEmail,
   subject: "Your REPS account is closed",
-  displayName: "Member cancelled",
+  displayName: "Trainer · Billing — Subscription cancelled",
   previewData: { proName: "Sam Carter", reasonLabel: "at your request" },
 } satisfies TemplateEntry;
 
