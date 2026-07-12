@@ -340,6 +340,13 @@ async function handleIdentityEvent(
 
   // Mirror identity state onto professionals so other systems (cert name-match,
   // public profile badges, "verified since" copy) have a single source of truth.
+  //
+  // Stripe fires multiple events per session (.created / .processing /
+  // .requires_input / .verified) and they can arrive out of order. Never
+  // downgrade an already-approved identity from a late-arriving intermediate
+  // event — only terminal states (approved / rejected / needs_more_info)
+  // mirror onto professionals. `.processing` and `.created` only refresh the
+  // session id.
   const proPatch: Record<string, unknown> = {
     stripe_identity_session_id: vs.id,
   };
@@ -348,12 +355,19 @@ async function handleIdentityEvent(
     proPatch.identity_verified_at = new Date().toISOString();
     if (docName) proPatch.identity_verified_name = docName;
     if (patch.dob_on_doc) proPatch.identity_verified_dob = patch.dob_on_doc;
-  } else if (finalStatus === "rejected") {
-    proPatch.identity_status = "rejected";
-  } else if (finalStatus === "needs_more_info") {
-    proPatch.identity_status = "needs_more_info";
-  } else {
-    proPatch.identity_status = "pending";
+  } else if (finalStatus === "rejected" || finalStatus === "needs_more_info") {
+    proPatch.identity_status = finalStatus;
+  }
+  // Load current identity_status and refuse to downgrade an approved row.
+  const { data: proCurrent } = await supabaseAdmin
+    .from("professionals")
+    .select("identity_status")
+    .eq("id", row.professional_id)
+    .maybeSingle();
+  const currentStatus = (proCurrent as { identity_status?: string | null } | null)
+    ?.identity_status ?? null;
+  if (currentStatus === "approved" && proPatch.identity_status !== "approved") {
+    delete proPatch.identity_status;
   }
   await supabaseAdmin
     .from("professionals")
