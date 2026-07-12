@@ -61,7 +61,7 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: "https://repsuk.org/" },
-      { rel: "preload", as: "image", href: heroCoaching.url, fetchpriority: "high" },
+      { rel: "preload", as: "image", href: heroCoaching.url, fetchPriority: "high" },
     ],
 
   }),
