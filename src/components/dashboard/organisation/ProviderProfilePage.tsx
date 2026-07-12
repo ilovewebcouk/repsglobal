@@ -91,9 +91,11 @@ export function ProviderProfilePage() {
     queryFn: () => fetchNameStatus(),
   });
 
-  const submitName = useServerFn(submitProviderNameChange);
-  const [nameInput, setNameInput] = React.useState("");
-  const [nameSaving, setNameSaving] = React.useState(false);
+  const fetchVerifSummary = useServerFn(getProviderVerificationSummary);
+  const { data: verifSummary } = useQuery({
+    queryKey: ["provider-verification-summary"],
+    queryFn: () => fetchVerifSummary(),
+  });
 
   const fetchDomainStatus = useServerFn(getProviderDomainVerification);
   const { data: domainStatus } = useQuery({
@@ -111,41 +113,6 @@ export function ProviderProfilePage() {
 
   const namePending = !!nameStatus?.pending;
   const approvedName = nameStatus?.approved_name ?? "";
-  const pendingName = nameStatus?.pending?.requested_name ?? "";
-
-  // Seed the input with the current approved name (or pending, if any) once loaded.
-  React.useEffect(() => {
-    if (nameStatus) setNameInput(pendingName || approvedName || "");
-  }, [nameStatus, pendingName, approvedName]);
-
-  const nameDirty =
-    nameInput.trim().length > 0 &&
-    nameInput.trim() !== (pendingName || approvedName);
-
-  async function submitNameChange() {
-    const requested = nameInput.trim();
-    if (!requested) {
-      toast.error("Enter a provider name.");
-      return;
-    }
-    setNameSaving(true);
-    try {
-      const res = await submitName({ data: { requested_name: requested } });
-      if ("applied" in res && res.applied) {
-        toast.success("Provider name set.");
-      } else if ("submitted" in res && res.submitted) {
-        toast.success("Change submitted — awaiting REPS review.");
-      } else {
-        toast.success("Saved.");
-      }
-      void qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
-      void qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not save.");
-    } finally {
-      setNameSaving(false);
-    }
-  }
 
   const websiteLocked = domainStatus?.status === "approved";
   const approvedWebsite = domainStatus?.rawWebsite ?? "";
