@@ -12,6 +12,8 @@ import {
 } from "@react-email/components";
 import type { TemplateEntry } from "./registry";
 
+// REPs admin invite template — rebuilt snapshot trigger
+
 interface AdminInviteProps {
   inviteeName?: string;
   inviterName?: string;
