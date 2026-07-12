@@ -6,6 +6,7 @@
  * dashboard-profile.functions (avatar / logo) and hero.functions (hero image).
  */
 import * as React from "react";
+import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -31,9 +32,9 @@ import {
 } from "@/lib/profile/provider-profile.functions";
 import {
   getMyProviderNameStatus,
-  submitProviderNameChange,
 } from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
+import { getProviderVerificationSummary } from "@/lib/verification/provider-verification.functions";
 import {
   listMyProviderChanges,
   PROVIDER_FIELD_LABELS,
@@ -91,9 +92,11 @@ export function ProviderProfilePage() {
     queryFn: () => fetchNameStatus(),
   });
 
-  const submitName = useServerFn(submitProviderNameChange);
-  const [nameInput, setNameInput] = React.useState("");
-  const [nameSaving, setNameSaving] = React.useState(false);
+  const fetchVerifSummary = useServerFn(getProviderVerificationSummary);
+  const { data: verifSummary } = useQuery({
+    queryKey: ["provider-verification-summary"],
+    queryFn: () => fetchVerifSummary(),
+  });
 
   const fetchDomainStatus = useServerFn(getProviderDomainVerification);
   const { data: domainStatus } = useQuery({
@@ -111,41 +114,6 @@ export function ProviderProfilePage() {
 
   const namePending = !!nameStatus?.pending;
   const approvedName = nameStatus?.approved_name ?? "";
-  const pendingName = nameStatus?.pending?.requested_name ?? "";
-
-  // Seed the input with the current approved name (or pending, if any) once loaded.
-  React.useEffect(() => {
-    if (nameStatus) setNameInput(pendingName || approvedName || "");
-  }, [nameStatus, pendingName, approvedName]);
-
-  const nameDirty =
-    nameInput.trim().length > 0 &&
-    nameInput.trim() !== (pendingName || approvedName);
-
-  async function submitNameChange() {
-    const requested = nameInput.trim();
-    if (!requested) {
-      toast.error("Enter a provider name.");
-      return;
-    }
-    setNameSaving(true);
-    try {
-      const res = await submitName({ data: { requested_name: requested } });
-      if ("applied" in res && res.applied) {
-        toast.success("Provider name set.");
-      } else if ("submitted" in res && res.submitted) {
-        toast.success("Change submitted — awaiting REPS review.");
-      } else {
-        toast.success("Saved.");
-      }
-      void qc.invalidateQueries({ queryKey: ["my-provider-name-status"] });
-      void qc.invalidateQueries({ queryKey: ["my-provider-profile"] });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not save.");
-    } finally {
-      setNameSaving(false);
-    }
-  }
 
   const websiteLocked = domainStatus?.status === "approved";
   const approvedWebsite = domainStatus?.rawWebsite ?? "";
@@ -421,17 +389,29 @@ export function ProviderProfilePage() {
           </div>
         </div>
 
-        {/* IDENTITY */}
+        {/* IDENTITY — read-only. All three values are locked during verification. */}
         <PPanel>
           <div className="border-b border-reps-border px-5 py-4">
-            <h3 className="text-[14px] font-semibold text-white">Identity</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">
-              The name, logo and hero image people see on your public page.
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-[14px] font-semibold text-white">Identity</h3>
+                <p className="mt-0.5 text-[12px] text-white/55">
+                  Locked during verification. Contact support to change any of these.
+                </p>
+              </div>
+              <Link
+                to="/dashboard/verification"
+                className="shrink-0 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-hover"
+              >
+                View verification
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-col gap-5 px-5 py-4">
-            <Field
+          <div className="flex flex-col divide-y divide-reps-border">
+            <LockedRow
               label="Provider name"
+              value={approvedName || verifSummary?.name.providerName || null}
+              missingHint="Not yet locked in. Complete step 02 of verification."
               hint={
                 data?.slug ? (
                   <>
@@ -445,56 +425,33 @@ export function ProviderProfilePage() {
                       repsuk.org/t/{data.slug}
                     </a>
                   </>
-                ) : (
-                  "Your public URL is generated automatically from your provider name once approved."
-                )
+                ) : null
               }
-            >
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <input
-                    type="text"
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    placeholder="e.g. Diverse Trainers"
-                    className={`${inputCls} flex-1`}
-                  />
-                  <button
-                    type="button"
-                    onClick={submitNameChange}
-                    disabled={nameSaving || !nameDirty}
-                    className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
-                  >
-                    {nameSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                    Submit name change
-                  </button>
-                </div>
-                <p className="text-[11.5px] text-white/45">
-                  Change this any time. Every change is reviewed by REPs before it appears on your public page and URL.
-                </p>
-                {namePending ? (
-                  <div className="flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
-                    <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <span>
-                      Awaiting admin approval —{" "}
-                      <span className="font-semibold">
-                        &ldquo;{nameStatus?.pending?.requested_name}&rdquo;
-                      </span>
-                      . Your public page still shows{" "}
-                      <span className="font-semibold">
-                        {approvedName ? `"${approvedName}"` : "no name yet"}
-                      </span>{" "}
-                      until this is reviewed.
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            </Field>
-
-
-
+              pending={
+                namePending
+                  ? `Awaiting review: "${nameStatus?.pending?.requested_name}"`
+                  : null
+              }
+            />
+            <LockedRow
+              label="Legal identity (from Stripe)"
+              value={verifSummary?.identity.verifiedName ?? null}
+              missingHint="Not yet verified. Complete step 01 of verification."
+              hint="Private. Only REPS admin can see this."
+            />
+            <LockedRow
+              label="Provider domain"
+              value={verifSummary?.domain.domain ?? null}
+              missingHint="Not yet verified. Complete step 03 of verification."
+              hint={
+                verifSummary?.domain.email
+                  ? `Verified via ${verifSummary.domain.email}`
+                  : null
+              }
+            />
           </div>
         </PPanel>
+
 
         {/* ABOUT */}
         <PPanel>
@@ -684,3 +641,49 @@ function Field({
     </label>
   );
 }
+
+function LockedRow({
+  label,
+  value,
+  missingHint,
+  hint,
+  pending,
+}: {
+  label: string;
+  value: string | null;
+  missingHint: string;
+  hint?: React.ReactNode;
+  pending?: string | null;
+}) {
+  const hasValue = !!value && value.trim().length > 0;
+  return (
+    <div className="flex flex-col gap-1.5 px-5 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-[12.5px] font-medium text-white/85">{label}</span>
+        {hasValue ? (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-300">
+            <Check className="h-3 w-3" /> Locked
+          </span>
+        ) : (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-2 py-0.5 text-[10.5px] font-semibold text-white/60">
+            Not yet locked
+          </span>
+        )}
+      </div>
+      <div
+        className={`text-[14px] font-semibold ${
+          hasValue ? "text-white" : "text-white/40"
+        }`}
+      >
+        {hasValue ? value : missingHint}
+      </div>
+      {hint ? <span className="text-[11.5px] text-white/45">{hint}</span> : null}
+      {pending ? (
+        <span className="mt-1 inline-flex items-center gap-1.5 rounded-[8px] border border-amber-400/25 bg-amber-500/10 px-2.5 py-1 text-[11.5px] font-semibold text-amber-200">
+          <Clock className="h-3 w-3" /> {pending}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
