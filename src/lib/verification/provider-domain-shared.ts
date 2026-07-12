@@ -105,7 +105,7 @@ export interface ProviderDomainState {
   adminDecisionReason: string | null;
   adminNotes: string | null;
   /**
-   * True when `professionals.website` isn't set / can't be parsed —
+   * True when `professionals.website_url` isn't set / can't be parsed —
    * user must fix their profile before starting.
    */
   websiteMissing: boolean;
