@@ -293,48 +293,34 @@ async function handleIdentityEvent(
     }
   }
 
-  // Name-match gate: Stripe Identity verifies the doc/selfie but does not
-  // confirm the name on the ID matches the REPS profile. If we get an
-  // auto-approve from Stripe AND have a doc name, cross-check against
-  // profiles.full_name and downgrade to needs_more_info on mismatch.
+  // Name-match gate: for individual accounts, cross-check the Stripe ID name
+  // against profiles.full_name and downgrade to needs_more_info on mismatch.
+  // For organisation (training provider) accounts we skip this — the profile
+  // name is the organisation display name (e.g. "Northline Fitness Academy"),
+  // which will never match a personal ID. Stripe's verification result IS the
+  // identity for the org and is stored as-is on identity_verified_name.
   if (mappedStatus === "approved" && docName) {
-    // For organisation accounts, compare against the stored contact-person
-    // name (contact_first_name + contact_last_name) instead of the org's
-    // display name, which will never match a personal ID.
     const { data: pro } = await supabaseAdmin
       .from("professionals")
-      .select("account_type, contact_first_name, contact_last_name")
+      .select("account_type")
       .eq("id", row.professional_id)
       .maybeSingle();
-    const proAny = pro as {
-      account_type?: string | null;
-      contact_first_name?: string | null;
-      contact_last_name?: string | null;
-    } | null;
+    const proAny = pro as { account_type?: string | null } | null;
 
-    let compareName: string | null = null;
-    if (
-      proAny?.account_type === "organisation" &&
-      (proAny.contact_first_name || proAny.contact_last_name)
-    ) {
-      compareName = [proAny.contact_first_name, proAny.contact_last_name]
-        .filter(Boolean)
-        .join(" ")
-        .replace(/\s+/g, " ")
-        .trim() || null;
-    } else {
+    if (proAny?.account_type !== "organisation") {
       const { data: profile } = await supabaseAdmin
         .from("profiles")
         .select("full_name")
         .eq("id", row.professional_id)
         .maybeSingle();
-      compareName = (profile as { full_name?: string | null } | null)?.full_name ?? null;
-    }
+      const compareName =
+        (profile as { full_name?: string | null } | null)?.full_name ?? null;
 
-    if (compareName && !namesMatch(docName, compareName)) {
-      patch.status = "needs_more_info";
-      patch.stripe_reason = `Name on ID ("${docName}") does not match the name on your REPS account ("${compareName}"). Update your account to match your legal name, or restart the check with the correct ID.`;
-      patch.admin_note = "Auto-flagged: name mismatch with profile";
+      if (compareName && !namesMatch(docName, compareName)) {
+        patch.status = "needs_more_info";
+        patch.stripe_reason = `Name on ID ("${docName}") does not match the name on your REPS account ("${compareName}"). Update your account to match your legal name, or restart the check with the correct ID.`;
+        patch.admin_note = "Auto-flagged: name mismatch with profile";
+      }
     }
   }
 
