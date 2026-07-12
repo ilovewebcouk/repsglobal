@@ -120,7 +120,7 @@ export const getProviderVerificationSummary = createServerFn({ method: "GET" })
       domain: {
         done: domainDone,
         status: domStatus,
-        domain: (dom?.expected_domain as string | null) ?? null,
+        domain: (dom?.domain as string | null) ?? null,
         email: (dom?.email as string | null) ?? null,
         website: (pro?.website_url as string | null) ?? null,
       },
