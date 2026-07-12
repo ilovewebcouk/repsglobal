@@ -96,7 +96,7 @@ export const Route = createFileRoute("/cpd")({
     ],
     links: [
       { rel: "canonical", href: CANONICAL },
-      { rel: "preload", as: "image", href: heroImg, fetchpriority: "high" },
+      { rel: "preload", as: "image", href: heroImg, fetchPriority: "high" },
     ],
     scripts: [
       {

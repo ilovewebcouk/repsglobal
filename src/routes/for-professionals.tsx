@@ -52,7 +52,7 @@ export const Route = createFileRoute("/for-professionals")({
     links: [
       { rel:"canonical", href:"https://repsuk.org/for-professionals" },
       // Preload the LCP hero image — biggest single perceived-performance win on this page.
-      { rel:"preload", as:"image", href: heroGym.url, fetchpriority:"high" },
+      { rel:"preload", as:"image", href: heroGym.url, fetchPriority:"high" },
     ],
   }),
   component: ForProsPage,

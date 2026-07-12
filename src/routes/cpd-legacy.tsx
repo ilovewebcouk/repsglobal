@@ -72,7 +72,7 @@ export const Route = createFileRoute("/cpd-legacy")({
     ],
     links: [
       { rel: "canonical", href: CANONICAL },
-      { rel: "preload", as: "image", href: heroCpd, fetchpriority: "high" },
+      { rel: "preload", as: "image", href: heroCpd, fetchPriority: "high" },
     ],
     scripts: [
       {

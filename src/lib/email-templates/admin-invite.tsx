@@ -12,8 +12,6 @@ import {
 } from "@react-email/components";
 import type { TemplateEntry } from "./registry";
 
-// REPs admin invite template — rebuilt snapshot trigger
-
 interface AdminInviteProps {
   inviteeName?: string;
   inviterName?: string;
@@ -31,7 +29,7 @@ const AdminInviteEmail = ({
   return (
     <Html lang="en" dir="ltr">
       <Head />
-      <Preview>You've been granted admin access to {SITE_NAME}</Preview>
+      <Preview>Your {SITE_NAME} admin invite is ready</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={brandBar}>

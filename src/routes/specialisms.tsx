@@ -55,7 +55,7 @@ export const Route = createFileRoute("/specialisms")({
     ],
     links: [
       { rel:"canonical", href: CANONICAL },
-      { rel:"preload", as:"image", href: heroSpecialisms, fetchpriority:"high" },
+      { rel:"preload", as:"image", href: heroSpecialisms, fetchPriority:"high" },
     ],
     scripts: [
       {
