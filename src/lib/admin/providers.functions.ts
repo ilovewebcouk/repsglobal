@@ -2,8 +2,8 @@
  * Admin — Training-provider control surface.
  *
  * Provider discriminator: `professionals.account_type = 'organisation'`.
- * Canonical provider display name: `profiles.full_name`.
- * `professionals.legal_entity_name` is NEVER surfaced or edited here.
+ * Canonical provider display name: `profiles.full_name` (the ONE source of
+ * truth for a training provider's display name — e.g. "Northline Fitness Academy").
  *
  * All handlers verify `has_role('admin')` and audit via the existing
  * `log_admin_action` RPC. Service-role client is loaded lazily inside

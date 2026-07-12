@@ -17,9 +17,6 @@ export type SettingsBundle = {
     locale: string;
     legal_name_locked: boolean;
     account_type: "individual" | "organisation";
-    legal_entity_name: string | null;
-    contact_first_name: string | null;
-    contact_last_name: string | null;
     identity_status:
       | "none"
       | "pending"
@@ -74,7 +71,7 @@ export const getMySettings = createServerFn({ method: "GET" })
         supabase
           .from("professionals")
           .select(
-            "contact_phone, timezone, locale, identity_status, is_published, account_type, legal_entity_name, contact_first_name, contact_last_name",
+            "contact_phone, timezone, locale, identity_status, is_published, account_type",
           )
           .eq("id", userId)
           .maybeSingle(),
@@ -123,9 +120,6 @@ export const getMySettings = createServerFn({ method: "GET" })
           ((proRow.account_type as string | null) === "organisation"
             ? "organisation"
             : "individual"),
-        legal_entity_name: (proRow.legal_entity_name as string | null) ?? null,
-        contact_first_name: (proRow.contact_first_name as string | null) ?? null,
-        contact_last_name: (proRow.contact_last_name as string | null) ?? null,
         identity_status: idStatus,
         legal_name_locked: idStatus === "approved",
       },
@@ -165,9 +159,6 @@ const AccountInput = z.object({
     .optional(),
   timezone: z.string().trim().min(1).max(64),
   locale: z.string().trim().min(2).max(16),
-  legal_entity_name: z.string().trim().max(160).nullable().optional(),
-  contact_first_name: z.string().trim().max(80).nullable().optional(),
-  contact_last_name: z.string().trim().max(80).nullable().optional(),
 });
 
 export const updateMyAccount = createServerFn({ method: "POST" })
@@ -178,18 +169,16 @@ export const updateMyAccount = createServerFn({ method: "POST" })
 
     const { data: proCheck } = await supabase
       .from("professionals")
-      .select("identity_status, account_type")
+      .select("identity_status")
       .eq("id", userId)
       .maybeSingle();
     const proCheckRow = proCheck as {
       identity_status?: string | null;
-      account_type?: string | null;
     } | null;
     const idStatus = proCheckRow?.identity_status ?? null;
     const legalLocked = idStatus === "approved";
-    const isOrganisation = proCheckRow?.account_type === "organisation";
 
-    const profilePatch: Record<string, unknown> = { full_name: data.full_name ?? null,  };
+    const profilePatch: Record<string, unknown> = { full_name: data.full_name ?? null };
     if (!legalLocked) {
       profilePatch.full_name = data.full_name;
     }
@@ -206,26 +195,6 @@ export const updateMyAccount = createServerFn({ method: "POST" })
       timezone: data.timezone,
       locale: data.locale,
     };
-    if (isOrganisation) {
-      if (data.legal_entity_name !== undefined) {
-        proPatch.legal_entity_name =
-          data.legal_entity_name && data.legal_entity_name.trim() !== ""
-            ? data.legal_entity_name.trim()
-            : null;
-      }
-      if (data.contact_first_name !== undefined) {
-        proPatch.contact_first_name =
-          data.contact_first_name && data.contact_first_name.trim() !== ""
-            ? data.contact_first_name.trim()
-            : null;
-      }
-      if (data.contact_last_name !== undefined) {
-        proPatch.contact_last_name =
-          data.contact_last_name && data.contact_last_name.trim() !== ""
-            ? data.contact_last_name.trim()
-            : null;
-      }
-    }
     const { error: proErr } = await supabase
       .from("professionals")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
