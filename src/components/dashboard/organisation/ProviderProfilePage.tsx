@@ -6,6 +6,7 @@
  * dashboard-profile.functions (avatar / logo) and hero.functions (hero image).
  */
 import * as React from "react";
+import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
