@@ -161,6 +161,8 @@ export function ProviderVerificationPage() {
 function Hero({
   identityDone,
   identityStatus,
+  nameLocked,
+  namePending,
   domainDone,
   domainStatus,
   completed,
@@ -169,13 +171,15 @@ function Hero({
 }: {
   identityDone: boolean;
   identityStatus: string;
+  nameLocked: boolean;
+  namePending: boolean;
   domainDone: boolean;
   domainStatus: ProviderDomainState["status"];
-  completed: 0 | 1 | 2;
+  completed: 0 | 1 | 2 | 3;
   badgeTier: VerifiedTier;
   loading: boolean;
 }) {
-  const allDone = completed === 2;
+  const allDone = completed === 3;
   const empty = completed === 0;
   const pending = domainStatus === "pending_admin_review";
 
@@ -185,30 +189,35 @@ function Hero({
       ? "Verify your training provider"
       : pending
         ? "Awaiting REPS review"
-        : `${completed} of 2 — keep going`;
+        : `${completed} of 3 — keep going`;
 
   const sub = allDone
-    ? "Both checks passed. Your provider is verified across REPS."
+    ? "All three checks locked in. Your provider is verified across REPS."
     : empty
-      ? "Two checks: prove your identity with Stripe, then confirm an email on your provider's domain."
+      ? "Three checks: prove your identity, lock in your provider name, and confirm your domain. Each is permanent once submitted."
       : pending
         ? "You've confirmed your provider email. Our team will review your domain shortly."
-        : "One more check to complete your provider verification.";
+        : `${3 - completed} more ${3 - completed === 1 ? "check" : "checks"} to complete your provider verification.`;
 
   const identityLabel = identityDone
-    ? "Identity verified"
+    ? "Identity locked"
     : identityStatus === "pending"
       ? "Identity — in review"
-      : identityStatus === "rejected"
+      : identityStatus === "rejected" ||
+          identityStatus === "needs_more_info"
         ? "Identity — action needed"
-        : identityStatus === "needs_more_info"
-          ? "Identity — action needed"
-          : identityStatus === "expired"
-            ? "Identity — expired"
-            : "Identity — not started";
+        : identityStatus === "expired"
+          ? "Identity — expired"
+          : "Identity — not started";
+
+  const nameLabel = nameLocked
+    ? "Provider name locked"
+    : namePending
+      ? "Provider name — in review"
+      : "Provider name — not started";
 
   const domainLabel = domainDone
-    ? "Domain confirmed"
+    ? "Domain locked"
     : domainStatus === "pending_admin_review"
       ? "Domain — in review"
       : domainStatus === "email_sent"
@@ -232,6 +241,7 @@ function Hero({
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <LayerChip label={identityLabel} earned={identityDone} loading={loading} />
+            <LayerChip label={nameLabel} earned={nameLocked} loading={loading} />
             <LayerChip label={domainLabel} earned={domainDone} loading={loading} />
           </div>
 
@@ -242,7 +252,7 @@ function Hero({
           <p className="text-[11px] text-white/45 lg:text-right">
             {allDone
               ? "Live on every public surface."
-              : "Updates the moment both checks pass."}
+              : "Updates the moment all three checks lock in."}
           </p>
         </div>
       </div>
