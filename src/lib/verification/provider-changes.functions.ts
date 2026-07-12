@@ -506,6 +506,7 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
         context: {
           request_id: data.id,
           field_key: fieldKey,
+          field_label: fieldLabel,
           message:
             data.decision === "approved"
               ? `${fieldLabel} is now live on your public page.`
