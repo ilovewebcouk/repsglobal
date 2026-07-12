@@ -62,10 +62,12 @@ function useReturnToasts() {
     if (search.stripe_identity === "complete") {
       void qc.invalidateQueries({ queryKey: ["my-identity"] });
       void qc.invalidateQueries({ queryKey: ["my-trust-state"] });
+      void qc.invalidateQueries({ queryKey: ["provider-verification-summary"] });
       toast.success("ID check submitted — we'll confirm shortly.");
     }
     if (search.domain_confirm === "ok") {
       void qc.invalidateQueries({ queryKey: ["provider-domain-verification"] });
+      void qc.invalidateQueries({ queryKey: ["provider-verification-summary"] });
       toast.success("Email confirmed. Our team will review your domain shortly.");
     } else if (search.domain_confirm === "expired") {
       toast.error("That confirmation link expired. Send yourself a new one below.");
