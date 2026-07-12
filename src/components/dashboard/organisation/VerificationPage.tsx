@@ -294,8 +294,149 @@ function LayerChip({
 }
 
 /* -------------------------------------------------------------------------- */
+/* Provider name lock-in card (step 02)                                        */
+/* -------------------------------------------------------------------------- */
+
+function ProviderNameCard({
+  step,
+  summary,
+  loading,
+}: {
+  step: string;
+  summary: import("@/lib/verification/provider-verification.functions").ProviderVerificationSummary | undefined;
+  loading: boolean;
+}) {
+  const qc = useQueryClient();
+  const lockIn = useServerFn(lockInProviderName);
+  const locked = !!summary?.name.locked;
+  const lockedName = summary?.name.providerName ?? null;
+  const [value, setValue] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
+
+  async function handleLockIn() {
+    const trimmed = value.trim();
+    if (trimmed.length < 2) {
+      toast.error("Enter your training provider name.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Lock in "${trimmed}" as your training provider name?\n\nThis is permanent — you won't be able to change it yourself afterwards.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await lockIn({ data: { provider_name: trimmed } });
+      toast.success("Provider name locked in.");
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["provider-verification-summary"] }),
+        qc.invalidateQueries({ queryKey: ["my-provider-name-status"] }),
+        qc.invalidateQueries({ queryKey: ["my-provider-profile"] }),
+      ]);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <section
+      id="provider-name"
+      className="scroll-mt-24 rounded-[16px] border border-reps-border bg-reps-panel p-5"
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-[15px] font-semibold text-white">
+              Training provider name
+            </h2>
+            {locked ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                <Lock className="h-3 w-3" /> Locked
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-2 py-0.5 text-[10px] font-semibold text-white/60">
+                Action needed
+              </span>
+            )}
+          </div>
+          <p className="mt-0.5 text-[12px] text-white/55">
+            The trading name of your training provider — shown on your public
+            page and used in your REPS URL. Permanent once locked.
+          </p>
+        </div>
+        <span className="rounded-full bg-reps-panel-soft px-2.5 py-0.5 text-[11px] font-semibold text-white/60">
+          {step}
+        </span>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center gap-2 text-[13px] text-white/55">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
+        </div>
+      ) : locked ? (
+        <div className="rounded-[12px] border border-emerald-400/25 bg-emerald-500/5 p-4">
+          <div className="flex items-start gap-2.5">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-semibold text-white">
+                Locked as &ldquo;{lockedName}&rdquo;
+              </p>
+              <p className="mt-1 text-[12.5px] text-white/60">
+                This is your public REPS name. Contact support if it needs to
+                change.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-white/50">
+              Training provider name
+            </span>
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="e.g. Smart Dog Training"
+              maxLength={120}
+              className="h-10 rounded-[12px] border border-reps-border bg-reps-ink/60 px-3 text-[13.5px] text-white placeholder:text-white/30 focus:border-reps-orange focus:outline-none"
+            />
+            <span className="text-[11px] text-white/40">
+              This is what learners see. Once locked, only REPS support can
+              change it — there's no self-service edit.
+            </span>
+          </label>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleLockIn}
+              disabled={submitting || value.trim().length < 2}
+              className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-reps-orange px-4 text-[13px] font-semibold text-white transition hover:bg-reps-orange-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Lock className="h-3.5 w-3.5" />
+              )}
+              Lock in provider name
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* Domain email card                                                          */
 /* -------------------------------------------------------------------------- */
+
 
 function DomainEmailCard({
   state,
