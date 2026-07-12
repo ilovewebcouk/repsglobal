@@ -1,93 +1,77 @@
 ## Goal
 
-Training provider verification becomes a strict **3-step lock-in**. Once each step is submitted it is permanent; the provider can't edit it later. Profile becomes read-only mirror of what was locked in during verification. Nothing else on the dashboard unlocks until all 3 are complete.
+Clean up `/dashboard/profile` (`ProviderProfilePage.tsx`) so the identity trio (name / legal / domain) is the only locked block, the top warning banner is gone, per-field "Awaiting admin approval" pills replace the global banner, the website URL disappears entirely, and the social links section reuses the trainer-side `SocialLinksPicker`.
 
-**Scope:** Training providers only (`account_type = 'organisation'` / `trainerTier === 'training_provider'`). Individual trainers untouched.
+## Changes (single file: `src/components/dashboard/organisation/ProviderProfilePage.tsx`)
 
----
+### 1. Remove the top warning banner
+Delete the entire amber `<div className="rounded-[14px] border border-amber-400/25 …">` block (lines ~362–390) including the "Every profile change needs admin approval…" copy and the fields-awaiting-review sub-list. The per-field pills (below) replace it. Provider-name pending status already renders inside `LockedRow` in the Identity panel, so nothing is lost.
 
-## The 3 verification steps (locked, ordered display, any order to complete)
+### 2. Per-field "Awaiting admin approval" pill
+Add a tiny local helper next to `Field`:
 
-```text
-01  Identity            Stripe Identity  → writes profiles.full_name (source of truth)
-02  Training provider name  Free-text lock-in → writes profiles.full_name (only if 01 not yet done) OR just confirms 01's name
-03  Provider domain     Domain email confirm → writes professionals.website + verified flag
+```tsx
+function PendingPill() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-[8px] border border-amber-400/25 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+      <Clock className="h-3 w-3" /> Awaiting admin approval
+    </span>
+  );
+}
 ```
 
-**Decision required before build:** what does step 02 actually capture?
+Extend `Field` to accept an optional `pending?: boolean` prop; when true it renders `<PendingPill />` on the same row as the label (right-aligned via `justify-between`).
 
-Option A — **Stripe identity IS the provider name.** Step 02 becomes a one-time "Confirm this is your trading name" acknowledgement of the Stripe name (a single "Lock in as trading name" button). No free-text. `profiles.full_name` = Stripe identity name, locked forever.
+Wire the pill on the four editable fields that go through admin review, driven by `pendingChanges` / `pendingKeys` already in scope:
 
-Option B — Step 02 is a **separate free-text trading name** the provider types once, reviewed by admin, then locked. `profiles.full_name` = that trading name (independent of Stripe identity). Stripe identity remains stored on `professionals.identity_verified_name` for admin only.
+- Tagline → `pending={"tagline" in pendingChanges}`
+- Public description → `pending={"about" in pendingChanges}`
+- Contact email → `pending={"contact_email" in pendingChanges}` (only when not locked)
+- Telephone → `pending={"contact_phone" in pendingChanges}`
+- Address → `pending={"address" in pendingChanges}`
 
-I recommend **Option B** — a training provider's trading name ("Smart Dog Training") is almost never the director's legal identity ("Scott Cameron McKay"). The existing `provider_name_requests` table already models exactly this, but as an admin-approved *change*. We repurpose it as the one-time **lock-in** at signup.
+Social fields also go through approval — add a `pending` badge above the social grid if any `social_*` key is in `pendingChanges` (single pill labelled "Awaiting admin approval" placed in the Social panel header row).
 
-The rest of the plan assumes Option B. Confirm before I build.
+### 3. Remove Website URL field entirely
+It duplicates the domain locked in Identity (step 03 of verification).
 
----
+- Delete the entire `<Field label="Website URL" …>` block (~lines 501–520).
+- Drop `website_url` from `form` initial state, the `useEffect` hydration, the `update` typings implicitly (no code change needed there), the `saveMut` payload (`website_url: …`), the `baseline` object, and the `changedCount` pairs list.
+- Remove `websiteLocked` / `approvedWebsite` locals and the `getProviderDomainVerification` import if `domainStatus` is now only used for `emailLocked`/`approvedEmail`. (Keep `domainStatus` for email lock — it stays.)
+- Adjust the Contact grid: with Website gone, put Contact email on its own row (still `md:grid-cols-2`, but email spans `md:col-span-2` or sits alongside phone — keep email + phone side-by-side, address full width below).
 
-## Behaviour
+### 4. Contact email — keep, still editable
+Confirmed: leave the field editable (unless `emailLocked` from domain verification). Hint copy stays. Pending pill wires up as in §2.
 
-### Verification page (`/dashboard/verification`, provider variant)
+### 5. Telephone + Address
+No changes.
 
-Three numbered steps. Each step, once locked, shows:
-- Green "Locked" pill
-- Locked value (read-only)
-- Copy: *"Locked in on {date}. This can't be changed. Contact support if wrong."*
+### 6. Social links — reuse `SocialLinksPicker`
+Replace the whole Social `PPanel`'s current grid of five `SocialHandleInput`s with the shared picker used on the trainer profile:
 
-Header count: **"X of 3 — keep going"** / **"Verified — badge live"**.
+```tsx
+import { SocialLinksPicker, type SocialField } from "@/components/profile/SocialLinksPicker";
 
-Remove the "Auto-flagged: name mismatch with profile" banner (already agreed — Stripe is truth for identity; trading name is separate and locked separately).
+// inside panel body:
+<SocialLinksPicker
+  values={{
+    social_instagram: form.social_instagram,
+    social_tiktok: form.social_tiktok,
+    social_x: form.social_x,
+    social_youtube: form.social_youtube,
+    social_linkedin: form.social_linkedin,
+  }}
+  onChange={(field: SocialField, value: string) => update(field, value)}
+/>
+```
 
-### Profile page (`/dashboard/profile`, provider variant)
+Then drop the now-unused imports (`Instagram`, `Linkedin`, `Youtube`, local `XIcon`, `TiktokIcon`, `SocialHandleInput`). Panel header copy stays; add the single social-level "Awaiting admin approval" pill in the header when any social key is pending.
 
-Identity card becomes fully **read-only** for providers. Shows three rows:
-- Provider name (from `profiles.full_name`) — read-only, no "Submit name change" button
-- Legal identity (from `professionals.identity_verified_name`) — read-only
-- Provider domain (from `professionals.website`) — read-only
+### 7. Housekeeping
+- Remove `PROVIDER_FIELD_LABELS` import if no longer referenced after banner removal (keep the `ProviderFieldKey` type import — still used for `pendingKeys`).
+- Verify `changedCount` still counts correctly with `website_url` removed.
+- No server / migration changes. `updateMyProviderProfile` continues to accept `website_url` optionally; we just stop sending it (the previously approved value on `professionals.website_url` remains untouched, which is correct — it mirrors the verified domain).
 
-All three link to `/dashboard/verification` with copy: *"Locked during verification."*
-
-The current "Submit name change" flow is **removed** for providers. (Keep the `provider_name_requests` table + admin queue for support-driven corrections only; expose via support ticket, not self-service.)
-
-### Hard gate until all 3 steps complete
-
-Currently `IdentityGateWall` blocks dashboard when identity isn't approved. Extend to a **provider verification gate**: for `training_provider` accounts, if any of the 3 steps isn't complete → block every `/dashboard/*` route except `/dashboard/verification` and `/dashboard/support*`. Reuse `IdentityGateWall` styling, retitle "Complete verification to unlock your dashboard" with the 3 checkboxes.
-
-### Login prompt dialog
-
-Rewrite `VerificationPromptDialog` for training providers to show the 3 provider steps (not the trainer's identity/insurance/qualifications set). Copy makes the lock explicit: *"Complete all 3 steps to unlock your dashboard. Once locked, these details can't be changed."*
-
-Non-providers keep the existing 3-step trainer dialog.
-
----
-
-## Files touched
-
-- `src/components/dashboard/organisation/VerificationPage.tsx` — add step 02 (Trading name lock-in), retitle header "X of 3", add "Locked" state per step
-- `src/lib/verification/provider-name.functions.ts` — add `lockInProviderName` server fn (first-time only, no admin review); keep existing change-request path for admin use
-- `src/components/dashboard/organisation/ProviderProfilePage.tsx` — Identity card → read-only, remove "Submit name change" UI, add "Locked during verification" links
-- `src/routes/_authenticated/_professional/route.tsx` — extend gate: providers with <3 steps get gate wall
-- `src/components/dashboard/verification/IdentityGateWall.tsx` — provider variant showing 3-step checklist
-- `src/components/dashboard/verification/VerificationPromptDialog.tsx` — provider branch with 3 provider steps + locking copy
-- `src/lib/verification/trust.functions.ts` — expose `providerNameLocked` boolean + completion count for providers
-
-**No DB migration needed** if we reuse `provider_name_requests` (mark first row as `status='approved', auto_locked=true`). If we want a cleaner column, one migration to add `professionals.provider_name_locked_at timestamptz`.
-
----
-
-## QA sweep after build
-
-1. Grep: no editable "Provider name" input remains outside `/dashboard/verification` for providers.
-2. Provider with 0/1/2/3 steps → correct gate, correct badge, correct profile read-only state.
-3. Individual trainer path unchanged (identity/insurance/qualifications flow, Profile still editable where it was).
-4. Admin verification panel still shows both `profiles.full_name` (trading) + `identity_verified_name` (Stripe).
-5. Playwright screenshots: verification page (0/3, 2/3, 3/3), profile page locked, login dialog for provider.
-
----
-
-## One question before I proceed
-
-**Option A (Stripe name IS the trading name, one-click lock)** or **Option B (separate typed trading name, admin-reviewed once then locked forever)**?
-
-My recommendation: **Option B** — matches real-world provider naming, matches your screenshot ("Test Profile" ≠ "SCOTT CAMERON MCKAY"), and the plumbing already exists.
+## Out of scope
+- Server-side write path, admin review queue, and the domain-verification lock behaviour are unchanged.
+- No visual redesign of Identity panel — it already shows Provider name / Legal identity / Provider domain with locked pills, which is exactly what the user described.
