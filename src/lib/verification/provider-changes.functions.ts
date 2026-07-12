@@ -435,16 +435,33 @@ export const adminDecideProviderChange = createServerFn({ method: "POST" })
 
     async function notifyPro(params: {
       professionalId: string;
-      event: string;
+      event:
+        | "provider_change.approved"
+        | "provider_change.rejected"
+        | "provider_name.approved"
+        | "provider_name.rejected"
+        | "provider_domain.approved"
+        | "provider_domain.rejected";
       context: Record<string, unknown>;
     }) {
-      const { error: notifErr } = await sa.from("verification_notifications").insert({
-        professional_id: params.professionalId,
-        event: params.event,
-        context: params.context,
-      });
-      if (notifErr) {
-        console.error("[provider-changes.notify] insert failed", notifErr.message);
+      try {
+        const { notifyVerificationEvent } = await import(
+          "@/lib/verification/notifications.functions"
+        );
+        const { data: prof } = await sa
+          .from("profiles")
+          .select("full_name")
+          .eq("id", params.professionalId)
+          .maybeSingle();
+        await notifyVerificationEvent({
+          professionalId: params.professionalId,
+          event: params.event,
+          context: params.context,
+          proName: (prof as { full_name?: string | null } | null)?.full_name ?? undefined,
+          alsoEmail: true,
+        });
+      } catch (e) {
+        console.error("[provider-changes.notify] failed", (e as Error).message);
       }
     }
 
