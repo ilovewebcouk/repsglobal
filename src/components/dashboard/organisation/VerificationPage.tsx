@@ -94,12 +94,12 @@ function useReturnToasts() {
 export function ProviderVerificationPage() {
   useReturnToasts();
 
-  const fetchTrust = useServerFn(getTrustState);
-  const trustQ = useQuery({
-    queryKey: ["my-trust-state"],
-    queryFn: () => fetchTrust(),
+  const fetchSummary = useServerFn(getProviderVerificationSummary);
+  const summaryQ = useQuery({
+    queryKey: ["provider-verification-summary"],
+    queryFn: () => fetchSummary(),
   });
-  const t = trustQ.data;
+  const s = summaryQ.data;
 
   const fetchDomain = useServerFn(getProviderDomainVerification);
   const domainQ = useQuery({
@@ -108,11 +108,16 @@ export function ProviderVerificationPage() {
   });
   const d = domainQ.data;
 
-  const identityDone = !!t?.ticks.identity;
-  const domainDone = d?.status === "approved";
-  const completed = (Number(identityDone) + Number(domainDone)) as 0 | 1 | 2;
+  const identityDone = !!s?.identity.done;
+  const nameLocked = !!s?.name.locked;
+  const domainDone = !!s?.domain.done;
+  const completed = (Number(identityDone) + Number(nameLocked) + Number(domainDone)) as
+    | 0
+    | 1
+    | 2
+    | 3;
   const badgeTier: VerifiedTier =
-    completed === 2 ? "full" : identityDone ? "identity" : "none";
+    completed === 3 ? "full" : identityDone ? "identity" : "none";
 
   return (
     <DashboardShell
@@ -120,25 +125,30 @@ export function ProviderVerificationPage() {
       tier="training_provider"
       active="Verification"
       title="Verification"
-      subtitle="Two checks to verify your training provider on REPS."
-
+      subtitle="Three checks. Once locked, each step is permanent."
     >
       <div className="flex flex-col gap-6">
         <Hero
           identityDone={identityDone}
-          identityStatus={t?.identity.status ?? "none"}
+          identityStatus={s?.identity.status ?? "none"}
+          nameLocked={nameLocked}
+          namePending={!!s?.name.pendingName}
           domainDone={domainDone}
           domainStatus={d?.status ?? "unstarted"}
           completed={completed}
           badgeTier={badgeTier}
-          loading={trustQ.isLoading || domainQ.isLoading}
+          loading={summaryQ.isLoading || domainQ.isLoading}
         />
 
         <div className="flex flex-col gap-4">
           <IdentityProfileCard step="01" />
+          <ProviderNameCard
+            step="02"
+            summary={s}
+            loading={summaryQ.isLoading}
+          />
           <DomainEmailCard state={d} loading={domainQ.isLoading} />
         </div>
-
       </div>
     </DashboardShell>
   );
