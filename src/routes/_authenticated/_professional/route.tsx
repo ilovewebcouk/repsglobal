@@ -113,22 +113,59 @@ function ProfessionalLayout() {
   const ctx = Route.useRouteContext() as {
     user: { id: string };
     isImpersonating?: boolean;
+    trainerTier?: string;
   };
   const location = useLocation();
+  const isProvider = ctx.trainerTier === "training_provider";
 
   const fetchTrust = useServerFn(getTrustState);
   const trustQuery = useQuery({
     queryKey: ["trust-state", ctx.user.id],
     queryFn: () => fetchTrust(),
-    enabled: !ctx.isImpersonating,
+    enabled: !ctx.isImpersonating && !isProvider,
     staleTime: 30_000,
   });
 
+  const fetchProviderSummary = useServerFn(getProviderVerificationSummary);
+  const providerQuery = useQuery({
+    queryKey: ["provider-verification-summary", ctx.user.id],
+    queryFn: () => fetchProviderSummary(),
+    enabled: !ctx.isImpersonating && isProvider,
+    staleTime: 30_000,
+  });
+
+  // ---- Provider (training_provider) branch: 3-step lock-in gate. ----
+  if (isProvider) {
+    const summary = providerQuery.data;
+    if (
+      !ctx.isImpersonating &&
+      summary &&
+      summary.completedCount < 3 &&
+      !isAllowlisted(location.pathname)
+    ) {
+      return <ProviderGateWall summary={summary} />;
+    }
+    return (
+      <>
+        <Outlet />
+        {!ctx.isImpersonating &&
+        summary &&
+        summary.identity.done &&
+        summary.completedCount < 3 ? (
+          <ProviderVerificationPromptDialog
+            summary={summary}
+            userId={ctx.user.id}
+          />
+        ) : null}
+      </>
+    );
+  }
+
+  // ---- Individual trainer branch (unchanged). ----
   const trust = trustQuery.data;
   const identityStatus = trust?.identity.status ?? null;
   const identityApproved = identityStatus === "approved";
 
-  // Hard-gate: identity not approved + route not allow-listed → show wall.
   if (
     !ctx.isImpersonating &&
     trust &&
