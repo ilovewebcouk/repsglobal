@@ -31,9 +31,9 @@ import {
 } from "@/lib/profile/provider-profile.functions";
 import {
   getMyProviderNameStatus,
-  submitProviderNameChange,
 } from "@/lib/verification/provider-name.functions";
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
+import { getProviderVerificationSummary } from "@/lib/verification/provider-verification.functions";
 import {
   listMyProviderChanges,
   PROVIDER_FIELD_LABELS,
