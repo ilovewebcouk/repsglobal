@@ -15,6 +15,9 @@ import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/au
 import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 
 export type VerificationEvent =
+  | "identity.approved"
+  | "identity.rejected"
+  | "identity.needs_more_info"
   | "insurance.rejected_expired"
   | "insurance.flagged_low_cover"
   | "insurance.flagged_name_mismatch"
