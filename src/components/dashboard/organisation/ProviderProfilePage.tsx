@@ -388,17 +388,29 @@ export function ProviderProfilePage() {
           </div>
         </div>
 
-        {/* IDENTITY */}
+        {/* IDENTITY — read-only. All three values are locked during verification. */}
         <PPanel>
           <div className="border-b border-reps-border px-5 py-4">
-            <h3 className="text-[14px] font-semibold text-white">Identity</h3>
-            <p className="mt-0.5 text-[12px] text-white/55">
-              The name, logo and hero image people see on your public page.
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-[14px] font-semibold text-white">Identity</h3>
+                <p className="mt-0.5 text-[12px] text-white/55">
+                  Locked during verification. Contact support to change any of these.
+                </p>
+              </div>
+              <Link
+                to="/dashboard/verification"
+                className="shrink-0 text-[12px] font-semibold text-reps-orange hover:text-reps-orange-hover"
+              >
+                View verification
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-col gap-5 px-5 py-4">
-            <Field
+          <div className="flex flex-col divide-y divide-reps-border">
+            <LockedRow
               label="Provider name"
+              value={approvedName || verifSummary?.name.providerName || null}
+              missingHint="Not yet locked in. Complete step 02 of verification."
               hint={
                 data?.slug ? (
                   <>
@@ -412,56 +424,33 @@ export function ProviderProfilePage() {
                       repsuk.org/t/{data.slug}
                     </a>
                   </>
-                ) : (
-                  "Your public URL is generated automatically from your provider name once approved."
-                )
+                ) : null
               }
-            >
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <input
-                    type="text"
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    placeholder="e.g. Diverse Trainers"
-                    className={`${inputCls} flex-1`}
-                  />
-                  <button
-                    type="button"
-                    onClick={submitNameChange}
-                    disabled={nameSaving || !nameDirty}
-                    className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:opacity-50"
-                  >
-                    {nameSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                    Submit name change
-                  </button>
-                </div>
-                <p className="text-[11.5px] text-white/45">
-                  Change this any time. Every change is reviewed by REPs before it appears on your public page and URL.
-                </p>
-                {namePending ? (
-                  <div className="flex items-start gap-2 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
-                    <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <span>
-                      Awaiting admin approval —{" "}
-                      <span className="font-semibold">
-                        &ldquo;{nameStatus?.pending?.requested_name}&rdquo;
-                      </span>
-                      . Your public page still shows{" "}
-                      <span className="font-semibold">
-                        {approvedName ? `"${approvedName}"` : "no name yet"}
-                      </span>{" "}
-                      until this is reviewed.
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            </Field>
-
-
-
+              pending={
+                namePending
+                  ? `Awaiting review: "${nameStatus?.pending?.requested_name}"`
+                  : null
+              }
+            />
+            <LockedRow
+              label="Legal identity (from Stripe)"
+              value={verifSummary?.identity.verifiedName ?? null}
+              missingHint="Not yet verified. Complete step 01 of verification."
+              hint="Private. Only REPS admin can see this."
+            />
+            <LockedRow
+              label="Provider domain"
+              value={verifSummary?.domain.domain ?? null}
+              missingHint="Not yet verified. Complete step 03 of verification."
+              hint={
+                verifSummary?.domain.email
+                  ? `Verified via ${verifSummary.domain.email}`
+                  : null
+              }
+            />
           </div>
         </PPanel>
+
 
         {/* ABOUT */}
         <PPanel>
