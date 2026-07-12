@@ -76,10 +76,8 @@ export const getProviderVerificationSummary = createServerFn({ method: "GET" })
         .maybeSingle(),
       sb
         .from("provider_domain_verifications")
-        .select(
-          "status, expected_domain, email, admin_reviewed_at",
-        )
-        .eq("user_id", userId)
+        .select("status, domain, email, admin_reviewed_at")
+        .eq("professional_id", userId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
