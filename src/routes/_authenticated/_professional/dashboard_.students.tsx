@@ -49,6 +49,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { StructuredAddressAutocomplete } from "@/components/forms/StructuredAddressAutocomplete";
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 import {
   cancelRegistration,
@@ -874,6 +875,19 @@ function BasketTab({
                   next time.
                 </p>
               </div>
+              <StructuredAddressAutocomplete
+                placeholder="Search address (autocomplete)"
+                onSelect={(parts) =>
+                  setAddr((a) => ({
+                    ...a,
+                    addressLine1: parts.addressLine1 || a.addressLine1,
+                    addressLine2: parts.addressLine2 || a.addressLine2,
+                    city: parts.city || a.city,
+                    postcode: parts.postcode || a.postcode,
+                    countryCode: parts.countryCode || a.countryCode,
+                  }))
+                }
+              />
               <div className="grid gap-2 sm:grid-cols-2">
                 <Input
                   placeholder="Contact name"

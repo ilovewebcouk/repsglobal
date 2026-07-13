@@ -1,68 +1,51 @@
 ## Goal
-Establish exactly why the Lovable email preview UI is still showing `502 Bad Gateway`, fix the root cause, and only mark it complete after visual proof.
 
-## What I know so far
-- The sending domain is verified.
-- The backend email preview routes are receiving dashboard preview requests and returning `200` in server logs.
-- Your browser screenshot still shows `GET https://lovable.dev/api/email-preview?... 502`, so the failing layer is the Lovable dashboard preview proxy or the shape/content it receives from the app preview endpoint.
-- I will not call this fixed until I can capture a screenshot showing the email preview loading successfully.
+Make the Basket shipping-address form (Students & Certificates → Basket tab) autocomplete-driven so trainers pick their address from a Google suggestion dropdown and every field (line 1, line 2, city, postcode, country) fills automatically.
 
-## QA and audit plan
+## Approach
 
-1. **Map the full preview chain**
-   - Identify which app endpoint the dashboard proxy is calling for auth email previews and app email previews.
-   - Confirm the exact request method, content type, response size, and payload shape each endpoint returns.
-   - Compare that against what the Lovable dashboard preview proxy appears to expect.
+Reuse the existing `loadPlacesLibrary()` loader and Google Maps browser key already used by the site's search bars. Google Places (New) supports `addressComponents`, so we can parse suggestions into structured parts.
 
-2. **Audit server responses, not just status codes**
-   - Test every email preview route locally and through the deployed preview URL.
-   - Confirm whether the response is valid JSON for list endpoints and valid standalone HTML for rendered email previews.
-   - Check whether any route is returning the normal app shell by mistake.
-   - Check whether the full all-template preview payload is too large or malformed for the proxy.
+## Changes
 
-3. **Audit every template render**
-   - Render all registered app email templates one by one.
-   - Render all auth email templates one by one.
-   - Capture template name, render status, subject, HTML byte size, and any error.
-   - Fix any template that fails, returns invalid output, or has missing/unsafe preview data.
+### 1. New component: `src/components/forms/StructuredAddressAutocomplete.tsx`
 
-4. **Make the preview endpoints proxy-friendly**
-   - Add stricter request parsing for likely dashboard parameters such as template name/type.
-   - Return small, predictable responses where possible.
-   - Ensure unsupported methods/unknown templates return clear JSON errors, not the app page.
-   - Add safe diagnostic logging around preview requests so future 502s show which template or payload failed.
+- Same suggestions UI/UX as `AddressAutocomplete.tsx` (single input + dropdown, keyboard nav, MapPin icon, session token).
+- Requests `["addressComponents", "formattedAddress"]` on `fetchFields`.
+- Parses `addressComponents` into:
+  - `addressLine1` = street_number + route (fallback: premise / subpremise + route)
+  - `addressLine2` = subpremise / sublocality_level_1 (if not folded into line 1)
+  - `city` = postal_town → locality → administrative_area_level_2
+  - `postcode` = postal_code
+  - `countryCode` = country short_name (ISO-3166 alpha-2, upper-case)
+- Emits a single `onSelect(parts)` callback.
+- Also exposes `value` / `onChange` so the user can still type a search string; parts only fire on a real pick.
 
-5. **Re-test delivery health separately**
-   - Query recent email logs using the deduplicated latest-status rule.
-   - Confirm whether actual email sending is failing or whether the issue is isolated to dashboard preview loading.
-   - Summarize any dead-letter/backlog issue separately from preview rendering.
+### 2. Wire into Basket shipping section
 
-6. **Visual verification before saying fixed**
-   - Use browser automation to open the relevant preview/dashboard page where possible.
-   - Capture screenshots of:
-     - a rendered auth email preview,
-     - a rendered app email preview,
-     - and any preview list/picker if accessible.
-   - Inspect the screenshot before reporting completion.
-   - If the Lovable dashboard frame itself is not accessible from automation, I will still capture screenshots of the exact app preview endpoints and clearly state that the remaining `lovable.dev/api/email-preview` proxy error is outside the app route if it persists despite valid endpoint screenshots.
+In `src/routes/_authenticated/_professional/dashboard_.students.tsx` (`BasketTab`):
 
-## Technical details
-- Files likely involved:
-  - `src/routes/lovable/email/auth/preview.ts`
-  - `src/routes/lovable/email/transactional/preview.ts`
-  - `src/routes/lovable/email/auth/webhook.ts`
-  - `src/routes/lovable/email/transactional/send.ts`
-  - `src/lib/email-templates/registry.ts`
-  - individual templates under `src/lib/email-templates/**`
-- Signals to use:
-  - email domain health
-  - server route logs
-  - endpoint response bodies
-  - template render audit output
-  - browser screenshots
+- Above the current 7 inputs, render `<StructuredAddressAutocomplete>` labelled "Search address" with a small "or enter manually below" helper.
+- On select, `setAddr` merges the parsed parts into existing state (`fullName` and `companyName` untouched; `phoneNumber` untouched). If a component is missing from Google (rare for line 2), leave the existing value.
+- Keep all existing manual inputs so users can still edit / correct after autofill (needed for flats, care-of names, etc.).
+- Preserve the existing `localStorage` persistence and the shipping validation logic (`addressComplete`) — no changes there.
 
-## Acceptance criteria
-- No template render failures in the audit.
-- Preview endpoints return valid expected content, not the app shell.
-- The browser screenshot shows the preview content loaded.
-- If the external Lovable preview proxy still returns 502 while app endpoints are proven healthy, the final report will separate app-side status from platform-proxy status instead of claiming it is fixed.
+### 3. No changes elsewhere
+
+- No new dependencies, no server-function changes, no schema changes.
+- `AddressAutocomplete.tsx` (formatted-string variant) stays as-is for the search bars.
+- No design token changes; input styling matches the existing `Input` component in the form.
+
+## Verification
+
+- Load `/dashboard/students` → Basket tab.
+- Type a partial address, confirm suggestions appear, pick one, and verify line 1, city, postcode, and country all populate; line 2 is set only when Google returns a sub-premise.
+- Manual edits after autofill still work and persist via `localStorage`.
+- Checkout button enables once required fields are complete.
+- Screenshot the filled form before declaring done.
+
+## Out of scope
+
+- International address quality tuning per country.
+- Any redesign of the basket UI.
+- Adding autocomplete to other forms (enquire page, gym signup, etc.).
