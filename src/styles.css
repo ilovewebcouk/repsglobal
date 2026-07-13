@@ -306,3 +306,42 @@
 [data-coach-theme="light"] .bg-reps-orange { color: #ffffff; }
 [data-coach-theme="light"] .bg-reps-orange .text-white,
 [data-coach-theme="light"] .bg-reps-orange.text-white { color: #ffffff; }
+
+/* -------------------------------------------------------------
+   LEGACY REPs palette — preview only (scoped)
+   Wrap any subtree in <div data-palette="legacy-reps"> to recolour
+   every `bg/text/border-reps-orange*` surface, plus the coach
+   accent tokens, using the old exerciseregister.org palette:
+     lilac    #a978b2
+     purple   #5c2c82
+     magenta  #e73c8e
+     grey     #9c9c9b
+   Dark surfaces (ink, panel, midnight) are unchanged.
+   ------------------------------------------------------------- */
+[data-palette="legacy-reps"] {
+  --reps-orange: #5c2c82;
+  --reps-orange-hover: #4a2069;
+  --reps-orange-dark: #3a1854;
+  --reps-orange-soft: rgba(92, 44, 130, 0.14);
+  --reps-orange-tint: #160B1F;
+  --reps-orange-border: rgba(169, 120, 178, 0.45);
+  --reps-red: #e73c8e;
+  --reps-muted: #9c9c9b;
+  --coach-accent-orange: #5c2c82;
+}
+
+/* Lift the hero/marquee wash to lilac instead of purple for softer glow */
+[data-palette="legacy-reps"] .from-reps-orange\/20,
+[data-palette="legacy-reps"] .from-reps-orange\/15,
+[data-palette="legacy-reps"] .to-reps-orange\/10,
+[data-palette="legacy-reps"] .via-reps-orange\/10 {
+  --tw-gradient-from: rgba(169, 120, 178, 0.22);
+  --tw-gradient-to: rgba(169, 120, 178, 0.10);
+}
+
+/* Keep on-brand button text white on the purple surface */
+[data-palette="legacy-reps"] .bg-reps-orange,
+[data-palette="legacy-reps"] .hover\:bg-reps-orange-hover:hover {
+  color: #ffffff;
+}
+
