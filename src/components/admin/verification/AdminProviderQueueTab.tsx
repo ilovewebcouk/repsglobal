@@ -269,46 +269,53 @@ export function AdminProviderQueueTab() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-reps-border px-5 py-4">
-              <div>
-                <label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-                  Admin note (required for rejection)
-                </label>
-                <Textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={3}
-                  placeholder="e.g. Please rephrase — the current wording implies a guarantee."
-                />
+            {status === "pending" ? (
+              <div className="flex flex-col gap-3 border-t border-reps-border px-5 py-4">
+                <div>
+                  <label className="mb-1.5 block text-[12px] font-semibold text-white/80">
+                    Admin note (required for rejection)
+                  </label>
+                  <Textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. Please rephrase — the current wording implies a guarantee."
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="destructive-ghost"
+                    disabled={decideMut.isPending}
+                    onClick={() => decideMut.mutate("rejected")}
+                  >
+                    {decideMut.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <XCircle className="h-3.5 w-3.5" />
+                    )}
+                    Reject
+                  </Button>
+                  <Button
+                    disabled={decideMut.isPending}
+                    onClick={() => decideMut.mutate("approved")}
+                  >
+                    {decideMut.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    )}
+                    Approve &amp; publish
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center justify-end gap-2">
-                <Button
-                  variant="destructive-ghost"
-                  disabled={decideMut.isPending}
-                  onClick={() => decideMut.mutate("rejected")}
-                >
-                  {decideMut.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <XCircle className="h-3.5 w-3.5" />
-                  )}
-                  Reject
-                </Button>
-                <Button
-                  disabled={decideMut.isPending}
-                  onClick={() => decideMut.mutate("approved")}
-                >
-                  {decideMut.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                  )}
-                  Approve &amp; publish
-                </Button>
+            ) : (
+              <div className="border-t border-reps-border px-5 py-3 text-[11.5px] text-white/55">
+                Historical record — read-only.
               </div>
-            </div>
+            )}
           </PPanel>
         )}
+      </div>
       </div>
     </div>
   );
