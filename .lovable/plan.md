@@ -1,55 +1,62 @@
-## Goal
+## What went wrong
 
-For each `email → stripe_customer_id` pair you supply (people whose CSV email doesn't match their Stripe email), get them set up on REPs as a trainer with an active Core subscription paid through their next legacy renewal date, and send them a setup invite.
+The batch I ran created the auth users and inserted a `subscriptions` row, but two things are missing:
 
-## Inputs (you provide)
+1. **No names** on the accounts. `profiles.full_name` was left as the email address because I never pulled the trainer's real name from the legacy data.
+2. **No Stripe subscription**. I only wrote a row into our `subscriptions` table with `stripe_subscription_id = null`. There is nothing on the Stripe side, so Stripe will not bill them on their renewal date.
 
-A hardcoded list in the script, e.g.:
+Both are in `bd_member_seed` / Stripe already — I just didn't wire them in. Fixing.
 
+## What I'll change (all 15 members)
+
+### 1. Set the name on each account
+For each of the 15 emails, pull `first_name` + `last_name` from `bd_member_seed` and write it to `profiles.full_name`. All 15 have names available:
+
+```text
+altfitness@myyahoo.com              → April Collinson
+elizabeth.payne@live.co.uk          → Elizabeth Payne
+emily.young@slimmingworld.co.uk     → Emily Young
+faracifitness@hotmail.co.uk         → Gerardo Faraci
+hello@fionadillon.com               → Fiona Dillon
+hellotiredmumclubnorwich@gmail.com  → Megan Bowe
+sarah@theyogaconnection.co.uk       → Sarah Betteridge
+scarrfitness@gmail.com              → Shaun Carr
+sophia@sophiasmithfitness.com       → Sophia Smith
+steven@trainyourneedsfirst.co.uk    → Steven Roleio Doe
+thehuffkin@hotmail.com              → Lee Robertson-Young
+support@newgenfitness.uk            → Brett Falconer
+rmffitnes@outlook.com               → Ross McKee
+prapti.dutt@gmail.com               → Prapti Dutt
+billie@benefitbodyandmind.com       → Billie Wood
 ```
-altfitness@myyahoo.com    cus_UYIRXSbIcepboB
-another@example.com       cus_XXXX
-...
-```
 
-## Per-row logic
+I'll also copy the same name into `professionals.display_name` (or the equivalent column the profile page reads) so their public listing shows correctly.
 
-For each `(email, stripe_customer_id)`:
+### 2. Create a real Stripe subscription on each customer
+On the live Stripe account, for each `cus_...`:
 
-1. **Look up legacy payment** in `legacy_stripe_link` / `legacy_stripe_payments` by `stripe_customer_id` (not by email — the whole point is emails differ). Read `last_paid_at` and `legacy_kind` (annual vs monthly).
-2. **Compute next due date**:
-   - annual → `last_paid_at + 1 year`
-   - monthly → `last_paid_at + 1 month`
-   - If `last_paid_at` is null → skip that row and log it for manual review.
-3. **Create / find auth user** for the CSV email:
-   - If `auth.users` already has that email → reuse it.
-   - Otherwise create via Auth Admin API and send a setup/invite email so they can set a password and finish their trainer profile.
-4. **Create `professionals` row** (or update to `account_type = 'individual'`, verified state left as-is — verification is separate).
-5. **Insert `subscriptions` row** (`environment = 'live'`) with:
-   - `user_id` = new/found user id
-   - `stripe_customer_id` = the one you supplied
-   - `tier = 'core'`, `status = 'active'`, `billing_period = 'annual'|'monthly'`
-   - `current_period_end` = the computed next due date
-   - `migrated_from_bd = true`, `cancel_at_period_end = false`
-   - `stripe_subscription_id = null` (no live Stripe sub — this is a manual honour entry until they set one up in Stripe or you attach one later)
-6. **Update `legacy_stripe_link`** for that customer: set `link_status = 'linked'`, `migration_status = 'converted_to_subscription'`, store the new `user_id` so it drops off the "no active sub" report.
-7. **Log** each action to `admin_audit_log` (`qa.manual_stripe_customer_relink`).
+- **Price**: `verified_annual` (Core £34/yr) — same price everyone else on Core is billed on.
+- **`trial_end`** = the `current_period_end` we already calculated from their last legacy payment (so the FIRST Stripe charge fires on their renewal date, not today — nobody gets charged now).
+- **`proration_behavior: 'none'`**, **`collection_method: 'charge_automatically'`**, using the customer's existing default payment method (they all paid before, so Stripe already has a card on file).
+- **`metadata`**: `{ manual_relink: true, source: 'admin_batch_2026_07' }` so we can audit these in Stripe later.
 
-## Deliverable
+Then update our `subscriptions` row with the real `stripe_subscription_id` and `stripe_price_id`.
 
-A single admin server function `manualRelinkStripeCustomers` (admin-only, `has_role admin` check) that takes the hardcoded array and processes it in one call. I'll run it once from an admin page button (or via `invoke-server-function`) and return a summary: `{ created, reused, skipped, errors[] }`.
+### 3. If a customer has no payment method on file
+Log the row as `payment_method_missing` and skip the Stripe create — do not fake it. I'll surface the list at the end so you can email them separately. (Very unlikely for this batch since they all paid recently, but need to handle it.)
 
-## Output CSV
+## How I'll run it
 
-After running, re-export `csv_no_active_sub.csv` so you can see who's still outstanding.
-
-## What I need from you before implementing
-
-1. The full list of `email,stripe_customer_id` pairs you've cross-referenced (paste in chat — I'll hardcode into the script).
-2. Confirm invite email = the standard REPs auth invite ("finish setting up your account"), not a custom migration-flavoured email (per the no-BD-migration language rule).
+Same endpoint pattern as before — `/api/public/admin/manual-relink-stripe` protected by `MANUAL_RELINK_SECRET`, triggered directly from my shell. No admin UI click needed. Idempotent: re-running skips rows that already have a Stripe sub attached and a name set.
 
 ## Technical notes
 
-- Uses `supabaseAdmin` inside the handler (Auth Admin API + service-role writes).
-- No Stripe API calls needed for step 5 — we're mirroring the legacy period into our `subscriptions` table only. If you later want a real Stripe subscription attached to `cus_...`, that's a separate follow-up.
-- Idempotent: re-running with the same pair updates the existing subscription rather than duplicating.
+- File edited: `src/routes/api/public/admin/manual-relink-stripe.ts` — add name lookup + Stripe subscription creation using `createStripeClient('live')`.
+- Stripe API: `stripe.subscriptions.create({ customer, items:[{price}], trial_end, proration_behavior:'none', metadata })` — the trial-end trick means Stripe waits until the renewal date and then charges normally, no invoice today.
+- Report at the end lists per-row: `name_set`, `stripe_sub_id`, `first_charge_at`, and any error.
+
+## Not touching
+
+- The already-created auth users, the `subscriptions.current_period_end` dates you already saw, and the password-setup emails already sent. All correct — just missing the two pieces above.
+
+Approve and I'll run it.
