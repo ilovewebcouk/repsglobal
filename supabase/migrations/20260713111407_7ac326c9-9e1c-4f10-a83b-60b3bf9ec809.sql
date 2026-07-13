@@ -1,0 +1,1 @@
+ALTER FUNCTION public.convert_prospect_on_signup() SET search_path = public, extensions;
