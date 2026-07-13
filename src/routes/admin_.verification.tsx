@@ -1040,24 +1040,30 @@ function AdminVerificationPage() {
                       </span>
                     </div>
 
+                    {/* Blocking issues appear only on hard-fail. Clean cases show
+                        just the primary Approve & next button — no scary red banner. */}
                     {!gates.hardPassed && (
-                      <div className="mb-3 rounded-[8px] border border-red-400/30 bg-red-500/10 px-3 py-2 text-[11.5px] text-red-200">
+                      <div className="mb-3 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[11.5px] text-amber-200">
                         <div className="mb-1 flex items-center gap-1.5 font-semibold">
-                          <AlertTriangle className="h-3.5 w-3.5" /> Blocking issues — override required
+                          <AlertTriangle className="h-3.5 w-3.5" /> Checks need attention — override required to approve
                         </div>
-                        <ul className="list-disc space-y-0.5 pl-5 text-red-100/85">
+                        <ul className="list-disc space-y-0.5 pl-5 text-amber-100/85">
                           {gates.blockingReasons.map((r) => <li key={r}>{r}</li>)}
                         </ul>
                       </div>
                     )}
 
-                    <Textarea
-                      placeholder="Reviewer notes (required for reject / changes)"
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      rows={3}
-                    />
+                    {/* Reviewer notes: hidden until reviewer opens them or picks Request changes / Reject. */}
+                    {notesOpen ? (
+                      <Textarea
+                        placeholder="Reviewer notes (required for reject / changes)"
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        rows={3}
+                      />
+                    ) : null}
 
+                    {/* Override reason: only shown when the case actually requires an override to approve. */}
                     {!gates.hardPassed && (
                       <div className="mt-3">
                         <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-white/55">
@@ -1083,25 +1089,27 @@ function AdminVerificationPage() {
                         </Button>
                       )}
                       <div className="flex-1" />
-                      <Button variant="ghost" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap })}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => {
+                          if (!notesOpen) { setNotesOpen(true); return; }
+                          decideMutation.mutate({ decision: "changes_requested", gates_snapshot: gatesSnap });
+                        }}
+                      >
                         Request changes
                       </Button>
-                      <Button variant="ghost" size="sm" disabled={busy} onClick={() => decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap })}>
-                        Reject
-                      </Button>
                       <Button
+                        variant="ghost"
                         size="sm"
-                        disabled={busy || !approveAllowed}
-                        onClick={() => decideMutation.mutate({
-                          decision: "approved",
-                          unlocked_tier: "verified",
-                          gates_snapshot: gatesSnap,
-                          override_reason: overrideReason.trim() || null,
-                        })}
-                        className="bg-reps-orange text-white hover:bg-reps-orange-hover disabled:opacity-50"
-                        title={approveAllowed ? "Approve qualification" : `Failing: ${gates.blockingReasons.join(", ")}`}
+                        disabled={busy}
+                        onClick={() => {
+                          if (!notesOpen) { setNotesOpen(true); return; }
+                          decideMutation.mutate({ decision: "rejected", gates_snapshot: gatesSnap });
+                        }}
                       >
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve qualification"}
+                        Reject
                       </Button>
                       <Button
                         size="sm"
@@ -1115,7 +1123,7 @@ function AdminVerificationPage() {
                             override_reason: overrideReason.trim() || null,
                           });
                         }}
-                        className="bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50"
+                        className="bg-reps-orange text-white hover:bg-reps-orange-hover disabled:opacity-50"
                         title={approveAllowed ? "Approve and jump to the next pending case" : `Failing: ${gates.blockingReasons.join(", ")}`}
                       >
                         {busy ? <Loader2 className="size-3.5 animate-spin" /> : "Approve & next"}
@@ -1123,6 +1131,7 @@ function AdminVerificationPage() {
                     </div>
                   </PCard>
                 )}
+
 
                 {/* History */}
                 {w.history.length > 0 && (
