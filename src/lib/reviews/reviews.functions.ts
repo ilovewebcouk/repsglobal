@@ -52,6 +52,33 @@ export const submitReview = createServerFn({ method: "POST" })
     if (!pro) throw new Error("Professional not found");
     if (pro.id === userId) throw new Error("You can't review your own profile");
 
+    // Enforce the same relationship rule as the RLS INSERT policy on `reviews`:
+    // reviewer must have either a paid/refunded booking with this pro OR be on
+    // the pro's client roster. We re-check server-side because we insert with
+    // the service-role client below (RLS is bypassed).
+    const [bookingRes, rosterRes] = await Promise.all([
+      supabaseAdmin
+        .from("bookings")
+        .select("id")
+        .eq("professional_id", pro.id)
+        .eq("client_user_id", userId)
+        .in("status", ["paid", "refunded", "partially_refunded"])
+        .limit(1)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("client_roster")
+        .select("id")
+        .eq("professional_id", pro.id)
+        .eq("auth_user_id", userId)
+        .limit(1)
+        .maybeSingle(),
+    ]);
+    if (!bookingRes.data && !rosterRes.data) {
+      throw new Error(
+        "Only clients who have booked or been added by this pro can leave a review.",
+      );
+    }
+
     // Prevent duplicate: one published/pending review per client per pro
     const { data: existing } = await supabaseAdmin
       .from("reviews")
