@@ -53,6 +53,7 @@ import { StructuredAddressAutocomplete } from "@/components/forms/StructuredAddr
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 import {
   cancelRegistration,
+  cancelCertificateBatchCheckout,
   createCertificateBatchCheckout,
   createLearner,
   createRegistration,
@@ -63,6 +64,8 @@ import {
   listMyLearners,
   listMyRegistrations,
   markRegistrationsPassed,
+  resumeCertificateBatchCheckout,
+  syncCertificateBatchCheckout,
   type LearnerDTO,
   type ProviderCourseOptionDTO,
   type RegistrationDTO,
@@ -97,6 +100,8 @@ function StudentsPage() {
   const regsFn = useServerFn(listMyRegistrations);
   const coursesFn = useServerFn(listMyApprovedCourses);
   const pricingFn = useServerFn(getCertificatePricing);
+  const syncCheckoutFn = useServerFn(syncCertificateBatchCheckout);
+  const cancelCheckoutFn = useServerFn(cancelCertificateBatchCheckout);
 
   const learnersQ = useQuery({ queryKey: ["cert-learners"], queryFn: () => learnersFn() });
   const regsQ = useQuery({ queryKey: ["cert-registrations"], queryFn: () => regsFn() });
@@ -105,24 +110,51 @@ function StudentsPage() {
 
   // Post-checkout toast + cleanup
   React.useEffect(() => {
-    if (search.checkout === "success") {
-      toast.success("Payment received — certificates are being issued.");
-      qc.invalidateQueries({ queryKey: ["cert-registrations"] });
-      navigate({ search: { tab: "certificates" }, replace: true });
-    } else if (search.checkout === "canceled") {
-      toast("Checkout canceled — your registrations are back in the basket.");
-      qc.invalidateQueries({ queryKey: ["cert-registrations"] });
-      navigate({ search: { tab: "basket" }, replace: true });
+    let canceled = false;
+    async function handleCheckoutReturn() {
+      if (search.checkout === "success") {
+        if (search.batch) {
+          const res = await syncCheckoutFn({ data: { batch_id: search.batch } });
+          if (canceled) return;
+          qc.invalidateQueries({ queryKey: ["cert-registrations"] });
+          if ("error" in res) {
+            toast.error(res.error);
+            navigate({ search: { tab: "basket" }, replace: true });
+          } else if (res.status === "pending") {
+            toast("Payment is still confirming — it remains in the basket as awaiting payment.");
+            navigate({ search: { tab: "basket" }, replace: true });
+          } else {
+            toast.success("Payment received — certificates are being issued.");
+            navigate({ search: { tab: "certificates" }, replace: true });
+          }
+        } else {
+          toast.success("Payment received — certificates are being issued.");
+          qc.invalidateQueries({ queryKey: ["cert-registrations"] });
+          navigate({ search: { tab: "certificates" }, replace: true });
+        }
+      } else if (search.checkout === "canceled") {
+        if (search.batch) await cancelCheckoutFn({ data: { batch_id: search.batch } });
+        if (canceled) return;
+        toast("Checkout canceled — your registrations are back in the basket.");
+        qc.invalidateQueries({ queryKey: ["cert-registrations"] });
+        navigate({ search: { tab: "basket" }, replace: true });
+      }
     }
+    handleCheckoutReturn();
+    return () => {
+      canceled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.checkout]);
+  }, [search.checkout, search.batch]);
 
   const learners = learnersQ.data ?? [];
   const regs = regsQ.data ?? [];
   const courses = coursesQ.data ?? [];
   const pricing = pricingQ.data;
 
-  const basket = regs.filter((r) => r.status === "passed" && !r.batch_id);
+  const basket = regs.filter(
+    (r) => (r.status === "passed" && !r.batch_id) || (r.status === "pending_payment" && !!r.batch_id),
+  );
   const certs = regs.filter((r) => r.status === "issued" || r.status === "dispatched");
 
   return (
@@ -733,13 +765,31 @@ function BasketTab({
       }
     | undefined;
 }) {
+  const qc = useQueryClient();
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const checkout = useServerFn(createCertificateBatchCheckout);
+  const resumeCheckout = useServerFn(resumeCertificateBatchCheckout);
+  const syncCheckout = useServerFn(syncCertificateBatchCheckout);
+  const cancelPendingCheckout = useServerFn(cancelCertificateBatchCheckout);
+
+  const checkoutable = React.useMemo(
+    () => basket.filter((b) => b.status === "passed" && !b.batch_id),
+    [basket],
+  );
+  const checkoutableIds = React.useMemo(() => checkoutable.map((b) => b.id), [checkoutable]);
+  const checkoutableKey = checkoutableIds.join("|");
+  const pending = React.useMemo(
+    () => basket.filter((b) => b.status === "pending_payment" && b.batch_id),
+    [basket],
+  );
+  const pendingBatchIds = React.useMemo(
+    () => Array.from(new Set(pending.map((p) => p.batch_id).filter(Boolean) as string[])),
+    [pending],
+  );
 
   React.useEffect(() => {
-    setSelected(new Set(basket.map((b) => b.id)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [basket.length]);
+    setSelected(new Set(checkoutableIds));
+  }, [checkoutableKey]);
 
   const unit = pricing?.unit_price_pence ?? 1500;
   const ukPostage = pricing?.postage_fee_pence ?? 650;
@@ -781,7 +831,7 @@ function BasketTab({
     addr.postcode.trim() &&
     addr.countryCode.trim().length === 2;
 
-  const mut = useMutation({
+  const checkoutMut = useMutation({
     mutationFn: () => {
       const shipTo = {
         fullName: addr.fullName.trim(),
@@ -815,6 +865,38 @@ function BasketTab({
     onError: (e: any) => toast.error(e?.message ?? "Could not start checkout."),
   });
 
+  const resumeMut = useMutation({
+    mutationFn: (batchId: string) => resumeCheckout({ data: { batch_id: batchId } }),
+    onSuccess: (res: any) => {
+      if ("url" in res && res.url) window.location.assign(res.url);
+      else toast.error(res?.error ?? "Could not resume checkout.");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not resume checkout."),
+  });
+
+  const syncMut = useMutation({
+    mutationFn: (batchId: string) => syncCheckout({ data: { batch_id: batchId } }),
+    onSuccess: (res: any) => {
+      if ("error" in res) {
+        toast.error(res.error);
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["cert-registrations"] });
+      if (res.status === "pending") toast("Payment is still awaiting confirmation.");
+      else toast.success("Payment confirmed.");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not confirm payment."),
+  });
+
+  const cancelPendingMut = useMutation({
+    mutationFn: (batchId: string) => cancelPendingCheckout({ data: { batch_id: batchId } }),
+    onSuccess: () => {
+      toast.success("Checkout canceled. Registration is back in the basket.");
+      qc.invalidateQueries({ queryKey: ["cert-registrations"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not cancel checkout."),
+  });
+
   return (
     <PPanel>
       <div className="border-b border-reps-border p-4">
@@ -834,17 +916,21 @@ function BasketTab({
           <ul className="divide-y divide-reps-border">
             {basket.map((r) => (
               <li key={r.id} className="flex items-center gap-3 p-4">
-                <Checkbox
-                  checked={selected.has(r.id)}
-                  onCheckedChange={() =>
-                    setSelected((prev) => {
-                      const n = new Set(prev);
-                      if (n.has(r.id)) n.delete(r.id);
-                      else n.add(r.id);
-                      return n;
-                    })
-                  }
-                />
+                {r.status === "passed" ? (
+                  <Checkbox
+                    checked={selected.has(r.id)}
+                    onCheckedChange={() =>
+                      setSelected((prev) => {
+                        const n = new Set(prev);
+                        if (n.has(r.id)) n.delete(r.id);
+                        else n.add(r.id);
+                        return n;
+                      })
+                    }
+                  />
+                ) : (
+                  <StatusBadge status={r.status} />
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="text-[14px] font-semibold text-white">{r.learner_name}</div>
                   <div className="text-[12.5px] text-white/60">
@@ -857,12 +943,54 @@ function BasketTab({
                     )}
                   </div>
                 </div>
-                <div className="text-[13px] text-white/70">£{(unit / 100).toFixed(2)}</div>
+                <div className="text-[13px] text-white/70">£{((r.price_pence_at_issue ?? unit) / 100).toFixed(2)}</div>
               </li>
             ))}
           </ul>
 
-          {requiresShipping && (
+          {pendingBatchIds.length > 0 ? (
+            <div className="border-t border-reps-border p-4 space-y-3">
+              {pendingBatchIds.map((batchId) => {
+                const pendingCount = pending.filter((p) => p.batch_id === batchId).length;
+                return (
+                  <div key={batchId} className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-amber-400/25 bg-amber-500/10 p-3">
+                    <div>
+                      <div className="text-[13.5px] font-semibold text-amber-200">Awaiting payment</div>
+                      <p className="mt-0.5 text-[12px] text-white/60">
+                        {pendingCount} certificate{pendingCount === 1 ? "" : "s"} are attached to an open checkout.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        onClick={() => resumeMut.mutate(batchId)}
+                        disabled={resumeMut.isPending || syncMut.isPending || cancelPendingMut.isPending}
+                      >
+                        <ExternalLink className="mr-1 h-4 w-4" /> Continue checkout
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => syncMut.mutate(batchId)}
+                        disabled={resumeMut.isPending || syncMut.isPending || cancelPendingMut.isPending}
+                      >
+                        {syncMut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-1 h-4 w-4" />}
+                        Confirm payment
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => cancelPendingMut.mutate(batchId)}
+                        disabled={resumeMut.isPending || syncMut.isPending || cancelPendingMut.isPending}
+                      >
+                        <X className="mr-1 h-4 w-4" /> Cancel checkout
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {requiresShipping && checkoutable.length > 0 && (
             <div className="border-t border-reps-border p-4 space-y-3">
               <div>
                 <h3 className="text-[13.5px] font-semibold text-white">
@@ -941,6 +1069,7 @@ function BasketTab({
             </div>
           )}
 
+          {checkoutable.length > 0 ? (
           <div className="flex items-center justify-between border-t border-reps-border p-4">
             <div>
               <div className="text-[12.5px] text-white/55">
@@ -956,13 +1085,14 @@ function BasketTab({
               </div>
             </div>
             <Button
-              onClick={() => mut.mutate()}
-              disabled={count === 0 || mut.isPending || !addressComplete}
+              onClick={() => checkoutMut.mutate()}
+              disabled={count === 0 || checkoutMut.isPending || !addressComplete}
             >
-              {mut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
+              {checkoutMut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
               Check out {count} certificate{count === 1 ? "" : "s"}
             </Button>
           </div>
+          ) : null}
         </>
       )}
     </PPanel>
