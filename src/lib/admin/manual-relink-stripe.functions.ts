@@ -27,6 +27,10 @@ const ENTRIES: Entry[] = [
   { email: 'sophia@sophiasmithfitness.com',     customerId: 'cus_SacYVgBBY6mAGD' },
   { email: 'steven@trainyourneedsfirst.co.uk',  customerId: 'cus_T2WbfL3CHDZqcR' },
   { email: 'thehuffkin@hotmail.com',            customerId: 'cus_RrqhXI7fAKWE6n' },
+  { email: 'support@newgenfitness.uk',          customerId: 'cus_P3h9q5OSM3yUyo' },
+  { email: 'rmffitnes@outlook.com',             customerId: 'cus_TRhShMrXM99yO5' },
+  { email: 'prapti.dutt@gmail.com',             customerId: 'cus_PjNQJ8rPbDWBmZ' },
+  { email: 'billie@benefitbodyandmind.com',     customerId: 'cus_QVBw3p67SWAJxx' },
 ];
 
 interface RowResult {
