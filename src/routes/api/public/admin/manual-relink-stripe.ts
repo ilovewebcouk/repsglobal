@@ -152,6 +152,11 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
             let stripeSubscriptionId: string | null =
               (existingSub as { stripe_subscription_id: string | null } | null)?.stripe_subscription_id ?? null;
             let paymentMethodMissing = false;
+            let stripeStatus:
+              | 'active' | 'trialing' | 'past_due' | 'unpaid' | 'canceled' | 'incomplete'
+              | 'incomplete_expired' | 'paused'
+              = 'active';
+            let stripeCurrentPeriodEndIso: string | null = null;
 
             if (!stripeSubscriptionId) {
               // Check customer has a default payment method
@@ -174,7 +179,6 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
                 if (kind === 'annual') fresh.setUTCFullYear(fresh.getUTCFullYear() + 1);
                 else fresh.setUTCMonth(fresh.getUTCMonth() + 1);
                 trialEndUnix = Math.floor(fresh.getTime() / 1000);
-                // Also update the value we persist so the DB matches Stripe
                 currentPeriodEndOverride = fresh.toISOString();
               }
 
@@ -192,8 +196,21 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
                 },
               });
               stripeSubscriptionId = sub.id;
+              stripeStatus = sub.status as typeof stripeStatus;
+              const cpe = (sub.items?.data?.[0] as { current_period_end?: number } | undefined)?.current_period_end
+                ?? (sub as unknown as { current_period_end?: number }).current_period_end;
+              if (cpe) stripeCurrentPeriodEndIso = new Date(cpe * 1000).toISOString();
+            } else {
+              // Retrieve the existing Stripe sub so our DB row mirrors reality
+              // (status + current_period_end) instead of a hardcoded snapshot.
+              const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+              stripeStatus = sub.status as typeof stripeStatus;
+              const cpe = (sub.items?.data?.[0] as { current_period_end?: number } | undefined)?.current_period_end
+                ?? (sub as unknown as { current_period_end?: number }).current_period_end;
+              if (cpe) stripeCurrentPeriodEndIso = new Date(cpe * 1000).toISOString();
             }
             if (currentPeriodEndOverride) currentPeriodEnd = currentPeriodEndOverride;
+            if (stripeCurrentPeriodEndIso) currentPeriodEnd = stripeCurrentPeriodEndIso;
 
 
             const row = {
@@ -204,10 +221,11 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
               stripe_price_id: price.id,
               tier: 'verified' as const,
               billing_period: kind,
-              status: 'active' as const,
+              status: stripeStatus,
               current_period_end: currentPeriodEnd,
               cancel_at_period_end: false,
               is_founding: false,
+
               migrated_from_bd: true,
               environment: 'live',
             };
