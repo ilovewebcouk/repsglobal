@@ -49,6 +49,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { StructuredAddressAutocomplete } from "@/components/forms/StructuredAddressAutocomplete";
 import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 import {
   cancelRegistration,
