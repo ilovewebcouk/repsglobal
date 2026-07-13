@@ -139,6 +139,9 @@ function AdminVerificationPage() {
   const [manualQualConfirmed, setManualQualConfirmed] = useState(false);
   const [revokeOpen, setRevokeOpen] = useState(false);
   const [revokeReason, setRevokeReason] = useState("");
+  const [personDrawerOpen, setPersonDrawerOpen] = useState(false);
+  /** Reviewer-notes textarea is hidden by default; revealed when reviewer picks Request changes / Reject or explicitly opens it. */
+  const [notesOpen, setNotesOpen] = useState(false);
   /** When true, after the next decision lands we jump to the next pending case instead of clearing. */
   const advanceAfterDecideRef = useRef(false);
 
