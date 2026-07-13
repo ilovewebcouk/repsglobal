@@ -287,8 +287,20 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       query = query.in('primary_profession', data.filters.professions);
     }
     if (data.q) {
-      query = query.or(`slug.ilike.%${data.q}%,city.ilike.%${data.q}%`);
+      const like = `%${data.q}%`;
+      // Also match against profiles.full_name so members without a slug yet
+      // (e.g. brand-new accounts) are searchable by name.
+      const { data: profileMatches } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .ilike('full_name', like)
+        .limit(500);
+      const nameIds = ((profileMatches ?? []) as Array<{ id: string }>).map((p) => p.id);
+      const orClauses = [`slug.ilike.${like}`, `city.ilike.${like}`];
+      if (nameIds.length) orClauses.push(`id.in.(${nameIds.join(',')})`);
+      query = query.or(orClauses.join(','));
     }
+
 
     // Order by member_since desc so the "Joined" slice reflects BD signup
     // dates for imported pros (created_at is the import event, not signup).
