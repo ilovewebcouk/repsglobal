@@ -35,9 +35,12 @@ function getTemplateNameFromBody(body: Record<string, any>) {
 }
 
 function json(data: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers)
+  Object.entries(CORS_HEADERS).forEach(([key, value]) => headers.set(key, value))
+
   return Response.json(data, {
     ...init,
-    headers: { ...CORS_HEADERS, ...(init?.headers ?? {}) },
+    headers,
   })
 }
 
@@ -48,7 +51,19 @@ async function renderTemplateHtml(name: string, data?: Record<string, any>) {
   }
 
   const templateData = data && Object.keys(data).length > 0 ? data : entry.previewData || {}
-  const html = await render(React.createElement(entry.component, templateData))
+  let html: string
+  try {
+    html = await render(React.createElement(entry.component, templateData))
+  } catch (err) {
+    console.error('Failed to render transactional email preview', {
+      template: name,
+      error: err instanceof Error ? err.message : String(err),
+    })
+    return json(
+      { error: 'Failed to render template preview', templateName: name },
+      { status: 500 }
+    )
+  }
 
   return new Response(html, {
     status: 200,
