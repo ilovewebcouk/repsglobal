@@ -397,6 +397,8 @@ function AdminVerificationPage() {
               </div>
             ) : null}
           </div>
+          <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
+
 
             {listing.isLoading && (
               <li className="p-6 text-center text-[12px] text-white/55">Loading…</li>
