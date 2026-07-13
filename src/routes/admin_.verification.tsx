@@ -19,6 +19,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSessionUser } from "@/hooks/use-session-user";
 import { useMemo, useRef, useState } from "react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -110,6 +112,8 @@ const STATUS_LABEL: Record<StatusFilter, string> = {
 
 function AdminVerificationPage() {
   const qc = useQueryClient();
+  const { user: sessionUser } = useSessionUser();
+  const currentUserId = sessionUser?.id ?? null;
   const fetchList = useServerFn(listVerifications);
   const fetchPending = useServerFn(listPendingVerifications);
   const fetchStats = useServerFn(getQueueStats);
@@ -383,8 +387,19 @@ function AdminVerificationPage() {
                 </button>
               ))}
             </div>
+            {statusFilter === "submitted" ? (
+              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-white/45">
+                <Lock className="h-2.5 w-2.5 text-amber-400" />
+                <span>Amber = another admin is reviewing</span>
+                <span className="mx-1 text-white/25">·</span>
+                <Lock className="h-2.5 w-2.5 text-emerald-400" />
+                <span>Green = you</span>
+              </div>
+            ) : null}
           </div>
           <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
+
+
             {listing.isLoading && (
               <li className="p-6 text-center text-[12px] text-white/55">Loading…</li>
             )}
@@ -397,6 +412,9 @@ function AdminVerificationPage() {
               const sla = isPending ? slaRemaining(r.created_at) : null;
               const name = r.professional?.full_name || "Unnamed";
               const claimed = (r as { claimed_by?: string | null }).claimed_by;
+              const claimedName = (r as { claimed_by_name?: string | null }).claimed_by_name;
+              const showLock = isPending && !!claimed;
+              const mine = !!claimed && claimed === currentUserId;
               const reviewedAt = (r as { reviewed_at?: string | null }).reviewed_at;
               return (
                 <li key={r.id}>
@@ -406,10 +424,30 @@ function AdminVerificationPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate text-[13px] font-semibold text-white">{name}</span>
-                      {claimed ? <Lock className="h-3 w-3 text-amber-400" /> : null}
+                      {showLock ? (
+                        <TooltipProvider delayDuration={150}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                className="inline-flex"
+                                onClick={(e) => e.stopPropagation()}
+                                aria-label={mine ? "You're reviewing this" : `Being reviewed by ${claimedName || "another admin"}`}
+                              >
+                                <Lock className={`h-3 w-3 ${mine ? "text-emerald-400" : "text-amber-400"}`} />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="text-[11px]">
+                              {mine
+                                ? "You're reviewing this case"
+                                : `Being reviewed by ${claimedName || "another admin"}`}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : null}
                     </div>
                     <div className="mt-0.5 flex items-center gap-1.5">
                       <span className="truncate text-[11px] text-white/55">{r.qualification}</span>
+
                       {siblingCounts[r.professional_id] > 1 && (
                         <span className="shrink-0 rounded-[6px] border border-reps-orange/30 bg-reps-orange-soft px-1.5 py-0.5 text-[10px] font-semibold text-reps-orange">
                           +{siblingCounts[r.professional_id] - 1} more

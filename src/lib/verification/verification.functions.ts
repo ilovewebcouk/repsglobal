@@ -113,7 +113,27 @@ async function fetchSubmissionsByStatus(statuses: readonly string[]) {
     );
   }
 
-  return (data ?? []).map((r) => ({ ...r, professional: profByPro[r.professional_id] ?? null }));
+  // Resolve reviewer display names for the claim padlock tooltip.
+  const reviewerIds = Array.from(
+    new Set((data ?? []).map((r) => r.claimed_by).filter((v): v is string => !!v)),
+  );
+  let reviewerNameById: Record<string, string> = {};
+  if (reviewerIds.length) {
+    const { data: reviewers } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", reviewerIds);
+    reviewerNameById = Object.fromEntries(
+      (reviewers ?? []).map((p) => [p.id, p.full_name ?? ""]),
+    );
+  }
+
+  return (data ?? []).map((r) => ({
+    ...r,
+    professional: profByPro[r.professional_id] ?? null,
+    claimed_by_name: r.claimed_by ? reviewerNameById[r.claimed_by] || null : null,
+  }));
+
 }
 
 /**
