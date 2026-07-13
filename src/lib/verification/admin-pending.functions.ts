@@ -61,47 +61,67 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         .limit(20),
       supabaseAdmin
         .from("provider_name_requests")
-        .select("id, provider_id, requested_name, current_name, created_at", { count: "exact" })
+        .select("id, user_id, requested_name, created_at", { count: "exact" })
         .eq("status", "pending")
         .order("created_at", { ascending: false })
         .limit(20),
       supabaseAdmin
         .from("provider_domain_verifications")
-        .select("id, provider_id, domain, created_at", { count: "exact" })
+        .select("id, professional_id, domain, created_at", { count: "exact" })
         .eq("status", "pending_admin_review")
         .order("created_at", { ascending: false })
         .limit(20),
       supabaseAdmin
         .from("provider_regulated_permissions")
-        .select("id, provider_id, awarding_body, qualification_title, created_at", {
-          count: "exact",
-        })
+        .select("id, provider_id, created_at", { count: "exact" })
         .eq("status", "submitted")
         .order("created_at", { ascending: false })
         .limit(20),
       supabaseAdmin
         .from("reps_courses")
-        .select("id, provider_id, title, status, created_at", { count: "exact" })
+        .select("id, provider_id, proposed_title, official_title, status, created_at", {
+          count: "exact",
+        })
         .in("status", ["submitted", "ai_drafted"])
         .order("created_at", { ascending: false })
         .limit(20),
     ]);
+
+    const nameRowsSafe = (nameRows ?? []) as Array<{
+      id: string;
+      user_id: string;
+      requested_name: string | null;
+      created_at: string;
+    }>;
+    const domainRowsSafe = (domainRows ?? []) as Array<{
+      id: string;
+      professional_id: string;
+      domain: string | null;
+      created_at: string;
+    }>;
+    const regulatedRowsSafe = (regulatedRows ?? []) as Array<{
+      id: string;
+      provider_id: string;
+      created_at: string;
+    }>;
+    const courseRowsSafe = (courseRows ?? []) as Array<{
+      id: string;
+      provider_id: string;
+      proposed_title: string | null;
+      official_title: string | null;
+      status: string;
+      created_at: string;
+    }>;
 
     const proIds = Array.from(
       new Set(
         [
           ...(qualRows ?? []).map((r) => r.professional_id),
           ...(insRows ?? []).map((r) => r.professional_id),
-        ].filter(Boolean) as string[],
-      ),
-    );
-    const providerIds = Array.from(
-      new Set(
-        [
-          ...(nameRows ?? []).map((r) => r.provider_id),
-          ...(domainRows ?? []).map((r) => r.provider_id),
-          ...(regulatedRows ?? []).map((r) => r.provider_id),
-          ...(courseRows ?? []).map((r) => r.provider_id),
+          ...nameRowsSafe.map((r) => r.user_id),
+          ...domainRowsSafe.map((r) => r.professional_id),
+          ...regulatedRowsSafe.map((r) => r.provider_id),
+          ...courseRowsSafe.map((r) => r.provider_id),
         ].filter(Boolean) as string[],
       ),
     );
@@ -117,17 +137,6 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
       }>) {
         const n = p.full_name?.trim();
         if (n) nameById.set(p.id, n);
-      }
-    }
-    const providerNameById = new Map<string, string>();
-    if (providerIds.length) {
-      const { data: provs } = await supabaseAdmin
-        .from("training_providers")
-        .select("id, name")
-        .in("id", providerIds);
-      for (const p of (provs ?? []) as Array<{ id: string; name: string | null }>) {
-        const n = p.name?.trim();
-        if (n) providerNameById.set(p.id, n);
       }
     }
 
@@ -176,62 +185,35 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         createdAt: r.created_at,
         href: "/admin/verification",
       })),
-      ...((nameRows ?? []) as Array<{
-        id: string;
-        provider_id: string;
-        requested_name: string | null;
-        current_name: string | null;
-        created_at: string;
-      }>).map<Item>((r) => ({
+      ...nameRowsSafe.map<Item>((r) => ({
         key: `pname-${r.id}`,
         kind: "provider_name",
-        title: `${providerNameById.get(r.provider_id) ?? r.current_name ?? "Provider"} — name change`,
-        preview: r.requested_name
-          ? `Wants "${r.requested_name}"`
-          : "Awaiting review",
+        title: `${nameById.get(r.user_id) ?? "Provider"} — name change`,
+        preview: r.requested_name ? `Wants "${r.requested_name}"` : "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
       })),
-      ...((domainRows ?? []) as Array<{
-        id: string;
-        provider_id: string;
-        domain: string | null;
-        created_at: string;
-      }>).map<Item>((r) => ({
+      ...domainRowsSafe.map<Item>((r) => ({
         key: `pdomain-${r.id}`,
         kind: "provider_domain",
-        title: `${providerNameById.get(r.provider_id) ?? "Provider"} — domain change`,
+        title: `${nameById.get(r.professional_id) ?? "Provider"} — domain change`,
         preview: r.domain ?? "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
       })),
-      ...((regulatedRows ?? []) as Array<{
-        id: string;
-        provider_id: string;
-        awarding_body: string | null;
-        qualification_title: string | null;
-        created_at: string;
-      }>).map<Item>((r) => ({
+      ...regulatedRowsSafe.map<Item>((r) => ({
         key: `preg-${r.id}`,
         kind: "provider_regulated",
-        title: `${providerNameById.get(r.provider_id) ?? "Provider"} — regulated qualification`,
-        preview:
-          [r.qualification_title, r.awarding_body].filter(Boolean).join(" · ") ||
-          "Awaiting review",
+        title: `${nameById.get(r.provider_id) ?? "Provider"} — regulated qualification`,
+        preview: "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
       })),
-      ...((courseRows ?? []) as Array<{
-        id: string;
-        provider_id: string;
-        title: string | null;
-        status: string;
-        created_at: string;
-      }>).map<Item>((r) => ({
+      ...courseRowsSafe.map<Item>((r) => ({
         key: `pcourse-${r.id}`,
         kind: "provider_course",
-        title: `${providerNameById.get(r.provider_id) ?? "Provider"} — REPS course`,
-        preview: r.title ?? "Awaiting review",
+        title: `${nameById.get(r.provider_id) ?? "Provider"} — REPS course`,
+        preview: r.official_title ?? r.proposed_title ?? "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
       })),
