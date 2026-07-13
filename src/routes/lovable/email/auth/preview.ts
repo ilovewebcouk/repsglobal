@@ -63,6 +63,40 @@ const SAMPLE_DATA: Record<string, object> = {
 export const Route = createFileRoute("/lovable/email/auth/preview")({
   server: {
     handlers: {
+      GET: async ({ request }) => {
+        const apiKey = process.env.LOVABLE_API_KEY
+
+        if (!apiKey) {
+          return Response.json(
+            { error: 'Server configuration error' },
+            { status: 500 }
+          )
+        }
+
+        const authHeader = request.headers.get('Authorization')
+        if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const url = new URL(request.url)
+        const type = url.searchParams.get('type') || url.searchParams.get('template') || 'signup'
+        const EmailTemplate = EMAIL_TEMPLATES[type]
+
+        if (!EmailTemplate) {
+          return Response.json(
+            { error: `Unknown email type: ${type}` },
+            { status: 400 }
+          )
+        }
+
+        const sampleData = SAMPLE_DATA[type] || {}
+        const html = await render(React.createElement(EmailTemplate, sampleData))
+
+        return new Response(html, {
+          status: 200,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        })
+      },
       POST: async ({ request }) => {
         const apiKey = process.env.LOVABLE_API_KEY
 
