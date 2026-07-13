@@ -233,7 +233,7 @@ function PricingPanel() {
                 ))}
               </select>
               <Button
-                variant="outline"
+                variant="subtle"
                 size="sm"
                 disabled={save.isPending || !service || service === currentService}
                 onClick={() =>
@@ -294,7 +294,7 @@ function SettingRow({
           />
         </div>
         <span className="text-[11px] text-white/40 whitespace-nowrap">{suffix}</span>
-        <Button variant="outline" size="sm" disabled={disabled} onClick={onSave}>
+        <Button variant="subtle" size="sm" disabled={disabled} onClick={onSave}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
         </Button>
       </div>
