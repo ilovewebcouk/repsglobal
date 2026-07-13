@@ -4,6 +4,8 @@
 // `manualRelinkStripeCustomers`.
 import { createFileRoute } from '@tanstack/react-router';
 import { ENTRIES, type Entry } from '@/lib/admin/manual-relink-stripe.functions';
+import { createStripeClient, resolvePriceByLookupKey } from '@/lib/billing/stripe.server';
+
 
 type Kind = 'annual' | 'monthly';
 
@@ -21,7 +23,11 @@ interface RowResult {
   detail: string;
   currentPeriodEnd?: string;
   userId?: string;
+  fullName?: string | null;
+  stripeSubscriptionId?: string | null;
+  paymentMethodMissing?: boolean;
 }
+
 
 export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
   server: {
@@ -36,6 +42,9 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
         const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
         const { sendTransactionalEmailServer } = await import('@/lib/email/send.server');
 
+        const stripe = createStripeClient('live');
+        const price = await resolvePriceByLookupKey(stripe, 'verified_annual');
+
         const inviterName = 'The REPs team';
         const results: RowResult[] = [];
 
@@ -43,6 +52,7 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
           const email = entry.email.trim().toLowerCase();
           const kind: Kind = entry.kind ?? 'annual';
           try {
+
             let anchor: string | null = entry.paidAtOverride ?? null;
             let anchorAmount: number | null = null;
             if (!anchor) {
@@ -102,6 +112,22 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
             }
             if (!userId) throw new Error('no user id resolved');
 
+            // 1) Set profiles.full_name from legacy bd_member_seed
+            let fullName: string | null = null;
+            const { data: seed } = await supabaseAdmin
+              .from('bd_member_seed')
+              .select('first_name, last_name')
+              .eq('email', email)
+              .maybeSingle();
+            if (seed?.first_name || seed?.last_name) {
+              fullName = [seed.first_name, seed.last_name].filter(Boolean).join(' ').trim();
+            }
+            if (fullName) {
+              await supabaseAdmin
+                .from('profiles')
+                .upsert({ id: userId, full_name: fullName } as never, { onConflict: 'id' });
+            }
+
             const { data: prof } = await supabaseAdmin
               .from('professionals').select('id').eq('id', userId).maybeSingle();
             if (!prof) {
@@ -112,12 +138,53 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
               } as never);
             }
 
+            // 2) Create real Stripe subscription anchored to renewal date
+            // Check existing subscription first (idempotency)
+            const { data: existingSub } = await supabaseAdmin
+              .from('subscriptions')
+              .select('stripe_subscription_id')
+              .eq('user_id', userId)
+              .eq('environment', 'live')
+              .maybeSingle();
+
+            let stripeSubscriptionId: string | null =
+              (existingSub as { stripe_subscription_id: string | null } | null)?.stripe_subscription_id ?? null;
+            let paymentMethodMissing = false;
+
+            if (!stripeSubscriptionId) {
+              // Check customer has a default payment method
+              const customer = await stripe.customers.retrieve(entry.customerId);
+              const defaultPm =
+                customer && !('deleted' in customer && customer.deleted)
+                  ? (customer.invoice_settings?.default_payment_method ?? customer.default_source ?? null)
+                  : null;
+              if (!defaultPm) {
+                paymentMethodMissing = true;
+              }
+
+              const trialEndUnix = Math.floor(new Date(currentPeriodEnd).getTime() / 1000);
+              const sub = await stripe.subscriptions.create({
+                customer: entry.customerId,
+                items: [{ price: price.id }],
+                trial_end: trialEndUnix,
+                proration_behavior: 'none',
+                collection_method: 'charge_automatically',
+                metadata: {
+                  manual_relink: 'true',
+                  source: 'admin_batch_2026_07',
+                  reps_user_id: userId,
+                  reps_email: email,
+                },
+              });
+              stripeSubscriptionId = sub.id;
+            }
+
             const row = {
               user_id: userId,
               owner_id: userId,
               stripe_customer_id: entry.customerId,
-              stripe_subscription_id: null,
-              stripe_price_id: null,
+              stripe_subscription_id: stripeSubscriptionId,
+              stripe_price_id: price.id,
               tier: 'verified' as const,
               billing_period: kind,
               status: 'active' as const,
@@ -131,6 +198,7 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
               .from('subscriptions')
               .upsert(row as never, { onConflict: 'user_id,environment' });
             if (upErr) throw new Error(`subscriptions upsert: ${upErr.message}`);
+
 
             if (action === 'created' && inviteUrl) {
               try {
@@ -168,10 +236,14 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
               email,
               customerId: entry.customerId,
               action,
-              detail: `anchor=${anchor}${anchorAmount ? ` (£${(anchorAmount/100).toFixed(2)})` : ''} → current_period_end=${currentPeriodEnd}`,
+              detail: `name=${fullName ?? '∅'} sub=${stripeSubscriptionId ?? '∅'}${paymentMethodMissing ? ' PM_MISSING' : ''} anchor=${anchor}${anchorAmount ? ` (£${(anchorAmount/100).toFixed(2)})` : ''} → first_charge=${currentPeriodEnd}`,
               currentPeriodEnd,
               userId,
+              fullName,
+              stripeSubscriptionId,
+              paymentMethodMissing,
             });
+
           } catch (err) {
             results.push({
               email,
