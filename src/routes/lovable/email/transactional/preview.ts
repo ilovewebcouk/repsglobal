@@ -9,6 +9,56 @@ import { TEMPLATES } from '@/lib/email-templates/registry'
 export const Route = createFileRoute("/lovable/email/transactional/preview")({
   server: {
     handlers: {
+      GET: async ({ request }) => {
+        const apiKey = process.env.LOVABLE_API_KEY
+        if (!apiKey) {
+          return Response.json(
+            { error: 'Server configuration error' },
+            { status: 500 }
+          )
+        }
+
+        const authHeader = request.headers.get('Authorization')
+        const token = authHeader?.replace(/^Bearer\s+/i, '')
+        if (token !== apiKey) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const url = new URL(request.url)
+        const name =
+          url.searchParams.get('templateName') ||
+          url.searchParams.get('template_name') ||
+          url.searchParams.get('name')
+
+        if (!name) {
+          return Response.json(
+            {
+              templates: Object.entries(TEMPLATES).map(([templateName, entry]) => ({
+                templateName,
+                displayName: entry.displayName || templateName,
+              })),
+            },
+            { status: 200 }
+          )
+        }
+
+        const entry = TEMPLATES[name]
+        if (!entry) {
+          return Response.json(
+            { error: `Unknown template: ${name}` },
+            { status: 404 }
+          )
+        }
+
+        const html = await render(
+          React.createElement(entry.component, entry.previewData || {})
+        )
+
+        return new Response(html, {
+          status: 200,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        })
+      },
       POST: async ({ request }) => {
         const apiKey = process.env.LOVABLE_API_KEY
         if (!apiKey) {
