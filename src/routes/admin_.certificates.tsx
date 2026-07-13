@@ -140,11 +140,11 @@ function PricingPanel() {
     onError: (e: any) => toast.error(e?.message ?? "Could not save"),
   });
 
-  return (
   const currentServiceLabel =
     RM_SERVICE_OPTS.find((s) => s.code === currentService)?.label ?? currentService;
 
   return (
+
     <div className="max-w-2xl space-y-4">
       <PCard>
         <div className="p-6">
