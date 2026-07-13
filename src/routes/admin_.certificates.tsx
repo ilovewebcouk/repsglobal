@@ -141,147 +141,167 @@ function PricingPanel() {
   });
 
   return (
-    <PCard>
-      <div className="p-6 max-w-lg space-y-6">
-        <div>
-          <div className="text-[13px] text-white/60">Certificate unit price</div>
-          <div className="mt-1 font-display text-3xl">
-            £{(currentUnit / 100).toFixed(2)}{" "}
-            <span className="text-sm text-white/40">/ certificate</span>
+  const currentServiceLabel =
+    RM_SERVICE_OPTS.find((s) => s.code === currentService)?.label ?? currentService;
+
+  return (
+    <div className="max-w-2xl space-y-4">
+      <PCard>
+        <div className="p-6">
+          <div className="mb-5">
+            <h2 className="font-display text-lg">Pricing</h2>
+            <p className="mt-0.5 text-[12.5px] text-white/50">
+              What professionals pay for certificates and postage.
+            </p>
           </div>
-          <div className="mt-2">
-            <label className="text-[12px] text-white/50">New price (£)</label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder={(currentUnit / 100).toFixed(2)}
+          <div className="divide-y divide-white/5">
+            <SettingRow
+              label="Certificate unit price"
+              helper="Charged per certificate."
+              suffix="£ / cert"
+              currentValue={(currentUnit / 100).toFixed(2)}
               value={unit}
-              onChange={(e) => setUnit(e.target.value)}
+              onChange={setUnit}
+              disabled={isLoading || save.isPending || !unit}
+              pending={save.isPending}
+              onSave={() => {
+                const n = Number(unit);
+                if (!Number.isFinite(n) || n < 0) return;
+                save.mutate({ unit_price_pence: Math.round(n * 100) });
+              }}
             />
-          </div>
-          <Button
-            className="mt-3"
-            disabled={isLoading || save.isPending || !unit}
-            onClick={() => {
-              const n = Number(unit);
-              if (!Number.isFinite(n) || n < 0) return;
-              save.mutate({ unit_price_pence: Math.round(n * 100) });
-            }}
-          >
-            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save unit price"}
-          </Button>
-        </div>
-
-        <div className="border-t border-white/5 pt-6">
-          <div className="text-[13px] text-white/60">Postage per UK batch</div>
-          <div className="mt-1 font-display text-3xl">
-            £{(currentPostage / 100).toFixed(2)}{" "}
-            <span className="text-sm text-white/40">/ batch</span>
-          </div>
-          <p className="mt-1 text-[12px] text-white/50">
-            Charged once per UK batch regardless of how many certificates are inside.
-          </p>
-          <div className="mt-2">
-            <label className="text-[12px] text-white/50">New postage fee (£)</label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder={(currentPostage / 100).toFixed(2)}
+            <SettingRow
+              label="UK postage per batch"
+              helper="Once per UK batch, any size."
+              suffix="£ / batch"
+              currentValue={(currentPostage / 100).toFixed(2)}
               value={postage}
-              onChange={(e) => setPostage(e.target.value)}
+              onChange={setPostage}
+              disabled={save.isPending || !postage}
+              pending={save.isPending}
+              onSave={() => {
+                const n = Number(postage);
+                if (!Number.isFinite(n) || n < 0) return;
+                save.mutate({ postage_fee_pence: Math.round(n * 100) });
+              }}
             />
-          </div>
-          <Button
-            className="mt-3"
-            disabled={save.isPending || !postage}
-            onClick={() => {
-              const n = Number(postage);
-              if (!Number.isFinite(n) || n < 0) return;
-              save.mutate({ postage_fee_pence: Math.round(n * 100) });
-            }}
-          >
-            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save postage fee"}
-          </Button>
-        </div>
-
-        <div className="border-t border-white/5 pt-6">
-          <div className="text-[13px] text-white/60">
-            International postage per batch
-          </div>
-          <div className="mt-1 font-display text-3xl">
-            £{(currentIntlPostage / 100).toFixed(2)}{" "}
-            <span className="text-sm text-white/40">/ batch</span>
-          </div>
-          <p className="mt-1 text-[12px] text-white/50">
-            Flat fee charged once per non-UK batch. Covers Royal Mail International Tracked.
-          </p>
-          <div className="mt-2">
-            <label className="text-[12px] text-white/50">
-              New international postage fee (£)
-            </label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder={(currentIntlPostage / 100).toFixed(2)}
+            <SettingRow
+              label="International postage per batch"
+              helper="Once per non-UK batch. Royal Mail International Tracked."
+              suffix="£ / batch"
+              currentValue={(currentIntlPostage / 100).toFixed(2)}
               value={intlPostage}
-              onChange={(e) => setIntlPostage(e.target.value)}
+              onChange={setIntlPostage}
+              disabled={save.isPending || !intlPostage}
+              pending={save.isPending}
+              onSave={() => {
+                const n = Number(intlPostage);
+                if (!Number.isFinite(n) || n < 0) return;
+                save.mutate({ international_postage_fee_pence: Math.round(n * 100) });
+              }}
             />
           </div>
-          <Button
-            className="mt-3"
-            disabled={save.isPending || !intlPostage}
-            onClick={() => {
-              const n = Number(intlPostage);
-              if (!Number.isFinite(n) || n < 0) return;
-              save.mutate({ international_postage_fee_pence: Math.round(n * 100) });
-            }}
-          >
-            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save international postage"}
-          </Button>
         </div>
+      </PCard>
 
-        <div className="border-t border-white/5 pt-6">
-          <div className="text-[13px] text-white/60">Default UK Royal Mail service</div>
-          <div className="mt-1 font-display text-xl">
-            {RM_SERVICE_OPTS.find((s) => s.code === currentService)?.label ?? currentService}
+      <PCard>
+        <div className="p-6">
+          <div className="mb-5">
+            <h2 className="font-display text-lg">Dispatch</h2>
+            <p className="mt-0.5 text-[12.5px] text-white/50">
+              Default carrier service used for UK batches. International batches always use
+              International Tracked.
+            </p>
           </div>
-          <p className="mt-1 text-[12px] text-white/50">
-            Used by default for UK batches. International batches default to International
-            Tracked. Admin can override per batch at dispatch time.
-          </p>
-          <div className="mt-2">
-            <label className="text-[12px] text-white/50">Change default</label>
-            <select
-              className="mt-1 w-full rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2 text-[13px] text-white"
-              value={service || currentService}
-              onChange={(e) => setService(e.target.value)}
-            >
-              {RM_SERVICE_OPTS.filter((s) => s.code === "TPN" || s.code === "TPS").map((s) => (
-                <option key={s.code} value={s.code}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="text-[13px] text-white">Default UK Royal Mail service</div>
+              <div className="mt-0.5 text-[12px] text-white/50">
+                Currently: {currentServiceLabel}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2 text-[13px] text-white min-w-[220px]"
+                value={service || currentService}
+                onChange={(e) => setService(e.target.value)}
+              >
+                {RM_SERVICE_OPTS.filter((s) => s.code === "TPN" || s.code === "TPS").map((s) => (
+                  <option key={s.code} value={s.code}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={save.isPending || !service || service === currentService}
+                onClick={() =>
+                  save.mutate({
+                    default_rm_service_code: service as RmServiceCode,
+                  })
+                }
+              >
+                {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </div>
           </div>
-          <Button
-            className="mt-3"
-            disabled={save.isPending || !service || service === currentService}
-            onClick={() =>
-              save.mutate({
-                default_rm_service_code: service as RmServiceCode,
-              })
-            }
-          >
-            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save default service"}
-          </Button>
         </div>
-      </div>
-    </PCard>
+      </PCard>
+    </div>
   );
 }
+
+function SettingRow({
+  label,
+  helper,
+  suffix,
+  currentValue,
+  value,
+  onChange,
+  onSave,
+  disabled,
+  pending,
+}: {
+  label: string;
+  helper: string;
+  suffix: string;
+  currentValue: string;
+  value: string;
+  onChange: (v: string) => void;
+  onSave: () => void;
+  disabled: boolean;
+  pending: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <div className="min-w-0">
+        <div className="text-[13px] text-white">{label}</div>
+        <div className="mt-0.5 text-[12px] text-white/50">
+          {helper} <span className="text-white/40">Currently £{currentValue}.</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="relative">
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            placeholder={currentValue}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-[140px] text-right pr-2"
+          />
+        </div>
+        <span className="text-[11px] text-white/40 whitespace-nowrap">{suffix}</span>
+        <Button variant="outline" size="sm" disabled={disabled} onClick={onSave}>
+          {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 
 // ─────────────────────────────────────────────────────────────── Batches
 
