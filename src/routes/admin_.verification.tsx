@@ -1253,6 +1253,27 @@ function StepHeader({ num, title, pill }: { num: number; title: string; pill: St
   );
 }
 
+function TrustPill({ tone, label }: { tone: "ok" | "warn" | "fail" | "miss"; label: string }) {
+  const cls =
+    tone === "ok"
+      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+      : tone === "warn"
+        ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+        : tone === "fail"
+          ? "border-red-400/30 bg-red-500/15 text-red-300"
+          : "border-white/15 bg-white/5 text-white/55";
+  const icon =
+    tone === "ok" ? <CheckCircle2 className="h-3 w-3" />
+    : tone === "fail" ? <XCircle className="h-3 w-3" />
+    : tone === "warn" ? <AlertTriangle className="h-3 w-3" />
+    : <Clock className="h-3 w-3" />;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${cls}`}>
+      {icon} {label}
+    </span>
+  );
+}
+
 function SubCheckChip({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span
