@@ -770,6 +770,144 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
     }
   });
 
+export const syncCertificateBatchCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<{ status: string } | { error: string }> => {
+    try {
+      const { supabase, userId } = context;
+      await assertProviderIsOrganisation(supabase, userId);
+
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: batch, error: batchErr } = await supabaseAdmin
+        .from("certificate_batches")
+        .select("id, provider_id, status, environment, stripe_checkout_session_id")
+        .eq("id", data.batch_id)
+        .eq("provider_id", userId)
+        .maybeSingle();
+      if (batchErr) throw new Error(batchErr.message);
+      if (!batch) return { error: "Payment batch not found." };
+
+      const status = (batch.status as string | null) ?? "pending";
+      if (status !== "pending") return { status };
+
+      const sessionId = batch.stripe_checkout_session_id as string | null;
+      if (!sessionId) return { error: "Payment session is not available." };
+
+      const { createStripeClient, getStripeErrorMessage } = await import("@/lib/billing/stripe.server");
+      const env = (batch.environment as "sandbox" | "live" | null) ?? "sandbox";
+      const stripe = createStripeClient(env);
+
+      try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        if (session.payment_status !== "paid") return { status: "pending" };
+
+        const now = new Date().toISOString();
+        await supabaseAdmin
+          .from("certificate_batches")
+          .update({
+            status: "paid",
+            paid_at: now,
+            stripe_payment_intent_id:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : (session.payment_intent?.id ?? null),
+          } as never)
+          .eq("id", data.batch_id)
+          .eq("status", "pending");
+        await supabaseAdmin
+          .from("certificate_registrations")
+          .update({ status: "paid", paid_at: now } as never)
+          .eq("batch_id", data.batch_id)
+          .eq("status", "pending_payment");
+
+        const { issueCertificatesForBatch } = await import("@/lib/certificates/issue.server");
+        await issueCertificatesForBatch(data.batch_id);
+        return { status: "paid" };
+      } catch (err) {
+        return { error: getStripeErrorMessage(err) };
+      }
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "Could not confirm payment" };
+    }
+  });
+
+export const resumeCertificateBatchCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<{ url: string } | { error: string }> => {
+    try {
+      const { supabase, userId } = context;
+      await assertProviderIsOrganisation(supabase, userId);
+
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: batch, error: batchErr } = await supabaseAdmin
+        .from("certificate_batches")
+        .select("id, provider_id, status, environment, stripe_checkout_session_id")
+        .eq("id", data.batch_id)
+        .eq("provider_id", userId)
+        .maybeSingle();
+      if (batchErr) throw new Error(batchErr.message);
+      if (!batch) return { error: "Payment batch not found." };
+      if ((batch.status as string | null) !== "pending") {
+        return { error: "This payment is no longer awaiting checkout." };
+      }
+      const sessionId = batch.stripe_checkout_session_id as string | null;
+      if (!sessionId) return { error: "Payment session is not available. Cancel it and start checkout again." };
+
+      const { createStripeClient, getStripeErrorMessage } = await import("@/lib/billing/stripe.server");
+      const env = (batch.environment as "sandbox" | "live" | null) ?? "sandbox";
+      const stripe = createStripeClient(env);
+      try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        if (session.payment_status === "paid") {
+          return { error: "Payment has already been received. Refresh certificates." };
+        }
+        if (!session.url || session.status === "expired") {
+          return { error: "This checkout session has expired. Cancel it and start checkout again." };
+        }
+        return { url: session.url };
+      } catch (err) {
+        return { error: getStripeErrorMessage(err) };
+      }
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "Could not resume checkout" };
+    }
+  });
+
+export const cancelCertificateBatchCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertProviderIsOrganisation(supabase, userId);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: batch, error: batchErr } = await supabaseAdmin
+      .from("certificate_batches")
+      .select("id, provider_id, status")
+      .eq("id", data.batch_id)
+      .eq("provider_id", userId)
+      .maybeSingle();
+    if (batchErr) throw new Error(batchErr.message);
+    if (!batch) throw new Error("Payment batch not found.");
+    if ((batch.status as string | null) !== "pending") return { ok: true };
+
+    await supabaseAdmin
+      .from("certificate_registrations")
+      .update({ batch_id: null, status: "passed", price_pence_at_issue: null } as never)
+      .eq("provider_id", userId)
+      .eq("batch_id", data.batch_id)
+      .eq("status", "pending_payment");
+    await supabaseAdmin
+      .from("certificate_batches")
+      .update({ status: "canceled" } as never)
+      .eq("id", data.batch_id)
+      .eq("provider_id", userId)
+      .eq("status", "pending");
+    return { ok: true };
+  });
+
 export const listMyBatches = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BatchDTO[]> => {
