@@ -89,6 +89,7 @@ import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
 import { Route as AdminSeoRouteImport } from './routes/admin_.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin_.reviews'
+import { Route as AdminRelinkStripeRouteImport } from './routes/admin_.relink-stripe'
 import { Route as AdminReconciliationRouteImport } from './routes/admin_.reconciliation'
 import { Route as AdminProviderNamesRouteImport } from './routes/admin_.provider-names'
 import { Route as AdminProspectsRouteImport } from './routes/admin_.prospects'
@@ -584,6 +585,11 @@ const AdminSeoRoute = AdminSeoRouteImport.update({
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
   id: '/admin_/reviews',
   path: '/admin/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRelinkStripeRoute = AdminRelinkStripeRouteImport.update({
+  id: '/admin_/relink-stripe',
+  path: '/admin/relink-stripe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
@@ -1176,6 +1182,7 @@ export interface FileRoutesByFullPath {
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/provider-names': typeof AdminProviderNamesRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/relink-stripe': typeof AdminRelinkStripeRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
@@ -1350,6 +1357,7 @@ export interface FileRoutesByTo {
   '/admin/prospects': typeof AdminProspectsRoute
   '/admin/provider-names': typeof AdminProviderNamesRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/relink-stripe': typeof AdminRelinkStripeRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
@@ -1523,6 +1531,7 @@ export interface FileRoutesById {
   '/admin_/prospects': typeof AdminProspectsRoute
   '/admin_/provider-names': typeof AdminProviderNamesRoute
   '/admin_/reconciliation': typeof AdminReconciliationRoute
+  '/admin_/relink-stripe': typeof AdminRelinkStripeRoute
   '/admin_/reviews': typeof AdminReviewsRoute
   '/admin_/seo': typeof AdminSeoRouteWithChildren
   '/admin_/settings': typeof AdminSettingsRoute
@@ -1701,6 +1710,7 @@ export interface FileRouteTypes {
     | '/admin/prospects'
     | '/admin/provider-names'
     | '/admin/reconciliation'
+    | '/admin/relink-stripe'
     | '/admin/reviews'
     | '/admin/seo'
     | '/admin/settings'
@@ -1875,6 +1885,7 @@ export interface FileRouteTypes {
     | '/admin/prospects'
     | '/admin/provider-names'
     | '/admin/reconciliation'
+    | '/admin/relink-stripe'
     | '/admin/reviews'
     | '/admin/seo'
     | '/admin/settings'
@@ -2047,6 +2058,7 @@ export interface FileRouteTypes {
     | '/admin_/prospects'
     | '/admin_/provider-names'
     | '/admin_/reconciliation'
+    | '/admin_/relink-stripe'
     | '/admin_/reviews'
     | '/admin_/seo'
     | '/admin_/settings'
@@ -2225,6 +2237,7 @@ export interface RootRouteChildren {
   AdminProspectsRoute: typeof AdminProspectsRoute
   AdminProviderNamesRoute: typeof AdminProviderNamesRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
+  AdminRelinkStripeRoute: typeof AdminRelinkStripeRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSeoRoute: typeof AdminSeoRouteWithChildren
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -2857,6 +2870,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/reviews'
       fullPath: '/admin/reviews'
       preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/relink-stripe': {
+      id: '/admin_/relink-stripe'
+      path: '/admin/relink-stripe'
+      fullPath: '/admin/relink-stripe'
+      preLoaderRoute: typeof AdminRelinkStripeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/reconciliation': {
@@ -3869,6 +3889,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProspectsRoute: AdminProspectsRoute,
   AdminProviderNamesRoute: AdminProviderNamesRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
+  AdminRelinkStripeRoute: AdminRelinkStripeRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSeoRoute: AdminSeoRouteWithChildren,
   AdminSettingsRoute: AdminSettingsRoute,
