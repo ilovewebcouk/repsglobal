@@ -162,7 +162,20 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
                 paymentMethodMissing = true;
               }
 
-              const trialEndUnix = Math.floor(new Date(currentPeriodEnd).getTime() / 1000);
+              // If the calculated period end is already in the past (their
+              // annual term already lapsed), give them a fresh full year from
+              // today so Stripe accepts trial_end and they don't get charged now.
+              let trialEndUnix = Math.floor(new Date(currentPeriodEnd).getTime() / 1000);
+              const nowUnix = Math.floor(Date.now() / 1000);
+              if (trialEndUnix <= nowUnix + 3600) {
+                const fresh = new Date();
+                if (kind === 'annual') fresh.setUTCFullYear(fresh.getUTCFullYear() + 1);
+                else fresh.setUTCMonth(fresh.getUTCMonth() + 1);
+                trialEndUnix = Math.floor(fresh.getTime() / 1000);
+                // Also update the value we persist so the DB matches Stripe
+                currentPeriodEndOverride = fresh.toISOString();
+              }
+
               const sub = await stripe.subscriptions.create({
                 customer: entry.customerId,
                 items: [{ price: price.id }],
