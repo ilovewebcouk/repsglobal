@@ -95,6 +95,16 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         ].filter(Boolean) as string[],
       ),
     );
+    const providerIds = Array.from(
+      new Set(
+        [
+          ...(nameRows ?? []).map((r) => r.provider_id),
+          ...(domainRows ?? []).map((r) => r.provider_id),
+          ...(regulatedRows ?? []).map((r) => r.provider_id),
+          ...(courseRows ?? []).map((r) => r.provider_id),
+        ].filter(Boolean) as string[],
+      ),
+    );
     const nameById = new Map<string, string>();
     if (proIds.length) {
       const { data: profs } = await supabaseAdmin
@@ -109,10 +119,27 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         if (n) nameById.set(p.id, n);
       }
     }
+    const providerNameById = new Map<string, string>();
+    if (providerIds.length) {
+      const { data: provs } = await supabaseAdmin
+        .from("training_providers")
+        .select("id, name")
+        .in("id", providerIds);
+      for (const p of (provs ?? []) as Array<{ id: string; name: string | null }>) {
+        const n = p.name?.trim();
+        if (n) providerNameById.set(p.id, n);
+      }
+    }
 
     type Item = {
       key: string;
-      kind: "qualification" | "insurance";
+      kind:
+        | "qualification"
+        | "insurance"
+        | "provider_name"
+        | "provider_domain"
+        | "provider_regulated"
+        | "provider_course";
       title: string;
       preview: string;
       createdAt: string;
@@ -146,6 +173,65 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         kind: "insurance",
         title: `${nameById.get(r.professional_id) ?? "Unnamed provider"} — insurance`,
         preview: r.provider ?? "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...((nameRows ?? []) as Array<{
+        id: string;
+        provider_id: string;
+        requested_name: string | null;
+        current_name: string | null;
+        created_at: string;
+      }>).map<Item>((r) => ({
+        key: `pname-${r.id}`,
+        kind: "provider_name",
+        title: `${providerNameById.get(r.provider_id) ?? r.current_name ?? "Provider"} — name change`,
+        preview: r.requested_name
+          ? `Wants "${r.requested_name}"`
+          : "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...((domainRows ?? []) as Array<{
+        id: string;
+        provider_id: string;
+        domain: string | null;
+        created_at: string;
+      }>).map<Item>((r) => ({
+        key: `pdomain-${r.id}`,
+        kind: "provider_domain",
+        title: `${providerNameById.get(r.provider_id) ?? "Provider"} — domain change`,
+        preview: r.domain ?? "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...((regulatedRows ?? []) as Array<{
+        id: string;
+        provider_id: string;
+        awarding_body: string | null;
+        qualification_title: string | null;
+        created_at: string;
+      }>).map<Item>((r) => ({
+        key: `preg-${r.id}`,
+        kind: "provider_regulated",
+        title: `${providerNameById.get(r.provider_id) ?? "Provider"} — regulated qualification`,
+        preview:
+          [r.qualification_title, r.awarding_body].filter(Boolean).join(" · ") ||
+          "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...((courseRows ?? []) as Array<{
+        id: string;
+        provider_id: string;
+        title: string | null;
+        status: string;
+        created_at: string;
+      }>).map<Item>((r) => ({
+        key: `pcourse-${r.id}`,
+        kind: "provider_course",
+        title: `${providerNameById.get(r.provider_id) ?? "Provider"} — REPS course`,
+        preview: r.title ?? "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
       })),
