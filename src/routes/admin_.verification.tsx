@@ -387,8 +387,17 @@ function AdminVerificationPage() {
                 </button>
               ))}
             </div>
+            {statusFilter === "submitted" ? (
+              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-white/45">
+                <Lock className="h-2.5 w-2.5 text-amber-400" />
+                <span>Amber = another admin is reviewing</span>
+                <span className="mx-1 text-white/25">·</span>
+                <Lock className="h-2.5 w-2.5 text-emerald-400" />
+                <span>Green = you</span>
+              </div>
+            ) : null}
           </div>
-          <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
+
             {listing.isLoading && (
               <li className="p-6 text-center text-[12px] text-white/55">Loading…</li>
             )}
