@@ -193,6 +193,8 @@ function AdminVerificationPage() {
     setManualQualConfirmed(false);
     setRevokeOpen(false);
     setRevokeReason("");
+    setPersonDrawerOpen(false);
+    setNotesOpen(false);
     try {
       await claim({ data: { id } });
     } catch {
