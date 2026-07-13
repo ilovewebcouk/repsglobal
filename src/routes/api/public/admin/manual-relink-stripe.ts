@@ -72,7 +72,9 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
               anchor = pay.paid_at;
               anchorAmount = pay.amount_pence ?? null;
             }
-            const currentPeriodEnd = addPeriod(anchor, kind);
+            let currentPeriodEnd = addPeriod(anchor, kind);
+            let currentPeriodEndOverride: string | null = null;
+
 
             let userId: string | null = null;
             let action: 'created' | 'reused' = 'reused';
