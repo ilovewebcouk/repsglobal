@@ -401,6 +401,9 @@ function AdminVerificationPage() {
               const sla = isPending ? slaRemaining(r.created_at) : null;
               const name = r.professional?.full_name || "Unnamed";
               const claimed = (r as { claimed_by?: string | null }).claimed_by;
+              const claimedName = (r as { claimed_by_name?: string | null }).claimed_by_name;
+              const showLock = isPending && !!claimed;
+              const mine = !!claimed && claimed === currentUserId;
               const reviewedAt = (r as { reviewed_at?: string | null }).reviewed_at;
               return (
                 <li key={r.id}>
@@ -410,10 +413,30 @@ function AdminVerificationPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate text-[13px] font-semibold text-white">{name}</span>
-                      {claimed ? <Lock className="h-3 w-3 text-amber-400" /> : null}
+                      {showLock ? (
+                        <TooltipProvider delayDuration={150}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                className="inline-flex"
+                                onClick={(e) => e.stopPropagation()}
+                                aria-label={mine ? "You're reviewing this" : `Being reviewed by ${claimedName || "another admin"}`}
+                              >
+                                <Lock className={`h-3 w-3 ${mine ? "text-emerald-400" : "text-amber-400"}`} />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="text-[11px]">
+                              {mine
+                                ? "You're reviewing this case"
+                                : `Being reviewed by ${claimedName || "another admin"}`}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : null}
                     </div>
                     <div className="mt-0.5 flex items-center gap-1.5">
                       <span className="truncate text-[11px] text-white/55">{r.qualification}</span>
+
                       {siblingCounts[r.professional_id] > 1 && (
                         <span className="shrink-0 rounded-[6px] border border-reps-orange/30 bg-reps-orange-soft px-1.5 py-0.5 text-[10px] font-semibold text-reps-orange">
                           +{siblingCounts[r.professional_id] - 1} more
