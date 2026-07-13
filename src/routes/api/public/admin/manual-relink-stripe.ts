@@ -193,6 +193,8 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
               });
               stripeSubscriptionId = sub.id;
             }
+            if (currentPeriodEndOverride) currentPeriodEnd = currentPeriodEndOverride;
+
 
             const row = {
               user_id: userId,
