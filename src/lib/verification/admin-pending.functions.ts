@@ -40,10 +40,10 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
     const [
       { data: qualRows, count: qualCount },
       { data: insRows, count: insCount },
-      { count: nameCount },
-      { count: domainCount },
-      { count: regulatedCount },
-      { count: coursesCount },
+      { data: nameRows, count: nameCount },
+      { data: domainRows, count: domainCount },
+      { data: regulatedRows, count: regulatedCount },
+      { data: courseRows, count: coursesCount },
     ] = await Promise.all([
       supabaseAdmin
         .from("verification_submissions")
@@ -61,20 +61,30 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         .limit(20),
       supabaseAdmin
         .from("provider_name_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending"),
+        .select("id, provider_id, requested_name, current_name, created_at", { count: "exact" })
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(20),
       supabaseAdmin
         .from("provider_domain_verifications")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending_admin_review"),
+        .select("id, provider_id, domain, created_at", { count: "exact" })
+        .eq("status", "pending_admin_review")
+        .order("created_at", { ascending: false })
+        .limit(20),
       supabaseAdmin
         .from("provider_regulated_permissions")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "submitted"),
+        .select("id, provider_id, awarding_body, qualification_title, created_at", {
+          count: "exact",
+        })
+        .eq("status", "submitted")
+        .order("created_at", { ascending: false })
+        .limit(20),
       supabaseAdmin
         .from("reps_courses")
-        .select("id", { count: "exact", head: true })
-        .in("status", ["submitted", "ai_drafted"]),
+        .select("id, provider_id, title, status, created_at", { count: "exact" })
+        .in("status", ["submitted", "ai_drafted"])
+        .order("created_at", { ascending: false })
+        .limit(20),
     ]);
 
     const proIds = Array.from(
