@@ -40,10 +40,10 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
     const [
       { data: qualRows, count: qualCount },
       { data: insRows, count: insCount },
-      { count: nameCount },
-      { count: domainCount },
-      { count: regulatedCount },
-      { count: coursesCount },
+      { data: nameRows, count: nameCount },
+      { data: domainRows, count: domainCount },
+      { data: regulatedRows, count: regulatedCount },
+      { data: courseRows, count: coursesCount },
     ] = await Promise.all([
       supabaseAdmin
         .from("verification_submissions")
@@ -61,27 +61,67 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         .limit(20),
       supabaseAdmin
         .from("provider_name_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending"),
+        .select("id, user_id, requested_name, created_at", { count: "exact" })
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(20),
       supabaseAdmin
         .from("provider_domain_verifications")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending_admin_review"),
+        .select("id, professional_id, domain, created_at", { count: "exact" })
+        .eq("status", "pending_admin_review")
+        .order("created_at", { ascending: false })
+        .limit(20),
       supabaseAdmin
         .from("provider_regulated_permissions")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "submitted"),
+        .select("id, provider_id, created_at", { count: "exact" })
+        .eq("status", "submitted")
+        .order("created_at", { ascending: false })
+        .limit(20),
       supabaseAdmin
         .from("reps_courses")
-        .select("id", { count: "exact", head: true })
-        .in("status", ["submitted", "ai_drafted"]),
+        .select("id, provider_id, proposed_title, official_title, status, created_at", {
+          count: "exact",
+        })
+        .in("status", ["submitted", "ai_drafted"])
+        .order("created_at", { ascending: false })
+        .limit(20),
     ]);
+
+    const nameRowsSafe = (nameRows ?? []) as Array<{
+      id: string;
+      user_id: string;
+      requested_name: string | null;
+      created_at: string;
+    }>;
+    const domainRowsSafe = (domainRows ?? []) as Array<{
+      id: string;
+      professional_id: string;
+      domain: string | null;
+      created_at: string;
+    }>;
+    const regulatedRowsSafe = (regulatedRows ?? []) as Array<{
+      id: string;
+      provider_id: string;
+      created_at: string;
+    }>;
+    const courseRowsSafe = (courseRows ?? []) as Array<{
+      id: string;
+      provider_id: string;
+      proposed_title: string | null;
+      official_title: string | null;
+      status: string;
+      created_at: string;
+    }>;
 
     const proIds = Array.from(
       new Set(
         [
           ...(qualRows ?? []).map((r) => r.professional_id),
           ...(insRows ?? []).map((r) => r.professional_id),
+          ...nameRowsSafe.map((r) => r.user_id),
+          ...domainRowsSafe.map((r) => r.professional_id),
+          ...regulatedRowsSafe.map((r) => r.provider_id),
+          ...courseRowsSafe.map((r) => r.provider_id),
         ].filter(Boolean) as string[],
       ),
     );
@@ -102,7 +142,13 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
 
     type Item = {
       key: string;
-      kind: "qualification" | "insurance";
+      kind:
+        | "qualification"
+        | "insurance"
+        | "provider_name"
+        | "provider_domain"
+        | "provider_regulated"
+        | "provider_course";
       title: string;
       preview: string;
       createdAt: string;
@@ -136,6 +182,38 @@ export const getAdminVerificationPending = createServerFn({ method: "GET" })
         kind: "insurance",
         title: `${nameById.get(r.professional_id) ?? "Unnamed provider"} — insurance`,
         preview: r.provider ?? "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...nameRowsSafe.map<Item>((r) => ({
+        key: `pname-${r.id}`,
+        kind: "provider_name",
+        title: `${nameById.get(r.user_id) ?? "Provider"} — name change`,
+        preview: r.requested_name ? `Wants "${r.requested_name}"` : "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...domainRowsSafe.map<Item>((r) => ({
+        key: `pdomain-${r.id}`,
+        kind: "provider_domain",
+        title: `${nameById.get(r.professional_id) ?? "Provider"} — domain change`,
+        preview: r.domain ?? "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...regulatedRowsSafe.map<Item>((r) => ({
+        key: `preg-${r.id}`,
+        kind: "provider_regulated",
+        title: `${nameById.get(r.provider_id) ?? "Provider"} — regulated qualification`,
+        preview: "Awaiting review",
+        createdAt: r.created_at,
+        href: "/admin/verification",
+      })),
+      ...courseRowsSafe.map<Item>((r) => ({
+        key: `pcourse-${r.id}`,
+        kind: "provider_course",
+        title: `${nameById.get(r.provider_id) ?? "Provider"} — REPS course`,
+        preview: r.official_title ?? r.proposed_title ?? "Awaiting review",
         createdAt: r.created_at,
         href: "/admin/verification",
       })),
