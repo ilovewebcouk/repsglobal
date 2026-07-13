@@ -36,6 +36,21 @@ const SOURCE_LABEL: Record<AdminProviderQueueItem["source"], string> = {
   change: "Profile change",
 };
 
+type StatusFilter = "pending" | "approved" | "rejected" | "withdrawn";
+const STATUS_TABS: readonly StatusFilter[] = ["pending", "approved", "rejected", "withdrawn"];
+const STATUS_LABEL: Record<StatusFilter, string> = {
+  pending: "New",
+  approved: "Approved",
+  rejected: "Rejected",
+  withdrawn: "Withdrawn",
+};
+const STATUS_PILL: Record<StatusFilter, string> = {
+  pending: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+  approved: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+  rejected: "border-rose-400/30 bg-rose-500/15 text-rose-300",
+  withdrawn: "border-white/15 bg-white/10 text-white/60",
+};
+
 function readValue(v: unknown): string | null {
   if (v == null) return null;
   if (typeof v === "object" && "value" in (v as Record<string, unknown>)) {
@@ -50,13 +65,14 @@ export function AdminProviderQueueTab() {
   const fetchQueue = useServerFn(adminListProviderQueue);
   const decide = useServerFn(adminDecideProviderChange);
 
+  const [status, setStatus] = React.useState<StatusFilter>("pending");
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [note, setNote] = React.useState("");
 
   const listQ = useQuery({
-    queryKey: ["admin-provider-queue"],
-    queryFn: () => fetchQueue(),
-    refetchInterval: 30_000,
+    queryKey: ["admin-provider-queue", status],
+    queryFn: () => fetchQueue({ data: { status } }),
+    refetchInterval: status === "pending" ? 30_000 : false,
   });
 
   const rows = listQ.data ?? [];
