@@ -8,14 +8,17 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 
 type Kind = 'annual' | 'monthly';
 
-interface Entry {
+export interface Entry {
   email: string;             // canonical email we want on the account
   customerId: string;        // Stripe customer id (verified in Stripe manually)
   kind?: Kind;               // defaults to 'annual' for the current batch
+  // If set, use this as the anchor for period calculation instead of the
+  // most recent legacy payment (used to skip odd small charges).
+  paidAtOverride?: string;
 }
 
 // Hardcoded batch supplied by the user. All annual for now.
-const ENTRIES: Entry[] = [
+export const ENTRIES: Entry[] = [
   { email: 'altfitness@myyahoo.com',            customerId: 'cus_UYIRXSbIcepboB' },
   { email: 'elizabeth.payne@live.co.uk',        customerId: 'cus_SlmqqtvoFPqs1A' },
   { email: 'emily.young@slimmingworld.co.uk',   customerId: 'cus_T8gA6WeeZTVbSD' },
@@ -23,7 +26,8 @@ const ENTRIES: Entry[] = [
   { email: 'hello@fionadillon.com',             customerId: 'cus_TuaLHfAp2qA9NQ' },
   { email: 'hellotiredmumclubnorwich@gmail.com', customerId: 'cus_TIhNR3SffkVnYG' },
   { email: 'sarah@theyogaconnection.co.uk',     customerId: 'cus_TtOwIQnCpsPNPl' },
-  { email: 'scarrfitness@gmail.com',            customerId: 'cus_SnBIGuGtQBNv4v' },
+  // Scarr: anchor from the £34 annual renewal, not the £10 top-up charge.
+  { email: 'scarrfitness@gmail.com',            customerId: 'cus_SnBIGuGtQBNv4v', paidAtOverride: '2025-08-02T08:36:45+00:00' },
   { email: 'sophia@sophiasmithfitness.com',     customerId: 'cus_SacYVgBBY6mAGD' },
   { email: 'steven@trainyourneedsfirst.co.uk',  customerId: 'cus_T2WbfL3CHDZqcR' },
   { email: 'thehuffkin@hotmail.com',            customerId: 'cus_RrqhXI7fAKWE6n' },
@@ -71,21 +75,27 @@ export const manualRelinkStripeCustomers = createServerFn({ method: 'POST' })
       const email = entry.email.trim().toLowerCase();
       const kind: Kind = entry.kind ?? 'annual';
       try {
-        // 1) Look up latest legacy payment by customer id
-        const { data: pay, error: payErr } = await supabaseAdmin
-          .from('legacy_stripe_payments')
-          .select('paid_at, amount_pence, status')
-          .eq('stripe_customer_id', entry.customerId)
-          .eq('status', 'Paid')
-          .order('paid_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (payErr) throw new Error(`legacy_stripe_payments: ${payErr.message}`);
-        if (!pay?.paid_at) {
-          results.push({ email, customerId: entry.customerId, action: 'skipped', detail: 'no legacy payment found' });
-          continue;
+        // 1) Anchor date: use override if provided, else latest legacy Paid payment
+        let anchor: string | null = entry.paidAtOverride ?? null;
+        let anchorAmount: number | null = null;
+        if (!anchor) {
+          const { data: pay, error: payErr } = await supabaseAdmin
+            .from('legacy_stripe_payments')
+            .select('paid_at, amount_pence, status')
+            .eq('stripe_customer_id', entry.customerId)
+            .eq('status', 'Paid')
+            .order('paid_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (payErr) throw new Error(`legacy_stripe_payments: ${payErr.message}`);
+          if (!pay?.paid_at) {
+            results.push({ email, customerId: entry.customerId, action: 'skipped', detail: 'no legacy payment found' });
+            continue;
+          }
+          anchor = pay.paid_at;
+          anchorAmount = pay.amount_pence ?? null;
         }
-        const currentPeriodEnd = addPeriod(pay.paid_at, kind);
+        const currentPeriodEnd = addPeriod(anchor, kind);
 
         // 2) Create or reuse auth user for this email
         let userId: string | null = null;
@@ -181,7 +191,7 @@ export const manualRelinkStripeCustomers = createServerFn({ method: 'POST' })
           email,
           customerId: entry.customerId,
           action,
-          detail: `paid_at=${pay.paid_at} → current_period_end=${currentPeriodEnd}`,
+          detail: `anchor=${anchor}${anchorAmount ? ` (£${(anchorAmount/100).toFixed(2)})` : ''} → current_period_end=${currentPeriodEnd}`,
           currentPeriodEnd,
           userId,
         });
