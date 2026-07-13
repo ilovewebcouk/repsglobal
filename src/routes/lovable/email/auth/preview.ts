@@ -25,9 +25,12 @@ const CORS_HEADERS = {
 } as const
 
 function json(data: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers)
+  Object.entries(CORS_HEADERS).forEach(([key, value]) => headers.set(key, value))
+
   return Response.json(data, {
     ...init,
-    headers: { ...CORS_HEADERS, ...(init?.headers ?? {}) },
+    headers,
   })
 }
 
@@ -63,7 +66,19 @@ async function renderAuthPreview(type: string) {
   }
 
   const sampleData = SAMPLE_DATA[type] || {}
-  const html = await render(React.createElement(EmailTemplate, sampleData))
+  let html: string
+  try {
+    html = await render(React.createElement(EmailTemplate, sampleData))
+  } catch (err) {
+    console.error('Failed to render auth email preview', {
+      type,
+      error: err instanceof Error ? err.message : String(err),
+    })
+    return json(
+      { error: 'Failed to render auth email preview', type },
+      { status: 500 }
+    )
+  }
 
   return new Response(html, {
     status: 200,
