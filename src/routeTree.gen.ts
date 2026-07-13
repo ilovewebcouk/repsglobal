@@ -57,6 +57,7 @@ import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as ProfessionsProfessionRouteImport } from './routes/professions.$profession'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as ProV2SlugRouteImport } from './routes/pro-v2.$slug'
+import { Route as PreviewLegacyColorsRouteImport } from './routes/preview.legacy-colors'
 import { Route as PortalTodayRouteImport } from './routes/portal_.today'
 import { Route as PortalProgrammeRouteImport } from './routes/portal_.programme'
 import { Route as PortalProfileRouteImport } from './routes/portal_.profile'
@@ -425,6 +426,11 @@ const ProSlugRoute = ProSlugRouteImport.update({
 const ProV2SlugRoute = ProV2SlugRouteImport.update({
   id: '/pro-v2/$slug',
   path: '/pro-v2/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewLegacyColorsRoute = PreviewLegacyColorsRouteImport.update({
+  id: '/preview/legacy-colors',
+  path: '/preview/legacy-colors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalTodayRoute = PortalTodayRouteImport.update({
@@ -1222,6 +1228,7 @@ export interface FileRoutesByFullPath {
   '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
+  '/preview/legacy-colors': typeof PreviewLegacyColorsRoute
   '/pro-v2/$slug': typeof ProV2SlugRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
@@ -1396,6 +1403,7 @@ export interface FileRoutesByTo {
   '/portal/profile': typeof PortalProfileRoute
   '/portal/programme': typeof PortalProgrammeRoute
   '/portal/today': typeof PortalTodayRoute
+  '/preview/legacy-colors': typeof PreviewLegacyColorsRoute
   '/pro-v2/$slug': typeof ProV2SlugRoute
   '/professions/$profession': typeof ProfessionsProfessionRoute
   '/r/$token': typeof RTokenRoute
@@ -1573,6 +1581,7 @@ export interface FileRoutesById {
   '/portal_/profile': typeof PortalProfileRoute
   '/portal_/programme': typeof PortalProgrammeRoute
   '/portal_/today': typeof PortalTodayRoute
+  '/preview/legacy-colors': typeof PreviewLegacyColorsRoute
   '/pro-v2/$slug': typeof ProV2SlugRoute
   '/pro/$slug': typeof ProSlugRouteWithChildren
   '/professions/$profession': typeof ProfessionsProfessionRoute
@@ -1753,6 +1762,7 @@ export interface FileRouteTypes {
     | '/portal/profile'
     | '/portal/programme'
     | '/portal/today'
+    | '/preview/legacy-colors'
     | '/pro-v2/$slug'
     | '/pro/$slug'
     | '/professions/$profession'
@@ -1927,6 +1937,7 @@ export interface FileRouteTypes {
     | '/portal/profile'
     | '/portal/programme'
     | '/portal/today'
+    | '/preview/legacy-colors'
     | '/pro-v2/$slug'
     | '/professions/$profession'
     | '/r/$token'
@@ -2103,6 +2114,7 @@ export interface FileRouteTypes {
     | '/portal_/profile'
     | '/portal_/programme'
     | '/portal_/today'
+    | '/preview/legacy-colors'
     | '/pro-v2/$slug'
     | '/pro/$slug'
     | '/professions/$profession'
@@ -2282,6 +2294,7 @@ export interface RootRouteChildren {
   PortalProfileRoute: typeof PortalProfileRoute
   PortalProgrammeRoute: typeof PortalProgrammeRoute
   PortalTodayRoute: typeof PortalTodayRoute
+  PreviewLegacyColorsRoute: typeof PreviewLegacyColorsRoute
   ProV2SlugRoute: typeof ProV2SlugRoute
   ProSlugRoute: typeof ProSlugRouteWithChildren
   ProfessionsProfessionRoute: typeof ProfessionsProfessionRoute
@@ -2660,6 +2673,13 @@ declare module '@tanstack/react-router' {
       path: '/pro-v2/$slug'
       fullPath: '/pro-v2/$slug'
       preLoaderRoute: typeof ProV2SlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview/legacy-colors': {
+      id: '/preview/legacy-colors'
+      path: '/preview/legacy-colors'
+      fullPath: '/preview/legacy-colors'
+      preLoaderRoute: typeof PreviewLegacyColorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal_/today': {
@@ -3942,6 +3962,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalProfileRoute: PortalProfileRoute,
   PortalProgrammeRoute: PortalProgrammeRoute,
   PortalTodayRoute: PortalTodayRoute,
+  PreviewLegacyColorsRoute: PreviewLegacyColorsRoute,
   ProV2SlugRoute: ProV2SlugRoute,
   ProSlugRoute: ProSlugRouteWithChildren,
   ProfessionsProfessionRoute: ProfessionsProfessionRoute,

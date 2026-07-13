@@ -188,7 +188,7 @@ function rowToNewestCoach(r: NewestCoachRow): NewestCoach {
   };
 }
 
-function HomeV2() {
+export function HomeV2() {
   const { data: newestResult } = useQuery({
     queryKey: ["home-newest-coaches", 16],
     queryFn: () => getNewestCoaches({ data: { limit: 12 } }),

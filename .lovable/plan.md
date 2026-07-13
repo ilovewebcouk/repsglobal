@@ -1,62 +1,60 @@
-## What went wrong
 
-The batch I ran created the auth users and inserted a `subscriptions` row, but two things are missing:
+## Goal
 
-1. **No names** on the accounts. `profiles.full_name` was left as the email address because I never pulled the trainer's real name from the legacy data.
-2. **No Stripe subscription**. I only wrote a row into our `subscriptions` table with `stripe_subscription_id = null`. There is nothing on the Stripe side, so Stripe will not bill them on their renewal date.
+Show you exactly what the current homepage looks like recoloured in the old REPs palette — lilac `#a978b2`, deep purple `#5c2c82`, magenta `#e73c8e`, cool grey `#9c9c9b` — without touching the locked homepage layout, and without shipping the change to production.
 
-Both are in `bd_member_seed` / Stripe already — I just didn't wire them in. Fixing.
+The homepage (`src/routes/index.tsx`) is memory-locked; I will not restructure any section. This is a pure token swap under a scoped wrapper, exactly like the existing `[data-coach-theme="light"]` override in `src/styles.css`.
 
-## What I'll change (all 15 members)
+## Approach
 
-### 1. Set the name on each account
-For each of the 15 emails, pull `first_name` + `last_name` from `bd_member_seed` and write it to `profiles.full_name`. All 15 have names available:
+### 1. Add a scoped legacy palette in `src/styles.css`
 
-```text
-altfitness@myyahoo.com              → April Collinson
-elizabeth.payne@live.co.uk          → Elizabeth Payne
-emily.young@slimmingworld.co.uk     → Emily Young
-faracifitness@hotmail.co.uk         → Gerardo Faraci
-hello@fionadillon.com               → Fiona Dillon
-hellotiredmumclubnorwich@gmail.com  → Megan Bowe
-sarah@theyogaconnection.co.uk       → Sarah Betteridge
-scarrfitness@gmail.com              → Shaun Carr
-sophia@sophiasmithfitness.com       → Sophia Smith
-steven@trainyourneedsfirst.co.uk    → Steven Roleio Doe
-thehuffkin@hotmail.com              → Lee Robertson-Young
-support@newgenfitness.uk            → Brett Falconer
-rmffitnes@outlook.com               → Ross McKee
-prapti.dutt@gmail.com               → Prapti Dutt
-billie@benefitbodyandmind.com       → Billie Wood
-```
+Append a `[data-palette="legacy-reps"]` block that redefines the same `--reps-*` and coach-accent tokens the homepage already consumes — so every `bg-reps-orange`, `text-reps-orange`, `border-reps-orange-border`, gradient stop, and CTA band auto-swaps without editing a single component.
 
-I'll also copy the same name into `professionals.display_name` (or the equivalent column the profile page reads) so their public listing shows correctly.
+Proposed mapping (open to your tweaks):
 
-### 2. Create a real Stripe subscription on each customer
-On the live Stripe account, for each `cus_...`:
+| Role | Current | Legacy |
+|---|---|---|
+| Primary CTA / brand accent (`--reps-orange`) | `#FF7A00` | `#5c2c82` (deep purple) |
+| Primary hover (`--reps-orange-hover`) | `#E96F00` | `#4a2069` |
+| Primary dark (`--reps-orange-dark`) | `#CC6200` | `#3a1854` |
+| Soft tint (`--reps-orange-soft`) | orange 12% | `rgba(92,44,130,0.12)` |
+| Border tint (`--reps-orange-border`) | orange 35% | `rgba(92,44,130,0.35)` |
+| Solid tint (`--reps-orange-tint`) | `#1A130C` | `#160B1F` |
+| Secondary accent (magenta pops — waitlist chips, "£34 was £99" strike, `--reps-red` in decorative spots only) | `#F05D5E` | `#e73c8e` |
+| Trust / verified gold (`--reps-gold`) | `#D9B66F` | keep gold (magenta already covers pink) |
+| Muted chrome (`--reps-muted`, sub-borders) | current greys | tuned toward `#9c9c9b` |
+| Lilac supporting tint (hero glow, marquee wash) | orange soft | `#a978b2` at low opacity |
 
-- **Price**: `verified_annual` (Core £34/yr) — same price everyone else on Core is billed on.
-- **`trial_end`** = the `current_period_end` we already calculated from their last legacy payment (so the FIRST Stripe charge fires on their renewal date, not today — nobody gets charged now).
-- **`proration_behavior: 'none'`**, **`collection_method: 'charge_automatically'`**, using the customer's existing default payment method (they all paid before, so Stripe already has a card on file).
-- **`metadata`**: `{ manual_relink: true, source: 'admin_batch_2026_07' }` so we can audit these in Stripe later.
+Dark surfaces (`--reps-ink`, `--reps-panel`, `--reps-midnight`) stay the same — the palette rides on top of the current dark hero and ivory sections, same as today's orange does. If you'd rather have a *lighter* purple-and-white treatment like the old exerciseregister.org site, we do that as a second variant.
 
-Then update our `subscriptions` row with the real `stripe_subscription_id` and `stripe_price_id`.
+### 2. Add a preview-only route `src/routes/preview.legacy-colors.tsx`
 
-### 3. If a customer has no payment method on file
-Log the row as `payment_method_missing` and skip the Stripe create — do not fake it. I'll surface the list at the end so you can email them separately. (Very unlikely for this batch since they all paid recently, but need to handle it.)
+- Renders the existing `Home` component from `src/routes/index.tsx` (imported, not duplicated).
+- Wraps it in `<div data-palette="legacy-reps">…</div>`.
+- `noindex, nofollow` in `head()`.
+- Not linked from anywhere — you visit `/preview/legacy-colors` to compare side-by-side with `/`.
 
-## How I'll run it
+Zero risk to the locked homepage; delete the route + the CSS block to revert.
 
-Same endpoint pattern as before — `/api/public/admin/manual-relink-stripe` protected by `MANUAL_RELINK_SECRET`, triggered directly from my shell. No admin UI click needed. Idempotent: re-running skips rows that already have a Stripe sub attached and a name set.
+### 3. What you'll see
 
-## Technical notes
+Every orange surface (CTA band top strip, "Find your coach" button, category pills on hover, "REPS VERIFIED" text, hero highlight underline, focus rings, footer accents) becomes deep purple. The "£99 → £34" strike and any celebratory pops become magenta. Lilac appears as the soft hero wash / marquee gradient. Grey stays close to what's there.
 
-- File edited: `src/routes/api/public/admin/manual-relink-stripe.ts` — add name lookup + Stripe subscription creation using `createStripeClient('live')`.
-- Stripe API: `stripe.subscriptions.create({ customer, items:[{price}], trial_end, proration_behavior:'none', metadata })` — the trial-end trick means Stripe waits until the renewal date and then charges normally, no invoice today.
-- Report at the end lists per-row: `name_set`, `stripe_sub_id`, `first_charge_at`, and any error.
+### 4. Decision point after preview
 
-## Not touching
+Once you've seen it, we pick one:
+- **Ship it** → promote the tokens from `[data-palette="legacy-reps"]` into `:root` in `src/styles.css`, delete the preview route, done. No component edits.
+- **Tune it** → adjust which colour plays primary vs accent (e.g. lilac primary + purple accent) and reshoot.
+- **Reject** → delete the CSS block + preview route.
 
-- The already-created auth users, the `subscriptions.current_period_end` dates you already saw, and the password-setup emails already sent. All correct — just missing the two pieces above.
+## Out of scope
 
-Approve and I'll run it.
+- Homepage layout, section order, or copy (locked per `mem://design/locked-homepage`).
+- Other pages (profile, coach website, admin) — a full palette migration is a separate exercise once you've approved the direction on the homepage.
+- Logo artwork changes — the current `logo-lockup.svg` reads fine on both palettes; a purple-native lockup is a follow-up.
+
+## Files touched
+
+- `src/styles.css` — append `[data-palette="legacy-reps"]` token overrides (~40 lines).
+- `src/routes/preview.legacy-colors.tsx` — new, ~15 lines.
