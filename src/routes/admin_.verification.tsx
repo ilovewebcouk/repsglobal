@@ -600,179 +600,251 @@ function AdminVerificationPage() {
                 </PCard>
 
 
-                {/* ── STEP 1 · IDENTITY ──────────────────────────────── */}
-                <PCard>
-                  <StepHeader
-                    num={1}
-                    title="Identity"
-                    pill={
-                      id?.status === "approved"
-                        ? { tone: "ok", label: `Verified${id.vendor === "stripe" ? " · Stripe" : id?.vendor === "veriff" ? " · Veriff" : ""}` }
-                        : id
-                          ? { tone: "warn", label: `Pending${id.stripe_status ? ` · ${id.stripe_status}` : ""}` }
-                          : { tone: "miss", label: "Not submitted" }
-                    }
-                  />
-                  {!id ? (
-                    <p className="text-[12px] text-white/55">
-                      No ID submitted. Use the reminder button at the bottom to request one.
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-[12px] text-white/75 sm:grid-cols-2">
-                      <div><span className="text-white/45">Name on doc</span> · {id.name_on_doc || "—"}</div>
-                      <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
-                      <div><span className="text-white/45">Doc</span> · {id.doc_type || "—"}{id.doc_country ? ` (${id.doc_country})` : ""}</div>
-                      <div><span className="text-white/45">Expiry</span> · {id.doc_expiry || "—"}</div>
-                      {id.vendor === "stripe" && id.stripe_reason && (
-                        <div className="sm:col-span-2 mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
-                          {id.stripe_reason}
+                {/* ── TRUST STRIP ─────────────────────────────────────
+                    Identity + insurance collapse to pills; full detail lives
+                    in the person drawer so the reviewer focuses on the
+                    qualification card below. */}
+                {(() => {
+                  const idTone: "ok" | "warn" | "miss" =
+                    id?.status === "approved" ? "ok" : id ? "warn" : "miss";
+                  const idLabel =
+                    id?.status === "approved"
+                      ? `Identity verified${id?.vendor === "stripe" ? " · Stripe" : id?.vendor === "veriff" ? " · Veriff" : ""}`
+                      : id
+                        ? "Identity pending"
+                        : "No identity";
+                  const insExpiredTs = ins?.expiry_date ? new Date(ins.expiry_date).getTime() < Date.now() : false;
+                  const insLowCover = ins ? (ins.cover_amount_gbp ?? 0) < 1_000_000 : false;
+                  const insTone: "ok" | "warn" | "fail" | "miss" = !ins
+                    ? "miss"
+                    : insExpiredTs
+                      ? "fail"
+                      : insLowCover
+                        ? "warn"
+                        : "ok";
+                  const insLabel = !ins
+                    ? "No insurance"
+                    : insExpiredTs
+                      ? `Insurance expired ${ins.expiry_date}`
+                      : insLowCover
+                        ? `Cover £${(ins.cover_amount_gbp ?? 0).toLocaleString()}`
+                        : `Insurance in date · exp ${ins.expiry_date}`;
+                  return (
+                    <PCard>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <TrustPill tone={idTone} label={idLabel} />
+                          <TrustPill tone={insTone} label={insLabel} />
                         </div>
-                      )}
-                      {id.vendor === "veriff" && id.veriff_reason && (
-                        <div className="sm:col-span-2 mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
-                          {id.veriff_reason}
-                        </div>
-                      )}
-                      <div className="sm:col-span-2 flex flex-wrap gap-1.5 pt-2">
-                        {id.vendor === "stripe" && id.stripe_vs_id && (
-                          <a
-                            href={`https://dashboard.stripe.com/identity/verification-sessions/${id.stripe_vs_id}`}
-                            target="_blank"
-                            rel="noopener"
-                            className="inline-flex items-center gap-1 rounded-[8px] border border-white/15 bg-white/[0.04] px-2 py-1 text-[11px] text-white/85 hover:bg-white/[0.08]"
-                          >
-                            Open in Stripe <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                        {id.doc_path_front && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_front!)}>Front</DocChip>}
-                        {id.doc_path_back && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_back!)}>Back</DocChip>}
-                        {id.selfie_path && <DocChip onClick={() => openDoc("identity-docs", id.selfie_path!)}>Selfie</DocChip>}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setPersonDrawerOpen(true)}
+                        >
+                          <UserRound className="mr-1 h-3.5 w-3.5" />
+                          Open person
+                        </Button>
                       </div>
-                    </div>
-                  )}
-                </PCard>
+                    </PCard>
+                  );
+                })()}
 
-                {/* ── STEP 2 · INSURANCE ─────────────────────────────── */}
-                <PCard>
-                  {(() => {
-                    const insExpired = ins?.expiry_date ? new Date(ins.expiry_date).getTime() < Date.now() : false;
-                    const lowCover = ins ? (ins.cover_amount_gbp ?? 0) < 1_000_000 : false;
-                    const insPill = !ins
-                      ? { tone: "miss" as const, label: "Not submitted" }
-                      : insExpired
-                        ? { tone: "fail" as const, label: `Expired ${ins.expiry_date}` }
-                        : lowCover
-                          ? { tone: "warn" as const, label: `Low cover · £${(ins.cover_amount_gbp ?? 0).toLocaleString()}` }
-                          : { tone: "ok" as const, label: `In date · expires ${ins.expiry_date}` };
-                    return (
-                      <>
-                        <StepHeader num={2} title="Insurance" pill={insPill} />
-                        {!ins ? (
+                {/* Person drawer — full identity + insurance detail lives here. */}
+                <Sheet open={personDrawerOpen} onOpenChange={setPersonDrawerOpen}>
+                  <SheetContent side="right" className="w-full overflow-y-auto border-l border-reps-border bg-reps-ink text-white sm:max-w-[560px]">
+                    <SheetHeader>
+                      <SheetTitle className="text-white">{prof?.full_name || "Unnamed"} · full trust profile</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-4 space-y-4">
+                      <PCard>
+                        <StepHeader
+                          num={1}
+                          title="Identity"
+                          pill={
+                            id?.status === "approved"
+                              ? { tone: "ok", label: `Verified${id.vendor === "stripe" ? " · Stripe" : id?.vendor === "veriff" ? " · Veriff" : ""}` }
+                              : id
+                                ? { tone: "warn", label: `Pending${id.stripe_status ? ` · ${id.stripe_status}` : ""}` }
+                                : { tone: "miss", label: "Not submitted" }
+                          }
+                        />
+                        {!id ? (
                           <p className="text-[12px] text-white/55">
-                            No insurance on file. You can still approve — insurance is tracked separately and the pro will be nudged to upload.
+                            No ID submitted. Use the reminder button on the decision panel to request one.
                           </p>
                         ) : (
-                          <>
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-[12px] text-white/75 sm:grid-cols-2">
-                              <div><span className="text-white/45">Provider</span> · {ins.provider}</div>
-                              <div><span className="text-white/45">Cover</span> · £{(ins.cover_amount_gbp ?? 0).toLocaleString()}</div>
-                              <div><span className="text-white/45">Policy</span> · {ins.policy_number || "—"}</div>
-                              <div><span className="text-white/45">Expires</span> · {ins.expiry_date}</div>
-                            </div>
-                            {(() => {
-                              const insured = (ins as { insured_name?: string | null }).insured_name ?? null;
-                              const nameMatchVal = (ins as { name_match?: boolean | null }).name_match ?? null;
-                              const idName = (pro as { identity_verified_name?: string | null } | null)?.identity_verified_name ?? null;
-                              const refName = idName ?? prof?.full_name ?? null;
-                              const tone: "ok" | "warn" | "fail" =
-                                nameMatchVal === true ? "ok" : nameMatchVal === false ? "fail" : "warn";
-                              const toneCls =
-                                tone === "ok"
-                                  ? "border-emerald-400/30 bg-emerald-500/5 text-emerald-100/85"
-                                  : tone === "fail"
-                                    ? "border-red-400/30 bg-red-500/10 text-red-200"
-                                    : "border-amber-400/30 bg-amber-500/5 text-amber-100/85";
-                              return (
-                                <div className={`mt-2 rounded-[8px] border px-2.5 py-2 text-[11.5px] ${toneCls}`}>
-                                  <div className="font-semibold">
-                                    {insured
-                                      ? `Insured name: ${insured}`
-                                      : "Insured name: not extracted — verify manually on certificate"}
-                                  </div>
-                                  {refName && (
-                                    <div className="opacity-70">
-                                      {idName ? "ID-verified name" : "Profile name"}: {refName}
-                                      {nameMatchVal === true ? " — matches" : nameMatchVal === false ? " — MISMATCH, review carefully" : ""}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                            <div className="mt-3 flex flex-wrap gap-1.5">
-                              {ins.doc_path && <DocChip onClick={() => openDoc("insurance-docs", ins.doc_path!)}>View certificate</DocChip>}
-                            </div>
-                            {(() => {
-                              const ts = (ins as { trust_signals?: { ai?: string; ai_confidence?: number | null; name_match?: boolean | null; name_score?: number | null; expiry_mismatch?: boolean; low_cover?: boolean; ai_extracted?: { expiry_date?: string | null; cover_amount_gbp?: number | null; insured_name?: string | null } } | null }).trust_signals ?? null;
-                              if (!ts) return null;
-                              const chips: Array<{ tone: "ok" | "warn" | "fail" | "info"; label: string }> = [];
-                              if (ts.ai === "ok") {
-                                chips.push({ tone: "info", label: `AI checked${typeof ts.ai_confidence === "number" ? ` · ${(ts.ai_confidence * 100).toFixed(0)}%` : ""}` });
-                              } else if (ts.ai === "skipped") {
-                                chips.push({ tone: "warn", label: "AI check skipped" });
-                              }
-                              if (ts.name_match === true) chips.push({ tone: "ok", label: "Name matches ID" });
-                              else if (ts.name_match === false) chips.push({ tone: "fail", label: `Name mismatch${ts.ai_extracted?.insured_name ? ` · "${ts.ai_extracted.insured_name}"` : ""}` });
-                              if (ts.expiry_mismatch) chips.push({ tone: "warn", label: `AI saw expiry ${ts.ai_extracted?.expiry_date ?? "?"}` });
-                              if (ts.low_cover) chips.push({ tone: "warn", label: "Cover < £1m" });
-                              if (chips.length === 0) return null;
-                              return (
-                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                  {chips.map((c, i) => (
-                                    <span
-                                      key={i}
-                                      className={`rounded-[6px] px-1.5 py-0.5 text-[10.5px] font-medium ${
-                                        c.tone === "ok"
-                                          ? "bg-emerald-500/15 text-emerald-300"
-                                          : c.tone === "warn"
-                                            ? "bg-amber-500/15 text-amber-300"
-                                            : c.tone === "fail"
-                                              ? "bg-red-500/15 text-red-300"
-                                              : "bg-white/10 text-white/75"
-                                      }`}
-                                    >
-                                      {c.label}
-                                    </span>
-                                  ))}
-                                </div>
-                              );
-                            })()}
-                            {insExpired && (
-                              <div className="mt-3 rounded-[8px] border border-red-400/30 bg-red-500/10 px-2.5 py-2 text-[11.5px] text-red-200">
-                                <div>Policy expired on {ins.expiry_date}. Cannot verify until a current certificate is on file.</div>
-                                {pro?.id && (
-                                  <div className="mt-2">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => nudgeRenewalMutation.mutate(pro.id)}
-                                      disabled={nudgeRenewalMutation.isPending || nudgeRenewalMutation.isSuccess}
-                                    >
-                                      {nudgeRenewalMutation.isSuccess
-                                        ? "Reminder sent ✓"
-                                        : nudgeRenewalMutation.isPending
-                                          ? "Sending…"
-                                          : "Nudge trainer to renew"}
-                                    </Button>
-                                  </div>
-                                )}
+                          <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-[12px] text-white/75 sm:grid-cols-2">
+                            <div><span className="text-white/45">Name on doc</span> · {id.name_on_doc || "—"}</div>
+                            <div><span className="text-white/45">DOB</span> · {id.dob_on_doc || "—"}</div>
+                            <div><span className="text-white/45">Doc</span> · {id.doc_type || "—"}{id.doc_country ? ` (${id.doc_country})` : ""}</div>
+                            <div><span className="text-white/45">Expiry</span> · {id.doc_expiry || "—"}</div>
+                            {id.vendor === "stripe" && id.stripe_reason && (
+                              <div className="sm:col-span-2 mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
+                                {id.stripe_reason}
                               </div>
                             )}
-                          </>
+                            {id.vendor === "veriff" && id.veriff_reason && (
+                              <div className="sm:col-span-2 mt-1 rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
+                                {id.veriff_reason}
+                              </div>
+                            )}
+                            <div className="sm:col-span-2 flex flex-wrap gap-1.5 pt-2">
+                              {id.vendor === "stripe" && id.stripe_vs_id && (
+                                <a
+                                  href={`https://dashboard.stripe.com/identity/verification-sessions/${id.stripe_vs_id}`}
+                                  target="_blank"
+                                  rel="noopener"
+                                  className="inline-flex items-center gap-1 rounded-[8px] border border-white/15 bg-white/[0.04] px-2 py-1 text-[11px] text-white/85 hover:bg-white/[0.08]"
+                                >
+                                  Open in Stripe <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                              {id.doc_path_front && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_front!)}>Front</DocChip>}
+                              {id.doc_path_back && <DocChip onClick={() => openDoc("identity-docs", id.doc_path_back!)}>Back</DocChip>}
+                              {id.selfie_path && <DocChip onClick={() => openDoc("identity-docs", id.selfie_path!)}>Selfie</DocChip>}
+                            </div>
+                          </div>
                         )}
-                      </>
-                    );
-                  })()}
-                </PCard>
+                      </PCard>
+
+                      <PCard>
+                        {(() => {
+                          const insExpired = ins?.expiry_date ? new Date(ins.expiry_date).getTime() < Date.now() : false;
+                          const lowCover = ins ? (ins.cover_amount_gbp ?? 0) < 1_000_000 : false;
+                          const insPill = !ins
+                            ? { tone: "miss" as const, label: "Not submitted" }
+                            : insExpired
+                              ? { tone: "fail" as const, label: `Expired ${ins.expiry_date}` }
+                              : lowCover
+                                ? { tone: "warn" as const, label: `Low cover · £${(ins.cover_amount_gbp ?? 0).toLocaleString()}` }
+                                : { tone: "ok" as const, label: `In date · expires ${ins.expiry_date}` };
+                          return (
+                            <>
+                              <StepHeader num={2} title="Insurance" pill={insPill} />
+                              {!ins ? (
+                                <p className="text-[12px] text-white/55">
+                                  No insurance on file. You can still approve — insurance is tracked separately and the pro will be nudged to upload.
+                                </p>
+                              ) : (
+                                <>
+                                  <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-[12px] text-white/75 sm:grid-cols-2">
+                                    <div><span className="text-white/45">Provider</span> · {ins.provider}</div>
+                                    <div><span className="text-white/45">Cover</span> · £{(ins.cover_amount_gbp ?? 0).toLocaleString()}</div>
+                                    <div><span className="text-white/45">Policy</span> · {ins.policy_number || "—"}</div>
+                                    <div><span className="text-white/45">Expires</span> · {ins.expiry_date}</div>
+                                  </div>
+                                  {(() => {
+                                    const insured = (ins as { insured_name?: string | null }).insured_name ?? null;
+                                    const nameMatchVal = (ins as { name_match?: boolean | null }).name_match ?? null;
+                                    const idName = (pro as { identity_verified_name?: string | null } | null)?.identity_verified_name ?? null;
+                                    const refName = idName ?? prof?.full_name ?? null;
+                                    const tone: "ok" | "warn" | "fail" =
+                                      nameMatchVal === true ? "ok" : nameMatchVal === false ? "fail" : "warn";
+                                    const toneCls =
+                                      tone === "ok"
+                                        ? "border-emerald-400/30 bg-emerald-500/5 text-emerald-100/85"
+                                        : tone === "fail"
+                                          ? "border-red-400/30 bg-red-500/10 text-red-200"
+                                          : "border-amber-400/30 bg-amber-500/5 text-amber-100/85";
+                                    return (
+                                      <div className={`mt-2 rounded-[8px] border px-2.5 py-2 text-[11.5px] ${toneCls}`}>
+                                        <div className="font-semibold">
+                                          {insured
+                                            ? `Insured name: ${insured}`
+                                            : "Insured name: not extracted — verify manually on certificate"}
+                                        </div>
+                                        {refName && (
+                                          <div className="opacity-70">
+                                            {idName ? "ID-verified name" : "Profile name"}: {refName}
+                                            {nameMatchVal === true ? " — matches" : nameMatchVal === false ? " — MISMATCH, review carefully" : ""}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                  <div className="mt-3 flex flex-wrap gap-1.5">
+                                    {ins.doc_path && <DocChip onClick={() => openDoc("insurance-docs", ins.doc_path!)}>View certificate</DocChip>}
+                                  </div>
+                                  {(() => {
+                                    const ts = (ins as { trust_signals?: { ai?: string; ai_confidence?: number | null; name_match?: boolean | null; name_score?: number | null; expiry_mismatch?: boolean; low_cover?: boolean; ai_extracted?: { expiry_date?: string | null; cover_amount_gbp?: number | null; insured_name?: string | null } } | null }).trust_signals ?? null;
+                                    if (!ts) return null;
+                                    const chips: Array<{ tone: "ok" | "warn" | "fail" | "info"; label: string }> = [];
+                                    if (ts.ai === "ok") {
+                                      chips.push({ tone: "info", label: `AI checked${typeof ts.ai_confidence === "number" ? ` · ${(ts.ai_confidence * 100).toFixed(0)}%` : ""}` });
+                                    } else if (ts.ai === "skipped") {
+                                      chips.push({ tone: "warn", label: "AI check skipped" });
+                                    }
+                                    if (ts.name_match === true) chips.push({ tone: "ok", label: "Name matches ID" });
+                                    else if (ts.name_match === false) chips.push({ tone: "fail", label: `Name mismatch${ts.ai_extracted?.insured_name ? ` · "${ts.ai_extracted.insured_name}"` : ""}` });
+                                    if (ts.expiry_mismatch) chips.push({ tone: "warn", label: `AI saw expiry ${ts.ai_extracted?.expiry_date ?? "?"}` });
+                                    if (ts.low_cover) chips.push({ tone: "warn", label: "Cover < £1m" });
+                                    if (chips.length === 0) return null;
+                                    return (
+                                      <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {chips.map((c, i) => (
+                                          <span
+                                            key={i}
+                                            className={`rounded-[6px] px-1.5 py-0.5 text-[10.5px] font-medium ${
+                                              c.tone === "ok"
+                                                ? "bg-emerald-500/15 text-emerald-300"
+                                                : c.tone === "warn"
+                                                  ? "bg-amber-500/15 text-amber-300"
+                                                  : c.tone === "fail"
+                                                    ? "bg-red-500/15 text-red-300"
+                                                    : "bg-white/10 text-white/75"
+                                            }`}
+                                          >
+                                            {c.label}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    );
+                                  })()}
+                                  {insExpired && (
+                                    <div className="mt-3 rounded-[8px] border border-red-400/30 bg-red-500/10 px-2.5 py-2 text-[11.5px] text-red-200">
+                                      <div>Policy expired on {ins.expiry_date}. Cannot verify until a current certificate is on file.</div>
+                                      {pro?.id && (
+                                        <div className="mt-2">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => nudgeRenewalMutation.mutate(pro.id)}
+                                            disabled={nudgeRenewalMutation.isPending || nudgeRenewalMutation.isSuccess}
+                                          >
+                                            {nudgeRenewalMutation.isSuccess
+                                              ? "Reminder sent ✓"
+                                              : nudgeRenewalMutation.isPending
+                                                ? "Sending…"
+                                                : "Nudge trainer to renew"}
+                                          </Button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </PCard>
+
+                      {pro?.slug && (
+                        <div className="text-[12px] text-white/60">
+                          <a
+                            href={`/t/${pro.slug}`}
+                            target="_blank"
+                            rel="noopener"
+                            className="inline-flex items-center gap-1 hover:text-white"
+                          >
+                            View public profile <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+
+
 
 
                 {/* ── STEP 3 · QUALIFICATION ─────────────────────────── */}
