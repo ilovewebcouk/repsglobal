@@ -17,6 +17,75 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
+  'Access-Control-Max-Age': '86400',
+} as const
+
+function json(data: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers)
+  Object.entries(CORS_HEADERS).forEach(([key, value]) => headers.set(key, value))
+
+  return Response.json(data, {
+    ...init,
+    headers,
+  })
+}
+
+function getTypeFromSearch(request: Request) {
+  const url = new URL(request.url)
+  return (
+    url.searchParams.get('type') ||
+    url.searchParams.get('template') ||
+    url.searchParams.get('templateName') ||
+    url.searchParams.get('template_name') ||
+    url.searchParams.get('name')
+  )
+}
+
+function getTypeFromBody(body: Record<string, any>) {
+  return (
+    body.type ||
+    body.template ||
+    body.templateName ||
+    body.template_name ||
+    body.name
+  )
+}
+
+async function renderAuthPreview(type: string) {
+  const EmailTemplate = EMAIL_TEMPLATES[type]
+
+  if (!EmailTemplate) {
+    return json(
+      { error: `Unknown email type: ${type}` },
+      { status: 400 }
+    )
+  }
+
+  const sampleData = SAMPLE_DATA[type] || {}
+  let html: string
+  try {
+    html = await render(React.createElement(EmailTemplate, sampleData))
+  } catch (err) {
+    console.error('Failed to render auth email preview', {
+      type,
+      error: err instanceof Error ? err.message : String(err),
+    })
+    return json(
+      { error: 'Failed to render auth email preview', type },
+      { status: 500 }
+    )
+  }
+
+  return new Response(html, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS },
+  })
+}
+
 // Configuration
 const SITE_NAME = "repsglobal"
 const ROOT_DOMAIN = "repsuk.org"
@@ -63,11 +132,14 @@ const SAMPLE_DATA: Record<string, object> = {
 export const Route = createFileRoute("/lovable/email/auth/preview")({
   server: {
     handlers: {
+      OPTIONS: async () => {
+        return new Response(null, { status: 204, headers: CORS_HEADERS })
+      },
       GET: async ({ request }) => {
         const apiKey = process.env.LOVABLE_API_KEY
 
         if (!apiKey) {
-          return Response.json(
+          return json(
             { error: 'Server configuration error' },
             { status: 500 }
           )
@@ -75,33 +147,23 @@ export const Route = createFileRoute("/lovable/email/auth/preview")({
 
         const authHeader = request.headers.get('Authorization')
         if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
-          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+          return json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const url = new URL(request.url)
-        const type = url.searchParams.get('type') || url.searchParams.get('template') || 'signup'
-        const EmailTemplate = EMAIL_TEMPLATES[type]
-
-        if (!EmailTemplate) {
-          return Response.json(
-            { error: `Unknown email type: ${type}` },
-            { status: 400 }
-          )
+        const type = getTypeFromSearch(request)
+        if (!type) {
+          return json({
+            templates: Object.keys(EMAIL_TEMPLATES).map((templateName) => ({ templateName })),
+          })
         }
 
-        const sampleData = SAMPLE_DATA[type] || {}
-        const html = await render(React.createElement(EmailTemplate, sampleData))
-
-        return new Response(html, {
-          status: 200,
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        })
+        return renderAuthPreview(type)
       },
       POST: async ({ request }) => {
         const apiKey = process.env.LOVABLE_API_KEY
 
         if (!apiKey) {
-          return Response.json(
+          return json(
             { error: 'Server configuration error' },
             { status: 500 }
           )
@@ -110,36 +172,28 @@ export const Route = createFileRoute("/lovable/email/auth/preview")({
         // Verify the caller is authorized with LOVABLE_API_KEY
         const authHeader = request.headers.get('Authorization')
         if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
-          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+          return json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        let type: string
+        let body: Record<string, any>
         try {
-          const body = await request.json()
-          type = body.type
+          const text = await request.text()
+          body = text ? JSON.parse(text) : {}
         } catch {
-          return Response.json(
+          return json(
             { error: 'Invalid JSON in request body' },
             { status: 400 }
           )
         }
 
-        const EmailTemplate = EMAIL_TEMPLATES[type]
-
-        if (!EmailTemplate) {
-          return Response.json(
-            { error: `Unknown email type: ${type}` },
-            { status: 400 }
-          )
+        const type = getTypeFromBody(body) || getTypeFromSearch(request)
+        if (!type) {
+          return json({
+            templates: Object.keys(EMAIL_TEMPLATES).map((templateName) => ({ templateName })),
+          })
         }
 
-        const sampleData = SAMPLE_DATA[type] || {}
-        const html = await render(React.createElement(EmailTemplate, sampleData))
-
-        return new Response(html, {
-          status: 200,
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        })
+        return renderAuthPreview(type)
       },
     },
   },
