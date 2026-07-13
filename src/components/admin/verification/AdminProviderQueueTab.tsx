@@ -36,6 +36,21 @@ const SOURCE_LABEL: Record<AdminProviderQueueItem["source"], string> = {
   change: "Profile change",
 };
 
+type StatusFilter = "pending" | "approved" | "rejected" | "withdrawn";
+const STATUS_TABS: readonly StatusFilter[] = ["pending", "approved", "rejected", "withdrawn"];
+const STATUS_LABEL: Record<StatusFilter, string> = {
+  pending: "New",
+  approved: "Approved",
+  rejected: "Rejected",
+  withdrawn: "Withdrawn",
+};
+const STATUS_PILL: Record<StatusFilter, string> = {
+  pending: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+  approved: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+  rejected: "border-rose-400/30 bg-rose-500/15 text-rose-300",
+  withdrawn: "border-white/15 bg-white/10 text-white/60",
+};
+
 function readValue(v: unknown): string | null {
   if (v == null) return null;
   if (typeof v === "object" && "value" in (v as Record<string, unknown>)) {
@@ -50,13 +65,14 @@ export function AdminProviderQueueTab() {
   const fetchQueue = useServerFn(adminListProviderQueue);
   const decide = useServerFn(adminDecideProviderChange);
 
+  const [status, setStatus] = React.useState<StatusFilter>("pending");
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [note, setNote] = React.useState("");
 
   const listQ = useQuery({
-    queryKey: ["admin-provider-queue"],
-    queryFn: () => fetchQueue(),
-    refetchInterval: 30_000,
+    queryKey: ["admin-provider-queue", status],
+    queryFn: () => fetchQueue({ data: { status } }),
+    refetchInterval: status === "pending" ? 30_000 : false,
   });
 
   const rows = listQ.data ?? [];
@@ -92,29 +108,60 @@ export function AdminProviderQueueTab() {
   });
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[380px_1fr]">
-      {/* LIST */}
-      <PPanel className="flex flex-col">
-        <div className="border-b border-reps-border px-4 py-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[13px] font-semibold text-white">Pending provider changes</h3>
-            <span className="rounded-full border border-amber-400/30 bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-semibold text-amber-300">
-              {rows.length}
-            </span>
+    <div className="flex flex-col gap-4">
+      <div className="inline-flex self-start rounded-[10px] border border-reps-border bg-reps-panel/40 p-1">
+        {STATUS_TABS.map((s) => (
+          <button
+            key={s}
+            onClick={() => {
+              setStatus(s);
+              setSelectedId(null);
+              setNote("");
+            }}
+            className={`rounded-[8px] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
+              status === s ? "bg-reps-orange text-white" : "text-white/55 hover:text-white"
+            }`}
+          >
+            {STATUS_LABEL[s]}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[380px_1fr]">
+        {/* LIST */}
+        <PPanel className="flex flex-col">
+          <div className="border-b border-reps-border px-4 py-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[13px] font-semibold text-white">
+                {status === "pending"
+                  ? "Pending profile changes"
+                  : status === "approved"
+                    ? "Approved profile changes"
+                    : status === "rejected"
+                      ? "Rejected profile changes"
+                      : "Withdrawn profile changes"}
+              </h3>
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10.5px] font-semibold ${STATUS_PILL[status]}`}
+              >
+                {rows.length}
+              </span>
+            </div>
+            <p className="mt-0.5 text-[11.5px] text-white/55">
+              {status === "pending"
+                ? "Every provider profile edit lands here for review before going live."
+                : `Recent ${STATUS_LABEL[status].toLowerCase()} provider profile edits.`}
+            </p>
           </div>
-          <p className="mt-0.5 text-[11.5px] text-white/55">
-            Every provider profile edit lands here for review before going live.
-          </p>
-        </div>
-        <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
-          {listQ.isLoading && (
-            <li className="p-6 text-center text-[12px] text-white/55">Loading…</li>
-          )}
-          {!listQ.isLoading && rows.length === 0 && (
-            <li className="p-6 text-center text-[12px] text-white/55">
-              No pending provider changes.
-            </li>
-          )}
+          <ul className="flex-1 divide-y divide-reps-border overflow-y-auto">
+            {listQ.isLoading && (
+              <li className="p-6 text-center text-[12px] text-white/55">Loading…</li>
+            )}
+            {!listQ.isLoading && rows.length === 0 && (
+              <li className="p-6 text-center text-[12px] text-white/55">
+                No {STATUS_LABEL[status].toLowerCase()} profile changes.
+              </li>
+            )}
           {rows.map((r) => {
             const sel = r.id === selectedId;
             const proposed = readValue(r.proposed_value);
@@ -222,46 +269,53 @@ export function AdminProviderQueueTab() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-reps-border px-5 py-4">
-              <div>
-                <label className="mb-1.5 block text-[12px] font-semibold text-white/80">
-                  Admin note (required for rejection)
-                </label>
-                <Textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={3}
-                  placeholder="e.g. Please rephrase — the current wording implies a guarantee."
-                />
+            {status === "pending" ? (
+              <div className="flex flex-col gap-3 border-t border-reps-border px-5 py-4">
+                <div>
+                  <label className="mb-1.5 block text-[12px] font-semibold text-white/80">
+                    Admin note (required for rejection)
+                  </label>
+                  <Textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. Please rephrase — the current wording implies a guarantee."
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="destructive-ghost"
+                    disabled={decideMut.isPending}
+                    onClick={() => decideMut.mutate("rejected")}
+                  >
+                    {decideMut.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <XCircle className="h-3.5 w-3.5" />
+                    )}
+                    Reject
+                  </Button>
+                  <Button
+                    disabled={decideMut.isPending}
+                    onClick={() => decideMut.mutate("approved")}
+                  >
+                    {decideMut.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    )}
+                    Approve &amp; publish
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center justify-end gap-2">
-                <Button
-                  variant="destructive-ghost"
-                  disabled={decideMut.isPending}
-                  onClick={() => decideMut.mutate("rejected")}
-                >
-                  {decideMut.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <XCircle className="h-3.5 w-3.5" />
-                  )}
-                  Reject
-                </Button>
-                <Button
-                  disabled={decideMut.isPending}
-                  onClick={() => decideMut.mutate("approved")}
-                >
-                  {decideMut.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                  )}
-                  Approve &amp; publish
-                </Button>
+            ) : (
+              <div className="border-t border-reps-border px-5 py-3 text-[11.5px] text-white/55">
+                Historical record — read-only.
               </div>
-            </div>
+            )}
           </PPanel>
         )}
+      </div>
       </div>
     </div>
   );
