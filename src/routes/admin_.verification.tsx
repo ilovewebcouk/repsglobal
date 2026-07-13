@@ -19,6 +19,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSessionUser } from "@/hooks/use-session-user";
 import { useMemo, useRef, useState } from "react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
