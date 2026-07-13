@@ -15,8 +15,10 @@ import {
   Shield,
   ShieldCheck,
   User,
+  UserRound,
   XCircle,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useMemo, useRef, useState } from "react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
