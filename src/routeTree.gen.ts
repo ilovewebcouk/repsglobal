@@ -147,6 +147,7 @@ import { Route as ApiPublicHooksOnboardingNudgeCronRouteImport } from './routes/
 import { Route as ApiPublicCronSeoIndexScanRouteImport } from './routes/api/public/cron/seo-index-scan'
 import { Route as ApiPublicCronPullPosthogDailyRouteImport } from './routes/api/public/cron/pull-posthog-daily'
 import { Route as ApiPublicConsentLogRouteImport } from './routes/api/public/consent/log'
+import { Route as ApiPublicAdminManualRelinkStripeRouteImport } from './routes/api/public/admin/manual-relink-stripe'
 import { Route as ApiPublicActivitySessionEventRouteImport } from './routes/api/public/activity/session-event'
 import { Route as ApiPublicActivityPublicConversionRouteImport } from './routes/api/public/activity/public-conversion'
 import { Route as ApiPublicActivityAuthEventRouteImport } from './routes/api/public/activity/auth-event'
@@ -893,6 +894,12 @@ const ApiPublicConsentLogRoute = ApiPublicConsentLogRouteImport.update({
   path: '/api/public/consent/log',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAdminManualRelinkStripeRoute =
+  ApiPublicAdminManualRelinkStripeRouteImport.update({
+    id: '/api/public/admin/manual-relink-stripe',
+    path: '/api/public/admin/manual-relink-stripe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicActivitySessionEventRoute =
   ApiPublicActivitySessionEventRouteImport.update({
     id: '/api/public/activity/session-event',
@@ -1269,6 +1276,7 @@ export interface FileRoutesByFullPath {
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
   '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
+  '/api/public/admin/manual-relink-stripe': typeof ApiPublicAdminManualRelinkStripeRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
@@ -1439,6 +1447,7 @@ export interface FileRoutesByTo {
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
   '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
+  '/api/public/admin/manual-relink-stripe': typeof ApiPublicAdminManualRelinkStripeRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
@@ -1619,6 +1628,7 @@ export interface FileRoutesById {
   '/api/public/activity/auth-event': typeof ApiPublicActivityAuthEventRoute
   '/api/public/activity/public-conversion': typeof ApiPublicActivityPublicConversionRoute
   '/api/public/activity/session-event': typeof ApiPublicActivitySessionEventRoute
+  '/api/public/admin/manual-relink-stripe': typeof ApiPublicAdminManualRelinkStripeRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
@@ -1797,6 +1807,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/auth-event'
     | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
+    | '/api/public/admin/manual-relink-stripe'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
     | '/api/public/cron/seo-index-scan'
@@ -1967,6 +1978,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/auth-event'
     | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
+    | '/api/public/admin/manual-relink-stripe'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
     | '/api/public/cron/seo-index-scan'
@@ -2146,6 +2158,7 @@ export interface FileRouteTypes {
     | '/api/public/activity/auth-event'
     | '/api/public/activity/public-conversion'
     | '/api/public/activity/session-event'
+    | '/api/public/admin/manual-relink-stripe'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
     | '/api/public/cron/seo-index-scan'
@@ -2292,6 +2305,7 @@ export interface RootRouteChildren {
   ApiPublicActivityAuthEventRoute: typeof ApiPublicActivityAuthEventRoute
   ApiPublicActivityPublicConversionRoute: typeof ApiPublicActivityPublicConversionRoute
   ApiPublicActivitySessionEventRoute: typeof ApiPublicActivitySessionEventRoute
+  ApiPublicAdminManualRelinkStripeRoute: typeof ApiPublicAdminManualRelinkStripeRoute
   ApiPublicConsentLogRoute: typeof ApiPublicConsentLogRoute
   ApiPublicCronPullPosthogDailyRoute: typeof ApiPublicCronPullPosthogDailyRoute
   ApiPublicCronSeoIndexScanRoute: typeof ApiPublicCronSeoIndexScanRoute
@@ -3278,6 +3292,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicConsentLogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/admin/manual-relink-stripe': {
+      id: '/api/public/admin/manual-relink-stripe'
+      path: '/api/public/admin/manual-relink-stripe'
+      fullPath: '/api/public/admin/manual-relink-stripe'
+      preLoaderRoute: typeof ApiPublicAdminManualRelinkStripeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/activity/session-event': {
       id: '/api/public/activity/session-event'
       path: '/api/public/activity/session-event'
@@ -3945,6 +3966,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicActivityPublicConversionRoute:
     ApiPublicActivityPublicConversionRoute,
   ApiPublicActivitySessionEventRoute: ApiPublicActivitySessionEventRoute,
+  ApiPublicAdminManualRelinkStripeRoute: ApiPublicAdminManualRelinkStripeRoute,
   ApiPublicConsentLogRoute: ApiPublicConsentLogRoute,
   ApiPublicCronPullPosthogDailyRoute: ApiPublicCronPullPosthogDailyRoute,
   ApiPublicCronSeoIndexScanRoute: ApiPublicCronSeoIndexScanRoute,
