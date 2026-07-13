@@ -112,6 +112,8 @@ const STATUS_LABEL: Record<StatusFilter, string> = {
 
 function AdminVerificationPage() {
   const qc = useQueryClient();
+  const { user: sessionUser } = useSessionUser();
+  const currentUserId = sessionUser?.id ?? null;
   const fetchList = useServerFn(listVerifications);
   const fetchPending = useServerFn(listPendingVerifications);
   const fetchStats = useServerFn(getQueueStats);
