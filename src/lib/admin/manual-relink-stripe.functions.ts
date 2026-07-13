@@ -145,23 +145,10 @@ export const manualRelinkStripeCustomers = createServerFn({ method: 'POST' })
           .upsert(row as never, { onConflict: 'user_id,environment' });
         if (upErr) throw new Error(`subscriptions upsert: ${upErr.message}`);
 
-        // 5) Upsert legacy_stripe_link so the "no active sub" report drops them
-        await supabaseAdmin
-          .from('legacy_stripe_link')
-          .upsert(
-            {
-              stripe_customer_id: entry.customerId,
-              email,
-              legacy_kind: kind,
-              link_status: 'linked',
-              migration_status: 'converted_to_subscription',
-              last_paid_at: pay.paid_at,
-              last_paid_amount_pence: pay.amount_pence,
-              next_due_at: currentPeriodEnd,
-              converted_at: new Date().toISOString(),
-            } as never,
-            { onConflict: 'stripe_customer_id' },
-          );
+        // 5) legacy_stripe_link: these customers have no seed row (their Stripe
+        //    email differs from the BD CSV), so we don't touch it. The new
+        //    subscriptions row is what removes them from the "no active sub"
+        //    report going forward.
 
         // 6) Send the standard REPs invite email (only for newly-created users)
         if (action === 'created' && inviteUrl) {
