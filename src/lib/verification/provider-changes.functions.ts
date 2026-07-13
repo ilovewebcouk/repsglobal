@@ -316,24 +316,27 @@ export type AdminProviderQueueItem = {
   created_at: string;
 };
 
+const ListInput = z
+  .object({
+    status: z.enum(["pending", "approved", "rejected", "withdrawn"]).optional(),
+  })
+  .optional();
+
 export const adminListProviderQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AdminProviderQueueItem[]> => {
+  .inputValidator((d: unknown) => ListInput.parse(d))
+  .handler(async ({ data, context }): Promise<AdminProviderQueueItem[]> => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+
+    const status = data?.status ?? "pending";
 
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
     const sa = supabaseAdmin as any;
 
-    const { data: rows, error } = await sa
-      .from("provider_pending_queue")
-      .select("*")
-      .order("created_at", { ascending: true });
-    if (error) throw new Error(error.message);
-
-    const list = (rows ?? []) as Array<{
+    type RawRow = {
       source: "change" | "name" | "domain";
       id: string;
       provider_id: string;
@@ -343,7 +346,95 @@ export const adminListProviderQueue = createServerFn({ method: "GET" })
       current_value: JsonValue;
       status: string;
       created_at: string;
-    }>;
+    };
+
+    let list: RawRow[] = [];
+
+    if (status === "pending") {
+      const { data: rows, error } = await sa
+        .from("provider_pending_queue")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw new Error(error.message);
+      list = (rows ?? []) as RawRow[];
+    } else {
+      // Query underlying tables directly so we can surface historical rows.
+      // withdrawn == provider_change_requests.status='superseded' (name/domain
+      // don't have a withdrawn concept, so those queries return nothing).
+      const changeStatus =
+        status === "withdrawn" ? "superseded" : status; // approved | rejected | superseded
+      const nameDomainStatus = status === "withdrawn" ? null : status;
+
+      const [changeRes, nameRes, domainRes] = await Promise.all([
+        sa
+          .from("provider_change_requests")
+          .select(
+            "id, provider_id, field_group, field_key, proposed_value, current_value, status, created_at, reviewed_at",
+          )
+          .eq("status", changeStatus)
+          .order("reviewed_at", { ascending: false, nullsFirst: false })
+          .limit(200),
+        nameDomainStatus
+          ? sa
+              .from("provider_name_requests")
+              .select("id, user_id, requested_name, status, created_at, reviewed_at")
+              .eq("status", nameDomainStatus)
+              .order("reviewed_at", { ascending: false, nullsFirst: false })
+              .limit(200)
+          : Promise.resolve({ data: [] }),
+        nameDomainStatus
+          ? sa
+              .from("provider_domain_verifications")
+              .select(
+                "id, professional_id, domain, email, status, created_at, admin_reviewed_at",
+              )
+              .eq("status", nameDomainStatus)
+              .order("admin_reviewed_at", { ascending: false, nullsFirst: false })
+              .limit(200)
+          : Promise.resolve({ data: [] }),
+      ]);
+
+      for (const r of ((changeRes.data ?? []) as any[])) {
+        list.push({
+          source: "change",
+          id: r.id,
+          provider_id: r.provider_id,
+          field_group: r.field_group,
+          field_key: r.field_key,
+          proposed_value: r.proposed_value,
+          current_value: r.current_value,
+          status: r.status,
+          created_at: r.reviewed_at ?? r.created_at,
+        });
+      }
+      for (const r of ((nameRes.data ?? []) as any[])) {
+        list.push({
+          source: "name",
+          id: r.id,
+          provider_id: r.user_id,
+          field_group: "identity",
+          field_key: "provider_name",
+          proposed_value: { value: r.requested_name ?? null },
+          current_value: { value: null },
+          status: r.status,
+          created_at: r.reviewed_at ?? r.created_at,
+        });
+      }
+      for (const r of ((domainRes.data ?? []) as any[])) {
+        list.push({
+          source: "domain",
+          id: r.id,
+          provider_id: r.professional_id,
+          field_group: "identity",
+          field_key: "provider_domain",
+          proposed_value: { value: r.email ?? r.domain ?? null },
+          current_value: { value: null },
+          status: r.status,
+          created_at: r.admin_reviewed_at ?? r.created_at,
+        });
+      }
+      list.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    }
 
     if (list.length === 0) return [];
 
