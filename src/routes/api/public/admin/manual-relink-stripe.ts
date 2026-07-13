@@ -82,19 +82,23 @@ export const Route = createFileRoute('/api/public/admin/manual-relink-stripe')({
               userId = existingUser.id;
               action = 'reused';
             } else {
-              const redirectTo = `https://repsuk.org/dashboard`;
-              const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
-                type: 'invite',
+              // Note: auth.admin.generateLink({type:'invite'}) currently
+              // fails on this project with "type citext does not exist"
+              // inside GoTrue's own SQL path. Use createUser instead
+              // (different endpoint) and mint a recovery link separately.
+              const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
                 email,
-                options: {
-                  redirectTo,
-                  data: { signup_kind: 'professional', migrated_from_bd: true },
-                },
+                email_confirm: true,
+                user_metadata: { signup_kind: 'professional', migrated_from_bd: true },
               });
-              if (linkErr) throw new Error(`generateLink: ${linkErr.message}`);
-              userId = linkData.user?.id ?? null;
-              inviteUrl = linkData.properties?.action_link ?? redirectTo;
+              if (cErr) throw new Error(`createUser: ${cErr.message}`);
+              userId = created.user?.id ?? null;
               action = 'created';
+              const redirectTo = `https://repsuk.org/dashboard`;
+              const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
+                type: 'recovery', email, options: { redirectTo },
+              });
+              inviteUrl = linkData?.properties?.action_link ?? redirectTo;
             }
             if (!userId) throw new Error('no user id resolved');
 
