@@ -17,7 +17,9 @@ import {
   XCircle,
   Clock,
   Trash2,
+  Pencil,
 } from "lucide-react";
+import { adminUpdateMemberEmail } from "@/lib/admin/member-email.functions";
 import { startImpersonation } from "@/lib/admin/impersonation.functions";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
