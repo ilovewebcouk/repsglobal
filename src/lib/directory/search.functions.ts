@@ -125,7 +125,9 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let qb = supabaseAdmin
       .from("professionals")
       .select(COLS, { count: "exact" })
-      .in("id", visibleIds);
+      .in("id", visibleIds)
+      .neq("account_type", "organisation");
+
     // Hide churned profiles (stage 'lapsed' or 'dormant'). Admin still sees
     // them everywhere else; this is the public-facing register filter.
     const { data: hiddenChurnRows } = await supabaseAdmin
@@ -452,9 +454,11 @@ export const getCityProfessionCounts = createServerFn({ method: "GET" })
           .from("professionals")
           .select("id", { count: "exact", head: true })
           .eq("is_published", true)
+          .neq("account_type", "organisation")
           .eq("primary_profession", slug)
           .ilike("city", `%${data.city}%`);
         return [slug, count ?? 0] as const;
+
       }),
     );
 
@@ -473,8 +477,10 @@ export const getCityOnlineCount = createServerFn({ method: "GET" })
       .from("professionals")
       .select("id", { count: "exact", head: true })
       .eq("is_published", true)
+      .neq("account_type", "organisation")
       .eq("online_available", true)
       .ilike("city", `%${data.city}%`);
+
     return { count: count ?? 0 };
   });
 
@@ -488,7 +494,9 @@ export const getCityAvgRating = createServerFn({ method: "GET" })
       .from("professionals")
       .select("id")
       .eq("is_published", true)
+      .neq("account_type", "organisation")
       .ilike("city", `%${data.city}%`);
+
     const ids = (pros ?? []).map((p) => p.id);
     if (ids.length === 0) return { avg: null, count: 0 };
     const { data: reviews } = await supabaseAdmin

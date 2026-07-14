@@ -1,43 +1,22 @@
-## Goal
+## Why they appear
 
-On public coach websites (`/c/$slug`) only:
-1. Hide the orange "Core membership — now £34/year · Join today" strip.
-2. Replace the wishy-washy "H is finishing their REPS profile" line with a stronger trust-first warning (and fix the bug where the first name renders as a single letter).
+`/find-a-professional` queries the `professionals` table with no `account_type` filter (see `src/lib/directory/search.functions.ts` around line 125). Training providers are stored as `professionals` rows with `account_type = 'organisation'` (that's what the separate providers directory uses via `listPublicProviders` in `src/lib/directory/providers.functions.ts`). So organisations get returned alongside individuals — hence "Test Profile" (an org account with the REPS logo) and "Northline Fitness Academy" showing up in the individual pro results.
 
-Everywhere else (marketing, home, directory, etc.) the promo bar stays.
+## Fix
 
-## Changes
+Scope `/find-a-professional` to individuals only by adding one line to the query in `src/lib/directory/search.functions.ts`:
 
-### 1. Hide `<SiteBanner />` on `/c/$slug`
-
-In `src/routes/c.$slug.index.tsx` (line 766), remove the `<SiteBanner />` render from the coach website page. The bar continues to render on all other routes that mount it.
-
-No menu adjustment needed: `ChromeBar` uses `sticky top-0` and `SectionNav` uses `sticky top-14`, both relative to the viewport — the site banner sat above them and scrolled away independently. Removing it does not shift the sticky header.
-
-### 2. Fix name bug + rewrite placeholder banner
-
-Current bug (line 769): `(coach.name ?? "").split("")[0]` splits by empty string and returns a single character ("H" instead of "Hedvika"). Change to `.split(" ")[0]`.
-
-Rewrite `TemplateContentBanner` (lines 798–827) as a trust-first warning:
-
-```text
-[shield icon]  Not yet verified by REPS
-              This professional is still completing their profile —
-              some content on this page is placeholder.
-                                          [Finish your website →]  (owner only)
+```ts
+.in("id", visibleIds)
+.eq("account_type", "individual")   // ← add
 ```
 
-Visual treatment:
-- Keep the amber palette (same warning family used across the app), but tighten the hierarchy: a bold single-line title + a smaller supporting line, replacing the current run-on sentence.
-- Swap the `Sparkles` icon for `ShieldAlert` to match the trust-warning tone.
-- Owner CTA button unchanged (still links to `/dashboard/website`).
+Apply the same filter to the count/aggregate queries in that file (lines ~452, 473, 488) so filter counts stay consistent. Training providers continue to appear on their dedicated providers directory (which already filters `account_type = 'organisation'`).
 
-### 3. Verification
+No UI changes, no schema changes.
 
-- Load `/c/hedvika-chau` (unverified) — confirm no orange promo bar, amber warning banner reads correctly with full first name, sticky nav still anchors to the top.
-- Load a verified pro (e.g. `/c/james-wilson`) — confirm no promo bar, no warning banner.
-- Load `/` and `/find-a-professional` — confirm the promo bar still renders.
+## Verification
 
-## Files touched
-
-- `src/routes/c.$slug.index.tsx` — remove `<SiteBanner />`, fix `split("")` → `split(" ")`, rewrite `TemplateContentBanner` copy + icon.
+- Reload `/find-a-professional` — "Test Profile" and "Northline Fitness Academy" are gone.
+- Providers directory still lists Northline etc.
+- Filter chips / totals still line up with the visible rows.
