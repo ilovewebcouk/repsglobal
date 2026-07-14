@@ -9,7 +9,7 @@
  */
 
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -776,6 +776,7 @@ function BasketTab({
   const resumeCheckout = useServerFn(resumeCertificateBatchCheckout);
   const syncCheckout = useServerFn(syncCertificateBatchCheckout);
   const cancelPendingCheckout = useServerFn(cancelCertificateBatchCheckout);
+  const navigateBasket = useNavigate();
 
   // Certificate branding gate — the server refuses checkout without a logo,
   // but we mirror the same check client-side so the CTA is obviously blocked
@@ -1097,13 +1098,12 @@ function BasketTab({
                     Every REPS certificate carries your logo. Head to the{" "}
                     <button
                       type="button"
-                      onClick={() => {
-                        window.location.hash = "";
-                        const url = new URL(window.location.href);
-                        url.searchParams.set("tab", "certificates");
-                        window.history.pushState({}, "", url.toString());
-                        window.dispatchEvent(new PopStateEvent("popstate"));
-                      }}
+                      onClick={() =>
+                        navigateBasket({
+                          to: "/dashboard/students",
+                          search: { tab: "certificates" },
+                        })
+                      }
                       className="font-semibold text-white underline underline-offset-4 hover:no-underline"
                     >
                       Certificates tab → Certificate branding
