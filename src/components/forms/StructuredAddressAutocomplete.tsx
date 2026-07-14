@@ -8,7 +8,7 @@
  * simpler formatted-string AddressAutocomplete.
  */
 import * as React from "react";
-import { Loader2, MapPin } from "lucide-react";
+import { Check, Loader2, MapPin, X } from "lucide-react";
 
 import {
   loadPlacesLibrary,
@@ -94,8 +94,10 @@ export function StructuredAddressAutocomplete({
   const [suggestions, setSuggestions] = React.useState<PlacesSuggestion[]>([]);
   const [placesReady, setPlacesReady] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [selected, setSelected] = React.useState(false);
   const placesLibRef = React.useRef<PlacesLibrary | null>(null);
   const sessionTokenRef = React.useRef<unknown>(null);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
   const wrapRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -163,6 +165,7 @@ export function StructuredAddressAutocomplete({
       const parts = parse(place.addressComponents ?? []);
       onSelect(parts);
       setText(place.formattedAddress ?? s.placePrediction.text.text ?? "");
+      setSelected(true);
       setOpen(false);
       if (placesLibRef.current) {
         sessionTokenRef.current = new placesLibRef.current.AutocompleteSessionToken();
@@ -172,9 +175,19 @@ export function StructuredAddressAutocomplete({
     }
   };
 
+  const clear = () => {
+    setText("");
+    setSelected(false);
+    setSuggestions([]);
+    setOpen(true);
+    // Re-focus so the user can immediately type a new search
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
   return (
     <div ref={wrapRef} className={`relative ${className ?? ""}`}>
       <input
+        ref={inputRef}
         type="text"
         className={inputCls}
         value={text}
@@ -182,18 +195,37 @@ export function StructuredAddressAutocomplete({
         onFocus={() => setOpen(true)}
         onChange={(e) => {
           setText(e.target.value);
+          setSelected(false);
           if (!open) setOpen(true);
         }}
         autoComplete="off"
         spellCheck={false}
       />
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/40">
+      <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-white/40">
+        {selected ? (
+          <Check className="h-3.5 w-3.5 text-emerald-300" aria-label="Address selected" />
+        ) : null}
         {loading ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="pointer-events-none h-3.5 w-3.5 animate-spin" />
+        ) : text ? (
+          <button
+            type="button"
+            aria-label="Clear address"
+            onClick={clear}
+            className="rounded-full p-0.5 hover:bg-white/10 hover:text-white/80 focus:outline-none focus:ring-1 focus:ring-white/30"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
         ) : (
-          <MapPin className="h-3.5 w-3.5" />
+          <MapPin className="pointer-events-none h-3.5 w-3.5" />
         )}
       </span>
+
+      {selected ? (
+        <p className="mt-1 text-[11.5px] text-white/45">
+          Address selected — edit the fields below to adjust, or clear to search again.
+        </p>
+      ) : null}
 
       {open && suggestions.length > 0 ? (
         <ul
