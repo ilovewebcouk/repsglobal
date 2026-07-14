@@ -1,54 +1,44 @@
-Add a visual editor to the Templates panel at `/admin/certificates` so you can see the certificate render live and drag fields into position instead of guessing coordinates.
+## Switch certificate field-map coordinates to top-left origin
 
-## What you get
+Match Adobe Illustrator's ruler so `(0,0)` is the top-left corner of the page and Y grows downward. Today the field map is stored in pdf-lib's native bottom-left points, which forces admins to mentally flip every Y value from Illustrator.
 
-Clicking **Edit** on a template opens a full-width two-pane editor:
+### Scope
 
-```text
-┌───────────── Fields (left) ─────────────┬────────── Live preview (right) ──────────┐
-│ Page 1 · certificate                    │  [Page 1] [Page 2]                       │
-│  • learner_name    x[ 300] y[ 420]      │                                          │
-│    size[28] align[center] bold          │   ┌────────────────────────────────┐     │
-│    color[#111]                          │   │                                │     │
-│  • course_line     …                    │   │   Rendered template PDF with   │     │
-│  • issue_date      …                    │   │   sample data overlaid.        │     │
-│  + add text field / image / list        │   │   Draggable markers per field. │     │
-│                                         │   │                                │     │
-│ Page 2 · unit summary                   │   └────────────────────────────────┘     │
-│  • list: unit_summary  x/y/maxWidth/…   │                                          │
-│                                         │   [Save field map]  [Discard]            │
-└─────────────────────────────────────────┴──────────────────────────────────────────┘
-```
+- All text, image and list fields in `field_map.certificate` and `field_map.unit_summary` are interpreted as top-left.
+- The live editor's drag markers, form inputs, and preview all speak top-left.
+- Existing saved templates get migrated in place so nothing visually shifts.
 
-Two ways to move a field:
-1. **Drag** its marker on the preview — coordinates update in the inputs.
-2. **Type** into the x / y / size / align inputs — marker moves.
+### Technical changes
 
-The preview auto-refreshes (debounced ~400ms) after any change so the on-page result is always current. **Save field map** persists; leaving without saving discards.
+1. **Renderer — `src/lib/certificates/pdf.server.ts`**
+   - In `overlayPage`, read `page.getHeight()` once and convert every field's `y` to pdf-lib space just before drawing:
+     - Text: `pdfY = pageH - y - fontSize` (so `y` is the visual top of the glyph box, matching Illustrator's text baseline-independent placement).
+     - Images (`qr_code`, `provider_logo`): `pdfY = pageH - y - height`.
+     - List: `pdfY = pageH - y - fontSize` for the first line, then keep the existing `y -= lh` downward flow (already correct in top-left orientation).
+   - Add a short comment block at the top documenting the new convention (points, top-left origin, Y grows down).
 
-## Technical details
+2. **Editor — `src/components/admin/certificates/TemplateEditor.tsx`**
+   - Remove the current bottom-left ↔ screen flip in the drag handler and marker positioning. Markers now use `top: y * scale` directly.
+   - Drag delta: `newY = oldY + dyScreen / scale` (no sign flip).
+   - Update the small helper hint next to X/Y inputs from "points from bottom-left" to "points from top-left (Illustrator origin)".
 
-**New server function** `previewCertificateTemplateWithMap({ id, field_map_json })` in `src/lib/certificates/templates.functions.ts`:
-- Loads the template's uploaded PDFs from storage.
-- Renders using the *supplied* field map (not the DB row), by extracting the overlay logic from `pdf.server.ts` into a small `renderCertificateWithTemplate(templateRow, fieldMap, sampleInput)` helper that both `generateCertificatePdf` and this new fn call.
-- Returns `{ pdf_b64 }`. Removes the fragile "temporarily flip `is_default`" hack in the existing `previewCertificateTemplate`.
+3. **Legacy fallback — `src/lib/certificates/pdf-legacy.server.ts`**
+   - Not touched. It doesn't consume `field_map`.
 
-**New component** `src/components/admin/certificates/TemplateEditor.tsx`:
-- Replaces the raw JSON textarea inside `TemplateRow` (JSON textarea kept behind an "Advanced / raw JSON" disclosure so you can still hand-edit).
-- Left pane: structured form driven by the `CertificateFieldMap` type — grouped by page (certificate / unit_summary), then sections (text / images / list). Each text row: field name (select from known list), x, y, fontSize, fontWeight, align, color, maxWidth, uppercase.
-- Right pane: renders live PDF via a blob URL in an `<iframe>` (browser's built-in PDF viewer). Refresh triggered by debounced state changes.
-- **Drag overlay**: use `pdfjs-dist` on the client to rasterise page 1 (and page 2) of the returned preview PDF to a canvas at a fixed display width (~700px). Overlay absolutely-positioned `<div>` markers per text/image field. On drag, convert screen delta → PDF points using the canvas↔PDF scale. `pdfjs-dist` is standard for this and already worker-friendly.
-- Toggle: **Show markers** (drag mode) / **Hide markers** (clean preview).
+4. **Migration for existing rows**
+   - New Supabase migration walks `certificate_templates.field_map` and, for each field, rewrites `y` from bottom-left to top-left using the known A4 portrait height (`841.89` pt) for both pages. Text uses `newY = pageH - oldY - (fontSize ?? 12)`; images use `newY = pageH - oldY - height`; list uses `newY = pageH - oldY - (fontSize ?? 10)`.
+   - Runs once; safe to re-run because we'll gate it on a `field_map->>'_origin'` marker set to `"top-left"` after conversion.
 
-**Wiring** in `src/routes/admin_.certificates.tsx`:
-- `TemplateRow` "Edit field map" opens the new `TemplateEditor` inline in place of the current textarea.
-- The existing "Preview" button still opens the PDF in a new tab (unchanged).
+5. **Docs**
+   - Update the header comment in `pdf.server.ts` (currently says "points from the bottom-left") and any authoring notes to reflect Illustrator-parity.
 
-**Sample data** used for the live render matches the existing `previewCertificateTemplate` sample ("Jamie Sample Learner", 6 units, etc.) so what you see is what learners will see.
+### Out of scope
 
-## Out of scope
-- Rotating fields or QR/logo drag-resize handles (positions still editable via inputs; keep MVP focused on the pain point — coordinates).
-- Uploading new PDFs from inside the editor (still done via the existing upload form).
-- Multi-user concurrent editing.
+- Rotating text, per-field origin overrides, non-A4 page sizes (the migration assumes A4 portrait, which matches the current template requirement).
+- Changing the units — still PDF points (1pt = 1/72"). Illustrator can be set to points to match 1:1.
 
-Nothing else on `/admin/certificates` changes.
+### Verification
+
+- Open an existing template in the editor after migration: markers land in the same visible spots as before.
+- Drag a field up on screen → Y value decreases (Illustrator behaviour).
+- Preview PDF renders identically to pre-migration output for the seeded template.

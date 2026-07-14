@@ -7,8 +7,8 @@
  *  - Right: live PDF preview rasterised via pdfjs-dist, with draggable
  *          markers overlaid so admins can position fields visually.
  *
- * Coordinates: pdf-lib native — points from the bottom-left of the page.
- * pdfjs viewport is top-left, so we flip Y when converting canvas ↔ map.
+ * Coordinates: **top-left origin, Y grows downward** (matches Adobe
+ * Illustrator). pdfjs viewport is also top-left, so no Y flip is needed.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -723,20 +723,20 @@ function PreviewCanvas({
     };
   }, [pdfB64, pageIndex]);
 
-  // Convert PDF point (bottom-left origin) → screen px on canvas (top-left origin)
+  // Convert PDF point (top-left origin) → screen px on canvas (top-left origin)
   const pdfToScreen = useCallback(
     (x: number, y: number) => {
       if (!dims) return { left: 0, top: 0 };
-      return { left: x * dims.scale, top: (dims.pdfH - y) * dims.scale };
+      return { left: x * dims.scale, top: y * dims.scale };
     },
     [dims],
   );
 
-  // Convert screen px on canvas → PDF point
+  // Convert screen px on canvas → PDF point (top-left origin)
   const screenToPdf = useCallback(
     (leftPx: number, topPx: number) => {
       if (!dims) return { x: 0, y: 0 };
-      return { x: leftPx / dims.scale, y: dims.pdfH - topPx / dims.scale };
+      return { x: leftPx / dims.scale, y: topPx / dims.scale };
     },
     [dims],
   );
@@ -807,7 +807,7 @@ function PreviewCanvas({
               );
             })}
             {(pageMap.images ?? []).map((im, i) => {
-              const pos = pdfToScreen(im.x, im.y + im.height);
+              const pos = pdfToScreen(im.x, im.y);
               const w = im.width * dims.scale;
               const h = im.height * dims.scale;
               return (

@@ -9,9 +9,10 @@
  * Falls back to the legacy code-drawn renderer when no default template
  * exists so certificates keep issuing on day one.
  *
- * Coordinate system: pdf-lib native — points from the bottom-left of the
- * page. Illustrator's ruler is top-left, so document the flip in the
- * template-authoring cheat sheet.
+ * Coordinate system: **top-left origin, Y grows downward**, in PDF points
+ * (1pt = 1/72"). This matches Adobe Illustrator's ruler so admins can copy
+ * X/Y straight from Illustrator. Internally we flip Y to pdf-lib's native
+ * bottom-left space just before drawing (see `overlayPage`).
  *
  * Server-only.
  */
@@ -248,26 +249,29 @@ function overlayPage(
     provider_logo: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
   },
 ): void {
+  const pageH = page.getHeight();
   for (const t of map.text ?? []) {
     const raw = values[t.field];
     if (raw == null || raw === "") continue;
-    drawText(page, t, raw, fonts);
+    drawText(page, t, raw, fonts, pageH);
   }
   for (const img of map.images ?? []) {
+    // Top-left origin: (img.x, img.y) is the top-left corner of the image box.
+    const pdfY = pageH - img.y - img.height;
     if (img.field === "qr_code") {
-      page.drawImage(images.qr, { x: img.x, y: img.y, width: img.width, height: img.height });
+      page.drawImage(images.qr, { x: img.x, y: pdfY, width: img.width, height: img.height });
     } else if (img.field === "provider_logo" && images.provider_logo) {
       const src = images.provider_logo;
       const scale = Math.min(img.width / src.width, img.height / src.height);
       const w = src.width * scale;
       const h = src.height * scale;
       const cx = img.x + (img.width - w) / 2;
-      const cy = img.y + (img.height - h) / 2;
+      const cy = pdfY + (img.height - h) / 2;
       page.drawImage(src, { x: cx, y: cy, width: w, height: h });
     }
   }
   if (map.list && map.list.field === "unit_summary") {
-    drawList(page, map.list, units, fonts);
+    drawList(page, map.list, units, fonts, pageH);
   }
 }
 
@@ -276,6 +280,7 @@ function drawText(
   t: TextField,
   raw: string,
   fonts: EmbeddedFonts,
+  pageH: number,
 ): void {
   const font =
     t.fontWeight === "bold" ? fonts.bold : t.fontWeight === "italic" ? fonts.italic : fonts.regular;
@@ -288,7 +293,9 @@ function drawText(
   let x = t.x;
   if (align === "center") x = t.x - width / 2;
   else if (align === "right") x = t.x - width;
-  page.drawText(full, { x, y: t.y, size, font, color, maxWidth: t.maxWidth });
+  // Top-left origin: t.y is the top of the glyph box; pdf-lib draws from baseline.
+  const y = pageH - t.y - size;
+  page.drawText(full, { x, y, size, font, color, maxWidth: t.maxWidth });
 }
 
 function drawList(
@@ -296,6 +303,7 @@ function drawList(
   l: ListField,
   items: string[] | undefined,
   fonts: EmbeddedFonts,
+  pageH: number,
 ): void {
   const list = (items ?? []).slice(0, l.maxItems ?? 40);
   if (list.length === 0) return;
@@ -306,7 +314,8 @@ function drawList(
   const font = fonts.regular;
   const bullet = l.bullet ?? "•";
   const bulletWidth = font.widthOfTextAtSize(bullet + "  ", size);
-  let y = l.y;
+  // Top-left origin: l.y is the top of the first line's glyph box.
+  let y = pageH - l.y - size;
   const maxCharsPerLine = Math.max(20, Math.floor((l.maxWidth - bulletWidth) / (size * 0.5)));
   for (const raw of list) {
     const lines = wrapText(raw, maxCharsPerLine);
