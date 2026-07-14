@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS center_number text;
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_center_number_key ON public.profiles (center_number) WHERE center_number IS NOT NULL;

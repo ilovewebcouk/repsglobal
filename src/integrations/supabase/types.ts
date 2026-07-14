@@ -3937,6 +3937,7 @@ export type Database = {
           avatar_qa_source: string | null
           avatar_qa_status: string
           avatar_url: string | null
+          center_number: string | null
           certificate_logo_url: string | null
           created_at: string
           full_name: string | null
@@ -3948,6 +3949,7 @@ export type Database = {
           avatar_qa_source?: string | null
           avatar_qa_status?: string
           avatar_url?: string | null
+          center_number?: string | null
           certificate_logo_url?: string | null
           created_at?: string
           full_name?: string | null
@@ -3959,6 +3961,7 @@ export type Database = {
           avatar_qa_source?: string | null
           avatar_qa_status?: string
           avatar_url?: string | null
+          center_number?: string | null
           certificate_logo_url?: string | null
           created_at?: string
           full_name?: string | null
