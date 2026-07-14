@@ -105,6 +105,7 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
       ofqualNumber,
       providerName,
       providerLogoUrl,
+      providerCenterNumber,
       issuedAt,
       verificationUrl,
       unitSummary,
