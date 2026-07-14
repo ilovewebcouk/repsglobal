@@ -164,13 +164,32 @@ export async function renderCertificateWithTemplate(
   },
   input: CertificatePdfInput,
 ): Promise<Uint8Array> {
-  const fieldMap = tpl.field_map ?? ({} as CertificateFieldMap);
-
-  // Fetch template PDFs
   const certPdfBytes = await downloadTemplateBytes(tpl.certificate_pdf_path);
   const unitPdfBytes = tpl.unit_summary_pdf_path
     ? await downloadTemplateBytes(tpl.unit_summary_pdf_path)
     : null;
+  return renderCertificateFromBytes(
+    { certPdfBytes, unitPdfBytes, fieldMap: tpl.field_map ?? ({} as CertificateFieldMap) },
+    input,
+  );
+}
+
+/**
+ * Pure bytes-level renderer. No storage / DB access — useful for automated
+ * tests and previews that already have template bytes in hand.
+ */
+export async function renderCertificateFromBytes(
+  tpl: {
+    certPdfBytes: Uint8Array;
+    unitPdfBytes: Uint8Array | null;
+    fieldMap: CertificateFieldMap;
+  },
+  input: CertificatePdfInput,
+): Promise<Uint8Array> {
+  const fieldMap = tpl.fieldMap ?? ({} as CertificateFieldMap);
+  const certPdfBytes = tpl.certPdfBytes;
+  const unitPdfBytes = tpl.unitPdfBytes;
+
 
   // Start from the certificate template so its artwork/fonts are preserved
   const output = await PDFDocument.load(certPdfBytes);
