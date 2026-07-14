@@ -18,6 +18,43 @@
  */
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "qrcode";
+import levelBadge1 from "@/assets/certificates/level-1.png.asset.json";
+import levelBadge2 from "@/assets/certificates/level-2.png.asset.json";
+import levelBadge3 from "@/assets/certificates/level-3.png.asset.json";
+import levelBadge4 from "@/assets/certificates/level-4.png.asset.json";
+import levelBadge5 from "@/assets/certificates/level-5.png.asset.json";
+import levelBadge6 from "@/assets/certificates/level-6.png.asset.json";
+import levelBadge7 from "@/assets/certificates/level-7.png.asset.json";
+
+const LEVEL_BADGE_URLS: Record<number, string> = {
+  1: levelBadge1.url,
+  2: levelBadge2.url,
+  3: levelBadge3.url,
+  4: levelBadge4.url,
+  5: levelBadge5.url,
+  6: levelBadge6.url,
+  7: levelBadge7.url,
+};
+
+async function tryEmbedLevelBadge(
+  doc: PDFDocument,
+  level: number | null,
+): Promise<Awaited<ReturnType<PDFDocument["embedPng"]>> | null> {
+  if (!level || !LEVEL_BADGE_URLS[level]) return null;
+  const relUrl = LEVEL_BADGE_URLS[level];
+  const base = (process.env.PUBLIC_SITE_URL ?? "https://repsuk.org").replace(/\/$/, "");
+  const url = relUrl.startsWith("http") ? relUrl : `${base}${relUrl}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = new Uint8Array(await res.arrayBuffer());
+    return await doc.embedPng(buf);
+  } catch (err) {
+    console.error("[cert-pdf] level badge embed failed", err);
+    return null;
+  }
+}
+
 
 export type CertificatePdfInput = {
   certificateNumber: string;
@@ -55,12 +92,13 @@ type TextField = {
 };
 
 type ImageField = {
-  field: "qr_code" | "provider_logo";
+  field: "qr_code" | "provider_logo" | "level_badge";
   x: number;
   y: number;
   width: number;
   height: number;
 };
+
 
 type ListField = {
   field: "unit_summary";
@@ -152,12 +190,14 @@ export async function renderCertificateWithTemplate(
   const qrPng = await renderQrPng(input.verificationUrl);
   const qrImage = await output.embedPng(qrPng);
   const providerLogoImage = await tryEmbedImageFromUrl(output, input.providerLogoUrl ?? null);
+  const levelBadgeImage = await tryEmbedLevelBadge(output, input.courseLevel);
 
   // ── Overlay page 1 (certificate)
   const page1 = output.getPage(0);
   overlayPage(page1, fieldMap.certificate ?? {}, values, input.unitSummary, fonts, {
     qr: qrImage,
     provider_logo: providerLogoImage,
+    level_badge: levelBadgeImage,
   });
 
   // ── Overlay page 2 (unit summary) if present
@@ -168,8 +208,10 @@ export async function renderCertificateWithTemplate(
     overlayPage(page2, fieldMap.unit_summary, values, input.unitSummary, fonts, {
       qr: qrImage,
       provider_logo: providerLogoImage,
+      level_badge: levelBadgeImage,
     });
   }
+
 
   return await output.save();
 }
@@ -250,6 +292,7 @@ function overlayPage(
   images: {
     qr: Awaited<ReturnType<PDFDocument["embedPng"]>>;
     provider_logo: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
+    level_badge: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
   },
 ): void {
   const pageH = page.getHeight();
@@ -271,12 +314,21 @@ function overlayPage(
       const cx = img.x + (img.width - w) / 2;
       const cy = pdfY + (img.height - h) / 2;
       page.drawImage(src, { x: cx, y: cy, width: w, height: h });
+    } else if (img.field === "level_badge" && images.level_badge) {
+      const src = images.level_badge;
+      const scale = Math.min(img.width / src.width, img.height / src.height);
+      const w = src.width * scale;
+      const h = src.height * scale;
+      const cx = img.x + (img.width - w) / 2;
+      const cy = pdfY + (img.height - h) / 2;
+      page.drawImage(src, { x: cx, y: cy, width: w, height: h });
     }
   }
   if (map.list && map.list.field === "unit_summary") {
     drawList(page, map.list, units, fonts, pageH);
   }
 }
+
 
 function drawText(
   page: ReturnType<PDFDocument["getPage"]>,

@@ -56,6 +56,7 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
     // Ofqual number (regulated kind only) + learning outcomes / modules
     let ofqualNumber: string | null = null;
     let unitSummary: string[] = [];
+    let derivedLevel: number | null = null;
     if ((reg as any).course_kind === "regulated") {
       const { data: perm } = await supabaseAdmin
         .from("provider_regulated_permissions")
@@ -68,10 +69,13 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
       } else if (outcomes && typeof outcomes === "object") {
         unitSummary = Object.values(outcomes).filter((x): x is string => typeof x === "string");
       }
+      // Regulated: parse "Level N" from the course title (no level column on permissions)
+      const titleMatch = /level\s*([1-7])/i.exec(String((reg as any).course_title ?? ""));
+      if (titleMatch) derivedLevel = Number(titleMatch[1]);
     } else {
       const { data: rc } = await supabaseAdmin
         .from("reps_courses")
-        .select("spec_modules, spec_learning_outcomes")
+        .select("spec_modules, spec_learning_outcomes, official_level, proposed_level")
         .eq("id", (reg as any).course_id).maybeSingle();
       const mods = (rc as any)?.spec_modules as unknown;
       if (Array.isArray(mods)) {
@@ -85,7 +89,11 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
           unitSummary = outcomes.filter((x): x is string => typeof x === "string");
         }
       }
+      const off = (rc as any)?.official_level;
+      const prop = (rc as any)?.proposed_level;
+      derivedLevel = (typeof off === "number" ? off : typeof prop === "number" ? prop : null);
     }
+
 
     // Assign number + token
     const { data: numRow } = await supabaseAdmin.rpc("next_certificate_number" as never);
@@ -100,7 +108,7 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
       certificateNumber,
       learnerName: (learner?.full_name as string | null) ?? "Learner",
       courseTitle: (reg as any).course_title,
-      courseLevel: (reg as any).course_level,
+      courseLevel: ((reg as any).course_level ?? derivedLevel) as number | null,
       repsCourseNumber: (reg as any).reps_course_number,
       ofqualNumber,
       providerName,
