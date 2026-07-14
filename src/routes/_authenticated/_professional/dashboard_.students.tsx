@@ -777,6 +777,18 @@ function BasketTab({
   const syncCheckout = useServerFn(syncCertificateBatchCheckout);
   const cancelPendingCheckout = useServerFn(cancelCertificateBatchCheckout);
 
+  // Certificate branding gate — the server refuses checkout without a logo,
+  // but we mirror the same check client-side so the CTA is obviously blocked
+  // and the provider knows exactly where to go.
+  const getBranding = useServerFn(getMyProviderBranding);
+  const brandingQuery = useQuery({
+    queryKey: ["my-provider-branding"],
+    queryFn: () => getBranding(),
+  });
+  const hasCertificateLogo = Boolean(
+    (brandingQuery.data as { certificate_logo_url: string | null } | undefined)?.certificate_logo_url,
+  );
+
   const checkoutable = React.useMemo(
     () => basket.filter((b) => b.status === "passed" && !b.batch_id),
     [basket],
@@ -1075,27 +1087,48 @@ function BasketTab({
           )}
 
           {checkoutable.length > 0 ? (
-          <div className="flex items-center justify-between border-t border-reps-border p-4">
-            <div>
-              <div className="text-[12.5px] text-white/55">
-                {count} certificate{count === 1 ? "" : "s"} × £{(unit / 100).toFixed(2)}
-                {postageOnBatch > 0
-                  ? ` + £${(postageOnBatch / 100).toFixed(2)} ${
-                      isInternational ? "international " : ""
-                    }postage`
-                  : ""}
+          <div className="border-t border-reps-border">
+            {!hasCertificateLogo && !brandingQuery.isPending ? (
+              <div className="flex items-start gap-3 border-b border-amber-400/25 bg-amber-500/10 px-4 py-3 text-[12.5px] text-amber-100">
+                <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-400/30 text-[10px] font-bold text-amber-50">!</span>
+                <div>
+                  <div className="font-semibold text-amber-50">Upload your certificate logo before checking out.</div>
+                  <div className="mt-0.5 text-amber-100/80">
+                    Every REPS certificate carries your logo. Head to the{" "}
+                    <button
+                      type="button"
+                      onClick={() => navigate({ search: { tab: "certificates" }, replace: false })}
+                      className="font-semibold text-white underline underline-offset-4 hover:no-underline"
+                    >
+                      Certificates tab → Certificate branding
+                    </button>{" "}
+                    and upload a PNG or JPG at exactly 160 × 60 px. No exceptions.
+                  </div>
+                </div>
               </div>
-              <div className="mt-1 font-display text-[22px] font-bold text-white">
-                £{(total / 100).toFixed(2)}
+            ) : null}
+            <div className="flex items-center justify-between p-4">
+              <div>
+                <div className="text-[12.5px] text-white/55">
+                  {count} certificate{count === 1 ? "" : "s"} × £{(unit / 100).toFixed(2)}
+                  {postageOnBatch > 0
+                    ? ` + £${(postageOnBatch / 100).toFixed(2)} ${
+                        isInternational ? "international " : ""
+                      }postage`
+                    : ""}
+                </div>
+                <div className="mt-1 font-display text-[22px] font-bold text-white">
+                  £{(total / 100).toFixed(2)}
+                </div>
               </div>
+              <Button
+                onClick={() => checkoutMut.mutate()}
+                disabled={count === 0 || checkoutMut.isPending || !addressComplete || !hasCertificateLogo}
+              >
+                {checkoutMut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
+                Check out {count} certificate{count === 1 ? "" : "s"}
+              </Button>
             </div>
-            <Button
-              onClick={() => checkoutMut.mutate()}
-              disabled={count === 0 || checkoutMut.isPending || !addressComplete}
-            >
-              {checkoutMut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-              Check out {count} certificate{count === 1 ? "" : "s"}
-            </Button>
           </div>
           ) : null}
         </>
