@@ -11,6 +11,19 @@
  */
 import { PDFDocument, StandardFonts, rgb, PageSizes } from "pdf-lib";
 import QRCode from "qrcode";
+import levelBadge1 from "@/assets/certificates/level-1.png.asset.json";
+import levelBadge2 from "@/assets/certificates/level-2.png.asset.json";
+import levelBadge3 from "@/assets/certificates/level-3.png.asset.json";
+import levelBadge4 from "@/assets/certificates/level-4.png.asset.json";
+import levelBadge5 from "@/assets/certificates/level-5.png.asset.json";
+import levelBadge6 from "@/assets/certificates/level-6.png.asset.json";
+import levelBadge7 from "@/assets/certificates/level-7.png.asset.json";
+
+const LEVEL_BADGE_URLS: Record<number, string> = {
+  1: levelBadge1.url, 2: levelBadge2.url, 3: levelBadge3.url,
+  4: levelBadge4.url, 5: levelBadge5.url, 6: levelBadge6.url, 7: levelBadge7.url,
+};
+
 
 export type CertificatePdfInput = {
   certificateNumber: string;
