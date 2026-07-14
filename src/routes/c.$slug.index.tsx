@@ -575,6 +575,8 @@ export const Route = createFileRoute("/c/$slug/")({
       };
     }
 
+    const canonical = `https://repsuk.org/c/${params.slug}`;
+
     // Unverified gate page — always noindex, generic copy, no PII in title.
     if (loaderData?.gated) {
       const first = loaderData.unverified?.firstName ?? "This member";
