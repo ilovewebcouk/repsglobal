@@ -1004,36 +1004,25 @@ export const verifyCertificateByToken = createServerFn({ method: "GET" })
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
 
-    const { data: row } = await supabasePublic
-      .from("certificate_registrations")
-      .select(
-        "certificate_number, course_title, course_level, reps_course_number, issued_at, status, provider_id, learners!inner(full_name)",
-      )
-      .eq("verification_token", data.token)
-      .in("status", ["issued", "dispatched", "revoked"])
-      .maybeSingle();
-
-    if (!row || !row.certificate_number || !row.issued_at) {
+    const { data: rows } = await supabasePublic.rpc(
+      "verify_certificate_by_token" as never,
+      { _token: data.token } as never,
+    );
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    if (!row || !(row as any).certificate_number || !(row as any).issued_at) {
       return { valid: false, reason: "not_found" };
     }
 
-    // Provider name — read from profiles (already publicly readable name)
-    const { data: providerProfile } = await supabasePublic
-      .from("profiles")
-      .select("full_name")
-      .eq("id", (row as any).provider_id)
-      .maybeSingle();
-
     return {
       valid: true,
-      certificate_number: row.certificate_number as string,
-      learner_name: ((row as any).learners?.full_name as string | null) ?? "",
-      course_title: row.course_title as string,
-      course_level: (row.course_level as number | null) ?? null,
-      reps_course_number: (row.reps_course_number as string | null) ?? null,
-      provider_name: (providerProfile?.full_name as string | null) ?? "Training provider",
-      issued_at: row.issued_at as string,
-      status: row.status as "issued" | "dispatched" | "revoked",
+      certificate_number: (row as any).certificate_number as string,
+      learner_name: ((row as any).learner_name as string | null) ?? "",
+      course_title: (row as any).course_title as string,
+      course_level: ((row as any).course_level as number | null) ?? null,
+      reps_course_number: ((row as any).reps_course_number as string | null) ?? null,
+      provider_name: ((row as any).provider_name as string | null) ?? "Training provider",
+      issued_at: (row as any).issued_at as string,
+      status: (row as any).status as "issued" | "dispatched" | "revoked",
     };
   });
 
