@@ -55,8 +55,7 @@ export function LegalLayout({
             </span>
             <span className="hidden h-3 w-px bg-white/15 sm:inline-block" />
             <span>
-              Maintained by REPs. Operated by Scott McKay, trading as REPs.
-              Contact{" "}
+              Maintained by REPs. Contact{" "}
               <a
                 href="mailto:support@repsuk.org"
                 className="font-semibold text-reps-orange hover:underline"

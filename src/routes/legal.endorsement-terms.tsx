@@ -11,7 +11,7 @@ import { LegalLayout, type LegalSection } from "@/components/legal/LegalLayout";
 export const ENDORSEMENT_TERMS_VERSION = "v2";
 
 const CANONICAL = "https://repsuk.org/legal/endorsement-terms";
-const META_TITLE = "REPS Endorsement Terms (v2) — for training providers";
+const META_TITLE = "REPS Endorsement Terms — for training providers";
 const META_DESC =
   "The binding terms training providers accept when requesting REPS endorsement of a qualification or course. Covers certificate use, trademark licence, sub-contracting ban, advertising, provider name, correct wording, learner records, suspension consequences and public-interest notices.";
 const LAST_UPDATED = "14 July 2026";
@@ -453,13 +453,6 @@ const SECTIONS: LegalSection[] = [
           endorsement rule in this document conflicts with the general
           Terms of Use, this document controls for endorsed
           qualifications and courses.
-        </p>
-        <p className="text-white/55">
-          <em>
-            Version {ENDORSEMENT_TERMS_VERSION}. Pending independent legal
-            review — clauses may be tightened but not weakened in future
-            revisions.
-          </em>
         </p>
       </>
     ),
