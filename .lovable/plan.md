@@ -1,41 +1,43 @@
-## Change
+## Two changes to the certificate pipeline
 
-Render a Level-N circular badge (using the seven uploaded SVGs) on the issued certificate PDF. Level is read from the numeric level already stored per course type — no new admin field, no new UI outside the cert.
+### 1) Provider logo upload — enforced 160×60
 
-## Scope
+The `profiles.certificate_logo_url` column already exists and the PDF renderer already draws it at the `provider_logo` slot in the field map. What's missing is an upload UI. Add it to the existing **Providers** panel in `/admin/certificates` (same row as centre number), since providers don't have a self-serve certificate settings screen yet.
 
-- REPS-endorsed courses → `reps_courses.official_level` (fallback: `proposed_level`)
-- Regulated qualifications → level parsed from the qualification title (e.g. "Level 3 Diploma…"); if absent, badge is omitted rather than guessed. `provider_regulated_permissions` has no level column, and adding one is out of scope for this pass.
+- **`src/lib/certificates/providers.functions.ts`**
+  - Return `certificate_logo_url` alongside `center_number` in `listProviderCenterNumbers`.
+  - New server fn `setProviderCertificateLogo({ provider_id, data_base64, mime })`:
+    - Decode the image server-side.
+    - Read intrinsic dimensions (use a tiny PNG/JPEG header parser — no `sharp`, Workers-safe).
+    - **Reject anything that isn't exactly 160×60 px** with a clear error ("Logo must be exactly 160×60 px — got NxN").
+    - Upload to the existing `certificate-templates` bucket under `provider-logos/<provider_id>.<ext>`, get public URL, write to `profiles.certificate_logo_url`.
+  - New server fn `clearProviderCertificateLogo({ provider_id })` to remove it.
 
-Trainer-uploaded personal certificates: **not in scope** (user chose Certificates PDF only, endorsed courses + regulated quals).
+- **`src/routes/admin_.certificates.tsx` — `ProvidersPanel`**
+  - Show a 160×60 preview thumbnail per row (or an "Upload logo" button when empty).
+  - File input `accept="image/png,image/jpeg"`. Client-side pre-check reads the file into an `Image` and blocks upload with a toast if dimensions ≠ 160×60, so admins get feedback before the round trip. Server still re-validates as the source of truth.
+  - "Remove" button when a logo is present.
 
-## Files
+- **`src/lib/certificates/pdf.server.ts`**
+  - The renderer currently letterboxes the logo inside its box preserving aspect. Since uploads are now guaranteed 160×60 and the template's `provider_logo` box is 160×60, the fit is exact — no behaviour change needed, but drop the "letterbox" scaling for the provider logo and draw it filling the box (guarantees no whitespace edges).
 
-**Assets** — copy the 7 uploaded SVGs into `src/assets/certificates/level-{1..7}.svg` via `lovable-assets` (asset pointer JSON), so they can be fetched server-side by URL inside the PDF generator (pdf-lib needs raw bytes; the server fetches the pointer's URL at render time and embeds the SVG as a PNG raster via a small rasterisation step, or — simpler — pre-export each SVG to `level-{n}.png` at 512×512 and embed with `embedPng`). Recommend PNG export up-front to avoid an SSR-side SVG→PNG rasteriser in the Worker runtime.
+### 2) Unit summary pagination — 12 modules per page
 
-**`src/lib/certificates/issue.server.ts`**
-- After loading `reps_courses` / `provider_regulated_permissions`, compute a `courseLevel: number | null`:
-  - reps: `official_level ?? proposed_level ?? null`
-  - regulated: regex `/level\s*([1-7])/i` on `course_title` (or the permission's qualification title) → number or null
-- Pass through as `courseLevel` on the existing `CertificatePdfInput` (field already exists, currently sourced from `certificate_registrations.course_level` — we now also feed it when null).
+Currently the unit summary template PDF is appended once and all items flow into a single list. Change to paginate at **12 items per page**, cloning the unit summary template page for each chunk.
 
-**`src/lib/certificates/pdf.server.ts`**
-- Extend `CertificateFieldMap` with a new `ImageField` variant: `field: "level_badge"` (x, y, width, height on the certificate page).
-- In `overlayPage`, when a `level_badge` field is present and `input.courseLevel` is 1–7, embed the corresponding `level-{n}.png` and draw it at the mapped coordinates. If level is null / out of 1–7, skip silently (no placeholder).
-- Preload the seven PNGs lazily (cache per render) using `fetch(assetUrl).then(r => r.arrayBuffer())` against the Lovable-Assets URLs.
+- **`src/lib/certificates/pdf.server.ts` → `renderCertificateWithTemplate`**
+  - When `unitPdfBytes && fieldMap.unit_summary` and `input.unitSummary.length > 0`:
+    - Split `unitSummary` into chunks of 12.
+    - For each chunk, copy the unit-summary template page into `output` as a new page and call `overlayPage` with that chunk as the `units` argument.
+  - `overlayPage` already renders the list from the passed `units` array — pass the chunk instead of the full list. `drawList` numbering is 1-based off the chunk index, so pass a `startIndex` so page 2 continues "13., 14., …" not "1., 2., …".
+  - `drawList` signature grows a `startIndex = 0` param; the numeric label becomes `${idx + 1 + startIndex}.` and the gutter width is sized off the widest label across the whole list (`unitSummary.length`), not the chunk, so the left margin stays consistent across pages.
 
-**`src/lib/certificates/pdf-legacy.server.ts`**
-- Same behaviour in the fallback renderer: if `courseLevel` is 1–7, draw the badge in a fixed top-right position on page 1 (~48pt from top/right, 72pt square). No field-map needed here.
+- **Overflow safety**: if a chunk of 12 still visually overflows the template box (long titles wrapping), that's an artwork/box-height concern — out of scope. 12-per-page is the hard cap regardless of wrap depth for this pass; can revisit with a measured "fit as many as will render" pass later if needed.
 
-**Admin template editor**
-- Add "Level badge" to the field picker so admins can position it on their uploaded template. Out of scope for this pass if the editor is not already generic — happy to defer and use a sensible default coordinate.
+- **Legacy renderer (`pdf-legacy.server.ts`)**: same pagination rule — 12 per page, new page after each chunk. Keep in sync so fallback PDFs match.
 
-## Out of scope
+### Out of scope
 
-- Public profiles, directory cards, dashboard verification panel (user selected certificates only).
-- New level column on `provider_regulated_permissions` (title parsing is enough for now).
-- Trainer-uploaded personal quals badge rendering.
-
-## Open question
-
-Should we ship PNG exports of the badges (recommended, avoids runtime SVG rasterisation in the Worker) or keep SVG and rasterise on the server? Default: PNG at 512×512, transparent background.
+- Provider self-serve certificate settings page (still admin-managed).
+- Auto-resize / server-side resample of oversized logos — spec says no exceptions, so we reject instead.
+- Dynamic per-page fit for unit summary (fixed 12/page for this pass).
