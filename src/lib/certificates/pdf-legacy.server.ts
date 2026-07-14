@@ -20,6 +20,8 @@ export type CertificatePdfInput = {
   repsCourseNumber: string | null;
   ofqualNumber: string | null;
   providerName: string;
+  providerLogoUrl?: string | null;
+  providerCenterNumber?: string | null;
   issuedAt: Date;
   verificationUrl: string;
   unitSummary: string[]; // learning outcomes / modules
