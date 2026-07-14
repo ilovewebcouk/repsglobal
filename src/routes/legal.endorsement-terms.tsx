@@ -8,12 +8,12 @@ import { LegalLayout, type LegalSection } from "@/components/legal/LegalLayout";
  * version below so material changes force fresh acceptance on the next
  * submission.
  */
-export const ENDORSEMENT_TERMS_VERSION = "v1";
+export const ENDORSEMENT_TERMS_VERSION = "v2";
 
 const CANONICAL = "https://repsuk.org/legal/endorsement-terms";
-const META_TITLE = "REPS Endorsement Terms (v1) — for training providers";
+const META_TITLE = "REPS Endorsement Terms (v2) — for training providers";
 const META_DESC =
-  "The binding terms training providers accept when requesting REPS endorsement of a qualification or course. Covers certificate use, advertising, provider name, correct wording, learner records, suspension consequences and public-interest notices.";
+  "The binding terms training providers accept when requesting REPS endorsement of a qualification or course. Covers certificate use, trademark licence, sub-contracting ban, advertising, provider name, correct wording, learner records, suspension consequences and public-interest notices.";
 const LAST_UPDATED = "14 July 2026";
 
 export const Route = createFileRoute("/legal/endorsement-terms")({
