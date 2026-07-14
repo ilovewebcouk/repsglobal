@@ -1097,7 +1097,13 @@ function BasketTab({
                     Every REPS certificate carries your logo. Head to the{" "}
                     <button
                       type="button"
-                      onClick={() => Route.navigate({ search: { tab: "certificates" }, replace: false })}
+                      onClick={() => {
+                        window.location.hash = "";
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("tab", "certificates");
+                        window.history.pushState({}, "", url.toString());
+                        window.dispatchEvent(new PopStateEvent("popstate"));
+                      }}
                       className="font-semibold text-white underline underline-offset-4 hover:no-underline"
                     >
                       Certificates tab → Certificate branding
