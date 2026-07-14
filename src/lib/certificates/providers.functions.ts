@@ -153,7 +153,7 @@ export const setProviderCertificateLogo = createServerFn({ method: "POST" })
     const dims = readImageDimensions(bytes);
     if (dims.w !== REQUIRED_LOGO_W || dims.h !== REQUIRED_LOGO_H) {
       throw new Error(
-        `Logo must be exactly ${REQUIRED_LOGO_W}×${REQUIRED_LOGO_H} px — got ${dims.w}×${dims.h}`,
+        `Logo must be exactly ${REQUIRED_LOGO_W} × ${REQUIRED_LOGO_H} pixels. Your image is ${dims.w} × ${dims.h} pixels.`,
       );
     }
     if (
@@ -265,7 +265,7 @@ export const setMyProviderCertificateLogo = createServerFn({ method: "POST" })
     const dims = readImageDimensions(bytes);
     if (dims.w !== REQUIRED_LOGO_W || dims.h !== REQUIRED_LOGO_H) {
       throw new Error(
-        `Logo must be exactly ${REQUIRED_LOGO_W}×${REQUIRED_LOGO_H} px — got ${dims.w}×${dims.h}`,
+        `Logo must be exactly ${REQUIRED_LOGO_W} × ${REQUIRED_LOGO_H} pixels. Your image is ${dims.w} × ${dims.h} pixels.`,
       );
     }
     if (
