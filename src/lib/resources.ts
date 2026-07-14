@@ -23,6 +23,8 @@ import coverLevel3RequirementsAsset from "@/assets/resources/level-3-pt-requirem
 const coverLevel3Requirements = coverLevel3RequirementsAsset.url;
 import coverTrainingProviderPortalAsset from "@/assets/resources/training-provider-portal-cover.jpg.asset.json";
 const coverTrainingProviderPortal = coverTrainingProviderPortalAsset.url;
+import coverRepsLmsComingAugustAsset from "@/assets/resources/reps-lms-coming-august.jpg.asset.json";
+const coverRepsLmsComingAugust = coverRepsLmsComingAugustAsset.url;
 
 import coverHowToVetAPersonalTrainerIn30Minutes from "@/assets/resources/how-to-vet-a-personal-trainer-in-30-minutes.jpg";
 import coverGroupTrainingVsOneToOne from "@/assets/resources/group-training-vs-one-to-one.jpg";
@@ -262,6 +264,82 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       {
         type: "p",
         text: "If you get stuck at any point, reply to any REPs email or contact support@repsuk.org — the standards and provider-onboarding teams are on the other end and can help you through the verification, endorsement and issuance flows.",
+      },
+    ],
+  },
+  {
+    slug: "reps-lms-coming-august",
+    title: "The REPs LMS: a world-class learning platform, built for fitness — coming August",
+    excerpt:
+      "A first look at the REPs LMS — an AI-assisted learning platform built specifically for the fitness industry, wired directly into REPs endorsement, certificates and verification. Video-native assessments, automated IQA and EQA, and standards that don't bend. Launching August.",
+    category: "Platform Updates",
+    ...STANDARDS,
+    date: "2026-07-14",
+    dateLabel: "14 July 2026",
+    readTime: "6 min read",
+    cover: coverRepsLmsComingAugust,
+    featured: true,
+    featuredOrder: 2,
+    body: [
+      {
+        type: "p",
+        text: "We're building the REPs LMS — a learning management platform built specifically for the fitness industry, launching in August. It's designed from the ground up for how fitness qualifications are actually delivered: practical assessments in real gyms, video evidence, tutor observation, IQA sampling, and awarding-body-grade paperwork. It fills the gaps every generic LMS leaves open, and it plugs directly into the REPs endorsement, certificate and verification flows you already know.",
+      },
+      { type: "h2", text: "Built for the fitness industry, not retrofitted" },
+      {
+        type: "p",
+        text: "Almost every LMS on the market was built for corporate compliance training or academic e-learning, then bent into shape to teach fitness qualifications. Video is a bolt-on. Practical assessment is a PDF upload. IQA is a spreadsheet. Standards evidence lives in someone's inbox. The REPs LMS is the opposite — practical assessment, video evidence and gym-based delivery are first-class objects in the platform, not afterthoughts. Everything from a Level 2 gym instructor unit to a Level 4 specialism, plus REPs-endorsed CPD, sits inside one coherent model.",
+      },
+      { type: "h2", text: "Wired directly into REPs" },
+      {
+        type: "p",
+        text: "The LMS isn't a separate product bolted on the side — it's the delivery layer of the same platform that already handles endorsement, learner registration, REPs-branded certificates and public certificate verification. A learner enrols in your endorsed course, works through the LMS, has their practical assessment marked, gets signed off, and their REPs-branded certificate is issued and verifiable at a public URL — all in one loop, no exports, no re-keying, no reconciliation between systems.",
+      },
+      { type: "h2", text: "AI across the whole delivery lifecycle" },
+      {
+        type: "p",
+        text: "AI is used across every stage: pre-marking assignments and video assessments against the rubric, drafting written feedback in the assessor's voice, generating IQA sampling plans, preparing EQA evidence packs, chasing overdue submissions, transcribing and timestamping practical videos, and building revision plans for struggling learners. The point is speed — cutting the tedious work that stops training providers scaling — without removing the human judgement calls that actually protect the learner and the qualification.",
+      },
+      { type: "h2", text: "IQA and EQA, made properly easy" },
+      {
+        type: "p",
+        text: "Internal Quality Assurance and External Quality Assurance are where most training providers hemorrhage time. The REPs LMS generates the sampling plan for you, tracks IQA decisions against every unit and assessor, flags patterns that need attention, and produces the full evidence pack an EQA visit needs in a couple of clicks. Human sign-off is retained everywhere it counts — the LMS just makes sure the paperwork behind the sign-off is complete, correctly ordered, and ready.",
+      },
+      { type: "h2", text: "Video assessments, natively" },
+      {
+        type: "p",
+        text: "Learners upload practical assessment videos directly from their phone. The LMS transcribes, timestamps and pre-marks the video against the unit's rubric, then hands it to the assessor with the rubric points already anchored to the moments in the footage they refer to. Assessors confirm, adjust or reject the AI's marking; nothing is issued without a qualified human sign-off. Written feedback is timestamped so learners can jump straight to the moment being critiqued. It turns a job that used to take an assessor an hour into something they can do properly in ten minutes.",
+      },
+      { type: "h2", text: "Standards, not shortcuts" },
+      {
+        type: "p",
+        text: "For any Ofqual-regulated qualification delivered through the LMS, standards are non-negotiable. AI accelerates the work; humans certify it. Every certificate issued out of the LMS still requires an authorised assessor and an IQA sign-off. The AI is a co-pilot, not a shortcut around the awarding body's requirements — and the LMS is built to make that distinction auditable, so a training provider can prove exactly who marked what, when, and against which rubric.",
+      },
+      { type: "h2", text: "What this unlocks for training providers" },
+      {
+        type: "ul",
+        items: [
+          "Deliver in-person courses and distance qualifications on the same platform, with the same assessment and IQA workflow.",
+          "Expand into regions and cohorts your current manpower could never reach — the tedious admin scales with software, not with headcount.",
+          "Onboard new assessors without drowning them in paperwork; the LMS carries the process, they carry the judgement.",
+          "Give learners a modern, mobile-first learning experience without paying enterprise LMS licence fees per seat.",
+          "Ship REPs-branded, publicly verifiable certificates the moment sign-off is complete — no manual issuance step.",
+        ],
+      },
+      { type: "h2", text: "Launching August" },
+      {
+        type: "p",
+        text: "The REPs LMS launches in August. Training providers already onboarded in the REPs training-provider portal will be first in — the LMS appears as a new section of the same dashboard, against the qualifications and courses you've already had endorsed. There is nothing to migrate, and nothing new to sign up to. If your organisation isn't in the portal yet, now is the time to get verified so you're ready when the LMS opens.",
+      },
+      {
+        type: "quote",
+        text: "The most advanced learning platform in the fitness industry has to earn that title where it matters — in the gym, on the assessment day, and on the certificate a learner will carry for the rest of their career.",
+        cite: "REPS Standards Charter",
+      },
+      { type: "h2", text: "Register interest" },
+      {
+        type: "p",
+        text: "If you'd like early access, reply to any REPs email or contact support@repsuk.org and mention the LMS — we'll add your organisation to the August rollout list and keep you posted as build progresses.",
       },
     ],
   },
