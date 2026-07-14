@@ -21,6 +21,8 @@ import coverRoadmap from "@/assets/resources/reps-roadmap-next.jpg";
 import coverWebsiteEditorLaunch from "@/assets/resources/new-website-editor-launch.jpg";
 import coverLevel3RequirementsAsset from "@/assets/resources/level-3-pt-requirements.jpg.asset.json";
 const coverLevel3Requirements = coverLevel3RequirementsAsset.url;
+import coverTrainingProviderPortalAsset from "@/assets/resources/training-provider-portal-cover.jpg.asset.json";
+const coverTrainingProviderPortal = coverTrainingProviderPortalAsset.url;
 
 import coverHowToVetAPersonalTrainerIn30Minutes from "@/assets/resources/how-to-vet-a-personal-trainer-in-30-minutes.jpg";
 import coverGroupTrainingVsOneToOne from "@/assets/resources/group-training-vs-one-to-one.jpg";
