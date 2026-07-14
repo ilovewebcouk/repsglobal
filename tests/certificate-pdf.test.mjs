@@ -203,18 +203,11 @@ test("unit summary paginates at 12 modules per page", async () => {
     // Verify the last unit page's content stream contains the last-numbered
     // item, proving order was preserved across the pagination boundary.
     const lastPage = doc.getPage(totalPages - 1);
-    const context = doc.context;
-    const streams = lastPage.node
-      .normalizedEntries()
-      .Contents.asArray()
-      .map((ref) => context.lookup(ref))
-      .filter(Boolean);
-    const decoded = streams
-      .map((s) => Buffer.from(s.getContents()).toString("latin1"))
-      .join("\n");
+    const decoded = decodePageContent(lastPage);
     // The list numbers items 1..n across pages. The last page must show `${n}.`.
+    // pdf-lib emits text as `(literal) Tj` — so we look for `(${n}.)`.
     assert.ok(
-      decoded.includes(`(${n}.)`) || decoded.includes(`${n}.`),
+      decoded.includes(`(${n}.)`),
       `n=${n}: last unit page should contain item number ${n}`,
     );
   }
