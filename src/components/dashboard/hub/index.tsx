@@ -597,6 +597,401 @@ function Ring({ value }: { value: number }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Provider — Needs Attention + Readiness                             */
+/* ------------------------------------------------------------------ */
+
+export function ProviderNeedsAttention({
+  unreadEnquiries,
+  pendingReviewReplies,
+  unreadSupport,
+  providerReadiness,
+}: {
+  unreadEnquiries: number;
+  pendingReviewReplies: number;
+  unreadSupport: number;
+  providerReadiness: ProviderReadinessResult | null | undefined;
+}) {
+  const items: Attention[] = [];
+
+  if (unreadEnquiries > 0) {
+    items.push({
+      key: "enquiries",
+      icon: Inbox,
+      tone: "orange",
+      title: `${unreadEnquiries} new ${unreadEnquiries === 1 ? "enquiry" : "enquiries"} awaiting reply`,
+      detail: "Reply from your inbox to keep response time strong.",
+      to: "/dashboard/enquiries",
+      cta: "Open",
+    });
+  }
+  if (pendingReviewReplies > 0) {
+    items.push({
+      key: "reviews",
+      icon: Star,
+      tone: "orange",
+      title: `${pendingReviewReplies} ${pendingReviewReplies === 1 ? "review" : "reviews"} need a response`,
+      detail: "Replies show prospects you're engaged.",
+      to: "/dashboard/reviews",
+      cta: "Reply",
+    });
+  }
+
+  const r = providerReadiness ?? null;
+
+  if (r) {
+    /* ------------------------- Provider verification ------------------------ */
+    const v = r.verification;
+    if (!v.identityDone) {
+      items.push({
+        key: "provider-identity",
+        icon: ShieldCheck,
+        tone: "orange",
+        title: "Verify your identity",
+        detail:
+          v.identityStatus === "pending"
+            ? "Stripe Identity check in progress — we'll update this when it's approved."
+            : "Run the Stripe Identity check to unlock the next verification step.",
+        to: "/dashboard/verification",
+        cta: v.identityStatus === "pending" ? "View" : "Verify",
+      });
+    }
+    if (!v.nameLocked) {
+      items.push({
+        key: "provider-name",
+        icon: ShieldCheck,
+        tone: "orange",
+        title: "Lock in your provider name",
+        detail: "This becomes your public /t/<name> URL — permanent once submitted.",
+        to: "/dashboard/verification",
+        cta: "Lock in",
+      });
+    }
+    if (!v.domainDone) {
+      const domainDetail =
+        v.domainStatus === "unstarted"
+          ? "Confirm an email on your provider domain so we can approve it."
+          : v.domainStatus === "email_sent"
+            ? "Check your inbox and click the confirmation link we sent."
+            : v.domainStatus === "email_confirmed" ||
+                v.domainStatus === "pending_admin_review"
+              ? "Email confirmed — our team is reviewing your domain."
+              : v.domainStatus === "rejected"
+                ? "Domain rejected — start again with a different provider email."
+                : "Confirm your provider email domain.";
+      items.push({
+        key: "provider-domain",
+        icon: ShieldCheck,
+        tone:
+          v.domainStatus === "rejected"
+            ? "danger"
+            : v.domainStatus === "email_confirmed" ||
+                v.domainStatus === "pending_admin_review"
+              ? "warn"
+              : "orange",
+        title: "Confirm your provider email domain",
+        detail: domainDetail,
+        to: "/dashboard/verification",
+        cta: "Open",
+      });
+    }
+
+    /* -------------------------- Branding & listing -------------------------- */
+    const b = r.branding;
+    if (!b.hasLogo) {
+      items.push({
+        key: "provider-logo",
+        icon: Sparkles,
+        tone: "neutral",
+        title: "Add your provider logo",
+        detail: "Shows on your directory card, provider page and certificates.",
+        to: "/dashboard",
+        cta: "Add",
+      });
+    }
+    if (!b.hasCover) {
+      items.push({
+        key: "provider-cover",
+        icon: Sparkles,
+        tone: "neutral",
+        title: "Add a cover image for your listing",
+        detail: "Sits behind your provider card and the /t/ page hero.",
+        to: "/dashboard",
+        cta: "Add",
+      });
+    }
+    if (!b.hasCertLogo) {
+      items.push({
+        key: "provider-cert-logo",
+        icon: GraduationCap,
+        tone: "warn",
+        title: "Upload your certificate logo (160 × 60 px)",
+        detail: "Required before you can issue your first REPs certificate.",
+        to: "/dashboard/students",
+        cta: "Upload",
+      });
+    }
+    if (!b.hasTagline) {
+      items.push({
+        key: "provider-tagline",
+        icon: Sparkles,
+        tone: "neutral",
+        title: "Write a short tagline for your provider page",
+        detail: "One line that sums up what you deliver.",
+        to: "/dashboard/website",
+        cta: "Write",
+      });
+    }
+    if (!b.hasBio) {
+      items.push({
+        key: "provider-bio",
+        icon: Sparkles,
+        tone: "neutral",
+        title: "Add an about section for your provider page",
+        detail: "Give learners the context they need before enrolling.",
+        to: "/dashboard/website",
+        cta: "Write",
+      });
+    }
+
+    /* --------------------------- Provider page ------------------------------ */
+    const p = r.providerPage;
+    if (!p.everPublished) {
+      items.push({
+        key: "provider-publish-first",
+        icon: ShieldCheck,
+        tone: "warn",
+        title: "Your provider page has never been published",
+        detail: "Publish it so you appear on the REPs training-provider directory.",
+        to: "/dashboard/website",
+        cta: "Publish",
+      });
+    } else if (p.hasUnpublishedChanges) {
+      items.push({
+        key: "provider-publish-changes",
+        icon: ShieldCheck,
+        tone: "warn",
+        title: "You have unpublished changes on your provider page",
+        detail: "Review and publish so the public page matches your dashboard.",
+        to: "/dashboard/website",
+        cta: "Publish",
+      });
+    }
+
+    /* ---------------------- Endorsement + first certificate ---------------- */
+    const a = r.adoption;
+    if (a.accreditedCourseCount === 0) {
+      items.push({
+        key: "provider-first-endorsement",
+        icon: GraduationCap,
+        tone: "orange",
+        title: "Get your first qualification endorsed",
+        detail: "Submit a qualification for REPs endorsement to start issuing certificates.",
+        to: "/dashboard/qualifications",
+        cta: "Submit",
+      });
+    } else if (a.issuedCertificateCount === 0) {
+      // Only surface this once endorsement is in place and branding is ready
+      // to actually issue — nudges the next real step.
+      const canIssue =
+        v.identityDone && v.nameLocked && v.domainDone && b.hasCertLogo;
+      if (canIssue) {
+        items.push({
+          key: "provider-first-certificate",
+          icon: GraduationCap,
+          tone: "orange",
+          title: "Issue your first REPs certificate",
+          detail: "Register a learner, mark them passed, and we'll issue the certificate.",
+          to: "/dashboard/students",
+          cta: "Start",
+        });
+      }
+    }
+  }
+
+  if (unreadSupport > 0) {
+    items.push({
+      key: "support",
+      icon: MessageCircle,
+      tone: "neutral",
+      title: `${unreadSupport} support ${unreadSupport === 1 ? "reply" : "replies"} waiting`,
+      detail: "REPS Support replied to a ticket.",
+      to: "/dashboard/support",
+      cta: "View",
+    });
+  }
+
+  const visible = items.slice(0, 8);
+
+  return (
+    <PPanel className="flex h-full flex-col p-5">
+      <SectionHeader
+        title="Needs your attention"
+        description="Live signals across verification, branding, endorsements and certificates."
+        icon={CheckCircle2}
+      />
+      {visible.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center">
+          <DashboardEmpty>
+            <DashboardEmptyIcon>
+              <CheckCircle2 />
+            </DashboardEmptyIcon>
+            <DashboardEmptyTitle>All caught up</DashboardEmptyTitle>
+            <DashboardEmptyDescription>
+              Nothing needs your attention right now. We'll surface enquiries,
+              domain reviews, endorsements and certificate work here as it comes in.
+            </DashboardEmptyDescription>
+          </DashboardEmpty>
+        </div>
+      ) : (
+        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
+          {visible.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.key}>
+                <Link
+                  to={item.to as any}
+                  className="group flex items-center gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 p-3 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+                >
+                  <DashboardBadge
+                    variant={item.tone}
+                    className="size-7 justify-center rounded-[10px] p-0 [&_svg]:size-3.5"
+                  >
+                    <Icon />
+                  </DashboardBadge>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13px] font-medium text-white">{item.title}</p>
+                    {item.detail ? (
+                      <p className="truncate text-[12px] text-white/55">{item.detail}</p>
+                    ) : null}
+                  </div>
+                  <span className="hidden items-center gap-1 text-[12px] font-medium text-white/65 group-hover:text-reps-orange sm:inline-flex">
+                    {item.cta}
+                    <ChevronRight className="size-3.5" />
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </PPanel>
+  );
+}
+
+export function ProviderReadinessCard({
+  providerReadiness,
+}: {
+  providerReadiness: ProviderReadinessResult | null | undefined;
+}) {
+  const r = providerReadiness ?? null;
+  const pct = r?.pct ?? 0;
+
+  const verificationLine = r
+    ? r.verification.done === 3
+      ? "Identity, name and domain verified"
+      : `${r.verification.done} of 3 verification steps done`
+    : "Loading…";
+
+  const brandingLine = r
+    ? r.branding.done === r.branding.total
+      ? "Logo, cover, certificate logo, tagline and bio ready"
+      : `${r.branding.done} of ${r.branding.total} branding items ready`
+    : "Loading…";
+
+  const pageLine = r
+    ? !r.providerPage.everPublished
+      ? "Publish your provider page to go live"
+      : r.providerPage.hasUnpublishedChanges
+        ? "Unpublished changes on your provider page"
+        : "Provider page is live and up to date"
+    : "Loading…";
+
+  const adoptionLine = r
+    ? r.adoption.accreditedCourseCount === 0
+      ? "Get your first qualification endorsed"
+      : r.adoption.issuedCertificateCount === 0
+        ? "Issue your first REPs certificate"
+        : `${r.adoption.accreditedCourseCount} endorsed · ${r.adoption.issuedCertificateCount} issued`
+    : "Loading…";
+
+  const rows = [
+    {
+      key: "verification",
+      label: "Verification",
+      pct: r?.verification.pct ?? 0,
+      detail: verificationLine,
+      to: "/dashboard/verification",
+    },
+    {
+      key: "branding",
+      label: "Branding & listing",
+      pct: r?.branding.pct ?? 0,
+      detail: brandingLine,
+      to: "/dashboard",
+    },
+    {
+      key: "page",
+      label: "Provider page",
+      pct: r?.providerPage.pct ?? 0,
+      detail: pageLine,
+      to: "/dashboard/website",
+    },
+    {
+      key: "adoption",
+      label: "Endorsements & certificates",
+      pct: r?.adoption.pct ?? 0,
+      detail: adoptionLine,
+      to:
+        r && r.adoption.accreditedCourseCount === 0
+          ? "/dashboard/qualifications"
+          : "/dashboard/students",
+    },
+  ] as const;
+
+  return (
+    <PPanel className="flex h-full flex-col p-5">
+      <SectionHeader title="Your REPS readiness" icon={Sparkles} />
+      <div className="flex items-center gap-4">
+        <Ring value={pct} />
+        <div className="min-w-0">
+          <p
+            className={cn(
+              "font-display text-[22px] font-semibold",
+              pct === 100 ? "text-emerald-300" : "text-white",
+            )}
+          >
+            {pct}%
+          </p>
+          <p className="text-[12px] text-white/55">
+            {pct === 100
+              ? "Provider dashboard fully set up."
+              : "Verification, branding, page and adoption roll up here."}
+          </p>
+        </div>
+      </div>
+      <ul className="mt-4 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
+        {rows.map((row) => (
+          <li key={row.key}>
+            <Link
+              to={row.to as any}
+              className="group flex items-center gap-3 rounded-[12px] border border-reps-border bg-reps-panel-soft/40 p-2.5 transition-colors hover:border-reps-orange/40 hover:bg-reps-panel-soft"
+            >
+              <MiniRing value={row.pct} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-medium text-white">{row.label}</p>
+                <p className="truncate text-[12px] text-white/55">{row.detail}</p>
+              </div>
+              <ChevronRight className="size-3.5 shrink-0 text-white/45 group-hover:text-reps-orange" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </PPanel>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
 /* Activity timeline                                                  */
 /* ------------------------------------------------------------------ */
 
