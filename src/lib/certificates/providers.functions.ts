@@ -209,3 +209,112 @@ export const clearProviderCertificateLogo = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true } as const;
   });
+
+// ─────────────────────────────────────────────────────────── Self-serve (provider)
+
+async function assertIsProvider(supabase: any, userId: string) {
+  const { data, error } = await supabase
+    .from("professionals")
+    .select("id, account_type")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data || (data as any).account_type !== "organisation") {
+    throw new Error("Only training provider accounts can manage certificate branding.");
+  }
+}
+
+export type MyProviderBrandingDTO = {
+  provider_id: string;
+  certificate_logo_url: string | null;
+};
+
+export const getMyProviderBranding = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<MyProviderBrandingDTO> => {
+    await assertIsProvider(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("certificate_logo_url")
+      .eq("id", context.userId)
+      .maybeSingle();
+    if (error) throw error;
+    return {
+      provider_id: context.userId,
+      certificate_logo_url: ((data as any)?.certificate_logo_url as string | null) ?? null,
+    };
+  });
+
+export const setMyProviderCertificateLogo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        data_base64: z.string().min(1),
+        mime: z.enum(["image/png", "image/jpeg"]),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    await assertIsProvider(context.supabase, context.userId);
+
+    const bytes = base64ToBytes(data.data_base64);
+    if (bytes.length > 2 * 1024 * 1024) throw new Error("Logo file too large (max 2MB)");
+
+    const dims = readImageDimensions(bytes);
+    if (dims.w !== REQUIRED_LOGO_W || dims.h !== REQUIRED_LOGO_H) {
+      throw new Error(
+        `Logo must be exactly ${REQUIRED_LOGO_W}×${REQUIRED_LOGO_H} px — got ${dims.w}×${dims.h}`,
+      );
+    }
+    if (
+      (data.mime === "image/png" && dims.format !== "png") ||
+      (data.mime === "image/jpeg" && dims.format !== "jpeg")
+    ) {
+      throw new Error("Image contents don't match the declared file type");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ext = data.mime === "image/png" ? "png" : "jpg";
+    const path = `${context.userId}/${Date.now()}.${ext}`;
+
+    const { error: uploadErr } = await supabaseAdmin.storage
+      .from(LOGO_BUCKET)
+      .upload(path, bytes, { contentType: data.mime, upsert: true });
+    if (uploadErr) throw uploadErr;
+
+    const { data: pub } = supabaseAdmin.storage.from(LOGO_BUCKET).getPublicUrl(path);
+    const publicUrl = pub.publicUrl;
+
+    const { error: updateErr } = await supabaseAdmin
+      .from("profiles")
+      .update({ certificate_logo_url: publicUrl } as never)
+      .eq("id", context.userId);
+    if (updateErr) throw updateErr;
+
+    return { ok: true, url: publicUrl } as const;
+  });
+
+export const clearMyProviderCertificateLogo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertIsProvider(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: files } = await supabaseAdmin.storage
+      .from(LOGO_BUCKET)
+      .list(context.userId);
+    if (files && files.length > 0) {
+      await supabaseAdmin.storage
+        .from(LOGO_BUCKET)
+        .remove(files.map((f) => `${context.userId}/${f.name}`));
+    }
+
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ certificate_logo_url: null } as never)
+      .eq("id", context.userId);
+    if (error) throw error;
+    return { ok: true } as const;
+  });
