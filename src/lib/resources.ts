@@ -343,7 +343,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
       },
     ],
   },
-
+  {
     slug: "personal-trainer-insurance",
     title: "Personal trainer insurance in the UK: what you actually need",
     excerpt:
