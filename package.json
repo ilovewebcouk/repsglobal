@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test:seo": "node --test tests/seo-snapshot.test.mjs"
+    "test:seo": "node --test tests/seo-snapshot.test.mjs",
+    "test:cert-pdf": "node --test tests/certificate-pdf.test.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
