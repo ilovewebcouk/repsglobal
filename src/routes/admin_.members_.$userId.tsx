@@ -1346,3 +1346,95 @@ function SoonEmpty({ title, description }: { title: string; description: string 
     </section>
   );
 }
+
+/* ───────────────────────── Edit email dialog ───────────────────────── */
+
+function EditEmailButton({ userId, currentEmail }: { userId: string; currentEmail: string | null }) {
+  const qc = useQueryClient();
+  const updateFn = useServerFn(adminUpdateMemberEmail);
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState(currentEmail ?? "");
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    const trimmed = email.trim();
+    if (!trimmed) return toast.error("Enter a new email address");
+    if (!reason.trim()) return toast.error("Enter a reason (audit log)");
+    setBusy(true);
+    try {
+      const res = await updateFn({ data: { user_id: userId, email: trimmed, reason: reason.trim() } });
+      if (!res.changed) {
+        toast.info("Email unchanged.");
+      } else {
+        toast.success(`Email updated to ${res.email}`);
+      }
+      await qc.invalidateQueries({ queryKey: ["member360", userId] });
+      setOpen(false);
+      setReason("");
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to update email");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => { setEmail(currentEmail ?? ""); setOpen(true); }}
+        className="inline-flex size-5 shrink-0 items-center justify-center rounded-[6px] text-white/45 hover:bg-white/5 hover:text-white/85"
+        aria-label="Edit email"
+        title="Edit email"
+      >
+        <Pencil className="size-3" />
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="border-reps-border bg-reps-ink">
+          <DialogHeader>
+            <DialogTitle>Change login email</DialogTitle>
+            <DialogDescription>
+              Updates the member's `auth.users` email and marks it confirmed. The change is written to the admin audit log.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-email">New email</Label>
+              <Input
+                id="new-email"
+                type="email"
+                autoComplete="off"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="member@example.com"
+              />
+              <p className="text-[11px] text-white/45">Current: {currentEmail ?? "none"}</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="reason">Reason (audit)</Label>
+              <Textarea
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows={2}
+                placeholder="e.g. member asked to correct typo in signup email"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={busy} className="bg-reps-orange text-white hover:bg-reps-orange-hover">
+                {busy ? "Saving…" : "Save email"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
