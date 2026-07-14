@@ -807,7 +807,7 @@ function PreviewCanvas({
               );
             })}
             {(pageMap.images ?? []).map((im, i) => {
-              const pos = pdfToScreen(im.x, im.y + im.height);
+              const pos = pdfToScreen(im.x, im.y);
               const w = im.width * dims.scale;
               const h = im.height * dims.scale;
               return (
