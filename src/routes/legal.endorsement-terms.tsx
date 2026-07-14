@@ -323,6 +323,52 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "trademark-class-41",
+    title: "REPS trademark — Class 41 (education & training)",
+    body: (
+      <>
+        <p>
+          <strong>REPS holds the registered "REPS" wordmark in Class 41</strong>{" "}
+          (education, training, provision of training, arranging and
+          conducting of courses, and related services). REPS decides who
+          may use the "REPS" wordmark in connection with fitness
+          education, training, courses, qualifications, CPD or any related
+          service.
+        </p>
+        <p>
+          <strong>Nobody</strong> may use the word "REPS" — on its own,
+          as a prefix, suffix, hashtag, handle, badge, seal, watermark,
+          course name, page title, marketing claim, meta title, ad copy,
+          email signature, invoice or certificate — in association with
+          fitness education, training or CPD, unless they have{" "}
+          <strong>explicit written approval from REPS</strong>.
+        </p>
+        <p>
+          As a training provider accepted onto the REPS register, you
+          have that approval for the limited purpose of truthfully
+          referring to your current REPS-endorsed qualifications and
+          courses. <strong>That approval lasts only for as long as REPS
+          chooses to leave it in place</strong>. REPS may revoke this
+          approval at any time — automatically on suspension or
+          termination, and otherwise on written notice — after which you
+          must remove every use of the "REPS" wordmark from your
+          website, socials, ads, PDFs, printed material, email templates
+          and third-party listings within seven days.
+        </p>
+        <p>
+          Any use of the "REPS" wordmark in connection with fitness
+          education by any person or entity <strong>without a current
+          REPS approval — including by anyone you have sub-contracted,
+          resold to, franchised to or otherwise associated with — is
+          trademark infringement</strong>, and REPS will enforce its
+          Class 41 rights. You are responsible for the use of the "REPS"
+          wordmark by anyone acting under your name, brand or supply
+          chain.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "right-to-withdraw",
     title: "REPS's right to withdraw endorsement",
     body: (
