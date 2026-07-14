@@ -29,8 +29,10 @@ import {
   Quote,
   Route as RouteIcon,
   Shield,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
+
   Star,
   Users,
   Youtube,
