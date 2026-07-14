@@ -23,6 +23,8 @@ import coverLevel3RequirementsAsset from "@/assets/resources/level-3-pt-requirem
 const coverLevel3Requirements = coverLevel3RequirementsAsset.url;
 import coverTrainingProviderPortalAsset from "@/assets/resources/training-provider-portal-cover.jpg.asset.json";
 const coverTrainingProviderPortal = coverTrainingProviderPortalAsset.url;
+import coverRepsLmsComingAugustAsset from "@/assets/resources/reps-lms-coming-august.jpg.asset.json";
+const coverRepsLmsComingAugust = coverRepsLmsComingAugustAsset.url;
 
 import coverHowToVetAPersonalTrainerIn30Minutes from "@/assets/resources/how-to-vet-a-personal-trainer-in-30-minutes.jpg";
 import coverGroupTrainingVsOneToOne from "@/assets/resources/group-training-vs-one-to-one.jpg";
