@@ -1,44 +1,42 @@
-## Switch certificate field-map coordinates to top-left origin
+## Add provider centre number to certificates
 
-Match Adobe Illustrator's ruler so `(0,0)` is the top-left corner of the page and Y grows downward. Today the field map is stored in pdf-lib's native bottom-left points, which forces admins to mentally flip every Y value from Illustrator.
+Every training provider gets a centre/membership number that prints on the certificate directly under (or next to) the provider name, prefixed `Centre No. `.
 
-### Scope
+### 1. Data model
 
-- All text, image and list fields in `field_map.certificate` and `field_map.unit_summary` are interpreted as top-left.
-- The live editor's drag markers, form inputs, and preview all speak top-left.
-- Existing saved templates get migrated in place so nothing visually shifts.
+Add `center_number text` to `public.profiles` (nullable, unique when set). Admin-editable only. No backfill — existing rows stay null until an admin fills them in.
 
-### Technical changes
+### 2. Admin UI
 
-1. **Renderer — `src/lib/certificates/pdf.server.ts`**
-   - In `overlayPage`, read `page.getHeight()` once and convert every field's `y` to pdf-lib space just before drawing:
-     - Text: `pdfY = pageH - y - fontSize` (so `y` is the visual top of the glyph box, matching Illustrator's text baseline-independent placement).
-     - Images (`qr_code`, `provider_logo`): `pdfY = pageH - y - height`.
-     - List: `pdfY = pageH - y - fontSize` for the first line, then keep the existing `y -= lh` downward flow (already correct in top-left orientation).
-   - Add a short comment block at the top documenting the new convention (points, top-left origin, Y grows down).
+On the existing provider admin edit surface (`/admin/professionals` provider detail — same place `certificate_logo_url` is edited), add a "Centre number" text input. Save via the existing provider update server fn.
 
-2. **Editor — `src/components/admin/certificates/TemplateEditor.tsx`**
-   - Remove the current bottom-left ↔ screen flip in the drag handler and marker positioning. Markers now use `top: y * scale` directly.
-   - Drag delta: `newY = oldY + dyScreen / scale` (no sign flip).
-   - Update the small helper hint next to X/Y inputs from "points from bottom-left" to "points from top-left (Illustrator origin)".
+### 3. Certificate pipeline
 
-3. **Legacy fallback — `src/lib/certificates/pdf-legacy.server.ts`**
-   - Not touched. It doesn't consume `field_map`.
+- `src/lib/certificates/issue.server.ts` — also select `center_number` from `profiles`, pass through as `providerCenterNumber` on the `CertificatePdfInput`.
+- `src/lib/certificates/pdf.server.ts` —
+  - Extend `CertificatePdfInput` with `providerCenterNumber: string | null`.
+  - Extend `buildFieldValues` to expose two new field keys:
+    - `center_number` → raw number, empty string when null
+    - `center_number_line` → `"Centre No. <n>"`, empty string when null
+  - Add both to the `TextField.field` union in the doc comment.
+- `src/lib/certificates/pdf-legacy.server.ts` — draw the same `Centre No. …` line below provider name when present.
+- `src/lib/certificates/preview.server.ts` — pass a sample `providerCenterNumber: "REPS-000123"` so the editor preview shows it.
 
-4. **Migration for existing rows**
-   - New Supabase migration walks `certificate_templates.field_map` and, for each field, rewrites `y` from bottom-left to top-left using the known A4 portrait height (`841.89` pt) for both pages. Text uses `newY = pageH - oldY - (fontSize ?? 12)`; images use `newY = pageH - oldY - height`; list uses `newY = pageH - oldY - (fontSize ?? 10)`.
-   - Runs once; safe to re-run because we'll gate it on a `field_map->>'_origin'` marker set to `"top-left"` after conversion.
+### 4. Template editor
 
-5. **Docs**
-   - Update the header comment in `pdf.server.ts` (currently says "points from the bottom-left") and any authoring notes to reflect Illustrator-parity.
+`src/components/admin/certificates/TemplateEditor.tsx` — add `center_number` and `center_number_line` to the field-picker dropdown for text fields so admins can position them on their uploaded template. No forced default coordinates — admin drags to place.
+
+### 5. Default field map
+
+Update the default template's `field_map` (in DB via migration) to include a `center_number_line` text field on the certificate page, positioned just under the existing `provider_name` field. Only apply when a template row has `_origin: "top-left"` and no existing entry for that key.
 
 ### Out of scope
 
-- Rotating text, per-field origin overrides, non-A4 page sizes (the migration assumes A4 portrait, which matches the current template requirement).
-- Changing the units — still PDF points (1pt = 1/72"). Illustrator can be set to points to match 1:1.
+- No changes to verification page / public certificate lookup (can add later).
+- No auto-generation of centre numbers — admins type them in.
 
 ### Verification
 
-- Open an existing template in the editor after migration: markers land in the same visible spots as before.
-- Drag a field up on screen → Y value decreases (Illustrator behaviour).
-- Preview PDF renders identically to pre-migration output for the seeded template.
+- Migration adds column and default-map entry.
+- Admin edits a provider, sets centre number, issues a batch → PDF shows `Centre No. <n>` under provider name.
+- Providers with null centre number: line is simply omitted (empty string skipped by `drawText`).
