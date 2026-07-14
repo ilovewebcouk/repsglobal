@@ -759,7 +759,7 @@ function CoachWebsitePage() {
   const isOwnerViewing =
     !!user && !!live?.website?.professional_id && user.id === live.website.professional_id;
   const showPlaceholderBanner =
-    !isFixture && !previewToken && !!live?.meta?.isPlaceholderContent;
+    !isFixture && !previewToken && !coach.trust?.isVerified && !!live?.meta?.isPlaceholderContent;
 
   return (
     <div data-coach-theme={coach.theme ?? "dark"} className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
