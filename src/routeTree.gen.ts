@@ -86,6 +86,7 @@ import { Route as CompareRepsVsMypthubRouteImport } from './routes/compare_.reps
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminVerificationRouteImport } from './routes/admin_.verification'
+import { Route as AdminTrainingProviderImportRouteImport } from './routes/admin_.training-provider-import'
 import { Route as AdminTeamRouteImport } from './routes/admin_.team'
 import { Route as AdminSupportRouteImport } from './routes/admin_.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin_.settings'
@@ -575,6 +576,12 @@ const AdminVerificationRoute = AdminVerificationRouteImport.update({
   path: '/admin/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTrainingProviderImportRoute =
+  AdminTrainingProviderImportRouteImport.update({
+    id: '/admin_/training-provider-import',
+    path: '/admin/training-provider-import',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminTeamRoute = AdminTeamRouteImport.update({
   id: '/admin_/team',
   path: '/admin/team',
@@ -1207,6 +1214,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
+  '/admin/training-provider-import': typeof AdminTrainingProviderImportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
@@ -1385,6 +1393,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/team': typeof AdminTeamRoute
+  '/admin/training-provider-import': typeof AdminTrainingProviderImportRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/compare/reps-vs-mypthub': typeof CompareRepsVsMypthubRoute
@@ -1562,6 +1571,7 @@ export interface FileRoutesById {
   '/admin_/settings': typeof AdminSettingsRoute
   '/admin_/support': typeof AdminSupportRoute
   '/admin_/team': typeof AdminTeamRoute
+  '/admin_/training-provider-import': typeof AdminTrainingProviderImportRoute
   '/admin_/verification': typeof AdminVerificationRoute
   '/c/$slug': typeof CSlugRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
@@ -1744,6 +1754,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
+    | '/admin/training-provider-import'
     | '/admin/verification'
     | '/c/$slug'
     | '/checkout/return'
@@ -1922,6 +1933,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/support'
     | '/admin/team'
+    | '/admin/training-provider-import'
     | '/admin/verification'
     | '/checkout/return'
     | '/compare/reps-vs-mypthub'
@@ -2098,6 +2110,7 @@ export interface FileRouteTypes {
     | '/admin_/settings'
     | '/admin_/support'
     | '/admin_/team'
+    | '/admin_/training-provider-import'
     | '/admin_/verification'
     | '/c/$slug'
     | '/checkout/return'
@@ -2280,6 +2293,7 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTeamRoute: typeof AdminTeamRoute
+  AdminTrainingProviderImportRoute: typeof AdminTrainingProviderImportRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   CSlugRoute: typeof CSlugRouteWithChildren
   CheckoutReturnRoute: typeof CheckoutReturnRoute
@@ -2889,6 +2903,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/verification'
       fullPath: '/admin/verification'
       preLoaderRoute: typeof AdminVerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/training-provider-import': {
+      id: '/admin_/training-provider-import'
+      path: '/admin/training-provider-import'
+      fullPath: '/admin/training-provider-import'
+      preLoaderRoute: typeof AdminTrainingProviderImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/team': {
@@ -3956,6 +3977,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTeamRoute: AdminTeamRoute,
+  AdminTrainingProviderImportRoute: AdminTrainingProviderImportRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   CSlugRoute: CSlugRouteWithChildren,
   CheckoutReturnRoute: CheckoutReturnRoute,

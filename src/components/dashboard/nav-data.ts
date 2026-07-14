@@ -172,6 +172,7 @@ export const ADMIN_NAV = [
       { icon: Users, label: "Members", to: "/admin/members" },
       { icon: ShieldCheck, label: "Verification", to: "/admin/verification" },
       { icon: GraduationCap, label: "Certificates", to: "/admin/certificates" },
+      { icon: Building2, label: "Import providers", to: "/admin/training-provider-import" },
       { icon: Star, label: "Reviews", to: "/admin/reviews" },
     ],
   },

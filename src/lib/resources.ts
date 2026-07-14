@@ -21,6 +21,8 @@ import coverRoadmap from "@/assets/resources/reps-roadmap-next.jpg";
 import coverWebsiteEditorLaunch from "@/assets/resources/new-website-editor-launch.jpg";
 import coverLevel3RequirementsAsset from "@/assets/resources/level-3-pt-requirements.jpg.asset.json";
 const coverLevel3Requirements = coverLevel3RequirementsAsset.url;
+import coverTrainingProviderPortalAsset from "@/assets/resources/training-provider-portal-cover.jpg.asset.json";
+const coverTrainingProviderPortal = coverTrainingProviderPortalAsset.url;
 
 import coverHowToVetAPersonalTrainerIn30Minutes from "@/assets/resources/how-to-vet-a-personal-trainer-in-30-minutes.jpg";
 import coverGroupTrainingVsOneToOne from "@/assets/resources/group-training-vs-one-to-one.jpg";
@@ -142,6 +144,127 @@ const MARK = {
 };
 
 export const RESOURCE_ARTICLES: ResourceArticle[] = [
+  {
+    slug: "new-training-provider-portal",
+    title: "The new REPs training-provider portal: endorsement, certificates & verification",
+    excerpt:
+      "A plain-English walkthrough of the new REPs training-provider portal — how course endorsement works, how REPs-branded certificates are issued and verified, and what providers must do to get verified before issuing them.",
+    category: "Verification & Standards",
+    ...STANDARDS,
+    date: "2026-07-14",
+    dateLabel: "14 July 2026",
+    readTime: "8 min read",
+    cover: coverTrainingProviderPortal,
+    featured: true,
+    featuredOrder: 1,
+    body: [
+      {
+        type: "p",
+        text: "We've launched the new REPs training-provider portal — a single dashboard for the organisations that deliver regulated fitness qualifications and REPs-endorsed CPD. It replaces the old email-and-spreadsheet workflow for course submissions, learner registrations, and certificate issuance. This guide explains what the portal does, how REPs endorses your courses, and how the new REPs-branded certificate flow works end-to-end.",
+      },
+      { type: "h2", text: "Who the portal is for" },
+      {
+        type: "p",
+        text: "The portal is for training providers — the awarding organisations, private academies and CPD course providers that train the fitness professionals who appear on the REPs register. Providers are a separate account type from individual professionals: your organisation gets a verified provider badge on its public REPs listing, its own website on REPs, and the tooling to register learners against the qualifications and courses you deliver.",
+      },
+      { type: "h2", text: "What's in the portal" },
+      {
+        type: "ul",
+        items: [
+          "Organisation profile and public website on REPs, with logo, verified provider badge, contact details and a directory of the qualifications and courses you deliver.",
+          "Endorsement submissions — send REPs your regulated qualifications and CPD courses for standards review and endorsement.",
+          "Learner registrations — enrol students against the endorsed courses you deliver, so their qualification is recognised on the REPs register from day one.",
+          "Certificate issuance — issue official REPs-branded certificates with a QR-code and a public verification URL per learner.",
+          "Reviews & reputation — collect verified reviews from the learners you've trained.",
+          "Verification workflow — a guided flow that walks your organisation through the checks required before you can issue any certificate.",
+        ],
+      },
+      { type: "h2", text: "How REPs endorsement works" },
+      {
+        type: "p",
+        text: "REPs endorses two kinds of learning: regulated qualifications (typically Level 2, Level 3 and Level 4 fitness qualifications delivered under a recognised awarding body) and CPD courses (shorter continuing-professional-development courses that expand a qualified professional's scope of practice).",
+      },
+      {
+        type: "p",
+        text: "When you submit a course through the portal, the REPs Standards team reviews the syllabus, hours, assessment, tutor credentials and any evidence you attach (course outline, assessment brief, tutor CVs, safeguarding policy). If the course meets our standards, we endorse it — that endorsement is what allows you to register learners against it and issue REPs-branded certificates when they pass.",
+      },
+      {
+        type: "p",
+        text: "Endorsement is not permanent. We spot-check evidence and learner outcomes on an ongoing basis, and REPs reserves the right to withdraw endorsement if standards slip. The provider endorsement terms — including the ban on sub-contracting delivery to a third party, and the REPs trade-mark rules — are set out at repsuk.org/legal/endorsement-terms and are agreed by every provider as part of onboarding.",
+      },
+      { type: "h2", text: "REPs-branded certificates: how they work" },
+      {
+        type: "p",
+        text: "Every certificate issued through the portal is a REPs-branded PDF, generated on our official REPs template. The learner's name, the course title, the unit summary, the certificate number, the issue date and a QR code all print onto the same document. It's designed to look and feel like an awarding-body certificate because that's how employers, gyms and members of the public treat it.",
+      },
+      {
+        type: "p",
+        text: "Alongside the certificate, we generate a Learner Unit Summary — a second page that lists every unit the learner completed on the course, in the order they were delivered. For qualifications with more than 12 units, the summary paginates cleanly and the numbering continues across pages.",
+      },
+      { type: "h2", text: "Certificate verification" },
+      {
+        type: "p",
+        text: "Every certificate carries a unique verification URL and a QR code that resolves to it. Anyone with the certificate can scan the QR (or open the URL) and see a REPs-hosted verification page that confirms: the learner's name, the course title, the issuing provider, the issue date, and whether the certificate is currently active. If the certificate has been revoked — for example because it was issued in error, or the provider has had endorsement withdrawn — the verification page says so.",
+      },
+      {
+        type: "p",
+        text: "That's the whole point of the REPs certificate: an employer, gym or member of the public should be able to check its authenticity in under ten seconds, without contacting the provider, without an email chain, and without taking anyone's word for it.",
+      },
+      { type: "h2", text: "You must be verified before you can issue certificates" },
+      {
+        type: "p",
+        text: "REPs does not allow unverified organisations to issue REPs-branded certificates. Before your first certificate can be issued, your organisation must complete full REPs provider verification. This is not a paperwork exercise — it's how we protect the learners you train and the register the wider industry relies on.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Organisation identity — companies-house or equivalent registration, trading address and legal entity details.",
+          "Provider logo — a valid organisation logo that meets our brand and print requirements (uploaded at 160×60px for certificate placement).",
+          "Authorised signatory — the person authorised to sign REPs certificates on your organisation's behalf, with their identity confirmed.",
+          "Endorsement terms — signed agreement to the REPs provider endorsement terms, including the prohibition on sub-contracting delivery and the REPs trade-mark rules.",
+          "Contact & support — a working support email and a public-facing contact for learner enquiries.",
+        ],
+      },
+      {
+        type: "p",
+        text: "The verification section of the portal walks you through each of these in order; most providers clear it within a few working days. Until verification is complete, the portal is available in a read-only preview mode — you can explore the dashboard and prepare course submissions, but you cannot register learners or issue certificates.",
+      },
+      { type: "h2", text: "What is not allowed" },
+      {
+        type: "ul",
+        items: [
+          "Sub-contracting or sub-agreeing delivery of endorsed qualifications to another organisation. This is treated as a material breach of the endorsement terms and results in immediate termination of REPs endorsement, and blacklisting of the sub-contracting party on the REPs website.",
+          "Using the REPs name, the REPs word mark, or any REPs branding in relation to fitness education without an active endorsement from REPs. REPs holds the class 41 registration for the REPs word mark; unauthorised use is trade-mark infringement.",
+          "Issuing REPs-branded certificates via any route other than the portal.",
+          "Placing third-party awarding-body or certificate-registry logos on REPs-branded certificates.",
+        ],
+      },
+      {
+        type: "p",
+        text: "Training providers have permission to use the REPs word mark in association with the qualifications and courses they deliver, for as long as their endorsement is active. If REPs withdraws endorsement, that permission is withdrawn at the same time.",
+      },
+      { type: "h2", text: "Getting started" },
+      {
+        type: "ul",
+        items: [
+          "Sign in to your provider account at repsuk.org — the email address stays the same as the one you already use with REPs.",
+          "Open Verification in the portal and complete each step in order. This unlocks certificate issuance.",
+          "Add your qualifications and courses under Qualifications & Courses, and submit each one for REPs endorsement.",
+          "Once endorsed, register learners against the course and issue their certificates from the Students & Certificates section — each learner receives their PDF, verification URL and QR code automatically.",
+        ],
+      },
+      {
+        type: "quote",
+        text: "A REPs certificate isn't decoration. It's a public claim about the professional's training — and anyone should be able to verify it in under ten seconds, from any phone.",
+        cite: "REPS Standards Charter",
+      },
+      { type: "h2", text: "Support" },
+      {
+        type: "p",
+        text: "If you get stuck at any point, reply to any REPs email or contact support@repsuk.org — the standards and provider-onboarding teams are on the other end and can help you through the verification, endorsement and issuance flows.",
+      },
+    ],
+  },
   {
     slug: "personal-trainer-insurance",
     title: "Personal trainer insurance in the UK: what you actually need",
