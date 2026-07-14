@@ -1215,7 +1215,7 @@ function ProvidersPanel() {
                       />
                     </div>
                     <Button
-                      variant={dirty ? "primary" : "secondary"}
+                      variant={dirty ? "primary" : "subtle"}
                       disabled={!dirty || mutation.isPending}
                       onClick={() =>
                         mutation.mutate({
