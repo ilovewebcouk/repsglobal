@@ -2058,3 +2058,73 @@ function StickyMobileBar({
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Unverified gate                                                    */
+/* ------------------------------------------------------------------ */
+
+function UnverifiedGate({ status }: { status: Extract<ProSlugStatus, { exists: true }> }) {
+  const first = status.firstName ?? "This member";
+  return (
+    <div className="flex min-h-screen flex-col bg-reps-ink text-reps-text">
+      <SiteBanner />
+      <header className="border-b border-reps-border">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+          <Link to="/" className="inline-flex items-center gap-2">
+            <RepsWordmark className="h-5 text-white" />
+          </Link>
+          <Link
+            to="/register"
+            className="rounded-[10px] border border-reps-border bg-white/5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-reps-panel-soft"
+          >
+            Browse verified members
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-xl rounded-[22px] border border-reps-border bg-reps-panel/40 p-8 text-center">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/70">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+
+          <h1 className="mt-6 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+            {first} isn't verified on REPs yet
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/70">
+            Members only appear publicly once REPs has independently verified their ID,
+            insurance and qualifications. Until then, this page isn't available.
+          </p>
+
+          <div className="mt-6 rounded-[14px] border border-reps-border bg-reps-ink/60 px-5 py-4 text-left text-[13px] text-white/65">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+              What REPs verifies
+            </div>
+            <ul className="mt-3 space-y-1.5">
+              <li>· Government-issued photo ID</li>
+              <li>· In-force public liability insurance</li>
+              <li>· Recognised qualifications (Ofqual / awarding body)</li>
+            </ul>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Link
+              to="/register"
+              className="inline-flex h-10 items-center justify-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+            >
+              Find a verified professional
+            </Link>
+            <Link
+              to="/how-verification-works"
+              className="inline-flex h-10 items-center justify-center rounded-[10px] border border-reps-border bg-white/5 px-5 text-[14px] font-medium text-white/85 hover:bg-reps-panel-soft"
+            >
+              How verification works
+            </Link>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
