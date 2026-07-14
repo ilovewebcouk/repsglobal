@@ -26,12 +26,12 @@ export const listProviderCenterNumbers = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Providers = profiles with the 'provider' role
-    const { data: roles } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "provider");
-    const ids = ((roles ?? []) as any[]).map((r) => r.user_id as string);
+    // Providers = professionals with account_type = 'organisation'
+    const { data: pros } = await supabaseAdmin
+      .from("professionals")
+      .select("id")
+      .eq("account_type", "organisation");
+    const ids = ((pros ?? []) as any[]).map((r) => r.id as string);
     if (ids.length === 0) return [];
 
     const { data, error } = await supabaseAdmin
