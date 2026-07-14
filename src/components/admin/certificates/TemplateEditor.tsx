@@ -80,6 +80,8 @@ const KNOWN_TEXT_FIELDS = [
   "reps_course_number",
   "ofqual_number",
   "provider_name",
+  "center_number",
+  "center_number_line",
   "verify_url",
 ] as const;
 
