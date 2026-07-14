@@ -1067,17 +1067,37 @@ function BasketTab({
                   value={addr.postcode}
                   onChange={(e) => setAddr({ ...addr, postcode: e.target.value })}
                 />
-                <Input
-                  placeholder="Country code (2 letters, e.g. GB, US, ES)"
-                  maxLength={2}
-                  value={addr.countryCode}
-                  onChange={(e) =>
-                    setAddr({
-                      ...addr,
-                      countryCode: e.target.value.toUpperCase().slice(0, 2),
-                    })
-                  }
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Country code (2 letters, e.g. GB, US, ES)"
+                    maxLength={2}
+                    value={addr.countryCode}
+                    onChange={(e) =>
+                      setAddr({
+                        ...addr,
+                        countryCode: e.target.value.toUpperCase().slice(0, 2),
+                      })
+                    }
+                  />
+                  {addr.countryCode && addr.countryCode.length === 2 ? (
+                    (() => {
+                      try {
+                        const dn = new Intl.DisplayNames(["en"], { type: "region" });
+                        const name = dn.of(addr.countryCode);
+                        if (name && name !== addr.countryCode) {
+                          return (
+                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11.5px] text-white/50">
+                              {name}
+                            </span>
+                          );
+                        }
+                      } catch {
+                        /* Intl.DisplayNames unsupported — silently skip */
+                      }
+                      return null;
+                    })()
+                  ) : null}
+                </div>
                 <Input
                   placeholder="Phone (optional — for the courier)"
                   value={addr.phoneNumber}
