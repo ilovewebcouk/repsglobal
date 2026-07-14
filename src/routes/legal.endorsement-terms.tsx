@@ -46,9 +46,33 @@ const SECTIONS: LegalSection[] = [
           any REPS-mimicking mark on any certificate you produce yourself.
         </p>
         <p>
+          <strong>
+            Placing the REPS logo, the REPS wordmark, or any reference to
+            REPS on a certificate you (or any third party on your behalf)
+            print, issue, email or publish is strictly prohibited and is a
+            material breach of these terms.
+          </strong>{" "}
+          This applies to every certificate you produce outside the REPS
+          platform — including internal completion certificates,
+          attendance certificates, CPD certificates, third-party
+          awarding-body certificates you print or co-brand, and any
+          certificate template a supplier or print house produces on your
+          instruction. If it isn't the certificate REPS issued through the
+          portal, it must contain no REPS logo, no REPS wordmark, no
+          "REPS-endorsed" language, and no other reference to REPS
+          whatsoever.
+        </p>
+        <p>
           If a learner needs an endorsed credential, register them through
           REPS and let REPS produce it. Your own internal completion
-          certificate is fine — just don't badge it "REPS".
+          certificate is fine — just don't badge it "REPS" in any form.
+        </p>
+        <p>
+          Breach of this clause results in immediate suspension of
+          endorsement, withdrawal of the trademark licence in the "REPS
+          trademark — Class 41" section below, a public notice on your REPS
+          profile, and — where the breach is repeated or wilful — trademark
+          enforcement action.
         </p>
       </>
     ),
