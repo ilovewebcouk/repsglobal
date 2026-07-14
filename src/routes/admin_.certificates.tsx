@@ -43,10 +43,8 @@ import {
 } from "@/lib/certificates/templates.functions";
 import { TemplateEditor } from "@/components/admin/certificates/TemplateEditor";
 import {
-  clearProviderCertificateLogo,
   listProviderCenterNumbers,
   setProviderCenterNumber,
-  setProviderCertificateLogo,
 } from "@/lib/certificates/providers.functions";
 
 export const Route = createFileRoute("/admin_/certificates")({
