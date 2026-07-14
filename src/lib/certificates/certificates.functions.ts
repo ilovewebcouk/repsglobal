@@ -604,6 +604,23 @@ export const createCertificateBatchCheckout = createServerFn({ method: "POST" })
       const { supabase, userId, claims } = context;
       const { country } = await assertProviderIsOrganisation(supabase, userId);
 
+      // Gate: provider MUST have a 160×60 certificate logo on file before
+      // any batch can be created or paid for. This is the point-of-no-return
+      // check — the UI mirrors it, but this is authoritative.
+      const { data: brandRow } = await supabase
+        .from("profiles")
+        .select("certificate_logo_url")
+        .eq("id", userId)
+        .maybeSingle();
+      const brandLogoUrl = (brandRow as { certificate_logo_url: string | null } | null)?.certificate_logo_url ?? null;
+      if (!brandLogoUrl) {
+        return {
+          error:
+            "Upload your provider certificate logo (exactly 160 × 60 px) before checking out. Open the Certificates tab → Certificate branding to add it.",
+        };
+      }
+
+
       // Load pricing (unit + UK & international postage)
       const { data: pricing } = await supabase
         .from("certificate_pricing")

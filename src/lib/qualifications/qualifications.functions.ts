@@ -317,6 +317,10 @@ const submitRegulatedBatchInput = z.object({
   evidence_type: z.enum(["eqa_report", "centre_certificate", "approval_letter"]),
   evidence_doc_paths: z.array(z.string().min(1)).min(1).max(5),
   awarding_body_reference: z.string().max(120).optional().nullable(),
+  endorsement_terms_version: z.string().min(1).max(20),
+  endorsement_terms_accepted: z.literal(true, {
+    message: "You must accept the REPS Endorsement Terms to submit.",
+  }),
 });
 
 export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
@@ -371,6 +375,8 @@ export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
           evidence_type: data.evidence_type,
           evidence_doc_paths: data.evidence_doc_paths,
           awarding_body_reference: data.awarding_body_reference ?? null,
+          endorsement_terms_version: data.endorsement_terms_version,
+          endorsement_terms_accepted_at: new Date().toISOString(),
         } as never)
         .select("id")
         .single();
@@ -509,6 +515,10 @@ const submitRepsCourseInput = z.object({
   endorsement_statement_agreed: z.literal(true, {
     message: "You must agree to display the REPS endorsement statement.",
   }),
+  endorsement_terms_version: z.string().min(1).max(20),
+  endorsement_terms_accepted: z.literal(true, {
+    message: "You must accept the REPS Endorsement Terms to submit.",
+  }),
 });
 
 export const submitRepsCourse = createServerFn({ method: "POST" })
@@ -571,6 +581,8 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
         spec_modules: data.spec_modules as never,
         endorsement_statement_url: data.endorsement_statement_url.trim(),
         endorsement_statement_agreed: true,
+        endorsement_terms_version: data.endorsement_terms_version,
+        endorsement_terms_accepted_at: new Date().toISOString(),
       } as never)
       .select("id")
       .single();

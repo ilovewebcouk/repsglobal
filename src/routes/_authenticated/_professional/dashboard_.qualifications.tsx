@@ -10,7 +10,8 @@
  */
 
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ENDORSEMENT_TERMS_VERSION } from "@/routes/legal.endorsement-terms";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -699,6 +700,7 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
     React.useState<RegulatedPermissionRow["evidence_type"]>("eqa_report");
   const [reference, setReference] = React.useState("");
   const [files, setFiles] = React.useState<File[]>([]);
+  const [termsAgreed, setTermsAgreed] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
   const draftUpper = draftNumber.trim().toUpperCase();
@@ -755,7 +757,7 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
     setFiles(Array.from(list).slice(0, 5));
   };
 
-  const canSubmit = chips.length > 0 && files.length > 0 && !submitting;
+  const canSubmit = chips.length > 0 && files.length > 0 && termsAgreed && !submitting;
 
   const onSubmit = async () => {
     if (!canSubmit) return;
@@ -773,6 +775,8 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
           evidence_type: evidenceType,
           evidence_doc_paths: paths,
           awarding_body_reference: reference.trim() || null,
+          endorsement_terms_version: ENDORSEMENT_TERMS_VERSION,
+          endorsement_terms_accepted: true,
         },
       });
       toast.success(
@@ -971,6 +975,25 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
               </p>
             ) : null}
           </div>
+
+          <label className="flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
+            <Checkbox
+              checked={termsAgreed}
+              onCheckedChange={(v) => setTermsAgreed(v === true)}
+              className="mt-0.5"
+            />
+            <span>
+              I have read and accept the{" "}
+              <Link
+                to="/legal/endorsement-terms"
+                target="_blank"
+                className="font-semibold text-reps-orange underline-offset-4 hover:underline"
+              >
+                REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
+              </Link>
+              . I understand that a breach — including printing the REPS badge on my own certificates, advertising unendorsed courses, or changing the trading name that REPS endorsed — results in permanent suspension from REPS and a permanent public notice on my profile.
+            </span>
+          </label>
         </div>
 
         <DialogFooter>
@@ -1108,6 +1131,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
 
   const statementReady = statementUrlValid && statementAgreed && statementCheck?.ok === true && statementCheck.found === true;
 
+  const [termsAgreed, setTermsAgreed] = React.useState(false);
+
   const canSubmit =
     title.trim().length >= 3 &&
     whoFor.trim().length >= 10 &&
@@ -1119,6 +1144,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     validModules.length >= 1 &&
     allSlotsFilled &&
     statementReady &&
+    termsAgreed &&
     !submitting;
 
   const resetAll = () => {
@@ -1232,6 +1258,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
           evidence_ids: evidenceIds,
           endorsement_statement_url: statementUrl.trim(),
           endorsement_statement_agreed: true,
+          endorsement_terms_version: ENDORSEMENT_TERMS_VERSION,
+          endorsement_terms_accepted: true,
         },
       });
       toast.success("Submitted for REPS admin review.");
@@ -1640,6 +1668,25 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
                 I agree to display the REPS endorsement statement, verbatim, on the page above for
                 as long as this course is endorsed by REPS. I understand admin verifies this
                 before and periodically after endorsement.
+              </span>
+            </label>
+
+            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
+              <Checkbox
+                checked={termsAgreed}
+                onCheckedChange={(v) => setTermsAgreed(v === true)}
+                className="mt-0.5"
+              />
+              <span>
+                I have read and accept the{" "}
+                <Link
+                  to="/legal/endorsement-terms"
+                  target="_blank"
+                  className="font-semibold text-reps-orange underline-offset-4 hover:underline"
+                >
+                  REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
+                </Link>
+                . I understand that a breach — including printing the REPS badge on my own certificates, advertising unendorsed courses, or changing the trading name that REPS endorsed — results in permanent suspension from REPS and a permanent public notice on my profile.
               </span>
             </label>
           </div>

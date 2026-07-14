@@ -4218,6 +4218,8 @@ export type Database = {
           ai_verdict: string | null
           awarding_body_reference: string | null
           created_at: string
+          endorsement_terms_accepted_at: string | null
+          endorsement_terms_version: string | null
           evidence_doc_paths: string[]
           evidence_expires_at: string | null
           evidence_issued_at: string | null
@@ -4255,6 +4257,8 @@ export type Database = {
           ai_verdict?: string | null
           awarding_body_reference?: string | null
           created_at?: string
+          endorsement_terms_accepted_at?: string | null
+          endorsement_terms_version?: string | null
           evidence_doc_paths?: string[]
           evidence_expires_at?: string | null
           evidence_issued_at?: string | null
@@ -4292,6 +4296,8 @@ export type Database = {
           ai_verdict?: string | null
           awarding_body_reference?: string | null
           created_at?: string
+          endorsement_terms_accepted_at?: string | null
+          endorsement_terms_version?: string | null
           evidence_doc_paths?: string[]
           evidence_expires_at?: string | null
           evidence_issued_at?: string | null
@@ -4746,6 +4752,8 @@ export type Database = {
           endorsement_statement_found: boolean | null
           endorsement_statement_last_checked_at: string | null
           endorsement_statement_url: string | null
+          endorsement_terms_accepted_at: string | null
+          endorsement_terms_version: string | null
           id: string
           official_level: number | null
           official_level_confidence: string | null
@@ -4800,6 +4808,8 @@ export type Database = {
           endorsement_statement_found?: boolean | null
           endorsement_statement_last_checked_at?: string | null
           endorsement_statement_url?: string | null
+          endorsement_terms_accepted_at?: string | null
+          endorsement_terms_version?: string | null
           id?: string
           official_level?: number | null
           official_level_confidence?: string | null
@@ -4854,6 +4864,8 @@ export type Database = {
           endorsement_statement_found?: boolean | null
           endorsement_statement_last_checked_at?: string | null
           endorsement_statement_url?: string | null
+          endorsement_terms_accepted_at?: string | null
+          endorsement_terms_version?: string | null
           id?: string
           official_level?: number | null
           official_level_confidence?: string | null
