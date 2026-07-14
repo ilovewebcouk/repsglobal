@@ -9,9 +9,10 @@
  * Falls back to the legacy code-drawn renderer when no default template
  * exists so certificates keep issuing on day one.
  *
- * Coordinate system: pdf-lib native — points from the bottom-left of the
- * page. Illustrator's ruler is top-left, so document the flip in the
- * template-authoring cheat sheet.
+ * Coordinate system: **top-left origin, Y grows downward**, in PDF points
+ * (1pt = 1/72"). This matches Adobe Illustrator's ruler so admins can copy
+ * X/Y straight from Illustrator. Internally we flip Y to pdf-lib's native
+ * bottom-left space just before drawing (see `overlayPage`).
  *
  * Server-only.
  */
