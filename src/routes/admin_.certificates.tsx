@@ -59,13 +59,14 @@ export const Route = createFileRoute("/admin_/certificates")({
   component: AdminCertificatesPage,
 });
 
-type Tab = "pricing" | "templates" | "batches" | "print" | "search";
+type Tab = "pricing" | "templates" | "providers" | "batches" | "print" | "search";
 
 function AdminCertificatesPage() {
   const [tab, setTab] = useState<Tab>("pricing");
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: "pricing", label: "Pricing" },
     { id: "templates", label: "Templates" },
+    { id: "providers", label: "Providers" },
     { id: "batches", label: "Batches" },
     { id: "print", label: "Print queue" },
     { id: "search", label: "Search & revoke" },
@@ -92,6 +93,7 @@ function AdminCertificatesPage() {
       </div>
       {tab === "pricing" && <PricingPanel />}
       {tab === "templates" && <TemplatesPanel />}
+      {tab === "providers" && <ProvidersPanel />}
       {tab === "batches" && <BatchesPanel />}
       {tab === "print" && <PrintQueuePanel />}
       {tab === "search" && <SearchPanel />}
