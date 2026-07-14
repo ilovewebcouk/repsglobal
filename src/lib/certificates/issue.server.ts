@@ -108,7 +108,7 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
       certificateNumber,
       learnerName: (learner?.full_name as string | null) ?? "Learner",
       courseTitle: (reg as any).course_title,
-      courseLevel: (reg as any).course_level,
+      courseLevel: ((reg as any).course_level ?? derivedLevel) as number | null,
       repsCourseNumber: (reg as any).reps_course_number,
       ofqualNumber,
       providerName,
