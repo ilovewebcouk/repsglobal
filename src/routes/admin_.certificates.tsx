@@ -41,6 +41,7 @@ import {
   updateCertificateTemplateFieldMap,
   type CertificateTemplateDTO,
 } from "@/lib/certificates/templates.functions";
+import { TemplateEditor } from "@/components/admin/certificates/TemplateEditor";
 
 export const Route = createFileRoute("/admin_/certificates")({
   head: () => ({
