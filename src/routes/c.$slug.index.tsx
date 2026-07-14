@@ -929,7 +929,7 @@ function HeroSection({
 
 
             <div className="mt-6 text-[12px] font-semibold uppercase tracking-[0.22em] text-reps-muted">
-              {coach.name} — {coach.role}
+              {coach.name} — {coach.trust?.isVerified ? coach.role : "Fitness Professional"}
             </div>
 
             <h1 className="mt-3 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.015em] text-reps-text lg:text-[64px]">
@@ -941,21 +941,18 @@ function HeroSection({
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]">
-              {coach.reviews > 0 ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <Star className="h-4 w-4 fill-reps-orange text-reps-orange" />
-                  <span className="font-semibold text-reps-text">
-                    {coach.rating.toFixed(1)}
-                  </span>
-                  <span className="text-reps-muted">
-                    ({coach.reviews} {coach.reviews === 1 ? "review" : "reviews"})
-                  </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Star
+                  className={`h-4 w-4 ${coach.reviews > 0 ? "fill-reps-orange text-reps-orange" : "text-reps-muted"}`}
+                />
+                <span className={`font-semibold ${coach.reviews > 0 ? "text-reps-text" : "text-reps-muted"}`}>
+                  {coach.rating.toFixed(1)}
                 </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 text-reps-muted">
-                  <Star className="h-4 w-4" /> No reviews yet
+                <span className="text-reps-muted">
+                  ({coach.reviews})
                 </span>
-              )}
+              </span>
+
               {coach.modes.includes("In-person") && (
                 <span className="inline-flex items-center gap-1.5 text-reps-muted">
                   <Users className="h-3.5 w-3.5" /> In-person · {coach.city}
