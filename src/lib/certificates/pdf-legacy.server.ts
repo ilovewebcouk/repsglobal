@@ -75,6 +75,25 @@ export async function generateCertificatePdfLegacy(input: CertificatePdfInput): 
   const rightHeaderW = helv.widthOfTextAtSize(rightHeader, 10);
   page.drawText(rightHeader, { x: W - 60 - rightHeaderW, y: H - 80, size: 10, font: helv, color: muted });
 
+  // Level badge (top-right)
+  if (input.courseLevel && LEVEL_BADGE_URLS[input.courseLevel]) {
+    try {
+      const relUrl = LEVEL_BADGE_URLS[input.courseLevel];
+      const base = (process.env.PUBLIC_SITE_URL ?? "https://repsuk.org").replace(/\/$/, "");
+      const url = relUrl.startsWith("http") ? relUrl : `${base}${relUrl}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const buf = new Uint8Array(await res.arrayBuffer());
+        const badge = await pdf.embedPng(buf);
+        const size = 72;
+        page.drawImage(badge, { x: W - 60 - size, y: H - 60 - size, width: size, height: size });
+      }
+    } catch (err) {
+      console.error("[cert-pdf-legacy] level badge embed failed", err);
+    }
+  }
+
+
   // Title
   const title = "Certificate of Achievement";
   const titleSize = 36;
