@@ -39,8 +39,8 @@ export async function generateCertificatePdfLegacy(input: CertificatePdfInput): 
   const muted = rgb(0.35, 0.35, 0.4);
   const line = rgb(0.85, 0.85, 0.88);
 
-  // ── Page 1 — Certificate of Achievement (A4 landscape) ────────────────
-  const page = pdf.addPage([PageSizes.A4[1], PageSizes.A4[0]]);
+  // ── Page 1 — Certificate of Achievement (A4 portrait) ─────────────────
+  const page = pdf.addPage(PageSizes.A4);
   const { width: W, height: H } = page.getSize();
 
   // Border
