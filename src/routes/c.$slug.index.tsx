@@ -2074,7 +2074,7 @@ function UnverifiedGate({ status }: { status: Extract<ProSlugStatus, { exists: t
             <RepsWordmark className="h-5 text-white" />
           </Link>
           <Link
-            to="/register"
+            to="/find-a-professional"
             className="rounded-[10px] border border-reps-border bg-white/5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-reps-panel-soft"
           >
             Browse verified members
