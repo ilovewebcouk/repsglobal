@@ -1,92 +1,81 @@
-# Provider endorsement terms + Ofqual-field guard + logo-gate on issuance
+# Training Provider Bulk Import + Portal Launch
 
-Three linked changes plus a brutal-honest list of what else the terms should cover.
+Goal: let you paste a CSV of existing training providers, create their accounts, link their Stripe customer IDs, and send a branded "Portal is now live" email with a password-set link. Also ship a public resource article explaining the new portal.
 
-## 1) Provider Endorsement Terms — versioned + acceptance-tracked
+Everyone imported must complete full REPS provider verification (identity + docs) before any certificate can be issued — the existing verification gate is already in place; we just make it explicit in the email and the article.
 
-**Public page: `/legal/endorsement-terms`** — canonical, versioned document. Every acceptance stores the version string it agreed to, so future changes force re-consent.
+## What gets built
 
-### The terms (v1) — plain-English clauses providers must accept
+### 1. Admin bulk importer (paste CSV → run)
 
-Wording draft I'll ship (compact, brutal, no legalese):
+New route `/admin/training-providers/import` with:
+- Textarea to paste CSV (columns: `email, stripe_customer_id, provider_name, website?`).
+- Preview table showing parsed rows + validation state per row (email format, duplicates already on REPs, missing fields).
+- "Run import" button → calls a new server fn `importTrainingProviders` which processes each row:
+  1. If the email already has an auth user → link the Stripe customer ID and send the announcement email only (skip account creation).
+  2. Otherwise: Supabase `generateLink({ type: "invite" })` (same as existing `createProvider`) → creates auth user + returns password-set link.
+  3. Upsert `profiles.full_name` and `professionals` row with `account_type = "organisation"` and derived slug.
+  4. Upsert `subscriptions` row with `tier = "training_provider"`, `status = "active"`, and `stripe_customer_id = <supplied>`.
+  5. Send the new "Portal is live" branded email with the password-set link embedded.
+  6. Log `admin_audit_log` action `provider.bulk_import`.
+- Result summary: how many created / linked-only / failed, with per-row errors.
 
-1. **REPS-issued certificates only.** You will not print, issue, watermark or attach a REPS badge, logo, wordmark, "REPS-endorsed", QR code, verification URL, certificate number, or any REPS-mimicking mark on any certificate you produce yourself. The only certificate that endorses a REPS-endorsed qualification or course is the certificate REPS issues.
-2. **No unendorsed advertising.** You will not describe, advertise, list, imply or market any qualification or course as "REPS-endorsed", "REPS-accredited", "REPS-approved", "REPS-recognised", "REPS partner" or similar unless it is currently endorsed by REPS and shown on your public REPS profile. Withdrawn or pending items must be removed from all channels within 7 days.
-3. **Endorsement statement, verbatim.** Where a course requires the REPS endorsement statement to appear on a public page, it must be displayed exactly as provided by REPS, on the URL you submitted, for as long as the endorsement is live. Removing, altering, or hiding it is a breach.
-4. **Correct wording on submissions.** You confirm every field submitted for endorsement uses the exact title, level, credential type, awarding body (if any), Ofqual number (if any), delivery mode and assessment method that matches the real product you deliver. Marketing puffery, invented levels, or mismatched titles are a breach.
-5. **Provider name is the endorsed entity.** REPS endorses **you, under the trading name on file**. You will not change your trading name, transfer the endorsement to another legal entity, sell/lease/sublicense it, or allow any third party to deliver under your endorsement. Legitimate name changes require written REPS approval before use — a fresh review may be required.
-6. **Learner records are truthful.** You will only register learners who have genuinely completed and passed the course you delivered. Bulk-issuing to non-attendees, back-dating, or issuing to people you have not personally assessed is a breach and may be reported to Action Fraud.
-7. **Reasonable requests.** You will respond to REPS audit or clarification requests within 10 working days, including sample assessment evidence, learner attendance records, and public-page checks.
-8. **Suspension consequences (public interest notice).** A material breach results in **permanent suspension from REPS**. On suspension:
-   - your profile, reviews and history remain publicly visible;
-   - a clear public notice is shown on your profile and every endorsed-course page stating you have been suspended from REPS, with the date;
-   - all previously-issued REPS certificates remain valid (learners keep their credential);
-   - you may not reapply under a different trading name, company, or director without written REPS approval.
-   REPS retains and displays this record indefinitely because it is in the public and learner interest. You waive any right to have this record removed on request.
-9. **Data & Ofqual claims.** The Ofqual number field is used exclusively for Ofqual-regulated qualifications. Populating it with anything else (e.g. an internal reference, awarding-body ID, or a number you don't hold current approval for) is a breach.
-10. **Governing law & changes.** Terms are governed by the laws of England and Wales. REPS may update these terms; material changes require re-acceptance before your next endorsement submission.
+Server fn lives in `src/lib/admin/import-training-providers.functions.ts` (extends the existing `createProvider` pattern).
 
-Rendered on a public route styled with existing marketing primitives (`SectionHeading`, prose block), plus a printable single-column layout. Linked from provider dashboard + qualifications submission dialog + course submission dialog.
+### 2. New app-email template: `provider-portal-is-live`
 
-### Acceptance capture
+`src/lib/email-templates/provider/portal-is-live.tsx` — React Email, brand-styled to match existing provider templates, sections:
+- Welcome / "The new REPs training-provider portal is live for you"
+- What's new: dashboard, endorsement submissions, in-portal certificate issuance, learner registrations, verified provider badge on public listings
+- **Verification requirement** — must complete identity + document verification before any certificate can be issued
+- Primary CTA button → the password-set link
+- Sign-in reminder: same email address you already use
+- Support link (support@repsuk.org)
 
-- **Existing tick box** ("I agree to display the REPS endorsement statement, verbatim…") is kept — it's clause 3.
-- **New required tick box** in both submission dialogs (regulated qualifications *and* course endorsement requests):
-  > I have read and accept the [REPS Endorsement Terms (v1)](/legal/endorsement-terms). I understand a breach results in permanent suspension and a permanent public notice on my REPS profile.
-- Submission is blocked until both boxes are ticked.
-- Store on the two request tables:
-  - `provider_regulated_permissions.endorsement_terms_version` (text) + `endorsement_terms_accepted_at` (timestamptz).
-  - `reps_courses.endorsement_terms_version` + `endorsement_terms_accepted_at`.
-  - Add matching columns to server functions + Zod validators; require them on submit.
-- Admin review surface displays the accepted version + timestamp inline with each request.
+Registered in `src/lib/email-templates/registry.ts`. Triggered from the importer via existing `sendTransactionalEmailServer`. Not user-triggerable.
 
-## 2) Ofqual number — only for Ofqual qualifications, never a stray label
+### 3. Public resource article: "The new REPs training-provider portal"
 
-Two fixes so the field only appears where it belongs:
+New entry in `src/lib/resources.ts` (slug `new-training-provider-portal`), rendered by existing `resources.$slug.tsx`. Sections:
+- Intro — what the portal is and who it's for
+- Endorsement workflow — how REPs endorses a regulated qualification or a course
+- Certificates — how the platform issues, verifies (QR + verify URL), and prints on official REPS stock (no third-party badges permitted per endorsement terms)
+- Verification requirement (identity + documents) before first certificate
+- Provider website + directory listing
+- FAQ / next steps
 
-- **Modern PDF renderer (`src/lib/certificates/pdf.server.ts`)**: `ofqual_number` is already blanked when null, so field-map text draws nothing. Add an explicit guard: if `input.ofqualNumber` is null/empty, skip drawing that field entirely and also skip any accompanying "Ofqual No." label positioned in the field map (I'll audit `field_map_json` for a static label — if present, either remove from the template or gate its draw on the value being non-empty). Confirmed the legacy renderer (`pdf-legacy.server.ts`) already gates on `if (input.ofqualNumber)` — no change needed there.
-- **Issuance layer (`issue.server.ts`)**: only populate `ofqualNumber` for Ofqual-regulated qualification registrations (`provider_regulated_permissions` path). For `reps_courses` (non-regulated) registrations, force `ofqualNumber = null`, never fall back to `reps_course_number` or anything else. I'll re-read that file to make it explicit.
-- **Template editor QA**: no Ofqual label baked into the artwork PNG — only editor-driven text.
+Featured image = the certificate photo you uploaded (`certificate_resource.jpg`), added as a Lovable Asset. The unit-summary image (`unit_summary_resource.jpg`) will illustrate the certificates section inside the article.
 
-## 3) Certificate issuance blocked until provider logo uploaded
+You've already agreed to ship the images as-is (Scott McKay signature visible on the certificate footer).
 
-Server-side gate, not just a UI hint — providers can't get to Stripe without a 160×60 logo on file:
+### 4. No new DB tables
 
-- **`createCertificateBatchCheckout` in `certificates.functions.ts`**: after `assertProviderIsOrganisation`, load `profiles.certificate_logo_url` for the caller. If null → return `{ error: "You must upload your provider certificate logo (exactly 160 × 60 px) before you can issue certificates. Add it in Certificates → Certificate branding." }`. No batch created, no Stripe session, no state change.
-- **Provider basket UI** in `dashboard_.students.tsx`: read `getMyProviderBranding` alongside the basket query; when no logo, disable the "Check out" button and show an inline callout with a scroll-to-branding-card link. Server-side check is still authoritative.
-- **Belt-and-braces at issuance (`issue.server.ts`)**: if a batch reaches issuance with no logo on the provider profile, mark the batch as `blocked_no_logo` (new status value) and email the provider instead of rendering. This handles edge cases where the logo is removed between checkout and issuance.
+- Auth users, `professionals`, `subscriptions`, and `admin_audit_log` all already exist.
+- Stripe customer ID goes on `subscriptions.stripe_customer_id` (already the canonical column).
+- No migration needed unless a column is missing on inspection — I'll confirm during implementation and only migrate if truly required.
 
-## Brutal-honest additions I'd fold into the terms
+## Technical details
 
-Things you didn't mention but will bite later if they aren't in v1:
+- Email uses the existing app email infrastructure (React Email templates + `/lovable/email/transactional/send`); no auth-email hook changes.
+- Password-set link comes from Supabase `generateLink({ type: "invite" })` — same mechanism the existing `createProvider` uses; it delivers the user to `/pricing` or a chosen post-set page, then Supabase logs them in.
+- For rows where the email is already on REPs, we do NOT rotate their password. We link Stripe + send the announcement email (no reset link, just a "sign in as usual" CTA).
+- Every imported provider is `account_type = organisation`, tier `training_provider`, subscription `active`. That gives them the portal without going through Stripe checkout.
+- The existing verification gate on certificate issuance and the "no logo, no certs" rule already enforce your "must pass verification" requirement — we don't need to add a second gate, but we make it explicit in the email + article.
 
-- **Refund policy on suspension**: unissued certificates in-flight at suspension → refunded; already-issued certificates → no refund, credential stays valid. State this explicitly.
-- **Chargebacks / disputes**: opening a fraudulent chargeback on a paid batch = automatic breach.
-- **Assessor identity**: the person named as assessor/tutor must actually have delivered/assessed. Ghost-signing is a breach.
-- **Learner consent**: provider warrants they have consent to submit learner name/email to REPS for verification and QR-verifiable certificate hosting.
-- **Sanctions/right to work**: provider warrants they aren't operating under a UK regulator ban, insolvency, or disqualification, and will notify REPS within 14 days if that changes.
-- **Impersonating REPS**: no fake "REPS Head Office", no forwarding customer contact as if from REPS, no using `@repsuk.org` lookalikes.
-- **Ownership of the mark**: the REPS name, logo, verification style, badge, and certificate design are REPS property; a limited licence to reference "REPS-endorsed" ends automatically on suspension or withdrawal.
-- **Right to withdraw endorsement at any time**: with reasonable notice for administrative reasons; without notice for breach.
-- **Public register is the source of truth**: if your public REPS profile says a course isn't endorsed, it isn't endorsed — no matter what a screenshot or old page says.
-- **Anti-circumvention**: reapplying via a shell company, spouse, employee, or "successor" entity to escape a suspension is itself a breach — REPS will link and re-suspend.
+## What I need from you next
 
-I'll bake all of these into the v1 document (numbered clauses 11–20) unless you want any dropped.
+Once this plan is approved, I'll implement it, then you paste the CSV in the following format so I can run the import:
 
-## Files touched
+```
+email,stripe_customer_id,provider_name,website
+alex@example.com,cus_XXXXXXXX,Example Fitness Academy,https://example.com
+...
+```
 
-- New: `src/routes/legal.endorsement-terms.tsx` (public page, `head()` with noindex? — happy either way; I'll default to indexable so it's citable).
-- Edit: `src/routes/_authenticated/_professional/dashboard_.qualifications.tsx` — add second tick box in both dialogs, link to terms page.
-- Edit: `src/lib/qualifications/qualifications.functions.ts` + `src/lib/cpd/cpd.functions.ts` — new fields on Zod + write path.
-- Edit: `src/components/admin/verification/AdminProviderQualificationsTab.tsx` (+ course review surface) — show version + timestamp.
-- Edit: `src/lib/certificates/pdf.server.ts` — Ofqual label gate; `issue.server.ts` — Ofqual population rule + no-logo block.
-- Edit: `src/lib/certificates/certificates.functions.ts` — logo gate in `createCertificateBatchCheckout`.
-- Edit: `src/routes/_authenticated/_professional/dashboard_.students.tsx` — disable Check-out when no logo.
-- Migration: two `endorsement_terms_*` columns on `provider_regulated_permissions` and `reps_courses`; optional new `certificate_batches.status` value `blocked_no_logo`.
+`website` is optional; leave blank if unknown.
 
-## Out of scope
-- Automated suspension workflow / admin "suspend provider" button — assume manual for now.
-- Public "suspended providers" registry page — separate build.
-- Formal legal review by counsel — REPS should still have a solicitor sight-check before v1 goes live; the page will carry a "v1 — pending legal review" tag until you tell me to remove it.
+## Out of scope for this plan
 
-Confirm and I'll ship.
+- Replacing the "Scott McKay" signatory on the live PDF certificate templates in storage (you chose "Ship as-is"; happy to open this as a follow-up).
+- A generic re-runnable CSV importer for other account types (this one is scoped to training providers).
+- Marketing-email fan-out beyond the one triggered announcement per imported row.
