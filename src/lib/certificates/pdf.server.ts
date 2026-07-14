@@ -255,6 +255,7 @@ function overlayPage(
   images: {
     qr: Awaited<ReturnType<PDFDocument["embedPng"]>>;
     provider_logo: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
+    level_badge: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
   },
 ): void {
   const pageH = page.getHeight();
@@ -276,12 +277,21 @@ function overlayPage(
       const cx = img.x + (img.width - w) / 2;
       const cy = pdfY + (img.height - h) / 2;
       page.drawImage(src, { x: cx, y: cy, width: w, height: h });
+    } else if (img.field === "level_badge" && images.level_badge) {
+      const src = images.level_badge;
+      const scale = Math.min(img.width / src.width, img.height / src.height);
+      const w = src.width * scale;
+      const h = src.height * scale;
+      const cx = img.x + (img.width - w) / 2;
+      const cy = pdfY + (img.height - h) / 2;
+      page.drawImage(src, { x: cx, y: cy, width: w, height: h });
     }
   }
   if (map.list && map.list.field === "unit_summary") {
     drawList(page, map.list, units, fonts, pageH);
   }
 }
+
 
 function drawText(
   page: ReturnType<PDFDocument["getPage"]>,
