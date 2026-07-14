@@ -41,6 +41,10 @@ import {
   verificationSummary,
   type ReadinessResult,
 } from "@/lib/dashboard/readiness.functions";
+import {
+  getProviderReadiness,
+  type ProviderReadinessResult,
+} from "@/lib/dashboard/provider-readiness.functions";
 import { SECTION_ATTENTION_COPY } from "@/lib/dashboard/website-sections";
 import {
   getEnquiryStats,
