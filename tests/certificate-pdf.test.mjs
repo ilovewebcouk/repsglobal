@@ -162,15 +162,7 @@ test("provider logo is placed at the exact 160×60 box on page 1", async () => {
   // Parse the content stream and assert a 160×60 image transform is present
   // at the mapped coordinates. Top-left (60, 700) with page height 842
   // ⇒ pdf-lib y = 842 - 700 - 60 = 82.
-  const contentStreams = page1.node.normalizedEntries().Contents;
-  const context = doc.context;
-  const streams = contentStreams
-    .asArray()
-    .map((ref) => context.lookup(ref))
-    .filter(Boolean);
-  const decoded = streams
-    .map((s) => Buffer.from(s.getContents()).toString("latin1"))
-    .join("\n");
+  const decoded = decodePageContent(page1);
   // pdf-lib emits `<w> 0 0 <h> <x> <y> cm ... /Xn Do` for each drawImage.
   const logoTransform = /(^|\s)160 0 0 60 60 82 cm/;
   assert.match(
