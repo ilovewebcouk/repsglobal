@@ -180,7 +180,8 @@ export const previewCertificateTemplate = createServerFn({ method: "POST" })
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }): Promise<{ pdf_b64: string }> => {
     await assertAdmin(context.supabase, context.userId);
-    return await renderPreview(data.id, null);
+    const { renderTemplatePreview } = await import("./preview.server");
+    return await renderTemplatePreview(data.id, null);
   });
 
 /** Preview using an unsaved, in-editor field map. */
@@ -197,55 +198,6 @@ export const previewCertificateTemplateWithMap = createServerFn({ method: "POST"
     } catch {
       throw new Error("field_map_json is not valid JSON");
     }
-    return await renderPreview(data.id, overrideMap);
+    const { renderTemplatePreview } = await import("./preview.server");
+    return await renderTemplatePreview(data.id, overrideMap);
   });
-
-async function renderPreview(
-  templateId: string,
-  overrideFieldMap: unknown | null,
-): Promise<{ pdf_b64: string }> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: row } = await supabaseAdmin
-    .from("certificate_templates")
-    .select("certificate_pdf_path, unit_summary_pdf_path, field_map")
-    .eq("id", templateId)
-    .maybeSingle();
-  if (!row) throw new Error("Template not found");
-  const r = row as any;
-
-  const { renderCertificateWithTemplate } = await import("./pdf.server");
-  const pdfBytes = await renderCertificateWithTemplate(
-    {
-      certificate_pdf_path: r.certificate_pdf_path as string,
-      unit_summary_pdf_path: (r.unit_summary_pdf_path ?? null) as string | null,
-      field_map: (overrideFieldMap ?? r.field_map ?? {}) as any,
-    },
-    {
-      certificateNumber: "REPS-CERT-PREVIEW",
-      learnerName: "Jamie Sample Learner",
-      courseTitle: "Level 2 Certificate in Gym Instructing",
-      courseLevel: 2,
-      repsCourseNumber: "RC-1234",
-      ofqualNumber: "603/1234/5",
-      providerName: "Sample Training Ltd",
-      providerLogoUrl: null,
-      issuedAt: new Date(),
-      verificationUrl: "https://repsuk.org/verify/preview-token",
-      unitSummary: [
-        "Anatomy and physiology for exercise",
-        "Health, safety and welfare in a fitness environment",
-        "Principles of exercise, fitness and health",
-        "Know how to support clients who take part in exercise",
-        "Planning gym-based exercise",
-        "Instructing gym-based exercise",
-      ],
-    },
-  );
-
-  let b64 = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < pdfBytes.length; i += chunk) {
-    b64 += String.fromCharCode.apply(null, Array.from(pdfBytes.subarray(i, i + chunk)));
-  }
-  return { pdf_b64: btoa(b64) };
-}
