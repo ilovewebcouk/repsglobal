@@ -289,7 +289,10 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
               profession && <span className="truncate text-sm text-white/55">{profession}</span>
             )}
           </div>
-          <div className="truncate text-[13px] text-white/45">{email ?? "no email on file"}</div>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="truncate text-[13px] text-white/45">{email ?? "no email on file"}</span>
+            <EditEmailButton userId={userId} currentEmail={email} />
+          </div>
           <div className="flex flex-wrap items-center gap-1.5">
             {isProvider && (
               <span className="inline-flex items-center rounded-full border border-sky-400/30 bg-sky-500/15 px-2 py-0.5 text-[11px] font-semibold text-sky-300">
