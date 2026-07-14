@@ -387,16 +387,19 @@ function drawList(
   items: string[] | undefined,
   fonts: EmbeddedFonts,
   pageH: number,
+  startIndex: number = 0,
+  totalCount?: number,
 ): void {
-  const list = (items ?? []).slice(0, l.maxItems ?? 40);
+  const list = items ?? [];
   if (list.length === 0) return;
   const size = l.fontSize ?? 10;
   const lh = l.lineHeight ?? 14;
   const color = hexToRgb(l.color ?? "#111111");
   const numberColor = hexToRgb(l.bulletColor ?? "#e97316");
   const font = fonts.regular;
-  // Reserve gutter width based on widest number label (e.g. "10.") so wrapped text left-aligns.
-  const widestLabel = `${list.length}.`;
+  // Reserve gutter width based on widest number label across the whole list
+  // (not just this page's chunk), so left margins stay consistent across pages.
+  const widestLabel = `${totalCount ?? startIndex + list.length}.`;
   const labelWidth = font.widthOfTextAtSize(widestLabel + "  ", size);
   // Top-left origin: l.y is the top of the first line's glyph box.
   let y = pageH - l.y - size;
@@ -406,7 +409,7 @@ function drawList(
     const lines = wrapText(raw, maxCharsPerLine);
     for (let i = 0; i < lines.length; i++) {
       if (i === 0) {
-        page.drawText(`${idx + 1}.`, { x: l.x, y, size, font, color: numberColor });
+        page.drawText(`${idx + 1 + startIndex}.`, { x: l.x, y, size, font, color: numberColor });
       }
       page.drawText(lines[i], { x: l.x + labelWidth, y, size, font, color, maxWidth: l.maxWidth - labelWidth });
       y -= lh;
@@ -414,6 +417,7 @@ function drawList(
     y -= 4;
   }
 }
+
 
 function hexToRgb(hex: string) {
   const clean = hex.replace("#", "");
