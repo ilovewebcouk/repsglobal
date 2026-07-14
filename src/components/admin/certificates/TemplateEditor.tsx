@@ -723,20 +723,20 @@ function PreviewCanvas({
     };
   }, [pdfB64, pageIndex]);
 
-  // Convert PDF point (bottom-left origin) → screen px on canvas (top-left origin)
+  // Convert PDF point (top-left origin) → screen px on canvas (top-left origin)
   const pdfToScreen = useCallback(
     (x: number, y: number) => {
       if (!dims) return { left: 0, top: 0 };
-      return { left: x * dims.scale, top: (dims.pdfH - y) * dims.scale };
+      return { left: x * dims.scale, top: y * dims.scale };
     },
     [dims],
   );
 
-  // Convert screen px on canvas → PDF point
+  // Convert screen px on canvas → PDF point (top-left origin)
   const screenToPdf = useCallback(
     (leftPx: number, topPx: number) => {
       if (!dims) return { x: 0, y: 0 };
-      return { x: leftPx / dims.scale, y: dims.pdfH - topPx / dims.scale };
+      return { x: leftPx / dims.scale, y: topPx / dims.scale };
     },
     [dims],
   );
