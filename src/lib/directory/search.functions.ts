@@ -477,8 +477,10 @@ export const getCityOnlineCount = createServerFn({ method: "GET" })
       .from("professionals")
       .select("id", { count: "exact", head: true })
       .eq("is_published", true)
+      .neq("account_type", "organisation")
       .eq("online_available", true)
       .ilike("city", `%${data.city}%`);
+
     return { count: count ?? 0 };
   });
 
