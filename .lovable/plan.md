@@ -1,42 +1,43 @@
-## Add provider centre number to certificates
+## Goal
 
-Every training provider gets a centre/membership number that prints on the certificate directly under (or next to) the provider name, prefixed `Centre No. `.
+On public coach websites (`/c/$slug`) only:
+1. Hide the orange "Core membership — now £34/year · Join today" strip.
+2. Replace the wishy-washy "H is finishing their REPS profile" line with a stronger trust-first warning (and fix the bug where the first name renders as a single letter).
 
-### 1. Data model
+Everywhere else (marketing, home, directory, etc.) the promo bar stays.
 
-Add `center_number text` to `public.profiles` (nullable, unique when set). Admin-editable only. No backfill — existing rows stay null until an admin fills them in.
+## Changes
 
-### 2. Admin UI
+### 1. Hide `<SiteBanner />` on `/c/$slug`
 
-On the existing provider admin edit surface (`/admin/professionals` provider detail — same place `certificate_logo_url` is edited), add a "Centre number" text input. Save via the existing provider update server fn.
+In `src/routes/c.$slug.index.tsx` (line 766), remove the `<SiteBanner />` render from the coach website page. The bar continues to render on all other routes that mount it.
 
-### 3. Certificate pipeline
+No menu adjustment needed: `ChromeBar` uses `sticky top-0` and `SectionNav` uses `sticky top-14`, both relative to the viewport — the site banner sat above them and scrolled away independently. Removing it does not shift the sticky header.
 
-- `src/lib/certificates/issue.server.ts` — also select `center_number` from `profiles`, pass through as `providerCenterNumber` on the `CertificatePdfInput`.
-- `src/lib/certificates/pdf.server.ts` —
-  - Extend `CertificatePdfInput` with `providerCenterNumber: string | null`.
-  - Extend `buildFieldValues` to expose two new field keys:
-    - `center_number` → raw number, empty string when null
-    - `center_number_line` → `"Centre No. <n>"`, empty string when null
-  - Add both to the `TextField.field` union in the doc comment.
-- `src/lib/certificates/pdf-legacy.server.ts` — draw the same `Centre No. …` line below provider name when present.
-- `src/lib/certificates/preview.server.ts` — pass a sample `providerCenterNumber: "REPS-000123"` so the editor preview shows it.
+### 2. Fix name bug + rewrite placeholder banner
 
-### 4. Template editor
+Current bug (line 769): `(coach.name ?? "").split("")[0]` splits by empty string and returns a single character ("H" instead of "Hedvika"). Change to `.split(" ")[0]`.
 
-`src/components/admin/certificates/TemplateEditor.tsx` — add `center_number` and `center_number_line` to the field-picker dropdown for text fields so admins can position them on their uploaded template. No forced default coordinates — admin drags to place.
+Rewrite `TemplateContentBanner` (lines 798–827) as a trust-first warning:
 
-### 5. Default field map
+```text
+[shield icon]  Not yet verified by REPS
+              This professional is still completing their profile —
+              some content on this page is placeholder.
+                                          [Finish your website →]  (owner only)
+```
 
-Update the default template's `field_map` (in DB via migration) to include a `center_number_line` text field on the certificate page, positioned just under the existing `provider_name` field. Only apply when a template row has `_origin: "top-left"` and no existing entry for that key.
+Visual treatment:
+- Keep the amber palette (same warning family used across the app), but tighten the hierarchy: a bold single-line title + a smaller supporting line, replacing the current run-on sentence.
+- Swap the `Sparkles` icon for `ShieldAlert` to match the trust-warning tone.
+- Owner CTA button unchanged (still links to `/dashboard/website`).
 
-### Out of scope
+### 3. Verification
 
-- No changes to verification page / public certificate lookup (can add later).
-- No auto-generation of centre numbers — admins type them in.
+- Load `/c/hedvika-chau` (unverified) — confirm no orange promo bar, amber warning banner reads correctly with full first name, sticky nav still anchors to the top.
+- Load a verified pro (e.g. `/c/james-wilson`) — confirm no promo bar, no warning banner.
+- Load `/` and `/find-a-professional` — confirm the promo bar still renders.
 
-### Verification
+## Files touched
 
-- Migration adds column and default-map entry.
-- Admin edits a provider, sets centre number, issues a batch → PDF shows `Centre No. <n>` under provider name.
-- Providers with null centre number: line is simply omitted (empty string skipped by `drawText`).
+- `src/routes/c.$slug.index.tsx` — remove `<SiteBanner />`, fix `split("")` → `split(" ")`, rewrite `TemplateContentBanner` copy + icon.
