@@ -1534,12 +1534,35 @@ export type AdminRegistrationSearchDTO = {
   certificate_number: string | null;
   verification_token: string | null;
   issued_at: string | null;
+  dispatched_at: string | null;
+  revoked_at: string | null;
+  revoked_reason: string | null;
+  batch_id: string | null;
+  pdf_path: string | null;
+  created_at: string;
 };
+
+const ALL_REG_STATUSES = [
+  "enrolled",
+  "passed",
+  "pending_payment",
+  "paid",
+  "issued",
+  "dispatched",
+  "revoked",
+  "canceled",
+] as const;
 
 export const adminSearchRegistrations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ q: z.string().trim().max(120).optional().default("") }).parse(d),
+    z
+      .object({
+        q: z.string().trim().max(120).optional().default(""),
+        statuses: z.array(z.enum(ALL_REG_STATUSES)).optional().default([]),
+        limit: z.number().int().min(1).max(200).optional().default(50),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<AdminRegistrationSearchDTO[]> => {
     const { supabase, userId } = context;
@@ -1548,14 +1571,17 @@ export const adminSearchRegistrations = createServerFn({ method: "GET" })
     let query = supabase
       .from("certificate_registrations")
       .select(
-        "id, provider_id, status, certificate_number, verification_token, issued_at, course_title, course_level, learners!inner(full_name, email)",
+        "id, provider_id, status, certificate_number, verification_token, issued_at, dispatched_at, revoked_at, revoked_reason, batch_id, pdf_path, course_title, course_level, created_at, learners!inner(full_name, email)",
       )
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(data.limit);
+
+    if (data.statuses.length > 0) {
+      query = query.in("status", data.statuses as unknown as string[]);
+    }
 
     const q = data.q.trim();
     if (q) {
-      // Try cert-number exact-ish match first, else fall back to email/name contains via learners join
       if (/^REPS-CERT-/i.test(q)) {
         query = query.ilike("certificate_number", `${q}%`);
       } else if (q.includes("@")) {
@@ -1572,7 +1598,6 @@ export const adminSearchRegistrations = createServerFn({ method: "GET" })
       (rows ?? []).map((r: any) => r.provider_id),
     );
 
-
     return (rows ?? []).map((r: any) => ({
       id: r.id,
       provider_id: r.provider_id,
@@ -1585,6 +1610,12 @@ export const adminSearchRegistrations = createServerFn({ method: "GET" })
       certificate_number: r.certificate_number,
       verification_token: r.verification_token,
       issued_at: r.issued_at,
+      dispatched_at: r.dispatched_at,
+      revoked_at: r.revoked_at,
+      revoked_reason: r.revoked_reason,
+      batch_id: r.batch_id,
+      pdf_path: r.pdf_path,
+      created_at: r.created_at,
     }));
   });
 
@@ -1594,7 +1625,7 @@ export const adminRevokeCertificate = createServerFn({ method: "POST" })
     z
       .object({
         registration_id: z.string().uuid(),
-        reason: z.string().trim().max(500).optional(),
+        reason: z.string().trim().min(5).max(500),
       })
       .parse(d),
   )
@@ -1603,9 +1634,42 @@ export const adminRevokeCertificate = createServerFn({ method: "POST" })
     await assertAdmin(supabase, (context as any).realUserId ?? userId);
     const { error } = await supabase
       .from("certificate_registrations")
-      .update({ status: "revoked" } as never)
+      .update({
+        status: "revoked",
+        revoked_at: new Date().toISOString(),
+        revoked_reason: data.reason,
+      } as never)
       .eq("id", data.registration_id)
       .in("status", ["issued", "dispatched"]);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const adminReinstateCertificate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ registration_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, (context as any).realUserId ?? userId);
+    const { data: reg } = await supabase
+      .from("certificate_registrations")
+      .select("dispatched_at, issued_at, status")
+      .eq("id", data.registration_id)
+      .maybeSingle();
+    if (!reg) throw new Error("Registration not found.");
+    if ((reg as any).status !== "revoked") throw new Error("Not revoked.");
+    const restored = (reg as any).dispatched_at ? "dispatched" : "issued";
+    const { error } = await supabase
+      .from("certificate_registrations")
+      .update({
+        status: restored,
+        revoked_at: null,
+        revoked_reason: null,
+      } as never)
+      .eq("id", data.registration_id);
+    if (error) throw new Error(error.message);
+    return { ok: true, status: restored };
+  });
+

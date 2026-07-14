@@ -1,17 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Download,
   ExternalLink,
+  FileText,
+  Link2,
   Loader2,
   Printer,
+  RotateCcw,
   Search,
   ShieldOff,
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
+
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -26,10 +30,13 @@ import {
   adminListPrintQueue,
   adminMarkBatchDispatched,
   adminMarkBatchPrinted,
+  adminReinstateCertificate,
   adminRevokeCertificate,
   adminSearchRegistrations,
   getCertificatePricing,
+  getCertificateSignedUrl,
   setCertificatePricing,
+
   type PrintQueueRowDTO,
 } from "@/lib/certificates/certificates.functions";
 import {
@@ -717,88 +724,396 @@ function DispatchDialog({
   );
 }
 
-// ─────────────────────────────────────────────────────────────── Search
+// ─────────────────────────────────────────────────────────────── Search & revoke
+
+type StatusFilter =
+  | "all"
+  | "enrolled"
+  | "passed"
+  | "issued"
+  | "dispatched"
+  | "revoked"
+  | "canceled";
+
+const STATUS_FILTERS: Array<{ id: StatusFilter; label: string; statuses: string[] }> = [
+  { id: "all", label: "All", statuses: [] },
+  { id: "issued", label: "Live (issued)", statuses: ["issued"] },
+  { id: "dispatched", label: "Dispatched", statuses: ["dispatched"] },
+  { id: "passed", label: "Awaiting issue", statuses: ["passed", "pending_payment", "paid"] },
+  { id: "enrolled", label: "Enrolled", statuses: ["enrolled"] },
+  { id: "revoked", label: "Revoked", statuses: ["revoked"] },
+  { id: "canceled", label: "Canceled", statuses: ["canceled"] },
+];
+
+function statusPillClass(status: string): string {
+  if (status === "issued" || status === "dispatched") {
+    return "border-emerald-400/30 bg-emerald-500/15 text-emerald-300";
+  }
+  if (status === "revoked") return "border-red-400/30 bg-red-500/15 text-red-300";
+  if (status === "canceled") return "border-white/15 bg-white/[0.05] text-white/50";
+  return "border-amber-400/30 bg-amber-500/15 text-amber-200";
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+type SearchRow = {
+  id: string;
+  provider_id: string;
+  provider_name: string | null;
+  learner_name: string;
+  learner_email: string;
+  course_title: string;
+  course_level: number | null;
+  status: string;
+  certificate_number: string | null;
+  verification_token: string | null;
+  issued_at: string | null;
+  dispatched_at: string | null;
+  revoked_at: string | null;
+  revoked_reason: string | null;
+  batch_id: string | null;
+  pdf_path: string | null;
+  created_at: string;
+};
 
 function SearchPanel() {
   const qc = useQueryClient();
   const search = useServerFn(adminSearchRegistrations);
   const revoke = useServerFn(adminRevokeCertificate);
+  const reinstate = useServerFn(adminReinstateCertificate);
+  const getSignedUrl = useServerFn(getCertificateSignedUrl);
+
   const [q, setQ] = useState("");
   const [submitted, setSubmitted] = useState("");
+  const [filter, setFilter] = useState<StatusFilter>("all");
+  const [revokeTarget, setRevokeTarget] = useState<SearchRow | null>(null);
+
+  const statuses = STATUS_FILTERS.find((s) => s.id === filter)?.statuses ?? [];
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-cert-search", submitted],
-    queryFn: () => search({ data: { q: submitted } }),
-  });
-  const revokeMut = useMutation({
-    mutationFn: (id: string) => revoke({ data: { registration_id: id } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-cert-search"] }),
+    queryKey: ["admin-cert-search", submitted, filter],
+    queryFn: () =>
+      search({
+        data: {
+          q: submitted,
+          statuses: statuses as never,
+          limit: 50,
+        },
+      }),
   });
 
+  const revokeMut = useMutation({
+    mutationFn: (v: { id: string; reason: string }) =>
+      revoke({ data: { registration_id: v.id, reason: v.reason } }),
+    onSuccess: () => {
+      toast.success("Certificate revoked. Public verify page is now blocked.");
+      setRevokeTarget(null);
+      qc.invalidateQueries({ queryKey: ["admin-cert-search"] });
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+
+  const reinstateMut = useMutation({
+    mutationFn: (id: string) => reinstate({ data: { registration_id: id } }),
+    onSuccess: () => {
+      toast.success("Certificate reinstated.");
+      qc.invalidateQueries({ queryKey: ["admin-cert-search"] });
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+
+  async function openPdf(id: string) {
+    try {
+      const { url } = await getSignedUrl({ data: { registration_id: id } });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  }
+
+  async function copyVerifyLink(token: string) {
+    const url = `${window.location.origin}/verify/${token}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Verify link copied.");
+    } catch {
+      toast.error("Could not copy link.");
+    }
+  }
+
+  const rows = (data ?? []) as SearchRow[];
+
   return (
-    <PCard>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          setSubmitted(q);
-        }}
-        className="p-4 flex gap-2 border-b border-white/5"
-      >
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Cert number, learner email or name"
-        />
-        <Button type="submit">
-          <Search className="h-4 w-4" /> Search
-        </Button>
-      </form>
-      {isLoading ? (
-        <div className="p-8 text-center text-white/50">Searching…</div>
-      ) : !data || data.length === 0 ? (
-        <div className="p-8 text-center text-white/50">
-          {submitted ? "No matches." : "Enter a search."}
+    <>
+      <PCard>
+        <div className="border-b border-white/5 p-4">
+          <div className="mb-2 text-[12px] text-white/55">
+            Find any learner registration across every provider. Revoke live certificates,
+            open their PDF, copy the public verify link, or jump to the provider.
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSubmitted(q);
+            }}
+            className="flex gap-2"
+          >
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Cert number (REPS-CERT-…), learner email or name — leave blank to see the latest 50"
+            />
+            <Button type="submit">
+              <Search className="h-4 w-4" /> Search
+            </Button>
+          </form>
+          <div className="mt-3 flex flex-wrap gap-1">
+            {STATUS_FILTERS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setFilter(s.id)}
+                className={`rounded-full px-2.5 py-1 text-[12px] transition ${
+                  filter === s.id
+                    ? "bg-white/[0.12] text-white"
+                    : "bg-white/[0.04] text-white/60 hover:text-white/90"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
-      ) : (
-        <div className="divide-y divide-white/5">
-          {data.map((r) => (
-            <div
-              key={r.id}
-              className="p-4 flex items-center justify-between gap-4 text-[13px]"
-            >
-              <div className="min-w-0">
-                <div className="font-medium truncate">
-                  {r.certificate_number ?? "—"} · {r.learner_name}
+
+        {isLoading ? (
+          <div className="p-8 text-center text-white/50">Loading…</div>
+        ) : rows.length === 0 ? (
+          <div className="p-8 text-center text-white/50">
+            {submitted || filter !== "all"
+              ? "No registrations match. Try a wider filter or search by learner email."
+              : "No registrations yet."}
+          </div>
+        ) : (
+          <div className="divide-y divide-white/5">
+            {rows.map((r) => {
+              const canRevoke = r.status === "issued" || r.status === "dispatched";
+              const hasPdf = !!r.pdf_path;
+              const hasVerify = !!r.verification_token && canRevoke;
+              const canReinstate = r.status === "revoked";
+              return (
+                <div key={r.id} className="p-4 text-[13px]">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-white">
+                          {r.certificate_number ?? "—"}
+                        </span>
+                        <span className="text-white/40">·</span>
+                        <span className="text-white">{r.learner_name || "Unnamed learner"}</span>
+                        <span
+                          className={`rounded-full border px-2 py-0.5 text-[11px] ${statusPillClass(r.status)}`}
+                        >
+                          {r.status}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 truncate text-[12px] text-white/55">
+                        {r.learner_email} · {r.course_title}
+                        {r.course_level ? ` · L${r.course_level}` : ""} ·{" "}
+                        {r.provider_name ?? r.provider_id.slice(0, 8)}
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11.5px] text-white/45">
+                        {r.issued_at ? <span>Issued {formatDate(r.issued_at)}</span> : null}
+                        {r.dispatched_at ? <span>Dispatched {formatDate(r.dispatched_at)}</span> : null}
+                        {r.revoked_at ? (
+                          <span className="text-red-300/80">
+                            Revoked {formatDate(r.revoked_at)}
+                            {r.revoked_reason ? ` — ${r.revoked_reason}` : ""}
+                          </span>
+                        ) : null}
+                        {r.batch_id ? <span>Batch {r.batch_id.slice(0, 8)}</span> : null}
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                      {hasPdf ? (
+                        <Button size="sm" variant="subtle" onClick={() => openPdf(r.id)}>
+                          <FileText className="h-3.5 w-3.5" /> PDF
+                        </Button>
+                      ) : null}
+                      {hasVerify ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="subtle"
+                            onClick={() =>
+                              window.open(`/verify/${r.verification_token}`, "_blank", "noopener,noreferrer")
+                            }
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" /> Verify
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="subtle"
+                            onClick={() => copyVerifyLink(r.verification_token!)}
+                          >
+                            <Link2 className="h-3.5 w-3.5" /> Copy
+                          </Button>
+                        </>
+                      ) : null}
+                      <Button
+                        size="sm"
+                        variant="subtle"
+                        onClick={() => window.open(`/admin/providers/${r.provider_id}`, "_blank")}
+                      >
+                        Provider
+                      </Button>
+                      {canRevoke ? (
+                        <Button
+                          size="sm"
+                          variant="destructive-ghost"
+                          onClick={() => setRevokeTarget(r)}
+                        >
+                          <ShieldOff className="h-3.5 w-3.5" /> Revoke
+                        </Button>
+                      ) : null}
+                      {canReinstate ? (
+                        <Button
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => {
+                            if (confirm("Reinstate this certificate? The public verify page will work again.")) {
+                              reinstateMut.mutate(r.id);
+                            }
+                          }}
+                          disabled={reinstateMut.isPending}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" /> Reinstate
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-white/50 text-[12px] truncate">
-                  {r.learner_email} · {r.course_title}
-                  {r.course_level ? ` · L${r.course_level}` : ""} ·{" "}
-                  {r.provider_name ?? r.provider_id}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Badge>{r.status}</Badge>
-                {(r.status === "issued" || r.status === "dispatched") && (
-                  <Button
-                    size="sm"
-                    variant="destructive-ghost"
-                    onClick={() => {
-                      if (confirm(`Revoke ${r.certificate_number ?? "this certificate"}?`)) {
-                        revokeMut.mutate(r.id);
-                      }
-                    }}
-                    disabled={revokeMut.isPending}
-                  >
-                    <ShieldOff className="h-3.5 w-3.5" /> Revoke
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </PCard>
+              );
+            })}
+          </div>
+        )}
+      </PCard>
+
+      <RevokeDialog
+        target={revokeTarget}
+        onClose={() => setRevokeTarget(null)}
+        onConfirm={(reason) =>
+          revokeTarget && revokeMut.mutate({ id: revokeTarget.id, reason })
+        }
+        pending={revokeMut.isPending}
+      />
+    </>
   );
 }
+
+function RevokeDialog({
+  target,
+  onClose,
+  onConfirm,
+  pending,
+}: {
+  target: SearchRow | null;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+  pending: boolean;
+}) {
+  const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    setReason("");
+  }, [target?.id]);
+
+
+  if (!target) return null;
+  const tooShort = reason.trim().length < 5;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-[18px] border border-reps-border bg-reps-panel p-6 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)]">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-red-400/30 bg-red-500/15 text-red-300">
+            <ShieldOff className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[16px] font-semibold text-white">Revoke certificate</h3>
+            <p className="mt-1 text-[13px] leading-relaxed text-white/70">
+              Revoking flips the status to <b>revoked</b>, breaks the public verify page,
+              and blocks the PDF from being re-downloaded by the provider or learner.
+              This is auditable and can be reinstated by an admin.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-[12px] border border-white/10 bg-white/[0.04] p-3 text-[12.5px]">
+          <div className="text-white">
+            {target.certificate_number ?? "—"} · {target.learner_name}
+          </div>
+          <div className="mt-0.5 text-white/55">
+            {target.course_title}
+            {target.course_level ? ` · L${target.course_level}` : ""} ·{" "}
+            {target.provider_name ?? target.provider_id.slice(0, 8)}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="mb-1 block text-[12px] text-white/70">
+            Reason (required — will be attached to the audit record)
+          </label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            maxLength={500}
+            placeholder="e.g. Provider withdrew the qualification; awarding-body compliance breach; learner disputed identity…"
+            className="w-full rounded-[10px] border border-white/10 bg-white/[0.04] p-2.5 text-[13px] text-white placeholder-white/35 outline-none focus:border-white/25"
+          />
+          <div className="mt-1 text-[11px] text-white/40">
+            Minimum 5 characters. {reason.length}/500
+          </div>
+        </div>
+
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="subtle" onClick={onClose} disabled={pending}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive-ghost"
+            disabled={tooShort || pending}
+            onClick={() => onConfirm(reason.trim())}
+          >
+            {pending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Revoking…
+              </>
+            ) : (
+              <>
+                <ShieldOff className="h-4 w-4" /> Revoke certificate
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 
 // Keep Download imported for future label re-download UI; suppress unused warning
 void Download;

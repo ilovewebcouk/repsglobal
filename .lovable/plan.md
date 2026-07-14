@@ -1,52 +1,55 @@
+## What "Search & revoke" is meant to be
 
-# New resource: The REPs LMS — coming August
+It's the admin's break-glass tool for one specific job: **find any certificate registration across every provider, and revoke it if REPs needs to invalidate it** (fraud, awarding-body withdrawal, wrong learner, provider off-boarded, etc.). Revoking flips the row's status, kills the public `/verify/<token>` page, and locks the PDF from re-download.
 
-A second training-provider resource sitting alongside the portal announcement, teasing the REPs LMS launch in August. Same visual system as existing resources; new hero image built to a "world-class product mock-up" bar.
+## Why you can't do anything right now
 
-## 1. Featured image (the hero of this piece)
+The Revoke button is coded to only appear when a row's status is `issued` or `dispatched`. Every row on your screen is `passed`, `enrolled`, or `canceled` — none of those have been turned into a live certificate yet, so there's nothing to revoke. The panel also has no other actions (no view, no filter, no context), so it looks like a dead-end search.
 
-Generated with the premium image model, saved as a Lovable Asset. Two composition candidates — I'll build **Option A** unless you say otherwise:
+## Plan — make this tab actually usable
 
-- **Option A — LMS dashboard mock-up (YouTube-thumbnail style):** dark REPs-tinted UI showing a Level 3 PT course dashboard: a learner list with progress bars, an AI-marked assessment panel, an IQA sampling ring at ~80%, and a video-assessment thumbnail (trainer coaching a squat in a gym) inset in the corner. Foreground device: floating MacBook + iPhone showing the same course. Orange accent glow, subtle grid, "REPs LMS" wordmark bottom-left, "Coming August" chip top-right. Real embroidered REPS wordmark on the trainer's polo in the inset (per trainer-imagery rule).
-- **Option B — Practical assessment scene:** wide gym shot of a Level 3 PT candidate coaching a client through a deadlift while a second person films on a phone on a tripod; overlay of two REPs LMS UI cards (video-submission card + AI-marking rubric card) emanating from the scene, per the trainer-to-platform composite pattern.
+### 1. Rename + reframe
+- Rename tab to **"Registrations"** (or keep "Search & revoke" but add a one-line subtitle: *"Find any learner registration across all providers. Revoke live certificates, view PDFs, or open the provider."*).
+- Add a small legend of what each status means (`enrolled → passed → issued → dispatched`, plus `canceled`, `revoked`).
 
-Both routes go through the same wordmark/embroidery rules and get uploaded via `lovable-assets` to a new `.asset.json` pointer.
+### 2. Add filters above the search box
+- Status multi-select (enrolled / passed / issued / dispatched / canceled / revoked).
+- Provider dropdown (typeahead).
+- Date range (issued between).
+- Empty-state copy: *"Search by cert number, learner email, name — or filter by status/provider."*
 
-## 2. Resource entry in `src/lib/resources.ts`
+### 3. Give each row real actions (dropdown menu on the right)
+Actions available depend on status:
+- **View details** (always) — opens a drawer with full registration, batch, provider, IQA state, dispatch tracking.
+- **Open provider** (always) — link to `/admin/providers/<id>`.
+- **Download PDF** — when `issued` / `dispatched` / `revoked`.
+- **Open public verify page** — when `issued` / `dispatched`.
+- **Copy verify link** — when `issued` / `dispatched`.
+- **Revoke certificate** — when `issued` / `dispatched`. Requires a reason (short textarea) + confirm dialog. Writes admin_audit_log.
+- **Un-revoke / reinstate** — when `revoked`, admin-only, also audit-logged.
+- **Mark dispatched manually** — when `issued` and no Royal Mail label (edge case).
 
-New article, `featured: true`, `featuredOrder: 2` (portal stays #1), category "Coming Soon", author = STANDARDS (Mark Ellis).
+### 4. Row visuals
+- Show issued date + expiry (if any), batch ID chip, Ofqual number chip when present.
+- Colour statuses consistently with the rest of the platform: `issued` emerald, `dispatched` emerald, `revoked` red, `canceled` white/50, `enrolled`/`passed` amber.
 
-- **slug:** `reps-lms-coming-august`
-- **title:** "The REPs LMS: a world-class learning platform, built for fitness — coming August"
-- **excerpt:** ~2 lines on: fitness-industry LMS, wired directly into REPs endorsement / certificates / verification, AI-assisted marking + IQA/EQA, video-assessment native, launching August.
-- **date/readTime:** 2026-07-14, "6 min read"
-- **cover:** new asset from step 1
+### 5. Revoke flow
+- Confirm dialog replaces `window.confirm` — shows learner name, cert number, provider, and a required reason field (min 10 chars).
+- On confirm: call `adminRevokeCertificate` with `{ registration_id, reason }`, then invalidate the search query and the provider's registrations query.
+- Server side: extend `adminRevokeCertificate` to accept + persist a `revocation_reason` and `revoked_by` (already writes status; just widen the payload and column if missing — migration only if the column doesn't exist).
 
-**Body sections (`body[]`, same block types as existing article):**
+### 6. Empty-state + zero-result copy
+- Zero results: *"No registrations match. Try a wider status filter or search by learner email."*
+- Before first search: don't show a blank panel — show the 20 most recent registrations across the platform so the tab feels alive.
 
-1. Intro paragraph — what it is and why it exists (gaps in current fitness-industry LMSs).
-2. "Built for the fitness industry, not retrofitted" — practical assessments, video, gym-based delivery, regulated qualifications + CPD.
-3. "Wired directly into REPs" — endorsement, learner registrations, REPs-branded certificates, public verification, all in one loop with the portal.
-4. "AI across the whole delivery lifecycle" — enrolment, learning material, assessment marking, IQA sampling, EQA prep, feedback to learners. Speed without lowering the bar.
-5. "IQA and EQA, made properly easy" — automated sampling plans, audit trails, evidence packs generated on demand, human sign-off retained where it matters.
-6. "Video assessments, natively" — upload, timestamped feedback, AI pre-mark against the rubric, assessor confirmation.
-7. "Standards, not shortcuts" — stringent standards for any Ofqual-regulated qualification delivered through the platform; AI accelerates, humans certify.
-8. "What this unlocks for training providers" — geographic reach, distance delivery, less manpower on tedious admin, room to grow.
-9. "Launching August" — early-access note; providers already in the portal will be first in.
-10. Closing quote (Standards Charter tone).
-
-Copy rules enforced: no "UK"/"CIMSPA"/"shopfront"/BD-migration language; "Ofqual-regulated" not "CIMSPA"; global framing.
-
-## 3. Wiring
-
-- Add cover import at top of `src/lib/resources.ts`.
-- Push the new article object into `RESOURCE_ARTICLES` right after the portal entry.
-- No route changes — `/resources/reps-lms-coming-august` is generated by the existing resource route.
-- No nav-data or dashboard changes.
+## Files this will touch
+- `src/routes/admin_.certificates.tsx` — `SearchPanel` component (biggest change).
+- `src/lib/admin/certificates.functions.ts` (or wherever `adminSearchRegistrations` / `adminRevokeCertificate` live) — add filter params + reason param + return richer row (issued_at, expiry, batch_id, verify_token, pdf_path).
+- Possibly one migration to add `revocation_reason text` + `revoked_by uuid` + `revoked_at timestamptz` on `certificate_registrations` if not already present.
 
 ## Acceptance
-
-- `/resources` lists the new article as a second featured card next to the portal one.
-- `/resources/reps-lms-coming-august` renders full article with hero cover, all sections, correct author, back-to-resources link.
-- Featured image visibly reads as a polished LMS mock-up (or gym-assessment composite), not the previous flat treatment — REPS wordmark rules honoured if a person appears.
-- No banned phrases; global-not-UK framing; Ofqual language used.
+- Tab loads with recent registrations pre-populated.
+- Filters + search combine correctly.
+- Every row has a working action menu; actions match status.
+- Revoking an `issued` cert requires a reason, shows in audit log, and immediately breaks its public verify page.
+- No row is ever a dead end.
