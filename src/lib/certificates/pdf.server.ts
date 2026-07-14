@@ -296,10 +296,17 @@ async function tryEmbedImageFromUrl(
 // ─────────────────────────────────────────────────────────────────────────────
 // Rendering
 
+const UNITS_PER_PAGE = 12;
+
 type EmbeddedFonts = {
   regular: Awaited<ReturnType<PDFDocument["embedFont"]>>;
   bold: Awaited<ReturnType<PDFDocument["embedFont"]>>;
   italic: Awaited<ReturnType<PDFDocument["embedFont"]>>;
+};
+
+type OverlayOpts = {
+  listStartIndex?: number;
+  listTotalCount?: number;
 };
 
 function overlayPage(
@@ -313,6 +320,7 @@ function overlayPage(
     provider_logo: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
     level_badge: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
   },
+  opts: OverlayOpts = {},
 ): void {
   const pageH = page.getHeight();
   for (const t of map.text ?? []) {
@@ -326,13 +334,13 @@ function overlayPage(
     if (img.field === "qr_code") {
       page.drawImage(images.qr, { x: img.x, y: pdfY, width: img.width, height: img.height });
     } else if (img.field === "provider_logo" && images.provider_logo) {
-      const src = images.provider_logo;
-      const scale = Math.min(img.width / src.width, img.height / src.height);
-      const w = src.width * scale;
-      const h = src.height * scale;
-      const cx = img.x + (img.width - w) / 2;
-      const cy = pdfY + (img.height - h) / 2;
-      page.drawImage(src, { x: cx, y: cy, width: w, height: h });
+      // Enforced 160×60 on upload — fill the box exactly, no letterbox.
+      page.drawImage(images.provider_logo, {
+        x: img.x,
+        y: pdfY,
+        width: img.width,
+        height: img.height,
+      });
     } else if (img.field === "level_badge" && images.level_badge) {
       const src = images.level_badge;
       const scale = Math.min(img.width / src.width, img.height / src.height);
@@ -344,9 +352,10 @@ function overlayPage(
     }
   }
   if (map.list && map.list.field === "unit_summary") {
-    drawList(page, map.list, units, fonts, pageH);
+    drawList(page, map.list, units, fonts, pageH, opts.listStartIndex ?? 0, opts.listTotalCount);
   }
 }
+
 
 
 function drawText(
