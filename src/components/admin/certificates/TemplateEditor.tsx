@@ -597,6 +597,7 @@ function ImageFieldRow({
         >
           <option value="qr_code">qr_code</option>
           <option value="provider_logo">provider_logo</option>
+          <option value="level_badge">level_badge</option>
         </select>
         <button onClick={onRemove} className="text-[11px] text-white/40 hover:text-white/80">
           Remove
