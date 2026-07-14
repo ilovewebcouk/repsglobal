@@ -66,6 +66,7 @@ import { Route as PortalMessagesRouteImport } from './routes/portal_.messages'
 import { Route as PortalCheckInsRouteImport } from './routes/portal_.check-ins'
 import { Route as NewsletterUnsubscribeRouteImport } from './routes/newsletter.unsubscribe'
 import { Route as NewsletterConfirmRouteImport } from './routes/newsletter.confirm'
+import { Route as LegalEndorsementTermsRouteImport } from './routes/legal.endorsement-terms'
 import { Route as InLocationRouteImport } from './routes/in.$location'
 import { Route as HelpCategoryRouteImport } from './routes/help.$category'
 import { Route as GymsSlugRouteImport } from './routes/gyms.$slug'
@@ -471,6 +472,11 @@ const NewsletterUnsubscribeRoute = NewsletterUnsubscribeRouteImport.update({
 const NewsletterConfirmRoute = NewsletterConfirmRouteImport.update({
   id: '/newsletter/confirm',
   path: '/newsletter/confirm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalEndorsementTermsRoute = LegalEndorsementTermsRouteImport.update({
+  id: '/legal/endorsement-terms',
+  path: '/legal/endorsement-terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InLocationRoute = InLocationRouteImport.update({
@@ -1220,6 +1226,7 @@ export interface FileRoutesByFullPath {
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
+  '/legal/endorsement-terms': typeof LegalEndorsementTermsRoute
   '/newsletter/confirm': typeof NewsletterConfirmRoute
   '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
@@ -1395,6 +1402,7 @@ export interface FileRoutesByTo {
   '/features/website': typeof FeaturesWebsiteRoute
   '/gyms/$slug': typeof GymsSlugRoute
   '/in/$location': typeof InLocationRouteWithChildren
+  '/legal/endorsement-terms': typeof LegalEndorsementTermsRoute
   '/newsletter/confirm': typeof NewsletterConfirmRoute
   '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/portal/check-ins': typeof PortalCheckInsRoute
@@ -1573,6 +1581,7 @@ export interface FileRoutesById {
   '/gyms/$slug': typeof GymsSlugRoute
   '/help/$category': typeof HelpCategoryRouteWithChildren
   '/in/$location': typeof InLocationRouteWithChildren
+  '/legal/endorsement-terms': typeof LegalEndorsementTermsRoute
   '/newsletter/confirm': typeof NewsletterConfirmRoute
   '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/portal_/check-ins': typeof PortalCheckInsRoute
@@ -1754,6 +1763,7 @@ export interface FileRouteTypes {
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
+    | '/legal/endorsement-terms'
     | '/newsletter/confirm'
     | '/newsletter/unsubscribe'
     | '/portal/check-ins'
@@ -1929,6 +1939,7 @@ export interface FileRouteTypes {
     | '/features/website'
     | '/gyms/$slug'
     | '/in/$location'
+    | '/legal/endorsement-terms'
     | '/newsletter/confirm'
     | '/newsletter/unsubscribe'
     | '/portal/check-ins'
@@ -2106,6 +2117,7 @@ export interface FileRouteTypes {
     | '/gyms/$slug'
     | '/help/$category'
     | '/in/$location'
+    | '/legal/endorsement-terms'
     | '/newsletter/confirm'
     | '/newsletter/unsubscribe'
     | '/portal_/check-ins'
@@ -2286,6 +2298,7 @@ export interface RootRouteChildren {
   FeaturesWebsiteRoute: typeof FeaturesWebsiteRoute
   GymsSlugRoute: typeof GymsSlugRoute
   InLocationRoute: typeof InLocationRouteWithChildren
+  LegalEndorsementTermsRoute: typeof LegalEndorsementTermsRoute
   NewsletterConfirmRoute: typeof NewsletterConfirmRoute
   NewsletterUnsubscribeRoute: typeof NewsletterUnsubscribeRoute
   PortalCheckInsRoute: typeof PortalCheckInsRoute
@@ -2736,6 +2749,13 @@ declare module '@tanstack/react-router' {
       path: '/newsletter/confirm'
       fullPath: '/newsletter/confirm'
       preLoaderRoute: typeof NewsletterConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/endorsement-terms': {
+      id: '/legal/endorsement-terms'
+      path: '/legal/endorsement-terms'
+      fullPath: '/legal/endorsement-terms'
+      preLoaderRoute: typeof LegalEndorsementTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/in/$location': {
@@ -3954,6 +3974,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesWebsiteRoute: FeaturesWebsiteRoute,
   GymsSlugRoute: GymsSlugRoute,
   InLocationRoute: InLocationRouteWithChildren,
+  LegalEndorsementTermsRoute: LegalEndorsementTermsRoute,
   NewsletterConfirmRoute: NewsletterConfirmRoute,
   NewsletterUnsubscribeRoute: NewsletterUnsubscribeRoute,
   PortalCheckInsRoute: PortalCheckInsRoute,
