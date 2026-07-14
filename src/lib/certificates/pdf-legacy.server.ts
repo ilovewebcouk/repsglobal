@@ -106,6 +106,13 @@ export async function generateCertificatePdfLegacy(input: CertificatePdfInput): 
   page.drawText(awardedBy, {
     x: (W - awardedW) / 2, y: H - 390, size: 12, font: helv, color: muted,
   });
+  if (input.providerCenterNumber) {
+    const centreLine = `Centre No. ${input.providerCenterNumber}`;
+    const centreW = helv.widthOfTextAtSize(centreLine, 11);
+    page.drawText(centreLine, {
+      x: (W - centreW) / 2, y: H - 408, size: 11, font: helv, color: muted,
+    });
+  }
 
   // Footer — issued date + numbers
   const issuedText = `Issued ${input.issuedAt.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`;
