@@ -91,6 +91,7 @@ import { template as winbackLapsed } from './trainer/lifecycle/winback-lapsed'
 import { template as providerDomainConfirm } from './provider/provider-domain-confirm'
 import { template as certificatesReady } from './provider/certificates-ready'
 import { template as certificatesShipped } from './provider/certificates-shipped'
+import { template as providerPortalIsLive } from './provider/portal-is-live'
 
 // ─────────────────────────────────────────────────────────────
 // Learner
@@ -190,6 +191,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'provider-domain-confirm': providerDomainConfirm,
   'certificates-ready': certificatesReady,
   'certificates-shipped': certificatesShipped,
+  'provider-portal-is-live': providerPortalIsLive,
 
   // ── Learner ────────────────────────────────────────────────
   'learner-certificate-issued': learnerCertificateIssued,
