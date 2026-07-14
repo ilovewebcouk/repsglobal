@@ -159,16 +159,20 @@ test("provider logo is placed at the exact 160×60 box on page 1", async () => {
   const imageCount = countImagesOnPage(page1);
   assert.ok(imageCount >= 2, `expected >= 2 images on page 1, got ${imageCount}`);
 
-  // Parse the content stream and assert a 160×60 image transform is present
-  // at the mapped coordinates. Top-left (60, 700) with page height 842
-  // ⇒ pdf-lib y = 842 - 700 - 60 = 82.
+  // Parse the content stream and assert the logo's placement transform
+  // is present. Top-left (60, 700) with page height 842, size 160×60
+  // ⇒ pdf-lib y = 842 - 700 - 60 = 82. pdf-lib splits the drawImage CTM
+  // as `1 0 0 1 x y cm` (translate) followed by `w 0 0 h 0 0 cm` (scale).
   const decoded = decodePageContent(page1);
-  // pdf-lib emits `<w> 0 0 <h> <x> <y> cm ... /Xn Do` for each drawImage.
-  const logoTransform = /(^|\s)160 0 0 60 60 82 cm/;
   assert.match(
     decoded,
-    logoTransform,
-    "provider logo should be drawn at (60, 82) with a 160×60 CTM on page 1",
+    /1 0 0 1 60 82 cm/,
+    "provider logo should be translated to (60, 82) on page 1",
+  );
+  assert.match(
+    decoded,
+    /160 0 0 60 0 0 cm/,
+    "provider logo should be scaled to 160×60 on page 1",
   );
 });
 
