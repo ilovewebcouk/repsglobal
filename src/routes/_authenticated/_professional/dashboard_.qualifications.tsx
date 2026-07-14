@@ -1670,6 +1670,25 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
                 before and periodically after endorsement.
               </span>
             </label>
+
+            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
+              <Checkbox
+                checked={termsAgreed}
+                onCheckedChange={(v) => setTermsAgreed(v === true)}
+                className="mt-0.5"
+              />
+              <span>
+                I have read and accept the{" "}
+                <Link
+                  to="/legal/endorsement-terms"
+                  target="_blank"
+                  className="font-semibold text-reps-orange underline-offset-4 hover:underline"
+                >
+                  REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
+                </Link>
+                . I understand that a breach — including printing the REPS badge on my own certificates, advertising unendorsed courses, or changing the trading name that REPS endorsed — results in permanent suspension from REPS and a permanent public notice on my profile.
+              </span>
+            </label>
           </div>
         </div>
 
