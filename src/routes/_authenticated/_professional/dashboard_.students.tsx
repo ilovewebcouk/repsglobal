@@ -70,6 +70,11 @@ import {
   type ProviderCourseOptionDTO,
   type RegistrationDTO,
 } from "@/lib/certificates/certificates.functions";
+import {
+  clearMyProviderCertificateLogo,
+  getMyProviderBranding,
+  setMyProviderCertificateLogo,
+} from "@/lib/certificates/providers.functions";
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard_/students")({
   head: () => ({
