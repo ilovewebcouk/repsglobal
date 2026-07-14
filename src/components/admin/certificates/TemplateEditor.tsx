@@ -383,6 +383,21 @@ function FieldsPanel({
             >
               + Logo
             </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() =>
+                onChange((p) => ({
+                  ...p,
+                  images: [
+                    ...(p.images ?? []),
+                    { field: "level_badge", x: 700, y: 60, width: 90, height: 90 },
+                  ],
+                }))
+              }
+            >
+              + Level badge
+            </Button>
           </div>
         </div>
         <div className="space-y-2">
