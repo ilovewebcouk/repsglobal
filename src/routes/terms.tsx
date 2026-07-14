@@ -30,9 +30,8 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           These terms of use (the <strong>"Terms"</strong>) form a binding
-          legal agreement between you and{" "}
-          <strong>Scott McKay, trading as REPs</strong>, of 167-169 Great
-          Portland Street, London, W1W 5PF, United Kingdom (
+          legal agreement between you and <strong>REPs</strong>, of
+          167-169 Great Portland Street, London, W1W 5PF, United Kingdom (
           <strong>"REPs"</strong>, <strong>"we"</strong>, <strong>"us"</strong>,{" "}
           <strong>"our"</strong>). They apply to every visitor and account
           holder on{" "}
@@ -422,10 +421,9 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           <strong>Registered and pending UK trade marks.</strong> The
-          following Trade Marks are owned by Scott McKay (trading as REPs)
-          of 167-169 Great Portland Street, London W1W 5PF and are entered
-          on the public register at the United Kingdom Intellectual Property
-          Office (UKIPO):
+          following Trade Marks are owned by REPs of 167-169 Great Portland
+          Street, London W1W 5PF and are entered on the public register at
+          the United Kingdom Intellectual Property Office (UKIPO):
         </p>
         <ul>
           <li>
