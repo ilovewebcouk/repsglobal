@@ -34,6 +34,7 @@ export async function renderTemplatePreview(
       ofqualNumber: "603/1234/5",
       providerName: "Sample Training Ltd",
       providerLogoUrl: null,
+      providerCenterNumber: "REPS-000123",
       issuedAt: new Date(),
       verificationUrl: "https://repsuk.org/verify/preview-token",
       unitSummary: [

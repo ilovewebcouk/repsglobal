@@ -42,6 +42,10 @@ import {
   type CertificateTemplateDTO,
 } from "@/lib/certificates/templates.functions";
 import { TemplateEditor } from "@/components/admin/certificates/TemplateEditor";
+import {
+  listProviderCenterNumbers,
+  setProviderCenterNumber,
+} from "@/lib/certificates/providers.functions";
 
 export const Route = createFileRoute("/admin_/certificates")({
   head: () => ({
@@ -55,13 +59,14 @@ export const Route = createFileRoute("/admin_/certificates")({
   component: AdminCertificatesPage,
 });
 
-type Tab = "pricing" | "templates" | "batches" | "print" | "search";
+type Tab = "pricing" | "templates" | "providers" | "batches" | "print" | "search";
 
 function AdminCertificatesPage() {
   const [tab, setTab] = useState<Tab>("pricing");
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: "pricing", label: "Pricing" },
     { id: "templates", label: "Templates" },
+    { id: "providers", label: "Providers" },
     { id: "batches", label: "Batches" },
     { id: "print", label: "Print queue" },
     { id: "search", label: "Search & revoke" },
@@ -88,6 +93,7 @@ function AdminCertificatesPage() {
       </div>
       {tab === "pricing" && <PricingPanel />}
       {tab === "templates" && <TemplatesPanel />}
+      {tab === "providers" && <ProvidersPanel />}
       {tab === "batches" && <BatchesPanel />}
       {tab === "print" && <PrintQueuePanel />}
       {tab === "search" && <SearchPanel />}
@@ -1122,3 +1128,112 @@ async function fileToBase64(file: File): Promise<string> {
   }
   return btoa(s);
 }
+
+// ─────────────────────────────────────────────────────────── Providers
+
+function ProvidersPanel() {
+  const qc = useQueryClient();
+  const list = useServerFn(listProviderCenterNumbers);
+  const save = useServerFn(setProviderCenterNumber);
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-provider-center-numbers"],
+    queryFn: () => list({ data: undefined as never }),
+  });
+  const [filter, setFilter] = useState("");
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  const mutation = useMutation({
+    mutationFn: (payload: { provider_id: string; center_number: string | null }) =>
+      save({ data: payload }),
+    onSuccess: () => {
+      toast.success("Centre number saved");
+      qc.invalidateQueries({ queryKey: ["admin-provider-center-numbers"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not save"),
+  });
+
+  const rows = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    const list = data ?? [];
+    if (!q) return list;
+    return list.filter(
+      (r) =>
+        (r.provider_name ?? "").toLowerCase().includes(q) ||
+        (r.center_number ?? "").toLowerCase().includes(q),
+    );
+  }, [data, filter]);
+
+  return (
+    <div className="max-w-3xl space-y-4">
+      <PCard>
+        <div className="p-6">
+          <div className="mb-4">
+            <h2 className="font-display text-lg">Provider centre numbers</h2>
+            <p className="mt-0.5 text-[12.5px] text-white/50">
+              Prints on certificates as "Centre No. &lt;number&gt;" beneath the provider name.
+              Leave blank to omit.
+            </p>
+          </div>
+          <div className="mb-3">
+            <Input
+              placeholder="Search providers"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+          </div>
+          {isLoading ? (
+            <div className="flex items-center gap-2 text-white/50 text-sm">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading providers…
+            </div>
+          ) : rows.length === 0 ? (
+            <div className="text-sm text-white/50">No providers found.</div>
+          ) : (
+            <div className="divide-y divide-white/5">
+              {rows.map((r) => {
+                const draft = drafts[r.provider_id] ?? r.center_number ?? "";
+                const dirty = draft !== (r.center_number ?? "");
+                return (
+                  <div
+                    key={r.provider_id}
+                    className="flex flex-wrap items-center gap-3 py-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] text-white/90">
+                        {r.provider_name ?? "Unnamed provider"}
+                      </div>
+                      <div className="truncate text-[11.5px] text-white/40">
+                        {r.provider_id}
+                      </div>
+                    </div>
+                    <div className="w-52">
+                      <Input
+                        placeholder="e.g. REPS-000123"
+                        value={draft}
+                        onChange={(e) =>
+                          setDrafts((s) => ({ ...s, [r.provider_id]: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <Button
+                      variant={dirty ? "primary" : "subtle"}
+                      disabled={!dirty || mutation.isPending}
+                      onClick={() =>
+                        mutation.mutate({
+                          provider_id: r.provider_id,
+                          center_number: draft.trim() ? draft.trim() : null,
+                        })
+                      }
+                    >
+                      Save
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </PCard>
+    </div>
+  );
+}
+
