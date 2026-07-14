@@ -805,15 +805,19 @@ function TemplateContentBanner({
   isOwnerViewing: boolean;
 }) {
   return (
-    <div className="border-b border-amber-400/20 bg-amber-500/10 text-amber-100">
-      <div className="mx-auto flex max-w-[1320px] flex-col gap-2 px-6 py-3 text-[13px] leading-snug sm:flex-row sm:items-center sm:justify-between lg:px-10">
-        <p className="flex items-start gap-2">
-          <Sparkles className="mt-[2px] h-4 w-4 shrink-0 text-amber-300" aria-hidden />
-          <span>
-            <span className="font-semibold text-amber-50">Some content on this page is still template placeholder text and imagery.</span>{""}
-            <span className="text-amber-100/85">{firstName} is finishing their REPS profile.</span>
-          </span>
-        </p>
+    <div className="border-b border-amber-400/25 bg-amber-500/10 text-amber-100">
+      <div className="mx-auto flex max-w-[1320px] flex-col gap-2 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 lg:px-10">
+        <div className="flex items-start gap-2.5">
+          <ShieldAlert className="mt-[2px] h-4 w-4 shrink-0 text-amber-300" aria-hidden />
+          <div className="leading-snug">
+            <div className="text-[13px] font-semibold text-amber-50">
+              Not yet verified by REPS
+            </div>
+            <div className="mt-0.5 text-[12.5px] text-amber-100/80">
+              {firstName} is still completing their profile — some content on this page is placeholder.
+            </div>
+          </div>
+        </div>
         {isOwnerViewing ? (
           <Link
             to="/dashboard/website"
@@ -827,6 +831,7 @@ function TemplateContentBanner({
     </div>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Chrome                                                             */
