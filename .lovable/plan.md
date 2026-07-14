@@ -1,22 +1,20 @@
-## Why they appear
+## Change
 
-`/find-a-professional` queries the `professionals` table with no `account_type` filter (see `src/lib/directory/search.functions.ts` around line 125). Training providers are stored as `professionals` rows with `account_type = 'organisation'` (that's what the separate providers directory uses via `listPublicProviders` in `src/lib/directory/providers.functions.ts`). So organisations get returned alongside individuals — hence "Test Profile" (an org account with the REPS logo) and "Northline Fitness Academy" showing up in the individual pro results.
+On the learner unit summary certificate page, render modules as a numbered list (1, 2, 3, …) instead of orange bullet dots. Numbering follows the order the provider entered modules during endorsement.
 
-## Fix
+## Files
 
-Scope `/find-a-professional` to individuals only by adding one line to the query in `src/lib/directory/search.functions.ts`:
+**`src/lib/certificates/pdf.server.ts`** — `drawList()` (~line 304)
+- Replace the fixed `bullet` glyph with a per-item index `${n}.`
+- Compute the widest label width from `list.length` (e.g. `"10."`) so all module text left-aligns cleanly regardless of 1- or 2-digit numbers
+- Keep the existing `bulletColor` token (orange) for the number, `color` for the text, and current line-height / wrap behaviour
+- The `ListField` fields `bullet` / `bulletColor` remain in the type for backwards compatibility with existing templates, but `bullet` is ignored on the unit-summary list; `bulletColor` now colours the number
 
-```ts
-.in("id", visibleIds)
-.eq("account_type", "individual")   // ← add
-```
+**`src/lib/certificates/pdf-legacy.server.ts`** — page 2 units loop (~line 200)
+- Same swap: `"•"` → `"${n}."` in matching orange, so the fallback generator stays consistent
 
-Apply the same filter to the count/aggregate queries in that file (lines ~452, 473, 488) so filter counts stay consistent. Training providers continue to appear on their dedicated providers directory (which already filters `account_type = 'organisation'`).
+## Out of scope
 
-No UI changes, no schema changes.
-
-## Verification
-
-- Reload `/find-a-professional` — "Test Profile" and "Northline Fitness Academy" are gone.
-- Providers directory still lists Northline etc.
-- Filter chips / totals still line up with the visible rows.
+- No schema / data changes — modules are already an ordered array (`spec_modules` for REPS courses, `spec_learning_outcomes` for regulated). Numbering just reflects that order.
+- No template-editor UI changes.
+- No copy / layout changes elsewhere on the certificate.

@@ -181,12 +181,14 @@ export async function generateCertificatePdfLegacy(input: CertificatePdfInput): 
   mY -= 20;
 
   const units = input.unitSummary.length > 0 ? input.unitSummary : ["Successful completion of all assessed units for this course."];
-  for (const unit of units) {
+  const labelGutter = helv.widthOfTextAtSize(`${units.length}.  `, 10);
+  for (let idx = 0; idx < units.length; idx++) {
     if (mY < 80) break;
-    page2.drawText("•", { x: 48, y: mY, size: 10, font: helv, color: orange });
+    const unit = units[idx];
+    page2.drawText(`${idx + 1}.`, { x: 48, y: mY, size: 10, font: helvBold, color: orange });
     const lines = wrapText(unit, 90);
     for (const l of lines) {
-      page2.drawText(l, { x: 62, y: mY, size: 10, font: helv, color: dark, maxWidth: PW - 110 });
+      page2.drawText(l, { x: 48 + labelGutter, y: mY, size: 10, font: helv, color: dark, maxWidth: PW - 110 });
       mY -= 14;
     }
     mY -= 4;

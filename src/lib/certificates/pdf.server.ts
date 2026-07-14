@@ -313,20 +313,22 @@ function drawList(
   const size = l.fontSize ?? 10;
   const lh = l.lineHeight ?? 14;
   const color = hexToRgb(l.color ?? "#111111");
-  const bulletColor = hexToRgb(l.bulletColor ?? "#e97316");
+  const numberColor = hexToRgb(l.bulletColor ?? "#e97316");
   const font = fonts.regular;
-  const bullet = l.bullet ?? "•";
-  const bulletWidth = font.widthOfTextAtSize(bullet + "  ", size);
+  // Reserve gutter width based on widest number label (e.g. "10.") so wrapped text left-aligns.
+  const widestLabel = `${list.length}.`;
+  const labelWidth = font.widthOfTextAtSize(widestLabel + "  ", size);
   // Top-left origin: l.y is the top of the first line's glyph box.
   let y = pageH - l.y - size;
-  const maxCharsPerLine = Math.max(20, Math.floor((l.maxWidth - bulletWidth) / (size * 0.5)));
-  for (const raw of list) {
+  const maxCharsPerLine = Math.max(20, Math.floor((l.maxWidth - labelWidth) / (size * 0.5)));
+  for (let idx = 0; idx < list.length; idx++) {
+    const raw = list[idx];
     const lines = wrapText(raw, maxCharsPerLine);
     for (let i = 0; i < lines.length; i++) {
       if (i === 0) {
-        page.drawText(bullet, { x: l.x, y, size, font, color: bulletColor });
+        page.drawText(`${idx + 1}.`, { x: l.x, y, size, font, color: numberColor });
       }
-      page.drawText(lines[i], { x: l.x + bulletWidth, y, size, font, color, maxWidth: l.maxWidth - bulletWidth });
+      page.drawText(lines[i], { x: l.x + labelWidth, y, size, font, color, maxWidth: l.maxWidth - labelWidth });
       y -= lh;
     }
     y -= 4;
