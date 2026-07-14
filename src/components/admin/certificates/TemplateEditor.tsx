@@ -39,7 +39,7 @@ type TextField = {
 };
 
 type ImageField = {
-  field: "qr_code" | "provider_logo";
+  field: "qr_code" | "provider_logo" | "level_badge";
   x: number;
   y: number;
   width: number;
