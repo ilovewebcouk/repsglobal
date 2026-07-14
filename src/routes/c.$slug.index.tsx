@@ -13,6 +13,7 @@ import {
 } from "@/lib/website/website.functions";
 import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
+import { getProSlugPublicStatus, type ProSlugStatus } from "@/lib/website/slug-status.functions";
 import {
   ArrowRight,
   ArrowUpRight,
