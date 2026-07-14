@@ -1035,11 +1035,10 @@ function RevokeDialog({
 }) {
   const [reason, setReason] = useState("");
 
-  // Reset reason each time the dialog opens for a new target
-  useMemo(() => {
+  useEffect(() => {
     setReason("");
-    return null;
   }, [target?.id]);
+
 
   if (!target) return null;
   const tooShort = reason.trim().length < 5;
