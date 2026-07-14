@@ -2110,13 +2110,13 @@ function UnverifiedGate({ status }: { status: Extract<ProSlugStatus, { exists: t
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              to="/register"
+              to="/find-a-professional"
               className="inline-flex h-10 items-center justify-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
             >
               Find a verified professional
             </Link>
             <Link
-              to="/how-verification-works"
+              to="/how-it-works"
               className="inline-flex h-10 items-center justify-center rounded-[10px] border border-reps-border bg-white/5 px-5 text-[14px] font-medium text-white/85 hover:bg-reps-panel-soft"
             >
               How verification works
