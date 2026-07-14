@@ -153,12 +153,14 @@ export async function renderCertificateWithTemplate(
   const qrPng = await renderQrPng(input.verificationUrl);
   const qrImage = await output.embedPng(qrPng);
   const providerLogoImage = await tryEmbedImageFromUrl(output, input.providerLogoUrl ?? null);
+  const levelBadgeImage = await tryEmbedLevelBadge(output, input.courseLevel);
 
   // ── Overlay page 1 (certificate)
   const page1 = output.getPage(0);
   overlayPage(page1, fieldMap.certificate ?? {}, values, input.unitSummary, fonts, {
     qr: qrImage,
     provider_logo: providerLogoImage,
+    level_badge: levelBadgeImage,
   });
 
   // ── Overlay page 2 (unit summary) if present
@@ -169,8 +171,10 @@ export async function renderCertificateWithTemplate(
     overlayPage(page2, fieldMap.unit_summary, values, input.unitSummary, fonts, {
       qr: qrImage,
       provider_logo: providerLogoImage,
+      level_badge: levelBadgeImage,
     });
   }
+
 
   return await output.save();
 }
