@@ -174,72 +174,30 @@ export const deleteCertificateTemplate = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Renders a preview using dummy learner data, returns PDF bytes as base64 */
+/** Renders a preview using dummy learner data, returns PDF bytes as base64. Uses the saved field_map. */
 export const previewCertificateTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }): Promise<{ pdf_b64: string }> => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Temporarily flag this template as default in memory by calling renderer with it
-    // Simpler: force it default for the duration of the render by loading its map directly
-    const { data: row } = await supabaseAdmin
-      .from("certificate_templates")
-      .select("*")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (!row) throw new Error("Template not found");
+    const { renderTemplatePreview } = await import("./preview.server");
+    return await renderTemplatePreview(data.id, null);
+  });
 
-    // Swap: temporarily mark this one default, render, then restore. Cheapest — call renderer with a
-    // sentinel by directly invoking with a fake-default row. We'll do a lightweight redirect:
-    // set is_default=true for this row (unsetting others), render, then restore whichever was previously default.
-    const { data: prevDefault } = await supabaseAdmin
-      .from("certificate_templates")
-      .select("id")
-      .eq("is_default", true)
-      .maybeSingle();
-    const prevDefaultId = (prevDefault as any)?.id as string | undefined;
-
-    if (prevDefaultId !== (row as any).id) {
-      if (prevDefaultId) {
-        await supabaseAdmin.from("certificate_templates").update({ is_default: false } as never).eq("id", prevDefaultId);
-      }
-      await supabaseAdmin.from("certificate_templates").update({ is_default: true } as never).eq("id", (row as any).id);
-    }
-
+/** Preview using an unsaved, in-editor field map. */
+export const previewCertificateTemplateWithMap = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({ id: z.string().uuid(), field_map_json: z.string() }).parse(i),
+  )
+  .handler(async ({ data, context }): Promise<{ pdf_b64: string }> => {
+    await assertAdmin(context.supabase, context.userId);
+    let overrideMap: unknown;
     try {
-      const { generateCertificatePdf } = await import("./pdf.server");
-      const pdfBytes = await generateCertificatePdf({
-        certificateNumber: "REPS-CERT-PREVIEW",
-        learnerName: "Jamie Sample Learner",
-        courseTitle: "Level 2 Certificate in Gym Instructing",
-        courseLevel: 2,
-        repsCourseNumber: "RC-1234",
-        ofqualNumber: "603/1234/5",
-        providerName: "Sample Training Ltd",
-        providerLogoUrl: null,
-        issuedAt: new Date(),
-        verificationUrl: "https://repsuk.org/verify/preview-token",
-        unitSummary: [
-          "Anatomy and physiology for exercise",
-          "Health, safety and welfare in a fitness environment",
-          "Principles of exercise, fitness and health",
-          "Know how to support clients who take part in exercise",
-          "Planning gym-based exercise",
-          "Instructing gym-based exercise",
-        ],
-      });
-      // Base64
-      let b64 = "";
-      const chunk = 0x8000;
-      for (let i = 0; i < pdfBytes.length; i += chunk) {
-        b64 += String.fromCharCode.apply(null, Array.from(pdfBytes.subarray(i, i + chunk)));
-      }
-      return { pdf_b64: btoa(b64) };
-    } finally {
-      if (prevDefaultId && prevDefaultId !== (row as any).id) {
-        await supabaseAdmin.from("certificate_templates").update({ is_default: false } as never).eq("id", (row as any).id);
-        await supabaseAdmin.from("certificate_templates").update({ is_default: true } as never).eq("id", prevDefaultId);
-      }
+      overrideMap = JSON.parse(data.field_map_json || "{}");
+    } catch {
+      throw new Error("field_map_json is not valid JSON");
     }
+    const { renderTemplatePreview } = await import("./preview.server");
+    return await renderTemplatePreview(data.id, overrideMap);
   });

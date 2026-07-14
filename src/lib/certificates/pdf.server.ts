@@ -102,12 +102,34 @@ export async function generateCertificatePdf(input: CertificatePdfInput): Promis
     return await generateCertificatePdfLegacy(input);
   }
 
-  const fieldMap = ((tpl as any).field_map ?? {}) as CertificateFieldMap;
+  return await renderCertificateWithTemplate(
+    {
+      certificate_pdf_path: (tpl as any).certificate_pdf_path as string,
+      unit_summary_pdf_path: ((tpl as any).unit_summary_pdf_path ?? null) as string | null,
+      field_map: ((tpl as any).field_map ?? {}) as CertificateFieldMap,
+    },
+    input,
+  );
+}
+
+/**
+ * Render a certificate against an explicit template row + field map.
+ * Used by the admin live-preview editor to render with an unsaved map.
+ */
+export async function renderCertificateWithTemplate(
+  tpl: {
+    certificate_pdf_path: string;
+    unit_summary_pdf_path: string | null;
+    field_map: CertificateFieldMap;
+  },
+  input: CertificatePdfInput,
+): Promise<Uint8Array> {
+  const fieldMap = tpl.field_map ?? ({} as CertificateFieldMap);
 
   // Fetch template PDFs
-  const certPdfBytes = await downloadTemplateBytes((tpl as any).certificate_pdf_path as string);
-  const unitPdfBytes = (tpl as any).unit_summary_pdf_path
-    ? await downloadTemplateBytes((tpl as any).unit_summary_pdf_path as string)
+  const certPdfBytes = await downloadTemplateBytes(tpl.certificate_pdf_path);
+  const unitPdfBytes = tpl.unit_summary_pdf_path
+    ? await downloadTemplateBytes(tpl.unit_summary_pdf_path)
     : null;
 
   // Start from the certificate template so its artwork/fonts are preserved
