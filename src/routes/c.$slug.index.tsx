@@ -533,16 +533,20 @@ export const Route = createFileRoute("/c/$slug/")({
   loaderDeps: ({ search }) => ({ preview: search.preview }),
   loader: async ({ params, deps }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
-    if (COACHES[params.slug]) return { gated: false as const, live: null };
+    if (COACHES[params.slug]) return { gated: false as const, live: null, unverified: null };
     // `?preview=<signed-token>` bypasses the published snapshot and reads
     // live draft content, so the editor's iframe shows unpublished edits.
-    // Un-signed / tampered tokens are ignored server-side and fall back to
-    // the snapshot.
     const live = await getWebsiteBySlug({
       data: { slug: params.slug, preview: deps.preview },
     });
-    if (!live) throw notFound();
-    return { gated: false as const, live };
+    if (live) return { gated: false as const, live, unverified: null };
+
+    // No published website found. Distinguish "not verified yet" from "no such member".
+    const status = await getProSlugPublicStatus({ data: { slug: params.slug } });
+    if (status.exists && !status.isSuspended) {
+      return { gated: true as const, live: null, unverified: status };
+    }
+    throw notFound();
   },
 
 
