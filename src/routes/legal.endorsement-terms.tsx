@@ -8,12 +8,12 @@ import { LegalLayout, type LegalSection } from "@/components/legal/LegalLayout";
  * version below so material changes force fresh acceptance on the next
  * submission.
  */
-export const ENDORSEMENT_TERMS_VERSION = "v1";
+export const ENDORSEMENT_TERMS_VERSION = "v2";
 
 const CANONICAL = "https://repsuk.org/legal/endorsement-terms";
-const META_TITLE = "REPS Endorsement Terms (v1) — for training providers";
+const META_TITLE = "REPS Endorsement Terms (v2) — for training providers";
 const META_DESC =
-  "The binding terms training providers accept when requesting REPS endorsement of a qualification or course. Covers certificate use, advertising, provider name, correct wording, learner records, suspension consequences and public-interest notices.";
+  "The binding terms training providers accept when requesting REPS endorsement of a qualification or course. Covers certificate use, trademark licence, sub-contracting ban, advertising, provider name, correct wording, learner records, suspension consequences and public-interest notices.";
 const LAST_UPDATED = "14 July 2026";
 
 export const Route = createFileRoute("/legal/endorsement-terms")({
@@ -114,23 +114,39 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: "provider-name-locked",
-    title: "Provider name is the endorsed entity",
+    title: "Provider name is the endorsed entity — no sub-contracting",
     body: (
       <>
         <p>
           REPS endorses <strong>you, under the trading name on file at the
-          time of endorsement</strong>. You may not:
+          time of endorsement</strong>, and nobody else. The endorsement is
+          personal to your entity and is <strong>strictly
+          non-transferable</strong>. You may not, under any circumstance:
         </p>
         <ul>
           <li>change your trading name and continue to advertise the
             endorsement under the new name;</li>
-          <li>transfer the endorsement to another legal entity (parent,
-            subsidiary, successor, franchise, acquirer);</li>
-          <li>sell, lease, sublicense or "white-label" the endorsement to
-            anyone else;</li>
-          <li>allow any third party to deliver the endorsed course under
-            your endorsement.</li>
+          <li>transfer, assign or novate the endorsement to another legal
+            entity (parent, subsidiary, successor, franchise, acquirer);</li>
+          <li>sell, lease, sublicense, sub-contract, "white-label",
+            "reseller-badge" or otherwise let any third party — franchisee,
+            partner, affiliate, associate tutor, sister company, contractor,
+            reseller or any other person — deliver, assess, market or issue
+            the endorsed course under your endorsement;</li>
+          <li>sub-agree, promise, imply or hold out to any third party
+            that they benefit from your REPS endorsement in any way.</li>
         </ul>
+        <p>
+          <strong>Zero tolerance.</strong> Sub-contracting or sub-agreeing
+          your endorsement to another party is treated as a material
+          breach. It results in <strong>immediate termination of your REPS
+          membership without notice or refund</strong>, and the persons and
+          entities involved will be <strong>publicly blacklisted on the
+          REPS website</strong>. Any continued use of the REPS name, mark
+          or endorsement claim by you or the third party after termination
+          is trade-mark infringement and REPS will pursue it (see
+          "REPS trademark — Class 41" below).
+        </p>
         <p>
           Legitimate name changes (rebrand, incorporation, merger) require
           written REPS approval before use. A fresh review may be required
@@ -302,6 +318,52 @@ const SECTIONS: LegalSection[] = [
           The licence ends automatically the moment the specific
           endorsement is withdrawn, suspended, or your account is
           suspended. Continued use after that point is trade-mark misuse.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "trademark-class-41",
+    title: "REPS trademark — Class 41 (education & training)",
+    body: (
+      <>
+        <p>
+          <strong>REPS holds the registered "REPS" wordmark in Class 41</strong>{" "}
+          (education, training, provision of training, arranging and
+          conducting of courses, and related services). REPS decides who
+          may use the "REPS" wordmark in connection with fitness
+          education, training, courses, qualifications, CPD or any related
+          service.
+        </p>
+        <p>
+          <strong>Nobody</strong> may use the word "REPS" — on its own,
+          as a prefix, suffix, hashtag, handle, badge, seal, watermark,
+          course name, page title, marketing claim, meta title, ad copy,
+          email signature, invoice or certificate — in association with
+          fitness education, training or CPD, unless they have{" "}
+          <strong>explicit written approval from REPS</strong>.
+        </p>
+        <p>
+          As a training provider accepted onto the REPS register, you
+          have that approval for the limited purpose of truthfully
+          referring to your current REPS-endorsed qualifications and
+          courses. <strong>That approval lasts only for as long as REPS
+          chooses to leave it in place</strong>. REPS may revoke this
+          approval at any time — automatically on suspension or
+          termination, and otherwise on written notice — after which you
+          must remove every use of the "REPS" wordmark from your
+          website, socials, ads, PDFs, printed material, email templates
+          and third-party listings within seven days.
+        </p>
+        <p>
+          Any use of the "REPS" wordmark in connection with fitness
+          education by any person or entity <strong>without a current
+          REPS approval — including by anyone you have sub-contracted,
+          resold to, franchised to or otherwise associated with — is
+          trademark infringement</strong>, and REPS will enforce its
+          Class 41 rights. You are responsible for the use of the "REPS"
+          wordmark by anyone acting under your name, brand or supply
+          chain.
         </p>
       </>
     ),
