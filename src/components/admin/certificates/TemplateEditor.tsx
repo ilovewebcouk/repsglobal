@@ -7,8 +7,8 @@
  *  - Right: live PDF preview rasterised via pdfjs-dist, with draggable
  *          markers overlaid so admins can position fields visually.
  *
- * Coordinates: pdf-lib native — points from the bottom-left of the page.
- * pdfjs viewport is top-left, so we flip Y when converting canvas ↔ map.
+ * Coordinates: **top-left origin, Y grows downward** (matches Adobe
+ * Illustrator). pdfjs viewport is also top-left, so no Y flip is needed.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
