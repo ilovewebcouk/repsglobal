@@ -1120,19 +1120,22 @@ function CertificatesTab({ certs }: { certs: RegistrationDTO[] }) {
   const publicBase = typeof window === "undefined" ? "https://repsuk.org" : window.location.origin;
 
   return (
-    <PPanel>
-      <div className="border-b border-reps-border p-4">
-        <h2 className="text-[15px] font-semibold text-white">Issued certificates</h2>
-        <p className="mt-0.5 text-[12.5px] text-white/55">
-          Forward these to your learners. Every certificate carries a QR code that anyone can scan to
-          verify it on REPS.
-        </p>
-      </div>
-      {certs.length === 0 ? (
-        <div className="p-8 text-center text-[13px] text-white/55">
-          No certificates yet. Pay for a basket of registrations to have REPS issue them.
+    <div className="space-y-4">
+      <ProviderCertificateBrandingCard />
+
+      <PPanel>
+        <div className="border-b border-reps-border p-4">
+          <h2 className="text-[15px] font-semibold text-white">Issued certificates</h2>
+          <p className="mt-0.5 text-[12.5px] text-white/55">
+            Forward these to your learners. Every certificate carries a QR code that anyone can scan to
+            verify it on REPS.
+          </p>
         </div>
-      ) : (
+        {certs.length === 0 ? (
+          <div className="p-8 text-center text-[13px] text-white/55">
+            No certificates yet. Pay for a basket of registrations to have REPS issue them.
+          </div>
+        ) : (
         <ul className="divide-y divide-reps-border">
           {certs.map((r) => (
             <li key={r.id} className="flex items-center gap-3 p-4">
