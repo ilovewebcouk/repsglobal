@@ -201,6 +201,8 @@ function buildFieldValues(input: CertificatePdfInput): Record<string, string> {
     reps_course_number: input.repsCourseNumber ?? "",
     ofqual_number: input.ofqualNumber ?? "",
     provider_name: input.providerName,
+    center_number: input.providerCenterNumber ?? "",
+    center_number_line: input.providerCenterNumber ? `Centre No. ${input.providerCenterNumber}` : "",
     verify_url: input.verificationUrl.replace(/^https?:\/\//, ""),
   };
 }
