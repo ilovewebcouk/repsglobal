@@ -1065,13 +1065,6 @@ function TemplateRow({
   onPreview: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
-  const [json, setJson] = useState(() => {
-    try {
-      return JSON.stringify(JSON.parse(template.field_map_json), null, 2);
-    } catch {
-      return template.field_map_json;
-    }
-  });
 
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
@@ -1087,7 +1080,7 @@ function TemplateRow({
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="ghost" onClick={onPreview}>
-            Preview
+            Open PDF
           </Button>
           {!template.is_default && (
             <Button variant="ghost" onClick={onSetDefault}>
@@ -1095,7 +1088,7 @@ function TemplateRow({
             </Button>
           )}
           <Button variant="ghost" onClick={() => setEditing((v) => !v)}>
-            {editing ? "Cancel" : "Edit field map"}
+            {editing ? "Close editor" : "Edit & preview"}
           </Button>
           <Button variant="ghost" onClick={onDelete}>
             <ShieldOff className="mr-1 h-3.5 w-3.5" />
@@ -1105,30 +1098,15 @@ function TemplateRow({
       </div>
 
       {editing && (
-        <div className="mt-3 space-y-2">
-          <textarea
-            value={json}
-            onChange={(e) => setJson(e.target.value)}
-            rows={16}
-            className="w-full rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-[11px] text-white/90"
-          />
-          <div className="flex justify-end">
-            <Button
-              onClick={async () => {
-                try {
-                  JSON.parse(json);
-                } catch {
-                  toast.error("Not valid JSON");
-                  return;
-                }
-                await onSaveMap(json);
-                setEditing(false);
-              }}
-            >
-              Save field map
-            </Button>
-          </div>
-        </div>
+        <TemplateEditor
+          templateId={template.id}
+          initialFieldMapJson={template.field_map_json}
+          onSave={async (json) => {
+            await onSaveMap(json);
+            setEditing(false);
+          }}
+          onCancel={() => setEditing(false)}
+        />
       )}
     </div>
   );
