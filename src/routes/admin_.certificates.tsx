@@ -1137,12 +1137,15 @@ function ProvidersPanel() {
   const qc = useQueryClient();
   const list = useServerFn(listProviderCenterNumbers);
   const save = useServerFn(setProviderCenterNumber);
+  const saveLogo = useServerFn(setProviderCertificateLogo);
+  const clearLogo = useServerFn(clearProviderCertificateLogo);
   const { data, isLoading } = useQuery({
     queryKey: ["admin-provider-center-numbers"],
     queryFn: () => list({ data: undefined as never }),
   });
   const [filter, setFilter] = useState("");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: (payload: { provider_id: string; center_number: string | null }) =>
@@ -1153,6 +1156,66 @@ function ProvidersPanel() {
     },
     onError: (e: any) => toast.error(e?.message ?? "Could not save"),
   });
+
+  async function readImageDims(file: File): Promise<{ w: number; h: number }> {
+    const url = URL.createObjectURL(file);
+    try {
+      return await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => reject(new Error("Could not read image"));
+        img.src = url;
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async function fileToBase64Only(file: File): Promise<string> {
+    return await fileToBase64(file);
+  }
+
+  async function onPickLogo(providerId: string, file: File) {
+    if (file.type !== "image/png" && file.type !== "image/jpeg") {
+      toast.error("Logo must be a PNG or JPEG");
+      return;
+    }
+    try {
+      const dims = await readImageDims(file);
+      if (dims.w !== 160 || dims.h !== 60) {
+        toast.error(`Logo must be exactly 160×60 px — got ${dims.w}×${dims.h}`);
+        return;
+      }
+      setUploadingId(providerId);
+      const b64 = await fileToBase64Only(file);
+      await saveLogo({
+        data: {
+          provider_id: providerId,
+          data_base64: b64,
+          mime: file.type as "image/png" | "image/jpeg",
+        },
+      });
+      toast.success("Logo uploaded");
+      qc.invalidateQueries({ queryKey: ["admin-provider-center-numbers"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not upload logo");
+    } finally {
+      setUploadingId(null);
+    }
+  }
+
+  async function onRemoveLogo(providerId: string) {
+    try {
+      setUploadingId(providerId);
+      await clearLogo({ data: { provider_id: providerId } });
+      toast.success("Logo removed");
+      qc.invalidateQueries({ queryKey: ["admin-provider-center-numbers"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not remove logo");
+    } finally {
+      setUploadingId(null);
+    }
+  }
 
   const rows = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -1170,10 +1233,10 @@ function ProvidersPanel() {
       <PCard>
         <div className="p-6">
           <div className="mb-4">
-            <h2 className="font-display text-lg">Provider centre numbers</h2>
+            <h2 className="font-display text-lg">Provider certificate settings</h2>
             <p className="mt-0.5 text-[12.5px] text-white/50">
-              Prints on certificates as "Centre No. &lt;number&gt;" beneath the provider name.
-              Leave blank to omit.
+              Centre number prints as "Centre No. &lt;number&gt;" beneath the provider name.
+              Certificate logo must be exactly <strong>160×60 px</strong> (PNG or JPEG) — no exceptions.
             </p>
           </div>
           <div className="mb-3">
@@ -1194,10 +1257,11 @@ function ProvidersPanel() {
               {rows.map((r) => {
                 const draft = drafts[r.provider_id] ?? r.center_number ?? "";
                 const dirty = draft !== (r.center_number ?? "");
+                const isUploading = uploadingId === r.provider_id;
                 return (
                   <div
                     key={r.provider_id}
-                    className="flex flex-wrap items-center gap-3 py-3"
+                    className="flex flex-wrap items-start gap-3 py-4"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[14px] text-white/90">
@@ -1206,8 +1270,60 @@ function ProvidersPanel() {
                       <div className="truncate text-[11.5px] text-white/40">
                         {r.provider_id}
                       </div>
+
+                      {/* Logo row */}
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="flex h-[60px] w-[160px] items-center justify-center rounded-[10px] border border-white/10 bg-white/[0.03]">
+                          {r.certificate_logo_url ? (
+                            <img
+                              src={r.certificate_logo_url}
+                              alt="Provider logo"
+                              width={160}
+                              height={60}
+                              className="h-[60px] w-[160px] object-contain"
+                            />
+                          ) : (
+                            <span className="text-[11px] text-white/40">160 × 60</span>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg"
+                              className="hidden"
+                              disabled={isUploading}
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) void onPickLogo(r.provider_id, f);
+                                e.target.value = "";
+                              }}
+                            />
+                            <span className="inline-flex h-8 items-center rounded-[10px] border border-white/15 bg-white/5 px-3 text-[12.5px] text-white/85 hover:bg-white/10">
+                              {isUploading
+                                ? "Uploading…"
+                                : r.certificate_logo_url
+                                  ? "Replace logo"
+                                  : "Upload logo"}
+                            </span>
+                          </label>
+                          {r.certificate_logo_url && (
+                            <button
+                              type="button"
+                              disabled={isUploading}
+                              onClick={() => void onRemoveLogo(r.provider_id)}
+                              className="text-left text-[11.5px] text-white/50 hover:text-white/80"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     <div className="w-52">
+                      <div className="mb-1 text-[11px] uppercase tracking-wide text-white/40">
+                        Centre number
+                      </div>
                       <Input
                         placeholder="e.g. REPS-000123"
                         value={draft}
@@ -1215,19 +1331,21 @@ function ProvidersPanel() {
                           setDrafts((s) => ({ ...s, [r.provider_id]: e.target.value }))
                         }
                       />
+                      <div className="mt-2">
+                        <Button
+                          variant={dirty ? "primary" : "subtle"}
+                          disabled={!dirty || mutation.isPending}
+                          onClick={() =>
+                            mutation.mutate({
+                              provider_id: r.provider_id,
+                              center_number: draft.trim() ? draft.trim() : null,
+                            })
+                          }
+                        >
+                          Save
+                        </Button>
+                      </div>
                     </div>
-                    <Button
-                      variant={dirty ? "primary" : "subtle"}
-                      disabled={!dirty || mutation.isPending}
-                      onClick={() =>
-                        mutation.mutate({
-                          provider_id: r.provider_id,
-                          center_number: draft.trim() ? draft.trim() : null,
-                        })
-                      }
-                    >
-                      Save
-                    </Button>
                   </div>
                 );
               })}
@@ -1238,4 +1356,5 @@ function ProvidersPanel() {
     </div>
   );
 }
+
 
