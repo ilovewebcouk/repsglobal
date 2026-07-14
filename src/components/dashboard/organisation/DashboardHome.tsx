@@ -22,6 +22,8 @@ import {
   CompletenessCard,
   CpdMini,
   NeedsAttention,
+  ProviderNeedsAttention,
+  ProviderReadinessCard,
   ProUpsellStrip,
   ReviewsSnapshot,
   VerificationStatusCard,
@@ -165,18 +167,15 @@ export function ProviderDashboardHome() {
 
           <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
             <div className="min-h-[340px] xl:col-span-8">
-              <NeedsAttention
-                unreadEnquiries={0}
-                pendingReviewReplies={0}
+              <ProviderNeedsAttention
+                unreadEnquiries={enqStats?.unread ?? 0}
+                pendingReviewReplies={hub.pendingReviewReplies}
                 unreadSupport={hub.supportUnread}
-                insuranceExpiringDays={insuranceExpiringDays}
-                insuranceExpired={insuranceExpired}
-                readiness={hub.readiness.data ?? null}
-                trust={hub.trust.data ?? null}
+                providerReadiness={hub.providerReadiness.data ?? null}
               />
             </div>
             <div className="min-h-[340px] xl:col-span-4">
-              <CompletenessCard readiness={hub.readiness.data ?? null} />
+              <ProviderReadinessCard providerReadiness={hub.providerReadiness.data ?? null} />
             </div>
           </div>
         </div>
