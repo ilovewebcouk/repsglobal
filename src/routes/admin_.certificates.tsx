@@ -42,6 +42,10 @@ import {
   type CertificateTemplateDTO,
 } from "@/lib/certificates/templates.functions";
 import { TemplateEditor } from "@/components/admin/certificates/TemplateEditor";
+import {
+  listProviderCenterNumbers,
+  setProviderCenterNumber,
+} from "@/lib/certificates/providers.functions";
 
 export const Route = createFileRoute("/admin_/certificates")({
   head: () => ({
