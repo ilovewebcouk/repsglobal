@@ -162,6 +162,7 @@ export async function generateCertificatePdfLegacy(input: CertificatePdfInput): 
     ["Certificate No.", input.certificateNumber],
     ["Issued", input.issuedAt.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })],
     ["Provider", input.providerName],
+    ...(input.providerCenterNumber ? [["Centre No.", input.providerCenterNumber] as [string, string]] : []),
     ...(input.repsCourseNumber ? [["REPS Course No.", input.repsCourseNumber] as [string, string]] : []),
     ...(input.ofqualNumber ? [["Ofqual No.", input.ofqualNumber] as [string, string]] : []),
   ];
