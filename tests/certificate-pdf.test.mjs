@@ -204,16 +204,32 @@ test("unit summary paginates at 12 modules per page", async () => {
       `n=${n}: expected ${expectedUnitPages} unit page(s), got ${unitPages}`,
     );
 
-    // Verify the last unit page's content stream contains the last-numbered
-    // item, proving order was preserved across the pagination boundary.
+    // Verify the last unit page contains the last-numbered item, proving
+    // order was preserved across the pagination boundary, AND the first
+    // continuation page (page 2, unit-page index 0) starts with item 1.
+    // pdf-lib emits text as hex strings like `<312E> Tj` for "1.".
+    const toHex = (s) =>
+      Array.from(s)
+        .map((c) => c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0"))
+        .join("");
     const lastPage = doc.getPage(totalPages - 1);
-    const decoded = decodePageContent(lastPage);
-    // The list numbers items 1..n across pages. The last page must show `${n}.`.
-    // pdf-lib emits text as `(literal) Tj` — so we look for `(${n}.)`.
-    assert.ok(
-      decoded.includes(`(${n}.)`),
-      `n=${n}: last unit page should contain item number ${n}`,
+    const lastDecoded = decodePageContent(lastPage);
+    assert.match(
+      lastDecoded,
+      new RegExp(`<${toHex(`${n}.`)}>\\s*Tj`),
+      `n=${n}: last unit page should contain item number ${n}.`,
     );
+    // Every unit page's first item must be 1 + (pageIndex * 12).
+    for (let p = 0; p < expectedUnitPages; p++) {
+      const page = doc.getPage(1 + p);
+      const dec = decodePageContent(page);
+      const firstItem = 1 + p * 12;
+      assert.match(
+        dec,
+        new RegExp(`<${toHex(`${firstItem}.`)}>\\s*Tj`),
+        `n=${n}: unit page ${p + 1} should start at item ${firstItem}.`,
+      );
+    }
   }
 });
 
