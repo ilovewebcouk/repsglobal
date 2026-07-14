@@ -1393,16 +1393,16 @@ function EditEmailButton({ userId, currentEmail }: { userId: string; currentEmai
         <Pencil className="size-3" />
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="border-reps-border bg-reps-ink">
+        <DialogContent className="border-reps-border bg-reps-ink text-white">
           <DialogHeader>
-            <DialogTitle>Change login email</DialogTitle>
-            <DialogDescription>
-              Updates the member's `auth.users` email and marks it confirmed. The change is written to the admin audit log.
+            <DialogTitle className="text-white">Change login email</DialogTitle>
+            <DialogDescription className="text-white/70">
+              Updates the member's login email and marks it confirmed. The change is written to the admin audit log.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="new-email">New email</Label>
+              <Label htmlFor="new-email" className="text-white">New email</Label>
               <Input
                 id="new-email"
                 type="email"
@@ -1410,21 +1410,29 @@ function EditEmailButton({ userId, currentEmail }: { userId: string; currentEmai
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="member@example.com"
+                className="border-reps-border bg-reps-panel/60 text-white placeholder:text-white/40"
               />
-              <p className="text-[11px] text-white/45">Current: {currentEmail ?? "none"}</p>
+              <p className="text-[11px] text-white/60">Current: {currentEmail ?? "none"}</p>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="reason">Reason (audit)</Label>
+              <Label htmlFor="reason" className="text-white">Reason (audit)</Label>
               <Textarea
                 id="reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={2}
                 placeholder="e.g. member asked to correct typo in signup email"
+                className="border-reps-border bg-reps-panel/60 text-white placeholder:text-white/40"
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={busy}
+                className="border-reps-border bg-white/5 text-white hover:bg-reps-panel-soft hover:text-white"
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={busy} className="bg-reps-orange text-white hover:bg-reps-orange-hover">
@@ -1434,6 +1442,7 @@ function EditEmailButton({ userId, currentEmail }: { userId: string; currentEmai
           </form>
         </DialogContent>
       </Dialog>
+
     </>
   );
 }

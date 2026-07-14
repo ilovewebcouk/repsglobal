@@ -13,6 +13,7 @@ import {
 } from "@/lib/website/website.functions";
 import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
+import { getProSlugPublicStatus, type ProSlugStatus } from "@/lib/website/slug-status.functions";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -532,16 +533,20 @@ export const Route = createFileRoute("/c/$slug/")({
   loaderDeps: ({ search }) => ({ preview: search.preview }),
   loader: async ({ params, deps }) => {
     // Fixture coaches (mock-up slugs) always render — no gating.
-    if (COACHES[params.slug]) return { gated: false as const, live: null };
+    if (COACHES[params.slug]) return { gated: false as const, live: null, unverified: null };
     // `?preview=<signed-token>` bypasses the published snapshot and reads
     // live draft content, so the editor's iframe shows unpublished edits.
-    // Un-signed / tampered tokens are ignored server-side and fall back to
-    // the snapshot.
     const live = await getWebsiteBySlug({
       data: { slug: params.slug, preview: deps.preview },
     });
-    if (!live) throw notFound();
-    return { gated: false as const, live };
+    if (live) return { gated: false as const, live, unverified: null };
+
+    // No published website found. Distinguish "not verified yet" from "no such member".
+    const status = await getProSlugPublicStatus({ data: { slug: params.slug } });
+    if (status.exists && !status.isSuspended) {
+      return { gated: true as const, live: null, unverified: status };
+    }
+    throw notFound();
   },
 
 
@@ -570,9 +575,22 @@ export const Route = createFileRoute("/c/$slug/")({
       };
     }
 
-    const sf = loaderData?.live?.website;
     const canonical = `https://repsuk.org/c/${params.slug}`;
 
+    // Unverified gate page — always noindex, generic copy, no PII in title.
+    if (loaderData?.gated) {
+      const first = loaderData.unverified?.firstName ?? "This member";
+      return {
+        meta: [
+          { title: `${first} — Not yet verified on REPS` },
+          { name: "description", content: `${first} has not completed REPs verification yet. Members only appear publicly once their ID, insurance and qualifications are independently verified.` },
+          { name: "robots", content: "noindex, nofollow" },
+        ],
+        links: [{ rel: "canonical", href: canonical }],
+      };
+    }
+
+    const sf = loaderData?.live?.website;
     if (!sf) {
       return {
         meta: [
@@ -680,6 +698,11 @@ function CoachWebsitePage() {
     staleTime: 60_000,
     enabled: !isFixture,
   });
+  // Unverified gate — pro exists but hasn't completed REPs verification.
+  if (loaderData?.gated && loaderData.unverified?.exists) {
+    return <UnverifiedGate status={loaderData.unverified} />;
+  }
+
 
   if (isFixture) {
     if (!mounted || authLoading) {
@@ -2035,3 +2058,73 @@ function StickyMobileBar({
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Unverified gate                                                    */
+/* ------------------------------------------------------------------ */
+
+function UnverifiedGate({ status }: { status: Extract<ProSlugStatus, { exists: true }> }) {
+  const first = status.firstName ?? "This member";
+  return (
+    <div className="flex min-h-screen flex-col bg-reps-ink text-reps-text">
+      <SiteBanner />
+      <header className="border-b border-reps-border">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+          <Link to="/" className="inline-flex items-center gap-2">
+            <RepsWordmark className="h-5 text-white" />
+          </Link>
+          <Link
+            to="/find-a-professional"
+            className="rounded-[10px] border border-reps-border bg-white/5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-reps-panel-soft"
+          >
+            Browse verified members
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-xl rounded-[22px] border border-reps-border bg-reps-panel/40 p-8 text-center">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/70">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+
+          <h1 className="mt-6 font-display text-[28px] font-bold leading-tight text-white lg:text-[36px]">
+            {first} isn't verified on REPs yet
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/70">
+            Members only appear publicly once REPs has independently verified their ID,
+            insurance and qualifications. Until then, this page isn't available.
+          </p>
+
+          <div className="mt-6 rounded-[14px] border border-reps-border bg-reps-ink/60 px-5 py-4 text-left text-[13px] text-white/65">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+              What REPs verifies
+            </div>
+            <ul className="mt-3 space-y-1.5">
+              <li>· Government-issued photo ID</li>
+              <li>· In-force public liability insurance</li>
+              <li>· Recognised qualifications (Ofqual / awarding body)</li>
+            </ul>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Link
+              to="/find-a-professional"
+              className="inline-flex h-10 items-center justify-center rounded-[10px] bg-reps-orange px-5 text-[14px] font-semibold text-white hover:bg-reps-orange-hover"
+            >
+              Find a verified professional
+            </Link>
+            <Link
+              to="/how-it-works"
+              className="inline-flex h-10 items-center justify-center rounded-[10px] border border-reps-border bg-white/5 px-5 text-[14px] font-medium text-white/85 hover:bg-reps-panel-soft"
+            >
+              How verification works
+            </Link>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
