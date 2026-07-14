@@ -17,13 +17,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { PDFDocument, StandardFonts, rgb, PDFName, PDFRawStream } from "pdf-lib";
-import { register } from "node:module";
-import { pathToFileURL } from "node:url";
+import { PDFDocument, PDFName, PDFRawStream, rgb } from "pdf-lib";
 
-// Register tsx so we can import the .ts renderer.
-register("tsx/esm", pathToFileURL("./"));
-
+// tsx is registered via `node --import tsx` (see package.json scripts).
 const { renderCertificateFromBytes } = await import(
   "../src/lib/certificates/pdf.server.ts"
 );
