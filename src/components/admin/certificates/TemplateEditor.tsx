@@ -39,7 +39,7 @@ type TextField = {
 };
 
 type ImageField = {
-  field: "qr_code" | "provider_logo";
+  field: "qr_code" | "provider_logo" | "level_badge";
   x: number;
   y: number;
   width: number;
@@ -383,6 +383,21 @@ function FieldsPanel({
             >
               + Logo
             </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() =>
+                onChange((p) => ({
+                  ...p,
+                  images: [
+                    ...(p.images ?? []),
+                    { field: "level_badge", x: 700, y: 60, width: 90, height: 90 },
+                  ],
+                }))
+              }
+            >
+              + Level badge
+            </Button>
           </div>
         </div>
         <div className="space-y-2">
@@ -582,6 +597,7 @@ function ImageFieldRow({
         >
           <option value="qr_code">qr_code</option>
           <option value="provider_logo">provider_logo</option>
+          <option value="level_badge">level_badge</option>
         </select>
         <button onClick={onRemove} className="text-[11px] text-white/40 hover:text-white/80">
           Remove
