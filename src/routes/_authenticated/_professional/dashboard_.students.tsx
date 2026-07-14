@@ -1185,8 +1185,141 @@ function CertificatesTab({ certs }: { certs: RegistrationDTO[] }) {
               </div>
             </li>
           ))}
-        </ul>
-      )}
+          </ul>
+        )}
+      </PPanel>
+    </div>
+  );
+}
+
+function ProviderCertificateBrandingCard() {
+  const qc = useQueryClient();
+  const get = useServerFn(getMyProviderBranding);
+  const save = useServerFn(setMyProviderCertificateLogo);
+  const remove = useServerFn(clearMyProviderCertificateLogo);
+  const [uploading, setUploading] = React.useState(false);
+
+  const { data } = useQuery({
+    queryKey: ["my-provider-branding"],
+    queryFn: () => get({ data: undefined as never }),
+  });
+
+  async function readDims(file: File): Promise<{ w: number; h: number }> {
+    const url = URL.createObjectURL(file);
+    try {
+      return await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => reject(new Error("Could not read image"));
+        img.src = url;
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async function toBase64(file: File): Promise<string> {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    let s = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < buf.length; i += chunk) {
+      s += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + chunk)));
+    }
+    return btoa(s);
+  }
+
+  async function onPick(file: File) {
+    if (file.type !== "image/png" && file.type !== "image/jpeg") {
+      toast.error("Logo must be a PNG or JPEG");
+      return;
+    }
+    try {
+      const dims = await readDims(file);
+      if (dims.w !== 160 || dims.h !== 60) {
+        toast.error(`Logo must be exactly 160×60 px — got ${dims.w}×${dims.h}`);
+        return;
+      }
+      setUploading(true);
+      const b64 = await toBase64(file);
+      await save({
+        data: { data_base64: b64, mime: file.type as "image/png" | "image/jpeg" },
+      });
+      toast.success("Logo uploaded");
+      qc.invalidateQueries({ queryKey: ["my-provider-branding"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not upload logo");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function onRemove() {
+    try {
+      setUploading(true);
+      await remove({ data: undefined as never });
+      toast.success("Logo removed");
+      qc.invalidateQueries({ queryKey: ["my-provider-branding"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not remove logo");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const logoUrl = data?.certificate_logo_url ?? null;
+
+  return (
+    <PPanel>
+      <div className="border-b border-reps-border p-4">
+        <h2 className="text-[15px] font-semibold text-white">Certificate branding</h2>
+        <p className="mt-0.5 text-[12.5px] text-white/55">
+          PNG or JPG, exactly <strong>160 × 60 pixels</strong>. This logo appears on every
+          certificate you issue.
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-4 p-4">
+        <div className="flex h-[60px] w-[160px] items-center justify-center rounded-[10px] border border-reps-border bg-white/[0.03]">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Your certificate logo"
+              width={160}
+              height={60}
+              className="h-[60px] w-[160px] object-contain"
+            />
+          ) : (
+            <span className="text-[11px] text-white/40">160 × 60</span>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept="image/png,image/jpeg"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void onPick(f);
+                e.target.value = "";
+              }}
+            />
+            <span className="inline-flex h-8 items-center rounded-[10px] border border-white/15 bg-white/5 px-3 text-[12.5px] text-white/85 hover:bg-white/10">
+              {uploading ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
+            </span>
+          </label>
+          {logoUrl && (
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => void onRemove()}
+              className="text-left text-[11.5px] text-white/50 hover:text-white/80"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
     </PPanel>
   );
 }
