@@ -698,6 +698,11 @@ function CoachWebsitePage() {
     staleTime: 60_000,
     enabled: !isFixture,
   });
+  // Unverified gate — pro exists but hasn't completed REPs verification.
+  if (loaderData?.gated && loaderData.unverified?.exists) {
+    return <UnverifiedGate status={loaderData.unverified} />;
+  }
+
 
   if (isFixture) {
     if (!mounted || authLoading) {
