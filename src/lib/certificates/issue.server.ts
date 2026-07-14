@@ -32,6 +32,36 @@ export async function issueCertificatesForBatch(batchId: string): Promise<void> 
   const providerLogoUrl = ((providerProfile as any)?.certificate_logo_url as string | null) ?? null;
   const providerCenterNumber = ((providerProfile as any)?.center_number as string | null) ?? null;
 
+  // Belt-and-braces: if the provider removed their logo between checkout and
+  // issuance, do NOT render certificates without it. Park the batch and email
+  // the provider so they can restore the logo and we can reissue.
+  if (!providerLogoUrl) {
+    console.error(`[cert-issue] batch ${batchId} blocked — provider ${providerId} has no certificate_logo_url`);
+    await supabaseAdmin
+      .from("certificate_batches")
+      .update({ status: "blocked_no_logo", admin_note: "Provider certificate logo missing at issuance time." } as never)
+      .eq("id", batchId);
+    try {
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(providerId);
+      const providerEmail = authUser?.user?.email ?? null;
+      if (providerEmail) {
+        const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+        await sendTransactionalEmailServer({
+          templateName: "certificates-blocked-no-logo",
+          recipientEmail: providerEmail,
+          idempotencyKey: `cert-batch-blocked-no-logo:${batchId}`,
+          templateData: { providerName, batchId },
+        }).catch(() => {
+          // Template may not exist yet — logging is enough for now.
+        });
+      }
+    } catch (err) {
+      console.error("[cert-issue] provider no-logo notification failed", err);
+    }
+    return;
+  }
+
+
   // Load all registrations in this batch
   const { data: regs } = await supabaseAdmin
     .from("certificate_registrations")
