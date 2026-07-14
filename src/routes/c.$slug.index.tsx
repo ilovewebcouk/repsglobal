@@ -765,14 +765,14 @@ function CoachWebsitePage() {
 
   return (
     <div data-coach-theme={coach.theme ?? "dark"} className="min-h-screen bg-reps-ink text-reps-text" style={accentStyle}>
-      <SiteBanner />
       {showPlaceholderBanner ? (
         <TemplateContentBanner
-          firstName={(coach.name ?? "").split("")[0] || "This coach"}
+          firstName={(coach.name ?? "").split(" ")[0] || "This professional"}
           isOwnerViewing={isOwnerViewing}
         />
       ) : null}
       <ChromeBar coach={coach} />
+
       <SectionNav />
 
       <HeroSection coach={coach} enquireHref={enquireHref} slug={slug} />
