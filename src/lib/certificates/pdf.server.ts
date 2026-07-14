@@ -200,16 +200,35 @@ export async function renderCertificateWithTemplate(
     level_badge: levelBadgeImage,
   });
 
-  // ── Overlay page 2 (unit summary) if present
+  // ── Overlay unit summary pages (12 modules per page)
   if (unitPdfBytes && fieldMap.unit_summary) {
     const unitDoc = await PDFDocument.load(unitPdfBytes);
-    const [copied] = await output.copyPages(unitDoc, [0]);
-    const page2 = output.addPage(copied);
-    overlayPage(page2, fieldMap.unit_summary, values, input.unitSummary, fonts, {
-      qr: qrImage,
-      provider_logo: providerLogoImage,
-      level_badge: levelBadgeImage,
-    });
+    const items = input.unitSummary ?? [];
+    const chunks: string[][] = [];
+    if (items.length === 0) {
+      chunks.push([]);
+    } else {
+      for (let i = 0; i < items.length; i += UNITS_PER_PAGE) {
+        chunks.push(items.slice(i, i + UNITS_PER_PAGE));
+      }
+    }
+    for (let c = 0; c < chunks.length; c++) {
+      const [copied] = await output.copyPages(unitDoc, [0]);
+      const page = output.addPage(copied);
+      overlayPage(
+        page,
+        fieldMap.unit_summary,
+        values,
+        chunks[c],
+        fonts,
+        {
+          qr: qrImage,
+          provider_logo: providerLogoImage,
+          level_badge: levelBadgeImage,
+        },
+        { listStartIndex: c * UNITS_PER_PAGE, listTotalCount: items.length },
+      );
+    }
   }
 
 
@@ -277,10 +296,17 @@ async function tryEmbedImageFromUrl(
 // ─────────────────────────────────────────────────────────────────────────────
 // Rendering
 
+const UNITS_PER_PAGE = 12;
+
 type EmbeddedFonts = {
   regular: Awaited<ReturnType<PDFDocument["embedFont"]>>;
   bold: Awaited<ReturnType<PDFDocument["embedFont"]>>;
   italic: Awaited<ReturnType<PDFDocument["embedFont"]>>;
+};
+
+type OverlayOpts = {
+  listStartIndex?: number;
+  listTotalCount?: number;
 };
 
 function overlayPage(
@@ -294,6 +320,7 @@ function overlayPage(
     provider_logo: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
     level_badge: Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
   },
+  opts: OverlayOpts = {},
 ): void {
   const pageH = page.getHeight();
   for (const t of map.text ?? []) {
@@ -307,13 +334,13 @@ function overlayPage(
     if (img.field === "qr_code") {
       page.drawImage(images.qr, { x: img.x, y: pdfY, width: img.width, height: img.height });
     } else if (img.field === "provider_logo" && images.provider_logo) {
-      const src = images.provider_logo;
-      const scale = Math.min(img.width / src.width, img.height / src.height);
-      const w = src.width * scale;
-      const h = src.height * scale;
-      const cx = img.x + (img.width - w) / 2;
-      const cy = pdfY + (img.height - h) / 2;
-      page.drawImage(src, { x: cx, y: cy, width: w, height: h });
+      // Enforced 160×60 on upload — fill the box exactly, no letterbox.
+      page.drawImage(images.provider_logo, {
+        x: img.x,
+        y: pdfY,
+        width: img.width,
+        height: img.height,
+      });
     } else if (img.field === "level_badge" && images.level_badge) {
       const src = images.level_badge;
       const scale = Math.min(img.width / src.width, img.height / src.height);
@@ -325,9 +352,10 @@ function overlayPage(
     }
   }
   if (map.list && map.list.field === "unit_summary") {
-    drawList(page, map.list, units, fonts, pageH);
+    drawList(page, map.list, units, fonts, pageH, opts.listStartIndex ?? 0, opts.listTotalCount);
   }
 }
+
 
 
 function drawText(
@@ -359,16 +387,19 @@ function drawList(
   items: string[] | undefined,
   fonts: EmbeddedFonts,
   pageH: number,
+  startIndex: number = 0,
+  totalCount?: number,
 ): void {
-  const list = (items ?? []).slice(0, l.maxItems ?? 40);
+  const list = items ?? [];
   if (list.length === 0) return;
   const size = l.fontSize ?? 10;
   const lh = l.lineHeight ?? 14;
   const color = hexToRgb(l.color ?? "#111111");
   const numberColor = hexToRgb(l.bulletColor ?? "#e97316");
   const font = fonts.regular;
-  // Reserve gutter width based on widest number label (e.g. "10.") so wrapped text left-aligns.
-  const widestLabel = `${list.length}.`;
+  // Reserve gutter width based on widest number label across the whole list
+  // (not just this page's chunk), so left margins stay consistent across pages.
+  const widestLabel = `${totalCount ?? startIndex + list.length}.`;
   const labelWidth = font.widthOfTextAtSize(widestLabel + "  ", size);
   // Top-left origin: l.y is the top of the first line's glyph box.
   let y = pageH - l.y - size;
@@ -378,7 +409,7 @@ function drawList(
     const lines = wrapText(raw, maxCharsPerLine);
     for (let i = 0; i < lines.length; i++) {
       if (i === 0) {
-        page.drawText(`${idx + 1}.`, { x: l.x, y, size, font, color: numberColor });
+        page.drawText(`${idx + 1 + startIndex}.`, { x: l.x, y, size, font, color: numberColor });
       }
       page.drawText(lines[i], { x: l.x + labelWidth, y, size, font, color, maxWidth: l.maxWidth - labelWidth });
       y -= lh;
@@ -386,6 +417,7 @@ function drawList(
     y -= 4;
   }
 }
+
 
 function hexToRgb(hex: string) {
   const clean = hex.replace("#", "");
