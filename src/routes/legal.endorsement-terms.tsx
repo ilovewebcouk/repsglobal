@@ -114,23 +114,39 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: "provider-name-locked",
-    title: "Provider name is the endorsed entity",
+    title: "Provider name is the endorsed entity — no sub-contracting",
     body: (
       <>
         <p>
           REPS endorses <strong>you, under the trading name on file at the
-          time of endorsement</strong>. You may not:
+          time of endorsement</strong>, and nobody else. The endorsement is
+          personal to your entity and is <strong>strictly
+          non-transferable</strong>. You may not, under any circumstance:
         </p>
         <ul>
           <li>change your trading name and continue to advertise the
             endorsement under the new name;</li>
-          <li>transfer the endorsement to another legal entity (parent,
-            subsidiary, successor, franchise, acquirer);</li>
-          <li>sell, lease, sublicense or "white-label" the endorsement to
-            anyone else;</li>
-          <li>allow any third party to deliver the endorsed course under
-            your endorsement.</li>
+          <li>transfer, assign or novate the endorsement to another legal
+            entity (parent, subsidiary, successor, franchise, acquirer);</li>
+          <li>sell, lease, sublicense, sub-contract, "white-label",
+            "reseller-badge" or otherwise let any third party — franchisee,
+            partner, affiliate, associate tutor, sister company, contractor,
+            reseller or any other person — deliver, assess, market or issue
+            the endorsed course under your endorsement;</li>
+          <li>sub-agree, promise, imply or hold out to any third party
+            that they benefit from your REPS endorsement in any way.</li>
         </ul>
+        <p>
+          <strong>Zero tolerance.</strong> Sub-contracting or sub-agreeing
+          your endorsement to another party is treated as a material
+          breach. It results in <strong>immediate termination of your REPS
+          membership without notice or refund</strong>, and the persons and
+          entities involved will be <strong>publicly blacklisted on the
+          REPS website</strong>. Any continued use of the REPS name, mark
+          or endorsement claim by you or the third party after termination
+          is trade-mark infringement and REPS will pursue it (see
+          "REPS trademark — Class 41" below).
+        </p>
         <p>
           Legitimate name changes (rebrand, incorporation, merger) require
           written REPS approval before use. A fresh review may be required
