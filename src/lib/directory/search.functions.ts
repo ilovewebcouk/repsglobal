@@ -494,7 +494,9 @@ export const getCityAvgRating = createServerFn({ method: "GET" })
       .from("professionals")
       .select("id")
       .eq("is_published", true)
+      .neq("account_type", "organisation")
       .ilike("city", `%${data.city}%`);
+
     const ids = (pros ?? []).map((p) => p.id);
     if (ids.length === 0) return { avg: null, count: 0 };
     const { data: reviews } = await supabaseAdmin
