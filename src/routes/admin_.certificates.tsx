@@ -5,13 +5,17 @@ import { useMemo, useState } from "react";
 import {
   Download,
   ExternalLink,
+  FileText,
+  Link2,
   Loader2,
   Printer,
+  RotateCcw,
   Search,
   ShieldOff,
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
+
 
 import { requireRole } from "@/lib/route-gates";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
