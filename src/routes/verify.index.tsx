@@ -45,7 +45,7 @@ function VerifyLookup() {
   };
 
   return (
-    <main className="min-h-screen bg-reps-bg px-4 py-16 text-white">
+    <main className="min-h-screen bg-reps-ink px-4 py-16 text-white">
       <div className="mx-auto max-w-xl">
         <a href="/" className="mb-8 inline-block font-display text-2xl font-bold text-reps-orange">
           REPS
