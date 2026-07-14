@@ -1779,28 +1779,21 @@ function QualificationsSection({ coach }: { coach: Coach }) {
           <ul className="grid gap-3 sm:grid-cols-2">
             {(() => {
               const live = coach.trust?.items ?? [];
-              const rows = live.length
-                ? live.map((it) => ({
-                    key: `${it.kind}-${it.title}-${it.id ?? ""}`,
-                    title: it.title,
-                    issuer: it.issuer,
-                    id: it.id ?? "—",
-                    issued: it.dateLabel ?? "",
-                  }))
-                : coach.qualifications.map((q) => ({
-                    key: q.title,
-                    title: q.title,
-                    issuer: q.issuer,
-                    id: q.id,
-                    issued: q.issued,
-                  }));
+              const rows = live.map((it) => ({
+                key: `${it.kind}-${it.title}-${it.id ?? ""}`,
+                title: it.title,
+                issuer: it.issuer,
+                id: it.id ?? "—",
+                issued: it.dateLabel ?? "",
+              }));
               if (rows.length === 0) {
                 return (
-                  <li className="flex flex-col rounded-[16px] border border-reps-border bg-reps-midnight p-4 text-[13px] text-reps-muted">
-                    No verified credentials yet.
+                  <li className="flex flex-col rounded-[16px] border border-reps-border bg-reps-midnight p-4 text-[13px] text-reps-muted sm:col-span-2">
+                    No verified credentials uploaded yet. This professional hasn't submitted qualifications, insurance or first-aid documents for verification.
                   </li>
                 );
               }
+
               return rows.map((q) => (
                 <li
                   key={q.key}
