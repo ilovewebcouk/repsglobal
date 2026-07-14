@@ -754,6 +754,7 @@ function WebsiteEditorPage() {
           <div hidden={active.id !== "profile"}><ProfilePhotoPanel /></div>
           <div hidden={active.id !== "contact"}><ContactSocialsPanel /></div>
           <div hidden={active.id !== "basics"}>
+            <div className="mb-4"><ProfilePhotoPanel /></div>
             <PPanel>
               <div className="border-b border-reps-border px-5 py-4">
                 <h3 className="text-[14px] font-semibold text-white">Website basics</h3>
