@@ -28,6 +28,7 @@ export type CertificatePdfInput = {
   ofqualNumber: string | null;
   providerName: string;
   providerLogoUrl?: string | null;
+  providerCenterNumber?: string | null;
   issuedAt: Date;
   verificationUrl: string;
   unitSummary: string[];
