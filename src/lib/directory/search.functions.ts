@@ -454,9 +454,11 @@ export const getCityProfessionCounts = createServerFn({ method: "GET" })
           .from("professionals")
           .select("id", { count: "exact", head: true })
           .eq("is_published", true)
+          .neq("account_type", "organisation")
           .eq("primary_profession", slug)
           .ilike("city", `%${data.city}%`);
         return [slug, count ?? 0] as const;
+
       }),
     );
 
