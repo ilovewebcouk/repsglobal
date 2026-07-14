@@ -125,7 +125,9 @@ export const searchProfessionals = createServerFn({ method: "GET" })
     let qb = supabaseAdmin
       .from("professionals")
       .select(COLS, { count: "exact" })
-      .in("id", visibleIds);
+      .in("id", visibleIds)
+      .neq("account_type", "organisation");
+
     // Hide churned profiles (stage 'lapsed' or 'dormant'). Admin still sees
     // them everywhere else; this is the public-facing register filter.
     const { data: hiddenChurnRows } = await supabaseAdmin
