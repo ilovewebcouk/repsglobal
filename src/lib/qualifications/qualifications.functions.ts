@@ -317,6 +317,10 @@ const submitRegulatedBatchInput = z.object({
   evidence_type: z.enum(["eqa_report", "centre_certificate", "approval_letter"]),
   evidence_doc_paths: z.array(z.string().min(1)).min(1).max(5),
   awarding_body_reference: z.string().max(120).optional().nullable(),
+  endorsement_terms_version: z.string().min(1).max(20),
+  endorsement_terms_accepted: z.literal(true, {
+    message: "You must accept the REPS Endorsement Terms to submit.",
+  }),
 });
 
 export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
