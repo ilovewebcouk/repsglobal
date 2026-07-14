@@ -30,10 +30,13 @@ import {
   adminListPrintQueue,
   adminMarkBatchDispatched,
   adminMarkBatchPrinted,
+  adminReinstateCertificate,
   adminRevokeCertificate,
   adminSearchRegistrations,
   getCertificatePricing,
+  getCertificateSignedUrl,
   setCertificatePricing,
+
   type PrintQueueRowDTO,
 } from "@/lib/certificates/certificates.functions";
 import {
