@@ -1284,7 +1284,9 @@ function ProviderCertificateBrandingCard() {
       const dims = await readDims(url);
       if (dims.w !== 160 || dims.h !== 60) {
         URL.revokeObjectURL(url);
-        toast.error(`Logo must be exactly 160×60 px — got ${dims.w}×${dims.h}`);
+        toast.error(
+          `Logo must be exactly 160 × 60 pixels. Your image is ${dims.w} × ${dims.h} pixels.`,
+        );
         return;
       }
       // Replace any previous pending preview.
