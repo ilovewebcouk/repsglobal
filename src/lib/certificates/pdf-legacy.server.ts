@@ -213,18 +213,56 @@ export async function generateCertificatePdfLegacy(input: CertificatePdfInput): 
   mY -= 20;
 
   const units = input.unitSummary.length > 0 ? input.unitSummary : ["Successful completion of all assessed units for this course."];
-  const labelGutter = helv.widthOfTextAtSize(`${units.length}.  `, 10);
-  for (let idx = 0; idx < units.length; idx++) {
-    if (mY < 80) break;
-    const unit = units[idx];
-    page2.drawText(`${idx + 1}.`, { x: 48, y: mY, size: 10, font: helvBold, color: orange });
-    const lines = wrapText(unit, 90);
-    for (const l of lines) {
-      page2.drawText(l, { x: 48 + labelGutter, y: mY, size: 10, font: helv, color: dark, maxWidth: PW - 110 });
-      mY -= 14;
-    }
-    mY -= 4;
+  const UNITS_PER_PAGE = 12;
+  const chunks: string[][] = [];
+  for (let i = 0; i < units.length; i += UNITS_PER_PAGE) {
+    chunks.push(units.slice(i, i + UNITS_PER_PAGE));
   }
+  const totalCount = units.length;
+  const labelGutter = helv.widthOfTextAtSize(`${totalCount}.  `, 10);
+
+  const drawUnitsChunk = (
+    p: ReturnType<typeof pdf.addPage>,
+    startY: number,
+    chunk: string[],
+    startIdx: number,
+  ) => {
+    let y = startY;
+    for (let idx = 0; idx < chunk.length; idx++) {
+      const unit = chunk[idx];
+      p.drawText(`${idx + 1 + startIdx}.`, { x: 48, y, size: 10, font: helvBold, color: orange });
+      const lines = wrapText(unit, 90);
+      for (const l of lines) {
+        p.drawText(l, { x: 48 + labelGutter, y, size: 10, font: helv, color: dark, maxWidth: PW - 110 });
+        y -= 14;
+      }
+      y -= 4;
+    }
+  };
+
+  // First chunk on page 2
+  drawUnitsChunk(page2, mY, chunks[0] ?? [], 0);
+
+  // Overflow chunks — new page each
+  for (let c = 1; c < chunks.length; c++) {
+    const pageN = pdf.addPage([PageSizes.A4[0], PageSizes.A4[1]]);
+    pageN.drawText("REPS", { x: 48, y: PH - 60, size: 22, font: helvBold, color: orange });
+    pageN.drawText("Learner Unit Summary (continued)", { x: 48, y: PH - 84, size: 18, font: helvBold, color: dark });
+    pageN.drawLine({
+      start: { x: 48, y: PH - 92 }, end: { x: PW - 48, y: PH - 92 },
+      thickness: 0.5, color: line,
+    });
+    pageN.drawText(`Certificate No. ${input.certificateNumber}`, {
+      x: 48, y: PH - 112, size: 9, font: helv, color: muted,
+    });
+    drawUnitsChunk(pageN, PH - 140, chunks[c], c * UNITS_PER_PAGE);
+
+    // Footer QR on every continuation page for verification consistency
+    pageN.drawImage(qrImg, { x: PW - 48 - 72, y: 48, width: 72, height: 72 });
+    pageN.drawText("Verify authenticity", { x: 48, y: 96, size: 10, font: helvBold, color: dark });
+    pageN.drawText(`repsuk.org/verify/${input.certificateNumber}`, { x: 48, y: 82, size: 9, font: helv, color: muted });
+  }
+
 
   // Footer QR mini + verify text
   page2.drawImage(qrImg, { x: PW - 48 - 72, y: 48, width: 72, height: 72 });
