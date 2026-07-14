@@ -1237,24 +1237,31 @@ function ProviderCertificateBrandingCard() {
   const save = useServerFn(setMyProviderCertificateLogo);
   const remove = useServerFn(clearMyProviderCertificateLogo);
   const [uploading, setUploading] = React.useState(false);
+  const [pending, setPending] = React.useState<{
+    file: File;
+    previewUrl: string;
+    mime: "image/png" | "image/jpeg";
+  } | null>(null);
+
+  // Clean up any object URL when the pending preview changes or unmounts.
+  React.useEffect(() => {
+    return () => {
+      if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+    };
+  }, [pending?.previewUrl]);
 
   const { data } = useQuery({
     queryKey: ["my-provider-branding"],
     queryFn: () => get({ data: undefined as never }),
   });
 
-  async function readDims(file: File): Promise<{ w: number; h: number }> {
-    const url = URL.createObjectURL(file);
-    try {
-      return await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
-        img.onerror = () => reject(new Error("Could not read image"));
-        img.src = url;
-      });
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+  async function readDims(url: string): Promise<{ w: number; h: number }> {
+    return await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => reject(new Error("Could not read image"));
+      img.src = url;
+    });
   }
 
   async function toBase64(file: File): Promise<string> {
@@ -1272,18 +1279,43 @@ function ProviderCertificateBrandingCard() {
       toast.error("Logo must be a PNG or JPEG");
       return;
     }
+    const url = URL.createObjectURL(file);
     try {
-      const dims = await readDims(file);
+      const dims = await readDims(url);
       if (dims.w !== 160 || dims.h !== 60) {
+        URL.revokeObjectURL(url);
         toast.error(`Logo must be exactly 160×60 px — got ${dims.w}×${dims.h}`);
         return;
       }
-      setUploading(true);
-      const b64 = await toBase64(file);
-      await save({
-        data: { data_base64: b64, mime: file.type as "image/png" | "image/jpeg" },
+      // Replace any previous pending preview.
+      if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+      setPending({
+        file,
+        previewUrl: url,
+        mime: file.type as "image/png" | "image/jpeg",
       });
-      toast.success("Logo uploaded");
+    } catch (e: any) {
+      URL.revokeObjectURL(url);
+      toast.error(e?.message ?? "Could not read image");
+    }
+  }
+
+  function cancelPending() {
+    if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+    setPending(null);
+  }
+
+  async function confirmSave() {
+    if (!pending) return;
+    try {
+      setUploading(true);
+      const b64 = await toBase64(pending.file);
+      await save({
+        data: { data_base64: b64, mime: pending.mime },
+      });
+      toast.success("Logo saved");
+      URL.revokeObjectURL(pending.previewUrl);
+      setPending(null);
       qc.invalidateQueries({ queryKey: ["my-provider-branding"] });
     } catch (e: any) {
       toast.error(e?.message ?? "Could not upload logo");
@@ -1305,7 +1337,8 @@ function ProviderCertificateBrandingCard() {
     }
   }
 
-  const logoUrl = data?.certificate_logo_url ?? null;
+  const savedLogoUrl = data?.certificate_logo_url ?? null;
+  const previewUrl = pending?.previewUrl ?? null;
 
   return (
     <PPanel>
@@ -1316,46 +1349,98 @@ function ProviderCertificateBrandingCard() {
           certificate you issue.
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-4 p-4">
-        <div className="flex h-[60px] w-[160px] items-center justify-center rounded-[10px] border border-reps-border bg-white/[0.03]">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Your certificate logo"
-              width={160}
-              height={60}
-              className="h-[60px] w-[160px] object-contain"
-            />
-          ) : (
-            <span className="text-[11px] text-white/40">160 × 60</span>
-          )}
-        </div>
+      <div className="flex flex-wrap items-start gap-6 p-4">
+        {/* Current saved logo */}
         <div className="flex flex-col gap-1.5">
-          <label className="cursor-pointer">
-            <input
-              type="file"
-              accept="image/png,image/jpeg"
-              className="hidden"
-              disabled={uploading}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void onPick(f);
-                e.target.value = "";
-              }}
-            />
-            <span className="inline-flex h-8 items-center rounded-[10px] border border-white/15 bg-white/5 px-3 text-[12.5px] text-white/85 hover:bg-white/10">
-              {uploading ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
+          <span className="text-[11px] uppercase tracking-wide text-white/45">
+            {pending ? "Current" : "Your logo"}
+          </span>
+          <div className="flex h-[60px] w-[160px] items-center justify-center rounded-[10px] border border-reps-border bg-white/[0.03]">
+            {savedLogoUrl ? (
+              <img
+                src={savedLogoUrl}
+                alt="Your certificate logo"
+                width={160}
+                height={60}
+                className="h-[60px] w-[160px] object-contain"
+              />
+            ) : (
+              <span className="text-[11px] text-white/40">None</span>
+            )}
+          </div>
+        </div>
+
+        {/* Pending preview */}
+        {pending && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] uppercase tracking-wide text-emerald-300/90">
+              Preview — not saved yet
             </span>
-          </label>
-          {logoUrl && (
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => void onRemove()}
-              className="text-left text-[11.5px] text-white/50 hover:text-white/80"
-            >
-              Remove
-            </button>
+            <div className="flex h-[60px] w-[160px] items-center justify-center rounded-[10px] border border-emerald-400/40 bg-white/[0.03] ring-1 ring-emerald-400/20">
+              <img
+                src={previewUrl!}
+                alt="Logo preview"
+                width={160}
+                height={60}
+                className="h-[60px] w-[160px] object-contain"
+              />
+            </div>
+            <span className="text-[11px] text-white/45">
+              160 × 60 · {(pending.file.size / 1024).toFixed(1)} KB
+            </span>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex flex-col gap-1.5">
+          {pending ? (
+            <>
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => void confirmSave()}
+                className="inline-flex h-8 items-center rounded-[10px] border border-emerald-400/40 bg-emerald-500/20 px-3 text-[12.5px] font-medium text-emerald-100 hover:bg-emerald-500/30 disabled:opacity-60"
+              >
+                {uploading ? "Saving…" : "Save logo"}
+              </button>
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={cancelPending}
+                className="text-left text-[11.5px] text-white/50 hover:text-white/80"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void onPick(f);
+                    e.target.value = "";
+                  }}
+                />
+                <span className="inline-flex h-8 items-center rounded-[10px] border border-white/15 bg-white/5 px-3 text-[12.5px] text-white/85 hover:bg-white/10">
+                  {savedLogoUrl ? "Replace logo" : "Upload logo"}
+                </span>
+              </label>
+              {savedLogoUrl && (
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => void onRemove()}
+                  className="text-left text-[11.5px] text-white/50 hover:text-white/80"
+                >
+                  Remove
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
