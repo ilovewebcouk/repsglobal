@@ -17,12 +17,39 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { inflateSync } from "node:zlib";
 import { PDFDocument, PDFName, PDFRawStream, rgb } from "pdf-lib";
 
 // tsx is registered via `node --import tsx` (see package.json scripts).
 const { renderCertificateFromBytes } = await import(
   "../src/lib/certificates/pdf.server.ts"
 );
+
+/** Decode a content-stream object, decompressing FlateDecode if present. */
+function decodeStream(stream) {
+  const raw = Buffer.from(stream.getContents());
+  const filter = stream.dict.lookup(PDFName.of("Filter"));
+  const name = filter ? filter.toString() : "";
+  if (name.includes("FlateDecode")) {
+    try {
+      return inflateSync(raw).toString("latin1");
+    } catch {
+      return raw.toString("latin1");
+    }
+  }
+  return raw.toString("latin1");
+}
+
+function decodePageContent(page) {
+  const context = page.doc.context;
+  const contents = page.node.normalizedEntries().Contents;
+  return contents
+    .asArray()
+    .map((ref) => context.lookup(ref))
+    .filter(Boolean)
+    .map(decodeStream)
+    .join("\n");
+}
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
