@@ -7179,6 +7179,19 @@ export type Database = {
         Args: { _response: string; _review_id: string }
         Returns: undefined
       }
+      verify_certificate_by_token: {
+        Args: { _token: string }
+        Returns: {
+          certificate_number: string
+          course_level: number
+          course_title: string
+          issued_at: string
+          learner_name: string
+          provider_name: string
+          reps_course_number: string
+          status: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "professional" | "client"

@@ -49,7 +49,7 @@ function VerifyPage() {
 
 function VerifyLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-reps-bg px-4 py-16 text-white">
+    <main className="min-h-screen bg-reps-ink px-4 py-16 text-white">
       <div className="mx-auto max-w-xl">
         <Link to="/" className="mb-8 inline-block font-display text-2xl font-bold text-reps-orange">
           REPS
