@@ -272,7 +272,7 @@ export const RESOURCE_ARTICLES: ResourceArticle[] = [
     title: "The REPs LMS: a world-class learning platform, built for fitness — coming August",
     excerpt:
       "A first look at the REPs LMS — an AI-assisted learning platform built specifically for the fitness industry, wired directly into REPs endorsement, certificates and verification. Video-native assessments, automated IQA and EQA, and standards that don't bend. Launching August.",
-    category: "Coming Soon",
+    category: "Platform Updates",
     ...STANDARDS,
     date: "2026-07-14",
     dateLabel: "14 July 2026",
