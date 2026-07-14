@@ -1447,6 +1447,7 @@ export function useHubData(enabled: boolean) {
   const fetchWebsite = useServerFn(getMyWebsite);
   const fetchTrust = useServerFn(getTrustState);
   const fetchReadiness = useServerFn(getMyReadiness);
+  const fetchProviderReadiness = useServerFn(getProviderReadiness);
 
   const profile = useQuery({
     queryKey: ["my-dashboard-profile"],
@@ -1488,6 +1489,11 @@ export function useHubData(enabled: boolean) {
     queryFn: () => fetchReadiness(),
     enabled,
   });
+  const providerReadiness = useQuery({
+    queryKey: ["my-provider-readiness"],
+    queryFn: () => fetchProviderReadiness(),
+    enabled,
+  });
 
 
   const reviewsUnread = useReviewsUnread({ enabled });
@@ -1506,6 +1512,7 @@ export function useHubData(enabled: boolean) {
     website,
     trust,
     readiness,
+    providerReadiness,
     reviewsUnread: reviewsUnread.unread,
     supportUnread: supportUnread.unread,
     pendingReviewReplies,
