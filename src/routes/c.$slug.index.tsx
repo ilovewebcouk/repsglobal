@@ -575,9 +575,20 @@ export const Route = createFileRoute("/c/$slug/")({
       };
     }
 
-    const sf = loaderData?.live?.website;
-    const canonical = `https://repsuk.org/c/${params.slug}`;
+    // Unverified gate page — always noindex, generic copy, no PII in title.
+    if (loaderData?.gated) {
+      const first = loaderData.unverified?.firstName ?? "This member";
+      return {
+        meta: [
+          { title: `${first} — Not yet verified on REPS` },
+          { name: "description", content: `${first} has not completed REPs verification yet. Members only appear publicly once their ID, insurance and qualifications are independently verified.` },
+          { name: "robots", content: "noindex, nofollow" },
+        ],
+        links: [{ rel: "canonical", href: canonical }],
+      };
+    }
 
+    const sf = loaderData?.live?.website;
     if (!sf) {
       return {
         meta: [
