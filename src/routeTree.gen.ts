@@ -30,8 +30,6 @@ import { Route as ForProfessionalsRouteImport } from './routes/for-professionals
 import { Route as FindATrainingProviderRouteImport } from './routes/find-a-training-provider'
 import { Route as FindAProfessionalRouteImport } from './routes/find-a-professional'
 import { Route as DashboardDemoRouteImport } from './routes/dashboard-demo'
-import { Route as CpdV2RouteImport } from './routes/cpd-v2'
-import { Route as CpdLegacyRouteImport } from './routes/cpd-legacy'
 import { Route as CpdRouteImport } from './routes/cpd'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -162,7 +160,6 @@ import { Route as AuthenticatedProfessionalDashboardSupportRouteImport } from '.
 import { Route as AuthenticatedProfessionalDashboardStudentsRouteImport } from './routes/_authenticated/_professional/dashboard_.students'
 import { Route as AuthenticatedProfessionalDashboardShopFrontRouteImport } from './routes/_authenticated/_professional/dashboard_.shop-front'
 import { Route as AuthenticatedProfessionalDashboardSettingsRouteImport } from './routes/_authenticated/_professional/dashboard_.settings'
-import { Route as AuthenticatedProfessionalDashboardServicesRouteImport } from './routes/_authenticated/_professional/dashboard_.services'
 import { Route as AuthenticatedProfessionalDashboardReviewsRouteImport } from './routes/_authenticated/_professional/dashboard_.reviews'
 import { Route as AuthenticatedProfessionalDashboardQualificationsRouteImport } from './routes/_authenticated/_professional/dashboard_.qualifications'
 import { Route as AuthenticatedProfessionalDashboardProfileRouteImport } from './routes/_authenticated/_professional/dashboard_.profile'
@@ -294,16 +291,6 @@ const FindAProfessionalRoute = FindAProfessionalRouteImport.update({
 const DashboardDemoRoute = DashboardDemoRouteImport.update({
   id: '/dashboard-demo',
   path: '/dashboard-demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CpdV2Route = CpdV2RouteImport.update({
-  id: '/cpd-v2',
-  path: '/cpd-v2',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CpdLegacyRoute = CpdLegacyRouteImport.update({
-  id: '/cpd-legacy',
-  path: '/cpd-legacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CpdRoute = CpdRouteImport.update({
@@ -984,12 +971,6 @@ const AuthenticatedProfessionalDashboardSettingsRoute =
     path: '/dashboard/settings',
     getParentRoute: () => AuthenticatedProfessionalRouteRoute,
   } as any)
-const AuthenticatedProfessionalDashboardServicesRoute =
-  AuthenticatedProfessionalDashboardServicesRouteImport.update({
-    id: '/dashboard_/services',
-    path: '/dashboard/services',
-    getParentRoute: () => AuthenticatedProfessionalRouteRoute,
-  } as any)
 const AuthenticatedProfessionalDashboardReviewsRoute =
   AuthenticatedProfessionalDashboardReviewsRouteImport.update({
     id: '/dashboard_/reviews',
@@ -1166,8 +1147,6 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
-  '/cpd-legacy': typeof CpdLegacyRoute
-  '/cpd-v2': typeof CpdV2Route
   '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/find-a-training-provider': typeof FindATrainingProviderRoute
@@ -1286,7 +1265,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/qualifications': typeof AuthenticatedProfessionalDashboardQualificationsRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
-  '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/students': typeof AuthenticatedProfessionalDashboardStudentsRoute
@@ -1346,8 +1324,6 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
-  '/cpd-legacy': typeof CpdLegacyRoute
-  '/cpd-v2': typeof CpdV2Route
   '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/find-a-training-provider': typeof FindATrainingProviderRoute
@@ -1461,7 +1437,6 @@ export interface FileRoutesByTo {
   '/dashboard/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/dashboard/qualifications': typeof AuthenticatedProfessionalDashboardQualificationsRoute
   '/dashboard/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
-  '/dashboard/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/dashboard/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/dashboard/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/dashboard/students': typeof AuthenticatedProfessionalDashboardStudentsRoute
@@ -1522,8 +1497,6 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/cpd': typeof CpdRoute
-  '/cpd-legacy': typeof CpdLegacyRoute
-  '/cpd-v2': typeof CpdV2Route
   '/dashboard-demo': typeof DashboardDemoRoute
   '/find-a-professional': typeof FindAProfessionalRoute
   '/find-a-training-provider': typeof FindATrainingProviderRoute
@@ -1644,7 +1617,6 @@ export interface FileRoutesById {
   '/_authenticated/_professional/dashboard_/profile': typeof AuthenticatedProfessionalDashboardProfileRoute
   '/_authenticated/_professional/dashboard_/qualifications': typeof AuthenticatedProfessionalDashboardQualificationsRoute
   '/_authenticated/_professional/dashboard_/reviews': typeof AuthenticatedProfessionalDashboardReviewsRoute
-  '/_authenticated/_professional/dashboard_/services': typeof AuthenticatedProfessionalDashboardServicesRoute
   '/_authenticated/_professional/dashboard_/settings': typeof AuthenticatedProfessionalDashboardSettingsRoute
   '/_authenticated/_professional/dashboard_/shop-front': typeof AuthenticatedProfessionalDashboardShopFrontRoute
   '/_authenticated/_professional/dashboard_/students': typeof AuthenticatedProfessionalDashboardStudentsRoute
@@ -1706,8 +1678,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
-    | '/cpd-legacy'
-    | '/cpd-v2'
     | '/dashboard-demo'
     | '/find-a-professional'
     | '/find-a-training-provider'
@@ -1826,7 +1796,6 @@ export interface FileRouteTypes {
     | '/dashboard/profile'
     | '/dashboard/qualifications'
     | '/dashboard/reviews'
-    | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
     | '/dashboard/students'
@@ -1886,8 +1855,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
-    | '/cpd-legacy'
-    | '/cpd-v2'
     | '/dashboard-demo'
     | '/find-a-professional'
     | '/find-a-training-provider'
@@ -2001,7 +1968,6 @@ export interface FileRouteTypes {
     | '/dashboard/profile'
     | '/dashboard/qualifications'
     | '/dashboard/reviews'
-    | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/shop-front'
     | '/dashboard/students'
@@ -2061,8 +2027,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/cpd'
-    | '/cpd-legacy'
-    | '/cpd-v2'
     | '/dashboard-demo'
     | '/find-a-professional'
     | '/find-a-training-provider'
@@ -2183,7 +2147,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_professional/dashboard_/profile'
     | '/_authenticated/_professional/dashboard_/qualifications'
     | '/_authenticated/_professional/dashboard_/reviews'
-    | '/_authenticated/_professional/dashboard_/services'
     | '/_authenticated/_professional/dashboard_/settings'
     | '/_authenticated/_professional/dashboard_/shop-front'
     | '/_authenticated/_professional/dashboard_/students'
@@ -2245,8 +2208,6 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CpdRoute: typeof CpdRoute
-  CpdLegacyRoute: typeof CpdLegacyRoute
-  CpdV2Route: typeof CpdV2Route
   DashboardDemoRoute: typeof DashboardDemoRoute
   FindAProfessionalRoute: typeof FindAProfessionalRoute
   FindATrainingProviderRoute: typeof FindATrainingProviderRoute
@@ -2511,20 +2472,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard-demo'
       fullPath: '/dashboard-demo'
       preLoaderRoute: typeof DashboardDemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cpd-v2': {
-      id: '/cpd-v2'
-      path: '/cpd-v2'
-      fullPath: '/cpd-v2'
-      preLoaderRoute: typeof CpdV2RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cpd-legacy': {
-      id: '/cpd-legacy'
-      path: '/cpd-legacy'
-      fullPath: '/cpd-legacy'
-      preLoaderRoute: typeof CpdLegacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cpd': {
@@ -3437,13 +3384,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfessionalDashboardSettingsRouteImport
       parentRoute: typeof AuthenticatedProfessionalRouteRoute
     }
-    '/_authenticated/_professional/dashboard_/services': {
-      id: '/_authenticated/_professional/dashboard_/services'
-      path: '/dashboard/services'
-      fullPath: '/dashboard/services'
-      preLoaderRoute: typeof AuthenticatedProfessionalDashboardServicesRouteImport
-      parentRoute: typeof AuthenticatedProfessionalRouteRoute
-    }
     '/_authenticated/_professional/dashboard_/reviews': {
       id: '/_authenticated/_professional/dashboard_/reviews'
       path: '/dashboard/reviews'
@@ -3747,7 +3687,6 @@ interface AuthenticatedProfessionalRouteRouteChildren {
   AuthenticatedProfessionalDashboardProfileRoute: typeof AuthenticatedProfessionalDashboardProfileRoute
   AuthenticatedProfessionalDashboardQualificationsRoute: typeof AuthenticatedProfessionalDashboardQualificationsRoute
   AuthenticatedProfessionalDashboardReviewsRoute: typeof AuthenticatedProfessionalDashboardReviewsRoute
-  AuthenticatedProfessionalDashboardServicesRoute: typeof AuthenticatedProfessionalDashboardServicesRoute
   AuthenticatedProfessionalDashboardSettingsRoute: typeof AuthenticatedProfessionalDashboardSettingsRoute
   AuthenticatedProfessionalDashboardShopFrontRoute: typeof AuthenticatedProfessionalDashboardShopFrontRoute
   AuthenticatedProfessionalDashboardStudentsRoute: typeof AuthenticatedProfessionalDashboardStudentsRoute
@@ -3774,8 +3713,6 @@ const AuthenticatedProfessionalRouteRouteChildren: AuthenticatedProfessionalRout
       AuthenticatedProfessionalDashboardQualificationsRoute,
     AuthenticatedProfessionalDashboardReviewsRoute:
       AuthenticatedProfessionalDashboardReviewsRoute,
-    AuthenticatedProfessionalDashboardServicesRoute:
-      AuthenticatedProfessionalDashboardServicesRoute,
     AuthenticatedProfessionalDashboardSettingsRoute:
       AuthenticatedProfessionalDashboardSettingsRoute,
     AuthenticatedProfessionalDashboardShopFrontRoute:
@@ -3928,8 +3865,6 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CpdRoute: CpdRoute,
-  CpdLegacyRoute: CpdLegacyRoute,
-  CpdV2Route: CpdV2Route,
   DashboardDemoRoute: DashboardDemoRoute,
   FindAProfessionalRoute: FindAProfessionalRoute,
   FindATrainingProviderRoute: FindATrainingProviderRoute,
