@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as TrainingProvidersRouteImport } from './routes/training-providers'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StandardsRouteImport } from './routes/standards'
 import { Route as SpecialismsRouteImport } from './routes/specialisms'
@@ -196,6 +197,11 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrainingProvidersRoute = TrainingProvidersRouteImport.update({
+  id: '/training-providers',
+  path: '/training-providers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -1166,6 +1172,7 @@ export interface FileRoutesByFullPath {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
+  '/training-providers': typeof TrainingProvidersRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1342,6 +1349,7 @@ export interface FileRoutesByTo {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
+  '/training-providers': typeof TrainingProvidersRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1516,6 +1524,7 @@ export interface FileRoutesById {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
+  '/training-providers': typeof TrainingProvidersRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
@@ -1697,6 +1706,7 @@ export interface FileRouteTypes {
     | '/specialisms'
     | '/standards'
     | '/terms'
+    | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
     | '/.mcp/list-tools'
@@ -1873,6 +1883,7 @@ export interface FileRouteTypes {
     | '/specialisms'
     | '/standards'
     | '/terms'
+    | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
     | '/.mcp/list-tools'
@@ -2046,6 +2057,7 @@ export interface FileRouteTypes {
     | '/specialisms'
     | '/standards'
     | '/terms'
+    | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
     | '/_authenticated/_professional'
@@ -2227,6 +2239,7 @@ export interface RootRouteChildren {
   SpecialismsRoute: typeof SpecialismsRoute
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
+  TrainingProvidersRoute: typeof TrainingProvidersRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -2339,6 +2352,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/training-providers': {
+      id: '/training-providers'
+      path: '/training-providers'
+      fullPath: '/training-providers'
+      preLoaderRoute: typeof TrainingProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -3884,6 +3904,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpecialismsRoute: SpecialismsRoute,
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
+  TrainingProvidersRoute: TrainingProvidersRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
