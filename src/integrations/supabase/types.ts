@@ -6823,6 +6823,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_users_last_sign_in: {
+        Args: { _ids: string[] }
+        Returns: {
+          id: string
+          last_sign_in_at: string
+        }[]
+      }
       grant_credit_topup: {
         Args: {
           _credits: number
