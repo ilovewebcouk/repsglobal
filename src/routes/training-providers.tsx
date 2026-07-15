@@ -450,29 +450,30 @@ function FeatureReelSection() {
 
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.45fr_0.85fr]">
-          <figure className="group overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange">
-            <div className="relative aspect-[16/9] overflow-hidden bg-reps-ink">
+          <figure className="group flex flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange">
+            <div className="relative aspect-[16/10] overflow-hidden bg-reps-ink">
               <img
                 src={featured.image}
                 alt={featured.alt}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="h-full w-full object-cover object-[center_30%] transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
                 width={1600}
                 height={1200}
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-reps-ink/90 via-reps-ink/40 to-transparent p-6 lg:p-8">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-                  {featured.eyebrow}
-                </span>
-                <h2 className="mt-2 font-display text-[26px] font-bold leading-tight text-white lg:text-[34px]">
-                  {featured.title}
-                </h2>
-                <p className="mt-2 max-w-[620px] text-[15px] leading-relaxed text-white/70">
-                  {featured.body}
-                </p>
-              </div>
             </div>
+            <figcaption className="p-6 lg:p-8">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
+                {featured.eyebrow}
+              </span>
+              <h2 className="mt-2 font-display text-[26px] font-bold leading-tight text-white lg:text-[32px]">
+                {featured.title}
+              </h2>
+              <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-white/70">
+                {featured.body}
+              </p>
+            </figcaption>
           </figure>
+
 
           <div className="grid gap-4">
             {sideItems.map((item) => (
