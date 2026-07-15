@@ -200,12 +200,15 @@ info@diversetrainers.co.uk,cus_Pt0nD0Q4QyWsyL,Diverse Trainers,https://www.diver
 function TrainingProviderImportPage() {
   const run = useServerFn(importTrainingProviders);
   const preview = useServerFn(previewProviderPortalEmail);
+  const auditPm = useServerFn(auditProviderPaymentMethods);
   const [csv, setCsv] = useState(PREFILL_CSV);
 
   const [busy, setBusy] = useState(false);
+  const [pmBusy, setPmBusy] = useState(false);
   const [environment, setEnvironment] = useState<"live" | "sandbox">("live");
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const [rows, setRows] = useState<ImportRowResult[] | null>(null);
+  const [pmRows, setPmRows] = useState<PaymentMethodAuditRow[] | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
