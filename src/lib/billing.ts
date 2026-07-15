@@ -182,12 +182,16 @@ export const ORG_TIERS: Record<OrgTierKey, OrgTierConfig> = {
   training_provider: {
     key: "training_provider",
     label: "REPs-accredited Training Provider",
-    priceLabel: "£499",
+    priceLabel: "£479",
     intervalLabel: "per year",
     stripePriceLookupKey: "training_provider_annual",
     stripeProductId: "training_provider",
-    amountPence: 49900,
+    amountPence: 47900,
     blurb:
-      "Public provider website, accredited-course listings, verified reviews, and REPs-accredited badges for every approved course.",
+      "Public provider website, unlimited accredited-course listings, verified reviews, and REPs-accredited badges for every approved course.",
   },
 };
+
+/** Per-learner certificate print/PDF price (add-on to the annual membership). */
+export const CERTIFICATE_UNIT_PRICE_PENCE = 1500;
+export const CERTIFICATE_UNIT_PRICE_LABEL = "£15";
