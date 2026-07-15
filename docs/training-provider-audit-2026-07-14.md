@@ -3,8 +3,10 @@
 **Date:** 2026-07-14
 **Scope:** every training-provider surface, before we import the real CSV
 of providers and before I build the training-provider pricing page.
-**Method:** read-only sweep of routes, server fns, DB schema, Supabase
-linter, memory rules. No code changes in this pass.
+**Status:** Audit complete. Blocker + High fixes executed 2026-07-15
+(see §14). Ready for a small dry-run CSV import.
+
+
 
 Legend: **BLOCKER** (must fix before CSV import) · **HIGH** (fix before
 pricing page) · **MED** (fix soon) · **LOW** (cleanup, optional).
