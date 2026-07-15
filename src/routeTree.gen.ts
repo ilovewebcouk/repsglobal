@@ -129,6 +129,7 @@ import { Route as CheckoutCreditsReturnRouteImport } from './routes/checkout.cre
 import { Route as CSlugReviewRouteImport } from './routes/c.$slug.review'
 import { Route as CSlugEnquireRouteImport } from './routes/c.$slug.enquire'
 import { Route as ApiPublicVerifyProviderDomainRouteImport } from './routes/api/public/verify-provider-domain'
+import { Route as ApiPublicAdminSendProviderAnnouncementRouteImport } from './routes/api/public/admin-send-provider-announcement'
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members_.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
@@ -793,6 +794,12 @@ const ApiPublicVerifyProviderDomainRoute =
     path: '/api/public/verify-provider-domain',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAdminSendProviderAnnouncementRoute =
+  ApiPublicAdminSendProviderAnnouncementRouteImport.update({
+    id: '/api/public/admin-send-provider-announcement',
+    path: '/api/public/admin-send-provider-announcement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminSeoLegacyRedirectsRoute = AdminSeoLegacyRedirectsRouteImport.update({
   id: '/legacy-redirects',
   path: '/legacy-redirects',
@@ -1248,6 +1255,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/api/public/admin-send-provider-announcement': typeof ApiPublicAdminSendProviderAnnouncementRoute
   '/api/public/verify-provider-domain': typeof ApiPublicVerifyProviderDomainRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
@@ -1421,6 +1429,7 @@ export interface FileRoutesByTo {
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/api/public/admin-send-provider-announcement': typeof ApiPublicAdminSendProviderAnnouncementRoute
   '/api/public/verify-provider-domain': typeof ApiPublicVerifyProviderDomainRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
@@ -1602,6 +1611,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members_/$userId': typeof AdminMembersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
+  '/api/public/admin-send-provider-announcement': typeof ApiPublicAdminSendProviderAnnouncementRoute
   '/api/public/verify-provider-domain': typeof ApiPublicVerifyProviderDomainRoute
   '/c/$slug/enquire': typeof CSlugEnquireRoute
   '/c/$slug/review': typeof CSlugReviewRoute
@@ -1782,6 +1792,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
+    | '/api/public/admin-send-provider-announcement'
     | '/api/public/verify-provider-domain'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
@@ -1955,6 +1966,7 @@ export interface FileRouteTypes {
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
+    | '/api/public/admin-send-provider-announcement'
     | '/api/public/verify-provider-domain'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
@@ -2135,6 +2147,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members_/$userId'
     | '/admin_/seo/legacy-redirects'
+    | '/api/public/admin-send-provider-announcement'
     | '/api/public/verify-provider-domain'
     | '/c/$slug/enquire'
     | '/c/$slug/review'
@@ -2310,6 +2323,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   AdminMembersUserIdRoute: typeof AdminMembersUserIdRoute
+  ApiPublicAdminSendProviderAnnouncementRoute: typeof ApiPublicAdminSendProviderAnnouncementRoute
   ApiPublicVerifyProviderDomainRoute: typeof ApiPublicVerifyProviderDomainRoute
   CheckoutCreditsReturnRoute: typeof CheckoutCreditsReturnRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -3180,6 +3194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVerifyProviderDomainRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/admin-send-provider-announcement': {
+      id: '/api/public/admin-send-provider-announcement'
+      path: '/api/public/admin-send-provider-announcement'
+      fullPath: '/api/public/admin-send-provider-announcement'
+      preLoaderRoute: typeof ApiPublicAdminSendProviderAnnouncementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/seo/legacy-redirects': {
       id: '/admin_/seo/legacy-redirects'
       path: '/legacy-redirects'
@@ -3976,6 +3997,8 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   AdminMembersUserIdRoute: AdminMembersUserIdRoute,
+  ApiPublicAdminSendProviderAnnouncementRoute:
+    ApiPublicAdminSendProviderAnnouncementRoute,
   ApiPublicVerifyProviderDomainRoute: ApiPublicVerifyProviderDomainRoute,
   CheckoutCreditsReturnRoute: CheckoutCreditsReturnRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
