@@ -320,118 +320,86 @@ function TrainingProvidersPage() {
 
 function HeroSection() {
   return (
-    <section className="relative isolate min-h-[720px] overflow-hidden lg:min-h-[820px]">
-      <img
-        src={studyingAsset.url}
-        alt="A fitness learner studying anatomy and course materials — the kind of learner served by REPs-endorsed training providers."
-        className="absolute inset-0 h-full w-full object-cover object-[30%_center] opacity-70 lg:opacity-55"
-        fetchPriority="high"
-        width={1600}
-        height={1200}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-reps-ink via-reps-ink/92 to-reps-ink/70"
-      />
-      <HeroOverlay copySide="left" intensity="standard" />
-
-      <div className="relative mx-auto grid max-w-[1320px] gap-12 px-6 pt-24 pb-24 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-16 lg:px-10 lg:pt-28 lg:pb-28">
-        <div className="max-w-[650px]">
-          <MarketingHeroEyebrow icon={GraduationCap}>
-            REPs Training Provider Membership
-          </MarketingHeroEyebrow>
-          <h1
-            className="mt-5 font-display text-[44px] font-bold leading-[1.03] text-white animate-fade-in lg:text-[68px]"
-            style={{ animationDelay: "80ms", animationDuration: "640ms" }}
-          >
-            Independent endorsement for fitness training providers.
-          </h1>
-          <p
-            className="mt-5 max-w-[570px] text-[16px] leading-relaxed text-white/80 animate-fade-in"
-            style={{ animationDelay: "180ms", animationDuration: "560ms" }}
-          >
-            REPs is the independent standards layer for fitness education. We review your courses,
-            recognise your provider publicly, collect verified learner reviews and issue publicly
-            verifiable certificates to every completing learner.
-          </p>
-
+    <section className="relative isolate overflow-hidden">
+      {/* Mobile: image sits above copy. Desktop: image occupies the right ~55% of the hero. */}
+      <div className="relative mx-auto grid max-w-[1440px] gap-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
+        {/* Copy column */}
+        <div className="relative order-2 px-6 pt-14 pb-20 lg:order-1 lg:px-10 lg:pt-28 lg:pb-28">
+          {/* Copy-side wash so text stays legible on mobile where image sits above */}
           <div
-            className="mt-8 flex flex-wrap gap-3 animate-fade-in"
-            style={{ animationDelay: "260ms", animationDuration: "560ms" }}
-          >
-            <a
-              href="/signup?type=training_provider"
-              className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-reps-ink lg:bg-gradient-to-r lg:from-reps-ink lg:via-reps-ink lg:to-reps-ink/60"
+          />
+          <div className="relative max-w-[620px]">
+            <MarketingHeroEyebrow icon={GraduationCap}>
+              REPs Training Provider Membership
+            </MarketingHeroEyebrow>
+            <h1
+              className="mt-5 font-display text-[42px] font-bold leading-[1.03] text-white animate-fade-in lg:text-[64px]"
+              style={{ animationDelay: "80ms", animationDuration: "640ms" }}
             >
-              Apply to become a provider <ArrowRight className="h-4 w-4" />
-            </a>
-            <Link
-              to="/contact"
-              search={{ topic: "training-provider" }}
-              className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-reps-ink/30 px-6 text-[14px] font-semibold text-white shadow-none hover:bg-white/10"
+              Independent endorsement for any course you deliver.
+            </h1>
+            <p
+              className="mt-5 max-w-[560px] text-[16px] leading-relaxed text-white/80 animate-fade-in"
+              style={{ animationDelay: "180ms", animationDuration: "560ms" }}
             >
-              Talk to the review team
-            </Link>
-          </div>
+              REPs is the independent standards layer for fitness education. Bring any course you
+              write in-house — practical, classroom, online, blended, any subject — and REPs will
+              review it, recognise your provider publicly and issue verifiable certificates to every
+              completing learner.
+            </p>
 
-          <div
-            className="mt-8 grid max-w-[560px] grid-cols-1 gap-px overflow-hidden rounded-[16px] border border-reps-border bg-reps-border animate-fade-in sm:grid-cols-3"
-            style={{ animationDelay: "340ms", animationDuration: "560ms" }}
-          >
-            <MetricTile value={TIER.priceLabel} label="per year" />
-            <MetricTile value="Unlimited" label="course submissions" />
-            <MetricTile value={CERTIFICATE_UNIT_PRICE_LABEL} label="per certificate" />
+            <div
+              className="mt-8 flex flex-wrap gap-3 animate-fade-in"
+              style={{ animationDelay: "260ms", animationDuration: "560ms" }}
+            >
+              <a
+                href="/signup?type=training_provider"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+              >
+                Apply to become a provider <ArrowRight className="h-4 w-4" />
+              </a>
+              <Link
+                to="/contact"
+                search={{ topic: "training-provider" }}
+                className="inline-flex h-12 items-center rounded-[10px] border border-white/25 bg-reps-ink/30 px-6 text-[14px] font-semibold text-white shadow-none hover:bg-white/10"
+              >
+                Talk to the review team
+              </Link>
+            </div>
+
+            <div
+              className="mt-8 grid max-w-[560px] grid-cols-1 gap-px overflow-hidden rounded-[16px] border border-reps-border bg-reps-border animate-fade-in sm:grid-cols-3"
+              style={{ animationDelay: "340ms", animationDuration: "560ms" }}
+            >
+              <MetricTile value={TIER.priceLabel} label="per year" />
+              <MetricTile value="Unlimited" label="course submissions" />
+              <MetricTile value={CERTIFICATE_UNIT_PRICE_LABEL} label="per certificate" />
+            </div>
           </div>
         </div>
 
-        <div className="relative hidden lg:block">
-          <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-reps-panel/95 p-6 shadow-[0_42px_110px_-50px_rgba(0,0,0,0.95)] backdrop-blur">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-                  Certificate evidence
-                </div>
-                <p className="mt-1 text-[13.5px] leading-snug text-white/70">
-                  Achievement certificate and Learner Unit Summary, issued from the provider portal.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white">
-                <img
-                  src={certificateAsset.url}
-                  alt="REPs-endorsed Certificate of Achievement showing learner name, course title, certificate number and verification details."
-                  className="aspect-[1/1.414] w-full object-contain"
-                  width={1240}
-                  height={1754}
-                />
-              </div>
-              <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white">
-                <img
-                  src={unitSummaryAsset.url}
-                  alt="REPs Learner Unit Summary listing completed units for the endorsed course."
-                  className="aspect-[1/1.414] w-full object-contain"
-                  width={1240}
-                  height={1754}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute -bottom-8 left-8 right-8 grid grid-cols-3 gap-px overflow-hidden rounded-[16px] border border-reps-border bg-reps-border shadow-[0_26px_70px_-42px_rgba(0,0,0,0.95)]">
-            {[
-              "Unique certificate number",
-              "Public verification URL",
-              "Learner unit record",
-            ].map((label) => (
-              <div key={label} className="bg-reps-panel/95 px-4 py-4 backdrop-blur">
-                <CheckCircle2 className="h-4 w-4 text-reps-orange" />
-                <div className="mt-2 text-[12px] font-semibold leading-snug text-white/80">
-                  {label}
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* Image column */}
+        <div className="relative order-1 aspect-[16/11] w-full overflow-hidden lg:order-2 lg:aspect-auto lg:min-h-[720px]">
+          <img
+            src={heroCoachingAsset.url}
+            alt="A REPs training-provider tutor coaching a learner through a practical kettlebell assessment on the gym floor."
+            className="absolute inset-0 h-full w-full object-cover object-[65%_center]"
+            fetchPriority="high"
+            width={1920}
+            height={1280}
+          />
+          {/* Subtle darkening only on the inner edge so text-side gradient blends naturally on desktop */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-reps-ink/70 via-reps-ink/20 to-transparent hidden lg:block"
+          />
+          {/* Bottom fade into next section */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-reps-ink"
+          />
         </div>
       </div>
     </section>
