@@ -94,6 +94,7 @@ function useActive() {
     findProvider:
       pathname.startsWith("/find-a-training-provider") ||
       pathname.startsWith("/t/"),
+    trainingProviders: pathname.startsWith("/training-providers"),
     resources:
       pathname === "/resources" || pathname.startsWith("/resources/"),
     pros:
