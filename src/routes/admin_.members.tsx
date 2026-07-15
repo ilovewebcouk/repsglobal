@@ -823,7 +823,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
   const setTpFn = useServerFn(setTrainingProviderPlan);
-  const publishFn = useServerFn(setProfessionalPublished);
+  
   const [busy, setBusy] = React.useState(false);
   const [suspendOpen, setSuspendOpen] = React.useState(false);
 
