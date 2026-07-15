@@ -125,10 +125,43 @@ function parseCsv(text: string): ParsedRow[] {
 
 function TrainingProviderImportPage() {
   const run = useServerFn(importTrainingProviders);
+  const preview = useServerFn(previewProviderPortalEmail);
   const [csv, setCsv] = useState("");
   const [busy, setBusy] = useState(false);
+  const [environment, setEnvironment] = useState<"live" | "sandbox">("live");
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const [rows, setRows] = useState<ImportRowResult[] | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [previewSubject, setPreviewSubject] = useState<string>("");
+  const [previewFor, setPreviewFor] = useState<string>("");
+
+  async function openPreview(r: ImportRowResult) {
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewFor(`${r.provider_name} · ${r.email}`);
+    setPreviewHtml("");
+    setPreviewSubject("");
+    try {
+      const res = (await preview({
+        data: {
+          provider_name: r.provider_name,
+          email: r.email,
+          already_registered:
+            r.action === "would_link_existing" || r.action === "linked_existing",
+        },
+      })) as { subject: string; html: string };
+      setPreviewSubject(res.subject);
+      setPreviewHtml(res.html);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Preview failed");
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  }
+
 
   const parsed = useMemo(() => parseCsv(csv), [csv]);
   const valid = parsed.filter((p) => p.ok);
