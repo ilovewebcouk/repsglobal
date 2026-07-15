@@ -30,7 +30,7 @@ export const listProviderCenterNumbers = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Providers = professionals with account_type = 'organisation'
+    // Providers = professionals with account_type = 'training_provider'
     const { data: pros } = await supabaseAdmin
       .from("professionals")
       .select("id")

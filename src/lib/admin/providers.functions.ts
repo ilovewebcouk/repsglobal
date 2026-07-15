@@ -1,7 +1,7 @@
 /**
  * Admin — Training-provider control surface.
  *
- * Provider discriminator: `professionals.account_type = 'organisation'`.
+ * Provider discriminator: `professionals.account_type = 'training_provider'`.
  * Canonical provider display name: `profiles.full_name` (the ONE source of
  * truth for a training provider's display name — e.g. "Northline Fitness Academy").
  *
@@ -589,7 +589,7 @@ export const createProvider = createServerFn({ method: "POST" })
       // permits 'verified' | 'pro' and the table has no metadata/kind/note
       // column. We record provider invites as plan='pro' so acceptance still
       // works, and distinguish them by the seeded professionals.account_type
-      // ='organisation' row keyed on email at accept-time.
+      // ='training_provider' row keyed on email at accept-time.
       // FOLLOW-UP: add a proper provider invite type (either extend the plan
       // enum with 'provider' or add a signup_kind/kind column) so provider
       // invites are not recorded as pro invites.
