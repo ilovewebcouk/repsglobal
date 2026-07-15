@@ -273,7 +273,7 @@ function TrainingProviderImportPage() {
   }
 
   return (
-    <main className="min-h-screen bg-reps-bg text-white">
+    <main className="min-h-screen bg-[#0B0E12] text-white">
      <div className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="text-2xl font-semibold">Bulk import training providers</h1>
       <p className="mt-2 text-sm text-white/70">
