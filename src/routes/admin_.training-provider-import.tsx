@@ -408,6 +408,89 @@ function TrainingProviderImportPage() {
         </p>
       </section>
 
+      {pmRows && (
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold">Payment-method audit</h2>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            <Badge variant="outline" className="border-white/20 text-white/80">
+              Checked: {pmRows.length}
+            </Badge>
+            <Badge className="bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+              Card on file: {pmRows.filter((r) => r.has_pm).length}
+            </Badge>
+            <Badge className="bg-red-500/15 text-red-300 border border-red-400/30">
+              No card: {pmRows.filter((r) => r.found && !r.has_pm).length}
+            </Badge>
+            {pmRows.some((r) => !r.found) && (
+              <Badge className="bg-orange-500/15 text-orange-300 border border-orange-400/30">
+                Not found: {pmRows.filter((r) => !r.found).length}
+              </Badge>
+            )}
+          </div>
+          <div className="mt-3 overflow-x-auto rounded-lg border border-white/10">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-white/15 bg-white/5 text-left text-white/80">
+                  <th className="px-3 py-2">Provider</th>
+                  <th className="px-3 py-2">Customer ID</th>
+                  <th className="px-3 py-2">Card on file</th>
+                  <th className="px-3 py-2">Card detail</th>
+                  <th className="px-3 py-2">Last paid</th>
+                  <th className="px-3 py-2">Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pmRows.map((r, i) => {
+                  const match = valid.find(
+                    (v) => v.stripe_customer_id === r.stripe_customer_id,
+                  );
+                  const cardDetail =
+                    r.has_pm && r.pm_brand
+                      ? `${r.pm_brand} •••• ${r.pm_last4} (exp ${r.pm_exp})`
+                      : r.has_pm
+                      ? r.pm_type ?? "on file"
+                      : "—";
+                  const lastPaid = r.last_paid_at
+                    ? new Date(r.last_paid_at * 1000).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }) +
+                      (r.last_paid_amount_pence != null
+                        ? ` · £${(r.last_paid_amount_pence / 100).toFixed(2)}`
+                        : "")
+                    : "—";
+                  return (
+                    <tr key={i} className="border-b border-white/10 align-top">
+                      <td className="px-3 py-2 font-medium">
+                        {match?.provider_name ?? "—"}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-white/60">
+                        {r.stripe_customer_id}
+                      </td>
+                      <td className="px-3 py-2">
+                        {!r.found ? (
+                          <span className="text-orange-300">not found</span>
+                        ) : r.has_pm ? (
+                          <span className="text-emerald-300">yes</span>
+                        ) : (
+                          <span className="text-red-300">no</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-white/85">{cardDetail}</td>
+                      <td className="px-3 py-2 text-white/70">{lastPaid}</td>
+                      <td className="px-3 py-2 text-white/60">{r.error ?? ""}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+
+
       {summary && (
         <section className="mt-8">
           <h2 className="text-lg font-semibold">
