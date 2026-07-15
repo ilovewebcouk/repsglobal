@@ -288,12 +288,15 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { createStripeClient } = await import("@/lib/billing/stripe.server");
     const sa = supabaseAdmin as any;
+    const stripe = createStripeClient(data.environment) as any;
 
     const results: ImportRowResult[] = [];
     let created = 0;
     let linked = 0;
     let errors = 0;
+    const capPriceCache: { id?: string } = {};
 
     for (const row of data.rows) {
       const rec: ImportRowResult = {
@@ -307,17 +310,21 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
       try {
         const website = normaliseUrl(row.website ?? null);
         const existingId = await findAuthUserByEmail(sa, row.email);
+        const audit = await auditStripeCustomer(stripe, row.stripe_customer_id);
+        rec.stripe_audit = audit;
 
         // ------ Dry-run branch ------
         if (!data.commit) {
           rec.action = existingId ? "would_link_existing" : "would_create";
           rec.user_id = existingId ?? undefined;
-          rec.detail = existingId
+          const authNote = existingId
             ? "Email already registered — Stripe customer would be linked."
             : "New auth user would be invited with a password-set link.";
+          rec.detail = audit.note ? `${authNote} ${audit.note}` : authNote;
           results.push(rec);
           continue;
         }
+
 
         // ------ Commit branch ------
         let userId = existingId;
