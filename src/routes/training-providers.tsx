@@ -292,7 +292,9 @@ function TrainingProvidersPage() {
       <PublicHeader variant="solid" />
 
       <HeroSection />
+      <WhoThisIsForSection />
       <FeatureReelSection />
+
       <CertificateShowcaseSection />
       <AuthoritySection />
       <ProviderSurfaceSection />
