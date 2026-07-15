@@ -102,6 +102,13 @@ const RowInput = z.object({
     .regex(/^cus_[A-Za-z0-9]+$/, "stripe_customer_id must look like cus_..."),
   provider_name: z.string().trim().min(1).max(160),
   website: z.string().trim().max(300).optional().nullable(),
+  /**
+   * Optional unix-seconds timestamp to use as the subscription's
+   * billing_cycle_anchor + trial_end when we ACTIVATE a fresh £479/yr sub
+   * for a customer with no active subscription on file. If omitted, no
+   * subscription is created (row still gets seeded + email skipped).
+   */
+  renewal_anchor_ts: z.number().int().positive().optional(),
 });
 
 const Input = z.object({
@@ -158,6 +165,12 @@ export type ImportRowResult = {
   detail: string;
   stripe_audit?: StripeAudit;
   renewal_applied?: boolean;
+  /** Set when we successfully created a fresh £479/yr Stripe subscription. */
+  subscription_activated?: boolean;
+  /** Stripe subscription id after activation (if any). */
+  activated_subscription_id?: string;
+  /** Anchor timestamp used, so the UI can echo the first-bill date. */
+  activated_anchor_ts?: number;
 };
 
 export type ImportSummary = {
@@ -259,14 +272,25 @@ async function resolveCapPrice(stripe: any, cache: { id?: string }): Promise<str
     cache.id = existing.data[0].id;
     return cache.id!;
   }
-  // Fallback — create it against a product with the same lookup as the config.
+  // Fallback — create/rename the "REPs LMS" product with our internal metadata key.
   const productList = await stripe.products.list({ limit: 100 });
-  const product =
-    productList.data.find((p: any) => p.metadata?.reps_key === "training_provider") ??
-    (await stripe.products.create({
-      name: "REPs-endorsed Training Provider",
+  let product =
+    productList.data.find((p: any) => p.metadata?.reps_key === "training_provider") ?? null;
+  if (product) {
+    // Keep the customer-facing name aligned with current branding.
+    if (product.name !== "REPs LMS") {
+      try {
+        product = await stripe.products.update(product.id, { name: "REPs LMS" });
+      } catch {
+        // non-fatal — continue with existing product
+      }
+    }
+  } else {
+    product = await stripe.products.create({
+      name: "REPs LMS",
       metadata: { reps_key: "training_provider" },
-    }));
+    });
+  }
   const created = await stripe.prices.create({
     product: product.id,
     unit_amount: RENEWAL_CAP_PENCE,
@@ -442,10 +466,51 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
           }
         }
 
-        // Send announcement email — skipped when there is no active sub so the
-        // provider isn't invited to a portal they can't yet use.
+        // ------ Activate a fresh £479/yr subscription (Stripe) ------
+        // Only fires when the customer has NO active subscription on file AND
+        // the admin supplied an anchor timestamp (last-paid + 12mo, or a hard
+        // override like SIFA). No charge today: trial_end + billing_cycle_anchor
+        // are both set to the anchor, so the first charge lands on that date.
+        if (
+          rec.stripe_audit?.renewal_action === "no_active_sub" &&
+          row.renewal_anchor_ts
+        ) {
+          try {
+            const capPriceId = await resolveCapPrice(stripe, capPriceCache);
+            const anchor = row.renewal_anchor_ts;
+            const newSub = await stripe.subscriptions.create({
+              customer: row.stripe_customer_id,
+              items: [{ price: capPriceId }],
+              collection_method: "charge_automatically",
+              trial_end: anchor,
+              billing_cycle_anchor: anchor,
+              proration_behavior: "none",
+              payment_behavior: "allow_incomplete",
+              metadata: {
+                reps_activated_by: context.userId,
+                reps_anchor_source: "bulk_import",
+              },
+            });
+            rec.subscription_activated = true;
+            rec.activated_subscription_id = newSub.id;
+            rec.activated_anchor_ts = anchor;
+          } catch (e) {
+            console.error("[importTrainingProviders] activation failed", row.email, e);
+            rec.subscription_activated = false;
+            rec.stripe_audit = {
+              ...rec.stripe_audit,
+              note: `Activation failed: ${e instanceof Error ? e.message : String(e)}`,
+            };
+          }
+        }
+
+        // Send announcement email — skipped only when we still have no active
+        // sub after the activation attempt (so the provider isn't invited to
+        // a portal they can't yet use).
         let messageId: string | undefined;
-        const skipEmail = rec.stripe_audit?.renewal_action === "no_active_sub";
+        const skipEmail =
+          rec.stripe_audit?.renewal_action === "no_active_sub" &&
+          !rec.subscription_activated;
         if (!skipEmail) {
           try {
             const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");

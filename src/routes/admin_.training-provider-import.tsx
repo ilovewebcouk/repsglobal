@@ -246,6 +246,20 @@ function TrainingProviderImportPage() {
   const invalid = parsed.filter((p) => !p.ok);
   const canRun = valid.length > 0 && invalid.length === 0 && !busy;
 
+  // Hard override for SIFA (cus_Qc6ZavuZOp8MOp) → renew 6 Aug 2026, per admin decision.
+  const ANCHOR_OVERRIDES: Record<string, number> = {
+    cus_Qc6ZavuZOp8MOp: Math.floor(new Date("2026-08-06T00:00:00Z").getTime() / 1000),
+  };
+  const YEAR_SECONDS = 365 * 24 * 60 * 60;
+
+  /** Compute the billing_cycle_anchor for a row: override → last_paid + 12mo → undefined. */
+  function anchorFor(customerId: string): number | undefined {
+    if (ANCHOR_OVERRIDES[customerId]) return ANCHOR_OVERRIDES[customerId];
+    const pm = pmRows?.find((r) => r.stripe_customer_id === customerId);
+    if (pm?.last_paid_at) return pm.last_paid_at + YEAR_SECONDS;
+    return undefined;
+  }
+
   async function execute(commit: boolean) {
     if (valid.length === 0) return;
     setBusy(true);
@@ -261,6 +275,7 @@ function TrainingProviderImportPage() {
             stripe_customer_id: v.stripe_customer_id!,
             provider_name: v.provider_name!,
             website: v.website ?? null,
+            renewal_anchor_ts: anchorFor(v.stripe_customer_id!),
           })),
         },
       })) as { summary: ImportSummary; results: ImportRowResult[] };
