@@ -49,6 +49,8 @@ export type AdminProRow = {
   location: string | null;
   coursesCount: number | null;
   verifiedProsLinked: number | null;
+  // Last time the user signed in (auth.users.last_sign_in_at). Null if never.
+  lastLoginAt: string | null;
 };
 
 
@@ -383,6 +385,15 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
 
+    // Last sign-in per user (admin-only RPC over auth.users).
+    const lastLoginByUser = new Map<string, string | null>();
+    try {
+      const { data: lastLogins } = await supabaseAdmin.rpc('get_users_last_sign_in', { _ids: ids });
+      for (const r of (lastLogins ?? []) as Array<{ id: string; last_sign_in_at: string | null }>) {
+        lastLoginByUser.set(r.id, r.last_sign_in_at);
+      }
+    } catch { /* non-fatal — column simply renders as "—" */ }
+
     // Provider-only: REPs course counts per provider. Cheap 1-shot fetch.
     const coursesCountByOrg = new Map<string, number>();
     if (data.segment === 'providers') {
@@ -502,6 +513,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         location: p.city ?? null,
         coursesCount: p.account_type === 'training_provider' ? (coursesCountByOrg.get(p.id) ?? 0) : null,
         verifiedProsLinked: null,
+        lastLoginAt: lastLoginByUser.get(p.id) ?? null,
       };
     });
 

@@ -54,6 +54,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { timeAgo } from "@/lib/format/relative-time";
 
 
 // Clicking a pro's name in the list opens their Member 360 workbench.
@@ -474,7 +475,7 @@ function AdminProfessionalsPage() {
                 <th className="px-5 py-3 font-semibold">{segment === "providers" ? "Provider" : "Professional"}</th>
                 {segment === "providers" ? (
                   <>
-                    <th className="px-3 py-3 font-semibold">Location</th>
+                    <th className="px-3 py-3 font-semibold">Last logged in</th>
                     <th className="px-3 py-3 font-semibold">Courses</th>
                     <th className="px-3 py-3 font-semibold">Verified pros</th>
                     <th className="px-3 py-3 font-semibold">Plan</th>
@@ -900,7 +901,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
 
       {segment === "providers" ? (
         <>
-          <td className="px-3 py-3 text-white/75">{row.location ?? <span className="text-white/45">—</span>}</td>
+          <td className="px-3 py-3 text-white/75">{row.lastLoginAt ? <span title={new Date(row.lastLoginAt).toLocaleString()}>{timeAgo(row.lastLoginAt)}</span> : <span className="text-white/45">Never</span>}</td>
           <td className="px-3 py-3 text-white/75 tabular-nums">{row.coursesCount ?? 0}</td>
           <td className="px-3 py-3 text-white/45">
             <Tooltip>
