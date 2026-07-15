@@ -466,10 +466,51 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
           }
         }
 
-        // Send announcement email — skipped when there is no active sub so the
-        // provider isn't invited to a portal they can't yet use.
+        // ------ Activate a fresh £479/yr subscription (Stripe) ------
+        // Only fires when the customer has NO active subscription on file AND
+        // the admin supplied an anchor timestamp (last-paid + 12mo, or a hard
+        // override like SIFA). No charge today: trial_end + billing_cycle_anchor
+        // are both set to the anchor, so the first charge lands on that date.
+        if (
+          rec.stripe_audit?.renewal_action === "no_active_sub" &&
+          row.renewal_anchor_ts
+        ) {
+          try {
+            const capPriceId = await resolveCapPrice(stripe, capPriceCache);
+            const anchor = row.renewal_anchor_ts;
+            const newSub = await stripe.subscriptions.create({
+              customer: row.stripe_customer_id,
+              items: [{ price: capPriceId }],
+              collection_method: "charge_automatically",
+              trial_end: anchor,
+              billing_cycle_anchor: anchor,
+              proration_behavior: "none",
+              payment_behavior: "allow_incomplete",
+              metadata: {
+                reps_activated_by: context.userId,
+                reps_anchor_source: "bulk_import",
+              },
+            });
+            rec.subscription_activated = true;
+            rec.activated_subscription_id = newSub.id;
+            rec.activated_anchor_ts = anchor;
+          } catch (e) {
+            console.error("[importTrainingProviders] activation failed", row.email, e);
+            rec.subscription_activated = false;
+            rec.stripe_audit = {
+              ...rec.stripe_audit,
+              note: `Activation failed: ${e instanceof Error ? e.message : String(e)}`,
+            };
+          }
+        }
+
+        // Send announcement email — skipped only when we still have no active
+        // sub after the activation attempt (so the provider isn't invited to
+        // a portal they can't yet use).
         let messageId: string | undefined;
-        const skipEmail = rec.stripe_audit?.renewal_action === "no_active_sub";
+        const skipEmail =
+          rec.stripe_audit?.renewal_action === "no_active_sub" &&
+          !rec.subscription_activated;
         if (!skipEmail) {
           try {
             const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
