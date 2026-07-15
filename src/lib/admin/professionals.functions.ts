@@ -513,6 +513,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         location: p.city ?? null,
         coursesCount: p.account_type === 'training_provider' ? (coursesCountByOrg.get(p.id) ?? 0) : null,
         verifiedProsLinked: null,
+        lastLoginAt: lastLoginByUser.get(p.id) ?? null,
       };
     });
 
