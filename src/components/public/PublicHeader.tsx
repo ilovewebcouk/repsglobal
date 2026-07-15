@@ -226,6 +226,18 @@ export function PublicHeader({
                 </NavigationMenu.Item>
 
                 <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/training-providers"
+                      className={cn(triggerClass(active.trainingProviders), "px-1 py-1")}
+                    >
+                      For Training Providers
+                      <ActiveDot show={active.trainingProviders} />
+                    </Link>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
                   <NavigationMenu.Trigger className={triggerClass(active.pros)}>
                     For Professionals
                     <ChevronDown
