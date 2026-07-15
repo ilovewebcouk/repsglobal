@@ -102,6 +102,13 @@ const RowInput = z.object({
     .regex(/^cus_[A-Za-z0-9]+$/, "stripe_customer_id must look like cus_..."),
   provider_name: z.string().trim().min(1).max(160),
   website: z.string().trim().max(300).optional().nullable(),
+  /**
+   * Optional unix-seconds timestamp to use as the subscription's
+   * billing_cycle_anchor + trial_end when we ACTIVATE a fresh £479/yr sub
+   * for a customer with no active subscription on file. If omitted, no
+   * subscription is created (row still gets seeded + email skipped).
+   */
+  renewal_anchor_ts: z.number().int().positive().optional(),
 });
 
 const Input = z.object({
