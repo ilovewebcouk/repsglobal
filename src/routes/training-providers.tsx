@@ -853,3 +853,12 @@ function CertificatePair() {
     </div>
   );
 }
+
+function MetricTile({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="bg-reps-panel/95 px-4 py-4 backdrop-blur">
+      <div className="font-display text-[22px] font-bold leading-none text-white">{value}</div>
+      <div className="mt-2 text-[11px] uppercase tracking-[0.14em] text-white/55">{label}</div>
+    </div>
+  );
+}
