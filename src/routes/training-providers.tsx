@@ -90,7 +90,7 @@ export const Route = createFileRoute("/training-providers")({
           "Independent course review, public recognition, verified learner reviews and REPs-issued certificates. £479/year.",
       },
       { property: "og:type", content: "product" },
-      { property: "og:image", content: heroDocumentsAsset.url },
+      { property: "og:image", content: certificateAsset.url },
       { property: "og:url", content: "https://repsuk.org/training-providers" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "REPs-endorsed Training Provider Membership" },
