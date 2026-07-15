@@ -165,6 +165,12 @@ export type ImportRowResult = {
   detail: string;
   stripe_audit?: StripeAudit;
   renewal_applied?: boolean;
+  /** Set when we successfully created a fresh £479/yr Stripe subscription. */
+  subscription_activated?: boolean;
+  /** Stripe subscription id after activation (if any). */
+  activated_subscription_id?: string;
+  /** Anchor timestamp used, so the UI can echo the first-bill date. */
+  activated_anchor_ts?: number;
 };
 
 export type ImportSummary = {
