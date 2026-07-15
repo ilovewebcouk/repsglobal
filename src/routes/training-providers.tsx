@@ -22,7 +22,8 @@ import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import { ORG_TIERS, CERTIFICATE_UNIT_PRICE_LABEL } from "@/lib/billing";
 
-import heroDocumentsAsset from "@/assets/training-providers/hero-documents.jpg.asset.json";
+import certificateAsset from "@/assets/training-providers/certificate-of-achievement.jpg.asset.json";
+import unitSummaryAsset from "@/assets/training-providers/learner-unit-summary.jpg.asset.json";
 import classroomAsset from "@/assets/training-providers/classroom-tutor.jpg.asset.json";
 import pilatesAsset from "@/assets/training-providers/pilates-class.jpg.asset.json";
 import spinAsset from "@/assets/training-providers/spin-class.jpg.asset.json";
