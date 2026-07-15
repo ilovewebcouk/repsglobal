@@ -14,6 +14,10 @@ import {
   type ImportSummary,
 } from "@/lib/admin/import-training-providers.functions";
 import { previewProviderPortalEmail } from "@/lib/admin/preview-provider-email.functions";
+import {
+  auditProviderPaymentMethods,
+  type PaymentMethodAuditRow,
+} from "@/lib/admin/audit-provider-payment-methods.functions";
 
 
 export const Route = createFileRoute("/admin_/training-provider-import")({
