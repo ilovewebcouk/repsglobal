@@ -123,6 +123,46 @@ function parseCsv(text: string): ParsedRow[] {
   });
 }
 
+type RenewalAction = NonNullable<ImportRowResult["stripe_audit"]>["renewal_action"] | undefined;
+
+function renewalPlanLabel(a: RenewalAction): string {
+  switch (a) {
+    case "keep_current_price":
+      return "Keep current price";
+    case "already_at_cap":
+      return "Already £479";
+    case "cap_to_479_at_renewal":
+      return "Cap to £479 at renewal";
+    case "no_active_sub":
+      return "No active sub";
+    case "non_gbp":
+      return "Non-GBP — review";
+    case "non_annual":
+      return "Non-annual — review";
+    case "audit_error":
+      return "Audit error";
+    default:
+      return "—";
+  }
+}
+
+function renewalPlanClass(a: RenewalAction): string {
+  switch (a) {
+    case "cap_to_479_at_renewal":
+      return "text-orange-300";
+    case "keep_current_price":
+    case "already_at_cap":
+      return "text-emerald-300";
+    case "no_active_sub":
+    case "non_gbp":
+    case "non_annual":
+    case "audit_error":
+      return "text-red-300";
+    default:
+      return "text-white/70";
+  }
+}
+
 function TrainingProviderImportPage() {
   const run = useServerFn(importTrainingProviders);
   const preview = useServerFn(previewProviderPortalEmail);
