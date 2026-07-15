@@ -279,6 +279,29 @@ function TrainingProviderImportPage() {
     }
   }
 
+  async function runPmAudit() {
+    if (valid.length === 0) return;
+    setPmBusy(true);
+    setPmRows(null);
+    try {
+      const res = (await auditPm({
+        data: {
+          environment,
+          customer_ids: valid.map((v) => v.stripe_customer_id!),
+        },
+      })) as PaymentMethodAuditRow[];
+      setPmRows(res);
+      const withPm = res.filter((r) => r.has_pm).length;
+      toast.success(
+        `Payment-method audit: ${withPm}/${res.length} have a saved card`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "PM audit failed");
+    } finally {
+      setPmBusy(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#0B0E12] text-white">
      <div className="mx-auto max-w-5xl px-6 py-10">
