@@ -198,27 +198,28 @@ const RECEIVE = [
 
 const FEATURE_REEL = [
   {
-    eyebrow: "Course delivery",
-    title: "Tutor-led learning environments",
-    body: "Training providers can evidence how learners are taught, supported and assessed in real course settings.",
+    eyebrow: "Classroom-based delivery",
+    title: "Tutor-led theory and assessment.",
+    body: "Endorsement covers your delivery model: how tutors teach, how learners are supported and how assessment is evidenced in the room.",
     image: classroomAsset.url,
     alt: "A REPs tutor teaching anatomy and course evidence to adult fitness learners in a classroom.",
   },
   {
     eyebrow: "Practical instruction",
-    title: "Pilates, yoga and movement courses",
-    body: "Programmes are reviewed for course structure, tutor competence and assessment quality.",
+    title: "Pilates, yoga and movement.",
+    body: "Practical courses are reviewed on syllabus, tutor competence, assessment method and learner safety — not marketing polish.",
     image: pilatesAsset.url,
     alt: "A Pilates instructor in a REPS-branded top guiding a learner through reformer practice.",
   },
   {
-    eyebrow: "Group exercise",
-    title: "Indoor cycling and studio formats",
-    body: "Group exercise courses can show delivery controls, learner support and safe instruction standards.",
+    eyebrow: "Group exercise formats",
+    title: "Indoor cycling and studio.",
+    body: "Group exercise courses are reviewed on delivery controls, learner safety, cueing standards and the assessment behind the qualification.",
     image: spinAsset.url,
     alt: "An indoor cycling instructor in a REPS-branded top coaching a studio class.",
   },
 ];
+
 
 const PRODUCT_SURFACE = [
   {
