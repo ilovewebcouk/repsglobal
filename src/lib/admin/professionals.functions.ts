@@ -377,18 +377,18 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
 
-    // Provider-only: course counts by organisation_id. Cheap 1-shot fetch.
+    // Provider-only: REPs course counts per provider. Cheap 1-shot fetch.
     const coursesCountByOrg = new Map<string, number>();
     if (data.segment === 'providers') {
-      const orgIds = prosFiltered.filter(p => p.account_type === 'organisation').map(p => p.id);
+      const orgIds = prosFiltered.filter(p => p.account_type === 'training_provider').map(p => p.id);
       if (orgIds.length) {
         const { data: courseRows } = await supabaseAdmin
-          .from('courses')
-          .select('organisation_id')
-          .in('organisation_id', orgIds);
-        for (const r of (courseRows ?? []) as Array<{ organisation_id: string | null }>) {
-          if (!r.organisation_id) continue;
-          coursesCountByOrg.set(r.organisation_id, (coursesCountByOrg.get(r.organisation_id) ?? 0) + 1);
+          .from('reps_courses')
+          .select('provider_id')
+          .in('provider_id', orgIds);
+        for (const r of (courseRows ?? []) as Array<{ provider_id: string | null }>) {
+          if (!r.provider_id) continue;
+          coursesCountByOrg.set(r.provider_id, (coursesCountByOrg.get(r.provider_id) ?? 0) + 1);
         }
       }
     }
