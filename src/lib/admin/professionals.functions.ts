@@ -210,7 +210,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     };
   });
 
-const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'payment_failed', 'renewal_due', 'recent', 'demos'] as const;
+const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'payment_failed', 'renewal_due', 'recent', 'demos', 'invited'] as const;
 export type AdminProTab = typeof TAB_VALUES[number];
 export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | 'mrr' | 'lifetimeValue' | 'renewalDate';
 export type SortDir = 'asc' | 'desc';
@@ -326,11 +326,13 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     if (adminRoleRes.error) throw adminRoleRes.error;
     const confirmedSet = new Set(((confirmedRes.data ?? []) as string[]).map(String));
     const adminIdSet = new Set(((adminRoleRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
-    const ids = allIds.filter(id => confirmedSet.has(id) && !adminIdSet.has(id));
+    // "Invited" tab flips the filter: show ONLY unconfirmed (invited-but-not-joined).
+    const wantInvited = data.tab === 'invited';
+    const ids = allIds.filter(id => (wantInvited ? !confirmedSet.has(id) : confirmedSet.has(id)) && !adminIdSet.has(id));
     if (ids.length === 0) {
       return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
     }
-    const prosFiltered = (pros ?? []).filter(p => confirmedSet.has(p.id) && !adminIdSet.has(p.id));
+    const prosFiltered = (pros ?? []).filter(p => (wantInvited ? !confirmedSet.has(p.id) : confirmedSet.has(p.id)) && !adminIdSet.has(p.id));
 
     // Chunk `.in('id', ids)` to keep request URLs under the edge worker URL
     // length limit. A single 400+ UUID list overflows and the request fails
