@@ -474,7 +474,7 @@ function AdminProfessionalsPage() {
                 <th className="px-5 py-3 font-semibold">{segment === "providers" ? "Provider" : "Professional"}</th>
                 {segment === "providers" ? (
                   <>
-                    <th className="px-3 py-3 font-semibold">Location</th>
+                    <th className="px-3 py-3 font-semibold">Last logged in</th>
                     <th className="px-3 py-3 font-semibold">Courses</th>
                     <th className="px-3 py-3 font-semibold">Verified pros</th>
                     <th className="px-3 py-3 font-semibold">Plan</th>
