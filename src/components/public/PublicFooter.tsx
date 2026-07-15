@@ -17,6 +17,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Find a Coach", to: "/find-a-professional" },
       { label: "Find a Training Provider", to: "/find-a-training-provider" },
+      { label: "For Training Providers", to: "/training-providers" },
       { label: "How REPS Works", to: "/how-it-works" },
       { label: "Specialisms", to: "/specialisms" },
       { label: "Reviews", to: "/reviews" },
