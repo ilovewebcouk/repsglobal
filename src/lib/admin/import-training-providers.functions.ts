@@ -168,7 +168,119 @@ export type ImportSummary = {
   dry_run: boolean;
 };
 
+/* ------------------------------ stripe audit ---------------------------- */
+
+/** Fetch the current active/trialing/past_due subscription for a customer, if any. */
+async function auditStripeCustomer(
+  stripe: any,
+  customerId: string,
+): Promise<StripeAudit> {
+  try {
+    const subs = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "all",
+      limit: 10,
+    });
+    const preferred = ["active", "trialing", "past_due"];
+    const sorted = [...subs.data].sort((a: any, b: any) => {
+      const ai = preferred.indexOf(a.status);
+      const bi = preferred.indexOf(b.status);
+      if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+      return (b.created ?? 0) - (a.created ?? 0);
+    });
+    const sub = sorted.find((s: any) => preferred.includes(s.status)) ?? sorted[0];
+    if (!sub) {
+      return { found: false, renewal_action: "no_active_sub", note: "No subscription on file." };
+    }
+    if (!preferred.includes(sub.status)) {
+      return {
+        found: false,
+        subscription_id: sub.id,
+        status: sub.status,
+        renewal_action: "no_active_sub",
+        note: `Subscription is ${sub.status}.`,
+      };
+    }
+    const item = sub.items?.data?.[0];
+    const price = item?.price;
+    const unit = price?.unit_amount ?? null;
+    const currency = (price?.currency ?? "").toLowerCase();
+    const interval = price?.recurring?.interval ?? "";
+    const base: StripeAudit = {
+      found: true,
+      subscription_id: sub.id,
+      subscription_item_id: item?.id,
+      status: sub.status,
+      price_id: price?.id,
+      unit_amount_pence: unit,
+      currency,
+      interval,
+      current_period_end: sub.current_period_end ?? null,
+      renewal_action: "keep_current_price",
+    };
+    if (currency !== "gbp") {
+      return { ...base, renewal_action: "non_gbp", note: `Currency is ${currency.toUpperCase()}, not GBP.` };
+    }
+    if (interval !== "year") {
+      return { ...base, renewal_action: "non_annual", note: `Interval is ${interval}, not annual.` };
+    }
+    if (unit == null) {
+      return { ...base, renewal_action: "audit_error", note: "Price has no unit_amount." };
+    }
+    if (unit <= RENEWAL_CAP_PENCE) {
+      return {
+        ...base,
+        renewal_action: unit === RENEWAL_CAP_PENCE ? "already_at_cap" : "keep_current_price",
+        note:
+          unit === RENEWAL_CAP_PENCE
+            ? "Already at £479/yr."
+            : `Grandfathered at £${(unit / 100).toFixed(2)}/yr — kept as-is.`,
+      };
+    }
+    return {
+      ...base,
+      renewal_action: "cap_to_479_at_renewal",
+      note: `Currently £${(unit / 100).toFixed(2)}/yr — will cap to £479 at next renewal (no immediate charge).`,
+    };
+  } catch (e) {
+    return {
+      found: false,
+      renewal_action: "audit_error",
+      note: e instanceof Error ? e.message : String(e),
+    };
+  }
+}
+
+/** Get-or-create the £479/yr training-provider Stripe Price (cached per-run). */
+async function resolveCapPrice(stripe: any, cache: { id?: string }): Promise<string> {
+  if (cache.id) return cache.id;
+  const existing = await stripe.prices.list({ lookup_keys: [TP_ANNUAL_LOOKUP], limit: 1, active: true });
+  if (existing.data.length) {
+    cache.id = existing.data[0].id;
+    return cache.id!;
+  }
+  // Fallback — create it against a product with the same lookup as the config.
+  const productList = await stripe.products.list({ limit: 100 });
+  const product =
+    productList.data.find((p: any) => p.metadata?.reps_key === "training_provider") ??
+    (await stripe.products.create({
+      name: "REPs-endorsed Training Provider",
+      metadata: { reps_key: "training_provider" },
+    }));
+  const created = await stripe.prices.create({
+    product: product.id,
+    unit_amount: RENEWAL_CAP_PENCE,
+    currency: "gbp",
+    recurring: { interval: "year" },
+    lookup_key: TP_ANNUAL_LOOKUP,
+    transfer_lookup_key: true,
+  });
+  cache.id = created.id;
+  return created.id;
+}
+
 /* ------------------------------ server fn ------------------------------ */
+
 
 export const importTrainingProviders = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
