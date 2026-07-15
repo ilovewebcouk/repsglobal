@@ -92,9 +92,21 @@ export function ProviderDashboardHome() {
     : hasPaidTier
       ? (TIERS[subTier as "verified" | "pro"]?.label ?? subTier)
       : "No plan";
-  const memberName =
-    data?.identity?.full_name ?? data?.identity?.full_name ?? "REPS member";
-  const firstName = memberName.split("")[0];
+  const tradingName =
+    (data?.identity?.full_name && data.identity.full_name.trim()) || "REPS member";
+  const verifiedName =
+    (data?.profile as { identity_verified_name?: string | null } | null | undefined)
+      ?.identity_verified_name?.trim() || null;
+  const identityApproved =
+    (data?.profile as { identity_status?: string | null } | null | undefined)
+      ?.identity_status === "approved";
+  const memberName = tradingName;
+  // Provider greeting: trading name until Stripe Identity is approved,
+  // then swap to the first name from the verified legal name.
+  const greetName =
+    identityApproved && verifiedName
+      ? verifiedName.split(/\s+/)[0]
+      : tradingName;
 
   const enqStats = hub.enqStats.data;
   const reviewKpis = hub.reviewKpis.data;
@@ -105,7 +117,7 @@ export function ProviderDashboardHome() {
     <DashboardShell
       role="trainer"
       active="Dashboard"
-      title={`${greeting}, ${firstName}`}
+      title={`${greeting}, ${greetName}`}
       subtitle={hasProAccess ? "Your business overview." : "Your REPS command center."}
       tier={tier}
       member={{
