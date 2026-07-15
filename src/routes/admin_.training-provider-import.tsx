@@ -6,12 +6,15 @@ import { requireRole } from "@/lib/route-gates";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertCircle, CheckCircle2, Eye } from "lucide-react";
 import {
   importTrainingProviders,
   type ImportRowResult,
   type ImportSummary,
 } from "@/lib/admin/import-training-providers.functions";
+import { previewProviderPortalEmail } from "@/lib/admin/preview-provider-email.functions";
+
 
 export const Route = createFileRoute("/admin_/training-provider-import")({
   ssr: false,
@@ -120,12 +123,116 @@ function parseCsv(text: string): ParsedRow[] {
   });
 }
 
+type RenewalAction = NonNullable<ImportRowResult["stripe_audit"]>["renewal_action"] | undefined;
+
+function renewalPlanLabel(a: RenewalAction): string {
+  switch (a) {
+    case "keep_current_price":
+      return "Keep current price";
+    case "already_at_cap":
+      return "Already £479";
+    case "cap_to_479_at_renewal":
+      return "Cap to £479 at renewal";
+    case "no_active_sub":
+      return "No active sub";
+    case "non_gbp":
+      return "Non-GBP — review";
+    case "non_annual":
+      return "Non-annual — review";
+    case "audit_error":
+      return "Audit error";
+    default:
+      return "—";
+  }
+}
+
+function renewalPlanClass(a: RenewalAction): string {
+  switch (a) {
+    case "cap_to_479_at_renewal":
+      return "text-orange-300";
+    case "keep_current_price":
+    case "already_at_cap":
+      return "text-emerald-300";
+    case "no_active_sub":
+    case "non_gbp":
+    case "non_annual":
+    case "audit_error":
+      return "text-red-300";
+    default:
+      return "text-white/70";
+  }
+}
+
+/**
+ * Prefilled CSV of the 24 existing paying training providers (loaded from
+ * `training_providers.numbers`). Admins can edit or clear this before running.
+ */
+const PREFILL_CSV = `email,stripe_customer_id,provider_name,website
+charlottesaunders2016@googlemail.com,cus_USZd4mtxruqXGB,Charlotte Saunders Limited,https://www.instagram.com/charlottesaundersx
+info@zerogravitypilatestraininglab.co.uk,cus_UR4xHlMGemLHra,Power Health and Fitness Ltd,http://www.zerogravitypilates.co.uk
+info@barrecertification.com,cus_UPnBAE1DZHYkVE,"Discover True You, Inc",https://barrecertification.com/
+lvlupfitness.pk@gmail.com,cus_TkvnOYI1KZNUOF,Level Up Fitness,https://www.lvl-upfitness.com
+gemmahuston@gmail.com,cus_TfD7d6sZaszeUp,Core By Gemma,https://www.corebygemma.com
+lara@bodybylara.co.uk,cus_TdcZq1I4VQbugF,Bodybylaracore LLP,https://www.bodybylaracore.com
+info@balancedconnection.co.uk,cus_TXRG9DBbqbSkAR,Core reformer ltd,http://www.balancedconnection.co.uk
+sally@mkreformed.co.uk,cus_TXR92RemhbCWCf,Mkhealthhub Solihull,https://mkreformed.co.uk
+rosarialp@hotmail.com,cus_THdW0JHN9IZudQ,Reformer Fitness Academy,https://se9pilates.co.uk/reformer-pilates-academy/
+rod@bodbyrod.com,cus_TFMUz1YB2TXguC,BodbyRod,http://www.bodbyrod.com
+askcoachx@gmail.com,cus_TAWjZ5R9oBzCUT,CoachX by ABS,https://www.abswellnessclub.com
+emma@emmanewhamfitness.com,cus_SYAiBukyrsTPaI,Pilates Union,https://www.pilatesunion.com/
+hussain.ali@aikaro.co.uk,cus_Rt0T8yUXoA6BCc,Aikaro Sports Academy,https://aikaro.co.uk/
+catie@barreseries.com,cus_TZzjq5oWd7pqz2,Barre Series,https://www.barreseries.com
+andy.gill@ethicsleisure.com,cus_RCSV3cBOpjNssb,Ethics Leisure,http://www.totalgymshop.co.uk
+jonathon@fitnesseducationonline.com.au,cus_T6az9cO6UUiEsL,Fitness Education Online,https://fitnesseducationonline.co.uk
+info@stormfitnessacademy.co.uk,cus_PKFfkS4BsmFl4b,Storm Fitness Academy,https://www.stormfitnessacademy.co.uk
+karwanmoh1995@gmail.com,cus_PM8uDZyZP6chGm,Fitness Global Academy,https://fitnessglobalacademy.com/
+nyamath@sifa-fitness.com,cus_Qc6ZavuZOp8MOp,SIFA,https://sifa-fitness.com/
+accounts@apeccourses.com,cus_QD5LgkMdgkTSsA,APEC Courses Ireland Ltd.,http://www.apeccourses.com
+claudia@bellydancebodymind.com,cus_PU0qwZD0uL8KNO,Dance Body Mind,https://www.bellydancebodymind.com/
+info@athleticum.co.uk,cus_QASk2eQofTc8eU,Athleticum (Morelli Enterprises Ltd),https://www.athleticum.co.uk/
+steele.williams@train.fitness,cus_Q8DO6LgkZUNc15,Campus Learning Limited,https://train.fitness
+info@diversetrainers.co.uk,cus_Pt0nD0Q4QyWsyL,Diverse Trainers,https://www.diversetrainers.co.uk/`;
+
 function TrainingProviderImportPage() {
   const run = useServerFn(importTrainingProviders);
-  const [csv, setCsv] = useState("");
+  const preview = useServerFn(previewProviderPortalEmail);
+  const [csv, setCsv] = useState(PREFILL_CSV);
+
   const [busy, setBusy] = useState(false);
+  const [environment, setEnvironment] = useState<"live" | "sandbox">("live");
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const [rows, setRows] = useState<ImportRowResult[] | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [previewSubject, setPreviewSubject] = useState<string>("");
+  const [previewFor, setPreviewFor] = useState<string>("");
+
+  async function openPreview(r: ImportRowResult) {
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewFor(`${r.provider_name} · ${r.email}`);
+    setPreviewHtml("");
+    setPreviewSubject("");
+    try {
+      const res = (await preview({
+        data: {
+          provider_name: r.provider_name,
+          email: r.email,
+          already_registered:
+            r.action === "would_link_existing" || r.action === "linked_existing",
+        },
+      })) as { subject: string; html: string };
+      setPreviewSubject(res.subject);
+      setPreviewHtml(res.html);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Preview failed");
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  }
+
 
   const parsed = useMemo(() => parseCsv(csv), [csv]);
   const valid = parsed.filter((p) => p.ok);
@@ -141,6 +248,7 @@ function TrainingProviderImportPage() {
       const res = (await run({
         data: {
           commit,
+          environment,
           rows: valid.map((v) => ({
             email: v.email!,
             stripe_customer_id: v.stripe_customer_id!,
@@ -149,6 +257,7 @@ function TrainingProviderImportPage() {
           })),
         },
       })) as { summary: ImportSummary; results: ImportRowResult[] };
+
       setSummary(res.summary);
       setRows(res.results);
       toast.success(
@@ -221,18 +330,43 @@ function TrainingProviderImportPage() {
           </div>
         )}
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            onClick={() => execute(false)}
-            disabled={!canRun}
-          >
-            {busy ? "Running…" : "Dry run (no changes)"}
-          </Button>
-          <Button onClick={() => execute(true)} disabled={!canRun}>
-            {busy ? "Importing…" : `Import ${valid.length} provider${valid.length === 1 ? "" : "s"}`}
-          </Button>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-white/60">Stripe environment:</span>
+            <div className="inline-flex overflow-hidden rounded-md border border-white/15">
+              {(["live", "sandbox"] as const).map((env) => (
+                <button
+                  key={env}
+                  type="button"
+                  onClick={() => setEnvironment(env)}
+                  className={`px-3 py-1.5 font-medium transition ${
+                    environment === env
+                      ? env === "live"
+                        ? "bg-red-500/25 text-red-100"
+                        : "bg-sky-500/25 text-sky-100"
+                      : "bg-transparent text-white/70 hover:bg-white/5"
+                  }`}
+                >
+                  {env}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="ml-auto flex gap-2">
+            <Button variant="outline" onClick={() => execute(false)} disabled={!canRun}>
+              {busy ? "Running…" : "Dry run (no changes)"}
+            </Button>
+            <Button onClick={() => execute(true)} disabled={!canRun}>
+              {busy ? "Importing…" : `Import ${valid.length} provider${valid.length === 1 ? "" : "s"}`}
+            </Button>
+          </div>
         </div>
+        <p className="mt-2 text-[11px] text-white/50">
+          Renewal-price rule: providers keep their existing annual price if it&rsquo;s £479 or
+          less. Anyone paying more will be capped to £479 <strong>at their next renewal</strong>{" "}
+          — no immediate charges, no proration. Rows with no active subscription are flagged and
+          the email is skipped.
+        </p>
       </section>
 
       {summary && (
@@ -264,41 +398,97 @@ function TrainingProviderImportPage() {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/15 bg-white/5 text-left text-white/80">
-                <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Provider</th>
-                <th className="px-3 py-2">Stripe customer</th>
+                <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Action</th>
+                <th className="px-3 py-2">Current price</th>
+                <th className="px-3 py-2">Renewal plan</th>
                 <th className="px-3 py-2">Detail</th>
+                <th className="px-3 py-2">Email</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} className="border-b border-white/10">
-                  <td className="px-3 py-2">{r.email}</td>
-                  <td className="px-3 py-2">{r.provider_name}</td>
-                  <td className="px-3 py-2 font-mono">{r.stripe_customer_id}</td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={
-                        r.action === "error"
-                          ? "text-red-300"
-                          : r.action === "created" || r.action === "would_create"
-                          ? "text-emerald-300"
-                          : r.action === "linked_existing" || r.action === "would_link_existing"
-                          ? "text-sky-300"
-                          : "text-white/80"
-                      }
-                    >
-                      {r.action.replace(/_/g, " ")}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-white/75">{r.detail}</td>
-                </tr>
-              ))}
+              {rows.map((r, i) => {
+                const audit = r.stripe_audit;
+                const current =
+                  audit?.unit_amount_pence != null
+                    ? `£${(audit.unit_amount_pence / 100).toFixed(2)}/${audit.interval ?? "?"}`
+                    : audit?.renewal_action === "no_active_sub"
+                    ? "—"
+                    : "?";
+                const planLabel = renewalPlanLabel(audit?.renewal_action);
+                const planClass = renewalPlanClass(audit?.renewal_action);
+                return (
+                  <tr key={i} className="border-b border-white/10 align-top">
+                    <td className="px-3 py-2 font-medium">{r.provider_name}</td>
+                    <td className="px-3 py-2">{r.email}</td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={
+                          r.action === "error"
+                            ? "text-red-300"
+                            : r.action === "created" || r.action === "would_create"
+                            ? "text-emerald-300"
+                            : r.action === "linked_existing" || r.action === "would_link_existing"
+                            ? "text-sky-300"
+                            : "text-white/80"
+                        }
+                      >
+                        {r.action.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-white/85">{current}</td>
+                    <td className="px-3 py-2">
+                      <span className={planClass}>{planLabel}</span>
+                    </td>
+                    <td className="px-3 py-2 text-white/70">{r.detail}</td>
+                    <td className="px-3 py-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => openPreview(r)}
+                      >
+                        <Eye className="mr-1 size-3.5" /> Preview
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </section>
       )}
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Email preview — {previewFor}
+            </DialogTitle>
+          </DialogHeader>
+          {previewSubject && (
+            <div className="text-xs text-white/70">
+              <span className="text-white/50">Subject:</span> {previewSubject}
+            </div>
+          )}
+          <div className="mt-2 h-[70vh] w-full overflow-hidden rounded-md border border-white/10 bg-white">
+            {previewLoading ? (
+              <div className="grid h-full place-items-center text-sm text-black/60">
+                Rendering…
+              </div>
+            ) : (
+              <iframe
+                title="Email preview"
+                srcDoc={previewHtml}
+                className="h-full w-full"
+                sandbox=""
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
+
 }

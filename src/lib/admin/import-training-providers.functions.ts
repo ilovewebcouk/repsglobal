@@ -108,9 +108,37 @@ const Input = z.object({
   rows: z.array(RowInput).min(1).max(500),
   /** If true, actually run. If false, dry-run and just report what WOULD happen. */
   commit: z.boolean().default(false),
+  /** Stripe environment for subscription audit + price cap. */
+  environment: z.enum(["sandbox", "live"]).default("live"),
 });
 
 /* -------------------------------- output ------------------------------- */
+
+/** Cap for renewal price in pence (£479 / yr). */
+const RENEWAL_CAP_PENCE = 47900;
+/** Lookup key of the £479/yr training-provider Stripe price. */
+const TP_ANNUAL_LOOKUP = "training_provider_annual";
+
+export type StripeAudit = {
+  found: boolean;
+  subscription_id?: string;
+  subscription_item_id?: string;
+  status?: string;
+  price_id?: string;
+  unit_amount_pence?: number | null;
+  currency?: string;
+  interval?: string;
+  current_period_end?: number | null;
+  renewal_action:
+    | "keep_current_price"
+    | "cap_to_479_at_renewal"
+    | "already_at_cap"
+    | "no_active_sub"
+    | "non_gbp"
+    | "non_annual"
+    | "audit_error";
+  note?: string;
+};
 
 export type ImportRowResult = {
   email: string;
@@ -128,6 +156,8 @@ export type ImportRowResult = {
   invite_url?: string;
   message_id?: string;
   detail: string;
+  stripe_audit?: StripeAudit;
+  renewal_applied?: boolean;
 };
 
 export type ImportSummary = {
@@ -138,7 +168,119 @@ export type ImportSummary = {
   dry_run: boolean;
 };
 
+/* ------------------------------ stripe audit ---------------------------- */
+
+/** Fetch the current active/trialing/past_due subscription for a customer, if any. */
+async function auditStripeCustomer(
+  stripe: any,
+  customerId: string,
+): Promise<StripeAudit> {
+  try {
+    const subs = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "all",
+      limit: 10,
+    });
+    const preferred = ["active", "trialing", "past_due"];
+    const sorted = [...subs.data].sort((a: any, b: any) => {
+      const ai = preferred.indexOf(a.status);
+      const bi = preferred.indexOf(b.status);
+      if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+      return (b.created ?? 0) - (a.created ?? 0);
+    });
+    const sub = sorted.find((s: any) => preferred.includes(s.status)) ?? sorted[0];
+    if (!sub) {
+      return { found: false, renewal_action: "no_active_sub", note: "No subscription on file." };
+    }
+    if (!preferred.includes(sub.status)) {
+      return {
+        found: false,
+        subscription_id: sub.id,
+        status: sub.status,
+        renewal_action: "no_active_sub",
+        note: `Subscription is ${sub.status}.`,
+      };
+    }
+    const item = sub.items?.data?.[0];
+    const price = item?.price;
+    const unit = price?.unit_amount ?? null;
+    const currency = (price?.currency ?? "").toLowerCase();
+    const interval = price?.recurring?.interval ?? "";
+    const base: StripeAudit = {
+      found: true,
+      subscription_id: sub.id,
+      subscription_item_id: item?.id,
+      status: sub.status,
+      price_id: price?.id,
+      unit_amount_pence: unit,
+      currency,
+      interval,
+      current_period_end: sub.current_period_end ?? null,
+      renewal_action: "keep_current_price",
+    };
+    if (currency !== "gbp") {
+      return { ...base, renewal_action: "non_gbp", note: `Currency is ${currency.toUpperCase()}, not GBP.` };
+    }
+    if (interval !== "year") {
+      return { ...base, renewal_action: "non_annual", note: `Interval is ${interval}, not annual.` };
+    }
+    if (unit == null) {
+      return { ...base, renewal_action: "audit_error", note: "Price has no unit_amount." };
+    }
+    if (unit <= RENEWAL_CAP_PENCE) {
+      return {
+        ...base,
+        renewal_action: unit === RENEWAL_CAP_PENCE ? "already_at_cap" : "keep_current_price",
+        note:
+          unit === RENEWAL_CAP_PENCE
+            ? "Already at £479/yr."
+            : `Grandfathered at £${(unit / 100).toFixed(2)}/yr — kept as-is.`,
+      };
+    }
+    return {
+      ...base,
+      renewal_action: "cap_to_479_at_renewal",
+      note: `Currently £${(unit / 100).toFixed(2)}/yr — will cap to £479 at next renewal (no immediate charge).`,
+    };
+  } catch (e) {
+    return {
+      found: false,
+      renewal_action: "audit_error",
+      note: e instanceof Error ? e.message : String(e),
+    };
+  }
+}
+
+/** Get-or-create the £479/yr training-provider Stripe Price (cached per-run). */
+async function resolveCapPrice(stripe: any, cache: { id?: string }): Promise<string> {
+  if (cache.id) return cache.id;
+  const existing = await stripe.prices.list({ lookup_keys: [TP_ANNUAL_LOOKUP], limit: 1, active: true });
+  if (existing.data.length) {
+    cache.id = existing.data[0].id;
+    return cache.id!;
+  }
+  // Fallback — create it against a product with the same lookup as the config.
+  const productList = await stripe.products.list({ limit: 100 });
+  const product =
+    productList.data.find((p: any) => p.metadata?.reps_key === "training_provider") ??
+    (await stripe.products.create({
+      name: "REPs-endorsed Training Provider",
+      metadata: { reps_key: "training_provider" },
+    }));
+  const created = await stripe.prices.create({
+    product: product.id,
+    unit_amount: RENEWAL_CAP_PENCE,
+    currency: "gbp",
+    recurring: { interval: "year" },
+    lookup_key: TP_ANNUAL_LOOKUP,
+    transfer_lookup_key: true,
+  });
+  cache.id = created.id;
+  return created.id;
+}
+
 /* ------------------------------ server fn ------------------------------ */
+
 
 export const importTrainingProviders = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -146,12 +288,15 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { createStripeClient } = await import("@/lib/billing/stripe.server");
     const sa = supabaseAdmin as any;
+    const stripe = createStripeClient(data.environment) as any;
 
     const results: ImportRowResult[] = [];
     let created = 0;
     let linked = 0;
     let errors = 0;
+    const capPriceCache: { id?: string } = {};
 
     for (const row of data.rows) {
       const rec: ImportRowResult = {
@@ -165,17 +310,21 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
       try {
         const website = normaliseUrl(row.website ?? null);
         const existingId = await findAuthUserByEmail(sa, row.email);
+        const audit = await auditStripeCustomer(stripe, row.stripe_customer_id);
+        rec.stripe_audit = audit;
 
         // ------ Dry-run branch ------
         if (!data.commit) {
           rec.action = existingId ? "would_link_existing" : "would_create";
           rec.user_id = existingId ?? undefined;
-          rec.detail = existingId
+          const authNote = existingId
             ? "Email already registered — Stripe customer would be linked."
             : "New auth user would be invited with a password-set link.";
+          rec.detail = audit.note ? `${authNote} ${audit.note}` : authNote;
           results.push(rec);
           continue;
         }
+
 
         // ------ Commit branch ------
         let userId = existingId;
@@ -269,26 +418,55 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
           if (subErr) throw new Error(subErr.message);
         }
 
-        // Send announcement email
-        let messageId: string | undefined;
-        try {
-          const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
-          const sendRes = await sendTransactionalEmailServer({
-            templateName: "provider-portal-is-live",
-            recipientEmail: row.email,
-            idempotencyKey: `provider-portal-live-${userId}`,
-            templateData: {
-              providerName: row.provider_name,
-              passwordSetUrl: inviteUrl ?? undefined,
-              alreadyRegistered: !!existingId,
-              emailAddress: row.email,
-            },
-          });
-          messageId = (sendRes as { messageId?: string }).messageId;
-        } catch (e) {
-          // Non-fatal — record it so we can retry manually.
-          console.error("[importTrainingProviders] email send failed", row.email, e);
+        // ------ Renewal-price cap (Stripe) ------
+        if (
+          rec.stripe_audit?.renewal_action === "cap_to_479_at_renewal" &&
+          rec.stripe_audit.subscription_id &&
+          rec.stripe_audit.subscription_item_id
+        ) {
+          try {
+            const capPriceId = await resolveCapPrice(stripe, capPriceCache);
+            await stripe.subscriptions.update(rec.stripe_audit.subscription_id, {
+              items: [{ id: rec.stripe_audit.subscription_item_id, price: capPriceId }],
+              proration_behavior: "none",
+              metadata: { reps_renewal_capped: "479_gbp", reps_capped_by: context.userId },
+            });
+            rec.renewal_applied = true;
+          } catch (e) {
+            console.error("[importTrainingProviders] price cap failed", row.email, e);
+            rec.renewal_applied = false;
+            rec.stripe_audit = {
+              ...rec.stripe_audit,
+              note: `Cap failed: ${e instanceof Error ? e.message : String(e)}`,
+            };
+          }
         }
+
+        // Send announcement email — skipped when there is no active sub so the
+        // provider isn't invited to a portal they can't yet use.
+        let messageId: string | undefined;
+        const skipEmail = rec.stripe_audit?.renewal_action === "no_active_sub";
+        if (!skipEmail) {
+          try {
+            const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+            const sendRes = await sendTransactionalEmailServer({
+              templateName: "provider-portal-is-live",
+              recipientEmail: row.email,
+              idempotencyKey: `provider-portal-live-${userId}`,
+              templateData: {
+                providerName: row.provider_name,
+                passwordSetUrl: inviteUrl ?? undefined,
+                alreadyRegistered: !!existingId,
+                emailAddress: row.email,
+              },
+            });
+            messageId = (sendRes as { messageId?: string }).messageId;
+          } catch (e) {
+            // Non-fatal — record it so we can retry manually.
+            console.error("[importTrainingProviders] email send failed", row.email, e);
+          }
+        }
+
 
         // Audit log
         await sa.rpc("log_admin_action", {
@@ -306,15 +484,19 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
           },
         });
 
+        const auditSuffix = rec.stripe_audit?.note ? ` ${rec.stripe_audit.note}` : "";
+        const emailSuffix = skipEmail ? " Email SKIPPED (no active subscription)." : "";
+        const capSuffix = rec.renewal_applied ? " Renewal price capped to £479." : "";
         if (existingId) {
           linked += 1;
           rec.action = "linked_existing";
-          rec.detail = "Existing REPs account linked to Stripe customer & announcement sent.";
+          rec.detail = `Existing REPs account linked to Stripe customer${skipEmail ? "" : " & announcement sent"}.${auditSuffix}${emailSuffix}${capSuffix}`;
         } else {
           created += 1;
           rec.action = "created";
-          rec.detail = "Auth user invited, portal seeded, announcement + password-set link sent.";
+          rec.detail = `Auth user invited, portal seeded${skipEmail ? "" : ", announcement + password-set link sent"}.${auditSuffix}${emailSuffix}${capSuffix}`;
         }
+
         rec.user_id = userId ?? undefined;
         rec.slug = slug ?? undefined;
         rec.invite_url = inviteUrl ?? undefined;

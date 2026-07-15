@@ -1,71 +1,71 @@
+## What I'll do
 
-# Pass 3 — Training Providers page: fix the story
+You've uploaded `training_providers.numbers` with **24 providers**. All 4 columns line up with the existing importer at `/admin/training-provider-import`: `companyname → provider_name`, `email`, `stripe_customer_id`, `website`.
 
-## What's wrong right now (brutal)
+I'll add two things on top of the existing importer before we launch anything to them:
 
-1. **Hero image is hidden.** A dark studying photo sits behind heavy copy — nobody sees a training provider actually training anyone. It reads as a moody stock backdrop, not a proof shot.
-2. **Certificate showcase looks like stock props.** Two certificates floating on a black panel = corporate template energy. No human, no context, no pride.
-3. **Feature reel implies a fixed menu.** Captions naming yoga, Pilates and indoor cycling make the page look like it endorses *those disciplines*. The truth is: REPs endorses **any in-house course a provider writes** — kettlebells, pre/post-natal, strength, nutrition intros, sport-specific, online-only, blended. The reel is actively working against the pitch.
-4. **Certificate asset was wrong** — the version on the page is missing the Level 3 badge. User has uploaded the correct one.
+1. **Rendered email preview** — you see the exact email each provider will receive, per row, before commit.
+2. **Renewal-price guarantee** — I'll audit each Stripe customer's current subscription and enforce your rule: *keep their existing price if ≤ £479; cap it at £479 if higher.* Cap applies **at next renewal only** — no immediate charges, no proration.
 
-## What we're changing
+Nothing sends and no Stripe changes happen until you press **Commit** in the admin UI.
 
-### 1. Swap the certificate asset
-Replace `src/assets/training-providers/certificate-of-achievement.png` with the new user-uploaded file (`user-uploads://certificate_resource-2.png`) via `lovable-assets create` → overwrite the existing `.asset.json` pointer. No component code changes needed; the import path stays.
+---
 
-### 2. New hero image — practical coaching moment
-Generate a new hero asset: a tutor coaching a learner through a practical movement on a gym floor (kettlebell/barbell setup or a form correction). Deliberately **not** a yoga/Pilates/cycling scene — it has to read as "practical assessment of a course this provider wrote in-house."
+## Step 1 — Convert & load the 24 rows
 
-- Style: matches the rest of the site's editorial imagery (dark, cinematic, medium-crisp).
-- REPS wordmark on tutor's polo per `mem://design/trainer-imagery` (ALL CAPS, white, real embroidery texture, medium weight).
-- Rework hero layout so the image is **actually visible** — currently `opacity-70` + `object-[30%_center]` puts it behind copy. Options: shift copy to left column at `lg:`, image occupies right ~55%; or full-bleed with darker gradient only on the copy side. Aim: on desktop the coaching moment is unmistakable; on mobile the image sits above/below copy, not behind.
+I'll convert the `.numbers` file to CSV in-repo (kept internal, not committed) and pre-fill the textarea on `/admin/training-provider-import`. All 24 rows parsed cleanly on my read; every row has a valid `cus_...` id.
 
-### 3. Certificate showcase — real learner moment
-Kill the "two certificates floating on black" panel. Replace with a **generated image of a small group of learners (3–4 people) holding their Certificates of Achievement** post-course. Certificates readable enough to recognise but the humans are the subject. Warm, proud, real — not stock.
+## Step 2 — Extend the importer with a proper preview
 
-- REPS wordmark on any visible learner/tutor polo per the trainer-imagery rules.
-- Beside/under the image, keep a small **inset of the actual certificate PNG** (the new user-uploaded file) at legible size so the artefact itself is still verifiable — but it supports the human shot instead of being the hero of the section.
-- Copy pivots from "here's what the paperwork looks like" to "here's what your learners walk away with." Add the "publicly verifiable — QR + certificate number" chip.
+Currently "Dry run" only says *would_create* / *would_link_existing*. I'll extend it so dry-run also returns, per row:
 
-### 4. Reframe the feature reel — delivery formats, not disciplines
-Rewrite `FEATURE_REEL` so the three tiles are **formats**, not sports:
+- **Auth status** — new signup vs. existing REPs account.
+- **Stripe subscription audit**:
+  - active subscription found? (yes/no + sub id)
+  - current unit amount + currency + interval
+  - action: `keep_current_price` (≤ £479) / `cap_to_479_at_renewal` (> £479) / `no_active_sub_flag`
+- **Rendered email HTML** — the exact `provider-portal-is-live` email, rendered with that provider's data, with a "Preview" button that opens it in a modal.
 
-1. **Classroom & theory delivery** — tutor-led sessions, manuals, written assessment. Any subject the provider writes.
-2. **Practical & assessment** — on-the-floor coaching and skills sign-off. Any modality (strength, conditioning, mobility, sport-specific, rehab-adjacent, etc.).
-3. **Online & blended** — recorded modules, live tutor calls, remote assessment submissions.
+Table gets two extra columns: **Renewal price** and **Email preview**.
 
-Above the reel, add a single lead line that makes scope explicit:
+## Step 3 — Renewal-price enforcement (commit only)
 
-> "REPs endorses any course a training provider writes in-house — whatever the subject, whatever the delivery format. The examples below show what endorsement covers in practice."
+For each row where the current price > £479/year (47900p GBP), on commit I'll:
 
-Reuse existing photography where it fits the format label; where a current image is too obviously "yoga" or "cycling," swap for a neutral classroom/floor/laptop-study shot so the caption reads as an example of the *format*, not a claim about the *discipline*.
+- Create a new Stripe Price at 47900 GBP / year (reused across rows via lookup key `training_provider_annual_479_gbp`).
+- Update the subscription with `{ items: [{ id, price: <new> }], proration_behavior: 'none', billing_cycle_anchor: 'unchanged' }` — this changes the price that applies at the **next renewal**, no immediate charge, no credit.
+- Log before/after in `admin_audit_log` (`provider.renewal_price_capped`).
 
-### 5. Copy sweeps
-- Hero H1 stays the positioning line ("Independent endorsement for fitness training providers.") but sub-lede rewritten to lead with **"any course you write in-house"** rather than listing formats.
-- "Who this is for" section: reinforce course-agnostic scope in the "fit" bullets (e.g. "You write your own curriculum — any subject, any format").
-- Kill any remaining language that implies REPs endorses a *fixed catalogue* of disciplines.
+For rows already ≤ £479: no Stripe write at all — they keep exactly what they paid.
 
-## Order of operations
+For rows with no active sub: flagged in the results table, **skipped** on commit (no email sent) so you can investigate.
 
-1. Overwrite certificate `.asset.json` with the new user upload.
-2. Generate hero image (practical coaching moment). Save under `src/assets/training-providers/` via `lovable-assets`.
-3. Generate certificate-moment image (small group of learners holding certificates). Save the same way.
-4. Edit `src/routes/training-providers.tsx`:
-   - Rewire hero layout so the new image is visible (not behind copy).
-   - Rebuild the certificate showcase section around the new group photo + small inset of the certificate PNG.
-   - Rewrite `FEATURE_REEL` entries as delivery formats + add the scope lead line above.
-   - Copy sweeps in hero sub-lede and "Who this is for."
-5. Verify: `tsgo` typecheck, screenshot the page at desktop + mobile via Playwright, confirm — hero image visible, certificate group shot present, reel reads as formats not disciplines.
+## Step 4 — You review, then commit
+
+You'll see, before pressing Commit:
+
+- Row-by-row action (create / link) + current price + planned renewal price.
+- The exact email each will get (rendered).
+- Any anomalies (no active sub, cancelled sub, non-GBP, unusual interval).
+
+Only after you press Commit do emails send and Stripe subscriptions update.
+
+---
 
 ## Technical notes
 
-- Image generation via `imagegen--generate_image` (`premium` tier — humans + text on garments require it). REPS wordmark rules per `mem://design/trainer-imagery` are non-negotiable; regenerate if wordmark fails ALL CAPS / white / medium weight / embroidery texture.
-- All spacing, radii, tokens continue to follow REPs build-compliance skill (button 10px, card 16/18px, hero 24px, brand-orange only via semantic tokens, no button shadows).
-- No backend/data changes. Presentation-only.
+- **Files touched**
+  - `src/lib/admin/import-training-providers.functions.ts` — add Stripe audit + price-cap logic, extend `ImportRowResult` with `stripe_audit` and `renewal_action`.
+  - `src/lib/admin/preview-provider-email.functions.ts` *(new)* — `renderTrainingProviderEmail({ email, provider_name })` returns `{ subject, html }` using the same template as commit.
+  - `src/routes/admin_.training-provider-import.tsx` — add "Preview email" button per row + "Renewal price" column.
+- **Stripe** — uses existing server-side Stripe client. Reads `stripe.subscriptions.list({ customer, status: 'all', limit: 3 })` and picks the most recent `active`/`trialing`/`past_due` sub. New Price uses lookup key so re-runs are idempotent.
+- **No schema changes.** No new tables. No new secrets.
+- **Idempotency** — `idempotencyKey` on the email send already prevents duplicate sends per user. Stripe price update is a no-op if the sub is already on the £479 price.
+- **CSV format stays 4-column** (`email, stripe_customer_id, provider_name, website`) — matches your uploaded file. Website is optional; I'll pass it through to seed `professionals.website_url` when the pro row doesn't already have one.
 
-## Out of scope (this pass)
+## After you approve the plan
 
-- No pricing/plan changes.
-- No new routes.
-- No SiteBanner changes (already done in Pass 1).
-- Long-form Pass 4 copy polish (case studies, testimonials) — separate pass once visuals are locked.
+1. I switch to build mode, extend the importer + add email preview + Stripe audit.
+2. I paste your 24 rows into the admin page and run **Dry run**.
+3. You review the 24 rendered emails + 24 price actions.
+4. You press **Commit**. Emails go out; subs > £479 are scheduled to cap at renewal.
