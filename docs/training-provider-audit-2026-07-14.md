@@ -303,4 +303,43 @@ Deleting each of these is a mechanical change with no user impact:
 
 ---
 
-**Next step:** you review this doc, confirm the drop-list is OK, then I execute the Blocker + High fixes as separate migrations/commits and re-run the checklist before the CSV import.
+## 14. Execution log — 2026-07-15
+
+**Shipped this turn:**
+
+- ✅ Deleted dead routes: `src/routes/cpd-v2.tsx`, `src/routes/cpd-legacy.tsx`, `src/routes/_authenticated/_professional/dashboard_.services.tsx`
+- ✅ Deleted `src/lib/certificates/pdf-legacy.server.ts`; the fallback path in `pdf.server.ts` now throws a clear error instructing the admin to upload a default template.
+- ✅ Migration `20260715_normalise_training_provider_account_type`:
+  - Widened `professionals_account_type_check` to `IN ('individual','training_provider')`
+  - Renamed the DB value: every row with `account_type='organisation'` → `'training_provider'`
+  - Purged all provider-side test data: `certificate_batches`, `certificate_registrations`, `learners`, `provider_regulated_permissions`, `provider_domain_verifications`, `provider_change_requests`, `provider_name_requests`, `reps_course_evidence`, `reps_courses`, `course_accreditation_files`
+  - Dropped dead `courses` table
+  - Deleted the 2 test training-provider auth users
+- ✅ Code sweep: every `"organisation"` / `'organisation'` account_type value literal replaced with `"training_provider"` across 20 files (routes, server fns, sidebar, dashboard components, directory, admin).
+- ✅ Fixed the admin professionals list to count REPs courses from `reps_courses` (keyed on `provider_id`) instead of the dead `courses` table.
+- ✅ Typecheck: no new errors introduced by this sweep (pre-existing router search-param strictness errors remain but are unrelated).
+
+**Amended from original plan:**
+
+- ❌ **Column drops (§1.2) skipped.** Re-reading the callsites, `hourly_rate_pence`, `dbs_valid_until`, `identity_*`, `reps_level`, `primary_title_slug`, etc. are all **actively used by individual PT members**. They're only *NULL for providers*, not unused. Correct long-term path is a companion `provider_profile` table — out of scope for this pass.
+- ⏸ **Refund → auto-revoke path (§3.2 Stripe refund).** Genuine gap but requires webhook design + email + audit-log work. Deferred to a dedicated fix turn before the CSV import goes live at scale.
+- ⏸ **`provider_name_requests` fold into `provider_change_requests`.** Cosmetic; deferred.
+- ⏸ **SECURITY DEFINER function grants sweep (103 linter WARNs).** Platform-wide, not provider-specific; deferred.
+- ⏸ **`admin_audit_log` insert verification on every admin provider write.** Manual spot-check pending.
+
+**Remaining before you import the real CSV:**
+
+1. Run a **5-row dry-run** through `/admin/training-provider-import` and check every field lands on the professional row.
+2. Manually re-run the full learner → passed → basket → Stripe (test mode) → PDF → dispatch → verify flow end-to-end with the new default template.
+3. Confirm `/dashboard/qualifications` and `/dashboard/cpd` behave correctly for a `training_provider` account (both are shared with individuals; may need hiding).
+4. Decide on refund handling before real payments start.
+
+---
+
+## 15. Deferred (post-CSV, pre-pricing-page)
+
+- Refund → auto-revoke handler in `api/public/payments/webhook.ts`.
+- SECURITY DEFINER grant hardening.
+- `provider_name_requests` consolidation.
+- Companion `provider_profile` table to stop overloading `professionals`.
+
