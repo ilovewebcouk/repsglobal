@@ -273,7 +273,8 @@ function TrainingProviderImportPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10 text-white">
+    <main className="min-h-screen bg-reps-bg text-white">
+     <div className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="text-2xl font-semibold">Bulk import training providers</h1>
       <p className="mt-2 text-sm text-white/70">
         Paste one row per line as{" "}
@@ -488,6 +489,7 @@ function TrainingProviderImportPage() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </main>
   );
 
