@@ -383,7 +383,15 @@ function TrainingProviderImportPage() {
               ))}
             </div>
           </div>
-          <div className="ml-auto flex gap-2">
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={runPmAudit}
+              disabled={valid.length === 0 || pmBusy}
+              title="Read-only: fetch default payment method + last successful charge from Stripe"
+            >
+              {pmBusy ? "Auditing…" : "Audit payment methods"}
+            </Button>
             <Button variant="outline" onClick={() => execute(false)} disabled={!canRun}>
               {busy ? "Running…" : "Dry run (no changes)"}
             </Button>
