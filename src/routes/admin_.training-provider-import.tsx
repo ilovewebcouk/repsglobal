@@ -259,18 +259,43 @@ function TrainingProviderImportPage() {
           </div>
         )}
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            onClick={() => execute(false)}
-            disabled={!canRun}
-          >
-            {busy ? "Running…" : "Dry run (no changes)"}
-          </Button>
-          <Button onClick={() => execute(true)} disabled={!canRun}>
-            {busy ? "Importing…" : `Import ${valid.length} provider${valid.length === 1 ? "" : "s"}`}
-          </Button>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-white/60">Stripe environment:</span>
+            <div className="inline-flex overflow-hidden rounded-md border border-white/15">
+              {(["live", "sandbox"] as const).map((env) => (
+                <button
+                  key={env}
+                  type="button"
+                  onClick={() => setEnvironment(env)}
+                  className={`px-3 py-1.5 font-medium transition ${
+                    environment === env
+                      ? env === "live"
+                        ? "bg-red-500/25 text-red-100"
+                        : "bg-sky-500/25 text-sky-100"
+                      : "bg-transparent text-white/70 hover:bg-white/5"
+                  }`}
+                >
+                  {env}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="ml-auto flex gap-2">
+            <Button variant="outline" onClick={() => execute(false)} disabled={!canRun}>
+              {busy ? "Running…" : "Dry run (no changes)"}
+            </Button>
+            <Button onClick={() => execute(true)} disabled={!canRun}>
+              {busy ? "Importing…" : `Import ${valid.length} provider${valid.length === 1 ? "" : "s"}`}
+            </Button>
+          </div>
         </div>
+        <p className="mt-2 text-[11px] text-white/50">
+          Renewal-price rule: providers keep their existing annual price if it&rsquo;s £479 or
+          less. Anyone paying more will be capped to £479 <strong>at their next renewal</strong>{" "}
+          — no immediate charges, no proration. Rows with no active subscription are flagged and
+          the email is skipped.
+        </p>
       </section>
 
       {summary && (
@@ -302,41 +327,97 @@ function TrainingProviderImportPage() {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/15 bg-white/5 text-left text-white/80">
-                <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Provider</th>
-                <th className="px-3 py-2">Stripe customer</th>
+                <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Action</th>
+                <th className="px-3 py-2">Current price</th>
+                <th className="px-3 py-2">Renewal plan</th>
                 <th className="px-3 py-2">Detail</th>
+                <th className="px-3 py-2">Email</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} className="border-b border-white/10">
-                  <td className="px-3 py-2">{r.email}</td>
-                  <td className="px-3 py-2">{r.provider_name}</td>
-                  <td className="px-3 py-2 font-mono">{r.stripe_customer_id}</td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={
-                        r.action === "error"
-                          ? "text-red-300"
-                          : r.action === "created" || r.action === "would_create"
-                          ? "text-emerald-300"
-                          : r.action === "linked_existing" || r.action === "would_link_existing"
-                          ? "text-sky-300"
-                          : "text-white/80"
-                      }
-                    >
-                      {r.action.replace(/_/g, " ")}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-white/75">{r.detail}</td>
-                </tr>
-              ))}
+              {rows.map((r, i) => {
+                const audit = r.stripe_audit;
+                const current =
+                  audit?.unit_amount_pence != null
+                    ? `£${(audit.unit_amount_pence / 100).toFixed(2)}/${audit.interval ?? "?"}`
+                    : audit?.renewal_action === "no_active_sub"
+                    ? "—"
+                    : "?";
+                const planLabel = renewalPlanLabel(audit?.renewal_action);
+                const planClass = renewalPlanClass(audit?.renewal_action);
+                return (
+                  <tr key={i} className="border-b border-white/10 align-top">
+                    <td className="px-3 py-2 font-medium">{r.provider_name}</td>
+                    <td className="px-3 py-2">{r.email}</td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={
+                          r.action === "error"
+                            ? "text-red-300"
+                            : r.action === "created" || r.action === "would_create"
+                            ? "text-emerald-300"
+                            : r.action === "linked_existing" || r.action === "would_link_existing"
+                            ? "text-sky-300"
+                            : "text-white/80"
+                        }
+                      >
+                        {r.action.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-white/85">{current}</td>
+                    <td className="px-3 py-2">
+                      <span className={planClass}>{planLabel}</span>
+                    </td>
+                    <td className="px-3 py-2 text-white/70">{r.detail}</td>
+                    <td className="px-3 py-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => openPreview(r)}
+                      >
+                        <Eye className="mr-1 size-3.5" /> Preview
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </section>
       )}
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Email preview — {previewFor}
+            </DialogTitle>
+          </DialogHeader>
+          {previewSubject && (
+            <div className="text-xs text-white/70">
+              <span className="text-white/50">Subject:</span> {previewSubject}
+            </div>
+          )}
+          <div className="mt-2 h-[70vh] w-full overflow-hidden rounded-md border border-white/10 bg-white">
+            {previewLoading ? (
+              <div className="grid h-full place-items-center text-sm text-black/60">
+                Rendering…
+              </div>
+            ) : (
+              <iframe
+                title="Email preview"
+                srcDoc={previewHtml}
+                className="h-full w-full"
+                sandbox=""
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
+
 }
