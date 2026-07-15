@@ -16,7 +16,7 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { HeroOverlay } from "@/components/marketing/HeroOverlay";
+
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { BlockHeading } from "@/components/marketing/BlockHeading";
@@ -816,52 +816,40 @@ function WhoThisIsForSection() {
 function CertificatePair() {
   return (
     <div className="relative">
-      <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-6 shadow-[0_42px_110px_-50px_rgba(0,0,0,0.95)] lg:p-8">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,122,0,0.14),transparent_70%)]"
+      {/* Proud learners holding their certificates — the human story */}
+      <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel shadow-[0_42px_110px_-50px_rgba(0,0,0,0.95)]">
+        <img
+          src={learnersCertificatesAsset.url}
+          alt="Four adult learners in REPS-branded tops holding their REPs-endorsed Certificates of Achievement after completing a provider-delivered course."
+          className="aspect-[16/11] w-full object-cover"
+          loading="lazy"
+          width={1600}
+          height={1100}
         />
-        <div className="relative mb-5 flex items-center justify-between gap-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-            Issued from the provider portal
-          </div>
-          <div className="hidden items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10.5px] font-semibold text-emerald-300 sm:inline-flex">
-            <CheckCircle2 className="h-3 w-3" /> Publicly verifiable
-          </div>
+        {/* Verified chip overlay */}
+        <div className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-[11px] font-semibold text-emerald-300 backdrop-blur">
+          <CheckCircle2 className="h-3 w-3" /> Publicly verifiable
         </div>
-        <div className="relative grid grid-cols-2 gap-4">
-          <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white shadow-[0_20px_50px_-24px_rgba(0,0,0,0.7)]">
-            <img
-              src={certificateAsset.url}
-              alt="REPs Certificate of Achievement showing learner name, course title, certificate number and verification URL."
-              className="aspect-[1/1.414] w-full object-contain"
-              loading="lazy"
-              width={1240}
-              height={1754}
-            />
-          </div>
-          <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white shadow-[0_20px_50px_-24px_rgba(0,0,0,0.7)]">
-            <img
-              src={unitSummaryAsset.url}
-              alt="REPs Learner Unit Summary listing completed course units and a verification QR code."
-              className="aspect-[1/1.414] w-full object-contain"
-              loading="lazy"
-              width={1240}
-              height={1754}
-            />
-          </div>
+        {/* Real certificate inset — bottom-right corner, so the artefact is still legible */}
+        <div className="absolute bottom-5 right-5 hidden w-[38%] max-w-[240px] overflow-hidden rounded-[10px] border border-reps-border bg-white shadow-[0_20px_50px_-24px_rgba(0,0,0,0.9)] sm:block">
+          <img
+            src={certificateAsset.url}
+            alt="REPs Level 3 Certificate of Achievement showing learner name, course title, certificate number and verification URL."
+            className="aspect-[1/1.414] w-full object-contain"
+            loading="lazy"
+            width={1240}
+            height={1754}
+          />
         </div>
       </div>
-    </div>
-  );
-}
 
-
-function MetricTile({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="bg-reps-panel/95 px-4 py-4 backdrop-blur">
-      <div className="font-display text-[22px] font-bold leading-none text-white">{value}</div>
-      <div className="mt-2 text-[11px] uppercase tracking-[0.14em] text-white/55">{label}</div>
+      {/* Caption strip */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-white/55">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
+          Course completion, real learners
+        </span>
+        <span>Every certificate carries a unique number, QR code and public verification URL.</span>
+      </div>
     </div>
   );
 }
