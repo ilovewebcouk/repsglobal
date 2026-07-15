@@ -177,6 +177,7 @@ function TrainingProviderImportPage() {
       const res = (await run({
         data: {
           commit,
+          environment,
           rows: valid.map((v) => ({
             email: v.email!,
             stripe_customer_id: v.stripe_customer_id!,
@@ -185,6 +186,7 @@ function TrainingProviderImportPage() {
           })),
         },
       })) as { summary: ImportSummary; results: ImportRowResult[] };
+
       setSummary(res.summary);
       setRows(res.results);
       toast.success(
