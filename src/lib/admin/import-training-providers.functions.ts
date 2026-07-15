@@ -108,9 +108,37 @@ const Input = z.object({
   rows: z.array(RowInput).min(1).max(500),
   /** If true, actually run. If false, dry-run and just report what WOULD happen. */
   commit: z.boolean().default(false),
+  /** Stripe environment for subscription audit + price cap. */
+  environment: z.enum(["sandbox", "live"]).default("live"),
 });
 
 /* -------------------------------- output ------------------------------- */
+
+/** Cap for renewal price in pence (£479 / yr). */
+const RENEWAL_CAP_PENCE = 47900;
+/** Lookup key of the £479/yr training-provider Stripe price. */
+const TP_ANNUAL_LOOKUP = "training_provider_annual";
+
+export type StripeAudit = {
+  found: boolean;
+  subscription_id?: string;
+  subscription_item_id?: string;
+  status?: string;
+  price_id?: string;
+  unit_amount_pence?: number | null;
+  currency?: string;
+  interval?: string;
+  current_period_end?: number | null;
+  renewal_action:
+    | "keep_current_price"
+    | "cap_to_479_at_renewal"
+    | "already_at_cap"
+    | "no_active_sub"
+    | "non_gbp"
+    | "non_annual"
+    | "audit_error";
+  note?: string;
+};
 
 export type ImportRowResult = {
   email: string;
@@ -128,6 +156,8 @@ export type ImportRowResult = {
   invite_url?: string;
   message_id?: string;
   detail: string;
+  stripe_audit?: StripeAudit;
+  renewal_applied?: boolean;
 };
 
 export type ImportSummary = {
