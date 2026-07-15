@@ -63,7 +63,8 @@ const PROFESSION_LABEL: Record<string, string> = {
 };
 
 
-const PLAN_RANK: Record<string, number> = { studio: 4, pro: 3, verified: 2, free: 1 };
+const PLAN_RANK: Record<string, number> = { training_provider: 5, studio: 4, pro: 3, verified: 2, free: 1 };
+const TRAINING_PROVIDER_MRR_PENCE = Math.round(47900 / 12);
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data: isAdmin } = await ctx.supabase.rpc('has_role', {
@@ -210,7 +211,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     };
   });
 
-const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'payment_failed', 'renewal_due', 'recent', 'demos', 'invited'] as const;
+const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'payment_failed', 'renewal_due', 'recent', 'demos'] as const;
 export type AdminProTab = typeof TAB_VALUES[number];
 export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | 'mrr' | 'lifetimeValue' | 'renewalDate';
 export type SortDir = 'asc' | 'desc';
@@ -314,9 +315,9 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
     }
 
-    // Filter to professionals whose auth user is email-confirmed (actually
-    // signed up). Invited-but-unaccepted shells from `generateLink({ type:
-    // 'invite' })` are hidden — they are not members yet.
+    // Professionals still require email confirmation before they appear here.
+    // Training providers are organisation members as soon as admin imports or
+    // creates them, so they must appear even before the invite link is clicked.
     // Also exclude platform admins — they're managed at /admin/team.
     const [confirmedRes, adminRoleRes] = await Promise.all([
       supabaseAdmin.rpc('get_confirmed_professional_ids', { _ids: allIds }),
@@ -326,13 +327,12 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     if (adminRoleRes.error) throw adminRoleRes.error;
     const confirmedSet = new Set(((confirmedRes.data ?? []) as string[]).map(String));
     const adminIdSet = new Set(((adminRoleRes.data ?? []) as Array<{ user_id: string }>).map(r => r.user_id));
-    // "Invited" tab flips the filter: show ONLY unconfirmed (invited-but-not-joined).
-    const wantInvited = data.tab === 'invited';
-    const ids = allIds.filter(id => (wantInvited ? !confirmedSet.has(id) : confirmedSet.has(id)) && !adminIdSet.has(id));
+    const includeUnconfirmedProviders = data.segment === 'providers';
+    const ids = allIds.filter(id => (includeUnconfirmedProviders || confirmedSet.has(id)) && !adminIdSet.has(id));
     if (ids.length === 0) {
       return { rows: [] as AdminProRow[], total: 0, page: data.page, pageSize: data.pageSize };
     }
-    const prosFiltered = (pros ?? []).filter(p => (wantInvited ? !confirmedSet.has(p.id) : confirmedSet.has(p.id)) && !adminIdSet.has(p.id));
+    const prosFiltered = (pros ?? []).filter(p => (includeUnconfirmedProviders || confirmedSet.has(p.id)) && !adminIdSet.has(p.id));
 
     // Chunk `.in('id', ids)` to keep request URLs under the edge worker URL
     // length limit. A single 400+ UUID list overflows and the request fails
@@ -357,7 +357,11 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       fetchAll<{ id: string; full_name: string | null; avatar_url: string | null }>((c) =>
         supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', c)),
       fetchAll<{ user_id: string | null; tier: string; status: string; created_at: string; current_period_end: string | null; billing_period: string | null }>((c) =>
-        supabaseAdmin.from('subscriptions').select('user_id, tier, status, created_at, current_period_end, billing_period').in('user_id', c)),
+        supabaseAdmin
+          .from('subscriptions')
+          .select('user_id, tier, status, created_at, current_period_end, billing_period')
+          .in('user_id', c)
+          .eq('environment', 'live')),
 
       fetchAll<{ professional_id: string; rating: number }>((c) =>
         supabaseAdmin.from('reviews').select('professional_id, rating').in('professional_id', c).eq('status', 'published')),
@@ -452,6 +456,10 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         bdNextDueIso: bdDueMap.get(p.id) ?? null,
         activePaidTier: (paidTierByUserId.get(p.id) as MemberBillingPlan | undefined) ?? null,
       });
+      const isTrainingProvider = p.account_type === 'training_provider';
+      const providerSub = isTrainingProvider
+        ? (subsByUser.get(p.id) ?? []).find((s) => ['active', 'trialing', 'past_due'].includes(s.status) && s.tier === 'training_provider') ?? null
+        : null;
 
       const ra = ratingAcc.get(p.id);
       // Policy (no self-removal): a pro's public profile stays live; only their
@@ -473,9 +481,9 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         
         profession: p.primary_profession ? (PROFESSION_LABEL[p.primary_profession] ?? p.primary_profession) : null,
         professionSlug: p.primary_profession ?? null,
-        plan: billing.plan,
+        plan: isTrainingProvider && providerSub ? 'training_provider' : billing.plan,
         accountType: ((p as { account_type?: string | null }).account_type as 'individual' | 'training_provider' | null) ?? null,
-        planMrrPence: billing.planMrrPence,
+        planMrrPence: isTrainingProvider && providerSub ? TRAINING_PROVIDER_MRR_PENCE : billing.planMrrPence,
         status,
         billingState: billing.billingState,
         rating: ra ? Math.round((ra.sum / ra.n) * 100) / 100 : null,

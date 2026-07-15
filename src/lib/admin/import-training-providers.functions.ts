@@ -424,6 +424,12 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
               tier: "training_provider" as any,
               status: "active" as any,
               stripe_customer_id: row.stripe_customer_id,
+              stripe_subscription_id: rec.stripe_audit?.subscription_id ?? null,
+              current_period_end: rec.stripe_audit?.current_period_end
+                ? new Date(rec.stripe_audit.current_period_end * 1000).toISOString()
+                : null,
+              billing_period: "annual" as any,
+              environment: data.environment,
               canceled_at: null,
               updated_at: now,
             } as never)
@@ -436,6 +442,11 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
             status: "active",
             billing_period: "annual",
             stripe_customer_id: row.stripe_customer_id,
+            stripe_subscription_id: rec.stripe_audit?.subscription_id ?? null,
+            current_period_end: rec.stripe_audit?.current_period_end
+              ? new Date(rec.stripe_audit.current_period_end * 1000).toISOString()
+              : null,
+            environment: data.environment,
             created_at: now,
             updated_at: now,
           } as never);
@@ -469,8 +480,8 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
         // ------ Activate a fresh £479/yr subscription (Stripe) ------
         // Only fires when the customer has NO active subscription on file AND
         // the admin supplied an anchor timestamp (last-paid + 12mo, or a hard
-        // override like SIFA). No charge today: trial_end + billing_cycle_anchor
-        // are both set to the anchor, so the first charge lands on that date.
+        // override like SIFA). No charge today: trial_end is set to the anchor,
+        // so the first charge lands on that date.
         if (
           rec.stripe_audit?.renewal_action === "no_active_sub" &&
           row.renewal_anchor_ts
@@ -483,8 +494,6 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
               items: [{ price: capPriceId }],
               collection_method: "charge_automatically",
               trial_end: anchor,
-              billing_cycle_anchor: anchor,
-              proration_behavior: "none",
               payment_behavior: "allow_incomplete",
               metadata: {
                 reps_activated_by: context.userId,
@@ -494,6 +503,19 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
             rec.subscription_activated = true;
             rec.activated_subscription_id = newSub.id;
             rec.activated_anchor_ts = anchor;
+            const { error: mirrorErr } = await sa
+              .from("subscriptions")
+              .update({
+                status: newSub.status as any,
+                stripe_subscription_id: newSub.id,
+                current_period_end: new Date(((newSub as any).current_period_end ?? anchor) * 1000).toISOString(),
+                billing_period: "annual" as any,
+                environment: data.environment,
+                updated_at: new Date().toISOString(),
+              } as never)
+              .eq("user_id", userId)
+              .eq("stripe_customer_id", row.stripe_customer_id);
+            if (mirrorErr) throw new Error(mirrorErr.message);
           } catch (e) {
             console.error("[importTrainingProviders] activation failed", row.email, e);
             rec.subscription_activated = false;
