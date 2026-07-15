@@ -181,14 +181,14 @@ export interface OrgTierConfig {
 export const ORG_TIERS: Record<OrgTierKey, OrgTierConfig> = {
   training_provider: {
     key: "training_provider",
-    label: "REPs-accredited Training Provider",
+    label: "REPs-endorsed Training Provider",
     priceLabel: "£479",
     intervalLabel: "per year",
     stripePriceLookupKey: "training_provider_annual",
     stripeProductId: "training_provider",
     amountPence: 47900,
     blurb:
-      "Public provider website, unlimited accredited-course listings, verified reviews, and REPs-accredited badges for every approved course.",
+      "Public provider website, unlimited REPs-endorsed course listings, verified learner reviews, and a digital endorsement badge for every approved course.",
   },
 };
 
