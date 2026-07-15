@@ -30,6 +30,8 @@ import classroomAsset from "@/assets/training-providers/classroom-tutor.jpg.asse
 import pilatesAsset from "@/assets/training-providers/pilates-class.jpg.asset.json";
 import spinAsset from "@/assets/training-providers/spin-class.jpg.asset.json";
 import studyingAsset from "@/assets/training-providers/studying.jpg.asset.json";
+import heroCoachingAsset from "@/assets/training-providers/hero-coaching.jpg.asset.json";
+import learnersCertificatesAsset from "@/assets/training-providers/learners-certificates.jpg.asset.json";
 
 const TIER = ORG_TIERS.training_provider;
 
@@ -198,25 +200,25 @@ const RECEIVE = [
 
 const FEATURE_REEL = [
   {
-    eyebrow: "Classroom-based delivery",
-    title: "Tutor-led theory and assessment.",
-    body: "Endorsement covers your delivery model: how tutors teach, how learners are supported and how assessment is evidenced in the room.",
+    eyebrow: "Classroom & theory delivery",
+    title: "Tutor-led theory, in the room.",
+    body: "Whatever the subject — anatomy, coaching science, nutrition, programme design, business — REPs reviews how your tutors teach it, how learners are supported and how the theory is assessed.",
     image: classroomAsset.url,
-    alt: "A REPs tutor teaching anatomy and course evidence to adult fitness learners in a classroom.",
+    alt: "A REPs tutor teaching adult fitness learners in a classroom.",
   },
   {
-    eyebrow: "Practical instruction",
-    title: "Pilates, yoga and movement.",
-    body: "Practical courses are reviewed on syllabus, tutor competence, assessment method and learner safety — not marketing polish.",
+    eyebrow: "Practical & assessment",
+    title: "On-the-floor coaching and sign-off.",
+    body: "Strength, conditioning, mobility, sport-specific, group exercise, rehab-adjacent — any practical modality your course teaches. REPs reviews the assessment method, learner safety and tutor competence.",
     image: pilatesAsset.url,
-    alt: "A Pilates instructor in a REPS-branded top guiding a learner through reformer practice.",
+    alt: "A practical fitness assessment in progress with a tutor observing a learner.",
   },
   {
-    eyebrow: "Group exercise formats",
-    title: "Indoor cycling and studio.",
-    body: "Group exercise courses are reviewed on delivery controls, learner safety, cueing standards and the assessment behind the qualification.",
+    eyebrow: "Online & blended",
+    title: "Recorded modules and live tutor calls.",
+    body: "Fully online or blended courses are reviewed on the same standards: learner support, assessment integrity, tutor availability and how completion evidence is captured remotely.",
     image: spinAsset.url,
-    alt: "An indoor cycling instructor in a REPS-branded top coaching a studio class.",
+    alt: "A studio-based group exercise course delivered live to learners.",
   },
 ];
 
