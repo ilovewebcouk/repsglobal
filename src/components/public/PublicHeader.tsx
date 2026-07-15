@@ -914,6 +914,13 @@ function MobileDrawer({
           >
             Find a Training Provider
           </Link>
+          <Link
+            to="/training-providers"
+            onClick={onNavigate}
+            className={mobileLinkClass(false)}
+          >
+            For Training Providers
+          </Link>
 
 
           <AccordionItem value="pros" className="border-0">
