@@ -374,44 +374,56 @@ function HeroSection() {
           </div>
         </div>
 
-        <div
-          className="relative hidden min-h-[520px] animate-fade-in lg:block"
-          style={{ animationDelay: "260ms", animationDuration: "640ms" }}
-        >
-          <div className="absolute right-0 top-2 w-[74%] overflow-hidden rounded-[18px] border border-white/15 bg-reps-panel shadow-[0_35px_90px_-45px_rgba(0,0,0,0.85)]">
-            <img
-              src={pilatesAsset.url}
-              alt="Pilates instructor education delivered in a professional studio setting."
-              className="aspect-[16/10] w-full object-cover"
-              width={1600}
-              height={1200}
-            />
-          </div>
-          <div className="absolute left-0 top-32 w-[42%] overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_32px_80px_-38px_rgba(0,0,0,0.85)]">
-            <img
-              src={certificateAsset.url}
-              alt="REPs-endorsed Certificate of Achievement showing learner, course and verification details."
-              className="aspect-[1/1.414] w-full object-cover"
-              width={1240}
-              height={1754}
-            />
-          </div>
-          <div className="absolute bottom-4 right-8 w-[39%] overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_32px_80px_-38px_rgba(0,0,0,0.85)]">
-            <img
-              src={unitSummaryAsset.url}
-              alt="REPs Learner Unit Summary with completed units and verification QR code."
-              className="aspect-[1/1.414] w-full object-cover"
-              width={1240}
-              height={1754}
-            />
-          </div>
-          <div className="absolute right-7 top-[350px] max-w-[250px] rounded-[16px] border border-reps-orange-border bg-reps-ink/90 p-5 shadow-[0_24px_60px_-36px_rgba(0,0,0,0.95)] backdrop-blur">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-              Endorsed evidence
+        <div className="relative hidden lg:block">
+          <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-reps-ink/88 p-5 shadow-[0_42px_110px_-50px_rgba(0,0,0,0.95)] backdrop-blur">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
+                  Certificate evidence
+                </div>
+                <p className="mt-1 text-[13.5px] leading-snug text-white/70">
+                  Achievement certificate and unit summary, issued from the provider portal.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold text-reps-orange">
+                {CERTIFICATE_UNIT_PRICE_LABEL} each
+              </span>
             </div>
-            <p className="mt-2 text-[14px] leading-snug text-white/80">
-              Course review, public proof and certificate records in one provider membership.
-            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)]">
+                <img
+                  src={certificateAsset.url}
+                  alt="REPs-endorsed Certificate of Achievement showing learner, course and verification details."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
+              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)]">
+                <img
+                  src={unitSummaryAsset.url}
+                  alt="REPs Learner Unit Summary with completed units and verification QR code."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute -bottom-8 left-8 right-8 grid grid-cols-3 gap-px overflow-hidden rounded-[16px] border border-reps-border bg-reps-border shadow-[0_26px_70px_-42px_rgba(0,0,0,0.95)]">
+            {[
+              "Unique certificate number",
+              "Public verification URL",
+              "Learner unit record",
+            ].map((label) => (
+              <div key={label} className="bg-reps-panel/95 px-4 py-4 backdrop-blur">
+                <CheckCircle2 className="h-4 w-4 text-reps-orange" />
+                <div className="mt-2 text-[12px] font-semibold leading-snug text-white/80">
+                  {label}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
