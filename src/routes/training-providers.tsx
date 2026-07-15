@@ -797,6 +797,51 @@ function FinalActionSection() {
   );
 }
 
+function WhoThisIsForSection() {
+  const audiences = [
+    {
+      title: "Established course providers",
+      body: "You already run PT, group ex, Pilates, yoga, kettlebell or specialist CPD courses and want an independent standards mark alongside them.",
+    },
+    {
+      title: "New providers launching a first course",
+      body: "You're bringing a course to market and need learner-facing credibility from day one — endorsement, listing, reviews and certificates.",
+    },
+    {
+      title: "Multi-course academies",
+      body: "You run a full course catalogue and want unlimited endorsed listings, a single provider website and one review layer across every course.",
+    },
+    {
+      title: "Not a fit",
+      body: "One-off workshops without formal assessment, unqualified tutors, or courses without a documented syllabus. Ofqual-regulated qualifications remain the provider's own — REPs endorsement is separate.",
+      muted: true,
+    },
+  ];
+  return (
+    <section className="bg-reps-panel/15">
+      <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+        <SectionHeader
+          eyebrow="Who this is for"
+          heading="Built for fitness training providers running real courses."
+          lede="REPs endorsement is a professional standards review for providers with a defined syllabus, assessed delivery and qualified tutors — not a marketplace badge."
+        />
+        <ul className="mt-12 grid gap-px overflow-hidden rounded-[22px] border border-reps-border bg-reps-border sm:grid-cols-2">
+          {audiences.map((a) => (
+            <li key={a.title} className="bg-reps-panel p-7 lg:p-8">
+              <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] ${a.muted ? "text-white/45" : "text-reps-orange"}`}>
+                {a.muted ? "Not a fit" : "A fit"}
+              </div>
+              <BlockHeading className="mt-3 text-[22px] lg:text-[26px]">{a.title}</BlockHeading>
+              <p className="mt-3 text-[15px] leading-relaxed text-white/70">{a.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+
 function CertificatePair() {
   return (
     <div className="relative">
