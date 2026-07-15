@@ -94,6 +94,7 @@ function useActive() {
     findProvider:
       pathname.startsWith("/find-a-training-provider") ||
       pathname.startsWith("/t/"),
+    trainingProviders: pathname.startsWith("/training-providers"),
     resources:
       pathname === "/resources" || pathname.startsWith("/resources/"),
     pros:
@@ -220,6 +221,18 @@ export function PublicHeader({
                     >
                       Find a Training Provider
                       <ActiveDot show={active.findProvider} />
+                    </Link>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+
+                <NavigationMenu.Item>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      to="/training-providers"
+                      className={cn(triggerClass(active.trainingProviders), "px-1 py-1")}
+                    >
+                      For Training Providers
+                      <ActiveDot show={active.trainingProviders} />
                     </Link>
                   </NavigationMenu.Link>
                 </NavigationMenu.Item>
@@ -917,7 +930,7 @@ function MobileDrawer({
           <Link
             to="/training-providers"
             onClick={onNavigate}
-            className={mobileLinkClass(false)}
+            className={mobileLinkClass(active.trainingProviders)}
           >
             For Training Providers
           </Link>
