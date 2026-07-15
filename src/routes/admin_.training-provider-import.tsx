@@ -6,12 +6,15 @@ import { requireRole } from "@/lib/route-gates";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertCircle, CheckCircle2, Eye } from "lucide-react";
 import {
   importTrainingProviders,
   type ImportRowResult,
   type ImportSummary,
 } from "@/lib/admin/import-training-providers.functions";
+import { previewProviderPortalEmail } from "@/lib/admin/preview-provider-email.functions";
+
 
 export const Route = createFileRoute("/admin_/training-provider-import")({
   ssr: false,
