@@ -974,7 +974,7 @@ function SearchPanel() {
                       <Button
                         size="sm"
                         variant="subtle"
-                        onClick={() => window.open(`/admin/providers/${r.provider_id}`, "_blank")}
+                        onClick={() => window.open(`/admin/members/${r.provider_id}`, "_blank")}
                       >
                         Provider
                       </Button>
