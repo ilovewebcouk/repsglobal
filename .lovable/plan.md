@@ -1,78 +1,70 @@
+# Training Provider Membership — Full Scope Document
 
-## Goal
+Create a single, self-contained reference document at:
 
-Ship a dedicated marketing + pricing page for the REPS-accredited Training Provider tier at **`/training-providers`** — the page a provider lands on before signing up. Matches the polish of `/pricing` and `/features/*`, uses locked marketing primitives, and beats the reference sites (EMD UK, old REPs, CIMSPA).
+`docs/training-provider-membership-scope.md`
 
-## Route + structure
+Written for a reader who knows nothing about the tier. No code changes.
 
-New file: `src/routes/training-providers.tsx` (public marketing route, dark REPs theme, uses `PublicHeader` / `PublicFooter`, full head metadata + JSON-LD Product/Offer).
+## Source material I'll consolidate
 
-Sections (top → bottom), all built with locked primitives (`HeroOverlay`, `SectionEyebrow`, `SectionHeading`, `SectionHeader`, `MarketingFaq`, `FinalCta`, `TierCard`-style card):
+- `docs/training-provider-audit-2026-07-14.md` (module audit)
+- `src/routes/training-providers.tsx` (public pricing page copy)
+- `src/lib/billing.ts` (£479/yr + £15/certificate)
+- `src/lib/certificates/*` (issue, pdf, print-pack, royal-mail, templates, providers)
+- `src/lib/directory/providers.functions.ts` + search + featured
+- `src/lib/qualifications/qualifications.functions.ts`
+- `src/lib/admin/import-training-providers.functions.ts` + `set-training-provider-plan.functions.ts`
+- Provider dashboard components (`src/components/dashboard/organisation/*`)
+- Public routes `t.$slug.tsx`, `c.$slug.tsx` (provider website)
 
-1. **Hero** — top-anchored copy, generated hero image (training-floor scene, REPS-embroidered coach), eyebrow "For training providers", H1 "Get your courses REPS-accredited. Get seen by 25,000+ pros.", lede, dual CTA (Apply now → `/signup?type=training_provider`, See what's included → `#included`), 3 trust chips (Ofqual-regulated wording, unlimited courses, digital certificates).
-2. **Proof strip** — 3 stats (pros on register, certificates issued, avg. reviews per accredited course) + PressMarquee.
-3. **"Everything a provider needs" feature grid** (6 cards, generated icons/imagery):
-   - Unlimited accredited course listings
-   - Public provider website (`/t/{slug}`)
-   - Course directory placement + homepage carousel
-   - Digital REPS-accredited badge + embed widget
-   - Learner review collection (Trustpilot-style widget + badge)
-   - Printable / PDF learner certificates (£15 each)
-4. **Annotated mock** — screenshot of a live `/t/{slug}` provider page with callouts (badge, courses, reviews, enquire).
-5. **Certificate showcase** — 4-up grid using existing `src/assets/certificates/level-1..7.png.asset.json` with "Issue REPS-accredited certificates in minutes" copy + £15/certificate line.
-6. **Reviews widget preview** — mock of the embeddable REPS-verified reviews widget + badge (parity with Trustpilot pitch).
-7. **How it works** — 4 steps: Apply → Course review → Get accredited → Issue certificates + get listed.
-8. **Pricing card** (the money shot):
-   - Single tier card, highlighted, `TierCard`-style shell
-   - **£479 / year** — "REPS-accredited Training Provider"
-   - Included bullets: unlimited accredited courses, provider website, directory + carousel, digital badge + widget, review collection, welcome article slot, priority support
-   - Add-on line: **Certificates £15 each** (bulk pricing on request)
-   - Primary CTA "Apply to become a REPS provider" → `/signup?type=training_provider`
-   - Secondary "Talk to us" → `/contact?topic=training-provider`
-9. **Compare** — 3-column table: REPS vs generic listing directories vs awarding-body partner schemes. Tier-ladder framing, no banned org names, no "CIMSPA" reference, includes "Last checked" + link to `/comparison-methodology`.
-10. **FAQ** (`MarketingFaq`) — 8 Qs: accreditation criteria, timeline, cancel policy, who owns certificates, VAT, insurance requirement for learners, existing awarding-body courses, refund policy. Emits FAQ JSON-LD.
-11. **FinalCta** — "Get your courses in front of 25,000+ REPs pros."
+## Document structure
 
-## Data / config changes
+1. **Executive summary** — one-paragraph "what it is" for a total newcomer.
+2. **Who it's for** — training providers, awarding-style organisations, course operators.
+3. **Language & positioning rules (must-read)**
+   - Explicit rule: REPs **never** uses the word "accredited" / "accreditation". We use **"endorsed"** / **"REPs-endorsed qualification"**.
+   - Explicit rule: no "UK" qualifier; brand is "REPs" not "REPs UK".
+   - Approved phrasing bank + banned phrases with rationale.
+4. **Membership pricing**
+   - £479/year, unlimited course listings, all features included.
+   - £15 per issued certificate (add-on, per learner).
+   - No booking fees, no commission, no paid add-ons beyond certificates.
+   - Billing cadence, renewal, cancel = immediate termination policy.
+5. **What's included — feature by feature**
+   For each: what it is, why it matters, how the provider uses it, where it lives in the product.
+   - Public provider website (`/t/$slug`) — layout, customisation, tier capabilities.
+   - Course directory listing + homepage carousel placement.
+   - Unlimited course/qualification listings.
+   - Digital REPs-endorsed badge + embeddable widget.
+   - Welcome article / editorial slot.
+   - Verified learner review collection (Trustpilot-style widget + on-site badges).
+   - Certificate issuance (digital + optional print & post via Royal Mail).
+   - Learner records / qualification register entry.
+   - Admin dashboard (organisation view): home, settings, courses, learners, certificates, reviews.
+6. **How a qualification is endorsed (end-to-end)**
+   - Application → REPs review → endorsement decision → published as "REPs-endorsed".
+   - What endorsement means vs does not mean (regulatory framing; never "accredited").
+   - Ongoing standards / review cadence.
+7. **How a certificate is issued (end-to-end)**
+   - Provider enters/uploads learner + qualification.
+   - Template selection (`templates.functions.ts`).
+   - Preview → issue (`issue.server.ts` → `pdf.server.ts`).
+   - Learner receives digital certificate + verifiable URL.
+   - Optional Royal Mail print-and-post pack (`print-pack.server.ts` + `royal-mail.server.ts`).
+   - Billing: £15 per issued certificate.
+   - Certificate verification page for public lookup.
+8. **Provider onboarding journey** — signup → admin sets plan → profile completion → first course → first certificate.
+9. **Discovery & visibility** — directory, search, city pages, homepage carousel, badge widget on their own site.
+10. **Reviews system** — collection request, verification, moderation, public display, embeddable widget.
+11. **Trust & compliance guardrails** — endorsement wording, banned claims, review verification, data handling.
+12. **Comparison vs alternatives** — pulled from `training-providers.tsx` compare table.
+13. **Roadmap / out-of-scope** — self-serve Stripe checkout, live reviews widget embed, awarding-body-level features.
+14. **Glossary** — endorsed, verified review, certificate, qualification, provider website, badge, register.
+15. **Appendix A** — key routes, server functions, tables (technical reference).
+16. **Appendix B** — approved copy snippets (hero, badge, certificate footer, review request email).
 
-- `src/lib/billing.ts` → change `ORG_TIERS.training_provider.priceLabel` from `£499` to **`£479`** and `amountPence` from `49900` to `47900`. Keep `stripePriceLookupKey: "training_provider_annual"` — Stripe price object gets updated separately (out of scope for this turn; note in doc).
-- Add `CERTIFICATE_UNIT_PRICE_PENCE = 1500` constant next to `ORG_TIERS` for single source of truth (already exists as £15 elsewhere? — reuse if present, otherwise add).
-- No DB migration needed.
+Length target: ~2,500–3,500 words, in Markdown, ready to hand to a non-technical stakeholder.
 
-## Assets (generated in build turn)
-
-Generate 4 images with `imagegen--generate_image` (premium where text matters), all with REPS-embroidered wordmark rule where humans appear:
-
-1. `src/assets/training-providers/hero.jpg` — wide training-floor scene, lead coach in REPS polo teaching a small group; cinematic, dark ambience matching site.
-2. `src/assets/training-providers/classroom.jpg` — accredited-course classroom moment (used in "How it works").
-3. `src/assets/training-providers/badge-mock.png` (transparent) — REPS-accredited digital badge mock for the badge section.
-4. `src/assets/training-providers/reviews-widget.jpg` — screenshot-style mock of the embeddable reviews widget on a provider site.
-
-Existing certificate level PNGs are reused directly.
-
-## Header/footer nav
-
-- Add "Training Providers" link to `PublicHeader` desktop + mobile nav (points to `/training-providers`). Confirm sitemap + `public/robots.txt` unaffected (route is public by default).
-
-## Type + build safety
-
-- Route file uses `createFileRoute("/training-providers")`; `routeTree.gen.ts` regenerates automatically.
-- All components imported from existing marketing primitives — no new primitives.
-- Full head(): title <60, meta <160, og:title/desc/type/url, canonical, og:image (absolute URL of hero via asset pointer + published origin), FAQ + Product JSON-LD.
-- Radii: hero 24, panels 22, cards 18, buttons 10, inputs 12. No banned radii/hex.
-- Uses only semantic tokens (`bg-reps-panel`, `text-reps-orange`, etc.).
-
-## Out of scope (flagged)
-
-- Stripe self-serve checkout for training providers (still admin-attached per `src/lib/billing.ts` comment). CTA goes to `/signup?type=training_provider` which routes into the existing provider signup/application flow; we do not wire a new Checkout Session here.
-- Updating the live Stripe price object from £499 → £479 (dashboard action, called out in audit doc).
-- Building the actual reviews-widget embed — this page only shows a mock.
-
-## Deliverable checklist
-
-- [ ] `src/routes/training-providers.tsx` created
-- [ ] `PublicHeader` nav updated
-- [ ] `src/lib/billing.ts` price updated to £479 / 47900
-- [ ] 4 generated marketing images under `src/assets/training-providers/`
-- [ ] Head metadata + JSON-LD verified
-- [ ] Audit script clean (banned hex/radii/shadows), typecheck green
+## Out of scope
+No code, migration, or copy changes to the live product in this step. Pure documentation.
