@@ -1,62 +1,71 @@
-I agree: the current /training-providers page drifted into a flat institutional prospectus and lost the world-class REPs feature/resource style. The rebuild should look like a premium REPs product launch page: dark, cinematic, scrollable, image-led, with a YouTube/resource-style feature hero and crisp product proof.
 
-Plan:
+# Pass 3 — Training Providers page: fix the story
 
-1. Rebuild the hero around a feature/resource-style visual system
-   - Use a wide editorial hero composition similar to the strongest REPs feature/resource pages, not the current brochure layout.
-   - Lead with a large cinematic training/provider image area and a high-quality certificate/product overlay.
-   - Treat the certificates as premium proof assets, not tilted cheap paper mockups.
-   - Keep the headline focused on the core offer: getting training courses REPs-endorsed.
+## What's wrong right now (brutal)
 
-2. Restore the “YouTube-style / resource-style” feel
-   - Build the top of page like a premium feature story: bold title, dark chrome, large visual, strong CTA, clear pricing.
-   - Add video/resource-like visual rhythm: large feature panel, thumbnail-style supporting cards, editorial captions, sharp hierarchy.
-   - Avoid the current static prospectus feel.
+1. **Hero image is hidden.** A dark studying photo sits behind heavy copy — nobody sees a training provider actually training anyone. It reads as a moody stock backdrop, not a proof shot.
+2. **Certificate showcase looks like stock props.** Two certificates floating on a black panel = corporate template energy. No human, no context, no pride.
+3. **Feature reel implies a fixed menu.** Captions naming yoga, Pilates and indoor cycling make the page look like it endorses *those disciplines*. The truth is: REPs endorses **any in-house course a provider writes** — kettlebells, pre/post-natal, strength, nutrition intros, sport-specific, online-only, blended. The reel is actively working against the pitch.
+4. **Certificate asset was wrong** — the version on the page is missing the Level 3 badge. User has uploaded the correct one.
 
-3. Remove the weak elements
-   - No sticky mini-menu under the hero.
-   - No comparison table.
-   - No fake stats.
-   - No SaaS dashboard gimmicks.
-   - No cheap badge treatment.
-   - No low-quality certificate collage styling.
+## What we're changing
 
-4. Use real training imagery properly
-   - Keep the existing Pilates, spin, classroom/tutor and studying images as supporting visuals where they help sell the provider market.
-   - Use them in larger, cleaner editorial/product sections rather than scattered cards.
-   - Make the page feel like real fitness education: Pilates, yoga-style movement, personal training, group exercise, learners and tutors.
+### 1. Swap the certificate asset
+Replace `src/assets/training-providers/certificate-of-achievement.png` with the new user-uploaded file (`user-uploads://certificate_resource-2.png`) via `lovable-assets create` → overwrite the existing `.asset.json` pointer. No component code changes needed; the import path stays.
 
-5. Make the certificate system look premium
-   - Use the Certificate of Achievement and Learner Unit Summary images cleanly in dedicated product sections.
-   - Present them as official product evidence: large, readable, straight, framed, with restrained shadows.
-   - Avoid distorted rotations, tiny thumbnails or fake 3D mockups.
+### 2. New hero image — practical coaching moment
+Generate a new hero asset: a tutor coaching a learner through a practical movement on a gym floor (kettlebell/barbell setup or a form correction). Deliberately **not** a yoga/Pilates/cycling scene — it has to read as "practical assessment of a course this provider wrote in-house."
 
-6. Restructure the page into a conversion-focused story
-   - Hero: offer, price, CTAs, premium certificate-led visual.
-   - Authority section: what REPs reviews and why it matters.
-   - Product section: provider page, directory listing, reviews, badge, certificate issuing.
-   - Training imagery section: real course delivery environments.
-   - Pricing section: £479/year and £15 per certificate, prominent and early enough.
-   - Process section: apply, submit evidence, review, endorsed, issue certificates.
-   - FAQ and final CTA.
+- Style: matches the rest of the site's editorial imagery (dark, cinematic, medium-crisp).
+- REPS wordmark on tutor's polo per `mem://design/trainer-imagery` (ALL CAPS, white, real embroidery texture, medium weight).
+- Rework hero layout so the image is **actually visible** — currently `opacity-70` + `object-[30%_center]` puts it behind copy. Options: shift copy to left column at `lg:`, image occupies right ~55%; or full-bleed with darker gradient only on the copy side. Aim: on desktop the coaching moment is unmistakable; on mobile the image sits above/below copy, not behind.
 
-7. Keep the existing compliance rules intact
-   - Use “endorsed” / “endorsement” wording only.
-   - Preserve the required disclaimer that REPs endorsement is not Ofqual-regulated, UKAS-accredited, government-approved or part of a regulated qualifications framework.
-   - Do not introduce banned organisation names.
-   - Keep CTAs pointing to /signup?type=training_provider and /contact?topic=training-provider.
+### 3. Certificate showcase — real learner moment
+Kill the "two certificates floating on black" panel. Replace with a **generated image of a small group of learners (3–4 people) holding their Certificates of Achievement** post-course. Certificates readable enough to recognise but the humans are the subject. Warm, proud, real — not stock.
 
-8. Technical implementation
-   - Edit only src/routes/training-providers.tsx unless a shared primitive is clearly needed.
-   - Continue using existing marketing primitives and REPs semantic tokens.
-   - Do not touch dashboard, legal, checkout, backend, billing logic or certificate backend.
-   - Preserve existing metadata and JSON-LD intent, updating only if needed for the new page structure.
+- REPS wordmark on any visible learner/tutor polo per the trainer-imagery rules.
+- Beside/under the image, keep a small **inset of the actual certificate PNG** (the new user-uploaded file) at legible size so the artefact itself is still verifiable — but it supports the human shot instead of being the hero of the section.
+- Copy pivots from "here's what the paperwork looks like" to "here's what your learners walk away with." Add the "publicly verifiable — QR + certificate number" chip.
 
-9. QA before handoff
-   - Typecheck.
-   - Grep for banned “accredited/accreditation” usage outside the mandatory disclaimer context.
-   - Confirm pricing: £479/year and £15/certificate.
-   - Confirm CTA URLs.
-   - Screenshot desktop and mobile sections.
-   - Confirm certificate images are used cleanly.
-   - Confirm no fake stats or comparison table remain.
+### 4. Reframe the feature reel — delivery formats, not disciplines
+Rewrite `FEATURE_REEL` so the three tiles are **formats**, not sports:
+
+1. **Classroom & theory delivery** — tutor-led sessions, manuals, written assessment. Any subject the provider writes.
+2. **Practical & assessment** — on-the-floor coaching and skills sign-off. Any modality (strength, conditioning, mobility, sport-specific, rehab-adjacent, etc.).
+3. **Online & blended** — recorded modules, live tutor calls, remote assessment submissions.
+
+Above the reel, add a single lead line that makes scope explicit:
+
+> "REPs endorses any course a training provider writes in-house — whatever the subject, whatever the delivery format. The examples below show what endorsement covers in practice."
+
+Reuse existing photography where it fits the format label; where a current image is too obviously "yoga" or "cycling," swap for a neutral classroom/floor/laptop-study shot so the caption reads as an example of the *format*, not a claim about the *discipline*.
+
+### 5. Copy sweeps
+- Hero H1 stays the positioning line ("Independent endorsement for fitness training providers.") but sub-lede rewritten to lead with **"any course you write in-house"** rather than listing formats.
+- "Who this is for" section: reinforce course-agnostic scope in the "fit" bullets (e.g. "You write your own curriculum — any subject, any format").
+- Kill any remaining language that implies REPs endorses a *fixed catalogue* of disciplines.
+
+## Order of operations
+
+1. Overwrite certificate `.asset.json` with the new user upload.
+2. Generate hero image (practical coaching moment). Save under `src/assets/training-providers/` via `lovable-assets`.
+3. Generate certificate-moment image (small group of learners holding certificates). Save the same way.
+4. Edit `src/routes/training-providers.tsx`:
+   - Rewire hero layout so the new image is visible (not behind copy).
+   - Rebuild the certificate showcase section around the new group photo + small inset of the certificate PNG.
+   - Rewrite `FEATURE_REEL` entries as delivery formats + add the scope lead line above.
+   - Copy sweeps in hero sub-lede and "Who this is for."
+5. Verify: `tsgo` typecheck, screenshot the page at desktop + mobile via Playwright, confirm — hero image visible, certificate group shot present, reel reads as formats not disciplines.
+
+## Technical notes
+
+- Image generation via `imagegen--generate_image` (`premium` tier — humans + text on garments require it). REPS wordmark rules per `mem://design/trainer-imagery` are non-negotiable; regenerate if wordmark fails ALL CAPS / white / medium weight / embroidery texture.
+- All spacing, radii, tokens continue to follow REPs build-compliance skill (button 10px, card 16/18px, hero 24px, brand-orange only via semantic tokens, no button shadows).
+- No backend/data changes. Presentation-only.
+
+## Out of scope (this pass)
+
+- No pricing/plan changes.
+- No new routes.
+- No SiteBanner changes (already done in Pass 1).
+- Long-form Pass 4 copy polish (case studies, testimonials) — separate pass once visuals are locked.
