@@ -304,15 +304,27 @@ function TrainingProvidersPage() {
           </div>
 
           <div className="relative">
-            <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
-              <img
-                src={heroDocumentsAsset.url}
-                alt="A Certificate of Achievement and a Learner Unit Summary printed on cream stock, a wax seal on the certificate and a QR verification code on the unit summary, laid on a black leather desk mat beside a fountain pen and reading glasses."
-                className="aspect-[4/3] w-full object-cover"
-                fetchPriority="high"
-                width={1600}
-                height={1200}
-              />
+            <div className="relative grid grid-cols-2 gap-4">
+              <div className="relative -rotate-2 overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={certificateAsset.url}
+                  alt="REPs-endorsed Certificate of Achievement issued to a learner, showing course title, certificate number, verification URL and Head of Education signature."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  fetchPriority="high"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
+              <div className="relative mt-8 rotate-2 overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={unitSummaryAsset.url}
+                  alt="REPs-endorsed Learner Unit Summary listing the six units completed for the course, with signature and QR verification code."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  fetchPriority="high"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
             </div>
             <div
               aria-hidden
