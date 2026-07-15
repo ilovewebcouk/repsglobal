@@ -900,7 +900,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
 
       {segment === "providers" ? (
         <>
-          <td className="px-3 py-3 text-white/75">{row.location ?? <span className="text-white/45">—</span>}</td>
+          <td className="px-3 py-3 text-white/75">{row.lastLoginAt ? <span title={new Date(row.lastLoginAt).toLocaleString()}>{timeAgo(row.lastLoginAt)}</span> : <span className="text-white/45">Never</span>}</td>
           <td className="px-3 py-3 text-white/75 tabular-nums">{row.coursesCount ?? 0}</td>
           <td className="px-3 py-3 text-white/45">
             <Tooltip>
