@@ -418,26 +418,55 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
           if (subErr) throw new Error(subErr.message);
         }
 
-        // Send announcement email
-        let messageId: string | undefined;
-        try {
-          const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
-          const sendRes = await sendTransactionalEmailServer({
-            templateName: "provider-portal-is-live",
-            recipientEmail: row.email,
-            idempotencyKey: `provider-portal-live-${userId}`,
-            templateData: {
-              providerName: row.provider_name,
-              passwordSetUrl: inviteUrl ?? undefined,
-              alreadyRegistered: !!existingId,
-              emailAddress: row.email,
-            },
-          });
-          messageId = (sendRes as { messageId?: string }).messageId;
-        } catch (e) {
-          // Non-fatal — record it so we can retry manually.
-          console.error("[importTrainingProviders] email send failed", row.email, e);
+        // ------ Renewal-price cap (Stripe) ------
+        if (
+          rec.stripe_audit?.renewal_action === "cap_to_479_at_renewal" &&
+          rec.stripe_audit.subscription_id &&
+          rec.stripe_audit.subscription_item_id
+        ) {
+          try {
+            const capPriceId = await resolveCapPrice(stripe, capPriceCache);
+            await stripe.subscriptions.update(rec.stripe_audit.subscription_id, {
+              items: [{ id: rec.stripe_audit.subscription_item_id, price: capPriceId }],
+              proration_behavior: "none",
+              metadata: { reps_renewal_capped: "479_gbp", reps_capped_by: context.userId },
+            });
+            rec.renewal_applied = true;
+          } catch (e) {
+            console.error("[importTrainingProviders] price cap failed", row.email, e);
+            rec.renewal_applied = false;
+            rec.stripe_audit = {
+              ...rec.stripe_audit,
+              note: `Cap failed: ${e instanceof Error ? e.message : String(e)}`,
+            };
+          }
         }
+
+        // Send announcement email — skipped when there is no active sub so the
+        // provider isn't invited to a portal they can't yet use.
+        let messageId: string | undefined;
+        const skipEmail = rec.stripe_audit?.renewal_action === "no_active_sub";
+        if (!skipEmail) {
+          try {
+            const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+            const sendRes = await sendTransactionalEmailServer({
+              templateName: "provider-portal-is-live",
+              recipientEmail: row.email,
+              idempotencyKey: `provider-portal-live-${userId}`,
+              templateData: {
+                providerName: row.provider_name,
+                passwordSetUrl: inviteUrl ?? undefined,
+                alreadyRegistered: !!existingId,
+                emailAddress: row.email,
+              },
+            });
+            messageId = (sendRes as { messageId?: string }).messageId;
+          } catch (e) {
+            // Non-fatal — record it so we can retry manually.
+            console.error("[importTrainingProviders] email send failed", row.email, e);
+          }
+        }
+
 
         // Audit log
         await sa.rpc("log_admin_action", {
