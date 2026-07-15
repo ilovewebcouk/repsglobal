@@ -930,7 +930,7 @@ function MobileDrawer({
           <Link
             to="/training-providers"
             onClick={onNavigate}
-            className={mobileLinkClass(false)}
+            className={mobileLinkClass(active.trainingProviders)}
           >
             For Training Providers
           </Link>
