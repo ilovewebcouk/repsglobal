@@ -641,19 +641,13 @@ function TrainingProvidersPage() {
       </section>
 
       {/* 9. FAQ --------------------------------------------------- */}
-      <section id="faq">
-        <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10 lg:py-28">
-          <div className="max-w-[760px]">
-            <SectionEyebrow>Frequently asked</SectionEyebrow>
-            <SectionHeading className="mt-3">
-              Endorsement, evidence and certificates.
-            </SectionHeading>
-          </div>
-          <div className="mt-10">
-            <MarketingFaq items={FAQ_ITEMS} />
-          </div>
-        </div>
-      </section>
+      <div id="faq">
+        <MarketingFaq
+          eyebrow="Frequently asked"
+          heading="Endorsement, evidence and certificates."
+          items={FAQ_ITEMS}
+        />
+      </div>
 
       {/* 10. Final CTA -------------------------------------------- */}
       <section>
