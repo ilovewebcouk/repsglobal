@@ -22,7 +22,8 @@ import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import { ORG_TIERS, CERTIFICATE_UNIT_PRICE_LABEL } from "@/lib/billing";
 
-import heroDocumentsAsset from "@/assets/training-providers/hero-documents.jpg.asset.json";
+import certificateAsset from "@/assets/training-providers/certificate-of-achievement.jpg.asset.json";
+import unitSummaryAsset from "@/assets/training-providers/learner-unit-summary.jpg.asset.json";
 import classroomAsset from "@/assets/training-providers/classroom-tutor.jpg.asset.json";
 import pilatesAsset from "@/assets/training-providers/pilates-class.jpg.asset.json";
 import spinAsset from "@/assets/training-providers/spin-class.jpg.asset.json";
@@ -89,7 +90,7 @@ export const Route = createFileRoute("/training-providers")({
           "Independent course review, public recognition, verified learner reviews and REPs-issued certificates. £479/year.",
       },
       { property: "og:type", content: "product" },
-      { property: "og:image", content: heroDocumentsAsset.url },
+      { property: "og:image", content: certificateAsset.url },
       { property: "og:url", content: "https://repsuk.org/training-providers" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "REPs-endorsed Training Provider Membership" },
@@ -303,15 +304,27 @@ function TrainingProvidersPage() {
           </div>
 
           <div className="relative">
-            <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
-              <img
-                src={heroDocumentsAsset.url}
-                alt="A Certificate of Achievement and a Learner Unit Summary printed on cream stock, a wax seal on the certificate and a QR verification code on the unit summary, laid on a black leather desk mat beside a fountain pen and reading glasses."
-                className="aspect-[4/3] w-full object-cover"
-                fetchPriority="high"
-                width={1600}
-                height={1200}
-              />
+            <div className="relative grid grid-cols-2 gap-4">
+              <div className="relative -rotate-2 overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={certificateAsset.url}
+                  alt="REPs-endorsed Certificate of Achievement issued to a learner, showing course title, certificate number, verification URL and Head of Education signature."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  fetchPriority="high"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
+              <div className="relative mt-8 rotate-2 overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={unitSummaryAsset.url}
+                  alt="REPs-endorsed Learner Unit Summary listing the six units completed for the course, with signature and QR verification code."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  fetchPriority="high"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
             </div>
             <div
               aria-hidden
@@ -464,15 +477,27 @@ function TrainingProvidersPage() {
       <section>
         <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-6 py-20 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-10 lg:py-28">
           <div className="relative">
-            <div className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
-              <img
-                src={heroDocumentsAsset.url}
-                alt="Certificate of Achievement with a wax seal and a Learner Unit Summary with a QR verification code laid on a leather desk mat."
-                className="aspect-[4/3] w-full object-cover"
-                loading="lazy"
-                width={1600}
-                height={1200}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={certificateAsset.url}
+                  alt="REPs Certificate of Achievement, showing learner name, course title, certificate number and verification URL."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  loading="lazy"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
+              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={unitSummaryAsset.url}
+                  alt="REPs Learner Unit Summary listing the six completed units and QR verification code."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  loading="lazy"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
             </div>
             <div
               aria-hidden
