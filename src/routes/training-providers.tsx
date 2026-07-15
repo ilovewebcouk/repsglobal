@@ -442,8 +442,9 @@ function FeatureReelSection() {
         <SectionHeader
           eyebrow="Feature overview"
           heading="Built for providers teaching real fitness skills."
-          lede="The page needs to sell the world your courses actually prepare learners for: coaching, cueing, assessing and supporting people in professional fitness settings."
+          lede="REPs endorsement covers the delivery formats fitness training providers actually run — classroom-based tutor delivery, practical instruction and studio-based group exercise formats."
         />
+
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.45fr_0.85fr]">
           <figure className="group overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange">
