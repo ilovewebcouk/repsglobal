@@ -24,8 +24,8 @@ import { MarketingFaq } from "@/components/marketing/MarketingFaq";
 
 import { ORG_TIERS, CERTIFICATE_UNIT_PRICE_LABEL } from "@/lib/billing";
 
-import certificateAsset from "@/assets/training-providers/certificate-of-achievement.jpg.asset.json";
-import unitSummaryAsset from "@/assets/training-providers/learner-unit-summary.jpg.asset.json";
+import certificateAsset from "@/assets/training-providers/certificate-of-achievement.png.asset.json";
+import unitSummaryAsset from "@/assets/training-providers/learner-unit-summary.png.asset.json";
 import classroomAsset from "@/assets/training-providers/classroom-tutor.jpg.asset.json";
 import pilatesAsset from "@/assets/training-providers/pilates-class.jpg.asset.json";
 import spinAsset from "@/assets/training-providers/spin-class.jpg.asset.json";
@@ -315,34 +315,39 @@ function TrainingProvidersPage() {
 
 function HeroSection() {
   return (
-    <section className="relative isolate min-h-[760px] overflow-hidden lg:min-h-[820px]">
+    <section className="relative isolate min-h-[720px] overflow-hidden lg:min-h-[820px]">
       <img
-        src={classroomAsset.url}
-        alt="Fitness tutor leading a professional training provider course with adult learners and course materials."
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        src={studyingAsset.url}
+        alt="A fitness learner studying anatomy and course materials — the kind of learner served by REPs-endorsed training providers."
+        className="absolute inset-0 h-full w-full object-cover object-[30%_center] opacity-70 lg:opacity-55"
         fetchPriority="high"
         width={1600}
         height={1200}
       />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-r from-reps-ink via-reps-ink/92 to-reps-ink/70"
+      />
       <HeroOverlay copySide="left" intensity="standard" />
 
-      <div className="relative mx-auto grid max-w-[1320px] gap-12 px-6 pt-24 pb-20 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-16 lg:px-10 lg:pt-28 lg:pb-24">
+      <div className="relative mx-auto grid max-w-[1320px] gap-12 px-6 pt-24 pb-24 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-16 lg:px-10 lg:pt-28 lg:pb-28">
         <div className="max-w-[650px]">
           <MarketingHeroEyebrow icon={GraduationCap}>
             REPs Training Provider Membership
           </MarketingHeroEyebrow>
           <h1
-            className="mt-5 font-display text-[44px] font-bold leading-[1.03] text-white animate-fade-in lg:text-[72px]"
+            className="mt-5 font-display text-[44px] font-bold leading-[1.03] text-white animate-fade-in lg:text-[68px]"
             style={{ animationDelay: "80ms", animationDuration: "640ms" }}
           >
-            Get your fitness courses REPs-endorsed.
+            Independent endorsement for fitness training providers.
           </h1>
           <p
             className="mt-5 max-w-[570px] text-[16px] leading-relaxed text-white/80 animate-fade-in"
             style={{ animationDelay: "180ms", animationDuration: "560ms" }}
           >
-            Independent course review, public provider recognition, verified learner reviews and
-            REPs-issued certificates for serious fitness education providers.
+            REPs is the independent standards layer for fitness education. We review your courses,
+            recognise your provider publicly, collect verified learner reviews and issue publicly
+            verifiable certificates to every completing learner.
           </p>
 
           <div
@@ -365,7 +370,7 @@ function HeroSection() {
           </div>
 
           <div
-            className="mt-8 grid max-w-[560px] grid-cols-3 gap-px overflow-hidden rounded-[16px] border border-reps-border bg-reps-border animate-fade-in"
+            className="mt-8 grid max-w-[560px] grid-cols-1 gap-px overflow-hidden rounded-[16px] border border-reps-border bg-reps-border animate-fade-in sm:grid-cols-3"
             style={{ animationDelay: "340ms", animationDuration: "560ms" }}
           >
             <MetricTile value={TIER.priceLabel} label="per year" />
@@ -375,35 +380,32 @@ function HeroSection() {
         </div>
 
         <div className="relative hidden lg:block">
-          <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-reps-ink/88 p-5 shadow-[0_42px_110px_-50px_rgba(0,0,0,0.95)] backdrop-blur">
+          <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-reps-panel/95 p-6 shadow-[0_42px_110px_-50px_rgba(0,0,0,0.95)] backdrop-blur">
             <div className="mb-5 flex items-center justify-between gap-4">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
                   Certificate evidence
                 </div>
                 <p className="mt-1 text-[13.5px] leading-snug text-white/70">
-                  Achievement certificate and unit summary, issued from the provider portal.
+                  Achievement certificate and Learner Unit Summary, issued from the provider portal.
                 </p>
               </div>
-              <span className="shrink-0 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold text-reps-orange">
-                {CERTIFICATE_UNIT_PRICE_LABEL} each
-              </span>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)]">
+              <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white">
                 <img
                   src={certificateAsset.url}
-                  alt="REPs-endorsed Certificate of Achievement showing learner, course and verification details."
-                  className="aspect-[1/1.414] w-full object-cover"
+                  alt="REPs-endorsed Certificate of Achievement showing learner name, course title, certificate number and verification details."
+                  className="aspect-[1/1.414] w-full object-contain"
                   width={1240}
                   height={1754}
                 />
               </div>
-              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)]">
+              <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white">
                 <img
                   src={unitSummaryAsset.url}
-                  alt="REPs Learner Unit Summary with completed units and verification QR code."
-                  className="aspect-[1/1.414] w-full object-cover"
+                  alt="REPs Learner Unit Summary listing completed units for the endorsed course."
+                  className="aspect-[1/1.414] w-full object-contain"
                   width={1240}
                   height={1754}
                 />
@@ -440,8 +442,9 @@ function FeatureReelSection() {
         <SectionHeader
           eyebrow="Feature overview"
           heading="Built for providers teaching real fitness skills."
-          lede="The page needs to sell the world your courses actually prepare learners for: coaching, cueing, assessing and supporting people in professional fitness settings."
+          lede="REPs endorsement covers the delivery formats fitness training providers actually run — classroom-based tutor delivery, practical instruction and studio-based group exercise formats."
         />
+
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.45fr_0.85fr]">
           <figure className="group overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange">
