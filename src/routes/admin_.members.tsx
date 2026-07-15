@@ -938,24 +938,6 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
                 {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
                 {STATUS_LABEL[row.status]}
               </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="inline-flex items-center gap-1.5 cursor-pointer select-none">
-                    <Switch
-                      checked={row.isPublished}
-                      disabled={publishM.isPending}
-                      onCheckedChange={(v) => publishM.mutate(!!v)}
-                      aria-label={row.isPublished ? "Page is live" : "Page is hidden"}
-                    />
-                    <span className={`text-[11px] font-semibold ${row.isPublished ? "text-emerald-300" : "text-white/45"}`}>
-                      {row.isPublished ? "Live" : "Hidden"}
-                    </span>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  {row.isPublished ? "Public page is visible — toggle off to hide" : "Public page is hidden — toggle on to make live"}
-                </TooltipContent>
-              </Tooltip>
             </div>
           </td>
           <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
