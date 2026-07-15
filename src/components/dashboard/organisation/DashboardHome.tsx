@@ -117,7 +117,7 @@ export function ProviderDashboardHome() {
     <DashboardShell
       role="trainer"
       active="Dashboard"
-      title={`${greeting}, ${firstName}`}
+      title={`${greeting}, ${greetName}`}
       subtitle={hasProAccess ? "Your business overview." : "Your REPS command center."}
       tier={tier}
       member={{
