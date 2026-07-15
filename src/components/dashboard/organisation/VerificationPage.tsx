@@ -414,7 +414,7 @@ function ProviderNameCard({
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="e.g. Smart Dog Training"
+              placeholder="e.g. Your Academy Ltd"
               maxLength={120}
               className="h-10 rounded-[12px] border border-reps-border bg-reps-ink/60 px-3 text-[13.5px] text-white placeholder:text-white/30 focus:border-reps-orange focus:outline-none"
             />
