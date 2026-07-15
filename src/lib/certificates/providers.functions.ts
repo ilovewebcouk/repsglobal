@@ -30,11 +30,11 @@ export const listProviderCenterNumbers = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Providers = professionals with account_type = 'organisation'
+    // Providers = professionals with account_type = 'training_provider'
     const { data: pros } = await supabaseAdmin
       .from("professionals")
       .select("id")
-      .eq("account_type", "organisation");
+      .eq("account_type", "training_provider");
     const ids = ((pros ?? []) as any[]).map((r) => r.id as string);
     if (ids.length === 0) return [];
 
@@ -219,7 +219,7 @@ async function assertIsProvider(supabase: any, userId: string) {
     .eq("id", userId)
     .maybeSingle();
   if (error) throw error;
-  if (!data || (data as any).account_type !== "organisation") {
+  if (!data || (data as any).account_type !== "training_provider") {
     throw new Error("Only training provider accounts can manage certificate branding.");
   }
 }

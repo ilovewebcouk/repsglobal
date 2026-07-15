@@ -1,7 +1,7 @@
 /**
  * Admin — Training-provider control surface.
  *
- * Provider discriminator: `professionals.account_type = 'organisation'`.
+ * Provider discriminator: `professionals.account_type = 'training_provider'`.
  * Canonical provider display name: `profiles.full_name` (the ONE source of
  * truth for a training provider's display name — e.g. "Northline Fitness Academy").
  *
@@ -125,7 +125,7 @@ export const listProviders = createServerFn({ method: "GET" })
       .select(
         "id, slug, contact_email, verification_status, is_published, suspended_at, reps_member_id, created_at",
       )
-      .eq("account_type", "organisation")
+      .eq("account_type", "training_provider")
       .order("created_at", { ascending: false });
 
     if (data.verified === "verified") query = query.eq("verification_status", "verified");
@@ -216,7 +216,7 @@ export const readProviderProfileForAdmin = createServerFn({ method: "GET" })
         .maybeSingle(),
     ]);
 
-    if (!pro || pro.account_type !== "organisation") {
+    if (!pro || pro.account_type !== "training_provider") {
       throw new Error("Not a training provider");
     }
 
@@ -315,7 +315,7 @@ export const adminUpdateProviderProfileMirror = createServerFn({ method: "POST" 
       .eq("id", data.user_id)
       .maybeSingle();
     if (!pro) throw new Error("Provider not found");
-    if (pro.account_type !== "organisation") throw new Error("Not a training provider");
+    if (pro.account_type !== "training_provider") throw new Error("Not a training provider");
 
     const { data: site } = await sa
       .from("websites")
@@ -446,7 +446,7 @@ export const renameProvider = createServerFn({ method: "POST" })
       .eq("id", data.user_id)
       .maybeSingle();
     if (!pro) throw new Error("Provider not found");
-    if (pro.account_type !== "organisation") throw new Error("Not a training provider");
+    if (pro.account_type !== "training_provider") throw new Error("Not a training provider");
 
     const oldSlug: string | null = pro.slug ?? null;
 
@@ -528,7 +528,7 @@ export const createProvider = createServerFn({ method: "POST" })
         redirectTo,
         data: {
           signup_kind: "professional",
-          account_type: "organisation",
+          account_type: "training_provider",
           full_name: data.name,
         },
       },
@@ -553,7 +553,7 @@ export const createProvider = createServerFn({ method: "POST" })
 
     const proRow: Record<string, unknown> = {
       id: newUserId,
-      account_type: "organisation",
+      account_type: "training_provider",
       slug,
       is_published: false,
     };
@@ -589,7 +589,7 @@ export const createProvider = createServerFn({ method: "POST" })
       // permits 'verified' | 'pro' and the table has no metadata/kind/note
       // column. We record provider invites as plan='pro' so acceptance still
       // works, and distinguish them by the seeded professionals.account_type
-      // ='organisation' row keyed on email at accept-time.
+      // ='training_provider' row keyed on email at accept-time.
       // FOLLOW-UP: add a proper provider invite type (either extend the plan
       // enum with 'provider' or add a signup_kind/kind column) so provider
       // invites are not recorded as pro invites.
@@ -649,7 +649,7 @@ export const suspendProvider = createServerFn({ method: "POST" })
       .eq("id", data.user_id)
       .maybeSingle();
     if (!pro) throw new Error("Provider not found");
-    if (pro.account_type !== "organisation") throw new Error("Not a training provider");
+    if (pro.account_type !== "training_provider") throw new Error("Not a training provider");
 
     const now = new Date().toISOString();
     const update = {
@@ -697,7 +697,7 @@ export const republishProvider = createServerFn({ method: "POST" })
       .eq("id", data.user_id)
       .maybeSingle();
     if (!pro) throw new Error("Provider not found");
-    if (pro.account_type !== "organisation") throw new Error("Not a training provider");
+    if (pro.account_type !== "training_provider") throw new Error("Not a training provider");
 
     const update = {
       is_published: true,
@@ -749,7 +749,7 @@ export const closeProvider = createServerFn({ method: "POST" })
       .eq("id", data.user_id)
       .maybeSingle();
     if (!pro) throw new Error("Provider not found");
-    if (pro.account_type !== "organisation") throw new Error("Not a training provider");
+    if (pro.account_type !== "training_provider") throw new Error("Not a training provider");
 
     const result = await _closeMembershipImpl({
       user_id: data.user_id,

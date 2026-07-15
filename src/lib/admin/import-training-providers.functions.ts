@@ -12,7 +12,7 @@
  *      provided stripe_customer_id, and send the announcement WITH the
  *      password-set CTA.
  *
- * Every imported provider is `account_type = "organisation"`, tier
+ * Every imported provider is `account_type = "training_provider"`, tier
  * `training_provider`, subscription `active`. Full REPS provider
  * verification is still required before certificates can issue — that
  * gate is enforced elsewhere; this fn does not bypass it.
@@ -190,7 +190,7 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
               redirectTo,
               data: {
                 signup_kind: "professional",
-                account_type: "organisation",
+                account_type: "training_provider",
                 full_name: row.provider_name,
               },
             },
@@ -223,7 +223,7 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
 
         const proRow: Record<string, unknown> = {
           id: userId,
-          account_type: "organisation",
+          account_type: "training_provider",
           slug,
         };
         if (!existingPro) proRow.is_published = false;

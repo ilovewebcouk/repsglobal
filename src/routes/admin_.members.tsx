@@ -688,7 +688,7 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
 
 function InviteButton() {
   const [open, setOpen] = React.useState(false);
-  const [type, setType] = React.useState<"individual" | "organisation">("individual");
+  const [type, setType] = React.useState<"individual" | "training_provider">("individual");
   const [email, setEmail] = React.useState("");
   const [fullName, setFullName] = React.useState("");
   const [website, setWebsite] = React.useState("");
@@ -699,7 +699,7 @@ function InviteButton() {
 
   const m = useMutation({
     mutationFn: async () => {
-      if (type === "organisation") {
+      if (type === "training_provider") {
         return createProviderFn({
           data: {
             email: email.trim(),
@@ -713,7 +713,7 @@ function InviteButton() {
     },
     onSuccess: () => {
       toast.success(
-        type === "organisation"
+        type === "training_provider"
           ? `Provider invite sent to ${email}`
           : `Invite sent to ${email}`,
       );
@@ -748,8 +748,8 @@ function InviteButton() {
                   : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
                 Individual professional
               </button>
-              <button onClick={() => setType("organisation")}
-                className={type === "organisation"
+              <button onClick={() => setType("training_provider")}
+                className={type === "training_provider"
                   ? "flex-1 rounded-[10px] border border-reps-orange bg-reps-orange-soft px-3 py-2 text-left text-[12px] font-semibold text-reps-orange"
                   : "flex-1 rounded-[10px] border border-reps-border px-3 py-2 text-left text-[12px] font-medium text-white/70 hover:text-white"}>
                 Training provider
@@ -759,19 +759,19 @@ function InviteButton() {
           <div>
             <Label htmlFor="invite-email" className="text-white/75">Email <span className="text-reps-orange">*</span></Label>
             <Input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder={type === "organisation" ? "contact@provider.com" : "trainer@example.com"}
+              placeholder={type === "training_provider" ? "contact@provider.com" : "trainer@example.com"}
               className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30" />
           </div>
           <div>
             <Label htmlFor="invite-name" className="text-white/75">
-              {type === "organisation" ? "Provider name" : "Full name (optional)"}
-              {type === "organisation" && <span className="text-reps-orange"> *</span>}
+              {type === "training_provider" ? "Provider name" : "Full name (optional)"}
+              {type === "training_provider" && <span className="text-reps-orange"> *</span>}
             </Label>
             <Input id="invite-name" value={fullName} onChange={(e) => setFullName(e.target.value)}
-              placeholder={type === "organisation" ? "Northline Academy" : "Sam Jones"}
+              placeholder={type === "training_provider" ? "Northline Academy" : "Sam Jones"}
               className="mt-1 h-10 rounded-[10px] border-white/15 bg-white/[0.04] text-white placeholder:text-white/30" />
           </div>
-          {type === "organisation" ? (
+          {type === "training_provider" ? (
             <div>
               <Label htmlFor="invite-website" className="text-white/75">Website (optional)</Label>
               <Input id="invite-website" value={website} onChange={(e) => setWebsite(e.target.value)}
@@ -802,7 +802,7 @@ function InviteButton() {
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>Close</Button>
           <Button
-            disabled={m.isPending || !email || (type === "organisation" && !fullName.trim())}
+            disabled={m.isPending || !email || (type === "training_provider" && !fullName.trim())}
             onClick={() => m.mutate()}
             className="bg-reps-orange text-white hover:bg-reps-orange-hover"
           >

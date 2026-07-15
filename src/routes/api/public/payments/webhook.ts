@@ -307,7 +307,7 @@ async function handleIdentityEvent(
       .maybeSingle();
     const proAny = pro as { account_type?: string | null } | null;
 
-    if (proAny?.account_type !== "organisation") {
+    if (proAny?.account_type !== "training_provider") {
       const { data: profile } = await supabaseAdmin
         .from("profiles")
         .select("full_name")

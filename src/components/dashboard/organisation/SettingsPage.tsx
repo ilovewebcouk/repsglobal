@@ -280,7 +280,7 @@ function AccountTab({ data }: { data: SettingsBundle }) {
   const [phone, setPhone] = React.useState(data.account.contact_phone ?? "");
   const [timezone, setTimezone] = React.useState(data.account.timezone);
   const [locale, setLocale] = React.useState(data.account.locale);
-  const isOrganisation = data.account.account_type === "organisation";
+  const isOrganisation = data.account.account_type === "training_provider";
 
   const [newEmail, setNewEmail] = React.useState("");
   const [emailLoading, setEmailLoading] = React.useState(false);

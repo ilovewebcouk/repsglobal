@@ -114,7 +114,7 @@ function VerificationCountBadge() {
     enabled: !!user,
   });
   const accountType = acctTypeQ.data?.accountType;
-  const isOrganisation = accountType === "organisation";
+  const isOrganisation = accountType === "training_provider";
 
   const trustQ = useQuery({
     queryKey: ["my-trust-state", queryScope],
@@ -346,7 +346,7 @@ function useIsOrganisation(): boolean {
     staleTime: 5 * 60_000,
     enabled: !!user,
   });
-  return data?.accountType === "organisation";
+  return data?.accountType === "training_provider";
 }
 
 function NavSectionGroup({ group, active }: { group: NavGroup; active: DashboardActive }) {
@@ -366,7 +366,7 @@ function NavSectionGroup({ group, active }: { group: NavGroup; active: Dashboard
             const isActive = pathname === item.to || item.label === active;
 
             // Website is gated behind the 3-pillar trust gate for individual
-            // pros. Training providers (account_type = 'organisation') get
+            // pros. Training providers (account_type = 'training_provider') get
             // Website unlocked by default — their website is part of the
             // provider directory offering, not a Verified-tier reward.
             if (item.label === "Website" && ready && !verified && !isOrganisation) {

@@ -139,7 +139,7 @@ function MemberPage() {
     staleTime: 30_000,
   });
 
-  const isProvider = snap.data?.account_type === "organisation";
+  const isProvider = snap.data?.account_type === "training_provider";
 
   return (
     <DashboardShell role="admin" active="Members" title={isProvider ? "Provider 360" : "Member 360"} subtitle="One workbench for every member action.">
@@ -265,7 +265,7 @@ function StickyHeader({ userId, snapshot, loading }: { userId: string; snapshot:
   const sub = subscription;
   const tierLbl = sub.tier_label;
   const status = sub.status;
-  const isProvider = account_type === "organisation";
+  const isProvider = account_type === "training_provider";
   const displayName = isProvider ? (full_name ?? "Unnamed provider") : (full_name ?? "Unnamed member");
   const publicHref = slug ? (isProvider ? `/t/${slug}` : `/c/${slug}`) : null;
   const isSuspended = isProvider && (snapshot.professional_suspended_at ?? null) != null;

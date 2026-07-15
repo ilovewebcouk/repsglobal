@@ -31,7 +31,7 @@ export const setTrainingProviderPlan = createServerFn({ method: "POST" })
     // Mark the professional record as an organisation account.
     const { error: profErr } = await supabaseAdmin
       .from("professionals")
-      .update({ account_type: "organisation" as any } as never)
+      .update({ account_type: "training_provider" as any } as never)
       .eq("id", data.professional_id);
     if (profErr) throw new Error(profErr.message);
 

@@ -137,9 +137,9 @@ export async function generateCertificatePdf(input: CertificatePdfInput): Promis
     .maybeSingle();
 
   if (!tpl) {
-    // Fallback: legacy code-drawn renderer
-    const { generateCertificatePdfLegacy } = await import("./pdf-legacy.server");
-    return await generateCertificatePdfLegacy(input);
+    throw new Error(
+      "No default certificate template found. Upload a default template in /admin/certificates → Templates before issuing certificates.",
+    );
   }
 
   return await renderCertificateWithTemplate(

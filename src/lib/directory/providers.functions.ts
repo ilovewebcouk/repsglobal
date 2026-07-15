@@ -50,7 +50,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
         { count: "exact" },
       )
       .in("id", visibleIds)
-      .eq("account_type", "organisation");
+      .eq("account_type", "training_provider");
 
     if (data.city) qb = qb.ilike("city", `%${data.city}%`);
     if (data.mode === "in_person") qb = qb.eq("in_person_available", true);

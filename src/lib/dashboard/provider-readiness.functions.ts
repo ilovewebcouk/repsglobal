@@ -92,7 +92,7 @@ export const getProviderReadiness = createServerFn({ method: "GET" })
       .select("id, account_type, identity_status, website_url, slug")
       .eq("id", userId)
       .maybeSingle();
-    if (!pro || pro.account_type !== "organisation") return null;
+    if (!pro || pro.account_type !== "training_provider") return null;
 
     const [
       { data: profile },

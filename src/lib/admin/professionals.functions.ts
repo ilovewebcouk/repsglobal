@@ -18,7 +18,7 @@ export type AdminProRow = {
   profession: string | null;
   professionSlug: string | null;
   plan: 'free' | 'verified' | 'pro' | 'studio' | 'training_provider';
-  accountType: 'individual' | 'organisation' | null;
+  accountType: 'individual' | 'training_provider' | null;
   planMrrPence: number;
   status: 'verified' | 'pending' | 'flagged' | 'suspended';
   /**
@@ -266,9 +266,9 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
 
     // Segment split: providers = organisations, professionals = everyone else.
     if (data.segment === 'providers') {
-      query = query.eq('account_type', 'organisation');
+      query = query.eq('account_type', 'training_provider');
     } else {
-      query = query.or('account_type.is.null,account_type.neq.organisation');
+      query = query.or('account_type.is.null,account_type.neq.training_provider');
     }
 
     switch (data.tab) {
@@ -377,18 +377,18 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
 
-    // Provider-only: course counts by organisation_id. Cheap 1-shot fetch.
+    // Provider-only: REPs course counts per provider. Cheap 1-shot fetch.
     const coursesCountByOrg = new Map<string, number>();
     if (data.segment === 'providers') {
-      const orgIds = prosFiltered.filter(p => p.account_type === 'organisation').map(p => p.id);
+      const orgIds = prosFiltered.filter(p => p.account_type === 'training_provider').map(p => p.id);
       if (orgIds.length) {
         const { data: courseRows } = await supabaseAdmin
-          .from('courses')
-          .select('organisation_id')
-          .in('organisation_id', orgIds);
-        for (const r of (courseRows ?? []) as Array<{ organisation_id: string | null }>) {
-          if (!r.organisation_id) continue;
-          coursesCountByOrg.set(r.organisation_id, (coursesCountByOrg.get(r.organisation_id) ?? 0) + 1);
+          .from('reps_courses')
+          .select('provider_id')
+          .in('provider_id', orgIds);
+        for (const r of (courseRows ?? []) as Array<{ provider_id: string | null }>) {
+          if (!r.provider_id) continue;
+          coursesCountByOrg.set(r.provider_id, (coursesCountByOrg.get(r.provider_id) ?? 0) + 1);
         }
       }
     }
@@ -472,7 +472,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         profession: p.primary_profession ? (PROFESSION_LABEL[p.primary_profession] ?? p.primary_profession) : null,
         professionSlug: p.primary_profession ?? null,
         plan: billing.plan,
-        accountType: ((p as { account_type?: string | null }).account_type as 'individual' | 'organisation' | null) ?? null,
+        accountType: ((p as { account_type?: string | null }).account_type as 'individual' | 'training_provider' | null) ?? null,
         planMrrPence: billing.planMrrPence,
         status,
         billingState: billing.billingState,
@@ -490,7 +490,7 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
         isTrial: billing.isTrial,
         trialDaysLeft: billing.trialDaysLeft,
         location: p.city ?? null,
-        coursesCount: p.account_type === 'organisation' ? (coursesCountByOrg.get(p.id) ?? 0) : null,
+        coursesCount: p.account_type === 'training_provider' ? (coursesCountByOrg.get(p.id) ?? 0) : null,
         verifiedProsLinked: null,
       };
     });
@@ -509,8 +509,8 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       const set = new Set(data.filters.plans);
       const wantsTP = set.has('training_provider');
       rows = rows.filter(r => {
-        if (wantsTP && r.accountType === 'organisation') return true;
-        return set.has(r.plan) && r.accountType !== 'organisation';
+        if (wantsTP && r.accountType === 'training_provider') return true;
+        return set.has(r.plan) && r.accountType !== 'training_provider';
       });
     }
     if (data.filters.hasAvatar === true) rows = rows.filter(r => !!r.avatarUrl);

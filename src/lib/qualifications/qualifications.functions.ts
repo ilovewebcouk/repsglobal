@@ -230,7 +230,7 @@ async function assertProviderHasTradingName(supabase: any, userId: string) {
     .select("account_type")
     .eq("id", userId)
     .maybeSingle();
-  if (pro?.account_type !== "organisation") return;
+  if (pro?.account_type !== "training_provider") return;
 
   const { data, error } = await supabase
     .from("profiles")
