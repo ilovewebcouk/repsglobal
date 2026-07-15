@@ -477,15 +477,27 @@ function TrainingProvidersPage() {
       <section>
         <div className="mx-auto grid max-w-[1320px] items-center gap-12 px-6 py-20 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-10 lg:py-28">
           <div className="relative">
-            <div className="overflow-hidden rounded-[22px] border border-reps-border bg-reps-panel">
-              <img
-                src={heroDocumentsAsset.url}
-                alt="Certificate of Achievement with a wax seal and a Learner Unit Summary with a QR verification code laid on a leather desk mat."
-                className="aspect-[4/3] w-full object-cover"
-                loading="lazy"
-                width={1600}
-                height={1200}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={certificateAsset.url}
+                  alt="REPs Certificate of Achievement, showing learner name, course title, certificate number and verification URL."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  loading="lazy"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
+              <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)]">
+                <img
+                  src={unitSummaryAsset.url}
+                  alt="REPs Learner Unit Summary listing the six completed units and QR verification code."
+                  className="aspect-[1/1.414] w-full object-cover"
+                  loading="lazy"
+                  width={1240}
+                  height={1754}
+                />
+              </div>
             </div>
             <div
               aria-hidden
