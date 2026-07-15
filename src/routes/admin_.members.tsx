@@ -145,7 +145,6 @@ const TABS: { label: string; value: AdminProTab }[] = [
   { label: "All", value: "all" },
   { label: "Verified", value: "verified" },
   { label: "Unverified", value: "pending" },
-  { label: "Invited", value: "invited" },
   { label: "Payment failed", value: "payment_failed" },
   { label: "Suspended", value: "suspended" },
 ];
@@ -919,18 +918,17 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
             </Tooltip>
           </td>
           <td className="px-3 py-3">
-            {row.isTrial ? (
-              <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 border border-emerald-400/30">
-                Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
-              </span>
-            ) : (
-              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass('training_provider')}`}>
-                {PLAN_LABEL.training_provider}
-              </span>
-            )}
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${planClass('training_provider')}`}>
+              {PLAN_LABEL.training_provider}
+            </span>
           </td>
           <td className="px-3 py-3">
             <div className="flex flex-wrap items-center gap-2">
+              {row.isTrial && (
+                <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                  Trial{row.trialDaysLeft != null ? ` · ${row.trialDaysLeft}d left` : ""}
+                </span>
+              )}
               {row.billingState !== "ok" && (
                 <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${billingClass(row.billingState)}`}>
                   {BILLING_LABEL[row.billingState]}
