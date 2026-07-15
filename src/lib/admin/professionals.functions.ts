@@ -49,6 +49,8 @@ export type AdminProRow = {
   location: string | null;
   coursesCount: number | null;
   verifiedProsLinked: number | null;
+  // Last time the user signed in (auth.users.last_sign_in_at). Null if never.
+  lastLoginAt: string | null;
 };
 
 
