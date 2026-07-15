@@ -54,7 +54,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Switch } from "@/components/ui/switch";
+
 
 // Clicking a pro's name in the list opens their Member 360 workbench.
 // The tooltip still surfaces the underlying user_id for ops/debugging,
@@ -113,7 +113,7 @@ import {
   listAdminProfessionals,
   setProfessionalSuspension,
   setProfessionalFlag,
-  setProfessionalPublished,
+  
   type AdminProRow,
   type AdminProTab,
   type AdminProSort,
@@ -823,7 +823,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
   const setTpFn = useServerFn(setTrainingProviderPlan);
-  const publishFn = useServerFn(setProfessionalPublished);
+  
   const [busy, setBusy] = React.useState(false);
   const [suspendOpen, setSuspendOpen] = React.useState(false);
 
@@ -871,15 +871,8 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const publishM = useMutation({
-    mutationFn: (is_published: boolean) =>
-      publishFn({ data: { professional_id: row.id, is_published } }),
-    onSuccess: (_res, is_published) => {
-      toast.success(is_published ? `${row.name} is now live` : `${row.name} hidden from public`);
-      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+
+
 
   // Cancel-sub and delete-member are owned by Member 360 (Phase 6 — single
   // destructive-action surface). The dropdown links there.
@@ -938,24 +931,6 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
                 {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
                 {STATUS_LABEL[row.status]}
               </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="inline-flex items-center gap-1.5 cursor-pointer select-none">
-                    <Switch
-                      checked={row.isPublished}
-                      disabled={publishM.isPending}
-                      onCheckedChange={(v) => publishM.mutate(!!v)}
-                      aria-label={row.isPublished ? "Page is live" : "Page is hidden"}
-                    />
-                    <span className={`text-[11px] font-semibold ${row.isPublished ? "text-emerald-300" : "text-white/45"}`}>
-                      {row.isPublished ? "Live" : "Hidden"}
-                    </span>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  {row.isPublished ? "Public page is visible — toggle off to hide" : "Public page is hidden — toggle on to make live"}
-                </TooltipContent>
-              </Tooltip>
             </div>
           </td>
           <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
