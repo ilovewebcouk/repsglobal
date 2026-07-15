@@ -113,7 +113,7 @@ import {
   listAdminProfessionals,
   setProfessionalSuspension,
   setProfessionalFlag,
-  setProfessionalPublished,
+  
   type AdminProRow,
   type AdminProTab,
   type AdminProSort,
