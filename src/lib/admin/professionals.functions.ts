@@ -210,7 +210,7 @@ export const getAdminProfessionalsKpis = createServerFn({ method: 'GET' })
     };
   });
 
-const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'payment_failed', 'renewal_due', 'recent', 'demos'] as const;
+const TAB_VALUES = ['all', 'verified', 'pending', 'flagged', 'suspended', 'payment_failed', 'renewal_due', 'recent', 'demos', 'invited'] as const;
 export type AdminProTab = typeof TAB_VALUES[number];
 export type AdminProSort = 'joined' | 'name' | 'plan' | 'rating' | 'clients' | 'mrr' | 'lifetimeValue' | 'renewalDate';
 export type SortDir = 'asc' | 'desc';
