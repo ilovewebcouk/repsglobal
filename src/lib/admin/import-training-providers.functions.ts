@@ -259,14 +259,25 @@ async function resolveCapPrice(stripe: any, cache: { id?: string }): Promise<str
     cache.id = existing.data[0].id;
     return cache.id!;
   }
-  // Fallback — create it against a product with the same lookup as the config.
+  // Fallback — create/rename the "REPs LMS" product with our internal metadata key.
   const productList = await stripe.products.list({ limit: 100 });
-  const product =
-    productList.data.find((p: any) => p.metadata?.reps_key === "training_provider") ??
-    (await stripe.products.create({
-      name: "REPs-endorsed Training Provider",
+  let product =
+    productList.data.find((p: any) => p.metadata?.reps_key === "training_provider") ?? null;
+  if (product) {
+    // Keep the customer-facing name aligned with current branding.
+    if (product.name !== "REPs LMS") {
+      try {
+        product = await stripe.products.update(product.id, { name: "REPs LMS" });
+      } catch {
+        // non-fatal — continue with existing product
+      }
+    }
+  } else {
+    product = await stripe.products.create({
+      name: "REPs LMS",
       metadata: { reps_key: "training_provider" },
-    }));
+    });
+  }
   const created = await stripe.prices.create({
     product: product.id,
     unit_amount: RENEWAL_CAP_PENCE,
