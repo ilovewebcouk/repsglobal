@@ -349,13 +349,12 @@ function HeroSection() {
             className="mt-8 flex flex-wrap gap-3 animate-fade-in"
             style={{ animationDelay: "260ms", animationDuration: "560ms" }}
           >
-            <Link
-              to="/signup"
-              search={{ type: "training_provider" }}
+            <a
+              href="/signup?type=training_provider"
               className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
             >
               Apply to become a provider <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
             <Link
               to="/contact"
               search={{ topic: "training-provider" }}
@@ -672,13 +671,12 @@ function PricingSection() {
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/signup"
-                search={{ type: "training_provider" }}
+              <a
+                href="/signup?type=training_provider"
                 className="mt-8 inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-6 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
               >
                 Apply to become a provider <ArrowRight className="h-4 w-4" />
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -760,13 +758,12 @@ function FinalActionSection() {
               Apply in a few minutes. Submit your first course evidence the same day.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link
-                to="/signup"
-                search={{ type: "training_provider" }}
+              <a
+                href="/signup?type=training_provider"
                 className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
               >
                 Apply to become a provider <ArrowRight className="h-4 w-4" />
-              </Link>
+              </a>
               <Link
                 to="/contact"
                 search={{ topic: "training-provider" }}
