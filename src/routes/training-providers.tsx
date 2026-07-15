@@ -413,9 +413,9 @@ function FeatureReelSection() {
     <section className="bg-reps-panel/30">
       <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
         <SectionHeader
-          eyebrow="Feature overview"
-          heading="Built for providers teaching real fitness skills."
-          lede="REPs endorsement covers the delivery formats fitness training providers actually run — classroom-based tutor delivery, practical instruction and studio-based group exercise formats."
+          eyebrow="What endorsement covers"
+          heading="Any subject. Any delivery format."
+          lede="REPs endorses any course a training provider writes in-house — whatever the subject, whatever the delivery format. The examples below show what endorsement covers in practice."
         />
 
 
@@ -473,11 +473,13 @@ function FeatureReelSection() {
 
             <div className="rounded-[18px] border border-reps-border bg-reps-ink/50 p-6">
               <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-                Course categories
+                Examples of what's been endorsed
               </div>
               <p className="mt-3 text-[15px] leading-relaxed text-white/75">
-                Personal training, group exercise, indoor cycling, strength and conditioning,
-                Pilates, yoga, nutrition and specialist CPD.
+                Personal training, kettlebell instruction, strength and conditioning, group
+                exercise, pre &amp; post-natal, indoor cycling, Pilates, yoga, nutrition intros,
+                sport-specific coaching, rehab-adjacent CPD, online-only formats — and any other
+                course a provider writes in-house.
               </p>
             </div>
           </div>
