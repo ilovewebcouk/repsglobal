@@ -484,15 +484,19 @@ export const importTrainingProviders = createServerFn({ method: "POST" })
           },
         });
 
+        const auditSuffix = rec.stripe_audit?.note ? ` ${rec.stripe_audit.note}` : "";
+        const emailSuffix = skipEmail ? " Email SKIPPED (no active subscription)." : "";
+        const capSuffix = rec.renewal_applied ? " Renewal price capped to £479." : "";
         if (existingId) {
           linked += 1;
           rec.action = "linked_existing";
-          rec.detail = "Existing REPs account linked to Stripe customer & announcement sent.";
+          rec.detail = `Existing REPs account linked to Stripe customer${skipEmail ? "" : " & announcement sent"}.${auditSuffix}${emailSuffix}${capSuffix}`;
         } else {
           created += 1;
           rec.action = "created";
-          rec.detail = "Auth user invited, portal seeded, announcement + password-set link sent.";
+          rec.detail = `Auth user invited, portal seeded${skipEmail ? "" : ", announcement + password-set link sent"}.${auditSuffix}${emailSuffix}${capSuffix}`;
         }
+
         rec.user_id = userId ?? undefined;
         rec.slug = slug ?? undefined;
         rec.invite_url = inviteUrl ?? undefined;
