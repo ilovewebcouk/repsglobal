@@ -232,7 +232,7 @@ export const updateMyDashboardProfile = createServerFn({ method: "POST" })
       (proCheck as { account_type?: string | null } | null)?.account_type ?? null;
     const existingSlug =
       (proCheck as { slug?: string | null } | null)?.slug ?? null;
-    const isOrganisation = existingAccountType === "organisation";
+    const isOrganisation = existingAccountType === "training_provider";
 
     // Build profile patch. Skip full_name when locked (DB trigger would
     // throw, but we'd rather not even attempt the update — gives a clean UX).

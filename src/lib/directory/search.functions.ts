@@ -126,7 +126,7 @@ export const searchProfessionals = createServerFn({ method: "GET" })
       .from("professionals")
       .select(COLS, { count: "exact" })
       .in("id", visibleIds)
-      .neq("account_type", "organisation");
+      .neq("account_type", "training_provider");
 
     // Hide churned profiles (stage 'lapsed' or 'dormant'). Admin still sees
     // them everywhere else; this is the public-facing register filter.
@@ -454,7 +454,7 @@ export const getCityProfessionCounts = createServerFn({ method: "GET" })
           .from("professionals")
           .select("id", { count: "exact", head: true })
           .eq("is_published", true)
-          .neq("account_type", "organisation")
+          .neq("account_type", "training_provider")
           .eq("primary_profession", slug)
           .ilike("city", `%${data.city}%`);
         return [slug, count ?? 0] as const;
@@ -477,7 +477,7 @@ export const getCityOnlineCount = createServerFn({ method: "GET" })
       .from("professionals")
       .select("id", { count: "exact", head: true })
       .eq("is_published", true)
-      .neq("account_type", "organisation")
+      .neq("account_type", "training_provider")
       .eq("online_available", true)
       .ilike("city", `%${data.city}%`);
 
@@ -494,7 +494,7 @@ export const getCityAvgRating = createServerFn({ method: "GET" })
       .from("professionals")
       .select("id")
       .eq("is_published", true)
-      .neq("account_type", "organisation")
+      .neq("account_type", "training_provider")
       .ilike("city", `%${data.city}%`);
 
     const ids = (pros ?? []).map((p) => p.id);

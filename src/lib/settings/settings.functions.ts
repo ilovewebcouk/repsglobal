@@ -16,7 +16,7 @@ export type SettingsBundle = {
     timezone: string;
     locale: string;
     legal_name_locked: boolean;
-    account_type: "individual" | "organisation";
+    account_type: "individual" | "training_provider";
     identity_status:
       | "none"
       | "pending"
@@ -117,8 +117,8 @@ export const getMySettings = createServerFn({ method: "GET" })
         timezone: (proRow.timezone as string | null) ?? "Europe/London",
         locale: (proRow.locale as string | null) ?? "en-GB",
         account_type:
-          ((proRow.account_type as string | null) === "organisation"
-            ? "organisation"
+          ((proRow.account_type as string | null) === "training_provider"
+            ? "training_provider"
             : "individual"),
         identity_status: idStatus,
         legal_name_locked: idStatus === "approved",

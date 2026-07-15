@@ -114,7 +114,7 @@ function VerificationCountBadge() {
     enabled: !!user,
   });
   const accountType = acctTypeQ.data?.accountType;
-  const isOrganisation = accountType === "organisation";
+  const isOrganisation = accountType === "training_provider";
 
   const trustQ = useQuery({
     queryKey: ["my-trust-state", queryScope],
@@ -346,7 +346,7 @@ function useIsOrganisation(): boolean {
     staleTime: 5 * 60_000,
     enabled: !!user,
   });
-  return data?.accountType === "organisation";
+  return data?.accountType === "training_provider";
 }
 
 function NavSectionGroup({ group, active }: { group: NavGroup; active: DashboardActive }) {

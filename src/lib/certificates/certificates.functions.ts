@@ -108,7 +108,7 @@ async function assertProviderIsOrganisation(supabase: any, userId: string) {
     .select("account_type, country")
     .eq("id", userId)
     .maybeSingle();
-  if (data?.account_type !== "organisation") {
+  if (data?.account_type !== "training_provider") {
     throw new Error(
       "Only training-provider accounts can manage students and certificates.",
     );
