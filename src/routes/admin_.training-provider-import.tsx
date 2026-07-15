@@ -489,6 +489,7 @@ function TrainingProviderImportPage() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </main>
   );
 
