@@ -163,10 +163,41 @@ function renewalPlanClass(a: RenewalAction): string {
   }
 }
 
+/**
+ * Prefilled CSV of the 24 existing paying training providers (loaded from
+ * `training_providers.numbers`). Admins can edit or clear this before running.
+ */
+const PREFILL_CSV = `email,stripe_customer_id,provider_name,website
+charlottesaunders2016@googlemail.com,cus_USZd4mtxruqXGB,Charlotte Saunders Limited,https://www.instagram.com/charlottesaundersx
+info@zerogravitypilatestraininglab.co.uk,cus_UR4xHlMGemLHra,Power Health and Fitness Ltd,http://www.zerogravitypilates.co.uk
+info@barrecertification.com,cus_UPnBAE1DZHYkVE,"Discover True You, Inc",https://barrecertification.com/
+lvlupfitness.pk@gmail.com,cus_TkvnOYI1KZNUOF,Level Up Fitness,https://www.lvl-upfitness.com
+gemmahuston@gmail.com,cus_TfD7d6sZaszeUp,Core By Gemma,https://www.corebygemma.com
+lara@bodybylara.co.uk,cus_TdcZq1I4VQbugF,Bodybylaracore LLP,https://www.bodybylaracore.com
+info@balancedconnection.co.uk,cus_TXRG9DBbqbSkAR,Core reformer ltd,http://www.balancedconnection.co.uk
+sally@mkreformed.co.uk,cus_TXR92RemhbCWCf,Mkhealthhub Solihull,https://mkreformed.co.uk
+rosarialp@hotmail.com,cus_THdW0JHN9IZudQ,Reformer Fitness Academy,https://se9pilates.co.uk/reformer-pilates-academy/
+rod@bodbyrod.com,cus_TFMUz1YB2TXguC,BodbyRod,http://www.bodbyrod.com
+askcoachx@gmail.com,cus_TAWjZ5R9oBzCUT,CoachX by ABS,https://www.abswellnessclub.com
+emma@emmanewhamfitness.com,cus_SYAiBukyrsTPaI,Pilates Union,https://www.pilatesunion.com/
+hussain.ali@aikaro.co.uk,cus_Rt0T8yUXoA6BCc,Aikaro Sports Academy,https://aikaro.co.uk/
+catie@barreseries.com,cus_TZzjq5oWd7pqz2,Barre Series,https://www.barreseries.com
+andy.gill@ethicsleisure.com,cus_RCSV3cBOpjNssb,Ethics Leisure,http://www.totalgymshop.co.uk
+jonathon@fitnesseducationonline.com.au,cus_T6az9cO6UUiEsL,Fitness Education Online,https://fitnesseducationonline.co.uk
+info@stormfitnessacademy.co.uk,cus_PKFfkS4BsmFl4b,Storm Fitness Academy,https://www.stormfitnessacademy.co.uk
+karwanmoh1995@gmail.com,cus_PM8uDZyZP6chGm,Fitness Global Academy,https://fitnessglobalacademy.com/
+nyamath@sifa-fitness.com,cus_Qc6ZavuZOp8MOp,SIFA,https://sifa-fitness.com/
+accounts@apeccourses.com,cus_QD5LgkMdgkTSsA,APEC Courses Ireland Ltd.,http://www.apeccourses.com
+claudia@bellydancebodymind.com,cus_PU0qwZD0uL8KNO,Dance Body Mind,https://www.bellydancebodymind.com/
+info@athleticum.co.uk,cus_QASk2eQofTc8eU,Athleticum (Morelli Enterprises Ltd),https://www.athleticum.co.uk/
+steele.williams@train.fitness,cus_Q8DO6LgkZUNc15,Campus Learning Limited,https://train.fitness
+info@diversetrainers.co.uk,cus_Pt0nD0Q4QyWsyL,Diverse Trainers,https://www.diversetrainers.co.uk/`;
+
 function TrainingProviderImportPage() {
   const run = useServerFn(importTrainingProviders);
   const preview = useServerFn(previewProviderPortalEmail);
-  const [csv, setCsv] = useState("");
+  const [csv, setCsv] = useState(PREFILL_CSV);
+
   const [busy, setBusy] = useState(false);
   const [environment, setEnvironment] = useState<"live" | "sandbox">("live");
   const [summary, setSummary] = useState<ImportSummary | null>(null);
