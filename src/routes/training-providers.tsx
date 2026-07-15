@@ -450,29 +450,30 @@ function FeatureReelSection() {
 
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.45fr_0.85fr]">
-          <figure className="group overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange">
-            <div className="relative aspect-[16/9] overflow-hidden bg-reps-ink">
+          <figure className="group flex flex-col overflow-hidden rounded-[18px] border border-reps-border bg-reps-panel transition-colors hover:border-reps-orange">
+            <div className="relative aspect-[16/10] overflow-hidden bg-reps-ink">
               <img
                 src={featured.image}
                 alt={featured.alt}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="h-full w-full object-cover object-[center_30%] transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
                 width={1600}
                 height={1200}
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-reps-ink/90 via-reps-ink/40 to-transparent p-6 lg:p-8">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
-                  {featured.eyebrow}
-                </span>
-                <h2 className="mt-2 font-display text-[26px] font-bold leading-tight text-white lg:text-[34px]">
-                  {featured.title}
-                </h2>
-                <p className="mt-2 max-w-[620px] text-[15px] leading-relaxed text-white/70">
-                  {featured.body}
-                </p>
-              </div>
             </div>
+            <figcaption className="p-6 lg:p-8">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
+                {featured.eyebrow}
+              </span>
+              <h2 className="mt-2 font-display text-[26px] font-bold leading-tight text-white lg:text-[32px]">
+                {featured.title}
+              </h2>
+              <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-white/70">
+                {featured.body}
+              </p>
+            </figcaption>
           </figure>
+
 
           <div className="grid gap-4">
             {sideItems.map((item) => (
@@ -845,35 +846,46 @@ function WhoThisIsForSection() {
 function CertificatePair() {
   return (
     <div className="relative">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.75)]">
-          <img
-            src={certificateAsset.url}
-            alt="REPs Certificate of Achievement showing learner name, course title, certificate number and verification URL."
-            className="aspect-[1/1.414] w-full object-cover"
-            loading="lazy"
-            width={1240}
-            height={1754}
-          />
+      <div className="relative overflow-hidden rounded-[22px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-6 shadow-[0_42px_110px_-50px_rgba(0,0,0,0.95)] lg:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,122,0,0.14),transparent_70%)]"
+        />
+        <div className="relative mb-5 flex items-center justify-between gap-4">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-reps-orange">
+            Issued from the provider portal
+          </div>
+          <div className="hidden items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10.5px] font-semibold text-emerald-300 sm:inline-flex">
+            <CheckCircle2 className="h-3 w-3" /> Publicly verifiable
+          </div>
         </div>
-        <div className="overflow-hidden rounded-[14px] border border-reps-border bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.75)]">
-          <img
-            src={unitSummaryAsset.url}
-            alt="REPs Learner Unit Summary listing completed course units and a verification QR code."
-            className="aspect-[1/1.414] w-full object-cover"
-            loading="lazy"
-            width={1240}
-            height={1754}
-          />
+        <div className="relative grid grid-cols-2 gap-4">
+          <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white shadow-[0_20px_50px_-24px_rgba(0,0,0,0.7)]">
+            <img
+              src={certificateAsset.url}
+              alt="REPs Certificate of Achievement showing learner name, course title, certificate number and verification URL."
+              className="aspect-[1/1.414] w-full object-contain"
+              loading="lazy"
+              width={1240}
+              height={1754}
+            />
+          </div>
+          <div className="overflow-hidden rounded-[12px] border border-reps-border bg-white shadow-[0_20px_50px_-24px_rgba(0,0,0,0.7)]">
+            <img
+              src={unitSummaryAsset.url}
+              alt="REPs Learner Unit Summary listing completed course units and a verification QR code."
+              className="aspect-[1/1.414] w-full object-contain"
+              loading="lazy"
+              width={1240}
+              height={1754}
+            />
+          </div>
         </div>
       </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(55%_55%_at_50%_85%,rgba(255,122,0,0.18),transparent_70%)] blur-2xl"
-      />
     </div>
   );
 }
+
 
 function MetricTile({ value, label }: { value: string; label: string }) {
   return (
