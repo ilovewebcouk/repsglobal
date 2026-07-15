@@ -24,17 +24,11 @@ import {
 
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
-import { HeroOverlay } from "@/components/marketing/HeroOverlay";
 import { MarketingHeroEyebrow } from "@/components/marketing/MarketingHeroEyebrow";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { MarketingFaq } from "@/components/marketing/MarketingFaq";
-import { FinalCta } from "@/components/marketing/FinalCta";
 
-import heroAsset from "@/assets/training-providers/hero.jpg.asset.json";
-import badgeAsset from "@/assets/training-providers/badge.png.asset.json";
-import certificateAsset from "@/assets/training-providers/certificate-of-achievement.jpg.asset.json";
-import unitSummaryAsset from "@/assets/training-providers/learner-unit-summary.jpg.asset.json";
 import { ORG_TIERS, CERTIFICATE_UNIT_PRICE_LABEL } from "@/lib/billing";
 
 const TIER = ORG_TIERS.training_provider;
@@ -91,27 +85,34 @@ export const Route = createFileRoute("/training-providers")({
         content:
           "Get your fitness courses REPs-endorsed. Unlimited course listings, provider website, endorsement badge, verified reviews and verifiable learner certificates. £479/year.",
       },
-      { property: "og:type", content: "website" },
-      { property: "og:title", content: "Become a REPs-endorsed Training Provider" },
+      {
+        property: "og:title",
+        content: "REPs-endorsed Training Provider Membership",
+      },
       {
         property: "og:description",
         content:
           "Unlimited REPs-endorsed course listings, provider website, endorsement badge, verified reviews, verifiable certificates. £479/year.",
       },
+      { property: "og:type", content: "product" },
       { property: "og:url", content: "https://repsuk.org/training-providers" },
       {
-        property: "og:image",
-        content: `https://repsuk.org${certificateAsset.url}`,
+        name: "twitter:card",
+        content: "summary_large_image",
       },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Become a REPs-endorsed Training Provider" },
+      {
+        name: "twitter:title",
+        content: "REPs-endorsed Training Provider Membership",
+      },
       {
         name: "twitter:description",
         content:
           "REPs-endorsed course listings, provider website, verified reviews and verifiable certificates. £479/year.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://repsuk.org/training-providers" }],
+    links: [
+      { rel: "canonical", href: "https://repsuk.org/training-providers" },
+    ],
     scripts: [
       {
         type: "application/ld+json",
@@ -153,12 +154,306 @@ export const Route = createFileRoute("/training-providers")({
 /* Sub-components                                                      */
 /* ------------------------------------------------------------------ */
 
+const NAV_ITEMS = [
+  { id: "overview", label: "Overview" },
+  { id: "certificates", label: "Certificates" },
+  { id: "trust", label: "Reviews & badge" },
+  { id: "pricing", label: "Pricing" },
+  { id: "endorsement", label: "Endorsement" },
+  { id: "faq", label: "FAQ" },
+];
+
+function SectionNav() {
+  return (
+    <nav
+      aria-label="On this page"
+      className="sticky top-14 z-30 hidden bg-reps-ink/85 backdrop-blur shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)] md:block"
+    >
+      <div className="mx-auto flex h-12 max-w-[1320px] items-center gap-1 overflow-x-auto px-6 lg:px-10">
+        {NAV_ITEMS.map((item) => (
+          <a
+            key={item.id}
+            href={`#${item.id}`}
+            className="rounded-[8px] px-3 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-reps-panel/60 hover:text-white"
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 function TrustChip({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-reps-border bg-reps-panel/70 px-3 py-1.5 text-[12px] font-medium text-white/80 backdrop-blur">
       <CheckCircle2 className="h-3.5 w-3.5 text-reps-orange" />
       {children}
     </span>
+  );
+}
+
+/**
+ * In-DOM REPs-endorsed digital badge. Semantic tokens only — no PNG.
+ * Replaces the previous flat "accredited" PNG mockup.
+ */
+function EndorsedBadge({ size = 160 }: { size?: number }) {
+  return (
+    <div
+      className="relative"
+      style={{ width: size, height: size }}
+      aria-label="REPs-endorsed digital badge"
+      role="img"
+    >
+      {/* Outer glow */}
+      <div className="absolute inset-0 rounded-full bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,122,0,0.28),transparent_72%)]" />
+      <svg viewBox="0 0 200 200" className="relative h-full w-full">
+        <defs>
+          <linearGradient id="rep-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#FF9A3C" />
+            <stop offset="1" stopColor="#E56A00" />
+          </linearGradient>
+          <path
+            id="rep-arc-top"
+            d="M 30 100 A 70 70 0 0 1 170 100"
+            fill="none"
+          />
+          <path
+            id="rep-arc-bottom"
+            d="M 34 108 A 66 66 0 0 0 166 108"
+            fill="none"
+          />
+        </defs>
+        {/* Ring */}
+        <circle
+          cx="100"
+          cy="100"
+          r="92"
+          fill="none"
+          stroke="url(#rep-ring)"
+          strokeWidth="2.5"
+        />
+        <circle
+          cx="100"
+          cy="100"
+          r="82"
+          fill="hsl(220 22% 8%)"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth="1"
+        />
+        {/* Arc text top */}
+        <text
+          fill="#FF7A00"
+          fontFamily="ui-sans-serif, system-ui, sans-serif"
+          fontSize="12.5"
+          fontWeight="700"
+          letterSpacing="3"
+        >
+          <textPath href="#rep-arc-top" startOffset="50%" textAnchor="middle">
+            REPS · ENDORSED
+          </textPath>
+        </text>
+        {/* Arc text bottom */}
+        <text
+          fill="rgba(255,255,255,0.55)"
+          fontFamily="ui-sans-serif, system-ui, sans-serif"
+          fontSize="9.5"
+          fontWeight="600"
+          letterSpacing="3.5"
+        >
+          <textPath
+            href="#rep-arc-bottom"
+            startOffset="50%"
+            textAnchor="middle"
+          >
+            TRAINING · PROVIDER
+          </textPath>
+        </text>
+        {/* Star separators */}
+        <g fill="#FF7A00">
+          <circle cx="42" cy="100" r="1.6" />
+          <circle cx="158" cy="100" r="1.6" />
+        </g>
+        {/* Centre monogram R */}
+        <text
+          x="100"
+          y="118"
+          textAnchor="middle"
+          fill="#FF7A00"
+          fontFamily="ui-sans-serif, system-ui, sans-serif"
+          fontSize="60"
+          fontWeight="800"
+          letterSpacing="-2"
+        >
+          R
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * Elegant placeholder for the Certificate of Achievement.
+ * Replaces the low-fidelity JPG. You upload the real design later
+ * and we swap this back to <img />.
+ */
+function CertificatePlaceholder() {
+  return (
+    <div className="relative overflow-hidden rounded-[18px] border border-reps-border bg-gradient-to-br from-[#12131a] to-[#0a0b10] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)]">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(65%_45%_at_50%_0%,rgba(255,122,0,0.10),transparent_70%)]"
+      />
+      {/* Watermark R */}
+      <div
+        aria-hidden
+        className="absolute inset-0 flex items-center justify-center opacity-[0.04]"
+      >
+        <span className="font-display text-[280px] font-bold leading-none text-white">
+          R
+        </span>
+      </div>
+      <div className="relative aspect-[1.414/1] p-8 lg:p-12">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-reps-orange">
+              <span className="font-display text-[15px] font-bold leading-none text-white">
+                R
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
+              REPs · Endorsed
+            </span>
+          </div>
+          <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+            Cert № 000-000
+          </span>
+        </div>
+
+        {/* Body */}
+        <div className="mt-8 lg:mt-12">
+          <p className="text-[10.5px] uppercase tracking-[0.28em] text-reps-orange">
+            Certificate of Achievement
+          </p>
+          <p className="mt-4 font-display text-[22px] font-bold leading-tight text-white lg:text-[28px]">
+            [ Learner name ]
+          </p>
+          <p className="mt-3 max-w-[520px] text-[12.5px] leading-relaxed text-white/55">
+            has successfully completed the REPs-endorsed course
+          </p>
+          <p className="mt-2 text-[15px] font-semibold text-white/90 lg:text-[17px]">
+            [ Course title · Level 3 ]
+          </p>
+        </div>
+
+        {/* Footer row */}
+        <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between lg:bottom-10 lg:left-12 lg:right-12">
+          <div>
+            <p className="text-[9.5px] uppercase tracking-[0.22em] text-white/35">
+              Issue date
+            </p>
+            <p className="mt-1 text-[12px] font-medium text-white/70">
+              — · — · ——
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9.5px] uppercase tracking-[0.22em] text-white/35">
+              Verify at
+            </p>
+            <p className="mt-1 text-[12px] font-medium text-reps-orange">
+              repsuk.org/verify/…
+            </p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-[6px] border border-white/15 bg-white/[0.03]">
+            <QrCode className="h-6 w-6 text-white/45" />
+          </div>
+        </div>
+      </div>
+      <div className="pointer-events-none absolute right-3 top-3 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-wider text-reps-orange">
+        Preview
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Placeholder for the Learner Unit Summary — companion document.
+ * Portrait-leaning, lists placeholder units.
+ */
+function UnitSummaryPlaceholder() {
+  const units = [
+    "Anatomy & physiology fundamentals",
+    "Programme design for hypertrophy",
+    "Nutrition for body composition",
+    "Client screening & consultation",
+    "Ethics, safeguarding & scope of practice",
+  ];
+  return (
+    <div className="relative overflow-hidden rounded-[18px] border border-reps-border bg-gradient-to-br from-[#12131a] to-[#0a0b10] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)]">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(65%_45%_at_50%_0%,rgba(255,122,0,0.08),transparent_70%)]"
+      />
+      <div className="relative p-8 lg:p-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-reps-orange">
+              <span className="font-display text-[13px] font-bold leading-none text-white">
+                R
+              </span>
+            </div>
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.24em] text-white/70">
+              Learner Unit Summary
+            </span>
+          </div>
+          <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+            Companion doc
+          </span>
+        </div>
+
+        <div className="mt-6 border-t border-reps-border/60 pt-5">
+          <p className="text-[10.5px] uppercase tracking-[0.22em] text-white/40">
+            Learner
+          </p>
+          <p className="mt-1 text-[15px] font-semibold text-white/90">
+            [ Learner name ]
+          </p>
+        </div>
+
+        <div className="mt-5">
+          <p className="text-[10.5px] uppercase tracking-[0.22em] text-white/40">
+            Units completed
+          </p>
+          <ul className="mt-3 divide-y divide-reps-border/50">
+            {units.map((u, i) => (
+              <li
+                key={u}
+                className="flex items-center justify-between gap-3 py-2.5"
+              >
+                <span className="flex items-center gap-2.5 text-[12.5px] text-white/80">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-reps-orange-border bg-reps-orange-soft text-[10px] font-semibold text-reps-orange">
+                    {i + 1}
+                  </span>
+                  {u}
+                </span>
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-reps-orange" />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between border-t border-reps-border/60 pt-4 text-[11px]">
+          <span className="text-white/45">Endorsed by REPs</span>
+          <span className="font-medium text-reps-orange">
+            repsuk.org/verify/…
+          </span>
+        </div>
+      </div>
+      <div className="pointer-events-none absolute right-3 top-3 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-wider text-reps-orange">
+        Preview
+      </div>
+    </div>
   );
 }
 
@@ -245,25 +540,25 @@ const ENDORSEMENT_STEPS = [
     n: "1",
     icon: ClipboardCheck,
     title: "Apply",
-    body: "Submit your organisation details and course information.",
+    body: "Submit your organisation details and course information through the provider portal.",
   },
   {
     n: "2",
     icon: BookOpen,
     title: "Submit courses",
-    body: "Upload syllabus, learning outcomes, assessment method, tutor evidence and delivery info.",
+    body: "Upload syllabus, learning outcomes, assessment method, tutor evidence and delivery format.",
   },
   {
     n: "3",
     icon: ShieldCheck,
     title: "REPs reviews",
-    body: "We assess course quality, assessment, tutor competence, insurance and wording.",
+    body: "REPs assesses course design, assessment, tutor competence, insurance and wording against endorsement standards.",
   },
   {
     n: "4",
     icon: BadgeCheck,
-    title: "Publish & issue certificates",
-    body: "Endorsed courses go live in the directory and you can issue verifiable certificates.",
+    title: "Publish & issue",
+    body: "Endorsed courses go live in the directory. Start issuing verifiable certificates the same day.",
   },
 ];
 
@@ -313,38 +608,49 @@ function TrainingProvidersPage() {
     <div className="min-h-screen bg-reps-ink text-reps-text">
       <PublicHeader variant="solid" />
 
-      {/* HERO */}
-      <section className="relative isolate overflow-hidden">
-        <img
-          src={heroAsset.url}
-          alt="Fitness education classroom with REPs-endorsed provider delivering a course"
-          width={1600}
-          height={1008}
-          className="absolute inset-0 h-full w-full object-cover object-center"
+      {/* ─── HERO ─────────────────────────────────────────────── */}
+      <section className="relative isolate overflow-hidden bg-reps-ink">
+        {/* Ambient glows */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(55% 65% at 12% 0%, rgba(255,122,0,0.18), transparent 70%), radial-gradient(50% 60% at 100% 30%, rgba(255,122,0,0.10), transparent 72%)",
+          }}
         />
-        <HeroOverlay copySide="left" />
-        <div className="relative mx-auto grid min-h-[720px] max-w-[1320px] items-start gap-10 px-6 pt-24 pb-20 lg:grid-cols-[1.05fr_1fr] lg:px-10 lg:pt-28 lg:pb-24">
-          <div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-reps-ink"
+        />
+
+        <div className="relative mx-auto grid max-w-[1320px] items-center gap-14 px-6 pb-20 pt-24 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:px-10 lg:pb-28 lg:pt-28">
+          {/* Copy */}
+          <div className="flex flex-col">
             <MarketingHeroEyebrow icon={GraduationCap} style={{ animationDelay: "0ms" }}>
               For training providers
             </MarketingHeroEyebrow>
+
             <h1
-              className="mt-5 animate-fade-in font-display text-[38px] font-bold leading-[1.05] text-white lg:text-[58px]"
+              className="mt-6 animate-fade-in font-display text-[38px] font-bold leading-[1.05] text-white lg:text-[64px]"
               style={{ animationDelay: "80ms" }}
             >
-              Get your fitness courses{" "}
+              Get your courses
+              <br />
               <span className="text-reps-orange">REPs-endorsed.</span>
             </h1>
+
             <p
-              className="mt-5 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/80"
+              className="mt-6 max-w-[560px] animate-fade-in text-[16px] leading-relaxed text-white/75"
               style={{ animationDelay: "180ms" }}
             >
               Submit unlimited courses for REPs endorsement, publish a verified
               provider website, issue verifiable learner certificates and get
               discovered by the professional fitness market — for £479/year.
             </p>
+
             <div
-              className="mt-7 flex animate-fade-in flex-wrap gap-3"
+              className="mt-8 flex animate-fade-in flex-wrap gap-3"
               style={{ animationDelay: "260ms" }}
             >
               <Link
@@ -355,70 +661,59 @@ function TrainingProvidersPage() {
                 Apply to become a REPs provider <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="#included"
+                href="#pricing"
                 className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-6 text-[14px] font-semibold text-white shadow-none hover:bg-white/10"
               >
                 See what's included
               </a>
             </div>
+
             <div
-              className="mt-6 flex animate-fade-in flex-wrap gap-2"
+              className="mt-8 flex animate-fade-in flex-wrap gap-2"
               style={{ animationDelay: "340ms" }}
             >
-              <TrustChip>£479/year</TrustChip>
+              <TrustChip>£479/year · annual</TrustChip>
               <TrustChip>Unlimited course listings</TrustChip>
               <TrustChip>Certificates £15 each</TrustChip>
-              <TrustChip>Built for fitness education</TrustChip>
             </div>
           </div>
 
-          {/* Hero certificate collage */}
-          <div className="relative hidden min-h-[520px] lg:block">
-            <div className="absolute right-[10%] top-[6%] w-[68%] rotate-[6deg] overflow-hidden rounded-[14px] border border-white/15 bg-white shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)]">
-              <img
-                src={unitSummaryAsset.url}
-                alt="Example REPs Learner Unit Summary showing completed units for a Level 3 course"
-                className="block h-auto w-full"
-              />
-            </div>
-            <div className="absolute left-0 top-[24%] w-[72%] -rotate-[4deg] overflow-hidden rounded-[14px] border border-white/15 bg-white shadow-[0_40px_80px_-20px_rgba(0,0,0,0.75)]">
-              <img
-                src={certificateAsset.url}
-                alt="Example REPs Certificate of Achievement issued by a REPs-endorsed training provider"
-                className="block h-auto w-full"
-              />
-            </div>
-            <div className="absolute bottom-[2%] right-[2%] w-[34%] max-w-[180px] drop-shadow-[0_20px_40px_rgba(255,122,0,0.25)]">
-              <img
-                src={badgeAsset.url}
-                alt="REPs-endorsed digital badge"
-                className="block h-auto w-full"
-              />
-            </div>
-          </div>
+          {/* Single certificate feature — no tilted collage */}
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute -inset-8 rounded-[32px] bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,122,0,0.16),transparent_72%)]"
+            />
+            <div className="relative animate-fade-in" style={{ animationDelay: "220ms" }}>
+              <CertificatePlaceholder />
 
-          {/* Mobile stacked visual */}
-          <div className="relative flex flex-col gap-4 lg:hidden">
-            <div className="overflow-hidden rounded-[14px] border border-white/15 bg-white shadow-2xl">
-              <img
-                src={certificateAsset.url}
-                alt="Example REPs Certificate of Achievement"
-                className="block h-auto w-full"
-              />
-            </div>
-            <div className="overflow-hidden rounded-[14px] border border-white/15 bg-white shadow-2xl">
-              <img
-                src={unitSummaryAsset.url}
-                alt="Example REPs Learner Unit Summary"
-                className="block h-auto w-full"
-              />
+              {/* Floating verified card */}
+              <div className="absolute -bottom-6 -left-6 hidden max-w-[260px] rounded-[16px] border border-reps-border bg-reps-panel/95 p-4 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)] backdrop-blur lg:block">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-500/15">
+                    <BadgeCheck className="h-4.5 w-4.5 text-emerald-300" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                      REPs-endorsed
+                    </p>
+                    <p className="mt-1 text-[12.5px] leading-snug text-white/75">
+                      Every certificate carries a public verification URL and
+                      QR code.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* WHAT'S INCLUDED */}
-      <section id="included" className="bg-reps-panel/20">
+      {/* ─── SECTION NAV (sticky) ─────────────────────────────── */}
+      <SectionNav />
+
+      {/* ─── WHAT'S INCLUDED ──────────────────────────────────── */}
+      <section id="overview" className="bg-reps-panel/20 scroll-mt-32">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="max-w-[760px]">
             <SectionEyebrow>What's included</SectionEyebrow>
@@ -439,65 +734,60 @@ function TrainingProvidersPage() {
         </div>
       </section>
 
-      {/* CERTIFICATE SHOWCASE */}
-      <section className="bg-reps-ink">
+      {/* ─── CERTIFICATE SHOWCASE ─────────────────────────────── */}
+      <section id="certificates" className="bg-reps-ink scroll-mt-32">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <div className="grid gap-14 lg:grid-cols-[1fr_1.05fr] lg:items-center">
+          <div className="max-w-[760px]">
+            <SectionEyebrow>Certificate system</SectionEyebrow>
+            <SectionHeading className="mt-3">
+              Issue certificates learners can verify.
+            </SectionHeading>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+              Every issued certificate includes a Certificate of Achievement,
+              Learner Unit Summary, unique certificate number, REPs course
+              number and public verification URL.
+            </p>
+          </div>
+
+          {/* Single-column feature — one big certificate, then companion doc + copy */}
+          <div className="mt-12 grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-start">
             <div>
-              <SectionEyebrow>Certificate system</SectionEyebrow>
-              <SectionHeading className="mt-3">
-                Issue certificates learners can verify.
-              </SectionHeading>
-              <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-                Every issued certificate includes a Certificate of Achievement,
-                Learner Unit Summary, unique certificate number, REPs course
-                number and public verification URL.
+              <CertificatePlaceholder />
+              <p className="mt-4 text-center text-[11.5px] uppercase tracking-[0.18em] text-white/45">
+                Example REPs Certificate of Achievement · design placeholder
               </p>
-              <ul className="mt-7 space-y-3 text-[14.5px] text-white/85">
-                {CERT_POINTS.map(({ icon: Icon, text }) => (
-                  <li key={text} className="flex items-start gap-2">
-                    <Icon className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8 rounded-[14px] border border-reps-border bg-reps-panel/40 p-5">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-reps-orange" />
-                  <p className="text-[13.5px] leading-relaxed text-white/75">
-                    This certificate confirms completion of a provider-issued
-                    course endorsed by REPs. It is not an Ofqual-regulated
-                    qualification unless explicitly stated.
-                  </p>
+            </div>
+            <div className="flex flex-col gap-8">
+              <UnitSummaryPlaceholder />
+              <div className="rounded-[18px] border border-reps-border bg-reps-panel/40 p-7">
+                <h3 className="font-display text-[18px] font-bold text-white">
+                  Every certificate includes
+                </h3>
+                <ul className="mt-4 space-y-3 text-[14px] text-white/85">
+                  {CERT_POINTS.map(({ icon: Icon, text }) => (
+                    <li key={text} className="flex items-start gap-2.5">
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-5 rounded-[10px] border border-reps-border bg-reps-ink p-4">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
+                    <p className="text-[12.5px] leading-relaxed text-white/70">
+                      REPs certificates confirm completion of a provider-issued
+                      course endorsed by REPs. They are not Ofqual-regulated
+                      qualifications unless explicitly stated.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Overlapping certificate mocks */}
-            <div className="relative min-h-[520px] lg:min-h-[640px]">
-              <div className="absolute right-0 top-0 w-[78%] rotate-[4deg] overflow-hidden rounded-[14px] border border-white/15 bg-white shadow-[0_40px_80px_-25px_rgba(0,0,0,0.7)]">
-                <img
-                  src={unitSummaryAsset.url}
-                  alt="REPs Learner Unit Summary listing the completed units on a REPs-endorsed course"
-                  className="block h-auto w-full"
-                />
-              </div>
-              <div className="absolute bottom-0 left-0 w-[80%] -rotate-[3deg] overflow-hidden rounded-[14px] border border-white/15 bg-white shadow-[0_40px_80px_-20px_rgba(0,0,0,0.75)]">
-                <img
-                  src={certificateAsset.url}
-                  alt="REPs Certificate of Achievement issued by a REPs-endorsed training provider"
-                  className="block h-auto w-full"
-                />
-              </div>
-            </div>
           </div>
-          <p className="mt-10 text-center text-[12.5px] uppercase tracking-[0.18em] text-white/45">
-            Example REPs-issued Certificate of Achievement and Learner Unit Summary.
-          </p>
         </div>
       </section>
 
-      {/* PROVIDER WEBSITE */}
+      {/* ─── PROVIDER WEBSITE ─────────────────────────────────── */}
       <section className="bg-reps-panel/15">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="grid gap-14 lg:grid-cols-[1fr_1.15fr] lg:items-center">
@@ -514,12 +804,12 @@ function TrainingProvidersPage() {
               <ul className="mt-6 space-y-3 text-[14.5px] text-white/80">
                 {[
                   "Provider name, logo and about section",
-                  "Digital REPs-endorsed badge and course listings",
+                  "REPs-endorsed badge and course listings",
                   "Verified learner reviews and star rating",
                   "Enquiry CTA that routes leads to your inbox",
                   "Certificate verification trust markers",
                 ].map((line) => (
-                  <li key={line} className="flex items-start gap-2">
+                  <li key={line} className="flex items-start gap-2.5">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
                     <span>{line}</span>
                   </li>
@@ -531,8 +821,8 @@ function TrainingProvidersPage() {
         </div>
       </section>
 
-      {/* REVIEWS & BADGE TRUST */}
-      <section className="bg-reps-ink">
+      {/* ─── REVIEWS & BADGE ──────────────────────────────────── */}
+      <section id="trust" className="bg-reps-ink scroll-mt-32">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="grid gap-14 lg:grid-cols-[1.1fr_1fr] lg:items-center">
             <div className="order-2 lg:order-1">
@@ -551,21 +841,16 @@ function TrainingProvidersPage() {
                 display them on your REPs provider website or your own external
                 website using the provider review widget.
               </p>
-              <p className="mt-3 text-[14px] leading-relaxed text-white/60">
-                Preview of the provider review widget and endorsement badge —
-                part of the REPs provider trust assets and review collection
-                and display toolkit.
-              </p>
               <ul className="mt-6 space-y-3 text-[14.5px] text-white/85">
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <Star className="mt-0.5 h-4 w-4 shrink-0 fill-reps-orange text-reps-orange" />
                   <span>Only learners who received a certificate can review</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
                   <span>Embeddable score badge and full review widget</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-reps-orange" />
                   <span>Reply publicly and flag issues for REPs moderation</span>
                 </li>
@@ -575,74 +860,8 @@ function TrainingProvidersPage() {
         </div>
       </section>
 
-      {/* HOW ENDORSEMENT WORKS */}
-      <section className="bg-reps-panel/15">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <div className="max-w-[760px]">
-            <SectionEyebrow>How endorsement works</SectionEyebrow>
-            <SectionHeading className="mt-3">
-              From application to issued certificates.
-            </SectionHeading>
-          </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {ENDORSEMENT_STEPS.map(({ n, icon: Icon, title, body }) => (
-              <div
-                key={n}
-                className="relative rounded-[18px] border border-reps-border bg-reps-panel/40 p-7"
-              >
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-reps-orange text-[14px] font-bold text-white">
-                  {n}
-                </span>
-                <Icon className="mt-6 h-6 w-6 text-reps-orange" />
-                <h3 className="mt-4 font-display text-[17px] font-bold text-white">
-                  {title}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">
-                  {body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ENDORSEMENT STANDARDS */}
-      <section className="bg-reps-ink">
-        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
-          <div className="max-w-[760px]">
-            <SectionEyebrow>Endorsement standards</SectionEyebrow>
-            <SectionHeading className="mt-3">
-              Reviewed against REPs course standards.
-            </SectionHeading>
-            <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
-              Endorsement is a quality review — not a pay-to-badge scheme.
-              Every submitted course is assessed against four core standards
-              before it can carry the REPs-endorsed mark.
-            </p>
-          </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {STANDARDS.map(({ icon: Icon, title, body }) => (
-              <div
-                key={title}
-                className="rounded-[18px] border border-reps-border bg-reps-panel/40 p-7"
-              >
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft">
-                  <Icon className="h-5 w-5 text-reps-orange" />
-                </div>
-                <h3 className="mt-5 font-display text-[17px] font-bold text-white">
-                  {title}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">
-                  {body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="bg-reps-panel/20">
+      {/* ─── PRICING (moved up to ~55% of page) ───────────────── */}
+      <section id="pricing" className="bg-reps-panel/25 scroll-mt-32">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="mx-auto max-w-[720px] text-center">
             <SectionEyebrow>Pricing</SectionEyebrow>
@@ -655,7 +874,7 @@ function TrainingProvidersPage() {
             <div className="relative overflow-hidden rounded-[22px] border border-reps-orange-border bg-reps-panel/70 p-10 lg:p-12">
               <div
                 aria-hidden
-                className="absolute inset-0 bg-[radial-gradient(50%_50%_at_100%_0%,rgba(255,122,0,0.18),transparent_70%)]"
+                className="absolute inset-0 bg-[radial-gradient(50%_50%_at_100%_0%,rgba(255,122,0,0.22),transparent_70%)]"
               />
               <div className="relative">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-reps-orange px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white">
@@ -758,8 +977,77 @@ function TrainingProvidersPage() {
         </div>
       </section>
 
-      {/* COMPARISON */}
-      <section className="bg-reps-ink">
+      {/* ─── HOW ENDORSEMENT WORKS + STANDARDS (vertical timeline) ── */}
+      <section id="endorsement" className="bg-reps-ink scroll-mt-32">
+        <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
+          <div className="max-w-[760px]">
+            <SectionEyebrow>How endorsement works</SectionEyebrow>
+            <SectionHeading className="mt-3">
+              From application to issued certificates.
+            </SectionHeading>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-white/70">
+              Endorsement is a quality review — not a pay-to-badge scheme.
+              Every submitted course is assessed against four core standards
+              before it can carry the REPs-endorsed mark.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_1fr]">
+            {/* Vertical timeline */}
+            <ol className="relative border-l border-reps-border/70 pl-6">
+              {ENDORSEMENT_STEPS.map(({ n, icon: Icon, title, body }) => (
+                <li key={n} className="relative pb-8 last:pb-0">
+                  <span className="absolute -left-[34px] flex h-9 w-9 items-center justify-center rounded-full border border-reps-orange-border bg-reps-orange text-[13px] font-bold text-white">
+                    {n}
+                  </span>
+                  <div className="rounded-[16px] border border-reps-border bg-reps-panel/40 p-6">
+                    <div className="flex items-center gap-2.5">
+                      <Icon className="h-4.5 w-4.5 text-reps-orange" />
+                      <h3 className="font-display text-[17px] font-bold text-white">
+                        {title}
+                      </h3>
+                    </div>
+                    <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">
+                      {body}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {/* Standards panel */}
+            <div className="rounded-[22px] border border-reps-border bg-reps-panel/30 p-8 lg:p-10">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-orange">
+                Endorsement standards
+              </span>
+              <h3 className="mt-3 font-display text-[22px] font-bold leading-tight text-white lg:text-[26px]">
+                Reviewed against four core standards.
+              </h3>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {STANDARDS.map(({ icon: Icon, title, body }) => (
+                  <div
+                    key={title}
+                    className="rounded-[14px] border border-reps-border bg-reps-ink/60 p-5"
+                  >
+                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-[8px] border border-reps-orange-border bg-reps-orange-soft">
+                      <Icon className="h-4 w-4 text-reps-orange" />
+                    </div>
+                    <h4 className="mt-4 font-display text-[15px] font-bold text-white">
+                      {title}
+                    </h4>
+                    <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/65">
+                      {body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── COMPARISON ───────────────────────────────────────── */}
+      <section className="bg-reps-panel/15">
         <div className="mx-auto max-w-[1320px] px-6 py-20 lg:px-10 lg:py-28">
           <div className="max-w-[760px]">
             <SectionEyebrow>How REPs compares</SectionEyebrow>
@@ -826,27 +1114,57 @@ function TrainingProvidersPage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <MarketingFaq
-        heading="Frequently asked questions."
-        items={FAQ_ITEMS.map((item) => ({ q: item.q, a: item.a }))}
-      />
+      {/* ─── FAQ ──────────────────────────────────────────────── */}
+      <div id="faq" className="scroll-mt-32">
+        <MarketingFaq
+          heading="Frequently asked questions."
+          items={FAQ_ITEMS.map((item) => ({ q: item.q, a: item.a }))}
+        />
+      </div>
 
-      {/* FINAL CTA */}
-      <FinalCta
-        eyebrow={{ icon: Award, label: "Applications open" }}
-        heading="Get your fitness courses"
-        headingAccent="REPs-endorsed."
-        lede="Apply for Training Provider membership and start submitting your courses for REPs review."
-        primary={{
-          to: "/signup",
-          label: "Apply to become a REPs provider",
-        }}
-        secondary={{
-          to: "/contact",
-          label: "Talk to us",
-        }}
-      />
+      {/* ─── FINAL CTA (inline, carries search params) ────────── */}
+      <section>
+        <div className="mx-auto max-w-[1320px] px-6 py-24 lg:px-10 lg:py-28">
+          <div className="relative overflow-hidden rounded-[24px] border border-reps-border bg-gradient-to-br from-reps-panel via-reps-panel to-reps-ink p-10 text-center lg:p-16">
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_0%,rgba(255,122,0,0.20),transparent_70%)]"
+            />
+            <div className="relative">
+              <span className="inline-flex items-center gap-2 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-reps-orange">
+                <Award className="h-3 w-3" />
+                Applications open
+              </span>
+              <h2 className="mt-5 font-display text-[32px] font-bold leading-tight text-white lg:text-[44px]">
+                Get your fitness courses
+                <br />
+                <span className="text-reps-orange">REPs-endorsed.</span>
+              </h2>
+              <p className="mx-auto mt-3 max-w-[540px] text-[15px] text-white/70">
+                Apply for Training Provider membership and start submitting
+                your courses for REPs review.
+              </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <Link
+                  to="/signup"
+                  search={{ type: "training_provider" } as never}
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
+                >
+                  Apply to become a REPs provider{" "}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/contact"
+                  search={{ topic: "training-provider" } as never}
+                  className="inline-flex h-12 items-center rounded-[10px] border border-white/25 px-7 text-[14px] font-semibold text-white shadow-none hover:bg-white/10"
+                >
+                  Talk to us
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <PublicFooter />
     </div>
@@ -891,7 +1209,7 @@ function ProviderPageMock() {
                   />
                 ))}
               </div>
-              <span>4.8 · 128 reviews</span>
+              <span>Example provider preview</span>
             </div>
           </div>
         </div>
@@ -931,8 +1249,8 @@ function ProviderPageMock() {
 
 function ReviewsWidgetMock() {
   const reviews = [
-    { name: "Amelia R.", body: "Excellent course and support.", stars: 5 },
-    { name: "Jordan T.", body: "Great learning experience.", stars: 5 },
+    { name: "Learner A", body: "Course structure and support were excellent.", stars: 5 },
+    { name: "Learner B", body: "Great tutor and clear assessment.", stars: 5 },
   ];
   return (
     <div className="w-full rounded-[18px] border border-reps-border bg-reps-panel/50 p-6 shadow-none">
@@ -941,21 +1259,8 @@ function ReviewsWidgetMock() {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
             REPs verified reviews
           </p>
-          <div className="mt-1 flex items-center gap-2">
-            <span className="font-display text-[26px] font-bold text-white">
-              4.8
-            </span>
-            <div className="flex gap-0.5">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Star
-                  key={i}
-                  className="h-3.5 w-3.5 fill-reps-orange text-reps-orange"
-                />
-              ))}
-            </div>
-          </div>
-          <p className="mt-1 text-[11.5px] text-white/60">
-            Based on 128 verified reviews
+          <p className="mt-2 text-[12px] text-white/55">
+            Preview · your rating appears once learners review
           </p>
         </div>
         <div className="flex h-11 w-11 items-center justify-center rounded-[10px] border border-reps-orange-border bg-reps-orange-soft">
@@ -980,7 +1285,7 @@ function ReviewsWidgetMock() {
               <span className="text-[11px] font-semibold text-white/70">
                 {r.name}
               </span>
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300">
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300">
                 Verified
               </span>
             </div>
@@ -1004,24 +1309,17 @@ function ReviewsWidgetMock() {
 
 function BadgeShowcase() {
   return (
-    <div className="relative flex items-center justify-center rounded-[18px] border border-reps-border bg-reps-panel/40 p-6">
-      <div className="absolute inset-0 rounded-[18px] bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,122,0,0.18),transparent_72%)]" />
-      <div className="relative flex flex-col items-center gap-3 text-center">
-        <img
-          src={badgeAsset.url}
-          alt="REPs-endorsed digital badge"
-          className="h-auto w-full max-w-[180px] drop-shadow-[0_20px_40px_rgba(255,122,0,0.25)]"
-        />
-        <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-white/70">
-          Embed our badge on your website
-        </p>
-        <p className="text-[11.5px] text-white/55">
-          Includes a live link back to your REPs profile.
-        </p>
-        <span className="mt-1 text-[11.5px] font-semibold text-reps-orange">
-          Download badge
-        </span>
-      </div>
+    <div className="relative flex flex-col items-center justify-center gap-4 rounded-[18px] border border-reps-border bg-reps-panel/40 p-6 text-center">
+      <EndorsedBadge size={168} />
+      <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-white/70">
+        Embed the badge on your website
+      </p>
+      <p className="text-[11.5px] text-white/55">
+        Every badge links back to your live REPs provider profile.
+      </p>
+      <span className="mt-1 text-[11.5px] font-semibold text-reps-orange">
+        Download badge
+      </span>
     </div>
   );
 }
