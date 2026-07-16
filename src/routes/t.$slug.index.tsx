@@ -363,7 +363,7 @@ function ProviderProfilePage() {
               <h1 className="mt-2 font-display text-[36px] font-bold leading-[1.05] tracking-[-0.01em] text-black lg:text-[46px]">
                 {providerName}
               </h1>
-              <p className="mt-1.5 text-[15px] text-black/60">Training Provider · Ofqual-regulated</p>
+              <p className="mt-1.5 text-[15px] text-black/60">Training Provider</p>
 
               <div className="mt-4 flex flex-col gap-2 text-[14px] text-black/65">
                 <span className="inline-flex items-center gap-1.5">
