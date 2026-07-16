@@ -52,7 +52,7 @@ export async function ensureUserFromPendingSignup(
     email: r.email,
     password: r.password,
     email_confirm: true,
-    user_metadata: { full_name: r.full_name, signup_kind: "professional", account_type: "pro", intended_tier: r.tier, intended_period: r.period,  },
+    user_metadata: { full_name: r.full_name, signup_kind: "professional", account_type: r.tier === "training_provider" ? "training_provider" : "pro", intended_tier: r.tier, intended_period: r.period,  },
   });
   if (createErr || !created?.user) {
     throw new Error(createErr?.message ?? "Failed to create user");

@@ -24,7 +24,8 @@ import { lovable } from "@/integrations/lovable";
 type SignupSearch = {
   // URL slug for the Core tier is "core" (legacy "verified" still accepted
   // and normalized below for back-compat with old emails/bookmarks).
-  tier?: "core" | "pro";
+  // Training-provider slug is "training-provider" (kebab) in the URL.
+  tier?: "core" | "pro" | "training_provider";
   period?: "monthly" | "annual";
   next?: "checkout";
 };
@@ -106,23 +107,57 @@ const PLAN_SUMMARIES: Record<
       ],
     },
   },
+  training_provider: {
+    annual: {
+      name: "REPs LMS",
+      tagline: "Independent endorsement for the courses you deliver.",
+      price: "£479",
+      unit: "/year",
+      meta: "£479 billed yearly",
+      highlights: [
+        "Independent course review by REPs",
+        "Public provider website + endorsement badge",
+        "Verified learner reviews",
+        "Certificates issued at £15 per learner",
+      ],
+    },
+    monthly: {
+      name: "REPs LMS",
+      tagline: "Independent endorsement for the courses you deliver.",
+      price: "£479",
+      unit: "/year",
+      meta: "£479 billed yearly",
+      highlights: [
+        "Independent course review by REPs",
+        "Public provider website + endorsement badge",
+        "Verified learner reviews",
+        "Certificates issued at £15 per learner",
+      ],
+    },
+  },
 };
 
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (search: Record<string, unknown>): SignupSearch => {
-    // Back-compat: accept legacy `?tier=verified` and normalize to `core`.
-    const rawTier = search.tier === "verified" ? "core" : (search.tier as SignupSearch["tier"]);
+    // Back-compat: accept legacy `?tier=verified` -> `core`, and accept
+    // both `training-provider` (URL kebab slug) and `training_provider`.
+    let rawTier = search.tier as string | undefined;
+    if (rawTier === "verified") rawTier = "core";
+    if (rawTier === "training-provider") rawTier = "training_provider";
     const requestedPeriod = search.period as SignupSearch["period"];
     const next = search.next as SignupSearch["next"];
-    const validTier = ["core", "pro"].includes(rawTier as string) ? rawTier : undefined;
-    const period = validTier === "core"
-      ? "annual"
-      : validTier === "pro" && (requestedPeriod === "monthly" || requestedPeriod === "annual")
-        ? requestedPeriod
-        : validTier === "pro"
-          ? "monthly"
-          : undefined;
+    const validTier = ["core", "pro", "training_provider"].includes(rawTier as string)
+      ? (rawTier as SignupSearch["tier"])
+      : undefined;
+    const period =
+      validTier === "core" || validTier === "training_provider"
+        ? "annual"
+        : validTier === "pro" && (requestedPeriod === "monthly" || requestedPeriod === "annual")
+          ? requestedPeriod
+          : validTier === "pro"
+            ? "monthly"
+            : undefined;
     return {
       tier: validTier,
       period: requestedPeriod === period ? requestedPeriod : period,
@@ -230,7 +265,7 @@ function SignupPage() {
     search.next === "checkout" && !!search.tier && !!search.period;
 
   const ctaLabel = wantsCheckout
-    ? search.tier === "core"
+    ? search.tier === "core" || search.tier === "training_provider"
       ? "Continue to payment"
       : "Continue to secure checkout"
     : "Create account";
@@ -268,7 +303,7 @@ function SignupPage() {
           email: email.trim(),
           password,
           // Internal billing enum still uses "verified" for the Core tier.
-          tier: search.tier === "core" ? "verified" : search.tier,
+          tier: search.tier === "core" ? "verified" : (search.tier as "pro" | "training_provider"),
           period: search.period,
           environment,
         },
