@@ -133,7 +133,7 @@ export function ProviderFaqsSection() {
               className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:cursor-not-allowed disabled:opacity-60"
               title={
                 atCap
-                  ? `You've hit the ${maxRows}-FAQ cap. Delete or hide one first.`
+                  ? "You've hit the FAQ cap. Delete one first."
                   : undefined
               }
             >
