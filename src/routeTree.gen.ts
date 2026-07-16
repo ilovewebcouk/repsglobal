@@ -48,6 +48,7 @@ import { Route as VerifyIndexRouteImport } from './routes/verify.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as HelpIndexRouteImport } from './routes/help.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
+import { Route as TrainingProvidersApplyRouteImport } from './routes/training-providers.apply'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as RenewCancelledRouteImport } from './routes/renew.cancelled'
@@ -383,6 +384,11 @@ const VerifyTokenRoute = VerifyTokenRouteImport.update({
   id: '/verify/$token',
   path: '/verify/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TrainingProvidersApplyRoute = TrainingProvidersApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
+  getParentRoute: () => TrainingProvidersRoute,
 } as any)
 const TSlugRoute = TSlugRouteImport.update({
   id: '/t/$slug',
@@ -1179,7 +1185,7 @@ export interface FileRoutesByFullPath {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
-  '/training-providers': typeof TrainingProvidersRoute
+  '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1245,6 +1251,7 @@ export interface FileRoutesByFullPath {
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/t/$slug': typeof TSlugRouteWithChildren
+  '/training-providers/apply': typeof TrainingProvidersApplyRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
@@ -1357,7 +1364,7 @@ export interface FileRoutesByTo {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
-  '/training-providers': typeof TrainingProvidersRoute
+  '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1419,6 +1426,7 @@ export interface FileRoutesByTo {
   '/renew/$token': typeof RenewTokenRoute
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
+  '/training-providers/apply': typeof TrainingProvidersApplyRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/help': typeof HelpIndexRoute
   '/resources': typeof ResourcesIndexRoute
@@ -1533,7 +1541,7 @@ export interface FileRoutesById {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
-  '/training-providers': typeof TrainingProvidersRoute
+  '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
@@ -1600,6 +1608,7 @@ export interface FileRoutesById {
   '/renew/cancelled': typeof RenewCancelledRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/t/$slug': typeof TSlugRouteWithChildren
+  '/training-providers/apply': typeof TrainingProvidersApplyRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
@@ -1782,6 +1791,7 @@ export interface FileRouteTypes {
     | '/renew/cancelled'
     | '/resources/$slug'
     | '/t/$slug'
+    | '/training-providers/apply'
     | '/verify/$token'
     | '/help/'
     | '/resources/'
@@ -1956,6 +1966,7 @@ export interface FileRouteTypes {
     | '/renew/$token'
     | '/renew/cancelled'
     | '/resources/$slug'
+    | '/training-providers/apply'
     | '/verify/$token'
     | '/help'
     | '/resources'
@@ -2136,6 +2147,7 @@ export interface FileRouteTypes {
     | '/renew/cancelled'
     | '/resources/$slug'
     | '/t/$slug'
+    | '/training-providers/apply'
     | '/verify/$token'
     | '/help/'
     | '/resources/'
@@ -2252,7 +2264,7 @@ export interface RootRouteChildren {
   SpecialismsRoute: typeof SpecialismsRoute
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
-  TrainingProvidersRoute: typeof TrainingProvidersRoute
+  TrainingProvidersRoute: typeof TrainingProvidersRouteWithChildren
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -2626,6 +2638,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/verify/$token'
       preLoaderRoute: typeof VerifyTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/training-providers/apply': {
+      id: '/training-providers/apply'
+      path: '/apply'
+      fullPath: '/training-providers/apply'
+      preLoaderRoute: typeof TrainingProvidersApplyRouteImport
+      parentRoute: typeof TrainingProvidersRoute
     }
     '/t/$slug': {
       id: '/t/$slug'
@@ -3813,6 +3832,17 @@ const HelpRouteChildren: HelpRouteChildren = {
 
 const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
 
+interface TrainingProvidersRouteChildren {
+  TrainingProvidersApplyRoute: typeof TrainingProvidersApplyRoute
+}
+
+const TrainingProvidersRouteChildren: TrainingProvidersRouteChildren = {
+  TrainingProvidersApplyRoute: TrainingProvidersApplyRoute,
+}
+
+const TrainingProvidersRouteWithChildren =
+  TrainingProvidersRoute._addFileChildren(TrainingProvidersRouteChildren)
+
 interface AdminBillingRouteChildren {
   AdminBillingDisputesDisputeIdRoute: typeof AdminBillingDisputesDisputeIdRoute
 }
@@ -3925,7 +3955,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpecialismsRoute: SpecialismsRoute,
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
-  TrainingProvidersRoute: TrainingProvidersRoute,
+  TrainingProvidersRoute: TrainingProvidersRouteWithChildren,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
