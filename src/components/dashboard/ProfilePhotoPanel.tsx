@@ -69,12 +69,18 @@ function pickFile(accept: string, maxBytes: number): Promise<File | null> {
   });
 }
 
-async function uploadFileToAvatars(path: string, file: Blob, contentType: string): Promise<void> {
+async function uploadToSignedAvatarUrl(
+  path: string,
+  token: string,
+  file: Blob,
+  contentType: string,
+): Promise<void> {
   const { error } = await supabase.storage
     .from("avatars")
-    .upload(path, file, { cacheControl: "31536000", upsert: true, contentType });
+    .uploadToSignedUrl(path, token, file, { contentType, upsert: true });
   if (error) throw error;
 }
+
 
 async function loadImageBitmap(file: File): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);
