@@ -198,6 +198,7 @@ const COACHES: Record<string, Coach> = {
     promise: "Get visibly stronger in 12 weeks.",
     subhead:
       "1-to-1 strength coaching in central London and online worldwide. For people who are done guessing and want a plan that actually works.",
+    aboutHeadline: "I take 20 clients. I write 20 programmes.",
     method: {
       name: "The Foundation Method",
       pillars: [
