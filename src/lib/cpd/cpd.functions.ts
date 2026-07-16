@@ -172,7 +172,6 @@ export const submitCertificate = createServerFn({ method: "POST" })
       }
     }
 
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     // Holder name match vs identity-verified name (if available)
     const { data: pro } = await supabase

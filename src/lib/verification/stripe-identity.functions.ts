@@ -51,7 +51,6 @@ export const createStripeIdentitySession = createServerFn({ method: "POST" })
       throw new Error("Stripe Identity returned no session");
     }
 
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     // Purge prior in-progress Stripe rows so Restart works cleanly.
     await supabase

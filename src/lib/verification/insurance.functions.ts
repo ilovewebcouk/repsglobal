@@ -49,7 +49,6 @@ export const saveInsurance = createServerFn({ method: "POST" })
       );
     }
 
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     // --- AI cross-check on the uploaded certificate -------------------------
     // Best-effort: if AI is unavailable we still persist the row, but with
@@ -473,7 +472,6 @@ export const createInsuranceUploadSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
     const { data, error } = await supabase
       .from("insurance_upload_sessions")
       .insert({ professional_id: userId } as never)
