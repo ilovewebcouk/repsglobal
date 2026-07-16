@@ -113,6 +113,7 @@ type Coach = {
   region: string;
   promise: string;
   subhead: string;
+  aboutHeadline: string;
   method: { name: string; intro?: string; pillars: { title: string; desc: string }[] };
   bio: string[];
   heroImage: string;
@@ -197,6 +198,7 @@ const COACHES: Record<string, Coach> = {
     promise: "Get visibly stronger in 12 weeks.",
     subhead:
       "1-to-1 strength coaching in central London and online worldwide. For people who are done guessing and want a plan that actually works.",
+    aboutHeadline: "I take 20 clients. I write 20 programmes.",
     method: {
       name: "The Foundation Method",
       pillars: [
@@ -488,6 +490,7 @@ function mergeLiveIntoCoach(
     role: professionLabel,
     promise: sf.tagline?.trim() || fallbackTagline,
     subhead: sf.subtitle ?? base.subhead,
+    aboutHeadline: (sf as { about_headline?: string | null }).about_headline?.trim() || base.aboutHeadline,
     bio: sf.about?.trim()
       ? sf.about.split(/\n\n+/).filter(Boolean)
       : [fallbackAbout],
@@ -1359,7 +1362,7 @@ function AboutSection({ coach }: { coach: Coach }) {
               About {coach.firstName}
             </span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
-              I take 20 clients. I write 20 programmes.
+              {coach.aboutHeadline}
             </h2>
             <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-reps-text-soft">
               {coach.bio.map((p) => (

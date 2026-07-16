@@ -220,6 +220,7 @@ function WebsiteEditorPage() {
 
   const [tagline, setTagline] = React.useState("");
   const [subtitle, setSubtitle] = React.useState("");
+  const [aboutHeadline, setAboutHeadline] = React.useState("");
   const [about, setAbout] = React.useState("");
   const [hero, setHero] = React.useState("");
   const [currentClients, setCurrentClients] = React.useState<number | null>(null);
@@ -231,6 +232,7 @@ function WebsiteEditorPage() {
     if (!sf) return;
     setTagline(sf.tagline ?? "");
     setSubtitle(sf.subtitle ?? "");
+    setAboutHeadline((sf as { about_headline?: string | null }).about_headline ?? "");
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
     setCurrentClients(sf.current_clients ?? null);
@@ -248,6 +250,7 @@ function WebsiteEditorPage() {
         data: {
           tagline: tagline || null,
           subtitle: subtitle || null,
+          about_headline: aboutHeadline || null,
           about: about || null,
           hero_image_url: hero || null,
           accent_hex: null,
@@ -490,11 +493,12 @@ function WebsiteEditorPage() {
   }, [qc]);
 
 
-  // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero/current_clients).
+  // Dirty tracking for the basics fields owned here (tagline/subtitle/about_headline/about/hero/current_clients).
   const basicsDirty =
     !!sf &&
     ((tagline || "") !== (sf.tagline ?? "") ||
       (subtitle || "") !== (sf.subtitle ?? "") ||
+      (aboutHeadline || "") !== ((sf as { about_headline?: string | null }).about_headline ?? "") ||
       (about || "") !== (sf.about ?? "") ||
       (hero || "") !== (sf.hero_image_url ?? "") ||
       (currentClients ?? null) !== (sf.current_clients ?? null));
@@ -776,6 +780,18 @@ function WebsiteEditorPage() {
                 <FieldCounter current={tagline.length} max={200} />
               </Field>
               <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
+              <Field
+                label="About headline"
+                hint="The bold H2 that sits above your About paragraphs on /c/your-slug."
+              >
+                <TextInput
+                  value={aboutHeadline}
+                  onChange={(e) => setAboutHeadline(e.target.value)}
+                  maxLength={200}
+                  placeholder="[e.g. I take 20 clients. I write 20 programmes.]"
+                />
+                <FieldCounter current={aboutHeadline.length} max={200} />
+              </Field>
               <Field
                 label="About"
                 hint="A short bio. Plain paragraphs, separated by blank lines."

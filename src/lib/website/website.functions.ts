@@ -8,6 +8,7 @@ import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
 const WebsiteUpsertSchema = z.object({
   tagline: z.string().trim().max(200).nullable().optional(),
   subtitle: z.string().trim().max(200).nullable().optional(),
+  about_headline: z.string().trim().max(200).nullable().optional(),
   about: z.string().trim().max(4000).nullable().optional(),
   hero_image_url: z.string().trim().url().max(500).nullable().optional(),
   accent_hex: z
@@ -26,6 +27,7 @@ export type WebsiteDTO = {
   professional_id: string;
   tagline: string | null;
   subtitle: string | null;
+  about_headline: string | null;
   about: string | null;
   hero_image_url: string | null;
   accent_hex: string | null;
@@ -605,7 +607,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("websites")
           .select(
-            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
+            "professional_id, tagline, subtitle, about_headline, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
           )
           .eq("professional_id", pro.id)
           .maybeSingle(),
@@ -650,6 +652,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         professional_id: pro.id,
         tagline: null,
         subtitle: null,
+        about_headline: null,
         about: null,
         hero_image_url: null,
         accent_hex: null,
@@ -674,6 +677,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           professional_id: pro.id,
           tagline: sfRow.tagline,
           subtitle: sfRow.subtitle ?? null,
+          about_headline: (sfRow as { about_headline?: string | null }).about_headline ?? null,
           about: sfRow.about,
           hero_image_url: sfRow.hero_image_url,
           accent_hex: sfRow.accent_hex,
@@ -775,7 +779,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("websites")
           .select(
-            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
+            "professional_id, tagline, subtitle, about_headline, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
           )
           .eq("professional_id", userId)
           .maybeSingle(),
@@ -816,7 +820,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
               { onConflict: "professional_id" },
             )
             .select(
-              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
+              "professional_id, tagline, subtitle, about_headline, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
             )
             .single();
           if (error) throw error;
@@ -829,6 +833,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           professional_id: userId,
           tagline: resolvedSf.tagline,
           subtitle: resolvedSf.subtitle ?? null,
+          about_headline: (resolvedSf as { about_headline?: string | null }).about_headline ?? null,
           about: resolvedSf.about,
           hero_image_url: resolvedSf.hero_image_url,
           accent_hex: resolvedSf.accent_hex,

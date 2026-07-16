@@ -6387,6 +6387,7 @@ export type Database = {
       websites: {
         Row: {
           about: string | null
+          about_headline: string | null
           accent_hex: string | null
           client_results_intro: string | null
           coaching_reach: Json
@@ -6410,6 +6411,7 @@ export type Database = {
         }
         Insert: {
           about?: string | null
+          about_headline?: string | null
           accent_hex?: string | null
           client_results_intro?: string | null
           coaching_reach?: Json
@@ -6433,6 +6435,7 @@ export type Database = {
         }
         Update: {
           about?: string | null
+          about_headline?: string | null
           accent_hex?: string | null
           client_results_intro?: string | null
           coaching_reach?: Json
