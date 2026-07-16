@@ -118,13 +118,13 @@ export function EarnedTitlePicker() {
                 className={
                   "flex items-center justify-between rounded-[10px] border px-3 py-2 text-left text-[13px] transition-colors " +
                   (isActive
-                    ? "border-reps-orange-border bg-reps-orange-soft text-white"
+                    ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
                     : "border-reps-border bg-reps-ink text-white/80 hover:text-white")
                 }
               >
                 <span className="flex items-center gap-2">
                   {isActive ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-reps-orange" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
                   ) : (
                     <span className="h-3.5 w-3.5 rounded-full border border-reps-border" />
                   )}
@@ -158,13 +158,13 @@ export function EarnedTitlePicker() {
                     className={
                       "flex items-center justify-between rounded-[10px] border px-3 py-2 text-left text-[13px] transition-colors " +
                       (isActive
-                        ? "border-reps-orange-border bg-reps-orange-soft text-white"
+                        ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
                         : "border-reps-border bg-reps-ink text-white/70 hover:text-white")
                     }
                   >
                     <span className="flex items-center gap-2">
                       {isActive ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-reps-orange" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
                       ) : (
                         <span className="h-3.5 w-3.5 rounded-[4px] border border-reps-border" />
                       )}
