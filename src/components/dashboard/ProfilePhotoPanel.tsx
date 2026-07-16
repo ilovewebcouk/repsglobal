@@ -220,13 +220,19 @@ export function ProfilePhotoPanel() {
   });
 
   const handlePickAvatar = async () => {
-    const id = await resolveUserId();
+    // Open the OS file picker FIRST, synchronously in the same tick as the
+    // click. Any await before pickFile() (e.g. refreshing the Supabase
+    // session) drops the user-gesture context, which makes Safari/iOS —
+    // and increasingly Chrome — silently ignore input.click(). Do auth
+    // work AFTER the user has chosen a file.
+    const filePromise = pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
+
+    const [f, id] = await Promise.all([filePromise, resolveUserId()]);
+    if (!f) return;
     if (!id) {
       toast.error("Not signed in.");
       return;
     }
-    const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
-    if (!f) return;
 
     if (f.type === "image/svg+xml" || /\.svg$/i.test(f.name)) {
       setRejection({
@@ -235,6 +241,7 @@ export function ProfilePhotoPanel() {
       });
       return;
     }
+
     try {
       const img = await loadImageBitmap(f);
       if (img.naturalWidth < 512 || img.naturalHeight < 512) {
