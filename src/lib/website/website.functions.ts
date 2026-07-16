@@ -836,11 +836,13 @@ export const getMyWebsite = createServerFn({ method: "GET" })
 
     if (!pro) return { website: null, services: [] };
 
-    const [coachingSinceYear, trust, gymVenues] = await Promise.all([
+    const [coachingSinceYear, trust, gymVenues, stripeCustomerSinceYear] = await Promise.all([
       fetchCoachingSinceYear(supabaseAdmin, userId, pro.primary_title_slug ?? null),
       fetchTrustSummary(supabaseAdmin, userId, pro.primary_title_slug ?? null, true),
       loadProfessionalGymVenues(supabaseAdmin, userId),
+      fetchStripeCustomerSinceYear(supabaseAdmin, userId),
     ]);
+
 
     const tier =
       subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
