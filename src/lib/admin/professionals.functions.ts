@@ -385,14 +385,25 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
 
-    // Last sign-in per user (admin-only RPC over auth.users).
+    // Last sign-in per user. Query auth.users directly via the service-role
+    // client — we can't use the `get_users_last_sign_in` RPC here because it
+    // gates on `has_role(auth.uid(), 'admin')`, and `auth.uid()` is NULL when
+    // called through `supabaseAdmin` (service role), so it silently returns
+    // zero rows and every column renders as "Never".
     const lastLoginByUser = new Map<string, string | null>();
     try {
-      const { data: lastLogins } = await supabaseAdmin.rpc('get_users_last_sign_in', { _ids: ids });
-      for (const r of (lastLogins ?? []) as Array<{ id: string; last_sign_in_at: string | null }>) {
+      const admin = supabaseAdmin as unknown as {
+        schema: (name: string) => {
+          from: (t: string) => { select: (cols: string) => { in: (col: string, vals: string[]) => PromiseLike<{ data: Array<{ id: string; last_sign_in_at: string | null }> | null; error: unknown }> } };
+        };
+      };
+      const lastLogins = await fetchAll<{ id: string; last_sign_in_at: string | null }>((c) =>
+        admin.schema('auth').from('users').select('id, last_sign_in_at').in('id', c),
+      );
+      for (const r of lastLogins) {
         lastLoginByUser.set(r.id, r.last_sign_in_at);
       }
-    } catch { /* non-fatal — column simply renders as "—" */ }
+    } catch { /* non-fatal — column simply renders as "Never" */ }
 
     // Provider-only: REPs course counts per provider. Cheap 1-shot fetch.
     const coursesCountByOrg = new Map<string, number>();
