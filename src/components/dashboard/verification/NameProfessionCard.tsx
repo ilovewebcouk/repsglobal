@@ -87,7 +87,7 @@ export function NameProfessionCard({ step }: { step?: string }) {
         <div>
           <div className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-white/75">
             <span>Legal name</span>
-            {locked ? <Lock className="h-3 w-3 text-white/40" /> : null}
+            {locked ? <Lock className="h-3 w-3 text-emerald-300" /> : null}
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <input
@@ -95,7 +95,12 @@ export function NameProfessionCard({ step }: { step?: string }) {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               disabled={locked}
-              className="h-10 flex-1 rounded-[12px] border border-reps-border bg-reps-panel-soft px-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-reps-orange disabled:opacity-60"
+              className={
+                "h-10 flex-1 rounded-[12px] border px-3 text-[13px] focus:outline-none focus:ring-1 disabled:cursor-not-allowed " +
+                (locked
+                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300 focus:ring-emerald-400/40"
+                  : "border-reps-border bg-reps-panel-soft text-white placeholder:text-white/40 focus:ring-reps-orange")
+              }
               placeholder="As it appears on your government ID"
             />
             <div className="flex items-center gap-3">
@@ -106,13 +111,27 @@ export function NameProfessionCard({ step }: { step?: string }) {
                 type="button"
                 onClick={() => saveMut.mutate()}
                 disabled={!dirty || saveMut.isPending || locked}
-                className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-reps-orange px-4 text-[12.5px] font-semibold text-white hover:bg-reps-orange-hover disabled:opacity-50"
+                className={
+                  "inline-flex h-10 items-center gap-2 rounded-[10px] px-4 text-[12.5px] font-semibold transition-colors " +
+                  (locked
+                    ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                    : "bg-reps-orange text-white hover:bg-reps-orange-hover disabled:opacity-50")
+                }
               >
-                {saveMut.isPending ? "Saving…" : "Save"}
+                {locked ? (
+                  <>
+                    <Lock className="h-3.5 w-3.5" />
+                    Locked
+                  </>
+                ) : saveMut.isPending ? (
+                  "Saving…"
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
           </div>
-          <p className="mt-1.5 text-[11.5px] text-white/45">
+          <p className={locked ? "mt-1.5 text-[11.5px] text-emerald-300" : "mt-1.5 text-[11.5px] text-white/45"}>
             {locked
               ? "Locked — matches your verified ID. Contact REPs support to change it."
               : "Must match your government ID and your regulated qualification certificates."}
