@@ -40,7 +40,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 import { CourseRow } from "@/components/academy/CourseRow";
 import {
@@ -202,12 +202,11 @@ function TrainingAcademyPage() {
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
             {/* Sticky filter rail */}
             <aside className="hidden lg:block">
-              <div className="sticky top-[92px] rounded-[18px] border border-black/10 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-                <ScrollArea className="h-[calc(100vh-140px)] pr-3">
-                  <AcademyFilterRail value={filters} onChange={setFilters} />
-                </ScrollArea>
+              <div className="sticky top-[calc(var(--public-header-h,72px)+16px)] max-h-[calc(100vh-var(--public-header-h,72px)-32px)] overflow-y-auto rounded-[18px] border border-black/10 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <AcademyFilterRail value={filters} onChange={setFilters} />
               </div>
             </aside>
+
 
             {/* Grid column */}
             <div className="min-w-0">
