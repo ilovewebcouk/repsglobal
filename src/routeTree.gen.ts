@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
-import { Route as TrainingProvidersRouteImport } from './routes/training-providers'
 import { Route as TrainingAcademyRouteImport } from './routes/training-academy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StandardsRouteImport } from './routes/standards'
@@ -46,6 +45,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifyIndexRouteImport } from './routes/verify.index'
+import { Route as TrainingProvidersIndexRouteImport } from './routes/training-providers.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as HelpIndexRouteImport } from './routes/help.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
@@ -202,11 +202,6 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TrainingProvidersRoute = TrainingProvidersRouteImport.update({
-  id: '/training-providers',
-  path: '/training-providers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrainingAcademyRoute = TrainingAcademyRouteImport.update({
@@ -378,6 +373,11 @@ const VerifyIndexRoute = VerifyIndexRouteImport.update({
   path: '/verify/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrainingProvidersIndexRoute = TrainingProvidersIndexRouteImport.update({
+  id: '/training-providers/',
+  path: '/training-providers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   id: '/resources/',
   path: '/resources/',
@@ -394,9 +394,9 @@ const VerifyTokenRoute = VerifyTokenRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrainingProvidersApplyRoute = TrainingProvidersApplyRouteImport.update({
-  id: '/apply',
-  path: '/apply',
-  getParentRoute: () => TrainingProvidersRoute,
+  id: '/training-providers/apply',
+  path: '/training-providers/apply',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TSlugRoute = TSlugRouteImport.update({
   id: '/t/$slug',
@@ -1204,7 +1204,6 @@ export interface FileRoutesByFullPath {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/training-academy': typeof TrainingAcademyRoute
-  '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1276,6 +1275,7 @@ export interface FileRoutesByFullPath {
   '/verify/$token': typeof VerifyTokenRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/training-providers/': typeof TrainingProvidersIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -1386,7 +1386,6 @@ export interface FileRoutesByTo {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/training-academy': typeof TrainingAcademyRoute
-  '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1454,6 +1453,7 @@ export interface FileRoutesByTo {
   '/verify/$token': typeof VerifyTokenRoute
   '/help': typeof HelpIndexRoute
   '/resources': typeof ResourcesIndexRoute
+  '/training-providers': typeof TrainingProvidersIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -1566,7 +1566,6 @@ export interface FileRoutesById {
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
   '/training-academy': typeof TrainingAcademyRoute
-  '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/_professional': typeof AuthenticatedProfessionalRouteRouteWithChildren
@@ -1639,6 +1638,7 @@ export interface FileRoutesById {
   '/verify/$token': typeof VerifyTokenRoute
   '/help/': typeof HelpIndexRoute
   '/resources/': typeof ResourcesIndexRoute
+  '/training-providers/': typeof TrainingProvidersIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/_authenticated/_professional/_pro': typeof AuthenticatedProfessionalProRouteRouteWithChildren
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -1753,7 +1753,6 @@ export interface FileRouteTypes {
     | '/standards'
     | '/terms'
     | '/training-academy'
-    | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
     | '/.mcp/list-tools'
@@ -1825,6 +1824,7 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/help/'
     | '/resources/'
+    | '/training-providers/'
     | '/verify/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -1935,7 +1935,6 @@ export interface FileRouteTypes {
     | '/standards'
     | '/terms'
     | '/training-academy'
-    | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
     | '/.mcp/list-tools'
@@ -2003,6 +2002,7 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/help'
     | '/resources'
+    | '/training-providers'
     | '/verify'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -2114,7 +2114,6 @@ export interface FileRouteTypes {
     | '/standards'
     | '/terms'
     | '/training-academy'
-    | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
     | '/_authenticated/_professional'
@@ -2187,6 +2186,7 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/help/'
     | '/resources/'
+    | '/training-providers/'
     | '/verify/'
     | '/_authenticated/_professional/_pro'
     | '/.lovable/oauth/consent'
@@ -2301,7 +2301,6 @@ export interface RootRouteChildren {
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
   TrainingAcademyRoute: typeof TrainingAcademyRoute
-  TrainingProvidersRoute: typeof TrainingProvidersRouteWithChildren
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -2368,8 +2367,10 @@ export interface RootRouteChildren {
   RenewCancelledRoute: typeof RenewCancelledRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   TSlugRoute: typeof TSlugRouteWithChildren
+  TrainingProvidersApplyRoute: typeof TrainingProvidersApplyRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
+  TrainingProvidersIndexRoute: typeof TrainingProvidersIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -2417,13 +2418,6 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/training-providers': {
-      id: '/training-providers'
-      path: '/training-providers'
-      fullPath: '/training-providers'
-      preLoaderRoute: typeof TrainingProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/training-academy': {
@@ -2664,6 +2658,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/training-providers/': {
+      id: '/training-providers/'
+      path: '/training-providers'
+      fullPath: '/training-providers/'
+      preLoaderRoute: typeof TrainingProvidersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resources/': {
       id: '/resources/'
       path: '/resources'
@@ -2687,10 +2688,10 @@ declare module '@tanstack/react-router' {
     }
     '/training-providers/apply': {
       id: '/training-providers/apply'
-      path: '/apply'
+      path: '/training-providers/apply'
       fullPath: '/training-providers/apply'
       preLoaderRoute: typeof TrainingProvidersApplyRouteImport
-      parentRoute: typeof TrainingProvidersRoute
+      parentRoute: typeof rootRouteImport
     }
     '/t/$slug': {
       id: '/t/$slug'
@@ -3892,17 +3893,6 @@ const HelpRouteChildren: HelpRouteChildren = {
 
 const HelpRouteWithChildren = HelpRoute._addFileChildren(HelpRouteChildren)
 
-interface TrainingProvidersRouteChildren {
-  TrainingProvidersApplyRoute: typeof TrainingProvidersApplyRoute
-}
-
-const TrainingProvidersRouteChildren: TrainingProvidersRouteChildren = {
-  TrainingProvidersApplyRoute: TrainingProvidersApplyRoute,
-}
-
-const TrainingProvidersRouteWithChildren =
-  TrainingProvidersRoute._addFileChildren(TrainingProvidersRouteChildren)
-
 interface AdminBillingRouteChildren {
   AdminBillingDisputesDisputeIdRoute: typeof AdminBillingDisputesDisputeIdRoute
 }
@@ -4016,7 +4006,6 @@ const rootRouteChildren: RootRouteChildren = {
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
   TrainingAcademyRoute: TrainingAcademyRoute,
-  TrainingProvidersRoute: TrainingProvidersRouteWithChildren,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
@@ -4084,8 +4073,10 @@ const rootRouteChildren: RootRouteChildren = {
   RenewCancelledRoute: RenewCancelledRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   TSlugRoute: TSlugRouteWithChildren,
+  TrainingProvidersApplyRoute: TrainingProvidersApplyRoute,
   VerifyTokenRoute: VerifyTokenRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
+  TrainingProvidersIndexRoute: TrainingProvidersIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,

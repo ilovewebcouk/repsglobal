@@ -78,7 +78,7 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
 ];
 
-export const Route = createFileRoute("/training-providers")({
+export const Route = createFileRoute("/training-providers/")({
   head: () => ({
     meta: [
       { title: "Training Provider Membership — REPs-endorsed courses · REPs" },
