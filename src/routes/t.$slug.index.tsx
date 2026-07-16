@@ -26,6 +26,7 @@ import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
 import { getPublicProviderIssuedCertificateCount } from "@/lib/providers/public-stats.functions";
 import { listPublicProviderFaqs } from "@/lib/provider-faqs/provider-faqs.functions";
+import { getPublicProviderVerification } from "@/lib/verification/provider-verification-public.functions";
 import repsLogo from "@/assets/brand/logo-dark.svg";
 import { AWARDING_BODIES, awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -147,6 +148,16 @@ function ProviderProfilePage() {
     enabled: !!sf.professional_id,
   });
   const certCount = certCountData?.count ?? 0;
+
+  const fetchVerification = useServerFn(getPublicProviderVerification);
+  const { data: verification } = useQuery({
+    queryKey: ["public-provider-verification", sf.professional_id],
+    queryFn: () =>
+      fetchVerification({ data: { providerId: sf.professional_id } }),
+    staleTime: 60_000,
+    enabled: !!sf.professional_id,
+  });
+  const isVerified = verification?.completedCount === 3;
   const learnersTrained =
     certCount > 0
       ? certCount >= 1000
@@ -330,7 +341,7 @@ function ProviderProfilePage() {
 
             <div className="flex flex-col justify-center">
               <div className="flex flex-wrap items-center gap-2">
-                {sf.trust?.identityVerifiedAt ? (
+                {isVerified ? (
                   <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
                     <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.2} />
                     REPS Verified
@@ -681,43 +692,60 @@ function ProviderProfilePage() {
               </article>
 
 
-              {/* Trust & Assurance */}
+              {/* Verification — 3-step provider lock-in */}
               <article className="rounded-[22px] border border-black/10 bg-white p-6">
-                <h2 className="font-display text-[20px] font-bold text-black">Trust & Assurance</h2>
+                <div className="flex items-start gap-3">
+                  {isVerified ? (
+                    <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-600" strokeWidth={2.2} />
+                  ) : (
+                    <Shield className="mt-0.5 h-5 w-5 text-black/40" strokeWidth={2} />
+                  )}
+                  <div>
+                    <h2 className="font-display text-[20px] font-bold text-black">
+                      {isVerified ? "REPS Verified" : "Not yet verified"}
+                    </h2>
+                    <p className="mt-0.5 text-[12.5px] text-black/55">
+                      {isVerified
+                        ? `Confirmed ${monthYear(verification?.verifiedAt) ?? "recently"}`
+                        : "REPS is reviewing this provider."}
+                    </p>
+                  </div>
+                </div>
                 <ul className="mt-4 space-y-3">
                   <TrustRow
-                    icon={<Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />}
-                    title="Identity Verified"
+                    done={!!verification?.identity.done}
+                    title="Identity"
                     sub={
-                      sf.trust?.identityVerifiedAt
-                        ? `Confirmed ${monthYear(sf.trust.identityVerifiedAt) ?? ""}`
-                        : "On file"
+                      verification?.identity.done
+                        ? `Owner confirmed via Stripe Identity${
+                            verification.identity.verifiedAt
+                              ? `, ${monthYear(verification.identity.verifiedAt) ?? ""}`
+                              : ""
+                          }`
+                        : "Not yet confirmed"
                     }
                   />
                   <TrustRow
-                    icon={<Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />}
-                    title="Accreditations Approved"
-                    sub={`Checked ${monthYear(sf.trust?.lastCheckedAt) ?? "recently"}`}
+                    done={!!verification?.name.done}
+                    title="Provider name"
+                    sub={
+                      verification?.name.done && verification.name.value
+                        ? `${verification.name.value} — locked`
+                        : "Not yet locked"
+                    }
                   />
                   <TrustRow
-                    icon={<Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />}
-                    title="Professional Indemnity Insurance"
+                    done={!!verification?.domain.done}
+                    title="Domain"
                     sub={
-                      sf.trust?.insuranceExpiry
-                        ? `Active until ${monthYear(sf.trust.insuranceExpiry) ?? ""}`
-                        : "On file"
+                      verification?.domain.done && verification.domain.value
+                        ? `${verification.domain.value} confirmed`
+                        : "Not yet confirmed"
                     }
                   />
                 </ul>
-                <Link
-                  to="/t/$slug/enquire"
-                  params={{ slug }}
-                  className="mt-5 inline-flex items-center gap-1 text-[13px] font-semibold text-[#FF7A00] hover:text-[#E96F00]"
-                >
-                  View full verification
-                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
-                </Link>
               </article>
+
 
               {/* FAQs */}
               <article id="faqs" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
@@ -995,26 +1023,39 @@ function StatTile({ label, value, accent }: { label: string; value: string; acce
 }
 
 function TrustRow({
-  icon,
+  done,
   title,
   sub,
 }: {
-  icon: React.ReactNode;
+  done: boolean;
   title: string;
   sub: string;
 }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
-        {icon}
+      <span
+        className={
+          done
+            ? "mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10"
+            : "mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full border border-black/15 bg-white"
+        }
+      >
+        {done ? (
+          <Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />
+        ) : (
+          <span className="h-2 w-2 rounded-full bg-black/25" />
+        )}
       </span>
       <div>
-        <p className="text-[14px] font-semibold text-black">{title}</p>
+        <p className={done ? "text-[14px] font-semibold text-black" : "text-[14px] font-semibold text-black/60"}>
+          {title}
+        </p>
         <p className="text-[12.5px] text-black/55">{sub}</p>
       </div>
     </li>
   );
 }
+
 
 function CourseCard({ course }: { course: Course }) {
   return (
