@@ -133,7 +133,7 @@ export function ProviderFaqsSection() {
               className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-reps-orange px-3 text-[13px] font-semibold text-white transition-colors hover:bg-reps-orange/90 disabled:cursor-not-allowed disabled:opacity-60"
               title={
                 atCap
-                  ? `You've hit the ${maxRows}-FAQ cap. Delete or hide one first.`
+                  ? "You've hit the FAQ cap. Delete one first."
                   : undefined
               }
             >
@@ -168,8 +168,8 @@ export function ProviderFaqsSection() {
           <>
             <div className="mb-3 flex items-center gap-3 text-[12px] text-white/55">
               <span>
-                <strong className="text-white/85">{publishedCount}</strong>{" "}
-                published · {faqs.length}/{maxRows} total
+                <strong className="text-white/85">{publishedCount}</strong> of{" "}
+                {maxPublic} published
               </span>
               {publishedCount >= maxPublic ? (
                 <span className="rounded-[6px] border border-amber-400/25 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
