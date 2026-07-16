@@ -18,7 +18,10 @@ const priceLabel = (n: number) =>
 
 export function CourseRow({ course }: CourseRowProps) {
   const p = course.provider;
-  const bg = `linear-gradient(135deg, hsl(${p.hue} 78% 58%) 0%, hsl(${(p.hue + 40) % 360} 62% 40%) 100%)`;
+  // One shared neutral premium background across every card so the grid reads
+  // as a single catalogue — provider identity comes from the initials chip.
+  const bg =
+    "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 55%, #1a1a1a 100%)";
 
   return (
     <a
@@ -27,11 +30,20 @@ export function CourseRow({ course }: CourseRowProps) {
       rel="noopener noreferrer"
       className="group flex flex-col gap-4 rounded-[18px] border border-black/10 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-black/20 hover:shadow-[0_6px_20px_-8px_rgba(0,0,0,0.15)] sm:flex-row sm:gap-5 sm:p-5"
     >
-      {/* Thumbnail — fixed 240×135 on desktop */}
+      {/* Thumbnail — fixed 320×180 on desktop (YouTube 16:9) */}
       <div
         className="relative aspect-video w-full shrink-0 overflow-hidden rounded-[12px] sm:w-[320px]"
         style={{ background: bg }}
       >
+        {/* Warm brand glow anchored top-right to tie the thumbnail to the brand */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 85% 15%, rgba(255,122,0,0.22) 0%, rgba(255,122,0,0) 55%)",
+          }}
+        />
         <span
           aria-hidden
           className="absolute left-2.5 top-2.5 grid size-9 place-items-center rounded-[8px] bg-white/95 text-[11px] font-bold tracking-[0.06em] text-black shadow-sm"
@@ -42,7 +54,7 @@ export function CourseRow({ course }: CourseRowProps) {
 
       {/* Info column */}
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <h3 className="font-display text-[17px] font-bold leading-snug text-black group-hover:text-[#FF7A00] sm:text-[18px]">
+        <h3 className="font-display text-[17px] font-bold leading-snug text-black group-hover:text-reps-orange sm:text-[18px]">
           {course.title}
         </h3>
         <p className="line-clamp-2 text-[13.5px] leading-snug text-black/65">
@@ -50,10 +62,10 @@ export function CourseRow({ course }: CourseRowProps) {
         </p>
         <p className="text-[12.5px] text-black/55">{p.name}</p>
 
-        {/* Rating */}
+        {/* Rating — brand orange stars per compliance rules */}
         <div className="mt-0.5 flex items-center gap-1.5 text-[13px]">
-          <span className="font-bold text-[#8A5A00]">{course.rating.toFixed(1)}</span>
-          <span className="inline-flex items-center text-[#E59819]">
+          <span className="font-bold text-reps-orange">{course.rating.toFixed(1)}</span>
+          <span className="inline-flex items-center text-reps-orange">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
@@ -92,18 +104,18 @@ export function CourseRow({ course }: CourseRowProps) {
             REPs Endorsed
           </span>
           {course.ofqualRegulated ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#FF7A00]/30 bg-[#FF7A00]/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-[#FF7A00]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
               <ShieldCheck className="h-3 w-3" />
               Ofqual-regulated
             </span>
           ) : null}
           {course.bestseller ? (
-            <span className="inline-flex items-center rounded-[4px] bg-[#FFF1C4] px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-[#6B4A00]">
+            <span className="inline-flex items-center rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
               Bestseller
             </span>
           ) : null}
           {course.newRelease ? (
-            <span className="inline-flex items-center rounded-[4px] bg-black/85 px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white">
+            <span className="inline-flex items-center rounded-full bg-black/85 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white">
               New
             </span>
           ) : null}
@@ -116,7 +128,7 @@ export function CourseRow({ course }: CourseRowProps) {
           {priceLabel(course.priceFromGBP)}
         </span>
         <span className="text-[11.5px] text-black/50">From</span>
-        <span className="mt-2 hidden text-[12.5px] font-semibold text-[#FF7A00] group-hover:underline sm:inline">
+        <span className="mt-2 hidden text-[12.5px] font-semibold text-reps-orange group-hover:underline sm:inline">
           View course →
         </span>
       </div>

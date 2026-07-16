@@ -1,106 +1,69 @@
-# Fix: Training-provider signup uses a different (broken) flow
+## /training-academy polish pass
 
-## What the audit found
+Screenshots saved to `/tmp/browser/academy/hero.png`, `full.png`, `mobile.png` — captured before any changes.
 
-The screenshot you sent is `/signup?tier=core&period=annual&next=checkout` — the **good** flow. `/training-providers/apply` uses a completely different, older pattern which is why it doesn't behave the same.
+### What's wrong right now (from the screenshots + code audit)
 
-**Good flow (Core, Pro) — `src/routes/signup.tsx` + `deferred-signup.functions.ts`:**
-1. Credentials stashed encrypted in `pending_signups` — no `auth.users` row yet.
-2. Stripe Checkout Session minted immediately.
-3. Account only created after payment succeeds (webhook + `/checkout/return`).
-4. No orphan accounts, no premature welcome emails, no email-confirm friction.
+**Hero** — flat white slab, one orange pill, black headline, no anchor. Reads like an admin page, not a marketing surface. Sits inside a `bg-[#f7f6f2]` ivory shell so it just looks pale.
 
-**Current training-provider flow — `src/routes/training-providers.apply.tsx` + `startOrgCheckout.ts` + `org-checkout.functions.ts`:**
-1. Calls `supabase.auth.signUp()` first → creates a real user with email confirmation.
-2. Only *then* calls the authenticated `createOrgCheckoutSession` server fn.
-3. If they abandon Stripe → orphan account. If email-confirm is on → they can't even reach checkout without clicking a link.
-4. Uses lookup key `training_provider_annual` (£479/yr, product "REPs LMS").
+**Colors are out — literal hex everywhere instead of tokens:**
+- `#FF7A00`, `#E96F00` used raw in 8 places across the route and `CourseRow.tsx` (should be `bg-brand-orange` / `text-brand-orange` / `hover:bg-brand-orange-hover`).
+- **Stars in gold/amber** — `text-[#E59819]` fill + `text-[#8A5A00]` rating number. The compliance skill is explicit: rating stars must be brand orange, never gold/yellow.
+- **Bestseller pill in yellow** — `bg-[#FFF1C4]` + `text-[#6B4A00]`. Off-brand, clashes with everything else.
+- **Course thumbnails** — every card generates a random 2-stop HSL gradient from the provider's `hue`, so the grid is a rainbow of teals, purples, reds, greens, and yellows next to a brand-orange page. Loud and unbranded.
+- Hero orange pill and Ofqual pill both use `#FF7A00/10` — fine, but should be tokenised so they match every other marketing pill on the site.
 
-Also: the last turn created `training_provider_annual` in the **sandbox** Stripe account only. On `repsuk.org` / `www.repsuk.org` the app uses **live** Stripe (see `stripe-client.ts` `isLiveHost`), where that lookup key does not exist yet — so real users hit a "no such price" error.
+**Hero content** — no tutor photo, no accent-orange headline split, no trust chips (contrary to the earlier summary in the conversation). Just a pill + headline + paragraph + search bar.
 
-## The fix
+### Plan
 
-Collapse the training-provider path into the same deferred flow so it behaves identically to Core, and provision the live Stripe product.
+Keep the light directory shell — it's consistent with `/find-a-training-provider` and `/find-a-coach`. Fix colors, add a real hero anchor, calm the thumbnails.
 
-### 1. Widen the deferred flow to accept `training_provider`
+**1. Route the tokens (colors "out" fix)**
 
-- `src/lib/billing.ts`
-  - Add `training_provider` to `CHECKOUT_OFFERS` (annual, `priceId: "training_provider_annual"`, `trialDays: 0`, `founding: false`, `display: "£479/yr"`).
-  - Broaden `PurchasableTier` to `"verified" | "pro" | "training_provider"` (or introduce a superset used only by checkout code so the rest of the UI is unaffected).
-- `src/lib/billing/deferred-signup.functions.ts`
-  - Extend the Zod tier enum to include `"training_provider"`.
-  - Skip the pro-waitlist guard for `training_provider`.
-  - Use REPs-LMS-specific `custom_text.submit.message` ("You're joining REPs LMS — public listing, verified reviews, endorsed courses.").
-  - `cancel_url`: `${origin}/training-providers?checkout=canceled`.
-  - `success_url`: unchanged (`/checkout/return?session_id=…`).
-- New migration `supabase/migrations/…_pending_signups_allow_training_provider.sql`:
-  ```sql
-  ALTER TABLE public.pending_signups DROP CONSTRAINT IF EXISTS pending_signups_tier_check;
-  ALTER TABLE public.pending_signups ADD CONSTRAINT pending_signups_tier_check
-    CHECK (tier IN ('verified','pro','studio','training_provider'));
-  ```
+Do a full hex→token sweep in `src/routes/training-academy.tsx` and `src/components/academy/CourseRow.tsx`:
 
-### 2. Teach `/signup` about the LMS tier
+| Raw hex today | Replace with |
+| --- | --- |
+| `bg-[#FF7A00]`, `hover:bg-[#E96F00]` | `bg-brand-orange`, `hover:bg-brand-orange-hover` |
+| `text-[#FF7A00]`, `border-[#FF7A00]/30`, `bg-[#FF7A00]/10` | `text-brand-orange`, `border-brand-orange-border`, `bg-brand-orange-soft` |
+| Ring `focus:ring-[#FF7A00]/25` | `focus:ring-brand-orange/25` (via token) |
+| Star fill `text-[#E59819]`, rating number `text-[#8A5A00]` | Both → `text-brand-orange` |
+| Bestseller pill `bg-[#FFF1C4] text-[#6B4A00]` | `bg-brand-orange-soft text-brand-orange border border-brand-orange-border` (matches Ofqual pill) |
+| "New" pill `bg-black/85 text-white` | Keep — reads as neutral chrome. |
 
-- `src/routes/signup.tsx`
-  - `SignupSearch.tier`: add `"training_provider"` (accept URL slug `training-provider` and normalise).
-  - Skip the `if (tier === "pro") redirect("/contact")` branch for `training_provider`.
-  - Add `PLAN_SUMMARIES.training_provider.annual`:
-    - name: **REPs LMS**, tagline: *"Independent endorsement for the courses you deliver."*
-    - price `£479`, unit `/year`, meta `£479 billed yearly`.
-    - highlights: independent course review, provider website + endorsement badge, verified learner reviews, `£15` per-learner certificate.
-  - Pass `tier: "training_provider"` straight through to `startDeferredCheckout` (no `verified` remap).
-  - CTA label: "Continue to payment" for training_provider (same as Core).
+**2. Calm the thumbnails**
 
-### 3. Retire the bespoke apply page
+The random `hsl(hue, 78%, 58%)` gradient per provider is the noisiest thing on the page. Replace with a single warm brand-adjacent gradient stack that all cards share, and let the provider logo (top-left initials chip) do the identification. Options for the shared background:
 
-- `src/routes/training-providers.apply.tsx` — replace with a `beforeLoad` that just redirects:
-  ```ts
-  throw redirect({
-    to: "/signup",
-    search: { tier: "training-provider", period: "annual", next: "checkout" },
-  });
-  ```
-  Keeps every existing "Apply" CTA link working; no more custom form, no more `supabase.auth.signUp` here.
-- Leave `org-checkout.functions.ts` / `startOrgCheckout.ts` alone for now (kept as internal admin/upgrade tooling), but remove all client callers.
+- Warm brand: `linear-gradient(135deg, #FF7A00 0%, #E96F00 55%, #1a1a1a 100%)` with a subtle radial highlight — one identity, matches the site.
+- Neutral premium: `linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)` — dark cards, pop the initials chip forward.
 
-### 4. Webhook behaviour — already correct, verify only
+I'd default to **neutral premium** because it lets the (upcoming) real course imagery drop in without redesigning, and keeps orange as an accent rather than plastering it 22 times down the grid. Initials chip stays white, provider name and price stay black on white below.
 
-`src/routes/api/public/payments/webhook.ts`:
-- `checkoutOfferForPriceId` already maps `training_provider_annual` → `{ tier: "training_provider", period: "annual" }` via the `ORG_TIERS` lookup in `billing.ts` (line 132).
-- Line 215 already sets `professionals.account_type = 'training_provider'` on `checkout.session.completed`.
-- The deferred-signup branch (line ~789) resolves `reps_pending_signup_id` → provisions `auth.users` from `pending_signups`. This runs regardless of tier, so the LMS path is picked up automatically.
-- QA step only: confirm end-to-end that a paid LMS pending-signup produces (a) confirmed auth user, (b) `subscriptions.tier='training_provider' status='active'`, (c) `professionals.account_type='training_provider'`.
+**3. Hero anchor**
 
-### 5. Live Stripe product "REPs LMS"
+Keep the layout but give it presence:
 
-Sandbox price was created in the previous turn. Live is missing. In build mode I will use the live Stripe secret to create:
-- Product `REPs LMS` (metadata `tier=training_provider`, `billing_period=annual`).
-- Price £479 GBP recurring yearly with `lookup_key=training_provider_annual`.
+- Add a warm wash behind the hero: a soft `radial-gradient` from brand-orange-soft (top-right) fading into the ivory bg, so the hero doesn't sit on flat white.
+- Split the H1: `"Every REPs-endorsed course,"` in near-black + `"in one catalogue."` in `text-brand-orange` — this is the "orange accent headline" pattern used on every other marketing page.
+- Add three trust chips under the lede — the same visual pattern from other marketing heroes:
+  - `GraduationCap` — "22 endorsed courses"
+  - `ShieldCheck` — "Ofqual-regulated options"
+  - `BadgeCheck` — "Vetted providers only"
+- Move the search+sort rail down slightly (`mt-8`) so it doesn't fight the headline.
 
-If a matching product already exists in live under a different name, I'll attach the price to it rather than creating a duplicate. Nothing else changes — the code resolves live vs sandbox automatically via `getStripeEnvironment()` in `stripe-client.ts`.
+No tutor photo. It would be lovely but requires an image asset that has to follow the REPs-wordmark rules from memory — out of scope for a colour polish pass. Flagging so we can add it as a separate step if you want.
 
-## QA plan (Playwright + Stripe test card 4242…) after implementation
+**4. Verify**
 
-1. Visit `/training-providers/apply` on preview → 302s to `/signup?tier=training-provider&period=annual&next=checkout`.
-2. Confirm the left plan card renders **REPs LMS · £479/year** with the four LMS highlights (not REPS Core / £34).
-3. Fill signup form → redirects to Stripe Hosted Checkout showing "REPs LMS" line item at £479.
-4. Cancel → lands on `/training-providers?checkout=canceled` (marketing page renders).
-5. Complete payment (test card) → `/checkout/return` → dashboard, signed in.
-6. Verify DB: `subscriptions.tier='training_provider' status='active'`, `professionals.account_type='training_provider'`, no `pending_signups` row remaining.
-7. Repeat the click on live-mirror preview to confirm the live price resolves (no "no such price" error).
-8. Existing Core flow (`/signup?tier=core&period=annual&next=checkout`) still works unchanged — regression sweep.
+After edits, re-screenshot desktop hero + full page + mobile and paste back so we can eyeball contrast side-by-side with the current screenshots. Then run the reps-build-compliance audit script — it should now pass because there'll be no raw `#FF7A00` / `#E59819` / `#FFF1C4` / `#8A5A00` / `#6B4A00` left in the two files.
 
-## Files touched
+### Out of scope for this pass
+- Real course photography (would need generated imagery with REPs wordmark compliance)
+- Any data / filtering / server-fn work — the 22 mock courses stay as-is
+- Tutor hero photo — separate ask
 
-```text
-src/lib/billing.ts                                       (extend types + CHECKOUT_OFFERS)
-src/lib/billing/deferred-signup.functions.ts             (accept training_provider)
-src/routes/signup.tsx                                    (accept training-provider slug + summary)
-src/routes/training-providers.apply.tsx                  (collapse to redirect)
-supabase/migrations/<ts>_pending_signups_allow_training_provider.sql   (new)
-```
-
-Plus one runtime step: create live Stripe product/price via API.
-
-No visual changes to any locked page. `/training-providers` marketing page and every "Apply" CTA remain in place — only where they land changes.
+### Files touched
+- `src/routes/training-academy.tsx` (hero, buttons, ring, empty-state reset button, focus ring)
+- `src/components/academy/CourseRow.tsx` (thumbnail gradient, stars, bestseller pill, price hover, title hover, Ofqual pill)
