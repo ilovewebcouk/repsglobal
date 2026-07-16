@@ -171,9 +171,11 @@ function CoreInvitesPage() {
           </tbody>
         </table>
       </div>
+      </div>
     </main>
   );
 }
+
 
 function NewInviteForm({ onCreated }: { onCreated: () => void | Promise<void> }) {
   const verify = useServerFn(verifyStripeCustomer);
