@@ -777,6 +777,18 @@ function WebsiteEditorPage() {
               </Field>
               <HeroSubtitleField value={subtitle} onChange={setSubtitle} tagline={tagline} slug={slug} />
               <Field
+                label="About headline"
+                hint="The bold H2 that sits above your About paragraphs on /c/your-slug."
+              >
+                <TextInput
+                  value={aboutHeadline}
+                  onChange={(e) => setAboutHeadline(e.target.value)}
+                  maxLength={200}
+                  placeholder="[e.g. I take 20 clients. I write 20 programmes.]"
+                />
+                <FieldCounter current={aboutHeadline.length} max={200} />
+              </Field>
+              <Field
                 label="About"
                 hint="A short bio. Plain paragraphs, separated by blank lines."
                 action={<AIDraftButton onClick={() => setAboutDialogOpen(true)} pending={draftAboutMut.isPending} />}
