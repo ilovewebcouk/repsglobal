@@ -115,7 +115,7 @@ import {
   listAdminProfessionals,
   setProfessionalSuspension,
   setProfessionalFlag,
-  setProfessionalPublished,
+  
   
   
   type AdminProRow,
