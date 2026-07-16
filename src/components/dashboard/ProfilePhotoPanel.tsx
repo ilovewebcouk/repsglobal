@@ -297,8 +297,6 @@ export function ProfilePhotoPanel() {
   const handleRemoveAvatar = () => removeMutation.mutate();
 
   const handleStartRegenerate = async () => {
-    const id = await resolveUserId();
-    if (!id) return;
     let sourcePath = lastUploadedPath;
     if (!sourcePath && profile.avatar_url) {
       toast.error("Please upload a fresh photo first, then generate a professional version.");
@@ -307,6 +305,7 @@ export function ProfilePhotoPanel() {
     if (!sourcePath) return;
     setRegenState({ step: "confirm", sourcePath, attempt: 0 });
   };
+
 
   const handleConfirmRegenerate = async () => {
     if (!regenState || regenState.step !== "confirm") return;
