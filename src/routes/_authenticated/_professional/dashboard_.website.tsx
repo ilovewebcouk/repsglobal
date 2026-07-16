@@ -493,11 +493,12 @@ function WebsiteEditorPage() {
   }, [qc]);
 
 
-  // Dirty tracking for the basics fields owned here (tagline/subtitle/about/hero/current_clients).
+  // Dirty tracking for the basics fields owned here (tagline/subtitle/about_headline/about/hero/current_clients).
   const basicsDirty =
     !!sf &&
     ((tagline || "") !== (sf.tagline ?? "") ||
       (subtitle || "") !== (sf.subtitle ?? "") ||
+      (aboutHeadline || "") !== ((sf as { about_headline?: string | null }).about_headline ?? "") ||
       (about || "") !== (sf.about ?? "") ||
       (hero || "") !== (sf.hero_image_url ?? "") ||
       (currentClients ?? null) !== (sf.current_clients ?? null));
