@@ -129,6 +129,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   // ── Trainer · Invite ───────────────────────────────────────
   'professional-invite': professionalInvite,
   'admin-invite': adminInvite,
+  'core-manual-invite': coreManualInvite,
 
   // ── Trainer · Onboarding (signup track) ────────────────────
   'onboarding-signup-log-in-1': onboardingSignupLogIn1,
