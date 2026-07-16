@@ -62,6 +62,9 @@ export type WebsiteDTO = {
   online_available: boolean;
   member_since: string | null;
   coaching_since_year: number | null;
+  /** Year the member's Stripe customer was first created — powers "Years established" on public pages. */
+  stripe_customer_since_year: number | null;
+
   // Subscription tier of the pro (so callers can gate Pro-only surfaces).
   tier: "verified" | "pro" | "studio" | null;
   // Trust block (public-safe summary).
