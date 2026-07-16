@@ -744,6 +744,8 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
+          stripe_customer_since_year: stripeCustomerSinceYear ?? null,
+
           tier,
           trust,
           socials: buildSocials(pro as any),
