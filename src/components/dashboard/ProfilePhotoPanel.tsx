@@ -207,7 +207,7 @@ export function ProfilePhotoPanel() {
 
   const removeMutation = useMutation({
     mutationFn: async () => {
-      const id = await userId;
+      const id = await resolveUserId();
       if (!id) throw new Error("Not signed in.");
       return saveAvatar({ data: { path: null } });
     },
@@ -220,7 +220,7 @@ export function ProfilePhotoPanel() {
   });
 
   const handlePickAvatar = async () => {
-    const id = await userId;
+    const id = await resolveUserId();
     if (!id) {
       toast.error("Not signed in.");
       return;
@@ -301,7 +301,7 @@ export function ProfilePhotoPanel() {
   const handleRemoveAvatar = () => removeMutation.mutate();
 
   const handleStartRegenerate = async () => {
-    const id = await userId;
+    const id = await resolveUserId();
     if (!id) return;
     let sourcePath = lastUploadedPath;
     if (!sourcePath && profile.avatar_url) {
