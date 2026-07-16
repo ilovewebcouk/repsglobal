@@ -524,7 +524,9 @@ function mergeLiveIntoCoach(
     })(),
     trust: sf.trust,
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
-    socials: sf.socials.length ? sf.socials : base.socials,
+    // Only show socials the coach has actually added. Never fall back to
+    // fixture placeholders (they link to "#" and mislead visitors).
+    socials: sf.socials,
     currentClients: sf.current_clients,
   };
 
@@ -1928,26 +1930,30 @@ function ContactSection({
             </div>
 
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-muted">
-                Follow my work
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {coach.socials.map((s) => (
-                  <a
-                    key={s.kind}
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={s.label}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-reps-border bg-reps-ink text-reps-text-soft transition-colors hover:border-reps-border-soft hover:text-reps-text"
-                  >
-                    <SocialIcon kind={s.kind} />
-                  </a>
-                ))}
-              </div>
+              {coach.socials.length > 0 && (
+                <>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-reps-muted">
+                    Follow my work
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {coach.socials.map((s) => (
+                      <a
+                        key={s.kind}
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={s.label}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-reps-border bg-reps-ink text-reps-text-soft transition-colors hover:border-reps-border-soft hover:text-reps-text"
+                      >
+                        <SocialIcon kind={s.kind} />
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
               <Link
                 to="/auth"
-                className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-reps-muted transition-colors hover:text-reps-text"
+                className={`${coach.socials.length > 0 ? "mt-5" : ""} inline-flex items-center gap-1.5 text-[13px] font-medium text-reps-muted transition-colors hover:text-reps-text`}
               >
                 Existing client? Log in to your portal
                 <ArrowUpRight className="h-3.5 w-3.5" />
