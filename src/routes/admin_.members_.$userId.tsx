@@ -567,31 +567,25 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
   const sub = snapshot.subscription;
 
   if (sub.source === "none") {
-    const isProvider = snapshot.account_type === "training_provider";
     return (
       <section className={cn(PANEL, "flex flex-col items-center gap-4 px-6 py-10 text-center")}>
-        <h3 className={PANEL_TITLE}>
-          {isProvider ? "Training provider — no subscription" : "No active subscription"}
-        </h3>
+        <h3 className={PANEL_TITLE}>No active subscription</h3>
         <p className="max-w-md text-sm text-white/55">
-          {isProvider
-            ? "Training providers are granted portal access via admin invite. They don't have a Stripe customer, subscription, or paid plan — this is expected."
-            : "This member isn't on a paid plan right now."}
+          This member isn't on a paid plan right now.
         </p>
-        {!isProvider && (
-          <div className="w-full max-w-xl text-left">
-            <BillingActions
-              userId={userId}
-              memberName={snapshot.full_name ?? snapshot.email ?? ""}
-              status="canceled"
-              isTrialing={false}
-              cancelAtPeriodEnd={false}
-            />
-          </div>
-        )}
+        <div className="w-full max-w-xl text-left">
+          <BillingActions
+            userId={userId}
+            memberName={snapshot.full_name ?? snapshot.email ?? ""}
+            status="canceled"
+            isTrialing={false}
+            cancelAtPeriodEnd={false}
+          />
+        </div>
       </section>
     );
   }
+
 
 
   const status = sub.status ?? "unknown";
