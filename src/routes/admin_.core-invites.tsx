@@ -93,7 +93,10 @@ function CoreInvitesPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10 text-white">
+    <main className="min-h-screen bg-reps-ink text-white">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+
+
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-2">Core invites</h1>
@@ -169,9 +172,11 @@ function CoreInvitesPage() {
           </tbody>
         </table>
       </div>
+      </div>
     </main>
   );
 }
+
 
 function NewInviteForm({ onCreated }: { onCreated: () => void | Promise<void> }) {
   const verify = useServerFn(verifyStripeCustomer);
