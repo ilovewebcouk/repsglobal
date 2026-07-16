@@ -74,7 +74,7 @@ export const AWARDING_BODIES: AwardingBody[] = [
   // Ofqual-regulated awarding bodies (fitness / coaching / sport)
   { slug: "active-iq", name: "Active IQ", aliases: ["activeiq"], regulated: true, domain: "activeiq.co.uk" },
   { slug: "ncfe", name: "NCFE", aliases: ["ncfe cache", "cache"], regulated: true, domain: "ncfe.org.uk" },
-  { slug: "focus-awards", name: "Focus Awards", regulated: true, domain: "focusawards.org.uk" },
+  { slug: "focus-awards", name: "Focus Awards", regulated: true, domain: "focusawards.org.uk", logo: "/__l5e/assets-v1/a4a92305-eae5-4c4a-a673-c2e8e68c8a52/focus-awards.png" },
   { slug: "ymca-awards", name: "YMCA Awards", aliases: ["ymca"], regulated: true, domain: "ymcaawards.co.uk" },
   { slug: "vtct", name: "VTCT", aliases: ["itec"], regulated: true, domain: "vtct.org.uk" },
   { slug: "innovate-awarding", name: "Innovate Awarding", regulated: true, domain: "innovateawarding.org" },
