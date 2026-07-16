@@ -163,6 +163,21 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: St
   );
   if (!userId) throw new Error(`No REPS user found for Stripe customer ${customerId}`);
 
+  // Capture when this Stripe customer was first created — used to compute
+  // "Years established" on public trainer pages. Best-effort: never fail
+  // the webhook if the customer lookup errors.
+  let stripeCustomerCreatedAt: string | null = null;
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!customer.deleted && typeof (customer as Stripe.Customer).created === "number") {
+      stripeCustomerCreatedAt = new Date(
+        (customer as Stripe.Customer).created * 1000,
+      ).toISOString();
+    }
+  } catch {
+    /* best-effort */
+  }
+
   const item = sub.items.data[0];
   // Prefer lookup_key (stable across sandbox/live) over the env-specific price.id.
   const priceLookup = item?.price.lookup_key ?? item?.price.id ?? null;
@@ -186,10 +201,12 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: St
     metadata: sub.metadata as unknown as object,
     environment: env,
     updated_at: new Date().toISOString(),
+    ...(stripeCustomerCreatedAt ? { stripe_customer_created_at: stripeCustomerCreatedAt } : {}),
   };
   await supabaseAdmin
     .from("subscriptions")
     .upsert(row as never, { onConflict: "user_id, environment" });
+
 
   // Training-provider (organisation) memberships: mirror the tier onto the
   // professionals row so the provider dashboard, admin surfaces and public
