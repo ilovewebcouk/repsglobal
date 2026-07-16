@@ -21,18 +21,25 @@ function normalise(raw: string): string {
   if (!v) return "";
   // Drop protocol
   v = v.replace(/^https?:\/\//i, "");
-  // Drop www.
-  v = v.replace(/^www\./i, "");
-  // Drop any known social domain prefix up to the first slash
+  // Drop query/hash early so trailing junk never survives
+  v = v.split(/[?#]/)[0] ?? "";
+  // Collapse any subdomain (www., m., uk., de., in., www.uk. …) down to the
+  // bare social host so the next replace can match it.
   v = v.replace(
-    /^(instagram\.com|tiktok\.com|x\.com|twitter\.com|youtube\.com|linkedin\.com\/in|linkedin\.com\/company|linkedin\.com)\/+/i,
+    /^(?:[a-z0-9-]+\.)+(instagram\.com|tiktok\.com|x\.com|twitter\.com|youtube\.com|linkedin\.com)\b/i,
+    "$1",
+  );
+  // Strip the host + optional path prefix (/in/, /company/, /c/, /channel/,
+  // /user/, or a leading /@ for TikTok/YouTube).
+  v = v.replace(
+    /^(?:instagram\.com|tiktok\.com|x\.com|twitter\.com|youtube\.com|linkedin\.com)(?:\/(?:in|company|c|channel|user))?\/+@?/i,
     "",
   );
-  // Drop leading @
+  // Drop leading @ (handle pasted as "@name")
   v = v.replace(/^@+/, "");
-  // Drop query/hash
-  v = v.split(/[?#]/)[0] ?? "";
-  // Drop trailing slash
+  // Keep only the first path segment — strips "/videos", "/about", etc.
+  v = v.split("/")[0] ?? "";
+  // Drop trailing slash (defensive)
   v = v.replace(/\/+$/, "");
   return v;
 }
