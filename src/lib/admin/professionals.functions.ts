@@ -392,10 +392,13 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
     // zero rows and every column renders as "Never".
     const lastLoginByUser = new Map<string, string | null>();
     try {
-      const lastLogins = await fetchAll<{ id: string; last_sign_in_at: string | null }>((c) =>
-        (supabaseAdmin.schema('auth') as unknown as {
+      const admin = supabaseAdmin as unknown as {
+        schema: (name: string) => {
           from: (t: string) => { select: (cols: string) => { in: (col: string, vals: string[]) => PromiseLike<{ data: Array<{ id: string; last_sign_in_at: string | null }> | null; error: unknown }> } };
-        }).from('users').select('id, last_sign_in_at').in('id', c),
+        };
+      };
+      const lastLogins = await fetchAll<{ id: string; last_sign_in_at: string | null }>((c) =>
+        admin.schema('auth').from('users').select('id, last_sign_in_at').in('id', c),
       );
       for (const r of lastLogins) {
         lastLoginByUser.set(r.id, r.last_sign_in_at);
