@@ -461,7 +461,7 @@ function InsuranceBody({
           {insurance.provider} · expires {insurance.expiry_date}
           {insurance.cover_amount_gbp ? ` · £${insurance.cover_amount_gbp.toLocaleString()} cover` : ""}
         </p>
-        {insurance.admin_note && (
+        {insurance.admin_note && insurance.status !== "active" && (
           <div className="mt-3 rounded-[10px] border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
             {insurance.admin_note}
           </div>
