@@ -519,19 +519,28 @@ function OverviewPane({ snapshot }: { snapshot: Member360Snapshot }) {
         <PanelHeader title="Identifiers" description="Cross-reference into Stripe and the database." />
         <div className={cn(PANEL_BODY, "flex flex-col gap-2")}>
           <IdRow label="User id" value={snapshot.user_id} />
-          <IdRow
-            label="Stripe customer"
-            value={snapshot.stripe_customer_id}
-            href={snapshot.stripe_customer_id ? `https://dashboard.stripe.com/customers/${snapshot.stripe_customer_id}` : undefined}
-          />
-          <IdRow
-            label="Stripe subscription"
-            value={sub.stripe_subscription_id}
-            href={sub.stripe_subscription_id ? `https://dashboard.stripe.com/subscriptions/${sub.stripe_subscription_id}` : undefined}
-          />
+          {snapshot.account_type === "training_provider" ? (
+            <div className="rounded-[10px] border border-sky-400/20 bg-sky-500/5 px-3 py-2 text-[12px] text-white/60">
+              Training provider — no Stripe customer or subscription. Access is granted via admin invite, not paid billing.
+            </div>
+          ) : (
+            <>
+              <IdRow
+                label="Stripe customer"
+                value={snapshot.stripe_customer_id}
+                href={snapshot.stripe_customer_id ? `https://dashboard.stripe.com/customers/${snapshot.stripe_customer_id}` : undefined}
+              />
+              <IdRow
+                label="Stripe subscription"
+                value={sub.stripe_subscription_id}
+                href={sub.stripe_subscription_id ? `https://dashboard.stripe.com/subscriptions/${sub.stripe_subscription_id}` : undefined}
+              />
+            </>
+          )}
           <IdRow label="Public slug" value={snapshot.slug} href={snapshot.slug ? `/c/${snapshot.slug}` : undefined} internal />
         </div>
       </section>
+
     </div>
   );
 }
@@ -565,24 +574,32 @@ function BillingPane({ snapshot, userId }: { snapshot: Member360Snapshot; userId
   const sub = snapshot.subscription;
 
   if (sub.source === "none") {
+    const isProvider = snapshot.account_type === "training_provider";
     return (
       <section className={cn(PANEL, "flex flex-col items-center gap-4 px-6 py-10 text-center")}>
-        <h3 className={PANEL_TITLE}>No active subscription</h3>
+        <h3 className={PANEL_TITLE}>
+          {isProvider ? "Training provider — no subscription" : "No active subscription"}
+        </h3>
         <p className="max-w-md text-sm text-white/55">
-          This member isn't on a paid plan right now.
+          {isProvider
+            ? "Training providers are granted portal access via admin invite. They don't have a Stripe customer, subscription, or paid plan — this is expected."
+            : "This member isn't on a paid plan right now."}
         </p>
-        <div className="w-full max-w-xl text-left">
-          <BillingActions
-            userId={userId}
-            memberName={snapshot.full_name ?? snapshot.email ?? ""}
-            status="canceled"
-            isTrialing={false}
-            cancelAtPeriodEnd={false}
-          />
-        </div>
+        {!isProvider && (
+          <div className="w-full max-w-xl text-left">
+            <BillingActions
+              userId={userId}
+              memberName={snapshot.full_name ?? snapshot.email ?? ""}
+              status="canceled"
+              isTrialing={false}
+              cancelAtPeriodEnd={false}
+            />
+          </div>
+        )}
       </section>
     );
   }
+
 
   const status = sub.status ?? "unknown";
   const statusClass = cn(
