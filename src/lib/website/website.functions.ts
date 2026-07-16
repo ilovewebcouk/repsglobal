@@ -679,7 +679,9 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
         fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
         loadProfessionalGymVenues(supabaseAdmin, pro.id),
+        fetchStripeCustomerSinceYear(supabaseAdmin, pro.id),
       ]);
+
 
       const sfRow = sf ?? {
         professional_id: pro.id,
