@@ -235,12 +235,20 @@ function ProviderCardTile({ row }: { row: ProviderCard }) {
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
-              REPS Verified
-            </span>
-          </div>
+          {row.verified ? (
+            <div className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.2} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                REPS Verified
+              </span>
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-black/45">
+                Unverified
+              </span>
+            </div>
+          )}
           {row.rating_avg != null && row.review_count > 0 ? (
             <span className="inline-flex items-center gap-1 text-[12.5px] text-black/60">
               <Star className="h-3.5 w-3.5 fill-[#FF7A00] text-[#FF7A00]" strokeWidth={0} />
