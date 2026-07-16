@@ -14,6 +14,7 @@ export interface TemplateEntry {
 // ─────────────────────────────────────────────────────────────
 import { template as professionalInvite } from './trainer/invite/professional-invite'
 import { template as adminInvite } from './trainer/invite/admin-invite'
+import { template as coreManualInvite } from './trainer/invite/core-manual-invite'
 
 // ─────────────────────────────────────────────────────────────
 // Trainer — onboarding
@@ -128,6 +129,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   // ── Trainer · Invite ───────────────────────────────────────
   'professional-invite': professionalInvite,
   'admin-invite': adminInvite,
+  'core-manual-invite': coreManualInvite,
 
   // ── Trainer · Onboarding (signup track) ────────────────────
   'onboarding-signup-log-in-1': onboardingSignupLogIn1,

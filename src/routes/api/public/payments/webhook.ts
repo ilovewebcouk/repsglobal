@@ -657,6 +657,113 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   console.error("[cert-batch] issuance failed", e);
                 }
                 userId = meta.provider_id || null;
+              } else if (session.mode === "setup" && meta.kind === "admin_core_invite" && meta.token_id) {
+                // Admin-invited Core member has added their card. Attach it,
+                // create the trialing Core subscription anchored on their
+                // last-payment anniversary, and publish their profile.
+                const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+                const { data: token } = await supabaseAdmin
+                  .from("billing_setup_tokens")
+                  .select("id, user_id, professional_id, stripe_customer_id, target_renewal_at, email, consumed_at")
+                  .eq("id", meta.token_id)
+                  .maybeSingle();
+                const tokenRow = token as any;
+                if (tokenRow && !tokenRow.consumed_at && tokenRow.stripe_customer_id) {
+                  // Retrieve the SetupIntent to get the payment method.
+                  const setupIntentId =
+                    typeof session.setup_intent === "string"
+                      ? session.setup_intent
+                      : session.setup_intent?.id;
+                  if (setupIntentId) {
+                    const si = await stripe.setupIntents.retrieve(setupIntentId);
+                    const pmId = typeof si.payment_method === "string" ? si.payment_method : si.payment_method?.id;
+                    if (pmId) {
+                      // Attach if not already, then set as default.
+                      try {
+                        await stripe.paymentMethods.attach(pmId, { customer: tokenRow.stripe_customer_id });
+                      } catch (e) {
+                        // Already attached is fine.
+                        if (!/already been attached/i.test(String((e as any)?.message ?? ""))) throw e;
+                      }
+                      await stripe.customers.update(tokenRow.stripe_customer_id, {
+                        invoice_settings: { default_payment_method: pmId },
+                      });
+
+                      // Resolve the Core price via lookup key.
+                      const priceList = await stripe.prices.list({
+                        lookup_keys: ["verified_annual"],
+                        limit: 1,
+                      });
+                      const corePrice = priceList.data[0];
+                      if (!corePrice) throw new Error("Core price not found for lookup key verified_annual");
+
+                      const anniversaryTs = Math.floor(new Date(tokenRow.target_renewal_at as string).getTime() / 1000);
+
+                      // Create subscription: trial until anniversary so first
+                      // charge lands exactly on that date.
+                      const sub = await stripe.subscriptions.create({
+                        customer: tokenRow.stripe_customer_id,
+                        items: [{ price: corePrice.id }],
+                        trial_end: anniversaryTs,
+                        billing_cycle_anchor: anniversaryTs,
+                        proration_behavior: "none",
+                        default_payment_method: pmId,
+                        metadata: {
+                          source: "admin_core_invite",
+                          token_id: tokenRow.id,
+                          tier: "verified",
+                          billing_period: "annual",
+                          reps_user_id: tokenRow.user_id ?? "",
+                        },
+                      });
+
+                      // Upsert subscriptions row.
+                      userId = await upsertSubscriptionFromStripe(sub, stripe, env);
+
+                      // Publish the professional.
+                      if (tokenRow.professional_id) {
+                        await supabaseAdmin
+                          .from("professionals")
+                          .update({
+                            is_published: true,
+                            admin_seeded_public: true,
+                          } as never)
+                          .eq("id", tokenRow.professional_id);
+                      }
+
+                      // Mark token consumed.
+                      await supabaseAdmin
+                        .from("billing_setup_tokens")
+                        .update({
+                          consumed_at: new Date().toISOString(),
+                          consumed_stripe_subscription_id: sub.id,
+                        } as never)
+                        .eq("id", tokenRow.id);
+
+                      // Welcome email (best-effort).
+                      try {
+                        const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
+                        const anniversary = new Date(tokenRow.target_renewal_at as string);
+                        await sendTransactionalEmailServer({
+                          templateName: "purchase-confirmation",
+                          recipientEmail: tokenRow.email as string,
+                          idempotencyKey: `admin-core-invite:${tokenRow.id}`,
+                          templateData: {
+                            tierLabel: "REPS Core",
+                            amountText: "£34",
+                            periodText: "/year",
+                            proName: null,
+                            renewalDate: anniversary.toLocaleDateString("en-GB", {
+                              day: "numeric", month: "long", year: "numeric",
+                            }),
+                          },
+                        });
+                      } catch (e) {
+                        console.warn("[admin-core-invite] welcome email failed", e);
+                      }
+                    }
+                  }
+                }
               } else if (session.mode === "subscription" && session.subscription) {
                 // Deferred signup (Option 1): if this checkout was started
                 // from /signup before any auth.users row existed, mint the

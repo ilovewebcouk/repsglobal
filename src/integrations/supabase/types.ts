@@ -541,6 +541,7 @@ export type Database = {
       billing_setup_tokens: {
         Row: {
           bd_member_id: number | null
+          client_reference: string | null
           consumed_at: string | null
           consumed_stripe_subscription_id: string | null
           created_at: string
@@ -548,14 +549,20 @@ export type Database = {
           expires_at: string
           id: string
           kind: string
+          professional_id: string | null
           reminders_sent: Json
+          revoked_at: string | null
+          sent_at: string | null
+          stripe_customer_id: string | null
           target_renewal_at: string | null
+          target_tier: string | null
           token: string
           updated_at: string
           user_id: string | null
         }
         Insert: {
           bd_member_id?: number | null
+          client_reference?: string | null
           consumed_at?: string | null
           consumed_stripe_subscription_id?: string | null
           created_at?: string
@@ -563,14 +570,20 @@ export type Database = {
           expires_at?: string
           id?: string
           kind: string
+          professional_id?: string | null
           reminders_sent?: Json
+          revoked_at?: string | null
+          sent_at?: string | null
+          stripe_customer_id?: string | null
           target_renewal_at?: string | null
+          target_tier?: string | null
           token: string
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           bd_member_id?: number | null
+          client_reference?: string | null
           consumed_at?: string | null
           consumed_stripe_subscription_id?: string | null
           created_at?: string
@@ -578,8 +591,13 @@ export type Database = {
           expires_at?: string
           id?: string
           kind?: string
+          professional_id?: string | null
           reminders_sent?: Json
+          revoked_at?: string | null
+          sent_at?: string | null
+          stripe_customer_id?: string | null
           target_renewal_at?: string | null
+          target_tier?: string | null
           token?: string
           updated_at?: string
           user_id?: string | null
@@ -591,6 +609,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bd_member_seed"
             referencedColumns: ["bd_member_id"]
+          },
+          {
+            foreignKeyName: "billing_setup_tokens_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_setup_tokens_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
           },
         ]
       }

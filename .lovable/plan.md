@@ -1,64 +1,111 @@
-## Reframe
-The aside stops pretending to be a second plan card. It becomes a **"Pay-per-completion" panel** whose job is to make the £15 feel earned, not scary — by showing the artefact the learner (and their future employer) actually receives.
+## Goal
+Let an admin manually onboard trainers onto **Core (£34/yr)** whose Stripe customer already exists, by drafting an invite, sending an email, and only publishing their profile once (a) they've claimed the account and (b) a payment method is on file. First billing hits on the anniversary of their last payment — not today.
 
-Hero of the box is a **miniature certificate mockup**, not a price. Price is a supporting caption. Deliverables are captions on the artefact, not a bullet list.
-
-## New layout inside the existing `<aside>` (still `src/routes/training-providers.tsx` 674–692)
+## Flow at a glance
 
 ```text
-┌──────────────────────────────────────────────┐
-│  ▸ eyebrow: "Pay only when they finish"      │
-│                                              │
-│  ┌────────────────────────────────────────┐  │  ← mini-certificate
-│  │  REPs · verified                       │  │    (mocked in JSX,
-│  │  Certificate of Achievement            │  │     ~ 3:4 ratio,
-│  │  ——————————————                        │  │     subtle paper
-│  │  Awarded to  •  Learner Name           │  │     texture, gold
-│  │  Level 3 Personal Trainer              │  │     hairline border,
-│  │  Provider · Your Academy               │  │     tiny QR block
-│  │                                        │  │     bottom-right)
-│  │  ID · REPS-C-A73F   ▢ QR               │  │
-│  └────────────────────────────────────────┘  │
-│                                              │
-│  £15  per learner completion                 │  ← price demoted to
-│                                              │    caption row
-│  ✓ Achievement cert   ✓ Unit summary         │  ← 2×2 chip grid
-│  ✓ Public verify URL  ✓ QR                   │    of deliverables
-│                                              │
-│  ─────────────────────────────────────────   │
-│  Small print: 30-day refund if REPs can't    │
-│  endorse any course. Membership is annual;   │
-│  cancellation is immediate.                  │
-└──────────────────────────────────────────────┘
+Admin creates draft  →  Verifies Stripe customer  →  Drafts email
+                                                       │
+                                              admin clicks Send
+                                                       ▼
+Trainer opens link  →  /activate/$token  →  set password (auth.users created)
+                                                       ▼
+                                     Stripe Checkout (mode=setup, customer=cus_xxx)
+                                                       ▼
+                                     Webhook: SetupIntent.succeeded
+                                       │  attach PM as customer default
+                                       │  create Core subscription:
+                                       │    price = core_annual
+                                       │    trial_end = anniversary
+                                       │    billing_cycle_anchor = anniversary
+                                       │    proration_behavior = none
+                                       │    default_payment_method = that PM
+                                       ▼
+                              Profile flips to public + verified badge
+                              "Welcome to Core" email sent
 ```
 
-## What actually changes in JSX
+First charge only happens on the anniversary — Stripe issues an invoice that day and auto-charges the saved card.
 
-1. **Eyebrow:** replace the existing "Learner certificates" pill copy with "Pay only when they finish." Same pill component, same tokens.
-2. **Mini-certificate mock** (new inline JSX, ~40 lines, no new file):
-   - Rounded card, `rounded-[14px] border border-white/12 bg-gradient-to-br from-white/[0.04] to-white/[0.02]`, `aspect-[4/3]`, `p-5`.
-   - Top row: tiny REPs lockup + "verified" badge in emerald (status-only, per memory).
-   - Serif display title "Certificate of Achievement" (`font-display`).
-   - Hairline divider.
-   - "Awarded to · Learner Name" (placeholder styled as writing-line grey).
-   - Course line: "Level 3 Personal Trainer".
-   - Provider line: "Your Academy".
-   - Bottom row: `ID · REPS-C-A73F` on left, a stylised 6×6 CSS QR block on right (pure divs, no image dependency).
-   - No real names, no real photos — clearly a template, not a fake credential.
-3. **Price row:** `£15` at `text-[28px]` (not 52px), inline "per learner completion" at `text-[13px] text-white/60`. Sits under the certificate, not above it.
-4. **Deliverables grid:** 2×2 grid of small chip rows using existing `CheckCircle2` (`h-3.5 w-3.5 text-reps-orange`) + label at `text-[13px] text-white/75`. Labels: "Achievement certificate", "Learner unit summary", "Public verification URL", "Scannable QR code".
-5. **Fine print:** unchanged position, but split into two lines separated by ` · `, dropped to `text-[12px] text-white/40`, above a `border-t border-reps-border/50 pt-4 mt-6`.
+## Data model
 
-## Why this is stronger than v1
-- **Shows the thing.** A prospect can see what their learner gets in half a second; text bullets can't do that.
-- **Fixes the pricing hierarchy.** £15 stops competing with £479. It reads as a per-outcome caption on an artefact, which is what it actually is.
-- **Trust from design, not adjectives.** Emerald "verified" chip + QR + ID number carry the credibility the current comma-soup sentence was trying to earn.
-- **Reusable.** The same mini-cert component can be lifted into `/for-professionals`, the CPD page, and comparison pages later. Not building it as a separate file yet — inline — but structured so extraction is a copy-paste.
+Reuse `billing_setup_tokens` — schema already fits. One new column via migration:
 
-## Out of scope
-- No changes to price value, membership card, `ORG_TIERS`, Stripe wiring, or any other section of the page.
-- No new image assets (the certificate is pure JSX/CSS — no generation, no `<img>`).
-- No new component files this pass; if we reuse it in another page later, we extract then.
+```sql
+ALTER TABLE public.billing_setup_tokens
+  ADD COLUMN professional_id uuid REFERENCES public.professionals(id) ON DELETE SET NULL,
+  ADD COLUMN stripe_customer_id text,
+  ADD COLUMN target_tier public.subscription_tier;
+CREATE INDEX billing_setup_tokens_professional_idx
+  ON public.billing_setup_tokens(professional_id)
+  WHERE professional_id IS NOT NULL;
+```
 
-## Note on the snapshot you asked for
-I tried to capture the current aside via headless Chromium against the sandbox preview and it returned `403 Forbidden` on the localhost dev server, so I read the exact JSX (lines 674–692) directly instead. If you want a rendered before/after, I can capture it against the published preview URL once we're in build mode.
+No new tables. The existing `professionals` row is created upfront in a **hidden** state (`is_public=false`, no verified badge). It flips public only when the webhook confirms both a saved PM and an active/trialing Core subscription.
+
+## Server functions (auth-required, admin-only)
+
+All live under `src/lib/admin/core-invites.functions.ts` — no new client-imported `.server.ts` files.
+
+1. **`verifyStripeCustomer({ stripe_customer_id })`** — server-side, uses `supabaseAdmin` only after role-check. Calls Stripe `customers.retrieve` and returns `{ email, name, created, has_payment_method, currency }`. Admin UI shows this **before** the "Save draft" button is enabled. Prevents fat-finger disasters.
+2. **`createCoreInvite({ full_name, email, slug, stripe_customer_id, last_paid_at })`**
+   - Re-verifies the customer server-side (never trust the client's earlier check).
+   - Inserts hidden `professionals` row + `pending_signups` mapping.
+   - Inserts `billing_setup_tokens` row: `kind='setup'`, `target_tier='core'`, `target_renewal_at = last_paid_at + 1 year` (rejected if already in the past — admin picks a next-anniversary date).
+   - Returns the draft record. **Does not send the email.**
+3. **`sendCoreInvite({ token_id })`** — dispatches the transactional email via existing `/lovable/email/transactional/send`. Sets `admin_pro_invites.email_message_id` equivalent on the token row for audit. Idempotent: won't re-send within 24h without explicit `force: true`.
+4. **`resendCoreInvite({ token_id })`** — thin wrapper on `sendCoreInvite` with `force: true`, logs into `reminders_sent`.
+5. **`revokeCoreInvite({ token_id })`** — sets `consumed_at` with a `revoked` marker; deletes the hidden professional row if not yet claimed.
+
+## Public routes (unauthenticated)
+
+- **`/activate/$token`** — validates token, presents "Set your password" form; on submit, creates `auth.users`, links to the hidden professional row, then hands off to Stripe Checkout in `setup` mode with `customer=cus_xxx` prefilled and success/cancel URLs. This is a new file `src/routes/activate.$token.tsx`.
+- **Success return** goes to `/activate/$token/finishing` which polls the subscription state until the webhook has done its work, then routes the trainer to their new dashboard.
+
+## Webhook (edit existing `src/routes/api/public/payments/webhook.ts`)
+
+Handle `checkout.session.completed` where `mode === 'setup'`:
+1. Look up the token by `client_reference_id` (set when creating the Checkout session).
+2. Retrieve the SetupIntent, attach the PM to the customer, `stripe.customers.update({ invoice_settings: { default_payment_method } })`.
+3. `stripe.subscriptions.create({ customer, items: [{ price: CORE_ANNUAL }], trial_end: target_renewal_at, billing_cycle_anchor: target_renewal_at, proration_behavior: 'none', default_payment_method, metadata: { source: 'admin_core_invite', token_id } })`.
+4. Upsert `subscriptions` row (`tier='core'`, `status='trialing'` → will become `active` on anniversary automatically).
+5. Flip professional to `is_public=true`, mark `consumed_at` + `consumed_stripe_subscription_id` on the token.
+6. Fire "Welcome to Core, your card is on file, first payment on {anniversary}" email.
+
+No change to the existing member cancel/dispute paths — they already handle Core subs.
+
+## Admin UI (new route `src/routes/_authenticated/admin/core-invites.tsx`)
+
+Single page, three states:
+
+1. **List** — draft / sent / claimed / expired / revoked. Uses shadcn `Table` + `Badge` for status (emerald "Claimed" only, per the status-colour memory).
+2. **New invite drawer** (`Sheet`) with a `FieldGroup`:
+   - Full name, email, slug (auto-suggested from name), Stripe customer ID, last-payment date (date picker).
+   - Below the Stripe customer ID field: a "Verify" button. On success shows a small confirmation card ("This Stripe customer is `jane@example.com` — Jane Doe, created May 2023, card on file: yes"). Admin must click "Looks right" before Save is enabled.
+   - "Save as draft" → creates but doesn't email.
+3. **Draft detail dialog** — full email preview (rendered from the actual React Email template), plus "Send now" and "Discard".
+
+## Email template
+
+New template `src/lib/email-templates/core-manual-invite.tsx` — copy is straightforward: "Your REPs Core membership is ready to activate. Set your password and add a card — your first payment of £34 is on {anniversary_date}." One CTA button → `/activate/$token`. No "migration"/"legacy"/"honour price" language anywhere (locked constraint). Register in `src/lib/email-templates/registry.ts`.
+
+## Failure modes handled
+
+- **Wrong customer ID** — blocked by the Verify step; admin cannot save without confirming Stripe returned a matching human.
+- **Anniversary already past** — server function rejects; admin must set a next-anniversary date. Otherwise Stripe would attempt an immediate charge.
+- **Trainer sets password but abandons Stripe** — professional stays hidden, token stays open, admin can resend. `reminders_sent` tracks nudges.
+- **Trainer detaches card before anniversary** — Stripe invoice fails → existing `invoice.payment_failed` handler flips `payment_standing` and mutes the profile. No new code needed.
+- **Duplicate invite for same email** — server function checks for an unconsumed token on that email and returns the existing one instead of creating a second.
+
+## Explicitly out of scope
+
+- Bulk CSV import. If you need it later, wrap `createCoreInvite` in a loop; not building it now.
+- Pro-tier (£59/mo) manual invites — this pass is Core-only. Pro uses the different subscription-mode Checkout path.
+- Changing the £34 price, the Core webhook branch's cancel/dispute logic, or the public-facing pricing pages.
+- Anything to do with `admin_pro_invites` (that's the from-scratch-signup path — different problem).
+
+## Brutal-truth risks I'm not hiding
+
+1. **You extend up to 12 months of free visibility per trainer.** A saved card is not money in the bank — it's just permission to try. If the "public before paid" window is what actually worries you, the alternative is: charge £34 today with `proration_behavior=create_prorations` and `billing_cycle_anchor=anniversary`, so they pay a prorated amount now and the full amount every anniversary. Say the word and I'll swap the flow — everything else stays identical.
+2. **Manual Stripe customer IDs are the weakest link.** The Verify step is the only thing between "great UX" and "publishing the wrong person's card on file." If Verify fails or Stripe is down, the admin cannot save — that's the correct behaviour, not a bug to work around.
+3. **Password + payment in one sitting is a lot.** Expect ~15–25% of trainers to drop off between password-set and card-saved. `resendCoreInvite` + reminder cadence built in from day one is why.
