@@ -13,7 +13,9 @@ import {
   validateAvatar,
   commitAvatar,
   regenerateAvatar,
+  createAvatarUploadUrl,
 } from "@/lib/profile/avatar-ai.functions";
+
 import { initialsFromName } from "@/lib/initials";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -67,12 +69,18 @@ function pickFile(accept: string, maxBytes: number): Promise<File | null> {
   });
 }
 
-async function uploadFileToAvatars(path: string, file: Blob, contentType: string): Promise<void> {
+async function uploadToSignedAvatarUrl(
+  path: string,
+  token: string,
+  file: Blob,
+  contentType: string,
+): Promise<void> {
   const { error } = await supabase.storage
     .from("avatars")
-    .upload(path, file, { cacheControl: "31536000", upsert: true, contentType });
+    .uploadToSignedUrl(path, token, file, { contentType, upsert: true });
   if (error) throw error;
 }
+
 
 async function loadImageBitmap(file: File): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);
@@ -163,22 +171,7 @@ export function ProfilePhotoPanel() {
   const runValidate = useServerFn(validateAvatar);
   const runCommit = useServerFn(commitAvatar);
   const runRegenerate = useServerFn(regenerateAvatar);
-
-  // Resolve the current signed-in user id at click time, refreshing the
-  // JWT first so storage RLS sees a valid auth.uid(). A stale/rotated
-  // token silently fails the avatars INSERT policy with the generic
-  // "new row violates row-level security policy" error.
-  const resolveUserId = React.useCallback(async (): Promise<string | null> => {
-    try {
-      await supabase.auth.refreshSession();
-    } catch {
-      /* ignore — fall through to getUser() which will surface the real state */
-    }
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) return null;
-    return data.user.id;
-  }, []);
-
+  const runCreateUploadUrl = useServerFn(createAvatarUploadUrl);
 
   const [avatarBusy, setAvatarBusy] = React.useState<
     null | "uploading" | "validating" | "cropping" | "generating"
@@ -206,11 +199,7 @@ export function ProfilePhotoPanel() {
   };
 
   const removeMutation = useMutation({
-    mutationFn: async () => {
-      const id = await resolveUserId();
-      if (!id) throw new Error("Not signed in.");
-      return saveAvatar({ data: { path: null } });
-    },
+    mutationFn: async () => saveAvatar({ data: { path: null } }),
     onSuccess: () => {
       toast.success("Profile photo removed.");
       setLastUploadedPath(null);
@@ -220,19 +209,11 @@ export function ProfilePhotoPanel() {
   });
 
   const handlePickAvatar = async () => {
-    // Open the OS file picker FIRST, synchronously in the same tick as the
-    // click. Any await before pickFile() (e.g. refreshing the Supabase
-    // session) drops the user-gesture context, which makes Safari/iOS —
-    // and increasingly Chrome — silently ignore input.click(). Do auth
-    // work AFTER the user has chosen a file.
-    const filePromise = pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
-
-    const [f, id] = await Promise.all([filePromise, resolveUserId()]);
+    // Open the OS file picker synchronously in the same tick as the click —
+    // any await before pickFile() would drop the user-gesture context and
+    // Safari/Chrome would silently ignore the file dialog.
+    const f = await pickFile("image/png,image/jpeg", 4 * 1024 * 1024);
     if (!f) return;
-    if (!id) {
-      toast.error("Not signed in.");
-      return;
-    }
 
     if (f.type === "image/svg+xml" || /\.svg$/i.test(f.name)) {
       setRejection({
@@ -260,8 +241,13 @@ export function ProfilePhotoPanel() {
     try {
       setAvatarBusy("uploading");
       const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
-      tempPath = `${id}/pending-${Date.now()}.${ext}`;
-      await uploadFileToAvatars(tempPath, f, f.type || "image/jpeg");
+
+      // Server mints a signed upload URL scoped to the authenticated (or
+      // impersonated) userId. Bypasses client-side storage RLS entirely —
+      // storage-service JWT quirks (e.g. aud=array) no longer block us.
+      const signed = await runCreateUploadUrl({ data: { kind: "pending", ext } });
+      tempPath = signed.path;
+      await uploadToSignedAvatarUrl(signed.path, signed.token, f, f.type || "image/jpeg");
 
       setAvatarBusy("validating");
       let result;
@@ -285,8 +271,9 @@ export function ProfilePhotoPanel() {
       setAvatarBusy("cropping");
       const croppedBlob = await cropPortraitToJpegBlob(f, result.faceBox);
 
-      const finalPath = `${id}/avatar-${Date.now()}.jpg`;
-      await uploadFileToAvatars(finalPath, croppedBlob, "image/jpeg");
+      const finalSigned = await runCreateUploadUrl({ data: { kind: "final", ext: "jpg" } });
+      const finalPath = finalSigned.path;
+      await uploadToSignedAvatarUrl(finalSigned.path, finalSigned.token, croppedBlob, "image/jpeg");
       await supabase.storage.from("avatars").remove([tempPath]).catch(() => {});
       tempPath = null;
 
@@ -305,11 +292,11 @@ export function ProfilePhotoPanel() {
     }
   };
 
+
+
   const handleRemoveAvatar = () => removeMutation.mutate();
 
   const handleStartRegenerate = async () => {
-    const id = await resolveUserId();
-    if (!id) return;
     let sourcePath = lastUploadedPath;
     if (!sourcePath && profile.avatar_url) {
       toast.error("Please upload a fresh photo first, then generate a professional version.");
@@ -318,6 +305,7 @@ export function ProfilePhotoPanel() {
     if (!sourcePath) return;
     setRegenState({ step: "confirm", sourcePath, attempt: 0 });
   };
+
 
   const handleConfirmRegenerate = async () => {
     if (!regenState || regenState.step !== "confirm") return;

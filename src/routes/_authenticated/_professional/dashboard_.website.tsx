@@ -433,9 +433,11 @@ function WebsiteEditorPage() {
   const publishStateQuery = useQuery({
     queryKey: ["my-website-publish-state"],
     queryFn: () => fetchPublishStateFn(),
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
+    // Editor invalidates this key after every save/publish, so background
+    // window-focus refetches only cause a "Loading…" flash without adding
+    // freshness. Keep it stable while the tab is idle.
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
   const publishState = publishStateQuery.data;
   const publishNowFn = useServerFn(publishMyWebsite);
@@ -458,11 +460,11 @@ function WebsiteEditorPage() {
   const sectionDiffQuery = useQuery({
     queryKey: ["my-website-section-diff"],
     queryFn: () => fetchSectionDiffFn(),
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
   const sectionDiff = sectionDiffQuery.data;
+
 
   // Optimistic dirty tracker. Any mutation success anywhere in the editor
   // bumps `localDirtyBump`; publish/discard reset `publishedDirtyBaseline`
