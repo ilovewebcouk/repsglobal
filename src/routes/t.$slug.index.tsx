@@ -22,11 +22,11 @@ import {
 import {
   getWebsiteBySlug,
   type WebsiteDTO,
-  type WebsiteFaqDTO,
 } from "@/lib/website/website.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
 import { getPublicProviderIssuedCertificateCount } from "@/lib/providers/public-stats.functions";
+import { listPublicProviderFaqs } from "@/lib/provider-faqs/provider-faqs.functions";
 import repsLogo from "@/assets/brand/logo-dark.svg";
 import { AWARDING_BODIES, awardingBodyName, awardingBodyLogo } from "@/lib/cpd/awarding-bodies";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -251,7 +251,14 @@ function ProviderProfilePage() {
   }, [regulatedRows]);
 
   const verifiedProsLinked = 0;
-  const faqs: WebsiteFaqDTO[] = [];
+
+  const fetchFaqs = useServerFn(listPublicProviderFaqs);
+  const { data: faqData } = useQuery({
+    queryKey: ["public-provider-faqs", slug],
+    queryFn: () => fetchFaqs({ data: { slug } }),
+    staleTime: 60_000,
+  });
+  const faqs = faqData?.faqs ?? [];
 
   return (
     <div className="min-h-screen bg-[#f7f6f2] text-black antialiased">

@@ -26,6 +26,7 @@ import { getMyProviderNameStatus } from "@/lib/verification/provider-name.functi
 import { getProviderDomainVerification } from "@/lib/verification/provider-domain.functions";
 import { getProviderVerificationSummary } from "@/lib/verification/provider-verification.functions";
 import { listMyProviderChanges } from "@/lib/verification/provider-changes.functions";
+import { ProviderFaqsSection } from "./ProviderFaqsSection";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
@@ -492,6 +493,9 @@ export function ProviderProfilePage() {
             />
           </div>
         </PPanel>
+
+        {/* FAQs */}
+        <ProviderFaqsSection />
       </div>
     </DashboardShell>
   );

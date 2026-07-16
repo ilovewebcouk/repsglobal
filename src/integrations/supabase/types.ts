@@ -4100,6 +4100,66 @@ export type Database = {
           },
         ]
       }
+      provider_faqs: {
+        Row: {
+          answer: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          generated_at: string | null
+          id: string
+          position: number
+          professional_id: string
+          question: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          generated_at?: string | null
+          id?: string
+          position?: number
+          professional_id: string
+          question: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          generated_at?: string | null
+          id?: string
+          position?: number
+          professional_id?: string
+          question?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_faqs_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_faqs_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_identity_review_queue"
+            referencedColumns: ["professional_id"]
+          },
+        ]
+      }
       provider_name_requests: {
         Row: {
           admin_note: string | null
