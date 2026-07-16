@@ -241,7 +241,7 @@ function TrainingAcademyPage() {
                   </EmptyContent>
                 </Empty>
               ) : (
-                <div className="divide-y divide-black/10 rounded-[18px] border border-black/10 bg-white px-5 sm:px-6">
+                <div className="flex flex-col gap-4">
                   {filtered.map((c) => (
                     <CourseRow key={c.id} course={c} />
                   ))}
