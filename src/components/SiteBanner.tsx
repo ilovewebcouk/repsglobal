@@ -8,9 +8,15 @@ import { ArrowRight } from "lucide-react";
  */
 export function SiteBanner() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Training Academy has its own sticky filter rail that already competes
+  // for vertical space — the promo strip is suppressed there.
+  if (pathname.startsWith("/training-academy")) return null;
+
   const isProviderSurface =
     pathname.startsWith("/training-providers") ||
     pathname.startsWith("/for-training-providers");
+
 
   if (isProviderSurface) {
     return (
