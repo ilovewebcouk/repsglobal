@@ -1,0 +1,3 @@
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS stripe_customer_created_at timestamptz;
+COMMENT ON COLUMN public.subscriptions.stripe_customer_created_at IS 'Stripe customer.created timestamp — used to compute "years established" on public trainer pages. Captured from Stripe on verify/webhook sync and via admin backfill.';
+CREATE INDEX IF NOT EXISTS subscriptions_stripe_customer_created_at_idx ON public.subscriptions (stripe_customer_created_at) WHERE stripe_customer_created_at IS NOT NULL;

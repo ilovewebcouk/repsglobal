@@ -62,6 +62,9 @@ export type WebsiteDTO = {
   online_available: boolean;
   member_since: string | null;
   coaching_since_year: number | null;
+  /** Year the member's Stripe customer was first created — powers "Years established" on public pages. */
+  stripe_customer_since_year: number | null;
+
   // Subscription tier of the pro (so callers can gate Pro-only surfaces).
   tier: "verified" | "pro" | "studio" | null;
   // Trust block (public-safe summary).
@@ -287,6 +290,32 @@ async function fetchCoachingSinceYear(
     if (y != null && (earliest == null || y < earliest)) earliest = y;
   }
   return earliest;
+}
+
+// Helper: year the member's Stripe customer was first created. Used to
+// power the "Years established" number on the public trainer page — the
+// signup year is the real signal, not a hand-entered field.
+async function fetchStripeCustomerSinceYear(
+  supabaseAdmin: { from: (t: string) => any },
+  professionalId: string,
+): Promise<number | null> {
+  const { data } = await supabaseAdmin
+    .from("subscriptions")
+    .select("stripe_customer_created_at, created_at")
+    .eq("user_id", professionalId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  const raw =
+    (data as { stripe_customer_created_at: string | null; created_at: string | null })
+      .stripe_customer_created_at ??
+    (data as { created_at: string | null }).created_at ??
+    null;
+  if (!raw) return null;
+  const parsed = new Date(raw);
+  if (isNaN(parsed.getTime())) return null;
+  return parsed.getFullYear();
 }
 
 // Helper: public-safe trust summary used by both website readers.
@@ -590,9 +619,10 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     };
 
     if (!previewOk && hasPublishedSnapshot) {
-      const [liveTrust, liveCoachingSinceYear] = await Promise.all([
+      const [liveTrust, liveCoachingSinceYear, liveStripeSinceYear] = await Promise.all([
         fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
         fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+        fetchStripeCustomerSinceYear(supabaseAdmin, pro.id),
       ]);
       payload = {
         ...snap!,
@@ -600,10 +630,13 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           ...snap!.website,
           trust: liveTrust,
           coaching_since_year: liveCoachingSinceYear ?? snap!.website.coaching_since_year,
+          stripe_customer_since_year:
+            liveStripeSinceYear ?? snap!.website.stripe_customer_since_year ?? null,
         },
       };
+
     } else {
-      const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
+      const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues, stripeCustomerSinceYear] = await Promise.all([
         supabaseAdmin
           .from("websites")
           .select(
@@ -646,7 +679,9 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
         fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
         loadProfessionalGymVenues(supabaseAdmin, pro.id),
+        fetchStripeCustomerSinceYear(supabaseAdmin, pro.id),
       ]);
+
 
       const sfRow = sf ?? {
         professional_id: pro.id,
@@ -709,6 +744,8 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
+          stripe_customer_since_year: stripeCustomerSinceYear ?? null,
+
           tier,
           trust,
           socials: buildSocials(pro as any),
@@ -799,11 +836,13 @@ export const getMyWebsite = createServerFn({ method: "GET" })
 
     if (!pro) return { website: null, services: [] };
 
-    const [coachingSinceYear, trust, gymVenues] = await Promise.all([
+    const [coachingSinceYear, trust, gymVenues, stripeCustomerSinceYear] = await Promise.all([
       fetchCoachingSinceYear(supabaseAdmin, userId, pro.primary_title_slug ?? null),
       fetchTrustSummary(supabaseAdmin, userId, pro.primary_title_slug ?? null, true),
       loadProfessionalGymVenues(supabaseAdmin, userId),
+      fetchStripeCustomerSinceYear(supabaseAdmin, userId),
     ]);
+
 
     const tier =
       subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
@@ -865,6 +904,8 @@ export const getMyWebsite = createServerFn({ method: "GET" })
           online_available: !!pro.online_available,
           member_since: pro.member_since ?? null,
           coaching_since_year: coachingSinceYear,
+          stripe_customer_since_year: stripeCustomerSinceYear ?? null,
+
           tier,
           trust,
           socials: buildSocials(pro as any),

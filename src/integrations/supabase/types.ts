@@ -5586,6 +5586,7 @@ export type Database = {
           owner_type: Database["public"]["Enums"]["subscription_owner_type"]
           payment_standing: string
           status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_created_at: string | null
           stripe_customer_id: string | null
           stripe_price_id: string | null
           stripe_subscription_id: string | null
@@ -5614,6 +5615,7 @@ export type Database = {
           owner_type?: Database["public"]["Enums"]["subscription_owner_type"]
           payment_standing?: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_created_at?: string | null
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
           stripe_subscription_id?: string | null
@@ -5642,6 +5644,7 @@ export type Database = {
           owner_type?: Database["public"]["Enums"]["subscription_owner_type"]
           payment_standing?: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_created_at?: string | null
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
           stripe_subscription_id?: string | null

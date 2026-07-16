@@ -180,8 +180,13 @@ function ProviderProfilePage() {
   const location = sf.address?.trim() || sf.city?.trim() || "Location coming soon";
   const logoUrl = sf.avatar_url ?? DEMO_PROVIDER_LOGOS[slug] ?? null;
 
-  const yearFrom = sf.trust?.qualifiedSinceYear ?? sf.coaching_since_year ?? null;
+  const yearFrom =
+    sf.trust?.qualifiedSinceYear ??
+    sf.coaching_since_year ??
+    sf.stripe_customer_since_year ??
+    null;
   const yearsEstablished = yearFrom ? Math.max(1, new Date().getFullYear() - yearFrom) : null;
+
   const verifiedSince = (() => {
     const idAt = sf.trust?.identityVerifiedAt;
     if (idAt) {
