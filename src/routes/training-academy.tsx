@@ -241,9 +241,9 @@ function TrainingAcademyPage() {
                   </EmptyContent>
                 </Empty>
               ) : (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="divide-y divide-black/10 rounded-[18px] border border-black/10 bg-white px-5 sm:px-6">
                   {filtered.map((c) => (
-                    <CourseCard key={c.id} course={c} />
+                    <CourseRow key={c.id} course={c} />
                   ))}
                 </div>
               )}
