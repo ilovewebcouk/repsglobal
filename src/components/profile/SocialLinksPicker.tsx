@@ -140,10 +140,17 @@ export function SocialLinksPicker({
           <Plus className="h-3.5 w-3.5" />
           {allAdded ? "All platforms added" : "Add platform"}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-[200px]">
+        <DropdownMenuContent
+          align="start"
+          className="min-w-[200px] border-reps-border bg-reps-ink text-white"
+        >
           <DropdownMenuGroup>
             {available.map((p) => (
-              <DropdownMenuItem key={p.field} onSelect={() => handleAdd(p.field)}>
+              <DropdownMenuItem
+                key={p.field}
+                onSelect={() => handleAdd(p.field)}
+                className="text-white/85 focus:bg-white/10 focus:text-white"
+              >
                 <span className="flex h-4 w-4 items-center justify-center text-white/60">{p.icon}</span>
                 {p.label}
               </DropdownMenuItem>
