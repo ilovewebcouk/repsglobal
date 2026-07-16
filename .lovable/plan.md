@@ -1,70 +1,64 @@
-# Wire "Apply to become a provider" → Stripe checkout (£479/yr LMS)
+## Reframe
+The aside stops pretending to be a second plan card. It becomes a **"Pay-per-completion" panel** whose job is to make the £15 feel earned, not scary — by showing the artefact the learner (and their future employer) actually receives.
 
-Today the three CTAs on `/training-providers` all point to `/signup?type=training_provider`, which drops users into the standard member signup with no plan preselected and no checkout kicked. We'll turn them into real "start checkout" buttons for the REPs LMS annual membership.
+Hero of the box is a **miniature certificate mockup**, not a price. Price is a supporting caption. Deliverables are captions on the artefact, not a bullet list.
 
-The price is already configured in `src/lib/billing.ts` (`ORG_TIERS.training_provider`: lookup key `training_provider_annual`, £479/yr) — no billing config changes needed.
+## New layout inside the existing `<aside>` (still `src/routes/training-providers.tsx` 674–692)
 
-## What changes
+```text
+┌──────────────────────────────────────────────┐
+│  ▸ eyebrow: "Pay only when they finish"      │
+│                                              │
+│  ┌────────────────────────────────────────┐  │  ← mini-certificate
+│  │  REPs · verified                       │  │    (mocked in JSX,
+│  │  Certificate of Achievement            │  │     ~ 3:4 ratio,
+│  │  ——————————————                        │  │     subtle paper
+│  │  Awarded to  •  Learner Name           │  │     texture, gold
+│  │  Level 3 Personal Trainer              │  │     hairline border,
+│  │  Provider · Your Academy               │  │     tiny QR block
+│  │                                        │  │     bottom-right)
+│  │  ID · REPS-C-A73F   ▢ QR               │  │
+│  └────────────────────────────────────────┘  │
+│                                              │
+│  £15  per learner completion                 │  ← price demoted to
+│                                              │    caption row
+│  ✓ Achievement cert   ✓ Unit summary         │  ← 2×2 chip grid
+│  ✓ Public verify URL  ✓ QR                   │    of deliverables
+│                                              │
+│  ─────────────────────────────────────────   │
+│  Small print: 30-day refund if REPs can't    │
+│  endorse any course. Membership is annual;   │
+│  cancellation is immediate.                  │
+└──────────────────────────────────────────────┘
+```
 
-### 1. New server function: `createOrgCheckoutSession`
-File: `src/lib/billing/org-checkout.functions.ts`
+## What actually changes in JSX
 
-- Auth-required (`requireSupabaseAuth`), same pattern as `createCheckoutSession`.
-- Input: `{ environment: 'sandbox' | 'live', gaClientId? }` (tier is implicit — only one org tier today).
-- Resolves the Stripe price via `ORG_TIERS.training_provider.stripePriceLookupKey`.
-- Reuses `getOrCreateCustomer` + `createStripeClient` from the member checkout.
-- Creates a Stripe subscription checkout session with:
-  - `success_url: /checkout/return?session_id=...&kind=org`
-  - `cancel_url: /training-providers?checkout=canceled`
-  - Metadata: `reps_user_id`, `tier: 'training_provider'`, `billing_period: 'annual'`, `environment`, `ga_client_id`.
-- Returns `{ url } | { error }`.
+1. **Eyebrow:** replace the existing "Learner certificates" pill copy with "Pay only when they finish." Same pill component, same tokens.
+2. **Mini-certificate mock** (new inline JSX, ~40 lines, no new file):
+   - Rounded card, `rounded-[14px] border border-white/12 bg-gradient-to-br from-white/[0.04] to-white/[0.02]`, `aspect-[4/3]`, `p-5`.
+   - Top row: tiny REPs lockup + "verified" badge in emerald (status-only, per memory).
+   - Serif display title "Certificate of Achievement" (`font-display`).
+   - Hairline divider.
+   - "Awarded to · Learner Name" (placeholder styled as writing-line grey).
+   - Course line: "Level 3 Personal Trainer".
+   - Provider line: "Your Academy".
+   - Bottom row: `ID · REPS-C-A73F` on left, a stylised 6×6 CSS QR block on right (pure divs, no image dependency).
+   - No real names, no real photos — clearly a template, not a fake credential.
+3. **Price row:** `£15` at `text-[28px]` (not 52px), inline "per learner completion" at `text-[13px] text-white/60`. Sits under the certificate, not above it.
+4. **Deliverables grid:** 2×2 grid of small chip rows using existing `CheckCircle2` (`h-3.5 w-3.5 text-reps-orange`) + label at `text-[13px] text-white/75`. Labels: "Achievement certificate", "Learner unit summary", "Public verification URL", "Scannable QR code".
+5. **Fine print:** unchanged position, but split into two lines separated by ` · `, dropped to `text-[12px] text-white/40`, above a `border-t border-reps-border/50 pt-4 mt-6`.
 
-### 2. Small client helper: `useStartOrgCheckout`
-File: `src/lib/billing/use-start-org-checkout.ts`
-
-- Wraps `useServerFn(createOrgCheckoutSession)`.
-- Reads GA `_ga` client id (same helper the member flow uses).
-- If unauthenticated → `navigate('/signup?type=training_provider&next=checkout')`.
-- If authenticated → call server fn and `window.location.assign(url)`.
-
-### 3. Signup: honour `type=training_provider&next=checkout`
-File: `src/routes/signup.tsx`
-
-- Extend the `SignupSearch` type with `type?: 'training_provider'`.
-- If `type === 'training_provider' && next === 'checkout'`, after successful signup / session hydration, call the new `createOrgCheckoutSession` and redirect to Stripe (mirrors the existing member `continueAfterAuth` path, but for the org tier).
-- If already signed in and lands on `/signup?type=training_provider&next=checkout`, kick checkout immediately (same as current member behaviour).
-- Auth page (`/auth`) already forwards `next` params; no change needed there.
-
-### 4. Update the three CTAs on `/training-providers`
-File: `src/routes/training-providers.tsx` (lines 357, 669, 756)
-
-- Replace the three `<a href="/signup?type=training_provider">Apply to become a provider</a>` with a shared `<ApplyProviderButton />` component that:
-  - Uses `useStartOrgCheckout`.
-  - Shows a small inline spinner while the checkout URL is being created.
-  - Keeps identical styling (`h-12 rounded-[10px] bg-reps-orange ...`) so the hero and section visuals don't change.
-- No visual redesign — CTAs look the same, only the target changes.
-
-### 5. Webhook: activate training-provider on paid checkout
-File: `src/routes/api/public/payments/webhook.ts`
-
-- In `checkout.session.completed` / `customer.subscription.created|updated`, detect `metadata.tier === 'training_provider'` and:
-  - Set `professionals.account_type = 'training_provider'` for the `reps_user_id`.
-  - Upsert a `subscriptions` row (`tier: 'training_provider'`, `status: 'active'`, `billing_period: 'annual'`, `stripe_subscription_id`, `current_period_end`).
-  - Same downgrade/cancel handling as the member tiers (mark `canceled` / `past_due` on the same events).
-- Mirrors what `setTrainingProviderPlan` does today, but driven by Stripe instead of admin QA.
-
-### 6. Return page copy
-File: `src/routes/checkout.return.tsx` (only if a training-provider branch is missing)
-
-- If the session's `tier` metadata is `training_provider`, show a short "Your REPs LMS membership is active — next step: submit your first course for review" panel and CTA into the provider dashboard. Otherwise leave the existing member copy untouched.
+## Why this is stronger than v1
+- **Shows the thing.** A prospect can see what their learner gets in half a second; text bullets can't do that.
+- **Fixes the pricing hierarchy.** £15 stops competing with £479. It reads as a per-outcome caption on an artefact, which is what it actually is.
+- **Trust from design, not adjectives.** Emerald "verified" chip + QR + ID number carry the credibility the current comma-soup sentence was trying to earn.
+- **Reusable.** The same mini-cert component can be lifted into `/for-professionals`, the CPD page, and comparison pages later. Not building it as a separate file yet — inline — but structured so extraction is a copy-paste.
 
 ## Out of scope
-- No changes to `ORG_TIERS` pricing or Stripe products (price already exists at £479 lookup key `training_provider_annual`).
-- No new marketing/design work on `/training-providers` — visuals are locked, only anchor targets change.
-- No changes to the existing member `createCheckoutSession` path.
-- No new admin surfaces — `setTrainingProviderPlan` (admin QA) stays as-is for manual flips.
+- No changes to price value, membership card, `ORG_TIERS`, Stripe wiring, or any other section of the page.
+- No new image assets (the certificate is pure JSX/CSS — no generation, no `<img>`).
+- No new component files this pass; if we reuse it in another page later, we extract then.
 
-## Technical notes
-- Stripe price MUST have the lookup key `training_provider_annual` set in both sandbox and live for `resolvePriceByLookupKey` to find it. If it's not set in Stripe yet, the first checkout call will surface a clear error — we should confirm this is configured before shipping.
-- Signed-out users go through `/signup?type=training_provider&next=checkout` so the "professional" record exists before Stripe fires the webhook. This matches the existing member flow.
-- Locked visuals on `/training-providers` are preserved — the three button DOM nodes keep the same classes and inner `ArrowRight` icon; only the element type changes from `<a>` to `<button>`.
+## Note on the snapshot you asked for
+I tried to capture the current aside via headless Chromium against the sandbox preview and it returned `403 Forbidden` on the localhost dev server, so I read the exact JSX (lines 674–692) directly instead. If you want a rendered before/after, I can capture it against the published preview URL once we're in build mode.
