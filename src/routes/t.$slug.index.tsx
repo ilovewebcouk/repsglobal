@@ -692,43 +692,60 @@ function ProviderProfilePage() {
               </article>
 
 
-              {/* Trust & Assurance */}
+              {/* Verification — 3-step provider lock-in */}
               <article className="rounded-[22px] border border-black/10 bg-white p-6">
-                <h2 className="font-display text-[20px] font-bold text-black">Trust & Assurance</h2>
+                <div className="flex items-start gap-3">
+                  {isVerified ? (
+                    <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-600" strokeWidth={2.2} />
+                  ) : (
+                    <Shield className="mt-0.5 h-5 w-5 text-black/40" strokeWidth={2} />
+                  )}
+                  <div>
+                    <h2 className="font-display text-[20px] font-bold text-black">
+                      {isVerified ? "REPS Verified" : "Not yet verified"}
+                    </h2>
+                    <p className="mt-0.5 text-[12.5px] text-black/55">
+                      {isVerified
+                        ? `Confirmed ${monthYear(verification?.verifiedAt) ?? "recently"}`
+                        : "REPS is reviewing this provider."}
+                    </p>
+                  </div>
+                </div>
                 <ul className="mt-4 space-y-3">
                   <TrustRow
-                    icon={<Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />}
-                    title="Identity Verified"
+                    done={!!verification?.identity.done}
+                    title="Identity"
                     sub={
-                      sf.trust?.identityVerifiedAt
-                        ? `Confirmed ${monthYear(sf.trust.identityVerifiedAt) ?? ""}`
-                        : "On file"
+                      verification?.identity.done
+                        ? `Owner confirmed via Stripe Identity${
+                            verification.identity.verifiedAt
+                              ? `, ${monthYear(verification.identity.verifiedAt) ?? ""}`
+                              : ""
+                          }`
+                        : "Not yet confirmed"
                     }
                   />
                   <TrustRow
-                    icon={<Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />}
-                    title="Accreditations Approved"
-                    sub={`Checked ${monthYear(sf.trust?.lastCheckedAt) ?? "recently"}`}
+                    done={!!verification?.name.done}
+                    title="Provider name"
+                    sub={
+                      verification?.name.done && verification.name.value
+                        ? `${verification.name.value} — locked`
+                        : "Not yet locked"
+                    }
                   />
                   <TrustRow
-                    icon={<Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />}
-                    title="Professional Indemnity Insurance"
+                    done={!!verification?.domain.done}
+                    title="Domain"
                     sub={
-                      sf.trust?.insuranceExpiry
-                        ? `Active until ${monthYear(sf.trust.insuranceExpiry) ?? ""}`
-                        : "On file"
+                      verification?.domain.done && verification.domain.value
+                        ? `${verification.domain.value} confirmed`
+                        : "Not yet confirmed"
                     }
                   />
                 </ul>
-                <Link
-                  to="/t/$slug/enquire"
-                  params={{ slug }}
-                  className="mt-5 inline-flex items-center gap-1 text-[13px] font-semibold text-[#FF7A00] hover:text-[#E96F00]"
-                >
-                  View full verification
-                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
-                </Link>
               </article>
+
 
               {/* FAQs */}
               <article id="faqs" className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6">
