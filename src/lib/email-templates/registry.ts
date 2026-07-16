@@ -14,6 +14,7 @@ export interface TemplateEntry {
 // ─────────────────────────────────────────────────────────────
 import { template as professionalInvite } from './trainer/invite/professional-invite'
 import { template as adminInvite } from './trainer/invite/admin-invite'
+import { template as coreManualInvite } from './trainer/invite/core-manual-invite'
 
 // ─────────────────────────────────────────────────────────────
 // Trainer — onboarding
