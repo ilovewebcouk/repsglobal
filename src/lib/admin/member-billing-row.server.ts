@@ -89,11 +89,18 @@ export type MemberBillingRow = {
 function normaliseTier(t: string | null | undefined): MemberBillingPlan | null {
   if (!t) return null;
   const k = t.toLowerCase();
-  if (k === "verified" || k === "pro" || k === "studio" || k === "free") {
+  if (
+    k === "verified" ||
+    k === "pro" ||
+    k === "studio" ||
+    k === "free" ||
+    k === "training_provider"
+  ) {
     return k as MemberBillingPlan;
   }
   return null;
 }
+
 
 function trialDaysLeftFor(iso: string | null): number | null {
   if (!iso) return null;
