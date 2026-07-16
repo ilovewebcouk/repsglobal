@@ -906,7 +906,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
               <TooltipTrigger asChild>
                 <span className="cursor-help underline decoration-dotted underline-offset-2">{timeAgo(row.lastLoginAt)}</span>
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-[var(--reps-ink)] text-white">{new Date(row.lastLoginAt).toLocaleString()}</TooltipContent>
+              <TooltipContent side="top" className="bg-[--reps-ink] text-white">{new Date(row.lastLoginAt).toLocaleString()}</TooltipContent>
             </Tooltip>
           ) : <span className="text-white/45">Never</span>}</td>
           <td className="px-3 py-3 text-white/75 tabular-nums">{row.coursesCount ?? 0}</td>
@@ -915,7 +915,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
               <TooltipTrigger asChild>
                 <span className="cursor-help underline decoration-dotted underline-offset-2">—</span>
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-[var(--reps-ink)] text-white">Wired once course + pro-link tables land</TooltipContent>
+              <TooltipContent side="top" className="bg-[--reps-ink] text-white">Wired once course + pro-link tables land</TooltipContent>
             </Tooltip>
           </td>
           <td className="px-3 py-3">
