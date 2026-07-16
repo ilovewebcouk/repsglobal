@@ -23,6 +23,7 @@ export type ProviderCard = {
   online_available: boolean;
   rating_avg: number | null;
   review_count: number;
+  verified: boolean;
 };
 
 const InputSchema = z.object({
@@ -46,7 +47,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
     let qb = supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, city, headline, in_person_available, online_available",
+        "id, slug, city, headline, in_person_available, online_available, verification_status",
         { count: "exact" },
       )
       .in("id", visibleIds)
@@ -153,6 +154,9 @@ export const listPublicProviders = createServerFn({ method: "GET" })
         online_available: Boolean(r.online_available),
         rating_avg: agg && agg.count > 0 ? agg.sum / agg.count : null,
         review_count: agg?.count ?? 0,
+        verified:
+          ((r as { verification_status?: string | null }).verification_status ?? null) ===
+          "verified",
       };
     }).filter((r) => r.slug);
 
