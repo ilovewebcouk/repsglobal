@@ -673,22 +673,80 @@ function PricingSection() {
 
           <aside className="rounded-[22px] border border-reps-border bg-reps-panel p-8 lg:p-10">
             <div className="inline-flex items-center gap-2 rounded-full border border-reps-border bg-reps-ink/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
-              <FileCheck2 className="h-3 w-3" /> Learner certificates
+              <FileCheck2 className="h-3 w-3" /> Pay only when they finish
             </div>
-            <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="font-display text-[52px] font-bold leading-none text-white">
+
+            {/* Mini certificate mockup */}
+            <div className="mt-6 aspect-[4/3] rounded-[14px] border border-white/12 bg-gradient-to-br from-white/[0.05] to-white/[0.02] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="flex items-center justify-between">
+                <span className="font-display text-[13px] font-semibold tracking-tight text-white">
+                  REPs
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300">
+                  <BadgeCheck className="h-2.5 w-2.5" /> Verified
+                </span>
+              </div>
+              <div className="mt-3 font-display text-[18px] leading-tight text-white">
+                Certificate of Achievement
+              </div>
+              <div className="mt-2 h-px w-16 bg-white/20" />
+              <div className="mt-3 text-[10px] uppercase tracking-wider text-white/45">
+                Awarded to
+              </div>
+              <div className="text-[13px] text-white/85">Learner name</div>
+              <div className="mt-2 text-[11px] text-white/60">Level 3 Personal Trainer</div>
+              <div className="text-[11px] text-white/45">Provider · Your Academy</div>
+              <div className="mt-3 flex items-end justify-between">
+                <div className="font-mono text-[9px] tracking-wider text-white/40">
+                  ID · REPS-C-A73F
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="grid grid-cols-6 gap-[1px] rounded-[3px] bg-white/10 p-[3px]"
+                >
+                  {[
+                    1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1,
+                    1, 1, 0, 1, 0, 1, 1, 0, 1,
+                  ].map((bit, i) => (
+                    <span
+                      key={i}
+                      className={`size-[3px] ${bit ? "bg-white/85" : "bg-transparent"}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Price caption */}
+            <div className="mt-6 flex items-baseline gap-2">
+              <span className="font-display text-[28px] font-bold leading-none text-white">
                 {CERTIFICATE_UNIT_PRICE_LABEL}
               </span>
-              <span className="text-[14px] text-white/60">per issued certificate</span>
+              <span className="text-[13px] text-white/60">per learner completion</span>
             </div>
-            <p className="mt-4 text-[14px] leading-relaxed text-white/70">
-              Certificate of Achievement, Learner Unit Summary, public verification URL and QR code
-              — issued only when a learner completes.
-            </p>
-            <p className="mt-6 text-[13px] leading-relaxed text-white/50">
-              Refunds are only offered within 30 days if REPs cannot endorse at least one of your
-              courses. Cancellation is immediate — no monthly option; membership is annual.
-            </p>
+
+            {/* Deliverables chip grid */}
+            <ul className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2.5">
+              {[
+                "Achievement certificate",
+                "Learner unit summary",
+                "Public verification URL",
+                "Scannable QR code",
+              ].map((label) => (
+                <li key={label} className="flex items-start gap-2 text-[13px] text-white/75">
+                  <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-reps-orange" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+
+            {/* Fine print */}
+            <div className="mt-6 border-t border-reps-border/50 pt-4 text-[12px] leading-relaxed text-white/40">
+              <p>30-day refund only if REPs can&rsquo;t endorse any of your courses.</p>
+              <p className="mt-1">
+                Membership is annual. Cancellation is immediate — no monthly option.
+              </p>
+            </div>
           </aside>
         </div>
       </div>
