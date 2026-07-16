@@ -22,7 +22,7 @@ const SIGNUP_INPUT = z
     fullName: z.string().trim().min(2).max(120),
     email: z.string().trim().toLowerCase().email().max(254),
     password: z.string().min(8).max(200),
-    tier: z.enum(["verified", "pro"]),
+    tier: z.enum(["verified", "pro", "training_provider"]),
     period: z.enum(["monthly", "annual"]),
     environment: z.enum(["sandbox", "live"]),
   })
@@ -112,14 +112,21 @@ export const startDeferredCheckout = createServerFn({ method: "POST" })
         const submitMessage =
           tier === "verified"
             ? "You're joining the REPs Core register — qualified, insured, and publicly listed worldwide."
-            : "You're starting REPs Pro — every feature in your tier is included, no paid add-ons.";
+            : tier === "training_provider"
+              ? "You're joining REPs LMS — independent course review, public endorsement, verified learner reviews."
+              : "You're starting REPs Pro — every feature in your tier is included, no paid add-ons.";
+
+        const cancelUrl =
+          tier === "training_provider"
+            ? `${origin}/training-providers?checkout=canceled`
+            : `${origin}/pricing?checkout=canceled`;
 
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
           customer: customer.id,
           line_items: [{ price: stripePrice.id, quantity: 1 }],
           success_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${origin}/pricing?checkout=canceled`,
+          cancel_url: cancelUrl,
           allow_promotion_codes: true,
           payment_method_collection: "always",
           custom_text: {

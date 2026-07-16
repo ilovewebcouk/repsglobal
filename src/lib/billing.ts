@@ -10,7 +10,7 @@
  */
 
 export type TierKey = "verified" | "pro" | "studio";
-export type PurchasableTier = "verified" | "pro";
+export type PurchasableTier = "verified" | "pro" | "training_provider";
 export type BillingPeriod = "monthly" | "annual";
 
 export interface TierConfig {
@@ -98,6 +98,15 @@ export const CHECKOUT_OFFERS: Record<PurchasableTier, Partial<Record<BillingPeri
       display: "£590/yr (Founding)",
       trialDays: 30,
       founding: true,
+    },
+  },
+  training_provider: {
+    annual: {
+      period: "annual",
+      priceId: "training_provider_annual",
+      display: "£479/yr",
+      trialDays: 0,
+      founding: false,
     },
   },
 };

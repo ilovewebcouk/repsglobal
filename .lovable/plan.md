@@ -1,57 +1,106 @@
-## What's broken
+# Fix: Training-provider signup uses a different (broken) flow
 
-Clicking any of the three "Apply to become a provider" CTAs on `/training-providers` navigates to `/training-providers/apply`, but the page never renders the apply form — the browser stays on the marketing page (with just its title swapped).
+## What the audit found
 
-## Root cause
+The screenshot you sent is `/signup?tier=core&period=annual&next=checkout` — the **good** flow. `/training-providers/apply` uses a completely different, older pattern which is why it doesn't behave the same.
 
-TanStack Router file-based routing treats `src/routes/training-providers.tsx` as the **parent layout** of `src/routes/training-providers.apply.tsx` (child path `/training-providers/apply`). A parent that has children MUST render `<Outlet />` for the child to mount.
+**Good flow (Core, Pro) — `src/routes/signup.tsx` + `deferred-signup.functions.ts`:**
+1. Credentials stashed encrypted in `pending_signups` — no `auth.users` row yet.
+2. Stripe Checkout Session minted immediately.
+3. Account only created after payment succeeds (webhook + `/checkout/return`).
+4. No orphan accounts, no premature welcome emails, no email-confirm friction.
 
-`training-providers.tsx` renders `<TrainingProvidersPage />` — the full marketing page, no `<Outlet />`. So the router matches `/training-providers/apply`, mounts the parent (marketing page), and silently drops the child (apply form).
+**Current training-provider flow — `src/routes/training-providers.apply.tsx` + `startOrgCheckout.ts` + `org-checkout.functions.ts`:**
+1. Calls `supabase.auth.signUp()` first → creates a real user with email confirmation.
+2. Only *then* calls the authenticated `createOrgCheckoutSession` server fn.
+3. If they abandon Stripe → orphan account. If email-confirm is on → they can't even reach checkout without clicking a link.
+4. Uses lookup key `training_provider_annual` (£479/yr, product "REPs LMS").
 
-This is exactly the pattern the `tanstack-route-architecture` card warns about: "the page is empty after navigation but the URL is correct — the route matched, but the parent layout has nowhere to render the child."
+Also: the last turn created `training_provider_annual` in the **sandbox** Stripe account only. On `repsuk.org` / `www.repsuk.org` the app uses **live** Stripe (see `stripe-client.ts` `isLiveHost`), where that lookup key does not exist yet — so real users hit a "no such price" error.
 
-Everything downstream (`startOrgCheckoutRedirect` → `createOrgCheckoutSession` → Stripe hosted checkout) is wired correctly and never gets a chance to run.
+## The fix
 
-## Fix
+Collapse the training-provider path into the same deferred flow so it behaves identically to Core, and provision the live Stripe product.
 
-Promote `/training-providers` from a leaf into a pathless layout wrapper by renaming files.
+### 1. Widen the deferred flow to accept `training_provider`
 
-### Rename
-
-- `src/routes/training-providers.tsx` → `src/routes/training-providers.index.tsx` (marketing page becomes the `/training-providers` leaf, unchanged).
-- Add a new tiny `src/routes/training-providers.tsx` that is the layout:
-  ```tsx
-  import { createFileRoute, Outlet } from "@tanstack/react-router";
-  export const Route = createFileRoute("/training-providers")({
-    component: () => <Outlet />,
-  });
+- `src/lib/billing.ts`
+  - Add `training_provider` to `CHECKOUT_OFFERS` (annual, `priceId: "training_provider_annual"`, `trialDays: 0`, `founding: false`, `display: "£479/yr"`).
+  - Broaden `PurchasableTier` to `"verified" | "pro" | "training_provider"` (or introduce a superset used only by checkout code so the rest of the UI is unaffected).
+- `src/lib/billing/deferred-signup.functions.ts`
+  - Extend the Zod tier enum to include `"training_provider"`.
+  - Skip the pro-waitlist guard for `training_provider`.
+  - Use REPs-LMS-specific `custom_text.submit.message` ("You're joining REPs LMS — public listing, verified reviews, endorsed courses.").
+  - `cancel_url`: `${origin}/training-providers?checkout=canceled`.
+  - `success_url`: unchanged (`/checkout/return?session_id=…`).
+- New migration `supabase/migrations/…_pending_signups_allow_training_provider.sql`:
+  ```sql
+  ALTER TABLE public.pending_signups DROP CONSTRAINT IF EXISTS pending_signups_tier_check;
+  ALTER TABLE public.pending_signups ADD CONSTRAINT pending_signups_tier_check
+    CHECK (tier IN ('verified','pro','studio','training_provider'));
   ```
 
-### Update the index route
+### 2. Teach `/signup` about the LMS tier
 
-In the renamed `training-providers.index.tsx`, change:
-```tsx
-createFileRoute("/training-providers")({ ... })
+- `src/routes/signup.tsx`
+  - `SignupSearch.tier`: add `"training_provider"` (accept URL slug `training-provider` and normalise).
+  - Skip the `if (tier === "pro") redirect("/contact")` branch for `training_provider`.
+  - Add `PLAN_SUMMARIES.training_provider.annual`:
+    - name: **REPs LMS**, tagline: *"Independent endorsement for the courses you deliver."*
+    - price `£479`, unit `/year`, meta `£479 billed yearly`.
+    - highlights: independent course review, provider website + endorsement badge, verified learner reviews, `£15` per-learner certificate.
+  - Pass `tier: "training_provider"` straight through to `startDeferredCheckout` (no `verified` remap).
+  - CTA label: "Continue to payment" for training_provider (same as Core).
+
+### 3. Retire the bespoke apply page
+
+- `src/routes/training-providers.apply.tsx` — replace with a `beforeLoad` that just redirects:
+  ```ts
+  throw redirect({
+    to: "/signup",
+    search: { tier: "training-provider", period: "annual", next: "checkout" },
+  });
+  ```
+  Keeps every existing "Apply" CTA link working; no more custom form, no more `supabase.auth.signUp` here.
+- Leave `org-checkout.functions.ts` / `startOrgCheckout.ts` alone for now (kept as internal admin/upgrade tooling), but remove all client callers.
+
+### 4. Webhook behaviour — already correct, verify only
+
+`src/routes/api/public/payments/webhook.ts`:
+- `checkoutOfferForPriceId` already maps `training_provider_annual` → `{ tier: "training_provider", period: "annual" }` via the `ORG_TIERS` lookup in `billing.ts` (line 132).
+- Line 215 already sets `professionals.account_type = 'training_provider'` on `checkout.session.completed`.
+- The deferred-signup branch (line ~789) resolves `reps_pending_signup_id` → provisions `auth.users` from `pending_signups`. This runs regardless of tier, so the LMS path is picked up automatically.
+- QA step only: confirm end-to-end that a paid LMS pending-signup produces (a) confirmed auth user, (b) `subscriptions.tier='training_provider' status='active'`, (c) `professionals.account_type='training_provider'`.
+
+### 5. Live Stripe product "REPs LMS"
+
+Sandbox price was created in the previous turn. Live is missing. In build mode I will use the live Stripe secret to create:
+- Product `REPs LMS` (metadata `tier=training_provider`, `billing_period=annual`).
+- Price £479 GBP recurring yearly with `lookup_key=training_provider_annual`.
+
+If a matching product already exists in live under a different name, I'll attach the price to it rather than creating a duplicate. Nothing else changes — the code resolves live vs sandbox automatically via `getStripeEnvironment()` in `stripe-client.ts`.
+
+## QA plan (Playwright + Stripe test card 4242…) after implementation
+
+1. Visit `/training-providers/apply` on preview → 302s to `/signup?tier=training-provider&period=annual&next=checkout`.
+2. Confirm the left plan card renders **REPs LMS · £479/year** with the four LMS highlights (not REPS Core / £34).
+3. Fill signup form → redirects to Stripe Hosted Checkout showing "REPs LMS" line item at £479.
+4. Cancel → lands on `/training-providers?checkout=canceled` (marketing page renders).
+5. Complete payment (test card) → `/checkout/return` → dashboard, signed in.
+6. Verify DB: `subscriptions.tier='training_provider' status='active'`, `professionals.account_type='training_provider'`, no `pending_signups` row remaining.
+7. Repeat the click on live-mirror preview to confirm the live price resolves (no "no such price" error).
+8. Existing Core flow (`/signup?tier=core&period=annual&next=checkout`) still works unchanged — regression sweep.
+
+## Files touched
+
+```text
+src/lib/billing.ts                                       (extend types + CHECKOUT_OFFERS)
+src/lib/billing/deferred-signup.functions.ts             (accept training_provider)
+src/routes/signup.tsx                                    (accept training-provider slug + summary)
+src/routes/training-providers.apply.tsx                  (collapse to redirect)
+supabase/migrations/<ts>_pending_signups_allow_training_provider.sql   (new)
 ```
-to:
-```tsx
-createFileRoute("/training-providers/")({ ... })
-```
-(TanStack generates the trailing-slash route ID for `*.index.tsx`.) Head/meta/component stay identical.
 
-### Leave everything else alone
+Plus one runtime step: create live Stripe product/price via API.
 
-- `training-providers.apply.tsx` — no change.
-- `startOrgCheckout.ts`, `org-checkout.functions.ts`, `billing.ts`, `ApplyProviderButton.tsx` — all confirmed correct in this audit, no change.
-- No visual change to any locked page.
-
-## QA verification after the fix
-
-1. Load `/training-providers` — marketing page renders exactly as today.
-2. Click each of the three "Apply to become a provider" CTAs — each navigates to `/training-providers/apply` and the apply gateway renders (signed-out → signup form; signed-in → "Taking you to Stripe…" then Stripe hosted checkout).
-3. Cancel from Stripe → returns to `/training-providers?checkout=canceled` (unchanged behaviour, still valid because the marketing route still exists).
-4. Successful test payment → `/checkout/return?session_id=…` handles the redirect.
-
-## Out of scope
-
-Everything the earlier audit already confirmed as wired: Stripe lookup key `training_provider_annual`, auth middleware on the server fn, `attachSupabaseAuth` bearer middleware, webhook handling. No changes there.
+No visual changes to any locked page. `/training-providers` marketing page and every "Apply" CTA remain in place — only where they land changes.
