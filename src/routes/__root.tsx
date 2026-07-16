@@ -221,6 +221,13 @@ function RootComponent() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      // Drop all cached React Query data on any identity transition so the
+      // next signed-in user (e.g. admin after a pro logs out) never sees the
+      // previous user's rows from disabled hooks (notifications bell, etc.).
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        queryClient.cancelQueries();
+        queryClient.clear();
+      }
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       // GA4 — bind user_id + logged_in user_property on every auth transition.
