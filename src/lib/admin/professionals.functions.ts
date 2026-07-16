@@ -385,25 +385,22 @@ export const listAdminProfessionals = createServerFn({ method: 'POST' })
       fetchActivePayingMemberCollection(supabaseAdmin),
     ]);
 
-    // Last sign-in per user. Query auth.users directly via the service-role
-    // client — we can't use the `get_users_last_sign_in` RPC here because it
-    // gates on `has_role(auth.uid(), 'admin')`, and `auth.uid()` is NULL when
-    // called through `supabaseAdmin` (service role), so it silently returns
-    // zero rows and every column renders as "Never".
+    // Last sign-in per user. The RPC is SECURITY DEFINER and restricted to
+    // service_role EXECUTE, so it works when called via `supabaseAdmin`.
+    // (The auth schema is not exposed to PostgREST, so a direct
+    // `.schema('auth').from('users')` call fails — we must use the RPC.)
     const lastLoginByUser = new Map<string, string | null>();
     try {
-      const admin = supabaseAdmin as unknown as {
-        schema: (name: string) => {
-          from: (t: string) => { select: (cols: string) => { in: (col: string, vals: string[]) => PromiseLike<{ data: Array<{ id: string; last_sign_in_at: string | null }> | null; error: unknown }> } };
-        };
-      };
-      const lastLogins = await fetchAll<{ id: string; last_sign_in_at: string | null }>((c) =>
-        admin.schema('auth').from('users').select('id, last_sign_in_at').in('id', c),
-      );
-      for (const r of lastLogins) {
+      const { data: lastLogins, error: lastLoginsErr } = await supabaseAdmin.rpc('get_users_last_sign_in', { _ids: ids });
+      if (lastLoginsErr) {
+        console.error('[admin.listPros] get_users_last_sign_in failed', lastLoginsErr);
+      }
+      for (const r of (lastLogins ?? []) as Array<{ id: string; last_sign_in_at: string | null }>) {
         lastLoginByUser.set(r.id, r.last_sign_in_at);
       }
-    } catch { /* non-fatal — column simply renders as "Never" */ }
+    } catch (e) {
+      console.error('[admin.listPros] get_users_last_sign_in threw', e);
+    }
 
     // Provider-only: REPs course counts per provider. Cheap 1-shot fetch.
     const coursesCountByOrg = new Map<string, number>();
