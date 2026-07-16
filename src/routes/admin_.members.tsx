@@ -829,22 +829,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
   const setTpFn = useServerFn(setTrainingProviderPlan);
-  const setPublishedFn = useServerFn(setProfessionalPublished);
-  const [publishedOptimistic, setPublishedOptimistic] = React.useState<boolean | null>(null);
-  const isLive = publishedOptimistic ?? row.isPublished;
-  const publishM = useMutation({
-    mutationFn: (next: boolean) => setPublishedFn({ data: { professional_id: row.id, is_published: next } }),
-    onMutate: (next) => { setPublishedOptimistic(next); },
-    onSuccess: (_res, next) => {
-      toast.success(next ? `${row.name} is now live` : `${row.name} hidden from public site`);
-      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
-      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
-    },
-    onError: (err: unknown) => {
-      setPublishedOptimistic(row.isPublished);
-      toast.error(err instanceof Error ? err.message : "Failed to update visibility");
-    },
-  });
+  
   
   
   const [busy, setBusy] = React.useState(false);
