@@ -25,7 +25,7 @@ export function CourseRow({ course }: CourseRowProps) {
       href={course.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col gap-4 py-5 transition sm:flex-row sm:gap-5 sm:py-6"
+      className="group flex flex-col gap-4 rounded-[18px] border border-black/10 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-black/20 hover:shadow-[0_6px_20px_-8px_rgba(0,0,0,0.15)] sm:flex-row sm:gap-5 sm:p-5"
     >
       {/* Thumbnail — fixed 240×135 on desktop */}
       <div
