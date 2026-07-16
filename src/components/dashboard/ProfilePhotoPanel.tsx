@@ -13,7 +13,9 @@ import {
   validateAvatar,
   commitAvatar,
   regenerateAvatar,
+  createAvatarUploadUrl,
 } from "@/lib/profile/avatar-ai.functions";
+
 import { initialsFromName } from "@/lib/initials";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
