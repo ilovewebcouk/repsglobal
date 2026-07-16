@@ -1,101 +1,94 @@
 
-# REPs Training Academy — `/training-academy`
+# Training Academy redesign — light directory listing
 
-A directory-style catalogue of qualifications and CPD courses that training providers have submitted for REPs endorsement. Mock data only — no backend, no auth, no forms. Every course card links out to the provider's own course URL in a new tab.
+Rebuild `/training-academy` to match `/find-a-professional`: ivory background, horizontal course rows, left-sticky filter rail. Same content and mock data as the current version — only visual/layout system changes. Uses shadcn primitives throughout.
 
-## Route
+## Design lock (from screenshot + existing directory)
 
-- **File:** `src/routes/training-academy.tsx`
-- **URL:** `/training-academy`
-- Own `head()`: title, description, og:title, og:description (no og:image — dark hero, no cover art in this pass).
-- Add to main nav (marketing header) as "Academy".
+Token / pattern | Value
+--- | ---
+Page background | `bg-reps-ivory`
+Card surface | `bg-white` with `border border-reps-stone`, `rounded-[18px]`
+Text | `text-reps-charcoal` (headings) / `text-reps-muted-light` (meta)
+Primary accent | `bg-reps-orange` / `text-reps-orange`
+"REPs Endorsed" pill | Emerald status token — mint fill, `rounded-full`, matches the "REPS VERIFIED" pill in the reference
+Layout | 12-col: **left-sticky filter rail (280px)** + right column of full-width horizontal cards
+Radii | Cards 18px, buttons 10px, inputs 12px, pills full (LOCKED radius map)
+Shadows | None on buttons; subtle hover lift on rows (`hover:-translate-y-0.5`, no shadow escalation)
 
-## Page structure (top → bottom)
+## Layout structure
 
-1. **Hero** (dark, `HeroOverlay` + `MarketingHeroEyebrow`)
-   - Eyebrow: "REPs Endorsed"
-   - H1: "The REPs Training Academy"
-   - Lede: One sentence — endorsed qualifications and CPD from vetted training providers, in one place.
-   - Two chips: "Ofqual-regulated where applicable" · "Endorsed by REPs"
-
-2. **Filter bar** (sticky under hero on desktop, `top-[72px]`)
-   - Profession (PT, Group ex, Strength, Yoga, Pilates, Nutrition, Online coaching)
-   - Level (Level 2, Level 3, Level 4, CPD short course)
-   - Delivery (Online, Blended, In-person)
-   - CPD points (Any, 5+, 10+, 20+)
-   - Provider (multi-select from mock list)
-   - Search input (title / keyword)
-   - "Reset" ghost button
-   - All client-side filtering over the mock array. `useState` only.
-
-3. **Results grid** — 3 cols desktop / 2 md / 1 mobile
-   - `CourseCard` (new component, `rounded-[18px]`, flat, no shadow):
-     - Provider logo (small, top-left) + provider name
-     - "REPs Endorsed" pill (emerald status token, top-right)
-     - Course title (H3, `BlockHeading` scale trimmed to card size)
-     - One-line summary
-     - Meta row: Level · CPD points · Duration · Delivery
-     - Price (from £)
-     - Primary CTA: "View course →" — `<a href={provider_url} target="_blank" rel="noopener noreferrer">`
-   - Empty state via shadcn `Empty` when filters return zero.
-
-4. **"What REPs endorsement means" explainer** (one section, dark panel)
-   - 3-column bullet grid: Verified provider · Assessed syllabus · Ongoing review
-   - Small print: "REPs endorsement is not accreditation. Where a course is Ofqual-regulated, that is stated on the card."
-   - Secondary CTA for providers: "Get your course endorsed" → `/training-academy/apply` (out of scope this pass; link to `#` with a note in code).
-
-5. **FAQ** (`MarketingFaq`, 5 Qs)
-   - What is a REPs endorsement?
-   - How is it different from Ofqual regulation?
-   - How do you vet providers?
-   - Do endorsed courses count toward Verified status?
-   - I'm a provider — how do I apply?
-
-6. **`FinalCta`** — "Browse endorsed courses" / "Endorse your course".
-
-## Mock data
-
-New file: `src/lib/training-academy.ts`
-
-```ts
-export type AcademyCourse = {
-  id: string;
-  title: string;
-  summary: string;
-  provider: { name: string; slug: string; logoText: string }; // logoText = initials placeholder
-  profession: "pt" | "group" | "strength" | "yoga" | "pilates" | "nutrition" | "online";
-  level: "L2" | "L3" | "L4" | "cpd";
-  cpdPoints: number;
-  durationLabel: string;   // "12 weeks", "1 day", etc
-  delivery: "online" | "blended" | "in-person";
-  priceFromGBP: number;
-  ofqualRegulated: boolean;
-  url: string;             // provider's course page — opens in new tab
-};
+```text
+┌───── PublicHeader (unchanged) ─────────────────────────────────────┐
+├───── Hero band (short, ivory bg) ──────────────────────────────────┤
+│  Eyebrow · H1 · lede · 3 trust chips                                │
+├───── Search bar (full-width, sticky under header) ─────────────────┤
+│  [🔍 Search courses…]  [Sort ▾]  [22 endorsed courses]              │
+├─────────────────────────────────────────────────────────────────────┤
+│ ┌── Filter rail (sticky, 280px) ──┐ ┌── Course rows (flex-1) ────┐  │
+│ │ Profession   (radio group)      │ │ ┌── Row: Origym · L2 ────┐│  │
+│ │ Level        (radio group)      │ │ │ [logo] Title           ││  │
+│ │ Delivery     (radio group)      │ │ │ Provider · meta chips  ││  │
+│ │ CPD points   (radio group)      │ │ │ Summary                ││  │
+│ │ Ofqual only  (checkbox)         │ │ │ [Endorsed] £599 → View ││  │
+│ │ Provider     (checkbox list)    │ │ └────────────────────────┘│  │
+│ │ [Reset filters]                 │ │ … 21 more rows            │  │
+│ └─────────────────────────────────┘ └───────────────────────────┘  │
+├───── What "REPs Endorsed" means (3-col explainer) ─────────────────┤
+├───── FAQ (MarketingFaq, dark strip)                               │
+├───── FinalCta (shared)                                             │
+└───── PublicFooter                                                  ┘
 ```
 
-Seed ~18–24 courses across ~8 mock providers (e.g. "Origym", "The Fitness Group", "Discovery Learning", "Study Active", "Future Fit", "HFE", "TRAINFITNESS", "Premier Global") — names used illustratively as placeholder mock data. Mix of L2/L3/L4 qualifications + short CPD courses (kettlebells, pre/post-natal, nutrition coaching, online coaching, mobility, etc). URLs point to `https://example.com/...` placeholders — real provider URLs get wired later.
+On mobile (`< lg`) the left rail collapses into a shadcn `Sheet` opened by a "Filters" button on the search bar, matching the reference screenshot's "Filters" pill.
 
-## Components to add
+## Files
 
-- `src/components/academy/CourseCard.tsx`
-- `src/components/academy/AcademyFilters.tsx`
-- Reuse: `HeroOverlay`, `MarketingHeroEyebrow`, `SectionHeader`, `SectionHeading`, `MarketingFaq`, `FinalCta`, shadcn `Badge`, `Select`, `Input`, `Button`, `Empty`, `Separator`, `ToggleGroup`.
+**Edit**
+- `src/routes/training-academy.tsx` — swap dark shell for ivory, replace filter/grid section with the new 2-column layout, keep hero copy but retune for ivory (charcoal text, orange accent line stays), keep the existing endorsement explainer + FAQ + FinalCta blocks (they remain dark for section rhythm, same as `/find-a-professional`).
 
-## Out of scope (this pass)
+**New**
+- `src/components/academy/AcademyFilterRail.tsx` — sticky left rail using shadcn `RadioGroup`, `Checkbox`, `Label`, `Separator`, `ScrollArea`. Groups: Profession, Level, Delivery, CPD points, Ofqual only, Provider.
+- `src/components/academy/AcademyFilterSheet.tsx` — mobile wrapper (`Sheet` + trigger button) that reuses `AcademyFilterRail` inside.
+- `src/components/academy/CourseRow.tsx` — horizontal card row (replaces `CourseCard`). Mirrors the reference's ResultRow: logo tile (56×56) left, title + provider + meta on the right, endorsement pill top-right, price + "View course →" bottom-right, meta chips row below title, trailing "Trains at / Delivery · Duration" footer line.
+- `src/components/academy/AcademySearchBar.tsx` — sticky top bar: shadcn `Input` (with `Search` icon leading), `Sort` `Select`, count label, mobile "Filters" button.
 
-- Provider application form / detail pages
-- Real provider data & real URLs
-- Course detail pages on REPs (cards link OUT to the provider)
-- Backend, DB, RLS, submissions
-- Auth-gated "enrol" flows
+**Delete**
+- `src/components/academy/CourseCard.tsx` (replaced by `CourseRow`)
+- `src/components/academy/AcademyFilters.tsx` (replaced by rail + sheet + search bar)
 
-## Compliance
+## Filter behaviour
 
-- Semantic tokens only, no raw hex.
-- Radii: cards `18px`, buttons `10px`, inputs `12px`, pills full.
-- Buttons flat (no shadows).
-- No banned phrases; no CIMSPA reference; use "Ofqual-regulated" / "recognised awarding body".
-- No "UK" qualifier in copy.
-- Emerald reserved for the "REPs Endorsed" status pill.
-- Post-build: Playwright screenshot + contrast check + `bash /tmp/audit.sh`.
+- All filter state stays in a single `useState<AcademyFilterState>` in the route (same shape as today, plus a new `ofqualOnly: boolean`).
+- Filter rail uses shadcn `RadioGroup` for single-select facets (Profession, Level, Delivery, CPD points), `Checkbox` for Ofqual toggle, `Checkbox` list for Provider (multi-select).
+- `AcademyFilterState.provider` becomes `string[]` (mock list from `ACADEMY_PROVIDERS`) instead of a single value.
+- Sort options: Recommended (default), CPD points (high→low), Price (low→high), Level (L2→L4).
+- Reset button clears everything back to defaults.
+- Empty state (shadcn `Empty`) replaces the row list when filtered = 0.
+
+## Shadcn usage (per shadcn skill)
+
+- **Directory search bar** — `Input` inside `InputGroup` with `InputGroupAddon` for the search icon; `Select` for sort; `Sheet` for the mobile filter drawer; `Button` variants for triggers.
+- **Filter rail** — `RadioGroup` + `RadioGroupItem` inside `FieldSet` + `FieldLegend` + `FieldGroup`, plus `Checkbox` + `Label`. `ScrollArea` wraps the whole rail on lg+ so long provider lists don't blow the sticky column.
+- **Row card** — `Badge` for meta chips, `Separator` for the trailing footer split, shared `EndorsementPill` styled to match reference "REPS VERIFIED" pill (emerald status tokens).
+- **Empty state** — `Empty` + `EmptyHeader` + `EmptyTitle` + `EmptyDescription` + `EmptyContent` with a Reset `Button`.
+- No `space-y-*` on new markup — `flex flex-col gap-*` only. No hardcoded hex; radii from the locked map only.
+
+## Copy & compliance
+
+- No banned phrases; no "UK" qualifier; no CIMSPA reference.
+- Emerald reserved for the endorsement pill (status semantics).
+- Ofqual badge kept on cards where `ofqualRegulated: true`.
+- Cards link OUT to each provider's course URL (unchanged), `target="_blank" rel="noopener noreferrer"`.
+- Nav entry ("For Professionals → Training Academy") unchanged.
+
+## Out of scope
+
+- Backend, real provider data, real URLs, course detail pages, saved / bookmark actions on rows (reference has a bookmark icon — noting deliberately omitted this pass unless you want it added).
+- The endorsement explainer, FAQ and FinalCta sections keep their current dark styling for rhythm; only the hero + directory band flip to ivory.
+
+## Verification
+
+- Playwright screenshot at desktop and mobile widths.
+- Confirm ivory bg reads with charcoal text; endorsement pill emerald matches the reference "REPS VERIFIED" pill visually.
+- Run `bash /tmp/audit.sh` (REPs build-compliance).
