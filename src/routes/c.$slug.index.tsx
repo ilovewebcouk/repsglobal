@@ -490,6 +490,7 @@ function mergeLiveIntoCoach(
     role: professionLabel,
     promise: sf.tagline?.trim() || fallbackTagline,
     subhead: sf.subtitle ?? base.subhead,
+    aboutHeadline: (sf as { about_headline?: string | null }).about_headline?.trim() || base.aboutHeadline,
     bio: sf.about?.trim()
       ? sf.about.split(/\n\n+/).filter(Boolean)
       : [fallbackAbout],
