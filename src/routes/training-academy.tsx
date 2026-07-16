@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { CourseCard } from "@/components/academy/CourseCard";
+import { CourseRow } from "@/components/academy/CourseRow";
 import {
   AcademyFilterRail,
   DEFAULT_FILTERS,
