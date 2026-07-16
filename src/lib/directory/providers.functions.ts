@@ -135,11 +135,32 @@ export const listPublicProviders = createServerFn({ method: "GET" })
         reviewAggById.set(pid, prev);
       }
     }
+    // Domain verification — mirror the profile page's 3-step trust check.
+    // A provider is "REPs Verified" only when identity is approved, the
+    // provider name is locked (profiles.full_name non-empty), AND the latest
+    // provider_domain_verifications row is 'approved'.
+    const domainApprovedIds = new Set<string>();
+    if (ids.length > 0) {
+      const { data: domRows } = await supabaseAdmin
+        .from("provider_domain_verifications")
+        .select("professional_id, status")
+        .in("professional_id", ids)
+        .eq("status", "approved");
+      for (const d of domRows ?? []) {
+        const pid = (d as { professional_id?: string | null }).professional_id;
+        if (pid) domainApprovedIds.add(pid);
+      }
+    }
 
     let rows: ProviderCard[] = (proRows ?? []).map((r) => {
       const prof = profilesById[r.id as string] ?? { name: null, avatar: null };
       const slug = (r.slug as string | null) ?? "";
       const agg = reviewAggById.get(r.id as string);
+      const identityDone =
+        ((r as { identity_status?: string | null }).identity_status ?? null) ===
+        "approved";
+      const nameDone = Boolean(prof.name && prof.name.trim().length > 0);
+      const domainDone = domainApprovedIds.has(r.id as string);
       return {
         id: r.id as string,
         slug,
@@ -154,9 +175,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
         online_available: Boolean(r.online_available),
         rating_avg: agg && agg.count > 0 ? agg.sum / agg.count : null,
         review_count: agg?.count ?? 0,
-        verified:
-          ((r as { verification_status?: string | null }).verification_status ?? null) ===
-          "verified",
+        verified: identityDone && nameDone && domainDone,
       };
     }).filter((r) => r.slug);
 
