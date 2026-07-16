@@ -388,3 +388,61 @@ export const listCoreInvites = createServerFn({ method: "GET" })
       };
     });
   });
+
+// ─────────────────────────────────────────────────────────────
+// Preview — render the exact email HTML that would go out for
+// a given invite, using the trainer's real data. Does NOT send,
+// enqueue, or log anything.
+// ─────────────────────────────────────────────────────────────
+export const previewCoreInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => {
+    if (!d.id) throw new Error("Invite id required.");
+    return { id: d.id };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: token, error } = await supabaseAdmin
+      .from("billing_setup_tokens")
+      .select("id, email, token, target_renewal_at, professional_id, kind")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!token) throw new Error("Invite not found.");
+    if ((token as any).kind !== "admin_core_invite") throw new Error("Wrong invite kind.");
+
+    let fullName: string | null = null;
+    if ((token as any).professional_id) {
+      const { data: prof } = await supabaseAdmin
+        .from("profiles").select("full_name").eq("id", (token as any).professional_id).maybeSingle();
+      fullName = prof?.full_name ?? null;
+    }
+
+    const baseUrl = (process.env.PUBLIC_SITE_URL ?? "https://repsuk.org").replace(/\/$/, "");
+    const activateUrl = `${baseUrl}/activate/${(token as any).token}`;
+    const anniversary = new Date((token as any).target_renewal_at as string);
+    const anniversaryLabel = anniversary.toLocaleDateString("en-GB", {
+      day: "numeric", month: "long", year: "numeric",
+    });
+
+    const React = (await import("react")).default;
+    const { render } = await import("@react-email/components");
+    const { TEMPLATES } = await import("@/lib/email-templates/registry");
+    const entry = TEMPLATES["core-manual-invite"];
+    if (!entry) throw new Error("Template not registered.");
+
+    const templateData = { fullName, activateUrl, anniversaryLabel, priceLabel: "£34" };
+    const html = await render(React.createElement(entry.component, templateData));
+    const subject = typeof entry.subject === "function"
+      ? (entry.subject as (d: unknown) => string)(templateData)
+      : (entry.subject as string);
+
+    return {
+      subject,
+      recipientEmail: (token as any).email as string,
+      html,
+    };
+  });
+
