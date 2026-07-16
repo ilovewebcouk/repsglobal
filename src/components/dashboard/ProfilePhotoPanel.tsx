@@ -164,10 +164,21 @@ export function ProfilePhotoPanel() {
   const runCommit = useServerFn(commitAvatar);
   const runRegenerate = useServerFn(regenerateAvatar);
 
-  const userId = React.useMemo(
-    () => supabase.auth.getSession().then((r) => r.data.session?.user.id ?? null),
-    [],
-  );
+  // Resolve the current signed-in user id at click time, refreshing the
+  // JWT first so storage RLS sees a valid auth.uid(). A stale/rotated
+  // token silently fails the avatars INSERT policy with the generic
+  // "new row violates row-level security policy" error.
+  const resolveUserId = React.useCallback(async (): Promise<string | null> => {
+    try {
+      await supabase.auth.refreshSession();
+    } catch {
+      /* ignore — fall through to getUser() which will surface the real state */
+    }
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) return null;
+    return data.user.id;
+  }, []);
+
 
   const [avatarBusy, setAvatarBusy] = React.useState<
     null | "uploading" | "validating" | "cropping" | "generating"
@@ -196,7 +207,7 @@ export function ProfilePhotoPanel() {
 
   const removeMutation = useMutation({
     mutationFn: async () => {
-      const id = await userId;
+      const id = await resolveUserId();
       if (!id) throw new Error("Not signed in.");
       return saveAvatar({ data: { path: null } });
     },
@@ -209,7 +220,7 @@ export function ProfilePhotoPanel() {
   });
 
   const handlePickAvatar = async () => {
-    const id = await userId;
+    const id = await resolveUserId();
     if (!id) {
       toast.error("Not signed in.");
       return;
@@ -290,7 +301,7 @@ export function ProfilePhotoPanel() {
   const handleRemoveAvatar = () => removeMutation.mutate();
 
   const handleStartRegenerate = async () => {
-    const id = await userId;
+    const id = await resolveUserId();
     if (!id) return;
     let sourcePath = lastUploadedPath;
     if (!sourcePath && profile.avatar_url) {
