@@ -524,7 +524,9 @@ function mergeLiveIntoCoach(
     })(),
     trust: sf.trust,
     theme: (sf as { theme?: "dark" | "light" }).theme ?? "dark",
-    socials: sf.socials.length ? sf.socials : base.socials,
+    // Only show socials the coach has actually added. Never fall back to
+    // fixture placeholders (they link to "#" and mislead visitors).
+    socials: sf.socials,
     currentClients: sf.current_clients,
   };
 
