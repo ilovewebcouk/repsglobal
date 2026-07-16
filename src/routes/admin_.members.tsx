@@ -963,6 +963,20 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
               </span>
             </div>
           </td>
+          {/* TEMP: manual publish toggle — remove when verification flow ships */}
+          <td className="px-3 py-3">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={isLive}
+                disabled={publishM.isPending}
+                onCheckedChange={(v) => publishM.mutate(v)}
+                aria-label={isLive ? "Hide from public site" : "Make live on public site"}
+              />
+              <span className={isLive ? "text-[11px] font-medium text-emerald-300" : "text-[11px] text-white/55"}>
+                {isLive ? "Live" : "Hidden"}
+              </span>
+            </div>
+          </td>
           <td className="px-3 py-3 text-white/75">{renewalLabel(row.renewalDate)}</td>
           <td className="px-3 py-3 text-white/55">{joinedLabel(row.joined)}</td>
         </>
