@@ -47,7 +47,7 @@ export const listPublicProviders = createServerFn({ method: "GET" })
     let qb = supabaseAdmin
       .from("professionals")
       .select(
-        "id, slug, city, headline, in_person_available, online_available, verification_status",
+        "id, slug, city, headline, in_person_available, online_available, verification_status, identity_status",
         { count: "exact" },
       )
       .in("id", visibleIds)
