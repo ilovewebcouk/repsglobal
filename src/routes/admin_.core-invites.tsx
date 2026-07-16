@@ -200,7 +200,59 @@ function CoreInvitesPage() {
           </tbody>
         </table>
       </div>
-      </div>
+
+      <Sheet
+        open={previewState.open}
+        onOpenChange={(open) => { if (!open) setPreviewState({ open: false }); }}
+      >
+        <SheetContent
+          side="right"
+          className="bg-[#0F172A] text-white border-white/10 w-full sm:max-w-2xl flex flex-col p-0"
+        >
+          <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10">
+            <SheetTitle className="text-white">Email preview</SheetTitle>
+            {previewState.open && !previewState.loading && (
+              <div className="mt-2 space-y-1 text-sm">
+                <div><span className="text-white/50">Subject:</span> <span className="text-white">{previewState.subject}</span></div>
+                <div><span className="text-white/50">To:</span> <span className="text-white font-mono text-xs">{previewState.recipientEmail}</span></div>
+              </div>
+            )}
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden bg-white">
+            {previewState.open && previewState.loading && (
+              <div className="h-full flex items-center justify-center text-reps-ink/60 text-sm">Rendering…</div>
+            )}
+            {previewState.open && !previewState.loading && (
+              <iframe
+                title="Email preview"
+                srcDoc={previewState.html}
+                sandbox=""
+                className="w-full h-full border-0"
+              />
+            )}
+          </div>
+          {previewState.open && !previewState.loading && previewState.canSend && (
+            <div className="px-6 py-4 border-t border-white/10 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewState({ open: false })}
+              >
+                Close
+              </Button>
+              <Button
+                className="bg-reps-orange hover:bg-reps-orange/90 text-white"
+                onClick={async () => {
+                  const id = previewState.inviteId;
+                  setPreviewState({ open: false });
+                  await onSend(id);
+                }}
+              >
+                Send now
+              </Button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </main>
   );
 }
