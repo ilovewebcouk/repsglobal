@@ -36,6 +36,7 @@ import {
   DEMO_PROVIDER_LOGOS,
 } from "@/lib/directory/demo-provider-assets";
 import { useMeasuredHeight } from "@/hooks/use-measured-height";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 /* -------------------------------------------------------------------- */
 /* Route                                                                */
@@ -762,14 +763,18 @@ function ProviderProfilePage() {
                     sub="Common learner questions will appear here."
                   />
                 ) : (
-                  <ul className="mt-4 space-y-2">
+                  <Accordion type="single" collapsible className="mt-2">
                     {faqs.slice(0, 5).map((f) => (
-                      <li key={f.id} className="rounded-[16px] border border-black/10 bg-[#f7f6f2] p-3">
-                        <p className="text-[13.5px] font-semibold text-black">{f.question}</p>
-                        <p className="mt-1 text-[13px] text-black/65">{f.answer}</p>
-                      </li>
+                      <AccordionItem key={f.id} value={f.id} className="border-black/10">
+                        <AccordionTrigger className="text-left text-[13.5px] font-semibold text-black hover:no-underline">
+                          {f.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-[13px] text-black/65">
+                          {f.answer}
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
-                  </ul>
+                  </Accordion>
                 )}
               </article>
             </div>
