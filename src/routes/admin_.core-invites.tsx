@@ -60,10 +60,16 @@ function CoreInvitesPage() {
   const send = useServerFn(sendCoreInvite);
   const resend = useServerFn(resendCoreInvite);
   const revoke = useServerFn(revokeCoreInvite);
+  const preview = useServerFn(previewCoreInvite);
 
   const [rows, setRows] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [previewState, setPreviewState] = useState<
+    | { open: false }
+    | { open: true; loading: true; inviteId: string }
+    | { open: true; loading: false; inviteId: string; subject: string; recipientEmail: string; html: string; canSend: boolean }
+  >({ open: false });
 
   const refresh = useCallback(async () => {
     setLoading(true);
