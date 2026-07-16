@@ -164,10 +164,21 @@ export function ProfilePhotoPanel() {
   const runCommit = useServerFn(commitAvatar);
   const runRegenerate = useServerFn(regenerateAvatar);
 
-  const userId = React.useMemo(
-    () => supabase.auth.getSession().then((r) => r.data.session?.user.id ?? null),
-    [],
-  );
+  // Resolve the current signed-in user id at click time, refreshing the
+  // JWT first so storage RLS sees a valid auth.uid(). A stale/rotated
+  // token silently fails the avatars INSERT policy with the generic
+  // "new row violates row-level security policy" error.
+  const resolveUserId = React.useCallback(async (): Promise<string | null> => {
+    try {
+      await supabase.auth.refreshSession();
+    } catch {
+      /* ignore — fall through to getUser() which will surface the real state */
+    }
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) return null;
+    return data.user.id;
+  }, []);
+
 
   const [avatarBusy, setAvatarBusy] = React.useState<
     null | "uploading" | "validating" | "cropping" | "generating"
