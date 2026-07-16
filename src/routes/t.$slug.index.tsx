@@ -21,7 +21,6 @@ import {
 
 import {
   getWebsiteBySlug,
-  type WebsiteDTO,
 } from "@/lib/website/website.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
