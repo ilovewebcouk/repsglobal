@@ -292,6 +292,32 @@ async function fetchCoachingSinceYear(
   return earliest;
 }
 
+// Helper: year the member's Stripe customer was first created. Used to
+// power the "Years established" number on the public trainer page — the
+// signup year is the real signal, not a hand-entered field.
+async function fetchStripeCustomerSinceYear(
+  supabaseAdmin: { from: (t: string) => any },
+  professionalId: string,
+): Promise<number | null> {
+  const { data } = await supabaseAdmin
+    .from("subscriptions")
+    .select("stripe_customer_created_at, created_at")
+    .eq("user_id", professionalId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  const raw =
+    (data as { stripe_customer_created_at: string | null; created_at: string | null })
+      .stripe_customer_created_at ??
+    (data as { created_at: string | null }).created_at ??
+    null;
+  if (!raw) return null;
+  const parsed = new Date(raw);
+  if (isNaN(parsed.getTime())) return null;
+  return parsed.getFullYear();
+}
+
 // Helper: public-safe trust summary used by both website readers.
 // `includeSensitiveIds` should ONLY be true for the owner-side reader
 // (getMyWebsite). The public reader must never expose real cert / policy
