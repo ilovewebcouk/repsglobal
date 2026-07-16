@@ -113,6 +113,7 @@ type Coach = {
   region: string;
   promise: string;
   subhead: string;
+  aboutHeadline: string;
   method: { name: string; intro?: string; pillars: { title: string; desc: string }[] };
   bio: string[];
   heroImage: string;
