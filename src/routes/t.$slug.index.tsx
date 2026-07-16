@@ -1023,26 +1023,39 @@ function StatTile({ label, value, accent }: { label: string; value: string; acce
 }
 
 function TrustRow({
-  icon,
+  done,
   title,
   sub,
 }: {
-  icon: React.ReactNode;
+  done: boolean;
   title: string;
   sub: string;
 }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
-        {icon}
+      <span
+        className={
+          done
+            ? "mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10"
+            : "mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full border border-black/15 bg-white"
+        }
+      >
+        {done ? (
+          <Check className="h-4 w-4 text-emerald-600" strokeWidth={2.4} />
+        ) : (
+          <span className="h-2 w-2 rounded-full bg-black/25" />
+        )}
       </span>
       <div>
-        <p className="text-[14px] font-semibold text-black">{title}</p>
+        <p className={done ? "text-[14px] font-semibold text-black" : "text-[14px] font-semibold text-black/60"}>
+          {title}
+        </p>
         <p className="text-[12.5px] text-black/55">{sub}</p>
       </div>
     </li>
   );
 }
+
 
 function CourseCard({ course }: { course: Course }) {
   return (
