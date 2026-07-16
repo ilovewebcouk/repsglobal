@@ -1,4 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { X, Eye, LayoutDashboard } from 'lucide-react';
@@ -20,11 +21,27 @@ export function ImpersonationBanner() {
   const { data } = useQuery({
     queryKey: ['impersonation-status'],
     queryFn: () => fetchStatus(),
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    // Tight window: banner must disappear promptly at ends_at.
+    refetchInterval: 15_000,
+    staleTime: 10_000,
+    refetchOnWindowFocus: true,
   });
 
+  // Client-clock check so the banner drops the instant local time passes
+  // ends_at, without waiting for the next refetch.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!data?.active) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [data?.active]);
+
   if (!data?.active) return null;
+  if (new Date(data.endsAt).getTime() <= now) {
+    // Expired locally — evict cached status; server-side is fail-closed too.
+    void qc.invalidateQueries({ queryKey: ['impersonation-status'] });
+    return null;
+  }
 
   return (
     <div className="sticky top-0 z-50 flex items-center justify-between gap-3 bg-reps-orange px-4 py-2.5 text-[12.5px] font-medium text-white sm:px-6 lg:px-8">

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireSupabaseAuthWithImpersonation } from "@/integrations/supabase/auth-middleware-impersonation";
+import { assertCallerHasProfessionalRow } from "@/lib/verification/guards.server";
 import { matchAwardingBody, OFQUAL_QUAL_NO_REGEX } from "./awarding-bodies";
 import { deriveTitlesForSubmission } from "./title-rules";
 
@@ -369,9 +370,9 @@ export const createCertUploadSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    await supabase
-      .from("professionals")
-      .upsert({ id: userId } as never, { onConflict: "id" });
+    // Reject admin/non-professional callers instead of auto-creating a
+    // professionals row from userId (see guards.server.ts).
+    await assertCallerHasProfessionalRow(supabase, userId);
     const { data, error } = await supabase
       .from("certificate_upload_sessions")
       .insert({ professional_id: userId } as never)

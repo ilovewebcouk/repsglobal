@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertCallerHasProfessionalRow } from "./guards.server";
 
 const submitInput = z.object({
   awarding_body: z.string().min(2).max(120),
@@ -33,9 +34,10 @@ export const submitVerification = createServerFn({ method: "POST" })
       }
     }
 
-    // Ensure a professional row exists (handle_new_user trigger should create it,
-    // but a Google OAuth signup without signup_kind=professional may have skipped it).
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
+    // Refuse to write as an admin-role user or a caller without a
+    // professionals row. Never auto-create the row here — see
+    // guards.server.ts.
+    await assertCallerHasProfessionalRow(supabase, userId);
 
     const { data: row, error } = await supabase
       .from("verification_submissions")

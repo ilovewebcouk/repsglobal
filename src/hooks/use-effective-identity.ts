@@ -3,6 +3,7 @@
 // should show the IMPERSONATED user, not the signed-in admin. Server-side
 // data is already swapped by `requireSupabaseAuthWithImpersonation`; this
 // hook fixes the client-side strings only.
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useAccountMenu } from "@/hooks/use-account-menu";
@@ -29,11 +30,26 @@ export function useEffectiveIdentity(): EffectiveIdentity {
     queryKey: ["impersonation-status"],
     queryFn: () => fetchStatus(),
     enabled: account.isAdmin,
-    staleTime: 30_000,
-    refetchOnWindowFocus: false,
+    // Tight windows so the UI can't show "Viewing as…" for long after the
+    // server-side session has expired.
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
   });
 
-  if (data?.active) {
+  // Client-side clock guard: if endsAt is in the past, immediately behave
+  // as non-impersonating even before the next refetch settles.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!data?.active) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [data?.active]);
+
+  const stillActive =
+    !!data?.active && new Date(data.endsAt).getTime() > now;
+
+  if (data?.active && stillActive) {
     const tierLabel =
       data.tier === "pro"
         ? "Pro"
