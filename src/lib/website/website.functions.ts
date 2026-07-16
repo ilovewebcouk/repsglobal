@@ -636,7 +636,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       };
 
     } else {
-      const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
+      const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues, stripeCustomerSinceYear] = await Promise.all([
         supabaseAdmin
           .from("websites")
           .select(
