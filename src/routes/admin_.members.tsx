@@ -54,7 +54,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Switch } from "@/components/ui/switch";
+
 import { timeAgo } from "@/lib/format/relative-time";
 
 
@@ -115,7 +115,7 @@ import {
   listAdminProfessionals,
   setProfessionalSuspension,
   setProfessionalFlag,
-  setProfessionalPublished,
+  
   
   
   type AdminProRow,
@@ -483,8 +483,6 @@ function AdminProfessionalsPage() {
                     <th className="px-3 py-3 font-semibold">Verified pros</th>
                     <th className="px-3 py-3 font-semibold">Plan</th>
                     <th className="px-3 py-3 font-semibold">Status</th>
-                    {/* TEMP: manual publish toggle — remove when verification flow ships */}
-                    <th className="px-3 py-3 font-semibold">Live</th>
                     <th className="px-3 py-3 font-semibold">Renewal date</th>
                     <th className="px-3 py-3 font-semibold">Joined</th>
                   </>
@@ -829,22 +827,7 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
   const suspendFn = useServerFn(setProfessionalSuspension);
   const flagFn = useServerFn(setProfessionalFlag);
   const setTpFn = useServerFn(setTrainingProviderPlan);
-  const setPublishedFn = useServerFn(setProfessionalPublished);
-  const [publishedOptimistic, setPublishedOptimistic] = React.useState<boolean | null>(null);
-  const isLive = publishedOptimistic ?? row.isPublished;
-  const publishM = useMutation({
-    mutationFn: (next: boolean) => setPublishedFn({ data: { professional_id: row.id, is_published: next } }),
-    onMutate: (next) => { setPublishedOptimistic(next); },
-    onSuccess: (_res, next) => {
-      toast.success(next ? `${row.name} is now live` : `${row.name} hidden from public site`);
-      qc.invalidateQueries({ queryKey: ["admin-pros-list"] });
-      qc.invalidateQueries({ queryKey: ["admin-pros-kpis"] });
-    },
-    onError: (err: unknown) => {
-      setPublishedOptimistic(row.isPublished);
-      toast.error(err instanceof Error ? err.message : "Failed to update visibility");
-    },
-  });
+  
   
   
   const [busy, setBusy] = React.useState(false);
@@ -960,20 +943,6 @@ function ProRow({ row, segment }: { row: AdminProRow; segment: AdminProSegment }
               <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(row.status)}`}>
                 {row.status === "verified" && <CheckCircle2 className="h-3 w-3" />}
                 {STATUS_LABEL[row.status]}
-              </span>
-            </div>
-          </td>
-          {/* TEMP: manual publish toggle — remove when verification flow ships */}
-          <td className="px-3 py-3">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={isLive}
-                disabled={publishM.isPending}
-                onCheckedChange={(v) => publishM.mutate(v)}
-                aria-label={isLive ? "Hide from public site" : "Make live on public site"}
-              />
-              <span className={isLive ? "text-[11px] font-medium text-emerald-300" : "text-[11px] text-white/55"}>
-                {isLive ? "Live" : "Hidden"}
               </span>
             </div>
           </td>
