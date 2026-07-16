@@ -207,7 +207,7 @@ export function NotificationsBell() {
           ) : (
             <ul className="divide-y divide-reps-border">
               {visible.map((item) => {
-                const href =
+                const rawHref =
                   item.kind === "verification"
                     ? item.href
                     : item.kind === "review"
@@ -215,6 +215,7 @@ export function NotificationsBell() {
                       : item.kind === "support-admin"
                         ? "/admin/support"
                         : "/dashboard/support";
+                const [hrefPath, hrefHash] = rawHref.split("#");
                 const showTicket =
                   (item.kind === "support-admin" || item.kind === "support-mine") &&
                   item.ticketNumber;
@@ -227,10 +228,21 @@ export function NotificationsBell() {
                 return (
                   <li key={item.key}>
                     <Link
-                      to={href}
-                      onClick={() => setOpen(false)}
+                      to={hrefPath}
+                      hash={hrefHash}
+                      onClick={() => {
+                        setOpen(false);
+                        if (hrefHash) {
+                          setTimeout(() => {
+                            document
+                              .getElementById(hrefHash)
+                              ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }, 120);
+                        }
+                      }}
                       className="flex gap-3 px-4 py-3 transition-colors hover:bg-reps-panel-soft"
                     >
+
                       <div
                         className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[8px] ${iconWrapClass}`}
                       >
