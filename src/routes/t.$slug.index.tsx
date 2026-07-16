@@ -36,6 +36,7 @@ import {
   DEMO_PROVIDER_LOGOS,
 } from "@/lib/directory/demo-provider-assets";
 import { useMeasuredHeight } from "@/hooks/use-measured-height";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 /* -------------------------------------------------------------------- */
 /* Route                                                                */
