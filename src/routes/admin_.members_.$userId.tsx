@@ -519,19 +519,28 @@ function OverviewPane({ snapshot }: { snapshot: Member360Snapshot }) {
         <PanelHeader title="Identifiers" description="Cross-reference into Stripe and the database." />
         <div className={cn(PANEL_BODY, "flex flex-col gap-2")}>
           <IdRow label="User id" value={snapshot.user_id} />
-          <IdRow
-            label="Stripe customer"
-            value={snapshot.stripe_customer_id}
-            href={snapshot.stripe_customer_id ? `https://dashboard.stripe.com/customers/${snapshot.stripe_customer_id}` : undefined}
-          />
-          <IdRow
-            label="Stripe subscription"
-            value={sub.stripe_subscription_id}
-            href={sub.stripe_subscription_id ? `https://dashboard.stripe.com/subscriptions/${sub.stripe_subscription_id}` : undefined}
-          />
+          {snapshot.account_type === "training_provider" ? (
+            <div className="rounded-[10px] border border-sky-400/20 bg-sky-500/5 px-3 py-2 text-[12px] text-white/60">
+              Training provider — no Stripe customer or subscription. Access is granted via admin invite, not paid billing.
+            </div>
+          ) : (
+            <>
+              <IdRow
+                label="Stripe customer"
+                value={snapshot.stripe_customer_id}
+                href={snapshot.stripe_customer_id ? `https://dashboard.stripe.com/customers/${snapshot.stripe_customer_id}` : undefined}
+              />
+              <IdRow
+                label="Stripe subscription"
+                value={sub.stripe_subscription_id}
+                href={sub.stripe_subscription_id ? `https://dashboard.stripe.com/subscriptions/${sub.stripe_subscription_id}` : undefined}
+              />
+            </>
+          )}
           <IdRow label="Public slug" value={snapshot.slug} href={snapshot.slug ? `/c/${snapshot.slug}` : undefined} internal />
         </div>
       </section>
+
     </div>
   );
 }
