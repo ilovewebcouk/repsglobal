@@ -15,6 +15,7 @@ import {
   resendCoreInvite,
   revokeCoreInvite,
   listCoreInvites,
+  previewCoreInvite,
 } from "@/lib/admin/core-invites.functions";
 
 export const Route = createFileRoute("/admin_/core-invites")({
@@ -59,10 +60,16 @@ function CoreInvitesPage() {
   const send = useServerFn(sendCoreInvite);
   const resend = useServerFn(resendCoreInvite);
   const revoke = useServerFn(revokeCoreInvite);
+  const preview = useServerFn(previewCoreInvite);
 
   const [rows, setRows] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [previewState, setPreviewState] = useState<
+    | { open: false }
+    | { open: true; loading: true; inviteId: string }
+    | { open: true; loading: false; inviteId: string; subject: string; recipientEmail: string; html: string; canSend: boolean }
+  >({ open: false });
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -90,6 +97,24 @@ function CoreInvitesPage() {
     if (!confirm("Revoke this invite? The trainer can't use the link after this.")) return;
     try { await revoke({ data: { id } }); toast.success("Revoked"); await refresh(); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Revoke failed"); }
+  }
+  async function onPreview(inv: Invite) {
+    setPreviewState({ open: true, loading: true, inviteId: inv.id });
+    try {
+      const res = await preview({ data: { id: inv.id } });
+      setPreviewState({
+        open: true,
+        loading: false,
+        inviteId: inv.id,
+        subject: res.subject,
+        recipientEmail: res.recipientEmail,
+        html: res.html,
+        canSend: inv.status === "draft",
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Preview failed");
+      setPreviewState({ open: false });
+    }
   }
 
   return (
@@ -155,6 +180,9 @@ function CoreInvitesPage() {
                 </td>
                 <td className="px-4 py-3">{statusBadge(r.status)}</td>
                 <td className="px-4 py-3 text-right space-x-2">
+                  {r.status !== "revoked" && (
+                    <Button size="sm" variant="outline" onClick={() => onPreview(r)}>Preview</Button>
+                  )}
                   {r.status === "draft" && (
                     <Button size="sm" onClick={() => onSend(r.id)}>Send</Button>
                   )}
@@ -172,6 +200,59 @@ function CoreInvitesPage() {
           </tbody>
         </table>
       </div>
+
+      <Sheet
+        open={previewState.open}
+        onOpenChange={(open) => { if (!open) setPreviewState({ open: false }); }}
+      >
+        <SheetContent
+          side="right"
+          className="bg-[#0F172A] text-white border-white/10 w-full sm:max-w-2xl flex flex-col p-0"
+        >
+          <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10">
+            <SheetTitle className="text-white">Email preview</SheetTitle>
+            {previewState.open && !previewState.loading && (
+              <div className="mt-2 space-y-1 text-sm">
+                <div><span className="text-white/50">Subject:</span> <span className="text-white">{previewState.subject}</span></div>
+                <div><span className="text-white/50">To:</span> <span className="text-white font-mono text-xs">{previewState.recipientEmail}</span></div>
+              </div>
+            )}
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden bg-white">
+            {previewState.open && previewState.loading && (
+              <div className="h-full flex items-center justify-center text-reps-ink/60 text-sm">Rendering…</div>
+            )}
+            {previewState.open && !previewState.loading && (
+              <iframe
+                title="Email preview"
+                srcDoc={previewState.html}
+                sandbox=""
+                className="w-full h-full border-0"
+              />
+            )}
+          </div>
+          {previewState.open && !previewState.loading && previewState.canSend && (
+            <div className="px-6 py-4 border-t border-white/10 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewState({ open: false })}
+              >
+                Close
+              </Button>
+              <Button
+                className="bg-reps-orange hover:bg-reps-orange/90 text-white"
+                onClick={async () => {
+                  const id = previewState.inviteId;
+                  setPreviewState({ open: false });
+                  await onSend(id);
+                }}
+              >
+                Send now
+              </Button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
       </div>
     </main>
   );
