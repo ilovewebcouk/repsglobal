@@ -12,20 +12,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-export type MemberBillingPlan = "free" | "verified" | "pro" | "studio";
+export type MemberBillingPlan = "free" | "verified" | "pro" | "studio" | "training_provider";
 export type MemberBillingState = "ok" | "payment_failed" | "renewal_due";
 
 // MRR pence by tier — must match `planMrrPence` in professionals.functions.ts.
+// Training providers are admin-invited comp/trial seats and don't count toward MRR.
 const PLAN_MRR_PENCE: Record<MemberBillingPlan, number> = {
   free: 0,
   verified: Math.round(3400 / 12), // £34/yr ÷ 12
   pro: 5900,
   studio: 14900,
+  training_provider: 0,
 };
 
 const PLAN_RANK: Record<MemberBillingPlan, number> = {
   studio: 4,
   pro: 3,
+  training_provider: 2, // ranked alongside verified so it wins over "free"
   verified: 2,
   free: 1,
 };
@@ -36,9 +39,12 @@ const FAILED_STRIPE_STATUSES = new Set([
   "incomplete",
   "incomplete_expired",
 ]);
+// COUNTED_TIERS drives the Active Paying Member collection. Providers are
+// intentionally excluded so revenue/MRR metrics stay clean.
 const COUNTED_TIERS = new Set<MemberBillingPlan>(["verified", "pro", "studio"]);
 const ENTITLED_STATUSES = new Set(["active", "trialing", "past_due"]);
 const RENEWAL_DUE_GRACE_DAYS = 7;
+
 
 export type SubscriptionRowLite = {
   user_id: string;
