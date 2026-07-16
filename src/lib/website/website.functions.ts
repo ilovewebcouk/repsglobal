@@ -593,9 +593,10 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
     };
 
     if (!previewOk && hasPublishedSnapshot) {
-      const [liveTrust, liveCoachingSinceYear] = await Promise.all([
+      const [liveTrust, liveCoachingSinceYear, liveStripeSinceYear] = await Promise.all([
         fetchTrustSummary(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
         fetchCoachingSinceYear(supabaseAdmin, pro.id, pro.primary_title_slug ?? null),
+        fetchStripeCustomerSinceYear(supabaseAdmin, pro.id),
       ]);
       payload = {
         ...snap!,
@@ -603,8 +604,11 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
           ...snap!.website,
           trust: liveTrust,
           coaching_since_year: liveCoachingSinceYear ?? snap!.website.coaching_since_year,
+          stripe_customer_since_year:
+            liveStripeSinceYear ?? snap!.website.stripe_customer_since_year ?? null,
         },
       };
+
     } else {
       const [{ data: sf }, { data: prof }, { data: services }, { data: subRow }, { data: transformations }, { data: clientResults }, { data: faqs }, coachingSinceYear, trust, gymVenues] = await Promise.all([
         supabaseAdmin
