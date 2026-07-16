@@ -224,13 +224,49 @@ export const resolveOfqualNumber = createServerFn({ method: "POST" })
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider guard
 
-async function assertProviderHasTradingName(supabase: any, userId: string) {
-  const { data: pro } = await supabase
-    .from("professionals")
-    .select("account_type")
-    .eq("id", userId)
-    .maybeSingle();
-  if (pro?.account_type !== "training_provider") return;
+/**
+ * Guard for every provider-write server-fn in this file.
+ *
+ * Must be called with the middleware-provided `userId`. It:
+ *  - Refuses if no `professionals` row exists for the caller (an admin
+ *    whose impersonation session silently expired must NOT be allowed
+ *    to auto-create one via a downstream upsert).
+ *  - Refuses if the caller's `account_type` is anything other than
+ *    `training_provider` — regulated permissions and REPS courses are
+ *    training-provider-only surfaces.
+ *  - Refuses if the caller has the `admin` role (defence-in-depth in
+ *    case an admin ever has a real training_provider account_type).
+ *  - Requires a non-empty trading name in `profiles.full_name`.
+ *
+ * NEVER upsert into `professionals` here. Any auto-creation of a
+ * professional row from the userId of a server-fn call is a footgun
+ * that fabricates provider identities on middleware fallbacks.
+ */
+async function assertCallerIsTrainingProvider(supabase: any, userId: string) {
+  const [{ data: pro }, { data: roleRow }] = await Promise.all([
+    supabase
+      .from("professionals")
+      .select("id, account_type")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle(),
+  ]);
+
+  if (roleRow) {
+    throw new Error(
+      "This action is only available to training-provider accounts. If you meant to act as a provider, reopen impersonation from the Members page.",
+    );
+  }
+  if (!pro || pro.account_type !== "training_provider") {
+    throw new Error(
+      "This action is only available to training-provider accounts.",
+    );
+  }
 
   const { data, error } = await supabase
     .from("profiles")
@@ -245,6 +281,7 @@ async function assertProviderHasTradingName(supabase: any, userId: string) {
     );
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Regulated permissions — submit / list / remove
@@ -261,7 +298,7 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => submitRegulatedInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertProviderHasTradingName(supabase, userId);
+    await assertCallerIsTrainingProvider(supabase, userId);
 
     const ofqualNumber = data.ofqual_number.trim().toUpperCase();
     if (!OFQUAL_QUAL_NO_REGEX.test(ofqualNumber)) {
@@ -286,7 +323,6 @@ export const submitRegulatedPermission = createServerFn({ method: "POST" })
         }
       : null;
 
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     const { data: row, error } = await supabase
       .from("provider_regulated_permissions")
@@ -328,7 +364,7 @@ export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => submitRegulatedBatchInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertProviderHasTradingName(supabase, userId);
+    await assertCallerIsTrainingProvider(supabase, userId);
 
     for (const p of data.evidence_doc_paths) {
       if (!p.startsWith(`${userId}/`)) {
@@ -346,7 +382,6 @@ export const submitRegulatedPermissionBatch = createServerFn({ method: "POST" })
       }
     }
 
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     const { lookupOfqualQualification } = await import("@/lib/cpd/ofqual.server");
     const groupId = crypto.randomUUID();
@@ -526,9 +561,8 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => submitRepsCourseInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertProviderHasTradingName(supabase, userId);
+    await assertCallerIsTrainingProvider(supabase, userId);
 
-    await supabase.from("professionals").upsert({ id: userId } as never, { onConflict: "id" });
 
     // Verify evidence rows: all owned by user, not yet attached to a course,
     // and cover every required kind.
