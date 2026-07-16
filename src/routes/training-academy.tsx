@@ -114,8 +114,17 @@ function TrainingAcademyPage() {
 
       <main id="main-content">
         {/* Compact header — matches Find a Training Provider */}
-        <section className="border-b border-black/10 bg-white">
-          <div className="mx-auto max-w-[1320px] px-4 py-10 lg:px-6 lg:py-14">
+        <section className="relative overflow-hidden border-b border-black/10 bg-white">
+          {/* Warm brand wash — anchors the hero without overwhelming the copy */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 900px 480px at 92% 0%, rgba(255,122,0,0.14) 0%, rgba(255,122,0,0.04) 45%, rgba(255,122,0,0) 70%), radial-gradient(ellipse 700px 380px at 0% 100%, rgba(255,122,0,0.06) 0%, rgba(255,122,0,0) 60%)",
+            }}
+          />
+          <div className="relative mx-auto max-w-[1320px] px-4 py-10 lg:px-6 lg:py-14">
             <nav aria-label="Breadcrumb" className="text-[13px] text-black/55">
               <ol className="flex flex-wrap items-center gap-1.5">
                 <li>
@@ -126,12 +135,13 @@ function TrainingAcademyPage() {
               </ol>
             </nav>
 
-            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-[#FF7A00]/30 bg-[#FF7A00]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#FF7A00]">
+            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-reps-orange-border bg-reps-orange-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-reps-orange">
               <GraduationCap className="h-3.5 w-3.5" strokeWidth={2.2} />
               REPs Training Academy
             </span>
             <h1 className="mt-3 font-display text-[34px] font-bold leading-[1.05] tracking-[-0.01em] text-black lg:text-[46px]">
-              Every REPs-endorsed course, in one catalogue.
+              Every REPs-endorsed course,{" "}
+              <span className="text-reps-orange">in one catalogue.</span>
             </h1>
             <p className="mt-3 max-w-[640px] text-[15px] leading-relaxed text-black/65 lg:text-[16px]">
               Qualifications and CPD from training providers that have applied for and passed the REPs
@@ -139,8 +149,25 @@ function TrainingAcademyPage() {
               straight to the provider to enrol.
             </p>
 
+            {/* Trust chips */}
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              {[
+                { icon: GraduationCap, label: `${ACADEMY_COURSES.length} endorsed courses` },
+                { icon: ShieldCheck, label: "Ofqual-regulated options" },
+                { icon: BadgeCheck, label: "Vetted providers only" },
+              ].map((chip) => (
+                <span
+                  key={chip.label}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1 text-[12px] font-medium text-black/70"
+                >
+                  <chip.icon className="h-3.5 w-3.5 text-reps-orange" strokeWidth={2} />
+                  {chip.label}
+                </span>
+              ))}
+            </div>
+
             {/* Search + sort rail */}
-            <div className="mt-6 grid grid-cols-1 gap-3 rounded-[18px] border border-black/10 bg-white p-3 md:grid-cols-[1fr_auto_auto] lg:p-4">
+            <div className="mt-8 grid grid-cols-1 gap-3 rounded-[18px] border border-black/10 bg-white p-3 md:grid-cols-[1fr_auto_auto] lg:p-4">
               <label className="relative flex items-center">
                 <Search className="pointer-events-none absolute left-3 h-4 w-4 text-black/40" strokeWidth={2} />
                 <input
@@ -148,7 +175,7 @@ function TrainingAcademyPage() {
                   placeholder="Search courses, providers or specialisms…"
                   value={filters.query}
                   onChange={(e) => setFilters({ ...filters, query: e.target.value })}
-                  className="h-11 w-full rounded-[12px] border border-black/10 bg-white pl-9 pr-3 text-[14px] text-black placeholder:text-black/45 focus:border-[#FF7A00] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/25"
+                  className="h-11 w-full rounded-[12px] border border-black/10 bg-white pl-9 pr-3 text-[14px] text-black placeholder:text-black/45 focus:border-reps-orange focus:outline-none focus:ring-2 focus:ring-reps-orange/25"
                 />
               </label>
 
@@ -163,7 +190,7 @@ function TrainingAcademyPage() {
                     <SlidersHorizontal data-icon="inline-start" />
                     Filters
                     {!isDefaultFilters(filters) ? (
-                      <span className="ml-1 inline-flex size-5 items-center justify-center rounded-full bg-[#FF7A00] text-[10.5px] font-bold text-white">
+                      <span className="ml-1 inline-flex size-5 items-center justify-center rounded-full bg-reps-orange text-[10.5px] font-bold text-white">
                         ●
                       </span>
                     ) : null}
