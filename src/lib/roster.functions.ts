@@ -51,6 +51,14 @@ async function assertProfessional(
   supabase: any,
   userId: string,
 ) {
+  // Reject admin-role callers (e.g. from a stale/expired impersonation
+  // fallback) and require a real professionals row before any
+  // membership-owned mutation. See src/lib/verification/guards.server.ts.
+  const { assertCallerHasProfessionalRow } = await import(
+    "@/lib/verification/guards.server"
+  );
+  await assertCallerHasProfessionalRow(supabase, userId);
+
   const { data: roles } = await supabase
     .from("user_roles")
     .select("role")

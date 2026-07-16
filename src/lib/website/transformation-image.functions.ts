@@ -13,7 +13,9 @@ export const uploadTransformationImageFromBase64 = createServerFn({ method: "POS
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((data) => UploadInput.parse(data))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
+    const { userId, supabase } = context;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(supabase, userId);
     const match = /^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i.exec(data.dataUrl);
     if (!match) throw new Error("Invalid image data URL");
     const ext = match[1].toLowerCase() === "png" ? "png" : match[1].toLowerCase() === "webp" ? "webp" : "jpg";

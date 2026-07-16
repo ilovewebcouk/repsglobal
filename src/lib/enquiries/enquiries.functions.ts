@@ -214,6 +214,8 @@ export const updateEnquiryStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpdateStatusSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const patch: {
       status: string;

@@ -14,7 +14,9 @@ export const uploadServiceImageFromBase64 = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((data) => UploadInput.parse(data))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
+    const { userId, supabase } = context;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(supabase, userId);
     const match = /^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i.exec(data.dataUrl);
     if (!match) throw new Error("Invalid image data URL");
     const ext = match[1].toLowerCase() === "png" ? "png" : match[1].toLowerCase() === "webp" ? "webp" : "jpg";
@@ -96,6 +98,8 @@ export const generateServiceImageFromAi = createServerFn({ method: "POST" })
   .inputValidator((data) => AiInput.parse(data))
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(supabase, userId);
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI gateway is not configured");
 
