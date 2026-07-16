@@ -1362,7 +1362,7 @@ function AboutSection({ coach }: { coach: Coach }) {
               About {coach.firstName}
             </span>
             <h2 className="mt-2 font-display text-[32px] font-bold leading-tight text-reps-text lg:text-[40px]">
-              I take 20 clients. I write 20 programmes.
+              {coach.aboutHeadline}
             </h2>
             <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-reps-text-soft">
               {coach.bio.map((p) => (
