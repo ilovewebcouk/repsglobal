@@ -168,8 +168,8 @@ export function ProviderFaqsSection() {
           <>
             <div className="mb-3 flex items-center gap-3 text-[12px] text-white/55">
               <span>
-                <strong className="text-white/85">{publishedCount}</strong>{" "}
-                published · {faqs.length}/{maxRows} total
+                <strong className="text-white/85">{publishedCount}</strong> of{" "}
+                {maxPublic} published
               </span>
               {publishedCount >= maxPublic ? (
                 <span className="rounded-[6px] border border-amber-400/25 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
