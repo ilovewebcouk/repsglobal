@@ -148,6 +148,16 @@ function ProviderProfilePage() {
     enabled: !!sf.professional_id,
   });
   const certCount = certCountData?.count ?? 0;
+
+  const fetchVerification = useServerFn(getPublicProviderVerification);
+  const { data: verification } = useQuery({
+    queryKey: ["public-provider-verification", sf.professional_id],
+    queryFn: () =>
+      fetchVerification({ data: { providerId: sf.professional_id } }),
+    staleTime: 60_000,
+    enabled: !!sf.professional_id,
+  });
+  const isVerified = verification?.completedCount === 3;
   const learnersTrained =
     certCount > 0
       ? certCount >= 1000
