@@ -483,8 +483,6 @@ function AdminProfessionalsPage() {
                     <th className="px-3 py-3 font-semibold">Verified pros</th>
                     <th className="px-3 py-3 font-semibold">Plan</th>
                     <th className="px-3 py-3 font-semibold">Status</th>
-                    {/* TEMP: manual publish toggle — remove when verification flow ships */}
-                    <th className="px-3 py-3 font-semibold">Live</th>
                     <th className="px-3 py-3 font-semibold">Renewal date</th>
                     <th className="px-3 py-3 font-semibold">Joined</th>
                   </>
