@@ -82,7 +82,18 @@ export const listMyProviderFaqs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    await assertCallerIsTrainingProvider(supabase, userId);
+
+    // Read-only listing: return empty for non-training-provider callers
+    // (admins, regular members) instead of throwing. Mutations remain
+    // guarded by assertCallerIsTrainingProvider.
+    const { data: pro } = await supabase
+      .from("professionals")
+      .select("account_type")
+      .eq("id", userId)
+      .maybeSingle();
+    if (!pro || (pro as { account_type?: string }).account_type !== "training_provider") {
+      return { faqs: [] as ProviderFaqDTO[], maxRows: MAX_ROWS, maxPublic: MAX_PUBLIC };
+    }
 
     const { data, error } = await supabase
       .from("provider_faqs")
