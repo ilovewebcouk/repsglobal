@@ -607,7 +607,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("websites")
           .select(
-            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
+            "professional_id, tagline, subtitle, about_headline, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
           )
           .eq("professional_id", pro.id)
           .maybeSingle(),
@@ -777,7 +777,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
         supabaseAdmin
           .from("websites")
           .select(
-            "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
+            "professional_id, tagline, subtitle, about_headline, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
           )
           .eq("professional_id", userId)
           .maybeSingle(),
@@ -818,7 +818,7 @@ export const getMyWebsite = createServerFn({ method: "GET" })
               { onConflict: "professional_id" },
             )
             .select(
-              "professional_id, tagline, subtitle, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
+              "professional_id, tagline, subtitle, about_headline, about, hero_image_url, accent_hex, method_name, method_intro, method_pillars, venues, coaching_reach, client_results_intro, layout_variant, theme, current_clients",
             )
             .single();
           if (error) throw error;
