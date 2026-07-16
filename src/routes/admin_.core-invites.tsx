@@ -253,6 +253,7 @@ function CoreInvitesPage() {
           )}
         </SheetContent>
       </Sheet>
+      </div>
     </main>
   );
 }
