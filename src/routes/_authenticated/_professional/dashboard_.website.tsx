@@ -220,6 +220,7 @@ function WebsiteEditorPage() {
 
   const [tagline, setTagline] = React.useState("");
   const [subtitle, setSubtitle] = React.useState("");
+  const [aboutHeadline, setAboutHeadline] = React.useState("");
   const [about, setAbout] = React.useState("");
   const [hero, setHero] = React.useState("");
   const [currentClients, setCurrentClients] = React.useState<number | null>(null);
@@ -231,6 +232,7 @@ function WebsiteEditorPage() {
     if (!sf) return;
     setTagline(sf.tagline ?? "");
     setSubtitle(sf.subtitle ?? "");
+    setAboutHeadline((sf as { about_headline?: string | null }).about_headline ?? "");
     setAbout(sf.about ?? "");
     setHero(sf.hero_image_url ?? "");
     setCurrentClients(sf.current_clients ?? null);
