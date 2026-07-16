@@ -190,6 +190,18 @@ async function upsertSubscriptionFromStripe(sub: Stripe.Subscription, stripe: St
   await supabaseAdmin
     .from("subscriptions")
     .upsert(row as never, { onConflict: "user_id, environment" });
+
+  // Training-provider (organisation) memberships: mirror the tier onto the
+  // professionals row so the provider dashboard, admin surfaces and public
+  // profile all reflect the paid status. Same shape as the admin QA path in
+  // `setTrainingProviderPlan` — best-effort, silent if no pro row exists yet.
+  if (isLiveStatus && lookup?.tier === "training_provider") {
+    await supabaseAdmin
+      .from("professionals")
+      .update({ account_type: "training_provider" as never } as never)
+      .eq("id", userId);
+  }
+
   return userId;
 }
 
