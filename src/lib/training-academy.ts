@@ -24,6 +24,8 @@ export type AcademyProvider = {
   name: string;
   /** Two-letter initials rendered inside the placeholder logo. */
   logo: string;
+  /** Hue (0-360) used to seed the thumbnail-fallback gradient. */
+  hue: number;
 };
 
 export type AcademyCourse = {
@@ -38,6 +40,14 @@ export type AcademyCourse = {
   delivery: AcademyDelivery;
   priceFromGBP: number;
   ofqualRegulated: boolean;
+  /** Total modules in the course (provider-supplied). */
+  modules: number;
+  /** Average rating out of 5, one decimal. */
+  rating: number;
+  /** Number of learner reviews. */
+  ratingCount: number;
+  bestseller?: boolean;
+  newRelease?: boolean;
   /** External provider course page — always opens in a new tab. */
   url: string;
 };
@@ -74,14 +84,14 @@ export const DELIVERY_LABELS: Record<AcademyDelivery, string> = {
 /* -------------------------------------------------------------------------- */
 
 const P = {
-  origym: { slug: "origym", name: "Origym", logo: "OG" },
-  tfg: { slug: "the-fitness-group", name: "The Fitness Group", logo: "TF" },
-  discovery: { slug: "discovery-learning", name: "Discovery Learning", logo: "DL" },
-  studyActive: { slug: "study-active", name: "Study Active", logo: "SA" },
-  futureFit: { slug: "future-fit", name: "Future Fit", logo: "FF" },
-  hfe: { slug: "hfe", name: "HFE", logo: "HF" },
-  trainfitness: { slug: "trainfitness", name: "TRAINFITNESS", logo: "TN" },
-  premier: { slug: "premier-global", name: "Premier Global", logo: "PG" },
+  origym: { slug: "origym", name: "Origym", logo: "OG", hue: 22 },
+  tfg: { slug: "the-fitness-group", name: "The Fitness Group", logo: "TF", hue: 210 },
+  discovery: { slug: "discovery-learning", name: "Discovery Learning", logo: "DL", hue: 158 },
+  studyActive: { slug: "study-active", name: "Study Active", logo: "SA", hue: 280 },
+  futureFit: { slug: "future-fit", name: "Future Fit", logo: "FF", hue: 340 },
+  hfe: { slug: "hfe", name: "HFE", logo: "HF", hue: 190 },
+  trainfitness: { slug: "trainfitness", name: "TRAINFITNESS", logo: "TN", hue: 45 },
+  premier: { slug: "premier-global", name: "Premier Global", logo: "PG", hue: 260 },
 } satisfies Record<string, AcademyProvider>;
 
 export const ACADEMY_PROVIDERS: AcademyProvider[] = Object.values(P);
@@ -104,6 +114,10 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 599,
     ofqualRegulated: true,
+    modules: 12,
+    rating: 4.7,
+    ratingCount: 1284,
+    bestseller: true,
     url: "https://example.com/origym/level-2-gym-instructor",
   },
   {
@@ -119,6 +133,10 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 1499,
     ofqualRegulated: true,
+    modules: 24,
+    rating: 4.8,
+    ratingCount: 2140,
+    bestseller: true,
     url: "https://example.com/the-fitness-group/l3-personal-training",
   },
   {
@@ -134,6 +152,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 1799,
     ofqualRegulated: true,
+    modules: 32,
+    rating: 4.6,
+    ratingCount: 987,
     url: "https://example.com/premier-global/master-pt",
   },
   {
@@ -149,6 +170,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 1699,
     ofqualRegulated: true,
+    modules: 28,
+    rating: 4.9,
+    ratingCount: 412,
     url: "https://example.com/the-fitness-group/l4-strength-conditioning",
   },
   {
@@ -164,6 +188,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 899,
     ofqualRegulated: true,
+    modules: 18,
+    rating: 4.8,
+    ratingCount: 623,
     url: "https://example.com/discovery-learning/pre-post-natal",
   },
   {
@@ -179,6 +206,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 849,
     ofqualRegulated: true,
+    modules: 16,
+    rating: 4.7,
+    ratingCount: 388,
     url: "https://example.com/hfe/lower-back-pain",
   },
   {
@@ -194,6 +224,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 349,
     ofqualRegulated: true,
+    modules: 10,
+    rating: 4.6,
+    ratingCount: 1502,
     url: "https://example.com/future-fit/l3-nutrition",
   },
   {
@@ -209,6 +242,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 899,
     ofqualRegulated: true,
+    modules: 22,
+    rating: 4.8,
+    ratingCount: 741,
     url: "https://example.com/hfe/l4-nutrition-coach",
   },
   {
@@ -224,6 +260,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 1899,
     ofqualRegulated: true,
+    modules: 40,
+    rating: 4.9,
+    ratingCount: 356,
     url: "https://example.com/study-active/yoga-diploma",
   },
   {
@@ -239,6 +278,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 1699,
     ofqualRegulated: true,
+    modules: 34,
+    rating: 4.8,
+    ratingCount: 289,
     url: "https://example.com/hfe/mat-pilates-diploma",
   },
   {
@@ -254,6 +296,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 549,
     ofqualRegulated: true,
+    modules: 14,
+    rating: 4.6,
+    ratingCount: 812,
     url: "https://example.com/the-fitness-group/l2-group-exercise",
   },
   {
@@ -269,6 +314,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "in-person",
     priceFromGBP: 179,
     ofqualRegulated: false,
+    modules: 6,
+    rating: 4.7,
+    ratingCount: 214,
     url: "https://example.com/trainfitness/kettlebell-cpd",
   },
   {
@@ -284,6 +332,10 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 129,
     ofqualRegulated: false,
+    modules: 8,
+    rating: 4.5,
+    ratingCount: 468,
+    newRelease: true,
     url: "https://example.com/origym/mobility-cpd",
   },
   {
@@ -299,6 +351,10 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 149,
     ofqualRegulated: false,
+    modules: 9,
+    rating: 4.6,
+    ratingCount: 331,
+    bestseller: true,
     url: "https://example.com/premier-global/online-coaching-cpd",
   },
   {
@@ -314,6 +370,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "in-person",
     priceFromGBP: 169,
     ofqualRegulated: false,
+    modules: 5,
+    rating: 4.7,
+    ratingCount: 156,
     url: "https://example.com/the-fitness-group/boxing-circuits-cpd",
   },
   {
@@ -329,6 +388,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "blended",
     priceFromGBP: 449,
     ofqualRegulated: false,
+    modules: 12,
+    rating: 4.9,
+    ratingCount: 142,
     url: "https://example.com/study-active/yin-yoga-cpd",
   },
   {
@@ -344,6 +406,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "in-person",
     priceFromGBP: 899,
     ofqualRegulated: false,
+    modules: 15,
+    rating: 4.8,
+    ratingCount: 203,
     url: "https://example.com/hfe/reformer-pilates-cpd",
   },
   {
@@ -359,6 +424,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 189,
     ofqualRegulated: false,
+    modules: 10,
+    rating: 4.7,
+    ratingCount: 512,
     url: "https://example.com/future-fit/behaviour-change-cpd",
   },
   {
@@ -374,6 +442,10 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 169,
     ofqualRegulated: false,
+    modules: 8,
+    rating: 4.8,
+    ratingCount: 267,
+    newRelease: true,
     url: "https://example.com/discovery-learning/female-athlete-cpd",
   },
   {
@@ -389,6 +461,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 139,
     ofqualRegulated: false,
+    modules: 7,
+    rating: 4.6,
+    ratingCount: 189,
     url: "https://example.com/hfe/older-adults-cpd",
   },
   {
@@ -404,6 +479,9 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "online",
     priceFromGBP: 119,
     ofqualRegulated: false,
+    modules: 6,
+    rating: 4.5,
+    ratingCount: 421,
     url: "https://example.com/trainfitness/macros-cpd",
   },
   {
@@ -419,6 +497,10 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     delivery: "in-person",
     priceFromGBP: 189,
     ofqualRegulated: false,
+    modules: 7,
+    rating: 4.9,
+    ratingCount: 98,
+    newRelease: true,
     url: "https://example.com/the-fitness-group/hybrid-race-cpd",
   },
 ];
