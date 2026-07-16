@@ -309,6 +309,7 @@ export const getMySectionDiff = createServerFn({ method: "GET" })
     const basicsDirty =
       normText(lw?.tagline) !== normText(sw?.tagline) ||
       normText(lw?.subtitle) !== normText(sw?.subtitle) ||
+      normText(lw?.about_headline) !== normText(sw?.about_headline) ||
       normText(lw?.about) !== normText(sw?.about) ||
       normText(lw?.hero_image_url) !== normText(sw?.hero_image_url) ||
       (lw?.current_clients ?? null) !== (sw?.current_clients ?? null);
