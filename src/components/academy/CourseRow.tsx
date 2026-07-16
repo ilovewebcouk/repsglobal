@@ -29,7 +29,7 @@ export function CourseRow({ course }: CourseRowProps) {
     >
       {/* Thumbnail — fixed 240×135 on desktop */}
       <div
-        className="relative aspect-[16/9] w-full shrink-0 overflow-hidden rounded-[12px] sm:w-[240px]"
+        className="relative aspect-video w-full shrink-0 overflow-hidden rounded-[12px] sm:w-[320px]"
         style={{ background: bg }}
       >
         <span
