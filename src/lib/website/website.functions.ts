@@ -8,6 +8,7 @@ import { DEFAULT_SERVICE_CARDS } from "@/lib/website/default-services";
 const WebsiteUpsertSchema = z.object({
   tagline: z.string().trim().max(200).nullable().optional(),
   subtitle: z.string().trim().max(200).nullable().optional(),
+  about_headline: z.string().trim().max(200).nullable().optional(),
   about: z.string().trim().max(4000).nullable().optional(),
   hero_image_url: z.string().trim().url().max(500).nullable().optional(),
   accent_hex: z
