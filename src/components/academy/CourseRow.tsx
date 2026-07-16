@@ -54,7 +54,7 @@ export function CourseRow({ course }: CourseRowProps) {
 
       {/* Info column */}
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <h3 className="font-display text-[17px] font-bold leading-snug text-black group-hover:text-[#FF7A00] sm:text-[18px]">
+        <h3 className="font-display text-[17px] font-bold leading-snug text-black group-hover:text-reps-orange sm:text-[18px]">
           {course.title}
         </h3>
         <p className="line-clamp-2 text-[13.5px] leading-snug text-black/65">
@@ -62,10 +62,10 @@ export function CourseRow({ course }: CourseRowProps) {
         </p>
         <p className="text-[12.5px] text-black/55">{p.name}</p>
 
-        {/* Rating */}
+        {/* Rating — brand orange stars per compliance rules */}
         <div className="mt-0.5 flex items-center gap-1.5 text-[13px]">
-          <span className="font-bold text-[#8A5A00]">{course.rating.toFixed(1)}</span>
-          <span className="inline-flex items-center text-[#E59819]">
+          <span className="font-bold text-reps-orange">{course.rating.toFixed(1)}</span>
+          <span className="inline-flex items-center text-reps-orange">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
@@ -104,18 +104,18 @@ export function CourseRow({ course }: CourseRowProps) {
             REPs Endorsed
           </span>
           {course.ofqualRegulated ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#FF7A00]/30 bg-[#FF7A00]/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-[#FF7A00]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
               <ShieldCheck className="h-3 w-3" />
               Ofqual-regulated
             </span>
           ) : null}
           {course.bestseller ? (
-            <span className="inline-flex items-center rounded-[4px] bg-[#FFF1C4] px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-[#6B4A00]">
+            <span className="inline-flex items-center rounded-full border border-reps-orange-border bg-reps-orange-soft px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-reps-orange">
               Bestseller
             </span>
           ) : null}
           {course.newRelease ? (
-            <span className="inline-flex items-center rounded-[4px] bg-black/85 px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white">
+            <span className="inline-flex items-center rounded-full bg-black/85 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white">
               New
             </span>
           ) : null}
@@ -128,7 +128,7 @@ export function CourseRow({ course }: CourseRowProps) {
           {priceLabel(course.priceFromGBP)}
         </span>
         <span className="text-[11.5px] text-black/50">From</span>
-        <span className="mt-2 hidden text-[12.5px] font-semibold text-[#FF7A00] group-hover:underline sm:inline">
+        <span className="mt-2 hidden text-[12.5px] font-semibold text-reps-orange group-hover:underline sm:inline">
           View course →
         </span>
       </div>
