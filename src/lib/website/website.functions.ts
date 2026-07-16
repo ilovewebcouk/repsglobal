@@ -652,6 +652,7 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
         professional_id: pro.id,
         tagline: null,
         subtitle: null,
+        about_headline: null,
         about: null,
         hero_image_url: null,
         accent_hex: null,
