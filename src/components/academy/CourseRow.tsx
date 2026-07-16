@@ -5,7 +5,7 @@ import {
   type AcademyCourse,
 } from "@/lib/training-academy";
 
-interface CourseCardProps {
+interface CourseRowProps {
   course: AcademyCourse;
 }
 
@@ -16,9 +16,8 @@ const priceLabel = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-export function CourseCard({ course }: CourseCardProps) {
+export function CourseRow({ course }: CourseRowProps) {
   const p = course.provider;
-  // Fallback thumbnail — two-stop gradient tinted from provider hue.
   const bg = `linear-gradient(135deg, hsl(${p.hue} 78% 58%) 0%, hsl(${(p.hue + 40) % 360} 62% 40%) 100%)`;
 
   return (
@@ -26,43 +25,35 @@ export function CourseCard({ course }: CourseCardProps) {
       href={course.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col overflow-hidden rounded-[18px] border border-black/10 bg-white transition hover:-translate-y-0.5 hover:border-black/25 hover:shadow-[0_20px_50px_-25px_rgba(0,0,0,0.22)]"
+      className="group flex flex-col gap-4 py-5 transition sm:flex-row sm:gap-5 sm:py-6"
     >
-      {/* 16:9 thumbnail */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden" style={{ background: bg }}>
-        {/* Provider logo tile in the corner */}
+      {/* Thumbnail — fixed 240×135 on desktop */}
+      <div
+        className="relative aspect-[16/9] w-full shrink-0 overflow-hidden rounded-[12px] sm:w-[240px]"
+        style={{ background: bg }}
+      >
         <span
           aria-hidden
-          className="absolute left-3 top-3 grid size-11 place-items-center rounded-[10px] bg-white/95 text-[12px] font-bold tracking-[0.06em] text-black shadow-sm"
+          className="absolute left-2.5 top-2.5 grid size-9 place-items-center rounded-[8px] bg-white/95 text-[11px] font-bold tracking-[0.06em] text-black shadow-sm"
         >
           {p.logo}
         </span>
-        {/* Corner tags */}
-        <div className="absolute right-3 top-3 flex flex-wrap items-center gap-1.5">
-          {course.bestseller ? (
-            <span className="inline-flex items-center rounded-full bg-[#FF7A00] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white">
-              Bestseller
-            </span>
-          ) : null}
-          {course.newRelease ? (
-            <span className="inline-flex items-center rounded-full bg-black/85 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white">
-              New
-            </span>
-          ) : null}
-        </div>
       </div>
 
-      {/* Body */}
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <p className="text-[12px] font-medium text-black/55">{p.name}</p>
-        <h3 className="mt-1 line-clamp-2 font-display text-[16.5px] font-semibold leading-snug text-black">
+      {/* Info column */}
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <h3 className="font-display text-[17px] font-bold leading-snug text-black group-hover:text-[#FF7A00] sm:text-[18px]">
           {course.title}
         </h3>
+        <p className="line-clamp-2 text-[13.5px] leading-snug text-black/65">
+          {course.summary}
+        </p>
+        <p className="text-[12.5px] text-black/55">{p.name}</p>
 
         {/* Rating */}
-        <div className="mt-2 flex items-center gap-1.5 text-[13px]">
-          <span className="font-bold text-black">{course.rating.toFixed(1)}</span>
-          <span className="inline-flex items-center text-[#FF7A00]">
+        <div className="mt-0.5 flex items-center gap-1.5 text-[13px]">
+          <span className="font-bold text-[#8A5A00]">{course.rating.toFixed(1)}</span>
+          <span className="inline-flex items-center text-[#E59819]">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
@@ -75,8 +66,8 @@ export function CourseCard({ course }: CourseCardProps) {
           <span className="text-black/50">({course.ratingCount.toLocaleString()})</span>
         </div>
 
-        {/* Meta row */}
-        <p className="mt-2 text-[12.5px] text-black/60">
+        {/* Meta */}
+        <p className="text-[12.5px] text-black/60">
           <span className="font-semibold text-black/80">{LEVEL_LABELS[course.level]}</span>
           <span aria-hidden> · </span>
           <span className="inline-flex items-center gap-1">
@@ -90,10 +81,12 @@ export function CourseCard({ course }: CourseCardProps) {
           </span>
           <span aria-hidden> · </span>
           <span>{DELIVERY_LABELS[course.delivery]}</span>
+          <span aria-hidden> · </span>
+          <span>{course.cpdPoints} CPD</span>
         </p>
 
         {/* Badges */}
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <div className="mt-1 flex flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-emerald-700">
             <BadgeCheck className="h-3 w-3" />
             REPs Endorsed
@@ -104,20 +97,28 @@ export function CourseCard({ course }: CourseCardProps) {
               Ofqual-regulated
             </span>
           ) : null}
-        </div>
-
-        {/* Footer */}
-        <div className="mt-4 flex items-end justify-between border-t border-black/10 pt-3">
-          <span className="text-[12px] text-black/55">
-            From{" "}
-            <span className="text-[15px] font-bold text-black">
-              {priceLabel(course.priceFromGBP)}
+          {course.bestseller ? (
+            <span className="inline-flex items-center rounded-[4px] bg-[#FFF1C4] px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-[#6B4A00]">
+              Bestseller
             </span>
-          </span>
-          <span className="text-[12.5px] font-semibold text-[#FF7A00] group-hover:underline">
-            View course →
-          </span>
+          ) : null}
+          {course.newRelease ? (
+            <span className="inline-flex items-center rounded-[4px] bg-black/85 px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white">
+              New
+            </span>
+          ) : null}
         </div>
+      </div>
+
+      {/* Price column */}
+      <div className="flex shrink-0 flex-col items-start justify-start sm:w-[110px] sm:items-end sm:text-right">
+        <span className="font-display text-[19px] font-bold text-black">
+          {priceLabel(course.priceFromGBP)}
+        </span>
+        <span className="text-[11.5px] text-black/50">From</span>
+        <span className="mt-2 hidden text-[12.5px] font-semibold text-[#FF7A00] group-hover:underline sm:inline">
+          View course →
+        </span>
       </div>
     </a>
   );
