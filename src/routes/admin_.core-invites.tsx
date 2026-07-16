@@ -15,6 +15,7 @@ import {
   resendCoreInvite,
   revokeCoreInvite,
   listCoreInvites,
+  previewCoreInvite,
 } from "@/lib/admin/core-invites.functions";
 
 export const Route = createFileRoute("/admin_/core-invites")({
