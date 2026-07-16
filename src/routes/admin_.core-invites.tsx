@@ -98,6 +98,24 @@ function CoreInvitesPage() {
     try { await revoke({ data: { id } }); toast.success("Revoked"); await refresh(); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Revoke failed"); }
   }
+  async function onPreview(inv: Invite) {
+    setPreviewState({ open: true, loading: true, inviteId: inv.id });
+    try {
+      const res = await preview({ data: { id: inv.id } });
+      setPreviewState({
+        open: true,
+        loading: false,
+        inviteId: inv.id,
+        subject: res.subject,
+        recipientEmail: res.recipientEmail,
+        html: res.html,
+        canSend: inv.status === "draft",
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Preview failed");
+      setPreviewState({ open: false });
+    }
+  }
 
   return (
     <main className="min-h-screen bg-reps-ink text-white">
