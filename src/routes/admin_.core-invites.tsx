@@ -180,6 +180,9 @@ function CoreInvitesPage() {
                 </td>
                 <td className="px-4 py-3">{statusBadge(r.status)}</td>
                 <td className="px-4 py-3 text-right space-x-2">
+                  {r.status !== "revoked" && (
+                    <Button size="sm" variant="outline" onClick={() => onPreview(r)}>Preview</Button>
+                  )}
                   {r.status === "draft" && (
                     <Button size="sm" onClick={() => onSend(r.id)}>Send</Button>
                   )}
