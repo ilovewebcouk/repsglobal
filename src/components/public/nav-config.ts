@@ -67,8 +67,10 @@ export const RESOURCE_QUICK_LINKS: { to: "/resources"; label: string }[] = [];
 // For Professionals — supplementary links surfaced below pricing/compare/features.
 export const PRO_RESOURCES = [
   { to: "/cpd" as const, label: "CPD & Education" },
+  { to: "/training-academy" as const, label: "Training Academy" },
   { to: "/specialisms" as const, label: "Specialisms explained" },
 ];
+
 
 // About REPS mega-menu — 3 columns of institutional, trust and support pages.
 export const ABOUT_GROUPS: {

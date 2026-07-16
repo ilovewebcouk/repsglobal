@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TrainingProvidersRouteImport } from './routes/training-providers'
+import { Route as TrainingAcademyRouteImport } from './routes/training-academy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StandardsRouteImport } from './routes/standards'
 import { Route as SpecialismsRouteImport } from './routes/specialisms'
@@ -206,6 +207,11 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
 const TrainingProvidersRoute = TrainingProvidersRouteImport.update({
   id: '/training-providers',
   path: '/training-providers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrainingAcademyRoute = TrainingAcademyRouteImport.update({
+  id: '/training-academy',
+  path: '/training-academy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -1197,6 +1203,7 @@ export interface FileRoutesByFullPath {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
+  '/training-academy': typeof TrainingAcademyRoute
   '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -1378,6 +1385,7 @@ export interface FileRoutesByTo {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
+  '/training-academy': typeof TrainingAcademyRoute
   '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -1557,6 +1565,7 @@ export interface FileRoutesById {
   '/specialisms': typeof SpecialismsRoute
   '/standards': typeof StandardsRoute
   '/terms': typeof TermsRoute
+  '/training-academy': typeof TrainingAcademyRoute
   '/training-providers': typeof TrainingProvidersRouteWithChildren
   '/unsubscribe': typeof UnsubscribeRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -1743,6 +1752,7 @@ export interface FileRouteTypes {
     | '/specialisms'
     | '/standards'
     | '/terms'
+    | '/training-academy'
     | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
@@ -1924,6 +1934,7 @@ export interface FileRouteTypes {
     | '/specialisms'
     | '/standards'
     | '/terms'
+    | '/training-academy'
     | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
@@ -2102,6 +2113,7 @@ export interface FileRouteTypes {
     | '/specialisms'
     | '/standards'
     | '/terms'
+    | '/training-academy'
     | '/training-providers'
     | '/unsubscribe'
     | '/verify-email'
@@ -2288,6 +2300,7 @@ export interface RootRouteChildren {
   SpecialismsRoute: typeof SpecialismsRoute
   StandardsRoute: typeof StandardsRoute
   TermsRoute: typeof TermsRoute
+  TrainingAcademyRoute: typeof TrainingAcademyRoute
   TrainingProvidersRoute: typeof TrainingProvidersRouteWithChildren
   UnsubscribeRoute: typeof UnsubscribeRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
@@ -2411,6 +2424,13 @@ declare module '@tanstack/react-router' {
       path: '/training-providers'
       fullPath: '/training-providers'
       preLoaderRoute: typeof TrainingProvidersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/training-academy': {
+      id: '/training-academy'
+      path: '/training-academy'
+      fullPath: '/training-academy'
+      preLoaderRoute: typeof TrainingAcademyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -3995,6 +4015,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpecialismsRoute: SpecialismsRoute,
   StandardsRoute: StandardsRoute,
   TermsRoute: TermsRoute,
+  TrainingAcademyRoute: TrainingAcademyRoute,
   TrainingProvidersRoute: TrainingProvidersRouteWithChildren,
   UnsubscribeRoute: UnsubscribeRoute,
   VerifyEmailRoute: VerifyEmailRoute,
