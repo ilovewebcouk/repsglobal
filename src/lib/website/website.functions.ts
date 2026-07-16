@@ -27,6 +27,7 @@ export type WebsiteDTO = {
   professional_id: string;
   tagline: string | null;
   subtitle: string | null;
+  about_headline: string | null;
   about: string | null;
   hero_image_url: string | null;
   accent_hex: string | null;
