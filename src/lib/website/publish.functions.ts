@@ -58,6 +58,8 @@ export const publishMyWebsite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .handler(async ({ context }): Promise<{ published_at: string }> => {
     const userId = context.userId;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { getWebsiteBySlug } = await import("./website.functions");
 
@@ -401,6 +403,8 @@ export const discardMySectionChanges = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ section: DiscardableSection }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const userId = context.userId;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: siteRow } = await supabaseAdmin

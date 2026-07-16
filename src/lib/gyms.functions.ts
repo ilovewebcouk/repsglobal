@@ -151,6 +151,8 @@ export const addMyGym = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => addInput.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     // Find lowest free position 0..2.
     const { data: existing, error: exErr } = await context.supabase
       .from("professional_gyms")
@@ -188,6 +190,8 @@ export const removeMyGym = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => removeInput.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("professional_gyms")
       .delete()
@@ -219,6 +223,8 @@ export const requestNewGym = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => requestInput.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const base = slugify(`${data.name}-${data.area || data.city}`);
     let slug = base;
     let n = 1;
@@ -385,6 +391,8 @@ export const importGoogleGym = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => importInput.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     // Rate limit: max 10 Google imports per pro per hour.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { count: recent } = await supabaseAdmin

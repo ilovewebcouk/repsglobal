@@ -193,6 +193,8 @@ export const saveMyWebsiteContent = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SaveContentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const patch: Record<string, unknown> = { professional_id: userId };
     if (data.subtitle !== undefined) patch.subtitle = data.subtitle;
@@ -251,6 +253,8 @@ export const upsertTransformation = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => TransformationSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     await assertOwnsRow(supabaseAdmin, "website_transformations", data.id, context.userId, "user_id");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
@@ -267,6 +271,8 @@ export const deleteTransformation = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { error } = await supabaseAdmin
       .from("website_transformations")
       .delete()
@@ -294,6 +300,8 @@ export const upsertClientResult = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ResultSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     await assertOwnsRow(supabaseAdmin, "website_client_results", data.id, context.userId, "user_id");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
@@ -310,6 +318,8 @@ export const deleteClientResult = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { error } = await supabaseAdmin
       .from("website_client_results")
       .delete()
@@ -336,6 +346,8 @@ export const upsertFaq = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => FaqSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     await assertOwnsRow(supabaseAdmin, "website_faqs", data.id, context.userId, "user_id");
     const row = { ...data, user_id: context.userId };
     const { data: out, error } = await supabaseAdmin
@@ -352,6 +364,8 @@ export const deleteFaq = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { error } = await supabaseAdmin
       .from("website_faqs")
       .delete()

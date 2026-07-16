@@ -263,6 +263,8 @@ export const thankReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => IdSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("reviews")
@@ -282,6 +284,8 @@ export const flagReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => FlagSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("reviews")
@@ -332,6 +336,8 @@ export const createReviewRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => CreateRequestSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: pro } = await supabaseAdmin
@@ -408,6 +414,8 @@ export const createReviewRequestsBulk = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => CreateRequestsBulkSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: pro } = await supabaseAdmin
@@ -1114,6 +1122,8 @@ export const replyToReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => ReplySchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Snapshot prior state so we know whether this is the first publish.
@@ -1186,6 +1196,8 @@ export const clearReviewReply = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuthWithImpersonation])
   .inputValidator((d: unknown) => z.object({ review_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, context.userId);
     const { error } = await context.supabase.rpc("clear_pro_review_response", {
       _review_id: data.review_id,
     } as never);
