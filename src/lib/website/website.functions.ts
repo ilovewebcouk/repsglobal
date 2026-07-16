@@ -887,6 +887,8 @@ export const upsertMyWebsite = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => WebsiteUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const patch = { ...data, professional_id: userId };
@@ -929,6 +931,8 @@ export const upsertMyService = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ServiceUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Ownership pre-check: if the caller supplied an id, verify the existing
     // row belongs to them before upsert. Prevents cross-tenant hijack via
@@ -960,6 +964,8 @@ export const deleteMyService = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const userId = context.userId;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(context.supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("services")

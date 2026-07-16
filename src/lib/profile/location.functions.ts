@@ -177,6 +177,8 @@ export const saveMyPrimaryPostcode = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SavePostcodeInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const { assertCallerHasProfessionalRow } = await import("@/lib/verification/guards.server");
+    await assertCallerHasProfessionalRow(supabase, userId);
     const pc = normalisePostcode(data.postcode);
     if (!UK_POSTCODE_RE.test(pc)) {
       throw new Error("That doesn't look like a valid UK postcode.");
