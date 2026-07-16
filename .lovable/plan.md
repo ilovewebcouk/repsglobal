@@ -1,73 +1,73 @@
-## Make the 24 admin-uploaded training providers live-but-unverified; restore verification gate for future signups
+# Fix balanced-connection tier mismatch
 
-### Goals
+## What's wrong
 
-1. The 24 training providers admin has already imported become live on `/find-a-training-provider`.
-2. They remain "Unverified" in status — they haven't completed the 3-step verification, so the badge stays unverified on public + admin surfaces. No fake approvals.
-3. Future Stripe signups only appear publicly after clearing the full verification flow — original behaviour restored.
-4. Remove the temporary "Live" switch column from `/admin/members` → Training Providers.
+`balanced-connection` has a valid live Stripe subscription:
 
-### Investigation summary
+- `stripe_subscription_id`: `sub_1TtVjnAP31Yc4cJj14TedHya`
+- `stripe_customer_id`: `cus_TXRG9DBbqbSkAR`
+- `stripe_price_id`: `training_provider_annual` (correct lookup key)
+- `status`: `trialing` (live)
+- `account_type` on `professionals`: `training_provider` ✅
+- `admin_seeded_public`: `true` ✅
 
-- Exactly 24 `professionals` rows have `account_type='training_provider'` — matches admin's import count.
-- Original public gate required TPs to have `identity_status='approved'` + `provider_domain_verifications.status='approved'`. Last change relaxed that globally — we'll restore it and add a narrow admin-seeded exemption instead.
-- Faking `identity_status='approved'` would flip their public badge to verified, which the user explicitly does not want.
+But its `subscriptions.tier` is `free`. The public visibility RPC requires
+`tier IN ('verified','pro','studio','training_provider')`, so this row is the
+only one of the 24 filtered out.
 
-### Changes
+The row's metadata shows `reps_activated_by: bulk_admin_fix_2026_07_15` — an
+earlier admin bulk script wrote `tier='free'` despite the Stripe price being
+`training_provider_annual`. The tier mapping in `src/lib/billing.ts`
+(`checkoutOfferForPriceId`) correctly returns `training_provider` for that
+lookup key, so any resync-from-Stripe would fix this, but no resync has run
+for this user since.
 
-**1. New column `admin_seeded_public` on `professionals`** (migration)
+## Plan
 
-- `admin_seeded_public boolean NOT NULL DEFAULT false`.
-- Meaning: "admin has manually placed this row on the public directory pre-verification". Only ever set by admin backfill/import scripts. Signup / Stripe checkout never sets it.
+### 1. Data fix (migration)
 
-**2. Restore the visibility gate with a narrow exemption** (migration)
+Update the one broken row to match Stripe:
 
-Rewrite `list_publicly_visible_pro_ids` and `is_pro_publicly_visible` back to the pre-toggle form for real accounts, but treat `admin_seeded_public=true` as an alternative to identity+domain approval for training providers only:
-
+```sql
+UPDATE public.subscriptions
+SET tier = 'training_provider',
+    billing_period = 'annual',
+    updated_at = now()
+WHERE stripe_subscription_id = 'sub_1TtVjnAP31Yc4cJj14TedHya'
+  AND tier = 'free';
 ```
-account_type <> 'training_provider'
-OR admin_seeded_public = true
-OR (
-  identity_status = 'approved'
-  AND full_name present
-  AND provider_domain_verifications.status = 'approved'
-)
+
+### 2. QA sweep of the other 23 TPs
+
+Same migration: catch any other training provider whose subscription row
+still says `tier='free'` despite having a `training_provider_annual` price:
+
+```sql
+UPDATE public.subscriptions s
+SET tier = 'training_provider',
+    billing_period = COALESCE(s.billing_period, 'annual'),
+    updated_at = now()
+FROM public.professionals p
+WHERE s.user_id = p.id
+  AND p.account_type = 'training_provider'
+  AND s.stripe_price_id = 'training_provider_annual'
+  AND s.status IN ('active','trialing','past_due','unpaid')
+  AND s.tier = 'free';
 ```
 
-Everything else (published, non-demo, active subscription) still required. So a self-signup TP without admin seed stays hidden until real verification.
+(From the current data all 23 others are already `training_provider` — this is
+a belt-and-braces sweep, expected to touch only the 1 row.)
 
-**3. Backfill the 24 admin-uploaded providers** (insert tool)
+### 3. Verification
 
-`UPDATE professionals SET admin_seeded_public = true WHERE account_type = 'training_provider'` (there are 24; no self-signups yet).
+After the migration:
 
-Do NOT touch `identity_status` or `provider_domain_verifications` — they stay as-is so the public + admin UIs continue to show "Unverified".
+- `SELECT COUNT(*) FROM list_publicly_visible_pro_ids() v JOIN professionals p ON p.id=v.id WHERE p.account_type='training_provider'` should return **24**.
+- Confirm `/find-a-training-provider` shows balanced-connection.
 
-**4. Remove the temporary Live toggle** in `src/routes/admin_.members.tsx`
+## Not doing (out of scope)
 
-- Delete `<th>Live</th>` and the `<td>` cell (both marked `TEMP:`).
-- Delete `setPublishedFn`, `publishedOptimistic`, `publishM`, `isLive` in `ProRow`.
-- Remove `setProfessionalPublished` and `Switch` imports from this file (still used elsewhere).
-
-### Sub-agent verification
-
-After the edits, spawn one read-only sub-agent to:
-- Confirm no leftover references to the removed toggle (`isLive`, `publishM`, `publishedOptimistic`, `TEMP: manual publish toggle`, Switch import in this file).
-- Dump `pg_get_functiondef` for `list_publicly_visible_pro_ids` and `is_pro_publicly_visible` and confirm both check `admin_seeded_public` as the TP exemption and keep `identity_status`/domain checks otherwise.
-- Confirm all 24 TPs now satisfy the gate (appear in `list_publicly_visible_pro_ids()`).
-- Confirm none of the 24 have been silently marked `identity_status='approved'` — status must stay unverified.
-- Simulate a "future signup": insert a synthetic row with `account_type='training_provider'`, `is_published=true`, active subscription, `admin_seeded_public=false`, unverified identity — confirm it does NOT appear in the RPC. Roll back the insert (or use a transaction the sub-agent reports on).
-- Grep public UI (`/find-a-training-provider`, provider profile) for anywhere status is derived, confirm the "Unverified" badge is driven by `verification_status` / `identity_status` and not overridden by anything we changed.
-- Report any TP that fails to appear, by slug.
-
-### Not changing
-
-- `/find-a-training-provider` UI unchanged — badge on cards is driven by real verification fields, so admin-seeded rows will keep showing "Unverified".
-- Stripe signup / checkout flow unchanged — defaults leave `admin_seeded_public=false`.
-- `setProfessionalPublished`, suspend/republish, and admin Member 360 controls unchanged.
-- No visual changes to admin members table beyond removing the toggle column.
-
-### Files touched
-
-- `src/routes/admin_.members.tsx` (delete toggle column + related code)
-- Migration: add `admin_seeded_public` column + restore RPCs with exemption
-- Data update: set `admin_seeded_public=true` for the 24 existing TPs
+- No changes to the tier-mapping code — it's already correct.
+- No changes to the visibility RPC or `admin_seeded_public` behaviour.
+- Not investigating why `bulk_admin_fix_2026_07_15` mis-tiered this one row;
+  the script isn't going to run again.
