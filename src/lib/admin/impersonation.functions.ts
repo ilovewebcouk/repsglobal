@@ -28,6 +28,9 @@ export const startImpersonation = createServerFn({ method: 'POST' })
     if (!target) throw new Error('Professional not found');
 
     // End any prior active sessions for this admin (one at a time).
+    // A partial unique index on (admin_id) WHERE ended_at IS NULL enforces
+    // this invariant at the DB layer; the update below is best-effort so
+    // the insert below never races against a stale row.
     await supabaseAdmin
       .from('admin_impersonation_sessions')
       .update({ ended_at: new Date().toISOString(), ended_reason: 'superseded' })
@@ -57,7 +60,30 @@ export const startImpersonation = createServerFn({ method: 'POST' })
         ip,
         user_agent: ua,
       });
-    if (error) throw error;
+    if (error) {
+      // Unique-index violation → a concurrent start won the race. Retry
+      // once after closing any surviving open row.
+      if ((error as { code?: string }).code === '23505') {
+        await supabaseAdmin
+          .from('admin_impersonation_sessions')
+          .update({ ended_at: new Date().toISOString(), ended_reason: 'superseded' })
+          .eq('admin_id', context.userId)
+          .is('ended_at', null);
+        const { error: retryError } = await supabaseAdmin
+          .from('admin_impersonation_sessions')
+          .insert({
+            admin_id: context.userId,
+            professional_id: target.id,
+            session_token: token,
+            ends_at: endsAt,
+            ip,
+            user_agent: ua,
+          });
+        if (retryError) throw retryError;
+      } else {
+        throw error;
+      }
+    }
 
     await supabaseAdmin.rpc('log_admin_action', {
       _actor_id: context.userId,
