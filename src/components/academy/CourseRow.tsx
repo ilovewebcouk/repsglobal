@@ -18,7 +18,10 @@ const priceLabel = (n: number) =>
 
 export function CourseRow({ course }: CourseRowProps) {
   const p = course.provider;
-  const bg = `linear-gradient(135deg, hsl(${p.hue} 78% 58%) 0%, hsl(${(p.hue + 40) % 360} 62% 40%) 100%)`;
+  // One shared neutral premium background across every card so the grid reads
+  // as a single catalogue — provider identity comes from the initials chip.
+  const bg =
+    "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 55%, #1a1a1a 100%)";
 
   return (
     <a
@@ -27,11 +30,20 @@ export function CourseRow({ course }: CourseRowProps) {
       rel="noopener noreferrer"
       className="group flex flex-col gap-4 rounded-[18px] border border-black/10 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-black/20 hover:shadow-[0_6px_20px_-8px_rgba(0,0,0,0.15)] sm:flex-row sm:gap-5 sm:p-5"
     >
-      {/* Thumbnail — fixed 240×135 on desktop */}
+      {/* Thumbnail — fixed 320×180 on desktop (YouTube 16:9) */}
       <div
         className="relative aspect-video w-full shrink-0 overflow-hidden rounded-[12px] sm:w-[320px]"
         style={{ background: bg }}
       >
+        {/* Warm brand glow anchored top-right to tie the thumbnail to the brand */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 85% 15%, rgba(255,122,0,0.22) 0%, rgba(255,122,0,0) 55%)",
+          }}
+        />
         <span
           aria-hidden
           className="absolute left-2.5 top-2.5 grid size-9 place-items-center rounded-[8px] bg-white/95 text-[11px] font-bold tracking-[0.06em] text-black shadow-sm"
