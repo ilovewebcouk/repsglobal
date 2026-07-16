@@ -199,11 +199,11 @@ function TrainingAcademyPage() {
 
         {/* Directory: left rail + card grid */}
         <section className="mx-auto max-w-[1320px] px-4 py-10 lg:px-6 lg:py-14">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
             {/* Sticky filter rail */}
             <aside className="hidden lg:block">
-              <div className="sticky top-[92px] max-h-[calc(100vh-112px)]">
-                <ScrollArea className="h-[calc(100vh-112px)] pr-4">
+              <div className="sticky top-[92px] rounded-[18px] border border-black/10 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <ScrollArea className="h-[calc(100vh-140px)] pr-3">
                   <AcademyFilterRail value={filters} onChange={setFilters} />
                 </ScrollArea>
               </div>
@@ -241,7 +241,7 @@ function TrainingAcademyPage() {
                   </EmptyContent>
                 </Empty>
               ) : (
-                <div className="divide-y divide-black/10 rounded-[18px] border border-black/10 bg-white px-5 sm:px-6">
+                <div className="flex flex-col gap-4">
                   {filtered.map((c) => (
                     <CourseRow key={c.id} course={c} />
                   ))}
