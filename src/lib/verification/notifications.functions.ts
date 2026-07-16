@@ -230,10 +230,11 @@ function titleFor(event: VerificationEvent, threshold?: number | null): string {
 
 function hrefFor(event: VerificationEvent): string {
   if (event === "identity.approved" || event === "identity.rejected" || event === "identity.needs_more_info") {
-    return "/dashboard/verification";
+    return "/dashboard/verification#identity";
   }
   if (event.startsWith("provider_")) return "/dashboard/profile";
-  return "/dashboard/verification";
+  if (event.startsWith("qualification")) return "/dashboard/verification#qualifications";
+  return "/dashboard/verification#insurance";
 }
 
 export const listMyVerificationNotifications = createServerFn({ method: "POST" })
