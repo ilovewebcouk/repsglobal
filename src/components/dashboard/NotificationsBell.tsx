@@ -59,6 +59,7 @@ type FeedItem =
     };
 
 export function NotificationsBell() {
+  const router = useRouter();
   const { user, isAdmin } = useSessionUser();
   const adminSupport = useSupportUnread({ enabled: isAdmin });
   const mySupport = useMySupportUnread({ enabled: !!user });
