@@ -71,6 +71,46 @@ async function signOneYearUrl(path: string): Promise<string> {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Signed upload URL                                                           */
+/*                                                                             */
+/* Client-side supabase.storage.from('avatars').upload() fails RLS on this     */
+/* project because the GoTrue-issued JWT has aud=['authenticated'] (array),    */
+/* which the storage service rejects — so auth.uid() is NULL inside the RLS    */
+/* check and the "new row violates row-level security policy" error fires.    */
+/*                                                                             */
+/* Fix: mint a signed upload URL server-side (with supabaseAdmin, which        */
+/* bypasses RLS) and have the browser PUT the file to that URL. The server    */
+/* pins the path prefix to the authenticated (or impersonated) userId so a    */
+/* member can only upload into their own folder.                              */
+/* -------------------------------------------------------------------------- */
+
+export const createAvatarUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuthWithImpersonation])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        kind: z.enum(["pending", "final"]),
+        ext: z.string().min(1).max(6),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ path: string; token: string }> => {
+    const { userId } = context;
+    const safeExt = /^[a-z0-9]{1,6}$/.test(data.ext.toLowerCase())
+      ? data.ext.toLowerCase()
+      : "jpg";
+    const prefix = data.kind === "pending" ? "pending" : "avatar";
+    const path = `${userId}/${prefix}-${Date.now()}.${safeExt}`;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("avatars")
+      .createSignedUploadUrl(path);
+    if (error || !signed) throw error ?? new Error("Failed to create upload URL");
+    return { path: signed.path, token: signed.token };
+  });
+
+
+/* -------------------------------------------------------------------------- */
 /* Validate avatar (vision)                                                    */
 /*                                                                             */
 /* Prompt + schema + decision come from src/lib/avatar/validate.shared so the  */
