@@ -12,7 +12,7 @@ import { requireSupabaseAuthWithImpersonation as requireSupabaseAuth } from "@/i
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 const MODEL = "google/gemini-3.5-flash";
-const MAX_ROWS = 8;
+const MAX_ROWS = 5;
 const MAX_PUBLIC = 5;
 
 /* -------------------- shared guard -------------------- */
