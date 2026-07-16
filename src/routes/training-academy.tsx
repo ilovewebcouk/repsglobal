@@ -260,7 +260,7 @@ function TrainingAcademyPage() {
                     <Button
                       type="button"
                       onClick={() => setFilters(DEFAULT_FILTERS)}
-                      className="h-10 rounded-[10px] bg-[#FF7A00] px-5 text-[13px] font-semibold text-white shadow-none hover:bg-[#E96F00]"
+                      className="h-10 rounded-[10px] bg-reps-orange px-5 text-[13px] font-semibold text-white shadow-none hover:bg-reps-orange-hover"
                     >
                       <RefreshCw data-icon="inline-start" />
                       Reset filters
