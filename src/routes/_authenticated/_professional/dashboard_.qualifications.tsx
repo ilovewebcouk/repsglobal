@@ -405,9 +405,9 @@ function RegulatedRow({ row }: { row: RegulatedPermissionRow }) {
               </>
             ) : null}
           </div>
-          {row.admin_note && !isWithdrawn ? (
+          {row.admin_note && (row.status === "rejected" || row.status === "changes_requested") ? (
             <div className="mt-2 rounded-[10px] border border-amber-500/25 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
-              <span className="font-semibold">Admin note:</span> {row.admin_note}
+              <span className="font-semibold">Reviewer's note:</span> {row.admin_note}
             </div>
           ) : null}
         </div>
@@ -545,7 +545,7 @@ function CpdRow({ row }: { row: RepsCourseRow }) {
               <span className="font-mono text-emerald-300">{row.reps_qual_number}</span>
             </p>
           ) : null}
-          {row.admin_note && !isWithdrawn ? (
+          {row.admin_note && (row.status === "rejected" || row.status === "changes_requested") ? (
             <div className="mt-2 rounded-[10px] border border-amber-500/25 bg-amber-500/10 p-2.5 text-[12px] text-amber-200">
               <span className="font-semibold">Reviewer's note:</span> {row.admin_note}
             </div>
