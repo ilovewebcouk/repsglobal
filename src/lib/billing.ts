@@ -113,7 +113,11 @@ export function tierForPriceId(priceId: string): TierKey | null {
   return null;
 }
 
-export function checkoutOfferForPriceId(priceId: string) {
+export function checkoutOfferForPriceId(priceId: string): {
+  tier: PurchasableTier | OrgTierKey;
+  period: BillingPeriod;
+  founding: boolean;
+} | null {
   for (const [tier, offers] of Object.entries(CHECKOUT_OFFERS)) {
     for (const offer of Object.values(offers)) {
       if (offer?.priceId === priceId) {
@@ -121,8 +125,18 @@ export function checkoutOfferForPriceId(priceId: string) {
       }
     }
   }
+  // Organisation tiers (training providers) live in a separate catalogue and
+  // are not sold through self-serve checkout — but Stripe events still fire
+  // with their lookup key. Include them here so the webhook / resync path
+  // doesn't fall through to `tier='free'`.
+  for (const org of Object.values(ORG_TIERS)) {
+    if (org.stripePriceLookupKey === priceId) {
+      return { tier: org.key, period: "annual", founding: false };
+    }
+  }
   return null;
 }
+
 
 /* ------------------------------------------------------------------ */
 /* AI credit top-up packs (one-time purchases)                         */

@@ -116,7 +116,7 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
     const [{ data: prof }, { data: profile }, { data: sub }, userRes] = await Promise.all([
       supabaseAdmin
         .from('professionals')
-        .select('id, slug')
+        .select('id, slug, account_type')
         .eq('id', session.professional_id)
         .maybeSingle(),
       supabaseAdmin
@@ -137,11 +137,23 @@ export const getImpersonationStatus = createServerFn({ method: 'GET' })
     const liveStatuses = ['active', 'trialing', 'past_due', 'unpaid'];
     const paidTiers = ['verified', 'pro', 'studio', 'training_provider'] as const;
     type ImpersonationTier = (typeof paidTiers)[number];
+    const subIsLive =
+      !!sub && liveStatuses.includes(sub.status as string);
+    const subTierPaid =
+      !!sub && paidTiers.includes(sub.tier as ImpersonationTier);
+    // account_type is the authoritative signal set at admin invite time;
+    // if it says training_provider, route as one even when the subscriptions
+    // row is stale (e.g. tier still 'free' from a missed webhook mapping).
+    const isProviderByAccountType =
+      (prof as { account_type?: string | null } | null)?.account_type ===
+      'training_provider';
     const tier: ImpersonationTier =
-      sub && liveStatuses.includes(sub.status as string) &&
-      paidTiers.includes(sub.tier as ImpersonationTier)
-        ? (sub.tier as ImpersonationTier)
-        : 'verified';
+      isProviderByAccountType && subIsLive
+        ? 'training_provider'
+        : subIsLive && subTierPaid
+          ? (sub!.tier as ImpersonationTier)
+          : 'verified';
+
 
     return {
       active: true as const,

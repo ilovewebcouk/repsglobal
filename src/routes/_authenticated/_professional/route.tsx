@@ -75,11 +75,18 @@ export const Route = createFileRoute("/_authenticated/_professional")({
       return { user, role: "professional" as const, trainerTier: "verified" as const };
     }
 
-    const { data: sub } = await supabase
-      .from("subscriptions")
-      .select("tier,status,payment_standing")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const [{ data: sub }, { data: pro }] = await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select("tier,status,payment_standing")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("professionals")
+        .select("account_type")
+        .eq("id", user.id)
+        .maybeSingle(),
+    ]);
 
     // Payment-standing suspension gate: a member with a live dispute or a
     // lost chargeback must not reach the dashboard, regardless of role.
@@ -91,18 +98,32 @@ export const Route = createFileRoute("/_authenticated/_professional")({
       throw redirect({ to: "/account/suspended" });
     }
 
-    const isPaid =
-      !!sub &&
-      PAID_TIERS.includes(sub.tier as string) &&
-      LIVE_STATUSES.includes(sub.status as string);
+    const subStatusLive =
+      !!sub && LIVE_STATUSES.includes(sub.status as string);
+    const subTierPaid =
+      !!sub && PAID_TIERS.includes(sub.tier as string);
+
+    // Training-provider intent lives on professionals.account_type (set at
+    // admin invite time). If a provider's subscriptions row has drifted (e.g.
+    // tier still 'free' because a webhook missed the lookup-key mapping),
+    // account_type still routes them correctly — never fall through to Core.
+    const isProviderByAccountType =
+      (pro as { account_type?: string | null } | null)?.account_type ===
+      "training_provider";
+
+    const isPaid = subStatusLive && (subTierPaid || isProviderByAccountType);
 
     if (!isPaid) {
       throw redirect({ to: "/pricing" });
     }
 
-    const trainerTier = sub!.tier as "verified" | "pro" | "studio" | "training_provider";
+    const trainerTier: "verified" | "pro" | "studio" | "training_provider" =
+      isProviderByAccountType
+        ? "training_provider"
+        : (sub!.tier as "verified" | "pro" | "studio" | "training_provider");
     return { user, role: "professional" as const, trainerTier };
   },
+
   head: () => ({
     meta: [{ name: "robots", content: "noindex" }],
   }),

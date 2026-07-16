@@ -9,7 +9,7 @@
 //
 // Server-only. Never import from client code.
 
-import { TIERS, type TierKey } from "@/lib/billing";
+import { TIERS, ORG_TIERS, type TierKey } from "@/lib/billing";
 import {
   fetchMemberBillingRow,
   type MemberBillingRow,
@@ -19,13 +19,18 @@ import {
 export type AdminSubscriptionSource = "shared-compute" | "none";
 export type AdminSubscriptionDiscrepancy = never;
 
+// Widened tier for admin display. `training_provider` sits alongside the
+// individual TierKeys so Member 360 can render provider subs with the
+// correct label without inflating the checkout catalogue.
+export type AdminTierKey = TierKey | "training_provider";
+
 export interface AdminSubscriptionState {
   user_id: string;
   source: AdminSubscriptionSource;
   stripe_subscription_id: string | null;
   stripe_customer_id: string | null;
   status: string | null;
-  tier: TierKey | null;
+  tier: AdminTierKey | null;
   tier_label: string | null;
   renewal_at: string | null;
   is_scheduled_renewal: boolean;
@@ -45,21 +50,29 @@ export interface AdminSubscriptionState {
 
 // Catalogue prices used so the Billing tab shows the published REPs price
 // even when we have no row to read from. Mirror of src/lib/billing.ts.
-const TIER_CATALOGUE_PRICE: Record<TierKey, { unit_amount_pence: number; currency: string; interval: string } | null> = {
+const TIER_CATALOGUE_PRICE: Record<AdminTierKey, { unit_amount_pence: number; currency: string; interval: string } | null> = {
   verified: { unit_amount_pence: 3400, currency: "gbp", interval: "year" },
   pro: { unit_amount_pence: 5900, currency: "gbp", interval: "month" },
   studio: { unit_amount_pence: 14900, currency: "gbp", interval: "month" },
+  training_provider: {
+    unit_amount_pence: ORG_TIERS.training_provider.amountPence,
+    currency: "gbp",
+    interval: "year",
+  },
 };
 
-function planToTierKey(plan: MemberBillingPlan): TierKey | null {
+function planToTierKey(plan: MemberBillingPlan): AdminTierKey | null {
   if (plan === "verified" || plan === "pro" || plan === "studio") return plan;
+  if (plan === "training_provider") return "training_provider";
   return null;
 }
 
-export function tierLabel(tier: TierKey | null): string | null {
+export function tierLabel(tier: AdminTierKey | null): string | null {
   if (!tier) return null;
+  if (tier === "training_provider") return ORG_TIERS.training_provider.label;
   return TIERS[tier]?.label ?? null;
 }
+
 
 function fmtDate(iso: string | null): string | null {
   if (!iso) return null;

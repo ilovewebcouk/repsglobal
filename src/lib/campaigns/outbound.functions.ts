@@ -121,7 +121,12 @@ export const searchTrainers = createServerFn({ method: "POST" })
 
     let proQuery = supabaseAdmin
       .from("professionals")
-      .select("id, primary_profession, city");
+      .select("id, primary_profession, city, account_type")
+      // Exclude organisations (training providers) from individual-pro
+      // campaigns at the source — this is authoritative even when the
+      // subscriptions row has drifted (e.g. tier still 'free' from a
+      // missed webhook mapping).
+      .neq("account_type", "training_provider");
     if (matchingIds.size > 0) proQuery = proQuery.in("id", [...matchingIds]);
     else if (q.length >= 2) return [];
     else proQuery = proQuery.limit(500);
@@ -130,6 +135,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const ids = (pros ?? []).map((p: any) => p.id);
+
 
     // Fetch profile names + full_name separately — no FK between
     // professionals and profiles, so PostgREST can't embed-join them.
