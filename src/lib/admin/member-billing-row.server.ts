@@ -149,8 +149,17 @@ export function computeMemberBillingRow(input: MemberBillingRowInput): MemberBil
     }
   }
 
+  // ─── Training-provider entitlement (not counted in APM, but still active) ───
+  // Providers are admin-invited and don't appear in the Active Paying Member
+  // collection, so `activePaidTier` is null even when they have a live trialing
+  // Stripe sub. Detect them directly from the entitled sub row.
+  const providerTier: MemberBillingPlan | null =
+    subDetail && normaliseTier(subDetail.tier) === "training_provider"
+      ? "training_provider"
+      : null;
+
   // ─── Plan + billing state (same precedence as the list) ───
-  const billingState: MemberBillingState = activePaidTier
+  const billingState: MemberBillingState = activePaidTier || providerTier
     ? "ok"
     : failedTier
       ? "payment_failed"
@@ -159,7 +168,8 @@ export function computeMemberBillingRow(input: MemberBillingRowInput): MemberBil
         : "ok";
 
   const plan: MemberBillingPlan =
-    activePaidTier ?? failedTier ?? (renewalDue ? "verified" : "free");
+    activePaidTier ?? providerTier ?? failedTier ?? (renewalDue ? "verified" : "free");
+
 
   // ─── Renewal date + source (identical formula to list) ───
   const renewalDate = subDetail?.current_period_end ?? bdNextDueIso ?? null;
