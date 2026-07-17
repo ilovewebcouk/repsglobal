@@ -1151,7 +1151,7 @@ export const listMyUnattachedEvidence = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: rows, error } = await supabase
       .from("reps_course_evidence")
-      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .select("id, course_id, provider_id, file_kind, file_label, file_path, file_name, file_size_bytes, mime_type, created_at")
       .eq("provider_id", userId)
       .is("course_id", null)
       .order("created_at", { ascending: true });
@@ -1179,7 +1179,7 @@ export const listRepsCourseEvidence = createServerFn({ method: "POST" })
     }
     const { data: rows, error } = await supabase
       .from("reps_course_evidence")
-      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .select("id, course_id, provider_id, file_kind, file_label, file_path, file_name, file_size_bytes, mime_type, created_at")
       .eq("course_id", data.course_id)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
