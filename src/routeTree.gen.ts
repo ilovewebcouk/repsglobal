@@ -151,6 +151,7 @@ import { Route as ApiPublicOpsAlertDispatchRouteImport } from './routes/api/publ
 import { Route as ApiPublicHooksSendScheduledCampaignsRouteImport } from './routes/api/public/hooks/send-scheduled-campaigns'
 import { Route as ApiPublicHooksOnboardingNudgeCronRouteImport } from './routes/api/public/hooks/onboarding-nudge-cron'
 import { Route as ApiPublicCronSeoIndexScanRouteImport } from './routes/api/public/cron/seo-index-scan'
+import { Route as ApiPublicCronRepsEvidenceCleanupRouteImport } from './routes/api/public/cron/reps-evidence-cleanup'
 import { Route as ApiPublicCronPullPosthogDailyRouteImport } from './routes/api/public/cron/pull-posthog-daily'
 import { Route as ApiPublicConsentLogRouteImport } from './routes/api/public/consent/log'
 import { Route as ApiPublicAdminManualRelinkStripeRouteImport } from './routes/api/public/admin/manual-relink-stripe'
@@ -920,6 +921,12 @@ const ApiPublicCronSeoIndexScanRoute =
     path: '/api/public/cron/seo-index-scan',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronRepsEvidenceCleanupRoute =
+  ApiPublicCronRepsEvidenceCleanupRouteImport.update({
+    id: '/api/public/cron/reps-evidence-cleanup',
+    path: '/api/public/cron/reps-evidence-cleanup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronPullPosthogDailyRoute =
   ApiPublicCronPullPosthogDailyRouteImport.update({
     id: '/api/public/cron/pull-posthog-daily',
@@ -1315,6 +1322,7 @@ export interface FileRoutesByFullPath {
   '/api/public/admin/manual-relink-stripe': typeof ApiPublicAdminManualRelinkStripeRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/reps-evidence-cleanup': typeof ApiPublicCronRepsEvidenceCleanupRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/onboarding-nudge-cron': typeof ApiPublicHooksOnboardingNudgeCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1490,6 +1498,7 @@ export interface FileRoutesByTo {
   '/api/public/admin/manual-relink-stripe': typeof ApiPublicAdminManualRelinkStripeRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/reps-evidence-cleanup': typeof ApiPublicCronRepsEvidenceCleanupRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/onboarding-nudge-cron': typeof ApiPublicHooksOnboardingNudgeCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1676,6 +1685,7 @@ export interface FileRoutesById {
   '/api/public/admin/manual-relink-stripe': typeof ApiPublicAdminManualRelinkStripeRoute
   '/api/public/consent/log': typeof ApiPublicConsentLogRoute
   '/api/public/cron/pull-posthog-daily': typeof ApiPublicCronPullPosthogDailyRoute
+  '/api/public/cron/reps-evidence-cleanup': typeof ApiPublicCronRepsEvidenceCleanupRoute
   '/api/public/cron/seo-index-scan': typeof ApiPublicCronSeoIndexScanRoute
   '/api/public/hooks/onboarding-nudge-cron': typeof ApiPublicHooksOnboardingNudgeCronRoute
   '/api/public/hooks/send-scheduled-campaigns': typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -1860,6 +1870,7 @@ export interface FileRouteTypes {
     | '/api/public/admin/manual-relink-stripe'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/reps-evidence-cleanup'
     | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/onboarding-nudge-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -2035,6 +2046,7 @@ export interface FileRouteTypes {
     | '/api/public/admin/manual-relink-stripe'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/reps-evidence-cleanup'
     | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/onboarding-nudge-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -2220,6 +2232,7 @@ export interface FileRouteTypes {
     | '/api/public/admin/manual-relink-stripe'
     | '/api/public/consent/log'
     | '/api/public/cron/pull-posthog-daily'
+    | '/api/public/cron/reps-evidence-cleanup'
     | '/api/public/cron/seo-index-scan'
     | '/api/public/hooks/onboarding-nudge-cron'
     | '/api/public/hooks/send-scheduled-campaigns'
@@ -2371,6 +2384,7 @@ export interface RootRouteChildren {
   ApiPublicAdminManualRelinkStripeRoute: typeof ApiPublicAdminManualRelinkStripeRoute
   ApiPublicConsentLogRoute: typeof ApiPublicConsentLogRoute
   ApiPublicCronPullPosthogDailyRoute: typeof ApiPublicCronPullPosthogDailyRoute
+  ApiPublicCronRepsEvidenceCleanupRoute: typeof ApiPublicCronRepsEvidenceCleanupRoute
   ApiPublicCronSeoIndexScanRoute: typeof ApiPublicCronSeoIndexScanRoute
   ApiPublicHooksOnboardingNudgeCronRoute: typeof ApiPublicHooksOnboardingNudgeCronRoute
   ApiPublicHooksSendScheduledCampaignsRoute: typeof ApiPublicHooksSendScheduledCampaignsRoute
@@ -3383,6 +3397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSeoIndexScanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/reps-evidence-cleanup': {
+      id: '/api/public/cron/reps-evidence-cleanup'
+      path: '/api/public/cron/reps-evidence-cleanup'
+      fullPath: '/api/public/cron/reps-evidence-cleanup'
+      preLoaderRoute: typeof ApiPublicCronRepsEvidenceCleanupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/pull-posthog-daily': {
       id: '/api/public/cron/pull-posthog-daily'
       path: '/api/public/cron/pull-posthog-daily'
@@ -4082,6 +4103,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAdminManualRelinkStripeRoute: ApiPublicAdminManualRelinkStripeRoute,
   ApiPublicConsentLogRoute: ApiPublicConsentLogRoute,
   ApiPublicCronPullPosthogDailyRoute: ApiPublicCronPullPosthogDailyRoute,
+  ApiPublicCronRepsEvidenceCleanupRoute: ApiPublicCronRepsEvidenceCleanupRoute,
   ApiPublicCronSeoIndexScanRoute: ApiPublicCronSeoIndexScanRoute,
   ApiPublicHooksOnboardingNudgeCronRoute:
     ApiPublicHooksOnboardingNudgeCronRoute,
