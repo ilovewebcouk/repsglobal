@@ -1028,44 +1028,28 @@ const DELIVERY_OPTIONS: Array<{ value: DeliveryMode; label: string; help: string
 
 type ModuleDraft = { title: string; summary: string; hours: string };
 
-type EvidenceSlotKind = Extract<
-  RepsCourseEvidenceKind,
-  "specification" | "sample_materials" | "assessment" | "tutor_cv"
->;
+type OptionalEvidenceKind = Exclude<RepsCourseEvidenceKind, "specification">;
 
-type EvidenceSlotSpec = {
-  kind: EvidenceSlotKind;
-  label: string;
-  help: string;
-  accept: string;
+const OPTIONAL_EVIDENCE_OPTIONS: { value: OptionalEvidenceKind; label: string }[] = [
+  { value: "sample_materials", label: "Sample learning materials" },
+  { value: "assessment", label: "Assessment plan / sample assessment" },
+  { value: "tutor_cv", label: "Lead tutor CV / bio" },
+  { value: "insurance", label: "Insurance certificate" },
+  { value: "awarding_body_cert", label: "Awarding-body certificate" },
+  { value: "other", label: "Other" },
+];
+
+const EVIDENCE_KIND_LABEL: Record<RepsCourseEvidenceKind, string> = {
+  specification: "Course specification / syllabus",
+  sample_materials: "Sample learning materials",
+  assessment: "Assessment plan / sample assessment",
+  tutor_cv: "Lead tutor CV / bio",
+  insurance: "Insurance certificate",
+  awarding_body_cert: "Awarding-body certificate",
+  other: "Other",
 };
 
-const EVIDENCE_SLOTS: EvidenceSlotSpec[] = [
-  {
-    kind: "specification",
-    label: "Course specification / syllabus",
-    help: "The full document a learner would receive — modules, hours, outcomes, assessment.",
-    accept: ".pdf,.doc,.docx",
-  },
-  {
-    kind: "sample_materials",
-    label: "Sample learning materials (1–2 modules)",
-    help: "Slides, workbook or a short video sample. Proves the teaching exists at the claimed level.",
-    accept: ".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.zip",
-  },
-  {
-    kind: "assessment",
-    label: "Assessment plan + sample assessment",
-    help: "How learners are judged competent, plus one worked example.",
-    accept: ".pdf,.doc,.docx",
-  },
-  {
-    kind: "tutor_cv",
-    label: "Lead tutor CV",
-    help: "The credentials of whoever teaches or signs off the course.",
-    accept: ".pdf,.doc,.docx",
-  },
-];
+const EVIDENCE_ACCEPT = ".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.zip,.jpg,.jpeg,.png";
 
 const MAX_EVIDENCE_BYTES = 25 * 1024 * 1024; // 25 MB per file
 
