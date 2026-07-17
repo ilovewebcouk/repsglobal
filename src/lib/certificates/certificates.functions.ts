@@ -1243,6 +1243,18 @@ export const adminMarkBatchPrinted = createServerFn({ method: "POST" })
       .eq("id", data.batch_id)
       .eq("status", "awaiting_print");
     if (error) throw new Error(error.message);
+
+    // Auto-invite every learner in the batch to leave a verified review.
+    // Idempotent — safe if the batch has already been enqueued.
+    try {
+      const { enqueueLearnerReviewRequestsForBatch } = await import(
+        "@/lib/certificates/enqueue-learner-review-requests.server"
+      );
+      await enqueueLearnerReviewRequestsForBatch(data.batch_id);
+    } catch (err) {
+      console.error("[adminMarkBatchPrinted] review invite enqueue failed", err);
+    }
+
     return { ok: true };
   });
 
