@@ -4,9 +4,9 @@ import { trackGaEvent, getGaClientId } from "@/hooks/useGoogleAnalytics";
 import { ORG_TIERS } from "@/lib/billing";
 
 /**
- * Mints a Stripe Hosted Checkout session for the REPs LMS training-provider
- * annual membership and redirects the browser. Requires an authenticated
- * session (createOrgCheckoutSession is guarded by requireSupabaseAuth).
+ * Mints a Stripe Hosted Checkout session for the REPs Training Provider
+ * Membership annual subscription and redirects the browser. Requires an
+ * authenticated session (createOrgCheckoutSession is guarded by requireSupabaseAuth).
  */
 export async function startOrgCheckoutRedirect(): Promise<void> {
   const gaClientId = getGaClientId();
@@ -18,7 +18,7 @@ export async function startOrgCheckoutRedirect(): Promise<void> {
     items: [
       {
         item_id: "training_provider_annual",
-        item_name: "REPs LMS",
+        item_name: "REPs Training Provider Membership",
         item_category: "training_provider",
         item_variant: "annual",
         price: tier.amountPence / 100,
