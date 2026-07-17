@@ -643,7 +643,12 @@ function ProviderProfilePage() {
                   );
                 })()}
               </article>
+
+              {/* Verified learner reviews — paginated, certificate-verified */}
+              <ProviderReviewsSection slug={slug} />
+
               {/* Verified Professionals Trained */}
+
               <article
                 id="verified-pros"
                 className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6"
