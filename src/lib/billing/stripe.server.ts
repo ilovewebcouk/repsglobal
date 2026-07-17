@@ -5,6 +5,7 @@
 //   sandbox  → STRIPE_SECRET_KEY_TEST  (sk_test_...)
 //   live     → STRIPE_SECRET_KEY_LIVE  (sk_live_...)
 import Stripe from "stripe";
+import { getRequest } from "@tanstack/react-start/server";
 
 export type StripeEnv = "sandbox" | "live";
 
@@ -66,9 +67,6 @@ export function getStripeErrorMessage(error: unknown): string {
  */
 export function getCheckoutOrigin(): string {
   try {
-    const { getRequest } = require("@tanstack/react-start/server") as {
-      getRequest: () => Request | undefined;
-    };
     const req = getRequest();
     const origin = req?.headers.get("origin");
     if (origin) return origin.replace(/\/$/, "");
