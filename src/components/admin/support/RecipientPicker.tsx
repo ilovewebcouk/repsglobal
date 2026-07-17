@@ -197,7 +197,7 @@ function TierChip({
   tier,
   kind,
 }: {
-  tier?: "verified" | "pro" | "studio" | null;
+  tier?: "verified" | "pro" | "studio" | "training_provider" | null;
   kind: RecipientHit["kind"];
 }) {
   if (kind === "contact") {
