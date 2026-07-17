@@ -1183,25 +1183,6 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   };
 
 
-  const handleCheckStatement = async () => {
-    if (!statementUrlValid) return;
-    setStatementChecking(true);
-    try {
-      const res = await runStatementCheck({ data: { url: statementUrl.trim() } });
-      setStatementCheck(res);
-      if (res.ok && res.found) {
-        toast.success("Endorsement statement found on your page.");
-      } else if (res.ok && !res.found) {
-        toast.error("We couldn't find the statement on that page. Paste it in verbatim and re-check.");
-      } else {
-        toast.error(res.error ?? "We couldn't fetch that page.");
-      }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Check failed");
-    } finally {
-      setStatementChecking(false);
-    }
-  };
 
 
   const handleUpload = async (kind: EvidenceSlotKind, file: File) => {
