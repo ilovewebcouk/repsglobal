@@ -17,8 +17,6 @@ function loadKey(): Buffer {
     /* fall through */
   }
   // Derive a 32-byte key deterministically from whatever we were given.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createHash } = require("node:crypto") as typeof import("node:crypto");
   return createHash("sha256").update(raw).digest();
 }
 
