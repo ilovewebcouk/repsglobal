@@ -515,12 +515,7 @@ export const deleteMyRegulatedPermission = removeMyRegulatedPermission;
 
 const DELIVERY_MODES = ["in_person", "online_live", "online_self_paced", "blended"] as const;
 
-const REQUIRED_EVIDENCE_KINDS = [
-  "specification",
-  "sample_materials",
-  "assessment",
-  "tutor_cv",
-] as const;
+const REQUIRED_EVIDENCE_KINDS = ["specification"] as const;
 
 const moduleSchema = z.object({
   title: z.string().min(2).max(200),
