@@ -2,7 +2,7 @@
 // (e.g. the pending_signups password used to mint the auth user after
 // Stripe payment succeeds). Never expose this module to the browser.
 
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 
 function loadKey(): Buffer {
   const raw = process.env.PENDING_SIGNUP_ENC_KEY;
