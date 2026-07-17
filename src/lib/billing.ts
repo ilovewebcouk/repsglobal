@@ -11,6 +11,9 @@
 
 export type TierKey = "verified" | "pro" | "studio";
 export type PurchasableTier = "verified" | "pro" | "training_provider";
+/** Every paid subscription tier — individual + organisation. Use this when
+ *  code needs to represent any paying member (metrics, targeting, filters). */
+export type SubscriptionTierKey = TierKey | "training_provider";
 export type BillingPeriod = "monthly" | "annual";
 
 export interface TierConfig {
