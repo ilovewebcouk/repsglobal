@@ -811,7 +811,11 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                         .from("profiles").select("full_name").eq("id", userId).maybeSingle();
                       const item = sub.items.data[0];
                       const tier = (sub.metadata?.tier as string) ?? "verified";
-                      const tierLabel = tier === "pro" ? "REPS Pro" : tier === "studio" ? "REPS Studio" : "REPS Core";
+                      const tierLabel =
+                        tier === "pro" ? "REPs Pro"
+                        : tier === "studio" ? "REPs Studio"
+                        : tier === "training_provider" ? "REPs Training Provider Membership"
+                        : "REPs Core";
                       const interval = item?.price.recurring?.interval ?? null;
                       const periodText = interval === "year" ? "/year" : interval === "month" ? "/month" : "";
                       const amount = (item?.price.unit_amount ?? 0) / 100;
