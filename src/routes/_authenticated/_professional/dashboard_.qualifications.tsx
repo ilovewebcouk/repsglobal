@@ -1254,10 +1254,9 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             hours: m.hours.trim() ? Number(m.hours) : null,
           })),
           evidence_ids: evidenceIds,
-          endorsement_statement_url: statementUrl.trim(),
-          endorsement_statement_agreed: true,
           endorsement_terms_version: ENDORSEMENT_TERMS_VERSION,
           endorsement_terms_accepted: true,
+
         },
       });
       toast.success("Submitted for REPS admin review.");
