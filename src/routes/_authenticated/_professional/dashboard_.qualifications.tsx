@@ -1625,8 +1625,14 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
                 >
                   REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
                 </Link>
-                . I understand that a breach — including printing the REPS badge on my own certificates, advertising unendorsed courses, or changing the trading name that REPS endorsed — results in permanent suspension from REPS and a permanent public notice on my profile.
+                , including the requirement to display the REPS endorsement statement above,
+                verbatim, on the public page for this course for as long as it is endorsed. I
+                understand that a breach — including printing the REPS badge on my own
+                certificates, advertising unendorsed courses, or changing the trading name that
+                REPS endorsed — results in permanent suspension from REPS and a permanent
+                public notice on my profile.
               </span>
+
             </label>
           </div>
         </div>
