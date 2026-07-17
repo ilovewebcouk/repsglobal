@@ -24,6 +24,7 @@ import {
 } from "@/lib/website/website.functions";
 import { listPublicReviewsBySlug } from "@/lib/reviews/reviews.functions";
 import { listPublicProviderQualifications } from "@/lib/qualifications/qualifications.functions";
+import { ProviderReviewsSection } from "@/components/provider/ProviderReviewsSection";
 import { getPublicProviderIssuedCertificateCount } from "@/lib/providers/public-stats.functions";
 import { listPublicProviderFaqs } from "@/lib/provider-faqs/provider-faqs.functions";
 import { getPublicProviderVerification } from "@/lib/verification/provider-verification-public.functions";
@@ -643,7 +644,12 @@ function ProviderProfilePage() {
                   );
                 })()}
               </article>
+
+              {/* Verified learner reviews — paginated, certificate-verified */}
+              <ProviderReviewsSection slug={slug} />
+
               {/* Verified Professionals Trained */}
+
               <article
                 id="verified-pros"
                 className="scroll-mt-28 rounded-[22px] border border-black/10 bg-white p-6"
@@ -845,13 +851,7 @@ function ProviderProfilePage() {
                 </div>
 
                 <div className="mt-5">
-                  {reviews.length === 0 ? (
-                    <div className="flex min-h-[120px] items-center justify-center rounded-[16px] border border-dashed border-black/15 bg-white px-4 text-center">
-                      <p className="text-[13px] text-black/55">
-                        No reviews yet. Verified learner reviews will appear here once published.
-                      </p>
-                    </div>
-                  ) : (
+                  {reviews.length > 0 ? (
                     <div className="space-y-2 rounded-[16px] border border-black/10 bg-[#f7f6f2] p-4">
                       {reviews.slice(0, 1).map((r) => (
                         <div key={r.id}>
@@ -877,19 +877,11 @@ function ProviderProfilePage() {
                         </div>
                       ))}
                     </div>
-                  )}
+                  ) : null}
                 </div>
-
-                <Link
-                  to="/t/$slug/review"
-                  params={{ slug }}
-                  className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-primary bg-primary px-4 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-reps-orange-hover"
-                >
-                  <Star className="h-3.5 w-3.5" strokeWidth={2} />
-                  Write a review
-                </Link>
               </article>
             </aside>
+
           </div>
         </section>
 

@@ -1204,3 +1204,93 @@ export const clearReviewReply = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+// =====================================================================
+// Public: paginated learner reviews section on /t/$slug
+// =====================================================================
+
+export type ProviderReviewRow = {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  reviewer_name: string | null;
+  course_id: string | null;
+  course_title: string | null;
+  certificate_number: string | null;
+  response: string | null;
+  responded_at: string | null;
+  published_at: string | null;
+  total_count: number;
+};
+
+export type ProviderCourseStat = {
+  course_id: string;
+  course_title: string;
+  review_count: number;
+  average_rating: number;
+};
+
+const ProviderReviewsPageSchema = z.object({
+  slug: z.string().min(1).max(120),
+  page: z.number().int().min(1).max(1000).default(1),
+  course_id: z.string().uuid().nullable().optional(),
+  sort: z.enum(["recent", "highest", "lowest"]).default("recent"),
+});
+
+export const listProviderReviewsPage = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => ProviderReviewsPageSchema.parse(d))
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      reviews: ProviderReviewRow[];
+      total: number;
+      page: number;
+      page_size: number;
+      total_pages: number;
+      courses: ProviderCourseStat[];
+    }> => {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: pro } = await supabaseAdmin
+        .from("professionals")
+        .select("id")
+        .eq("slug", data.slug)
+        .eq("is_published", true)
+        .maybeSingle();
+      if (!pro) {
+        return { reviews: [], total: 0, page: 1, page_size: 10, total_pages: 0, courses: [] };
+      }
+
+      const pageSize = 10;
+      const offset = (data.page - 1) * pageSize;
+
+      const [rowsRes, coursesRes] = await Promise.all([
+        supabaseAdmin.rpc("list_provider_reviews_page", {
+          _provider_id: pro.id,
+          _limit: pageSize,
+          _offset: offset,
+          _course_id: data.course_id ?? null,
+          _sort: data.sort,
+        } as never),
+        supabaseAdmin.rpc("provider_course_review_stats", {
+          _provider_id: pro.id,
+        } as never),
+      ]);
+
+      const rows = ((rowsRes.data ?? []) as unknown) as ProviderReviewRow[];
+      const courses = ((coursesRes.data ?? []) as unknown) as ProviderCourseStat[];
+      const total = rows.length > 0 ? Number(rows[0].total_count ?? 0) : 0;
+      const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
+
+      return {
+        reviews: rows,
+        total,
+        page: data.page,
+        page_size: pageSize,
+        total_pages: totalPages,
+        courses,
+      };
+    },
+  );
+
