@@ -606,8 +606,8 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
         proposed_tutor_credentials: data.proposed_tutor_credentials.trim(),
         proposed_extra_notes: data.proposed_extra_notes?.trim() || null,
         spec_modules: data.spec_modules as never,
-        endorsement_statement_url: data.endorsement_statement_url.trim(),
         endorsement_statement_agreed: true,
+
         endorsement_terms_version: data.endorsement_terms_version,
         endorsement_terms_accepted_at: new Date().toISOString(),
       } as never)
