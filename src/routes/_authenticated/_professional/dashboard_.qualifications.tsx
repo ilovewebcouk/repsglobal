@@ -74,7 +74,6 @@ import {
   uploadRepsCourseEvidence,
   removeRepsCourseEvidence,
   listMyUnattachedEvidence,
-  REPS_ENDORSEMENT_STATEMENT,
 
 } from "@/lib/qualifications/qualifications.functions";
 import type {
