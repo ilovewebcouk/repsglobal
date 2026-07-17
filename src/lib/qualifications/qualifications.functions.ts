@@ -539,7 +539,7 @@ const submitRepsCourseInput = z.object({
   proposed_tutor_credentials: z.string().min(10).max(4000),
   proposed_extra_notes: z.string().max(4000).nullable().optional(),
   spec_modules: z.array(moduleSchema).min(1).max(60),
-  evidence_ids: z.array(z.string().uuid()).min(4).max(40),
+  evidence_ids: z.array(z.string().uuid()).min(1).max(40),
   endorsement_terms_version: z.string().min(1).max(20),
 
   endorsement_terms_accepted: z.literal(true, {
