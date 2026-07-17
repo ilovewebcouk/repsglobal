@@ -1603,70 +1603,12 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
               Copy statement
             </button>
 
-            <div className="mt-4 space-y-2">
-              <Label className="block text-[12px] font-semibold text-white/80">
-                URL of the page where you'll display it <span className="text-red-300">*</span>
-              </Label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Input
-                  value={statementUrl}
-                  onChange={(e) => setStatementUrl(e.target.value)}
-                  placeholder="https://your-site.com/courses/kettlebell-coach"
-                  className="flex-1"
-                  maxLength={500}
-                />
-                <Button
-                  type="button"
-                  onClick={handleCheckStatement}
-                  disabled={!statementUrlValid || statementChecking}
-                  variant="ghost"
-                  className="sm:shrink-0"
-                >
-                  {statementChecking ? (
-                    <>
-                      <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> Checking…
-                    </>
-                  ) : (
-                    "Check now"
-                  )}
-                </Button>
-              </div>
-              <FieldHelp>
-                Paste the statement onto that page first, then click Check. We fetch the page and
-                look for the statement.
-              </FieldHelp>
+            <p className="mt-3 text-[11.5px] text-white/55">
+              Admin verifies the statement is displayed on your public course page before
+              endorsement, and re-checks it periodically. Displaying it is part of the
+              Endorsement Terms below.
+            </p>
 
-              {statementCheck ? (
-                statementCheck.ok && statementCheck.found ? (
-                  <div className="flex items-start gap-2 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-2.5 text-[12px] text-emerald-100">
-                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" />
-                    <span>Statement found on that page. Admin will re-check during review.</span>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-2 rounded-[10px] border border-red-400/30 bg-red-500/10 p-2.5 text-[12px] text-red-100">
-                    <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-300" />
-                    <span>
-                      {statementCheck.ok
-                        ? "The statement isn't on that page. Paste it in verbatim and check again."
-                        : `Couldn't fetch: ${statementCheck.error ?? "unknown error"}`}
-                    </span>
-                  </div>
-                )
-              ) : null}
-            </div>
-
-            <label className="mt-4 flex cursor-pointer items-start gap-2 text-[12.5px] text-white/80">
-              <Checkbox
-                checked={statementAgreed}
-                onCheckedChange={(v) => setStatementAgreed(v === true)}
-                className="mt-0.5"
-              />
-              <span>
-                I agree to display the REPS endorsement statement, verbatim, on the page above for
-                as long as this course is endorsed by REPS. I understand admin verifies this
-                before and periodically after endorsement.
-              </span>
-            </label>
 
             <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
               <Checkbox
