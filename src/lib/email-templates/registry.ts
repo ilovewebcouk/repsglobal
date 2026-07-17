@@ -97,6 +97,7 @@ import { template as providerPortalIsLive } from './provider/portal-is-live'
 // Learner
 // ─────────────────────────────────────────────────────────────
 import { template as learnerCertificateIssued } from './learner/learner-certificate-issued'
+import { template as learnerReviewRequest } from './learner/learner-review-request'
 
 // ─────────────────────────────────────────────────────────────
 // Client (trainer's client)
