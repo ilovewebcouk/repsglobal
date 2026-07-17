@@ -991,7 +991,7 @@ function AddRegulatedDialog({ open, onClose }: { open: boolean; onClose: () => v
               >
                 REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
               </Link>
-              . I understand that a breach — including printing the REPS badge on my own certificates, advertising unendorsed courses, or changing the trading name that REPS endorsed — results in permanent suspension from REPS and a permanent public notice on my profile.
+              .
             </span>
           </label>
         </div>
