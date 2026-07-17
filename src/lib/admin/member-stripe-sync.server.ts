@@ -33,6 +33,15 @@ export async function resyncUserFromStripe(
     if (r.stripe_customer_id) customerIds.add(r.stripe_customer_id);
   }
 
+  const { data: setupRows } = await supabaseAdmin
+    .from("billing_setup_tokens")
+    .select("stripe_customer_id")
+    .eq("user_id", userId)
+    .not("stripe_customer_id", "is", null);
+  for (const r of (setupRows ?? []) as Array<{ stripe_customer_id: string | null }>) {
+    if (r.stripe_customer_id) customerIds.add(r.stripe_customer_id);
+  }
+
   const { data: bdRow } = await supabaseAdmin
     .from("bd_member_seed")
     .select("migration_stripe_customer_id, migration_canonical_stripe_customer_id")
