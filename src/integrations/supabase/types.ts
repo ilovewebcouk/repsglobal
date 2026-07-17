@@ -2459,6 +2459,7 @@ export type Database = {
       }
       learners: {
         Row: {
+          auth_user_id: string | null
           country: string | null
           created_at: string
           created_by: string | null
@@ -2471,6 +2472,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auth_user_id?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null
@@ -2483,6 +2485,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auth_user_id?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null
@@ -4975,8 +4978,11 @@ export type Database = {
       }
       review_requests: {
         Row: {
+          certificate_registration_id: string | null
           client_email: string
           client_name: string | null
+          course_id: string | null
+          course_title_snapshot: string | null
           created_at: string
           delivered_at: string | null
           expires_at: string
@@ -4984,11 +4990,14 @@ export type Database = {
           failure_reason: string | null
           first_opened_at: string | null
           id: string
+          kind: string
           last_opened_at: string | null
           mailgun_message_id: string | null
           open_count: number
           opened_at: string | null
           professional_id: string
+          provider_name_snapshot: string | null
+          resend_count: number
           sent_at: string
           service_label: string | null
           status: string
@@ -4997,8 +5006,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          certificate_registration_id?: string | null
           client_email: string
           client_name?: string | null
+          course_id?: string | null
+          course_title_snapshot?: string | null
           created_at?: string
           delivered_at?: string | null
           expires_at?: string
@@ -5006,11 +5018,14 @@ export type Database = {
           failure_reason?: string | null
           first_opened_at?: string | null
           id?: string
+          kind?: string
           last_opened_at?: string | null
           mailgun_message_id?: string | null
           open_count?: number
           opened_at?: string | null
           professional_id: string
+          provider_name_snapshot?: string | null
+          resend_count?: number
           sent_at?: string
           service_label?: string | null
           status?: string
@@ -5019,8 +5034,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          certificate_registration_id?: string | null
           client_email?: string
           client_name?: string | null
+          course_id?: string | null
+          course_title_snapshot?: string | null
           created_at?: string
           delivered_at?: string | null
           expires_at?: string
@@ -5028,11 +5046,14 @@ export type Database = {
           failure_reason?: string | null
           first_opened_at?: string | null
           id?: string
+          kind?: string
           last_opened_at?: string | null
           mailgun_message_id?: string | null
           open_count?: number
           opened_at?: string | null
           professional_id?: string
+          provider_name_snapshot?: string | null
+          resend_count?: number
           sent_at?: string
           service_label?: string | null
           status?: string
@@ -5041,6 +5062,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "review_requests_certificate_registration_id_fkey"
+            columns: ["certificate_registration_id"]
+            isOneToOne: false
+            referencedRelation: "certificate_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "reps_courses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "review_requests_professional_id_fkey"
             columns: ["professional_id"]
@@ -5065,9 +5100,11 @@ export type Database = {
           ai_verdict: string | null
           bd_review_id: number | null
           body: string
+          certificate_registration_id: string | null
           client_email: string | null
           client_name: string
           client_user_id: string | null
+          course_id: string | null
           created_at: string
           flag_reason: string | null
           flagged_at: string | null
@@ -5088,6 +5125,7 @@ export type Database = {
           response: string | null
           response_edited_at: string | null
           response_notified_at: string | null
+          reviewer_kind: string
           service_label: string | null
           source: string
           status: string
@@ -5104,9 +5142,11 @@ export type Database = {
           ai_verdict?: string | null
           bd_review_id?: number | null
           body: string
+          certificate_registration_id?: string | null
           client_email?: string | null
           client_name: string
           client_user_id?: string | null
+          course_id?: string | null
           created_at?: string
           flag_reason?: string | null
           flagged_at?: string | null
@@ -5127,6 +5167,7 @@ export type Database = {
           response?: string | null
           response_edited_at?: string | null
           response_notified_at?: string | null
+          reviewer_kind?: string
           service_label?: string | null
           source?: string
           status?: string
@@ -5143,9 +5184,11 @@ export type Database = {
           ai_verdict?: string | null
           bd_review_id?: number | null
           body?: string
+          certificate_registration_id?: string | null
           client_email?: string | null
           client_name?: string
           client_user_id?: string | null
+          course_id?: string | null
           created_at?: string
           flag_reason?: string | null
           flagged_at?: string | null
@@ -5166,6 +5209,7 @@ export type Database = {
           response?: string | null
           response_edited_at?: string | null
           response_notified_at?: string | null
+          reviewer_kind?: string
           service_label?: string | null
           source?: string
           status?: string
@@ -5176,6 +5220,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_certificate_registration_id_fkey"
+            columns: ["certificate_registration_id"]
+            isOneToOne: false
+            referencedRelation: "certificate_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "reps_courses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reviews_professional_id_fkey"
             columns: ["professional_id"]
@@ -7004,6 +7062,29 @@ export type Database = {
           list_tag: string
         }[]
       }
+      list_provider_reviews_page: {
+        Args: {
+          _course_id?: string
+          _limit?: number
+          _offset?: number
+          _provider_id: string
+          _sort?: string
+        }
+        Returns: {
+          body: string
+          certificate_number: string
+          course_id: string
+          course_title: string
+          id: string
+          published_at: string
+          rating: number
+          responded_at: string
+          response: string
+          reviewer_name: string
+          title: string
+          total_count: number
+        }[]
+      }
       list_publicly_visible_pro_ids: {
         Args: never
         Returns: {
@@ -7119,6 +7200,15 @@ export type Database = {
         }
       }
       platform_health_snapshot: { Args: never; Returns: Json }
+      provider_course_review_stats: {
+        Args: { _provider_id: string }
+        Returns: {
+          average_rating: number
+          course_id: string
+          course_title: string
+          review_count: number
+        }[]
+      }
       prune_visitor_ip_observations: { Args: never; Returns: undefined }
       purge_activity_detail: {
         Args: never
