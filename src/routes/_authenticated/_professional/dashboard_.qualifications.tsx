@@ -305,7 +305,7 @@ function AddTypePickerDialog({
                 <span className="text-[14px] font-semibold text-white">REPS-endorsed course</span>
               </div>
               <p className="mt-1 text-[12.5px] text-white/60">
-                I've built my own course and want REPS to endorse it. You'll provide a syllabus, assessment criteria, and tutor CV.
+                I've built my own course and want REPS to endorse it. Upload a syllabus — everything else is optional.
               </p>
             </div>
           </label>
