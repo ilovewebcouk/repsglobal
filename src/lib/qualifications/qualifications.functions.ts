@@ -91,6 +91,8 @@ export type RepsCourseEvidenceKind =
   | "sample_materials"
   | "assessment"
   | "tutor_cv"
+  | "insurance"
+  | "awarding_body_cert"
   | "other";
 
 export type RepsCourseEvidenceRow = {
@@ -98,6 +100,7 @@ export type RepsCourseEvidenceRow = {
   course_id: string;
   provider_id: string;
   file_kind: RepsCourseEvidenceKind;
+  file_label: string | null;
   file_path: string;
   file_name: string;
   file_size_bytes: number | null;
@@ -512,12 +515,7 @@ export const deleteMyRegulatedPermission = removeMyRegulatedPermission;
 
 const DELIVERY_MODES = ["in_person", "online_live", "online_self_paced", "blended"] as const;
 
-const REQUIRED_EVIDENCE_KINDS = [
-  "specification",
-  "sample_materials",
-  "assessment",
-  "tutor_cv",
-] as const;
+const REQUIRED_EVIDENCE_KINDS = ["specification"] as const;
 
 const moduleSchema = z.object({
   title: z.string().min(2).max(200),
@@ -541,7 +539,7 @@ const submitRepsCourseInput = z.object({
   proposed_tutor_credentials: z.string().min(10).max(4000),
   proposed_extra_notes: z.string().max(4000).nullable().optional(),
   spec_modules: z.array(moduleSchema).min(1).max(60),
-  evidence_ids: z.array(z.string().uuid()).min(4).max(40),
+  evidence_ids: z.array(z.string().uuid()).min(1).max(40),
   endorsement_terms_version: z.string().min(1).max(20),
 
   endorsement_terms_accepted: z.literal(true, {
@@ -1027,11 +1025,14 @@ const EVIDENCE_KINDS = [
   "sample_materials",
   "assessment",
   "tutor_cv",
+  "insurance",
+  "awarding_body_cert",
   "other",
 ] as const;
 
 const evidenceUploadInput = z.object({
   file_kind: z.enum(EVIDENCE_KINDS),
+  file_label: z.string().trim().max(120).optional().nullable(),
   file_data_url: z.string().startsWith("data:").max(35_000_000),
   filename: z.string().min(1).max(200),
   mime_type: z.string().max(200).optional().nullable(),
@@ -1077,13 +1078,14 @@ export const uploadRepsCourseEvidence = createServerFn({ method: "POST" })
         course_id: data.course_id ?? null,
         provider_id: userId,
         file_kind: data.file_kind,
+        file_label: data.file_label?.trim() || null,
         file_path: path,
         file_name: data.filename.slice(0, 200),
         file_size_bytes: bytes.length,
         mime_type: data.mime_type ?? mime,
         uploaded_by: userId,
       } as never)
-      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .select("id, course_id, provider_id, file_kind, file_label, file_path, file_name, file_size_bytes, mime_type, created_at")
       .single();
     if (error) throw new Error(error.message);
 
@@ -1149,7 +1151,7 @@ export const listMyUnattachedEvidence = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: rows, error } = await supabase
       .from("reps_course_evidence")
-      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .select("id, course_id, provider_id, file_kind, file_label, file_path, file_name, file_size_bytes, mime_type, created_at")
       .eq("provider_id", userId)
       .is("course_id", null)
       .order("created_at", { ascending: true });
@@ -1177,7 +1179,7 @@ export const listRepsCourseEvidence = createServerFn({ method: "POST" })
     }
     const { data: rows, error } = await supabase
       .from("reps_course_evidence")
-      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .select("id, course_id, provider_id, file_kind, file_label, file_path, file_name, file_size_bytes, mime_type, created_at")
       .eq("course_id", data.course_id)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);

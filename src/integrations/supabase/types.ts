@@ -4680,6 +4680,7 @@ export type Database = {
           course_id: string | null
           created_at: string
           file_kind: string
+          file_label: string | null
           file_name: string
           file_path: string
           file_size_bytes: number | null
@@ -4692,6 +4693,7 @@ export type Database = {
           course_id?: string | null
           created_at?: string
           file_kind: string
+          file_label?: string | null
           file_name: string
           file_path: string
           file_size_bytes?: number | null
@@ -4704,6 +4706,7 @@ export type Database = {
           course_id?: string | null
           created_at?: string
           file_kind?: string
+          file_label?: string | null
           file_name?: string
           file_path?: string
           file_size_bytes?: number | null

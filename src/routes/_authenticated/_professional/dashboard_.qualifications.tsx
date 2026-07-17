@@ -305,7 +305,7 @@ function AddTypePickerDialog({
                 <span className="text-[14px] font-semibold text-white">REPS-endorsed course</span>
               </div>
               <p className="mt-1 text-[12.5px] text-white/60">
-                I've built my own course and want REPS to endorse it. You'll provide a syllabus, assessment criteria, and tutor CV.
+                I've built my own course and want REPS to endorse it. Upload a syllabus — everything else is optional.
               </p>
             </div>
           </label>
@@ -1028,44 +1028,28 @@ const DELIVERY_OPTIONS: Array<{ value: DeliveryMode; label: string; help: string
 
 type ModuleDraft = { title: string; summary: string; hours: string };
 
-type EvidenceSlotKind = Extract<
-  RepsCourseEvidenceKind,
-  "specification" | "sample_materials" | "assessment" | "tutor_cv"
->;
+type OptionalEvidenceKind = Exclude<RepsCourseEvidenceKind, "specification">;
 
-type EvidenceSlotSpec = {
-  kind: EvidenceSlotKind;
-  label: string;
-  help: string;
-  accept: string;
+const OPTIONAL_EVIDENCE_OPTIONS: { value: OptionalEvidenceKind; label: string }[] = [
+  { value: "sample_materials", label: "Sample learning materials" },
+  { value: "assessment", label: "Assessment plan / sample assessment" },
+  { value: "tutor_cv", label: "Lead tutor CV / bio" },
+  { value: "insurance", label: "Insurance certificate" },
+  { value: "awarding_body_cert", label: "Awarding-body certificate" },
+  { value: "other", label: "Other" },
+];
+
+const EVIDENCE_KIND_LABEL: Record<RepsCourseEvidenceKind, string> = {
+  specification: "Course specification / syllabus",
+  sample_materials: "Sample learning materials",
+  assessment: "Assessment plan / sample assessment",
+  tutor_cv: "Lead tutor CV / bio",
+  insurance: "Insurance certificate",
+  awarding_body_cert: "Awarding-body certificate",
+  other: "Other",
 };
 
-const EVIDENCE_SLOTS: EvidenceSlotSpec[] = [
-  {
-    kind: "specification",
-    label: "Course specification / syllabus",
-    help: "The full document a learner would receive — modules, hours, outcomes, assessment.",
-    accept: ".pdf,.doc,.docx",
-  },
-  {
-    kind: "sample_materials",
-    label: "Sample learning materials (1–2 modules)",
-    help: "Slides, workbook or a short video sample. Proves the teaching exists at the claimed level.",
-    accept: ".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.zip",
-  },
-  {
-    kind: "assessment",
-    label: "Assessment plan + sample assessment",
-    help: "How learners are judged competent, plus one worked example.",
-    accept: ".pdf,.doc,.docx",
-  },
-  {
-    kind: "tutor_cv",
-    label: "Lead tutor CV",
-    help: "The credentials of whoever teaches or signs off the course.",
-    accept: ".pdf,.doc,.docx",
-  },
-];
+const EVIDENCE_ACCEPT = ".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.zip,.jpg,.jpeg,.png";
 
 const MAX_EVIDENCE_BYTES = 25 * 1024 * 1024; // 25 MB per file
 
@@ -1095,15 +1079,15 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     { title: "", summary: "", hours: "" },
   ]);
 
-  const [evidenceByKind, setEvidenceByKind] = React.useState<
-    Record<EvidenceSlotKind, RepsCourseEvidenceRow[]>
-  >({
-    specification: [],
-    sample_materials: [],
-    assessment: [],
-    tutor_cv: [],
-  });
-  const [uploading, setUploading] = React.useState<EvidenceSlotKind | null>(null);
+  // Syllabus (required, single slot) and free-form list of optional extras
+  const [syllabus, setSyllabus] = React.useState<RepsCourseEvidenceRow[]>([]);
+  const [extras, setExtras] = React.useState<RepsCourseEvidenceRow[]>([]);
+  const [uploadingKind, setUploadingKind] = React.useState<RepsCourseEvidenceKind | null>(null);
+
+  // Inline "Add evidence" picker state
+  const [addOpen, setAddOpen] = React.useState(false);
+  const [addKind, setAddKind] = React.useState<OptionalEvidenceKind>("sample_materials");
+  const [addLabel, setAddLabel] = React.useState("");
 
   // Hydrate: if the provider closed a previous "Request REPS endorsement"
   // dialog without submitting, their uploads are still on disk with
@@ -1115,18 +1099,19 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
       try {
         const rows = await loadUnattached();
         if (cancelled || !rows || rows.length === 0) return;
-        setEvidenceByKind((prev) => {
-          const next = { ...prev };
-          const known = new Set(
-            EVIDENCE_SLOTS.flatMap((s) => next[s.kind].map((r) => r.id)),
-          );
-          for (const row of rows) {
-            const kind = row.file_kind as EvidenceSlotKind;
-            if (!next[kind] || known.has(row.id)) continue;
-            next[kind] = [...next[kind], row];
+        const knownSpec = new Set(syllabus.map((r) => r.id));
+        const knownExtras = new Set(extras.map((r) => r.id));
+        const nextSpec: RepsCourseEvidenceRow[] = [...syllabus];
+        const nextExtras: RepsCourseEvidenceRow[] = [...extras];
+        for (const row of rows) {
+          if (row.file_kind === "specification") {
+            if (!knownSpec.has(row.id)) nextSpec.push(row);
+          } else {
+            if (!knownExtras.has(row.id)) nextExtras.push(row);
           }
-          return next;
-        });
+        }
+        setSyllabus(nextSpec);
+        setExtras(nextExtras);
       } catch {
         // non-fatal — dialog still works for fresh uploads
       }
@@ -1147,7 +1132,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     (m) => m.title.trim().length >= 2 && m.summary.trim().length >= 2,
   );
 
-  const allSlotsFilled = EVIDENCE_SLOTS.every((s) => evidenceByKind[s.kind].length > 0);
+  const syllabusUploaded = syllabus.length > 0;
 
   const [termsAgreed, setTermsAgreed] = React.useState(false);
 
@@ -1160,7 +1145,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     howAssessed.trim().length >= 5 &&
     tutor.trim().length >= 10 &&
     validModules.length >= 1 &&
-    allSlotsFilled &&
+    syllabusUploaded &&
     termsAgreed &&
     !submitting;
 
@@ -1177,44 +1162,71 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     setTutor("");
     setExtra("");
     setModules([{ title: "", summary: "", hours: "" }]);
-    setEvidenceByKind({ specification: [], sample_materials: [], assessment: [], tutor_cv: [] });
+    setSyllabus([]);
+    setExtras([]);
+    setAddOpen(false);
+    setAddKind("sample_materials");
+    setAddLabel("");
     setTermsAgreed(false);
   };
 
-
-
-
-  const handleUpload = async (kind: EvidenceSlotKind, file: File) => {
+  const handleUploadSyllabus = async (file: File) => {
     if (file.size > MAX_EVIDENCE_BYTES) {
       toast.error(`${file.name} is over 25 MB — please compress or split.`);
       return;
     }
-    setUploading(kind);
+    setUploadingKind("specification");
     try {
       const dataUrl = await fileToDataUrl(file);
       const row = await uploadEvidence({
         data: {
-          file_kind: kind,
+          file_kind: "specification",
           file_data_url: dataUrl,
           filename: file.name,
           mime_type: file.type || null,
         },
       });
-      setEvidenceByKind((prev) => ({ ...prev, [kind]: [...prev[kind], row] }));
+      setSyllabus((prev) => [...prev, row]);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
-      setUploading(null);
+      setUploadingKind(null);
     }
   };
 
-  const handleRemoveEvidence = async (kind: EvidenceSlotKind, id: string) => {
+  const handleUploadExtra = async (kind: OptionalEvidenceKind, label: string, file: File) => {
+    if (file.size > MAX_EVIDENCE_BYTES) {
+      toast.error(`${file.name} is over 25 MB — please compress or split.`);
+      return;
+    }
+    setUploadingKind(kind);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const row = await uploadEvidence({
+        data: {
+          file_kind: kind,
+          file_label: kind === "other" ? label.trim() || null : null,
+          file_data_url: dataUrl,
+          filename: file.name,
+          mime_type: file.type || null,
+        },
+      });
+      setExtras((prev) => [...prev, row]);
+      setAddOpen(false);
+      setAddLabel("");
+      setAddKind("sample_materials");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploadingKind(null);
+    }
+  };
+
+  const handleRemoveEvidence = async (id: string, from: "spec" | "extra") => {
     try {
       await removeEvidence({ data: { id } });
-      setEvidenceByKind((prev) => ({
-        ...prev,
-        [kind]: prev[kind].filter((r) => r.id !== id),
-      }));
+      if (from === "spec") setSyllabus((prev) => prev.filter((r) => r.id !== id));
+      else setExtras((prev) => prev.filter((r) => r.id !== id));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Remove failed");
     }
@@ -1231,9 +1243,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const evidenceIds = EVIDENCE_SLOTS.flatMap((s) =>
-        evidenceByKind[s.kind].map((r) => r.id),
-      );
+      const evidenceIds = [...syllabus, ...extras].map((r) => r.id);
       await submit({
         data: {
           proposed_title: title.trim(),
@@ -1502,79 +1512,197 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             <div className="mb-1 flex items-center gap-1.5 text-[13px] font-semibold text-white">
               <Paperclip className="h-3.5 w-3.5" />
               Supporting evidence
-              <span className="ml-1 text-[11px] font-normal text-white/50">(all required)</span>
             </div>
             <p className="text-[11.5px] text-white/50">
-              Four documents help us verify the course is real, taught at the level you're claiming
-              and delivered by qualified people. Files are private to REPS admins.
+              A course outline or syllabus is required. Everything else is optional — add whatever
+              helps us verify the course. For in-person courses (Pilates, yoga, small-group), a
+              syllabus plus tutor bio is usually enough. Files are private to REPS admins.
             </p>
-            <div className="mt-3 space-y-3">
-              {EVIDENCE_SLOTS.map((slot) => {
-                const files = evidenceByKind[slot.kind];
-                const isUploadingThis = uploading === slot.kind;
-                return (
-                  <div key={slot.kind} className="rounded-[10px] border border-reps-border bg-white/[0.02] p-3">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-white">
-                          {slot.label}
-                          <span className="text-red-300">*</span>
-                        </div>
-                        <p className="mt-0.5 text-[11.5px] text-white/50">{slot.help}</p>
-                      </div>
-                      <label className="inline-flex cursor-pointer items-center gap-1 rounded-[8px] border border-reps-border bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-white/85 hover:text-white">
-                        {isUploadingThis ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Upload className="h-3.5 w-3.5" />
-                        )}
-                        {isUploadingThis ? "Uploading…" : files.length > 0 ? "Add another" : "Upload"}
-                        <input
-                          type="file"
-                          accept={slot.accept}
-                          className="hidden"
-                          disabled={isUploadingThis}
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            e.target.value = "";
-                            if (f) void handleUpload(slot.kind, f);
-                          }}
-                        />
-                      </label>
-                    </div>
-                    {files.length > 0 ? (
-                      <ul className="mt-2 space-y-1">
-                        {files.map((f) => (
-                          <li
-                            key={f.id}
-                            className="flex items-center justify-between gap-2 rounded-[8px] bg-white/[0.04] px-2.5 py-1.5 text-[11.5px] text-white/80"
-                          >
-                            <div className="flex min-w-0 items-center gap-1.5">
-                              <FileText className="h-3.5 w-3.5 shrink-0 text-white/50" />
-                              <span className="truncate">{f.file_name}</span>
-                              {f.file_size_bytes != null ? (
-                                <span className="shrink-0 text-white/40">
-                                  {(f.file_size_bytes / (1024 * 1024)).toFixed(1)} MB
-                                </span>
-                              ) : null}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveEvidence(slot.kind, f.id)}
-                              className="text-white/40 hover:text-red-300"
-                              aria-label={`Remove ${f.file_name}`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
+
+            {/* Required: syllabus */}
+            <div className="mt-3 rounded-[10px] border border-reps-border bg-white/[0.02] p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-white">
+                    Course outline / syllabus
+                    <span className="text-red-300">*</span>
                   </div>
-                );
-              })}
+                  <p className="mt-0.5 text-[11.5px] text-white/50">
+                    A single document — even 1–2 pages — covering what's taught, hours, who teaches
+                    it, and how competence is judged.
+                  </p>
+                </div>
+                <label className="inline-flex cursor-pointer items-center gap-1 rounded-[8px] border border-reps-border bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-white/85 hover:text-white">
+                  {uploadingKind === "specification" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Upload className="h-3.5 w-3.5" />
+                  )}
+                  {uploadingKind === "specification"
+                    ? "Uploading…"
+                    : syllabus.length > 0
+                      ? "Add another"
+                      : "Upload"}
+                  <input
+                    type="file"
+                    accept={EVIDENCE_ACCEPT}
+                    className="hidden"
+                    disabled={uploadingKind === "specification"}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (f) void handleUploadSyllabus(f);
+                    }}
+                  />
+                </label>
+              </div>
+              {syllabus.length > 0 ? (
+                <ul className="mt-2 space-y-1">
+                  {syllabus.map((f) => (
+                    <li
+                      key={f.id}
+                      className="flex items-center justify-between gap-2 rounded-[8px] bg-white/[0.04] px-2.5 py-1.5 text-[11.5px] text-white/80"
+                    >
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 shrink-0 text-white/50" />
+                        <span className="truncate">{f.file_name}</span>
+                        {f.file_size_bytes != null ? (
+                          <span className="shrink-0 text-white/40">
+                            {(f.file_size_bytes / (1024 * 1024)).toFixed(1)} MB
+                          </span>
+                        ) : null}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveEvidence(f.id, "spec")}
+                        className="text-white/40 hover:text-red-300"
+                        aria-label={`Remove ${f.file_name}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+
+            {/* Optional extras */}
+            <div className="mt-3 rounded-[10px] border border-reps-border bg-white/[0.02] p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-[12.5px] font-semibold text-white">
+                  Anything else <span className="font-normal text-white/50">(optional)</span>
+                </div>
+                {!addOpen ? (
+                  <button
+                    type="button"
+                    onClick={() => setAddOpen(true)}
+                    className="inline-flex items-center gap-1 rounded-[8px] border border-reps-border bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-white/85 hover:text-white"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add evidence
+                  </button>
+                ) : null}
+              </div>
+
+              {addOpen ? (
+                <div className="mt-2 space-y-2 rounded-[8px] border border-reps-border bg-white/[0.03] p-2.5">
+                  <Select
+                    value={addKind}
+                    onValueChange={(v) => setAddKind(v as OptionalEvidenceKind)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OPTIONAL_EVIDENCE_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {addKind === "other" ? (
+                    <Input
+                      value={addLabel}
+                      onChange={(e) => setAddLabel(e.target.value)}
+                      placeholder="Short label (e.g. Venue risk assessment)"
+                      maxLength={120}
+                    />
+                  ) : null}
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="inline-flex cursor-pointer items-center gap-1 rounded-[8px] border border-reps-border bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-white/85 hover:text-white">
+                      {uploadingKind === addKind ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Upload className="h-3.5 w-3.5" />
+                      )}
+                      {uploadingKind === addKind ? "Uploading…" : "Choose file"}
+                      <input
+                        type="file"
+                        accept={EVIDENCE_ACCEPT}
+                        className="hidden"
+                        disabled={uploadingKind !== null}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          e.target.value = "";
+                          if (f) void handleUploadExtra(addKind, addLabel, f);
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddOpen(false);
+                        setAddLabel("");
+                      }}
+                      className="text-[11.5px] text-white/50 hover:text-white/80"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {extras.length > 0 ? (
+                <ul className="mt-2 space-y-1">
+                  {extras.map((f) => {
+                    const kindLabel =
+                      f.file_kind === "other" && f.file_label
+                        ? f.file_label
+                        : EVIDENCE_KIND_LABEL[f.file_kind];
+                    return (
+                      <li
+                        key={f.id}
+                        className="flex items-center justify-between gap-2 rounded-[8px] bg-white/[0.04] px-2.5 py-1.5 text-[11.5px] text-white/80"
+                      >
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <FileText className="h-3.5 w-3.5 shrink-0 text-white/50" />
+                          <span className="shrink-0 rounded-[6px] bg-white/[0.06] px-1.5 py-0.5 text-[10.5px] font-medium text-white/70">
+                            {kindLabel}
+                          </span>
+                          <span className="truncate">{f.file_name}</span>
+                          {f.file_size_bytes != null ? (
+                            <span className="shrink-0 text-white/40">
+                              {(f.file_size_bytes / (1024 * 1024)).toFixed(1)} MB
+                            </span>
+                          ) : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveEvidence(f.id, "extra")}
+                          className="text-white/40 hover:text-red-300"
+                          aria-label={`Remove ${f.file_name}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
             </div>
           </div>
+
 
           {/* ── Terms acceptance ──────────────────────────────────────── */}
           <label className="flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
