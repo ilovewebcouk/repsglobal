@@ -73,6 +73,7 @@ import {
   removeMyRepsCourse,
   uploadRepsCourseEvidence,
   removeRepsCourseEvidence,
+  listMyUnattachedEvidence,
   checkEndorsementStatement,
   REPS_ENDORSEMENT_STATEMENT,
 } from "@/lib/qualifications/qualifications.functions";
@@ -1074,6 +1075,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   const submit = useServerFn(submitRepsCourse);
   const uploadEvidence = useServerFn(uploadRepsCourseEvidence);
   const removeEvidence = useServerFn(removeRepsCourseEvidence);
+  const loadUnattached = useServerFn(listMyUnattachedEvidence);
 
   const [title, setTitle] = React.useState("");
   const [proposedLevel, setProposedLevel] = React.useState<string>("");
@@ -1103,6 +1105,38 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     tutor_cv: [],
   });
   const [uploading, setUploading] = React.useState<EvidenceSlotKind | null>(null);
+
+  // Hydrate: if the provider closed a previous "Request REPS endorsement"
+  // dialog without submitting, their uploads are still on disk with
+  // course_id = null. Fetch them once on open so nothing is silently lost.
+  React.useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = await loadUnattached();
+        if (cancelled || !rows || rows.length === 0) return;
+        setEvidenceByKind((prev) => {
+          const next = { ...prev };
+          const known = new Set(
+            EVIDENCE_SLOTS.flatMap((s) => next[s.kind].map((r) => r.id)),
+          );
+          for (const row of rows) {
+            const kind = row.file_kind as EvidenceSlotKind;
+            if (!next[kind] || known.has(row.id)) continue;
+            next[kind] = [...next[kind], row];
+          }
+          return next;
+        });
+      } catch {
+        // non-fatal — dialog still works for fresh uploads
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Endorsement statement — provider must display verbatim on their course
   // page + agree to it. We fetch the URL server-side to confirm before submit.
