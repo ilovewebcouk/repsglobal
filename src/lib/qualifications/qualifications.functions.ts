@@ -91,6 +91,8 @@ export type RepsCourseEvidenceKind =
   | "sample_materials"
   | "assessment"
   | "tutor_cv"
+  | "insurance"
+  | "awarding_body_cert"
   | "other";
 
 export type RepsCourseEvidenceRow = {
@@ -98,6 +100,7 @@ export type RepsCourseEvidenceRow = {
   course_id: string;
   provider_id: string;
   file_kind: RepsCourseEvidenceKind;
+  file_label: string | null;
   file_path: string;
   file_name: string;
   file_size_bytes: number | null;
