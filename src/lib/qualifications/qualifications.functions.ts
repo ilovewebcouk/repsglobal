@@ -1132,6 +1132,11 @@ export const removeRepsCourseEvidence = createServerFn({ method: "POST" })
       .eq("provider_id", userId);
     if (error) throw new Error(error.message);
 
+    // Storage cleanup — best-effort but logged. DB row is already gone so a
+    // failure here becomes a dangling object; the orphan-evidence cron sweep
+    // reconciles those separately. We remove AFTER the DB delete so an
+    // interrupted request can't leave a live DB row pointing at a deleted
+    // file (that would surface as a broken download for admins).
     try {
       if (r.file_path.startsWith(`${userId}/`)) {
         await supabase.storage.from("course-accreditations").remove([r.file_path]);
@@ -1141,6 +1146,24 @@ export const removeRepsCourseEvidence = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+// List evidence rows the caller has uploaded but not yet attached to a course.
+// Used by AddCpdDialog to hydrate on open so evidence uploaded in a previous
+// session (dialog closed without submitting) is recoverable.
+export const listMyUnattachedEvidence = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: rows, error } = await supabase
+      .from("reps_course_evidence")
+      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .eq("provider_id", userId)
+      .is("course_id", null)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (rows ?? []) as unknown as RepsCourseEvidenceRow[];
+  });
+
 
 export const listRepsCourseEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
