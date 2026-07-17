@@ -665,7 +665,7 @@ export type RecipientHit = {
   email: string;
   name: string | null;
   kind: "professional" | "client" | "contact";
-  tier?: "verified" | "pro" | "studio" | null;
+  tier?: "verified" | "pro" | "studio" | "training_provider" | null;
   slug?: string | null;
 };
 
@@ -786,10 +786,10 @@ export const searchSupportRecipients = createServerFn({ method: "POST" })
       ((prosRes.data ?? []) as any[]).map((r) => [r.id, r.slug]),
     );
     const clientIds = new Set<string>(((clientsRes.data ?? []) as any[]).map((r) => r.id));
-    const tierById = new Map<string, "verified" | "pro" | "studio">(
+    const tierById = new Map<string, "verified" | "pro" | "studio" | "training_provider">(
       ((subsRes.data ?? []) as any[])
-        .filter((s) => ["verified", "pro", "studio"].includes(s.tier))
-        .map((s) => [s.user_id, s.tier as "verified" | "pro" | "studio"]),
+        .filter((s) => ["verified", "pro", "studio", "training_provider"].includes(s.tier))
+        .map((s) => [s.user_id, s.tier as "verified" | "pro" | "studio" | "training_provider"]),
     );
 
     const accountHits: RecipientHit[] = allUserIds

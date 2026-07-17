@@ -66,7 +66,7 @@ export type WebsiteDTO = {
   stripe_customer_since_year: number | null;
 
   // Subscription tier of the pro (so callers can gate Pro-only surfaces).
-  tier: "verified" | "pro" | "studio" | null;
+  tier: "verified" | "pro" | "studio" | "training_provider" | null;
   // Trust block (public-safe summary).
   trust: {
     isVerified: boolean;
@@ -703,8 +703,8 @@ export const getWebsiteBySlug = createServerFn({ method: "GET" })
       };
 
       const tier =
-        subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
-          ? (subRow.tier as "verified" | "pro" | "studio")
+        subRow && ["verified", "pro", "studio", "training_provider"].includes(subRow.tier as string)
+          ? (subRow.tier as "verified" | "pro" | "studio" | "training_provider")
           : null;
 
       payload = {
@@ -845,8 +845,8 @@ export const getMyWebsite = createServerFn({ method: "GET" })
 
 
     const tier =
-      subRow && ["verified", "pro", "studio"].includes(subRow.tier as string)
-        ? (subRow.tier as "verified" | "pro" | "studio")
+      subRow && ["verified", "pro", "studio", "training_provider"].includes(subRow.tier as string)
+        ? (subRow.tier as "verified" | "pro" | "studio" | "training_provider")
         : null;
 
     const resolvedSf = sf ?? (trust.isVerified

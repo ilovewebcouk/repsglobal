@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Inbox = "support" | "pros" | "partners" | "press" | "news";
-type Tier = "free" | "verified" | "pro" | "studio" | "former" | "newsletter" | "prospects";
+type Tier = "free" | "verified" | "pro" | "studio" | "training_provider" | "former" | "newsletter" | "prospects";
 
 // The "news" inbox is a send-only address for newsletter / campaign blasts.
 // Inbound mail to news@notify.repsuk.org is dropped by the Mailgun webhook
@@ -79,7 +79,7 @@ export const searchTrainers = createServerFn({ method: "POST" })
     z
       .object({
         q: z.string().max(120).optional(),
-        tier: z.enum(["free", "verified", "pro", "studio", "former", "newsletter", "prospects"]).optional(),
+        tier: z.enum(["free", "verified", "pro", "studio", "training_provider", "former", "newsletter", "prospects"]).optional(),
       })
       .parse(d ?? {}),
   )
@@ -272,7 +272,7 @@ async function resolveTierRecipients(
       .from("subscriptions")
       .select("user_id")
       .in("status", ["active", "trialing", "past_due"])
-      .in("tier", ["verified", "pro", "studio"]);
+      .in("tier", ["verified", "pro", "studio", "training_provider"]);
     const everyPaid = new Set<string>(
       (allPaidSubs.data ?? []).map((s: any) => s.user_id),
     );
@@ -286,7 +286,7 @@ async function resolveTierRecipients(
       .from("subscriptions")
       .select("user_id")
       .in("status", ["active", "trialing", "past_due"])
-      .in("tier", ["verified", "pro", "studio"]);
+      .in("tier", ["verified", "pro", "studio", "training_provider"]);
     const everyPaid = new Set<string>(
       (allPaidSubs.data ?? []).map((s: any) => s.user_id),
     );

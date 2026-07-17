@@ -257,7 +257,7 @@ function AdminProfessionalsPage() {
   const [dir, setDir] = React.useState<SortDir>("desc");
   const [filters, setFilters] = React.useState<AdminProFilters>(() => {
     if (searchParams.plan === "free") return { plans: ["free"] };
-    if (searchParams.plan === "paid") return { plans: ["verified", "pro", "studio"] };
+    if (searchParams.plan === "paid") return { plans: ["verified", "pro", "studio", "training_provider"] as any };
     return {};
   });
 
@@ -267,7 +267,7 @@ function AdminProfessionalsPage() {
       setFilters((f) => ({ ...f, plans: ["free"] }));
       setTab("all");
     } else if (searchParams.plan === "paid") {
-      setFilters((f) => ({ ...f, plans: ["verified", "pro", "studio"] }));
+      setFilters((f) => ({ ...f, plans: ["verified", "pro", "studio", "training_provider"] as any }));
       setTab("all");
     }
   }, [searchParams.plan]);
