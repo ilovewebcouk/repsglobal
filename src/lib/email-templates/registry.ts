@@ -196,6 +196,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
 
   // ── Learner ────────────────────────────────────────────────
   'learner-certificate-issued': learnerCertificateIssued,
+  'learner-review-request': learnerReviewRequest,
 
   // ── Client (trainer's client) ──────────────────────────────
   'client-invite': clientInvite,
