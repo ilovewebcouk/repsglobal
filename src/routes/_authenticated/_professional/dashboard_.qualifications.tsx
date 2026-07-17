@@ -74,8 +74,8 @@ import {
   uploadRepsCourseEvidence,
   removeRepsCourseEvidence,
   listMyUnattachedEvidence,
-  checkEndorsementStatement,
   REPS_ENDORSEMENT_STATEMENT,
+
 } from "@/lib/qualifications/qualifications.functions";
 import type {
   RepsCourseRow,
@@ -1138,21 +1138,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Endorsement statement — provider must display verbatim on their course
-  // page + agree to it. We fetch the URL server-side to confirm before submit.
-  const runStatementCheck = useServerFn(checkEndorsementStatement);
-  const [statementUrl, setStatementUrl] = React.useState("");
-  const [statementAgreed, setStatementAgreed] = React.useState(false);
-  const [statementChecking, setStatementChecking] = React.useState(false);
-  const [statementCheck, setStatementCheck] = React.useState<
-    | { ok: boolean; found: boolean; fetched_status: number | null; error: string | null; checked_at: string }
-    | null
-  >(null);
-  const statementUrlValid = /^https?:\/\/.+\..+/i.test(statementUrl.trim());
-  // Reset the check whenever the URL changes so the badge can't lie.
-  React.useEffect(() => {
-    setStatementCheck(null);
-  }, [statementUrl]);
+  // Endorsement statement — provider must display verbatim on their public
+  // course page. Agreeing to the Endorsement Terms includes agreeing to display it.
 
   const totalHoursNum = Number(totalHours);
   const hoursValid = totalHours.trim() !== "" && Number.isFinite(totalHoursNum) && totalHoursNum >= 0.5 && totalHoursNum <= 2000;
@@ -1162,8 +1149,6 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   );
 
   const allSlotsFilled = EVIDENCE_SLOTS.every((s) => evidenceByKind[s.kind].length > 0);
-
-  const statementReady = statementUrlValid && statementAgreed && statementCheck?.ok === true && statementCheck.found === true;
 
   const [termsAgreed, setTermsAgreed] = React.useState(false);
 
@@ -1177,7 +1162,6 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     tutor.trim().length >= 10 &&
     validModules.length >= 1 &&
     allSlotsFilled &&
-    statementReady &&
     termsAgreed &&
     !submitting;
 
@@ -1195,30 +1179,10 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     setExtra("");
     setModules([{ title: "", summary: "", hours: "" }]);
     setEvidenceByKind({ specification: [], sample_materials: [], assessment: [], tutor_cv: [] });
-    setStatementUrl("");
-    setStatementAgreed(false);
-    setStatementCheck(null);
+    setTermsAgreed(false);
   };
 
-  const handleCheckStatement = async () => {
-    if (!statementUrlValid) return;
-    setStatementChecking(true);
-    try {
-      const res = await runStatementCheck({ data: { url: statementUrl.trim() } });
-      setStatementCheck(res);
-      if (res.ok && res.found) {
-        toast.success("Endorsement statement found on your page.");
-      } else if (res.ok && !res.found) {
-        toast.error("We couldn't find the statement on that page. Paste it in verbatim and re-check.");
-      } else {
-        toast.error(res.error ?? "We couldn't fetch that page.");
-      }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Check failed");
-    } finally {
-      setStatementChecking(false);
-    }
-  };
+
 
 
   const handleUpload = async (kind: EvidenceSlotKind, file: File) => {
@@ -1290,10 +1254,9 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             hours: m.hours.trim() ? Number(m.hours) : null,
           })),
           evidence_ids: evidenceIds,
-          endorsement_statement_url: statementUrl.trim(),
-          endorsement_statement_agreed: true,
           endorsement_terms_version: ENDORSEMENT_TERMS_VERSION,
           endorsement_terms_accepted: true,
+
         },
       });
       toast.success("Submitted for REPS admin review.");
@@ -1640,70 +1603,12 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
               Copy statement
             </button>
 
-            <div className="mt-4 space-y-2">
-              <Label className="block text-[12px] font-semibold text-white/80">
-                URL of the page where you'll display it <span className="text-red-300">*</span>
-              </Label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Input
-                  value={statementUrl}
-                  onChange={(e) => setStatementUrl(e.target.value)}
-                  placeholder="https://your-site.com/courses/kettlebell-coach"
-                  className="flex-1"
-                  maxLength={500}
-                />
-                <Button
-                  type="button"
-                  onClick={handleCheckStatement}
-                  disabled={!statementUrlValid || statementChecking}
-                  variant="ghost"
-                  className="sm:shrink-0"
-                >
-                  {statementChecking ? (
-                    <>
-                      <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> Checking…
-                    </>
-                  ) : (
-                    "Check now"
-                  )}
-                </Button>
-              </div>
-              <FieldHelp>
-                Paste the statement onto that page first, then click Check. We fetch the page and
-                look for the statement.
-              </FieldHelp>
+            <p className="mt-3 text-[11.5px] text-white/55">
+              Admin verifies the statement is displayed on your public course page before
+              endorsement, and re-checks it periodically. Displaying it is part of the
+              Endorsement Terms below.
+            </p>
 
-              {statementCheck ? (
-                statementCheck.ok && statementCheck.found ? (
-                  <div className="flex items-start gap-2 rounded-[10px] border border-emerald-400/30 bg-emerald-500/10 p-2.5 text-[12px] text-emerald-100">
-                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" />
-                    <span>Statement found on that page. Admin will re-check during review.</span>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-2 rounded-[10px] border border-red-400/30 bg-red-500/10 p-2.5 text-[12px] text-red-100">
-                    <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-300" />
-                    <span>
-                      {statementCheck.ok
-                        ? "The statement isn't on that page. Paste it in verbatim and check again."
-                        : `Couldn't fetch: ${statementCheck.error ?? "unknown error"}`}
-                    </span>
-                  </div>
-                )
-              ) : null}
-            </div>
-
-            <label className="mt-4 flex cursor-pointer items-start gap-2 text-[12.5px] text-white/80">
-              <Checkbox
-                checked={statementAgreed}
-                onCheckedChange={(v) => setStatementAgreed(v === true)}
-                className="mt-0.5"
-              />
-              <span>
-                I agree to display the REPS endorsement statement, verbatim, on the page above for
-                as long as this course is endorsed by REPS. I understand admin verifies this
-                before and periodically after endorsement.
-              </span>
-            </label>
 
             <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
               <Checkbox
@@ -1720,8 +1625,14 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
                 >
                   REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
                 </Link>
-                . I understand that a breach — including printing the REPS badge on my own certificates, advertising unendorsed courses, or changing the trading name that REPS endorsed — results in permanent suspension from REPS and a permanent public notice on my profile.
+                , including the requirement to display the REPS endorsement statement above,
+                verbatim, on the public page for this course for as long as it is endorsed. I
+                understand that a breach — including printing the REPS badge on my own
+                certificates, advertising unendorsed courses, or changing the trading name that
+                REPS endorsed — results in permanent suspension from REPS and a permanent
+                public notice on my profile.
               </span>
+
             </label>
           </div>
         </div>

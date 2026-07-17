@@ -542,15 +542,8 @@ const submitRepsCourseInput = z.object({
   proposed_extra_notes: z.string().max(4000).nullable().optional(),
   spec_modules: z.array(moduleSchema).min(1).max(60),
   evidence_ids: z.array(z.string().uuid()).min(4).max(40),
-  endorsement_statement_url: z
-    .string()
-    .trim()
-    .url("Enter a full URL including https://")
-    .max(500),
-  endorsement_statement_agreed: z.literal(true, {
-    message: "You must agree to display the REPS endorsement statement.",
-  }),
   endorsement_terms_version: z.string().min(1).max(20),
+
   endorsement_terms_accepted: z.literal(true, {
     message: "You must accept the REPS Endorsement Terms to submit.",
   }),
@@ -613,8 +606,8 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
         proposed_tutor_credentials: data.proposed_tutor_credentials.trim(),
         proposed_extra_notes: data.proposed_extra_notes?.trim() || null,
         spec_modules: data.spec_modules as never,
-        endorsement_statement_url: data.endorsement_statement_url.trim(),
         endorsement_statement_agreed: true,
+
         endorsement_terms_version: data.endorsement_terms_version,
         endorsement_terms_accepted_at: new Date().toISOString(),
       } as never)
