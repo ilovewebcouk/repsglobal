@@ -11,7 +11,7 @@ import { getStripeEnvironment } from "@/lib/billing/stripe-client";
 type Search = { session_id?: string };
 
 const LIVE_STATUSES = ["active", "trialing", "past_due", "unpaid"];
-const PAID_TIERS = ["verified", "pro", "studio"];
+const PAID_TIERS = ["verified", "pro", "studio", "training_provider"];
 
 export const Route = createFileRoute("/_authenticated/_professional/dashboard/syncing")({
   validateSearch: (s: Record<string, unknown>): Search => ({

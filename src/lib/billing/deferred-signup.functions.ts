@@ -113,7 +113,7 @@ export const startDeferredCheckout = createServerFn({ method: "POST" })
           tier === "verified"
             ? "You're joining the REPs Core register — qualified, insured, and publicly listed worldwide."
             : tier === "training_provider"
-              ? "You're joining REPs LMS — independent course review, public endorsement, verified learner reviews."
+              ? "You're joining the REPs Training Provider Membership — independent course review, public endorsement, verified learner reviews."
               : "You're starting REPs Pro — every feature in your tier is included, no paid add-ons.";
 
         const cancelUrl =

@@ -61,6 +61,25 @@ export async function ensureUserFromPendingSignup(
 
   await markConsumed(pendingId);
   await backfillCustomer(r.stripe_customer_id, userId, environment);
+
+  // Training-provider signups: flip account_type synchronously so the
+  // dashboard router / provider-only views don't race the Stripe webhook.
+  // handle_new_user() always inserts professionals(id) with the column
+  // default 'individual' — we need to overwrite that immediately.
+  if (r.tier === "training_provider") {
+    const { error: updErr } = await supabaseAdmin
+      .from("professionals")
+      .update({ account_type: "training_provider" as never } as never)
+      .eq("id", userId);
+    if (updErr) {
+      // Not fatal — the webhook will retry the same update — but log clearly
+      // so ops can spot a stuck sign-up before the user complains.
+      console.error(
+        `[deferred-signup] failed to set account_type=training_provider for ${userId}: ${updErr.message}`,
+      );
+    }
+  }
+
   return userId;
 }
 
