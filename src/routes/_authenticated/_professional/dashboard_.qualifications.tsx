@@ -1075,6 +1075,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   const submit = useServerFn(submitRepsCourse);
   const uploadEvidence = useServerFn(uploadRepsCourseEvidence);
   const removeEvidence = useServerFn(removeRepsCourseEvidence);
+  const loadUnattached = useServerFn(listMyUnattachedEvidence);
 
   const [title, setTitle] = React.useState("");
   const [proposedLevel, setProposedLevel] = React.useState<string>("");
