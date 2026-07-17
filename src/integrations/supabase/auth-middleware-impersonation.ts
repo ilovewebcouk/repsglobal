@@ -85,10 +85,9 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
     }
 
     // Session is still open in the DB but past its deadline.
-    // Never silently fall back to real-admin identity here: any server-fn
-    // opting into this middleware is a member-facing action reached from an
-    // impersonated dashboard URL. Close the stale row and throw a tagged
-    // error so the client can evict the admin and refetch status.
+    // Close the stale row and fall through as the real admin. Throwing here
+    // blanks the app for admins who navigate away from an impersonated
+    // dashboard (e.g. to /pricing) before the client status query evicts.
     if (new Date(session.ends_at).getTime() < Date.now()) {
       try {
         await supabaseAdmin
@@ -97,11 +96,17 @@ export const requireSupabaseAuthWithImpersonation = createMiddleware({ type: 'fu
           .eq('id', session.id)
           .is('ended_at', null);
       } catch {
-        /* best-effort — the client-side eviction is what matters */
+        /* best-effort */
       }
-      throw new Error(
-        'impersonation_expired: Impersonation session expired — reopen it from the Members page.',
-      );
+      return next({
+        context: {
+          supabase: userSupabase,
+          userId: realUserId,
+          realUserId,
+          isImpersonating: false as boolean,
+          claims: data.claims,
+        },
+      });
     }
 
     return next({
