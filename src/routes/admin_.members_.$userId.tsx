@@ -110,8 +110,20 @@ function fmtMoney(pence: number | null | undefined, currency: string | null | un
 
 /* ───────────────────────── Page ───────────────────────── */
 
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
 function MemberPage() {
   const { userId } = Route.useParams();
+  if (!UUID_RE.test(userId)) {
+    return (
+      <DashboardShell role="admin" active="Members" title="Member not found" subtitle="That URL isn't a valid member id.">
+        <div className="p-6 text-sm text-white/60">
+          <p>The URL <span className="font-mono text-white/80">/admin/members/{userId}</span> isn't a valid member id.</p>
+          <p className="mt-2">Open a member from the <a href="/admin/members" className="text-reps-orange underline">Members list</a>.</p>
+        </div>
+      </DashboardShell>
+    );
+  }
   const getSnap = useServerFn(getMember360);
   const getTimeline = useServerFn(getMemberTimeline);
   const getSessions = useServerFn(getMemberSessions);
