@@ -1079,15 +1079,15 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     { title: "", summary: "", hours: "" },
   ]);
 
-  const [evidenceByKind, setEvidenceByKind] = React.useState<
-    Record<EvidenceSlotKind, RepsCourseEvidenceRow[]>
-  >({
-    specification: [],
-    sample_materials: [],
-    assessment: [],
-    tutor_cv: [],
-  });
-  const [uploading, setUploading] = React.useState<EvidenceSlotKind | null>(null);
+  // Syllabus (required, single slot) and free-form list of optional extras
+  const [syllabus, setSyllabus] = React.useState<RepsCourseEvidenceRow[]>([]);
+  const [extras, setExtras] = React.useState<RepsCourseEvidenceRow[]>([]);
+  const [uploadingKind, setUploadingKind] = React.useState<RepsCourseEvidenceKind | null>(null);
+
+  // Inline "Add evidence" picker state
+  const [addOpen, setAddOpen] = React.useState(false);
+  const [addKind, setAddKind] = React.useState<OptionalEvidenceKind>("sample_materials");
+  const [addLabel, setAddLabel] = React.useState("");
 
   // Hydrate: if the provider closed a previous "Request REPS endorsement"
   // dialog without submitting, their uploads are still on disk with
@@ -1099,18 +1099,19 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
       try {
         const rows = await loadUnattached();
         if (cancelled || !rows || rows.length === 0) return;
-        setEvidenceByKind((prev) => {
-          const next = { ...prev };
-          const known = new Set(
-            EVIDENCE_SLOTS.flatMap((s) => next[s.kind].map((r) => r.id)),
-          );
-          for (const row of rows) {
-            const kind = row.file_kind as EvidenceSlotKind;
-            if (!next[kind] || known.has(row.id)) continue;
-            next[kind] = [...next[kind], row];
+        const knownSpec = new Set(syllabus.map((r) => r.id));
+        const knownExtras = new Set(extras.map((r) => r.id));
+        const nextSpec: RepsCourseEvidenceRow[] = [...syllabus];
+        const nextExtras: RepsCourseEvidenceRow[] = [...extras];
+        for (const row of rows) {
+          if (row.file_kind === "specification") {
+            if (!knownSpec.has(row.id)) nextSpec.push(row);
+          } else {
+            if (!knownExtras.has(row.id)) nextExtras.push(row);
           }
-          return next;
-        });
+        }
+        setSyllabus(nextSpec);
+        setExtras(nextExtras);
       } catch {
         // non-fatal — dialog still works for fresh uploads
       }
@@ -1131,7 +1132,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     (m) => m.title.trim().length >= 2 && m.summary.trim().length >= 2,
   );
 
-  const allSlotsFilled = EVIDENCE_SLOTS.every((s) => evidenceByKind[s.kind].length > 0);
+  const syllabusUploaded = syllabus.length > 0;
 
   const [termsAgreed, setTermsAgreed] = React.useState(false);
 
@@ -1144,7 +1145,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     howAssessed.trim().length >= 5 &&
     tutor.trim().length >= 10 &&
     validModules.length >= 1 &&
-    allSlotsFilled &&
+    syllabusUploaded &&
     termsAgreed &&
     !submitting;
 
@@ -1161,44 +1162,71 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     setTutor("");
     setExtra("");
     setModules([{ title: "", summary: "", hours: "" }]);
-    setEvidenceByKind({ specification: [], sample_materials: [], assessment: [], tutor_cv: [] });
+    setSyllabus([]);
+    setExtras([]);
+    setAddOpen(false);
+    setAddKind("sample_materials");
+    setAddLabel("");
     setTermsAgreed(false);
   };
 
-
-
-
-  const handleUpload = async (kind: EvidenceSlotKind, file: File) => {
+  const handleUploadSyllabus = async (file: File) => {
     if (file.size > MAX_EVIDENCE_BYTES) {
       toast.error(`${file.name} is over 25 MB — please compress or split.`);
       return;
     }
-    setUploading(kind);
+    setUploadingKind("specification");
     try {
       const dataUrl = await fileToDataUrl(file);
       const row = await uploadEvidence({
         data: {
-          file_kind: kind,
+          file_kind: "specification",
           file_data_url: dataUrl,
           filename: file.name,
           mime_type: file.type || null,
         },
       });
-      setEvidenceByKind((prev) => ({ ...prev, [kind]: [...prev[kind], row] }));
+      setSyllabus((prev) => [...prev, row]);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
-      setUploading(null);
+      setUploadingKind(null);
     }
   };
 
-  const handleRemoveEvidence = async (kind: EvidenceSlotKind, id: string) => {
+  const handleUploadExtra = async (kind: OptionalEvidenceKind, label: string, file: File) => {
+    if (file.size > MAX_EVIDENCE_BYTES) {
+      toast.error(`${file.name} is over 25 MB — please compress or split.`);
+      return;
+    }
+    setUploadingKind(kind);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const row = await uploadEvidence({
+        data: {
+          file_kind: kind,
+          file_label: kind === "other" ? label.trim() || null : null,
+          file_data_url: dataUrl,
+          filename: file.name,
+          mime_type: file.type || null,
+        },
+      });
+      setExtras((prev) => [...prev, row]);
+      setAddOpen(false);
+      setAddLabel("");
+      setAddKind("sample_materials");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploadingKind(null);
+    }
+  };
+
+  const handleRemoveEvidence = async (id: string, from: "spec" | "extra") => {
     try {
       await removeEvidence({ data: { id } });
-      setEvidenceByKind((prev) => ({
-        ...prev,
-        [kind]: prev[kind].filter((r) => r.id !== id),
-      }));
+      if (from === "spec") setSyllabus((prev) => prev.filter((r) => r.id !== id));
+      else setExtras((prev) => prev.filter((r) => r.id !== id));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Remove failed");
     }
@@ -1215,9 +1243,7 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const evidenceIds = EVIDENCE_SLOTS.flatMap((s) =>
-        evidenceByKind[s.kind].map((r) => r.id),
-      );
+      const evidenceIds = [...syllabus, ...extras].map((r) => r.id);
       await submit({
         data: {
           proposed_title: title.trim(),
