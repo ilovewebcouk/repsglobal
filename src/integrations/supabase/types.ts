@@ -1379,39 +1379,6 @@ export type Database = {
           },
         ]
       }
-      course_accreditation_files: {
-        Row: {
-          course_id: string
-          created_at: string
-          file_kind: string
-          file_name: string
-          file_path: string
-          id: string
-          updated_at: string
-          uploaded_by: string | null
-        }
-        Insert: {
-          course_id: string
-          created_at?: string
-          file_kind?: string
-          file_name: string
-          file_path: string
-          id?: string
-          updated_at?: string
-          uploaded_by?: string | null
-        }
-        Update: {
-          course_id?: string
-          created_at?: string
-          file_kind?: string
-          file_name?: string
-          file_path?: string
-          id?: string
-          updated_at?: string
-          uploaded_by?: string | null
-        }
-        Relationships: []
-      }
       credit_transactions: {
         Row: {
           action: string
