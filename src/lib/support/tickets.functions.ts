@@ -345,7 +345,7 @@ export const replyToTicket = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const agentName = profile?.full_name
-      ? `${(profile.full_name as string).split("")[0]} at REPS`
+      ? `${(profile.full_name as string).split(" ")[0]} at REPS`
       : "REPS Support";
 
     // Render template (server-only imports inside handler so the email
@@ -587,7 +587,7 @@ export const createOutboundTicket = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
     const agentName = profile?.full_name
-      ? `${(profile.full_name as string).split("")[0]} at REPS`
+      ? `${(profile.full_name as string).split(" ")[0]} at REPS`
       : "REPS Support";
 
     const [{ default: React }, { render }, { TEMPLATES }] = await Promise.all([

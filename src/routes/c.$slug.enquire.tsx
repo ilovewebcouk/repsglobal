@@ -279,7 +279,7 @@ function EnquirePage() {
       void import("@/hooks/usePublicAnalyticsBeacon").then(({ capturePublic }) => {
         void capturePublic("enquiry_submit", { slug });
       });
-      toast.success(`Enquiry sent to ${pro.name.split("")[0]} — they'll reply by email.`);
+      toast.success(`Enquiry sent to ${pro.name.split(" ")[0]} — they'll reply by email.`);
       router.navigate({ to: "/c/$slug", params: { slug } });
     },
     onError: (err: unknown) => {
@@ -338,12 +338,12 @@ function EnquirePage() {
               Enquire about coaching with {pro.name}
             </h1>
             <p className="mt-3 max-w-[620px] text-[15px] leading-relaxed text-reps-muted-light">
-              Tell {pro.name.split("")[0]} a bit about your goals, availability and budget — they'll reply privately with a clear quote and next steps.
+              Tell {pro.name.split(" ")[0]} a bit about your goals, availability and budget — they'll reply privately with a clear quote and next steps.
             </p>
           </div>
           <div className="flex items-center gap-2 text-[12px] text-reps-muted-light lg:justify-end">
             <Lock className="h-3.5 w-3.5 text-reps-green" />
-            Private to {pro.name.split("")[0]} · You won't be added to any mailing lists
+            Private to {pro.name.split(" ")[0]} · You won't be added to any mailing lists
           </div>
         </div>
       </section>
@@ -451,7 +451,7 @@ function EnquirePage() {
                 required
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={`Hi ${pro.name.split("")[0]} — I'm hoping to build strength after a long break from the gym. I can train two evenings a week and I'm based in central ${pro.city}. Would love to hear about your strength block.`}
+                placeholder={`Hi ${pro.name.split(" ")[0]} — I'm hoping to build strength after a long break from the gym. I can train two evenings a week and I'm based in central ${pro.city}. Would love to hear about your strength block.`}
                 className="w-full rounded-[12px] border-reps-stone bg-reps-ivory px-4 py-3 text-[14px] leading-relaxed text-reps-charcoal placeholder:text-reps-muted-light focus-visible:border-reps-orange focus-visible:ring-0"
               />
 
@@ -501,7 +501,7 @@ function EnquirePage() {
                 className="h-11 rounded-[10px] bg-reps-orange px-7 text-[14px] font-semibold text-white shadow-none hover:bg-reps-orange-dark"
               >
                 <Send data-icon="inline-start" />
-                {mutation.isPending ? "Sending…" : `Send enquiry to ${pro.name.split("")[0]}`}
+                {mutation.isPending ? "Sending…" : `Send enquiry to ${pro.name.split(" ")[0]}`}
                 <ChevronRight data-icon="inline-end" />
               </Button>
             </div>

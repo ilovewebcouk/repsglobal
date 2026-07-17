@@ -438,7 +438,7 @@ async function loadFacts(userId: string) {
       .eq("is_published", true)
       .limit(8),
   ]);
-  const firstName = (prof?.full_name ?? "").split("")[0] ?? "";
+  const firstName = (prof?.full_name ?? "").split(" ")[0] ?? "";
   const modes: string[] = [];
   if (pro?.in_person_available) modes.push("in-person");
   if (pro?.online_available) modes.push("online");

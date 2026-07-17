@@ -70,7 +70,7 @@ type Facts = z.infer<typeof FactsSchema>;
 
 function factsBlock(f: Facts): string {
   const lines: string[] = [];
-  if (f.full_name) lines.push(`- First name: ${f.full_name.split("")[0]}`);
+  if (f.full_name) lines.push(`- First name: ${f.full_name.split(" ")[0]}`);
   if (f.primary_profession) lines.push(`- Profession: ${f.primary_profession}`);
   if (f.specialisms.length) lines.push(`- Specialisms: ${f.specialisms.join(", ")}`);
   if (f.city) lines.push(`- City: ${f.city}`);
