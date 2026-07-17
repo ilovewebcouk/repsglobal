@@ -4710,7 +4710,7 @@ export type Database = {
       }
       reps_course_evidence: {
         Row: {
-          course_id: string
+          course_id: string | null
           created_at: string
           file_kind: string
           file_name: string
@@ -4722,7 +4722,7 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
-          course_id: string
+          course_id?: string | null
           created_at?: string
           file_kind: string
           file_name: string
@@ -4734,7 +4734,7 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
-          course_id?: string
+          course_id?: string | null
           created_at?: string
           file_kind?: string
           file_name?: string
