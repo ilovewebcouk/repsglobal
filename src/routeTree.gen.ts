@@ -111,7 +111,6 @@ import { Route as AdminCertificatesRouteImport } from './routes/admin_.certifica
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
 import { Route as AdminBillingRouteImport } from './routes/admin_.billing'
 import { Route as AdminActivityRouteImport } from './routes/admin_.activity'
-import { Route as ActivateTokenRouteImport } from './routes/activate.$token'
 import { Route as AccountSuspendedRouteImport } from './routes/account.suspended'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -705,11 +704,6 @@ const AdminActivityRoute = AdminActivityRouteImport.update({
   path: '/admin/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ActivateTokenRoute = ActivateTokenRouteImport.update({
-  id: '/activate/$token',
-  path: '/activate/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AccountSuspendedRoute = AccountSuspendedRouteImport.update({
   id: '/account/suspended',
   path: '/account/suspended',
@@ -1210,7 +1204,6 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/suspended': typeof AccountSuspendedRoute
-  '/activate/$token': typeof ActivateTokenRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -1391,7 +1384,6 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/suspended': typeof AccountSuspendedRoute
-  '/activate/$token': typeof ActivateTokenRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/billing': typeof AdminBillingRouteWithChildren
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -1572,7 +1564,6 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/suspended': typeof AccountSuspendedRoute
-  '/activate/$token': typeof ActivateTokenRoute
   '/admin_/activity': typeof AdminActivityRoute
   '/admin_/billing': typeof AdminBillingRouteWithChildren
   '/admin_/campaigns': typeof AdminCampaignsRoute
@@ -1758,7 +1749,6 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/account/suspended'
-    | '/activate/$token'
     | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
@@ -1939,7 +1929,6 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/account/suspended'
-    | '/activate/$token'
     | '/admin/activity'
     | '/admin/billing'
     | '/admin/campaigns'
@@ -2119,7 +2108,6 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/account/suspended'
-    | '/activate/$token'
     | '/admin_/activity'
     | '/admin_/billing'
     | '/admin_/campaigns'
@@ -2305,7 +2293,6 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AccountSuspendedRoute: typeof AccountSuspendedRoute
-  ActivateTokenRoute: typeof ActivateTokenRoute
   AdminActivityRoute: typeof AdminActivityRoute
   AdminBillingRoute: typeof AdminBillingRouteWithChildren
   AdminCampaignsRoute: typeof AdminCampaignsRoute
@@ -3114,13 +3101,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/activity'
       fullPath: '/admin/activity'
       preLoaderRoute: typeof AdminActivityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/activate/$token': {
-      id: '/activate/$token'
-      path: '/activate/$token'
-      fullPath: '/activate/$token'
-      preLoaderRoute: typeof ActivateTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/suspended': {
@@ -4022,7 +4002,6 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AccountSuspendedRoute: AccountSuspendedRoute,
-  ActivateTokenRoute: ActivateTokenRoute,
   AdminActivityRoute: AdminActivityRoute,
   AdminBillingRoute: AdminBillingRouteWithChildren,
   AdminCampaignsRoute: AdminCampaignsRoute,
