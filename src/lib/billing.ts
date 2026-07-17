@@ -207,7 +207,7 @@ export interface OrgTierConfig {
 export const ORG_TIERS: Record<OrgTierKey, OrgTierConfig> = {
   training_provider: {
     key: "training_provider",
-    label: "REPs LMS",
+    label: "REPs Training Provider Membership",
     priceLabel: "£479",
     intervalLabel: "per year",
     stripePriceLookupKey: "training_provider_annual",
