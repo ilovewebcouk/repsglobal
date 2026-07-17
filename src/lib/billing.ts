@@ -218,6 +218,30 @@ export const ORG_TIERS: Record<OrgTierKey, OrgTierConfig> = {
   },
 };
 
+/* ------------------------------------------------------------------ */
+/* Canonical tier labels (single source of truth for customer copy)    */
+/* ------------------------------------------------------------------ */
+
+/** Full customer-facing label. Prefer this over ad-hoc ternaries. */
+export function tierLabelLong(tier: SubscriptionTierKey | string | null | undefined): string | null {
+  if (!tier) return null;
+  if (tier === "verified") return "REPs Core";
+  if (tier === "pro") return "REPs Pro";
+  if (tier === "studio") return "REPs Studio";
+  if (tier === "training_provider") return "REPs Training Provider Membership";
+  return null;
+}
+
+/** Short label for cramped admin badges / chips. */
+export function tierLabelShort(tier: SubscriptionTierKey | string | null | undefined): string | null {
+  if (!tier) return null;
+  if (tier === "verified") return "Core";
+  if (tier === "pro") return "Pro";
+  if (tier === "studio") return "Studio";
+  if (tier === "training_provider") return "Training Provider";
+  return null;
+}
+
 /** Per-learner certificate print/PDF price (add-on to the annual membership). */
 export const CERTIFICATE_UNIT_PRICE_PENCE = 1500;
 export const CERTIFICATE_UNIT_PRICE_LABEL = "£15";
