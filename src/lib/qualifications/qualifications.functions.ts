@@ -1025,11 +1025,14 @@ const EVIDENCE_KINDS = [
   "sample_materials",
   "assessment",
   "tutor_cv",
+  "insurance",
+  "awarding_body_cert",
   "other",
 ] as const;
 
 const evidenceUploadInput = z.object({
   file_kind: z.enum(EVIDENCE_KINDS),
+  file_label: z.string().trim().max(120).optional().nullable(),
   file_data_url: z.string().startsWith("data:").max(35_000_000),
   filename: z.string().min(1).max(200),
   mime_type: z.string().max(200).optional().nullable(),
