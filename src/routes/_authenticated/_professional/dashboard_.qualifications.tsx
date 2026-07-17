@@ -17,7 +17,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   AlertTriangle,
-  BadgeCheck,
+  
   CheckCircle2,
   Clock,
   FileText,
@@ -74,7 +74,6 @@ import {
   uploadRepsCourseEvidence,
   removeRepsCourseEvidence,
   listMyUnattachedEvidence,
-  REPS_ENDORSEMENT_STATEMENT,
 
 } from "@/lib/qualifications/qualifications.functions";
 import type {
@@ -1577,64 +1576,25 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
             </div>
           </div>
 
-          {/* ── Endorsement statement ─────────────────────────────────── */}
-          <div className="rounded-[12px] border border-emerald-500/25 bg-emerald-500/[0.06] p-4">
-            <div className="mb-1 flex items-center gap-1.5 text-[13px] font-semibold text-white">
-              <BadgeCheck className="h-3.5 w-3.5 text-emerald-300" />
-              REPS endorsement statement
-              <span className="ml-1 text-[11px] font-normal text-white/50">(required)</span>
-            </div>
-            <p className="text-[11.5px] text-white/60">
-              If we endorse this course, you must display the statement below on the public page
-              that lists it. It makes clear to learners that REPS endorsement is a quality mark,
-              not an Ofqual-regulated qualification.
-            </p>
-            <blockquote className="mt-3 rounded-[10px] border border-white/10 bg-black/25 p-3 text-[12px] leading-relaxed text-white/85 italic">
-              {REPS_ENDORSEMENT_STATEMENT}
-            </blockquote>
-            <button
-              type="button"
-              onClick={() => {
-                void navigator.clipboard.writeText(REPS_ENDORSEMENT_STATEMENT);
-                toast.success("Statement copied to clipboard.");
-              }}
-              className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-emerald-200 hover:text-emerald-100"
-            >
-              Copy statement
-            </button>
-
-            <p className="mt-3 text-[11.5px] text-white/55">
-              Admin verifies the statement is displayed on your public course page before
-              endorsement, and re-checks it periodically. Displaying it is part of the
-              Endorsement Terms below.
-            </p>
-
-
-            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
-              <Checkbox
-                checked={termsAgreed}
-                onCheckedChange={(v) => setTermsAgreed(v === true)}
-                className="mt-0.5"
-              />
-              <span>
-                I have read and accept the{" "}
-                <Link
-                  to="/legal/endorsement-terms"
-                  target="_blank"
-                  className="font-semibold text-reps-orange underline-offset-4 hover:underline"
-                >
-                  REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
-                </Link>
-                , including the requirement to display the REPS endorsement statement above,
-                verbatim, on the public page for this course for as long as it is endorsed. I
-                understand that a breach — including printing the REPS badge on my own
-                certificates, advertising unendorsed courses, or changing the trading name that
-                REPS endorsed — results in permanent suspension from REPS and a permanent
-                public notice on my profile.
-              </span>
-
-            </label>
-          </div>
+          {/* ── Terms acceptance ──────────────────────────────────────── */}
+          <label className="flex cursor-pointer items-start gap-2 rounded-[10px] border border-reps-border bg-white/[0.02] p-3 text-[12.5px] text-white/80">
+            <Checkbox
+              checked={termsAgreed}
+              onCheckedChange={(v) => setTermsAgreed(v === true)}
+              className="mt-0.5"
+            />
+            <span>
+              I have read and accept the{" "}
+              <Link
+                to="/legal/endorsement-terms"
+                target="_blank"
+                className="font-semibold text-reps-orange underline-offset-4 hover:underline"
+              >
+                REPS Endorsement Terms ({ENDORSEMENT_TERMS_VERSION})
+              </Link>
+              .
+            </span>
+          </label>
         </div>
 
         <DialogFooter>
