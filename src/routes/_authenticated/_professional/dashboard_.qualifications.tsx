@@ -1138,21 +1138,8 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Endorsement statement — provider must display verbatim on their course
-  // page + agree to it. We fetch the URL server-side to confirm before submit.
-  const runStatementCheck = useServerFn(checkEndorsementStatement);
-  const [statementUrl, setStatementUrl] = React.useState("");
-  const [statementAgreed, setStatementAgreed] = React.useState(false);
-  const [statementChecking, setStatementChecking] = React.useState(false);
-  const [statementCheck, setStatementCheck] = React.useState<
-    | { ok: boolean; found: boolean; fetched_status: number | null; error: string | null; checked_at: string }
-    | null
-  >(null);
-  const statementUrlValid = /^https?:\/\/.+\..+/i.test(statementUrl.trim());
-  // Reset the check whenever the URL changes so the badge can't lie.
-  React.useEffect(() => {
-    setStatementCheck(null);
-  }, [statementUrl]);
+  // Endorsement statement — provider must display verbatim on their public
+  // course page. Agreeing to the Endorsement Terms includes agreeing to display it.
 
   const totalHoursNum = Number(totalHours);
   const hoursValid = totalHours.trim() !== "" && Number.isFinite(totalHoursNum) && totalHoursNum >= 0.5 && totalHoursNum <= 2000;
@@ -1162,8 +1149,6 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
   );
 
   const allSlotsFilled = EVIDENCE_SLOTS.every((s) => evidenceByKind[s.kind].length > 0);
-
-  const statementReady = statementUrlValid && statementAgreed && statementCheck?.ok === true && statementCheck.found === true;
 
   const [termsAgreed, setTermsAgreed] = React.useState(false);
 
@@ -1177,7 +1162,6 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     tutor.trim().length >= 10 &&
     validModules.length >= 1 &&
     allSlotsFilled &&
-    statementReady &&
     termsAgreed &&
     !submitting;
 
@@ -1195,10 +1179,9 @@ function AddCpdDialog({ open, onClose }: { open: boolean; onClose: () => void })
     setExtra("");
     setModules([{ title: "", summary: "", hours: "" }]);
     setEvidenceByKind({ specification: [], sample_materials: [], assessment: [], tutor_cv: [] });
-    setStatementUrl("");
-    setStatementAgreed(false);
-    setStatementCheck(null);
+    setTermsAgreed(false);
   };
+
 
   const handleCheckStatement = async () => {
     if (!statementUrlValid) return;
