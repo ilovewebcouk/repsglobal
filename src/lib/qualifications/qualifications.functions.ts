@@ -1078,13 +1078,14 @@ export const uploadRepsCourseEvidence = createServerFn({ method: "POST" })
         course_id: data.course_id ?? null,
         provider_id: userId,
         file_kind: data.file_kind,
+        file_label: data.file_label?.trim() || null,
         file_path: path,
         file_name: data.filename.slice(0, 200),
         file_size_bytes: bytes.length,
         mime_type: data.mime_type ?? mime,
         uploaded_by: userId,
       } as never)
-      .select("id, course_id, provider_id, file_kind, file_path, file_name, file_size_bytes, mime_type, created_at")
+      .select("id, course_id, provider_id, file_kind, file_label, file_path, file_name, file_size_bytes, mime_type, created_at")
       .single();
     if (error) throw new Error(error.message);
 
