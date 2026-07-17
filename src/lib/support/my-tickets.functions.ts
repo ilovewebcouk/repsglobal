@@ -288,7 +288,7 @@ async function sendRequesterConfirmation(args: {
   // this matches every other trainer-facing email (consistent REPS SUPPORT
   // brand bar, card, footer) instead of the old hand-rolled HTML.
   const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
-  const firstName = args.requesterName?.split("")[0] || "there";
+  const firstName = args.requesterName?.split(" ")[0] || "there";
   await sendTransactionalEmailServer({
     templateName: "contact-autoresponse",
     recipientEmail: args.requesterEmail,

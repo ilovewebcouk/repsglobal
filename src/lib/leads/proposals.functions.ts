@@ -45,7 +45,7 @@ async function sendProposalEmail(opts: {
     ]);
     if (!enq?.sender_email) return;
     const proName = prof?.full_name ?? "Your REPs Pro";
-    const clientFirstName = (enq.sender_name ?? "").split("")[0] || "there";
+    const clientFirstName = (enq.sender_name ?? "").split(" ")[0] || "there";
     const proEmail = authUser?.user?.email ?? undefined;
     const cadenceLabel = CADENCE_LABEL_FOR_EMAIL[opts.body.cadence] ?? opts.body.cadence;
     const priceLabel =

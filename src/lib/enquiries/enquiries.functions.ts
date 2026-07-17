@@ -104,7 +104,7 @@ export const submitEnquiry = createServerFn({ method: "POST" })
       if (recipient) {
         const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
         const fullName = prof?.full_name ?? "";
-        const firstName = fullName.split("")[0] || "there";
+        const firstName = fullName.split(" ")[0] || "there";
         await sendTransactionalEmailServer({
           templateName: "enquiry-notification",
           recipientEmail: recipient,

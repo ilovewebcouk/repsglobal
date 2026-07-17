@@ -826,7 +826,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                         recipientEmail: email,
                         idempotencyKey: `purchase-confirmation:${session.id}`,
                         templateData: {
-                          proName: (profile?.full_name ?? "").toString().split("")[0] || null,
+                          proName: (profile?.full_name ?? "").toString().split(" ")[0] || null,
                           tierLabel, amountText, periodText,
                         },
                       });
@@ -979,7 +979,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                           templateName: "renewal-payment-failed",
                           intendedTier: (sub.metadata?.tier as string) ?? "verified",
                           templateData: {
-                            proName: (profile as { full_name?: string | null } | null)?.full_name?.split("")[0] ?? "there",
+                            proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
                             amount: subAmount,
                             graceEndDate: graceEnd.toLocaleDateString("en-GB", {
                               day: "numeric", month: "long", year: "numeric",
@@ -1148,7 +1148,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                       templateName: "renewal-payment-failed",
                       intendedTier: invTier,
                       templateData: {
-                        proName: (profile as { full_name?: string | null } | null)?.full_name?.split("")[0] ?? "there",
+                        proName: (profile as { full_name?: string | null } | null)?.full_name?.split(" ")[0] ?? "there",
                         amount: invAmount,
                         graceEndDate: graceEnd.toLocaleDateString("en-GB", {
                           day: "numeric", month: "long", year: "numeric",

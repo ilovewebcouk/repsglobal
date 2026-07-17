@@ -38,7 +38,7 @@ export const sendWelcomeEmailServerFn = createServerFn({ method: "POST" })
       const first =
         ((profile?.full_name) ?? "")
           .toString()
-          .split("")[0] || null;
+          .split(" ")[0] || null;
 
       const { sendTransactionalEmailServer } = await import("@/lib/email/send.server");
       await sendTransactionalEmailServer({

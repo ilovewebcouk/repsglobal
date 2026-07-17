@@ -158,7 +158,7 @@ export const draftLeadReply = createServerFn({ method: "POST" })
       supabaseAdmin.from("profiles").select("full_name").eq("id", userId).maybeSingle(),
     ]);
     if (!lead) throw new Error("Lead not found");
-    const proFirstName = (prof?.full_name ?? "").split("")[0] || "your coach";
+    const proFirstName = (prof?.full_name ?? "").split(" ")[0] || "your coach";
     const tone = data.tone ?? "warm";
 
     const system = `You draft email replies for fitness coaches replying to enquiries from prospective clients on the REPs platform.
