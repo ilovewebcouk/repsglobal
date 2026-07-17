@@ -272,22 +272,22 @@ async function resolveCapPrice(stripe: any, cache: { id?: string }): Promise<str
     cache.id = existing.data[0].id;
     return cache.id!;
   }
-  // Fallback — create/rename the "REPs LMS" product with our internal metadata key.
+  // Fallback — create/rename the Training Provider Membership product with our internal metadata key.
   const productList = await stripe.products.list({ limit: 100 });
   let product =
     productList.data.find((p: any) => p.metadata?.reps_key === "training_provider") ?? null;
   if (product) {
     // Keep the customer-facing name aligned with current branding.
-    if (product.name !== "REPs LMS") {
+    if (product.name !== "REPs Training Provider Membership") {
       try {
-        product = await stripe.products.update(product.id, { name: "REPs LMS" });
+        product = await stripe.products.update(product.id, { name: "REPs Training Provider Membership" });
       } catch {
         // non-fatal — continue with existing product
       }
     }
   } else {
     product = await stripe.products.create({
-      name: "REPs LMS",
+      name: "REPs Training Provider Membership",
       metadata: { reps_key: "training_provider" },
     });
   }
