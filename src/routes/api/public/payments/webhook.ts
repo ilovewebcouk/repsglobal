@@ -32,7 +32,26 @@ async function reserveEventRow(event: { id: string; type: string }, raw: unknown
     .single();
 
   if (error) {
-    if ((error as { code?: string }).code === "23505") return null;
+    if ((error as { code?: string }).code === "23505") {
+      const { data: existing, error: existingError } = await supabaseAdmin
+        .from("payment_events")
+        .select("id, processed_at, dead_lettered_at, processing_error")
+        .eq("stripe_event_id", event.id)
+        .maybeSingle();
+      if (existingError) throw existingError;
+      const row = existing as {
+        id: string;
+        processed_at: string | null;
+        dead_lettered_at: string | null;
+        processing_error: string | null;
+      } | null;
+      if (!row || row.processed_at || row.dead_lettered_at || !row.processing_error) return null;
+      await supabaseAdmin
+        .from("payment_events")
+        .update({ payload: raw as object } as never)
+        .eq("id", row.id);
+      return row.id;
+    }
     throw error;
   }
   return (data as { id: string }).id;
@@ -717,13 +736,15 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                       const anniversaryTs = Math.floor(new Date(tokenRow.target_renewal_at as string).getTime() / 1000);
 
                       // Create subscription: trial until anniversary so first
-                      // charge lands exactly on that date.
+                      // charge lands exactly on that date. Do not also pass a
+                      // billing_cycle_anchor here — Stripe anchors trialing
+                      // subscriptions at trial_end automatically, and pairing a
+                      // future anchor with a trial now fails unless the anchor
+                      // is explicitly prorated.
                       const sub = await stripe.subscriptions.create({
                         customer: tokenRow.stripe_customer_id,
                         items: [{ price: corePrice.id }],
                         trial_end: anniversaryTs,
-                        billing_cycle_anchor: anniversaryTs,
-                        proration_behavior: "none",
                         default_payment_method: pmId,
                         metadata: {
                           source: "admin_core_invite",
