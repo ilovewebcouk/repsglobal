@@ -104,18 +104,28 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          Where a course requires the REPS endorsement statement to appear
-          on a public page, you must display it exactly as REPS supplies it,
-          on the URL you submitted, for as long as the endorsement is live.
+          Where a course is endorsed by REPS, you must display the following
+          statement, exactly as written, on the public page that lists the
+          course, for as long as the endorsement is live:
         </p>
+        <blockquote className="mt-3 rounded-[10px] border border-white/10 bg-black/25 p-3 italic text-white/85">
+          This course has been endorsed by the REPs for its high-quality,
+          non-regulated provision and training programmes. This course is not
+          regulated by Ofqual and is not an accredited qualification. We will
+          be able to advise you on any further recognition, for example
+          progression routes into further and/or higher education. For further
+          information please visit the Learner FAQs on the REPs website.
+        </blockquote>
         <p>
           Rewording it, hiding it behind a click, blocking it from crawlers,
           or removing it while the course remains listed as endorsed is a
-          breach. REPS re-checks this periodically.
+          breach. REPS verifies this before endorsement and re-checks it
+          periodically.
         </p>
       </>
     ),
   },
+
   {
     id: "correct-wording",
     title: "Correct wording on every submission",
