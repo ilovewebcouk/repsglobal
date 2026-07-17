@@ -106,7 +106,6 @@ import { Route as AdminMembersRouteImport } from './routes/admin_.members'
 import { Route as AdminGymsRouteImport } from './routes/admin_.gyms'
 import { Route as AdminDirectoryRouteImport } from './routes/admin_.directory'
 import { Route as AdminCpdRouteImport } from './routes/admin_.cpd'
-import { Route as AdminCoreInvitesRouteImport } from './routes/admin_.core-invites'
 import { Route as AdminChurnRouteImport } from './routes/admin_.churn'
 import { Route as AdminCertificatesRouteImport } from './routes/admin_.certificates'
 import { Route as AdminCampaignsRouteImport } from './routes/admin_.campaigns'
@@ -681,11 +680,6 @@ const AdminCpdRoute = AdminCpdRouteImport.update({
   path: '/admin/cpd',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminCoreInvitesRoute = AdminCoreInvitesRouteImport.update({
-  id: '/admin_/core-invites',
-  path: '/admin/core-invites',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminChurnRoute = AdminChurnRouteImport.update({
   id: '/admin_/churn',
   path: '/admin/churn',
@@ -1222,7 +1216,6 @@ export interface FileRoutesByFullPath {
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/churn': typeof AdminChurnRoute
-  '/admin/core-invites': typeof AdminCoreInvitesRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
@@ -1404,7 +1397,6 @@ export interface FileRoutesByTo {
   '/admin/campaigns': typeof AdminCampaignsRoute
   '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/churn': typeof AdminChurnRoute
-  '/admin/core-invites': typeof AdminCoreInvitesRoute
   '/admin/cpd': typeof AdminCpdRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/gyms': typeof AdminGymsRoute
@@ -1586,7 +1578,6 @@ export interface FileRoutesById {
   '/admin_/campaigns': typeof AdminCampaignsRoute
   '/admin_/certificates': typeof AdminCertificatesRoute
   '/admin_/churn': typeof AdminChurnRoute
-  '/admin_/core-invites': typeof AdminCoreInvitesRoute
   '/admin_/cpd': typeof AdminCpdRoute
   '/admin_/directory': typeof AdminDirectoryRoute
   '/admin_/gyms': typeof AdminGymsRoute
@@ -1773,7 +1764,6 @@ export interface FileRouteTypes {
     | '/admin/campaigns'
     | '/admin/certificates'
     | '/admin/churn'
-    | '/admin/core-invites'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
@@ -1955,7 +1945,6 @@ export interface FileRouteTypes {
     | '/admin/campaigns'
     | '/admin/certificates'
     | '/admin/churn'
-    | '/admin/core-invites'
     | '/admin/cpd'
     | '/admin/directory'
     | '/admin/gyms'
@@ -2136,7 +2125,6 @@ export interface FileRouteTypes {
     | '/admin_/campaigns'
     | '/admin_/certificates'
     | '/admin_/churn'
-    | '/admin_/core-invites'
     | '/admin_/cpd'
     | '/admin_/directory'
     | '/admin_/gyms'
@@ -2323,7 +2311,6 @@ export interface RootRouteChildren {
   AdminCampaignsRoute: typeof AdminCampaignsRoute
   AdminCertificatesRoute: typeof AdminCertificatesRoute
   AdminChurnRoute: typeof AdminChurnRoute
-  AdminCoreInvitesRoute: typeof AdminCoreInvitesRoute
   AdminCpdRoute: typeof AdminCpdRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminGymsRoute: typeof AdminGymsRoute
@@ -3092,13 +3079,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/cpd'
       fullPath: '/admin/cpd'
       preLoaderRoute: typeof AdminCpdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin_/core-invites': {
-      id: '/admin_/core-invites'
-      path: '/admin/core-invites'
-      fullPath: '/admin/core-invites'
-      preLoaderRoute: typeof AdminCoreInvitesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/churn': {
@@ -4048,7 +4028,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCampaignsRoute: AdminCampaignsRoute,
   AdminCertificatesRoute: AdminCertificatesRoute,
   AdminChurnRoute: AdminChurnRoute,
-  AdminCoreInvitesRoute: AdminCoreInvitesRoute,
   AdminCpdRoute: AdminCpdRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminGymsRoute: AdminGymsRoute,
