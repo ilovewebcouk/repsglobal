@@ -12,7 +12,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Inbox = "support" | "pros" | "partners" | "press" | "news";
-type Tier = "free" | "verified" | "pro" | "studio" | "newsletter" | "prospects";
+type Tier = "free" | "verified" | "pro" | "studio" | "training_provider" | "newsletter" | "prospects";
 
 const INBOX_META: Record<Inbox, { email: string; name: string; label: string }> = {
   support: { email: "support@repsuk.org", name: "REPS", label: "Support" },
@@ -319,7 +319,7 @@ const draftSchema = z.object({
     .array(z.object({ email: z.string(), name: z.string().nullable().optional() }))
     .max(500)
     .optional(),
-  tiers: z.array(z.enum(["free", "verified", "pro", "studio", "newsletter", "prospects"])).max(6).optional(),
+  tiers: z.array(z.enum(["free", "verified", "pro", "studio", "training_provider", "newsletter", "prospects"])).max(7).optional(),
   prospectTags: z.array(z.string().max(120)).max(50).optional(),
   attachments: z
     .array(

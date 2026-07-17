@@ -45,6 +45,7 @@ const TIER_LABEL: Record<string, string> = {
   verified: "Core",
   pro: "Pro",
   studio: "Studio",
+  training_provider: "Training Provider",
   free: "Free",
 };
 

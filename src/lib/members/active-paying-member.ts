@@ -13,12 +13,13 @@
 
 // ---- Tier constants --------------------------------------------------------
 export const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing"] as const;
-export const COUNTED_TIERS = ["verified", "pro", "studio"] as const;
+export const COUNTED_TIERS = ["verified", "pro", "studio", "training_provider"] as const;
 
 export type MemberTier = (typeof COUNTED_TIERS)[number];
 
-// Studio > Pro > Verified (highest rank wins on dedupe / mix tally).
+// Training Provider > Studio > Pro > Verified (highest rank wins on dedupe / mix tally).
 export const TIER_RANK: Record<MemberTier, number> = {
+  training_provider: 4,
   studio: 3,
   pro: 2,
   verified: 1,
@@ -366,7 +367,7 @@ export function buildActivePayingMemberCollection(
         else if ((s.payment_standing ?? "ok") !== "ok")
           reason = `payment_standing="${s.payment_standing}" (chargeback / dispute)`;
         else
-          reason = `tier="${s.tier}" (requires verified/pro/studio)`;
+          reason = `tier="${s.tier}" (requires verified/pro/studio/training_provider)`;
         baseRow.exclusion_reason = reason;
         rawRows.push(baseRow);
         continue;
@@ -488,6 +489,7 @@ export function buildActivePayingMemberCollection(
     verified: 0,
     pro: 0,
     studio: 0,
+    training_provider: 0,
   };
   for (const m of members) by_tier[m.tier] += 1;
 

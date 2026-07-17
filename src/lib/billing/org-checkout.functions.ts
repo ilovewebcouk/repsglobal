@@ -6,8 +6,8 @@ import { ORG_TIERS } from "../billing";
 import { getOrCreateCustomer } from "./customer.server";
 
 /**
- * Auth-required Stripe checkout for the REPs LMS (training-provider) annual
- * membership — £479/yr, lookup key `training_provider_annual`. Mirrors
+ * Auth-required Stripe checkout for the REPs Training Provider Membership
+ * annual subscription — £479/yr, lookup key `training_provider_annual`. Mirrors
  * `createCheckoutSession` in ./billing.functions.ts but only supports the
  * single organisation tier that exists today.
  */

@@ -9,7 +9,7 @@
 // Never display a monthly equivalent for Core in the UI.
 
 
-export type Tier = "verified" | "pro" | "studio";
+export type Tier = "verified" | "pro" | "studio" | "training_provider";
 export type BillingPeriod = "monthly" | "annual";
 export type BillingEnv = "sandbox" | "live";
 
@@ -17,24 +17,28 @@ export const TIER_PRICE_PENCE: Record<Tier, number> = {
   verified: 3400,
   pro: 5900,
   studio: 14900,
+  training_provider: 47900,
 };
 
-/** Annual price in pence for tiers sold annually (Pro Founding annual = £590). */
+/** Annual price in pence for tiers sold annually (Pro Founding annual = £590; TP annual = £479). */
 export const TIER_ANNUAL_PRICE_PENCE: Partial<Record<Tier, number>> = {
   verified: 3400,
   pro: 59000,
+  training_provider: 47900,
 };
 
 export const TIER_CADENCE_MONTHS: Record<Tier, number> = {
   verified: 12,
   pro: 1,
   studio: 1,
+  training_provider: 12,
 };
 
 export const TIER_LABEL: Record<Tier, string> = {
   verified: "Core",
   pro: "Pro",
   studio: "Studio",
+  training_provider: "Training Provider",
 };
 
 /** Single-payment amount (in pence) for one renewal cycle of `tier`. */
@@ -42,6 +46,7 @@ export function paymentPence(tier: string): number {
   if (tier === "verified") return TIER_PRICE_PENCE.verified;
   if (tier === "pro") return TIER_PRICE_PENCE.pro;
   if (tier === "studio") return TIER_PRICE_PENCE.studio;
+  if (tier === "training_provider") return TIER_PRICE_PENCE.training_provider;
   return 0;
 }
 
@@ -52,6 +57,7 @@ export function paymentPenceFor(tier: string, period: BillingPeriod | null | und
     return period === "annual" ? TIER_ANNUAL_PRICE_PENCE.pro! : TIER_PRICE_PENCE.pro;
   }
   if (tier === "studio") return TIER_PRICE_PENCE.studio;
+  if (tier === "training_provider") return TIER_PRICE_PENCE.training_provider;
   return 0;
 }
 
@@ -60,6 +66,7 @@ export function annualPence(tier: string): number {
   if (tier === "verified") return TIER_PRICE_PENCE.verified;
   if (tier === "pro") return TIER_PRICE_PENCE.pro * 12;
   if (tier === "studio") return TIER_PRICE_PENCE.studio * 12;
+  if (tier === "training_provider") return TIER_PRICE_PENCE.training_provider;
   return 0;
 }
 
@@ -70,6 +77,7 @@ export function annualPenceFor(tier: string, period: BillingPeriod | null | unde
     return period === "annual" ? TIER_ANNUAL_PRICE_PENCE.pro! : TIER_PRICE_PENCE.pro * 12;
   }
   if (tier === "studio") return TIER_PRICE_PENCE.studio * 12;
+  if (tier === "training_provider") return TIER_PRICE_PENCE.training_provider;
   return 0;
 }
 
@@ -78,11 +86,12 @@ export function cadenceMonthsFor(tier: string, period: BillingPeriod | null | un
   if (tier === "verified") return 12;
   if (tier === "pro") return period === "annual" ? 12 : 1;
   if (tier === "studio") return 1;
+  if (tier === "training_provider") return 12;
   return 12;
 }
 
 export function isPaidTier(t: string): t is Tier {
-  return t === "verified" || t === "pro" || t === "studio";
+  return t === "verified" || t === "pro" || t === "studio" || t === "training_provider";
 }
 
 /** Server-side billing env selector. Defaults to live; sandbox is opt-in via BILLING_ENV=sandbox. */

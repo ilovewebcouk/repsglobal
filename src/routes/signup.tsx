@@ -109,7 +109,7 @@ const PLAN_SUMMARIES: Record<
   },
   training_provider: {
     annual: {
-      name: "REPs LMS",
+      name: "REPs Training Provider Membership",
       tagline: "Independent endorsement for the courses you deliver.",
       price: "£479",
       unit: "/year",
@@ -122,7 +122,7 @@ const PLAN_SUMMARIES: Record<
       ],
     },
     monthly: {
-      name: "REPs LMS",
+      name: "REPs Training Provider Membership",
       tagline: "Independent endorsement for the courses you deliver.",
       price: "£479",
       unit: "/year",

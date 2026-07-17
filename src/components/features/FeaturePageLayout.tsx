@@ -43,6 +43,7 @@ const TIER_LABELS: Record<string, string> = {
   pro: "Pro",
   business: "Business",
   studio: "Studio",
+  training_provider: "Training Provider",
 };
 
 export function FeaturePageLayout(props: FeaturePageProps) {

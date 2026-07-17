@@ -11,6 +11,9 @@
 
 export type TierKey = "verified" | "pro" | "studio";
 export type PurchasableTier = "verified" | "pro" | "training_provider";
+/** Every paid subscription tier — individual + organisation. Use this when
+ *  code needs to represent any paying member (metrics, targeting, filters). */
+export type SubscriptionTierKey = TierKey | "training_provider";
 export type BillingPeriod = "monthly" | "annual";
 
 export interface TierConfig {
@@ -204,7 +207,7 @@ export interface OrgTierConfig {
 export const ORG_TIERS: Record<OrgTierKey, OrgTierConfig> = {
   training_provider: {
     key: "training_provider",
-    label: "REPs LMS",
+    label: "REPs Training Provider Membership",
     priceLabel: "£479",
     intervalLabel: "per year",
     stripePriceLookupKey: "training_provider_annual",
@@ -214,6 +217,30 @@ export const ORG_TIERS: Record<OrgTierKey, OrgTierConfig> = {
       "Public provider website, unlimited REPs-endorsed course listings, verified learner reviews, and a digital endorsement badge for every approved course.",
   },
 };
+
+/* ------------------------------------------------------------------ */
+/* Canonical tier labels (single source of truth for customer copy)    */
+/* ------------------------------------------------------------------ */
+
+/** Full customer-facing label. Prefer this over ad-hoc ternaries. */
+export function tierLabelLong(tier: SubscriptionTierKey | string | null | undefined): string | null {
+  if (!tier) return null;
+  if (tier === "verified") return "REPs Core";
+  if (tier === "pro") return "REPs Pro";
+  if (tier === "studio") return "REPs Studio";
+  if (tier === "training_provider") return "REPs Training Provider Membership";
+  return null;
+}
+
+/** Short label for cramped admin badges / chips. */
+export function tierLabelShort(tier: SubscriptionTierKey | string | null | undefined): string | null {
+  if (!tier) return null;
+  if (tier === "verified") return "Core";
+  if (tier === "pro") return "Pro";
+  if (tier === "studio") return "Studio";
+  if (tier === "training_provider") return "Training Provider";
+  return null;
+}
 
 /** Per-learner certificate print/PDF price (add-on to the annual membership). */
 export const CERTIFICATE_UNIT_PRICE_PENCE = 1500;
