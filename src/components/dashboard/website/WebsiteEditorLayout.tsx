@@ -76,7 +76,10 @@ export function WebsiteEditorLayout({
   // Only mount the iframe once we have a signed preview token — otherwise
   // the server returns the published snapshot and the "preview" panel
   // would silently show stale content.
-  const iframeSrc = slug && previewToken ? `/c/${slug}?preview=${encodeURIComponent(previewToken)}` : "";
+  // Load preview from the published origin so the editor iframe is cross-origin.
+  // Same-origin caused Vite HMR / postMessage collisions that forced a reload every 2–3s.
+  const PREVIEW_ORIGIN = "https://repsglobal.lovable.app";
+  const iframeSrc = slug && previewToken ? `${PREVIEW_ORIGIN}/c/${slug}?preview=${encodeURIComponent(previewToken)}` : "";
 
 
   return (
