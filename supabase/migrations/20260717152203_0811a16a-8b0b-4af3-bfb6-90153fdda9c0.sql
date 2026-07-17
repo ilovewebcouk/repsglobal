@@ -1,0 +1,1 @@
+ALTER TABLE public.reps_course_evidence ALTER COLUMN course_id DROP NOT NULL;
