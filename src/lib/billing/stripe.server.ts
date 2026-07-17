@@ -67,9 +67,6 @@ export function getStripeErrorMessage(error: unknown): string {
  */
 export function getCheckoutOrigin(): string {
   try {
-    const { getRequest } = require("@tanstack/react-start/server") as {
-      getRequest: () => Request | undefined;
-    };
     const req = getRequest();
     const origin = req?.headers.get("origin");
     if (origin) return origin.replace(/\/$/, "");
