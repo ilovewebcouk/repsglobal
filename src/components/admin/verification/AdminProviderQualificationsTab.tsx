@@ -997,6 +997,34 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
     onError: (e) => toast.error(e instanceof Error ? e.message : "Redraft failed"),
   });
 
+  // Auto-recover legacy rows: if the AI already ran but the spec_* columns
+  // are still empty (partial-run pre-fix rows), trigger a redraft once when
+  // the admin opens the row so the form self-fills without a manual click.
+  const autoRedraftedRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (autoRedraftedRef.current === row.id) return;
+    const isPartialDraft =
+      row.ai_drafted_at != null &&
+      (row.status === "ai_drafted" || row.status === "submitted") &&
+      !row.spec_who_for &&
+      (row.spec_learning_outcomes?.length ?? 0) === 0 &&
+      !row.spec_how_youll_study &&
+      !row.spec_how_youre_assessed;
+    if (isPartialDraft && !redraftMut.isPending) {
+      autoRedraftedRef.current = row.id;
+      redraftMut.mutate();
+    }
+    // We only want this to fire on row change or state settle; redraftMut is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [row.id, row.ai_drafted_at, row.status, row.spec_who_for, row.spec_learning_outcomes, row.spec_how_youll_study, row.spec_how_youre_assessed]);
+
+  const aiHasDrafted =
+    row.ai_drafted_at != null &&
+    (Boolean(row.spec_who_for) ||
+      (row.spec_learning_outcomes?.length ?? 0) > 0 ||
+      Boolean(row.spec_how_youll_study) ||
+      Boolean(row.spec_how_youre_assessed));
+
   const providerName = row.provider?.full_name || "Unnamed provider";
 
   const deliveryLabel = (v: string | null): string => {
