@@ -2,12 +2,11 @@ import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { requireRole } from "@/lib/route-gates";
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { exportPrivateStorage } from "@/lib/admin/export-storage.functions";
 
 export const Route = createFileRoute("/_authenticated/admin_/export-storage")({
-  beforeLoad: async (ctx) => requireRole(ctx, "admin"),
+  beforeLoad: requireRole(["admin"]),
   head: () => ({ meta: [{ title: "Export private storage — Admin" }] }),
   component: ExportStoragePage,
 });
@@ -44,17 +43,18 @@ function ExportStoragePage() {
   }
 
   return (
-    <DashboardShell role="admin" tier="pro" active="Export storage" title="Export private storage" subtitle="Generate a JSON manifest of every private-bucket object with 7-day signed URLs.">
-      <div className="max-w-2xl space-y-4 rounded-[16px] border border-reps-border bg-reps-panel p-6">
+    <div className="min-h-screen bg-reps-ink px-6 py-16 text-white">
+      <div className="mx-auto max-w-2xl space-y-4 rounded-[16px] border border-reps-border bg-reps-panel p-6">
+        <h1 className="font-display text-[22px] font-semibold">Export private storage</h1>
         <div className="text-[13px] text-white/70 space-y-2">
           <p>
-            Enumerates <strong>certificate-templates, certificates, course-accreditations, identity-docs, insurance-docs, provider-review-evidence, support-attachments, verification-docs</strong> and produces a JSON file with a 7-day signed URL for every object.
+            Enumerates <strong>certificate-templates, certificates, course-accreditations, identity-docs, insurance-docs, provider-review-evidence, support-attachments, verification-docs</strong> and produces a JSON manifest containing a 7-day signed URL for every object.
           </p>
           <p>
-            Hand the JSON to the Replit agent — its script fetches each <code>signed_url</code> and re-uploads to the equivalent bucket. No keys are shared.
+            Hand the JSON to the Replit agent — a small script fetches each <code>signed_url</code> and re-uploads it to the equivalent bucket on the destination. No service keys are shared.
           </p>
           <p className="text-amber-300/80">
-            URLs expire after 7 days. Contains PII — treat the file as confidential and delete it once the migration is complete.
+            URLs expire in 7 days. The file contains PII — treat it as confidential and delete it once migration is complete.
           </p>
         </div>
 
@@ -64,13 +64,13 @@ function ExportStoragePage() {
 
         {state.status === "done" && (
           <p className="text-[13px] text-emerald-300">
-            Exported {state.count} files. {state.errors > 0 ? `${state.errors} error(s) — see "errors" array in the JSON.` : "No errors."}
+            Exported {state.count} files. {state.errors > 0 ? `${state.errors} error(s) — see the "errors" array in the JSON.` : "No errors."}
           </p>
         )}
         {state.status === "error" && (
           <p className="text-[13px] text-rose-300">{state.message}</p>
         )}
       </div>
-    </DashboardShell>
+    </div>
   );
 }
