@@ -136,6 +136,7 @@ import { Route as ApiPublicAdminSendProviderAnnouncementRouteImport } from './ro
 import { Route as AdminSeoLegacyRedirectsRouteImport } from './routes/admin_.seo.legacy-redirects'
 import { Route as AdminMembersUserIdRouteImport } from './routes/admin_.members_.$userId'
 import { Route as AuthenticatedDashboardDesignKitRouteImport } from './routes/_authenticated/dashboard_.design-kit'
+import { Route as AuthenticatedAdminExportStorageRouteImport } from './routes/_authenticated/admin_.export-storage'
 import { Route as AuthenticatedProfessionalDashboardRouteImport } from './routes/_authenticated/_professional/dashboard'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -835,6 +836,12 @@ const AuthenticatedDashboardDesignKitRoute =
     path: '/dashboard/design-kit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminExportStorageRoute =
+  AuthenticatedAdminExportStorageRouteImport.update({
+    id: '/admin_/export-storage',
+    path: '/admin/export-storage',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfessionalDashboardRoute =
   AuthenticatedProfessionalDashboardRouteImport.update({
     id: '/dashboard',
@@ -1280,6 +1287,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
+  '/admin/export-storage': typeof AuthenticatedAdminExportStorageRoute
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
@@ -1457,6 +1465,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
+  '/admin/export-storage': typeof AuthenticatedAdminExportStorageRoute
   '/dashboard/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin/members/$userId': typeof AdminMembersUserIdRoute
   '/admin/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
@@ -1643,6 +1652,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/_professional/dashboard': typeof AuthenticatedProfessionalDashboardRouteWithChildren
+  '/_authenticated/admin_/export-storage': typeof AuthenticatedAdminExportStorageRoute
   '/_authenticated/dashboard_/design-kit': typeof AuthenticatedDashboardDesignKitRoute
   '/admin_/members_/$userId': typeof AdminMembersUserIdRoute
   '/admin_/seo/legacy-redirects': typeof AdminSeoLegacyRedirectsRoute
@@ -1828,6 +1838,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard'
+    | '/admin/export-storage'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
@@ -2005,6 +2016,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard'
+    | '/admin/export-storage'
     | '/dashboard/design-kit'
     | '/admin/members/$userId'
     | '/admin/seo/legacy-redirects'
@@ -2190,6 +2202,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/_professional/dashboard'
+    | '/_authenticated/admin_/export-storage'
     | '/_authenticated/dashboard_/design-kit'
     | '/admin_/members_/$userId'
     | '/admin_/seo/legacy-redirects'
@@ -3292,6 +3305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardDesignKitRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin_/export-storage': {
+      id: '/_authenticated/admin_/export-storage'
+      path: '/admin/export-storage'
+      fullPath: '/admin/export-storage'
+      preLoaderRoute: typeof AuthenticatedAdminExportStorageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/_professional/dashboard': {
       id: '/_authenticated/_professional/dashboard'
       path: '/dashboard'
@@ -3852,12 +3872,14 @@ const AuthenticatedProfessionalRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfessionalRouteRoute: typeof AuthenticatedProfessionalRouteRouteWithChildren
+  AuthenticatedAdminExportStorageRoute: typeof AuthenticatedAdminExportStorageRoute
   AuthenticatedDashboardDesignKitRoute: typeof AuthenticatedDashboardDesignKitRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfessionalRouteRoute:
     AuthenticatedProfessionalRouteRouteWithChildren,
+  AuthenticatedAdminExportStorageRoute: AuthenticatedAdminExportStorageRoute,
   AuthenticatedDashboardDesignKitRoute: AuthenticatedDashboardDesignKitRoute,
 }
 
