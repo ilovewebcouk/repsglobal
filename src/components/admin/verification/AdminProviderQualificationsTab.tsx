@@ -885,32 +885,65 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
   const saveSpec = useServerFn(adminSaveRepsCourseSpec);
   const redraft = useServerFn(adminRedraftRepsCourse);
 
-  // Editable spec state — seeded from row, reset when a different row is selected.
-  const [officialTitle, setOfficialTitle] = React.useState(row.official_title ?? row.proposed_title);
-  const [officialLevel, setOfficialLevel] = React.useState<number | null>(row.official_level);
-  const [whoFor, setWhoFor] = React.useState(row.spec_who_for ?? "");
-  const [outcomes, setOutcomes] = React.useState((row.spec_learning_outcomes ?? []).join("\n"));
-  const [howStudy, setHowStudy] = React.useState(row.spec_how_youll_study ?? "");
-  const [howAssessed, setHowAssessed] = React.useState(row.spec_how_youre_assessed ?? "");
-  const [prereq, setPrereq] = React.useState(row.spec_prerequisites ?? "");
-  const [glh, setGlh] = React.useState<number | null>(row.spec_guided_learning_hours);
-  const [tqt, setTqt] = React.useState<number | null>(row.spec_total_qualification_time);
-  const [delivery, setDelivery] = React.useState<DeliveryMode | null>(row.spec_delivery_mode);
+  // Fallback: if the spec_* columns are empty but the AI produced content
+  // into the raw ai_draft JSON (partial-run legacy rows), hydrate the form
+  // from that JSON so admins never see empty boxes when the AI has drafted.
+  const hydrateFromDraft = React.useCallback((r: CourseRow) => {
+    const j = (r.ai_draft ?? {}) as Record<string, unknown>;
+    const gs = (k: string): string => (typeof j[k] === "string" ? (j[k] as string) : "");
+    const gn = (k: string): number | null =>
+      typeof j[k] === "number" && Number.isFinite(j[k] as number) ? (j[k] as number) : null;
+    const ga = (k: string): string[] =>
+      Array.isArray(j[k]) ? (j[k] as unknown[]).filter((x): x is string => typeof x === "string") : [];
+    const gd = (): DeliveryMode | null => {
+      const v = j.spec_delivery_mode;
+      return v === "in_person" || v === "online_live" || v === "online_self_paced" || v === "blended" || v === "online"
+        ? (v as DeliveryMode)
+        : null;
+    };
+    return {
+      officialTitle: r.official_title ?? gs("official_title") || r.proposed_title,
+      officialLevel: r.official_level ?? gn("official_level"),
+      whoFor: r.spec_who_for ?? gs("spec_who_for"),
+      outcomes: (r.spec_learning_outcomes ?? ga("spec_learning_outcomes")).join("\n"),
+      howStudy: r.spec_how_youll_study ?? gs("spec_how_youll_study"),
+      howAssessed: r.spec_how_youre_assessed ?? gs("spec_how_youre_assessed"),
+      prereq: r.spec_prerequisites ?? gs("spec_prerequisites"),
+      glh: r.spec_guided_learning_hours ?? gn("spec_guided_learning_hours"),
+      tqt: r.spec_total_qualification_time ?? gn("spec_total_qualification_time"),
+      delivery: r.spec_delivery_mode ?? gd(),
+    };
+  }, []);
+
+  const initial = hydrateFromDraft(row);
+
+  // Editable spec state — seeded from row (with ai_draft fallback), reset when a different row is selected.
+  const [officialTitle, setOfficialTitle] = React.useState(initial.officialTitle);
+  const [officialLevel, setOfficialLevel] = React.useState<number | null>(initial.officialLevel);
+  const [whoFor, setWhoFor] = React.useState(initial.whoFor);
+  const [outcomes, setOutcomes] = React.useState(initial.outcomes);
+  const [howStudy, setHowStudy] = React.useState(initial.howStudy);
+  const [howAssessed, setHowAssessed] = React.useState(initial.howAssessed);
+  const [prereq, setPrereq] = React.useState(initial.prereq);
+  const [glh, setGlh] = React.useState<number | null>(initial.glh);
+  const [tqt, setTqt] = React.useState<number | null>(initial.tqt);
+  const [delivery, setDelivery] = React.useState<DeliveryMode | null>(initial.delivery);
   const [note, setNote] = React.useState("");
 
   React.useEffect(() => {
-    setOfficialTitle(row.official_title ?? row.proposed_title);
-    setOfficialLevel(row.official_level);
-    setWhoFor(row.spec_who_for ?? "");
-    setOutcomes((row.spec_learning_outcomes ?? []).join("\n"));
-    setHowStudy(row.spec_how_youll_study ?? "");
-    setHowAssessed(row.spec_how_youre_assessed ?? "");
-    setPrereq(row.spec_prerequisites ?? "");
-    setGlh(row.spec_guided_learning_hours);
-    setTqt(row.spec_total_qualification_time);
-    setDelivery(row.spec_delivery_mode);
+    const v = hydrateFromDraft(row);
+    setOfficialTitle(v.officialTitle);
+    setOfficialLevel(v.officialLevel);
+    setWhoFor(v.whoFor);
+    setOutcomes(v.outcomes);
+    setHowStudy(v.howStudy);
+    setHowAssessed(v.howAssessed);
+    setPrereq(v.prereq);
+    setGlh(v.glh);
+    setTqt(v.tqt);
+    setDelivery(v.delivery);
     setNote("");
-  }, [row.id]);
+  }, [row.id, hydrateFromDraft, row]);
 
   const buildSpecPayload = () => ({
     id: row.id,
