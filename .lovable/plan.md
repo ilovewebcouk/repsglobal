@@ -1,68 +1,31 @@
-# Training Provider Verification — QA Report & Fix Plan
+## What's actually happening
 
-## What was audited
-Full read-only trace of the provider course/qualification upload flow, admin verification surfaces, RLS/grants, storage buckets, and the `is_pro_fully_verified` recompute pipeline. Live DB spot-checked against 25 real training-provider rows.
+The AI drafter **does** fill the right-column form fields — it writes into `spec_who_for`, `spec_learning_outcomes`, `spec_how_youll_study`, `spec_how_youre_assessed`, `spec_prerequisites`, `spec_guided_learning_hours`, `spec_total_qualification_time` and `spec_delivery_mode`, and the admin form pre-populates from exactly those columns.
 
-## The good news (confirmed working)
-- **Verified badge logic is correct** for training providers. All 25 TPs' computed status matches their signals (identity + name + domain). No drift, self-check trigger never fired.
-- **Admin queue + approve/reject** (`adminListRepsCourseQueue`, `adminDecideRepsCourse`, `adminListRegulatedQueue`) all use `has_role`-based `requireAdmin` — no bypass paths.
-- **Tier gating** (`assertCallerIsTrainingProvider`) correctly refuses admins and non-TP accounts, no silent auto-create.
-- **RLS on `reps_courses` / `provider_regulated_permissions`** correctly scopes public/owner/admin with status-transition guards.
-- **Storage RLS** on `course-accreditations` / `verification-docs` scoped by `auth.uid()` folder prefix with admin carve-out. Signed-URL fns gate on ownership-or-admin.
-- The recent `reps_course_evidence.course_id` nullable migration works — `submitRepsCourse`, `listRepsCourseEvidence`, `removeRepsCourseEvidence` all handle null safely.
+The Bondi Rise row you're looking at is the pre-existing stuck row from before yesterday's fix. When it was submitted 11h ago the AI drafter never ran at all (that was the bug I fixed), so those `spec_*` columns are still empty even though the middle-column "Reviewer summary (AI)" now shows content from a later partial run. Any course submitted from now on will arrive already drafted with every right-column field filled.
 
-## Issues found
+Two things to fix so this doesn't happen again and so this specific row self-heals:
 
-### P1 — Orphaned staged evidence, no resume, no cleanup
-**Symptom:** If a provider opens "Request REPS endorsement", uploads files, then closes the dialog without submitting, the `reps_course_evidence` rows (with `course_id = NULL`) and their storage objects are permanently orphaned. No UI to resume, no admin visibility, no TTL.
+## Plan
 
-**Confirmed live:** 4 orphan rows exist right now for one provider, all uploaded within a 45-second window — exactly the abandoned-dialog pattern.
+### 1. Auto-recover legacy rows on open
+In `AdminProviderQualificationsTab.tsx`, when the admin opens a row where `ai_drafted_at` is set but the `spec_*` fields are still empty (i.e. a pre-fix row that only got a partial draft), automatically call `runRepsCourseAiDraft` with `overwrite: true` once, show a subtle "Drafting with AI…" state on the form panel, and refetch when it finishes. No manual "Redraft with AI" click required.
 
-**Where:** `src/routes/_authenticated/_professional/dashboard_.qualifications.tsx:1072-1274` (`AddCpdDialog`) — evidence IDs live only in local React state; dialog unmounts on close; `resetAll()` only runs on successful submit.
+### 2. Hydrate the form from `ai_draft` JSON as a fallback
+If for any reason the `spec_*` columns are still empty but the raw `ai_draft` JSON on the row contains values (e.g. AI ran but the DB write of official/spec was skipped), initialise the form state from `ai_draft.spec_who_for`, `ai_draft.spec_learning_outcomes`, etc., so the boxes are never empty when the AI has already produced content. Admin still edits and saves; save writes to the real `spec_*` columns.
 
-**Root cause:** The nullable-`course_id` staging design assumes the client keeps evidence IDs across the session, but there's no persistence (no `listMyUnattachedEvidence` server fn, no localStorage cache). Once the dialog unmounts, ids are gone.
+### 3. Clearer "AI has filled these — review and approve" affordance
+Above the right-column form, add a small banner when `ai_drafted_at` is set and any `spec_*` field is filled: *"AI has drafted the fields below. Review, edit if needed, then Approve & publish."* So the admin knows the form values are AI output, not their own manual entry.
 
-**Fix:**
-1. Add `listMyUnattachedEvidence` (provider-scoped, `course_id IS NULL`) and hydrate `AddCpdDialog` on open.
-2. Add a scheduled cleanup (pg_cron → public webhook route) deleting `reps_course_evidence` rows + storage objects where `course_id IS NULL AND created_at < now() - interval '48 hours'`.
+### 4. Immediate one-time recovery for the Bondi Rise row
+Because the row is already visible on your screen, ship (1) so that opening it triggers a fresh redraft automatically — no data migration needed.
 
-### P1 — Storage/DB drift on course-accreditations bucket
-**Confirmed live:** 14 files in storage under one provider's folder, only 4 matching `reps_course_evidence` rows → 10 objects with no DB row. 45 MB today, unbounded growth.
+### Out of scope
+- The AI prompt/schema itself — it already produces every field the form needs.
+- Middle-column spec view — that stays as the raw provider claim.
+- Approval/publish flow — unchanged.
 
-**Where:** `src/lib/qualifications/qualifications.functions.ts:1100-1143` (`removeRepsCourseEvidence`) — deletes DB row first, then swallows storage-remove errors in try/catch. Any transient storage failure leaves a permanent dangling object.
-
-**Fix:** Reverse the order (remove storage object first, then DB row) or add a reconciliation cron that diffs `storage.objects` against `reps_course_evidence.file_path` and deletes true orphans. Also one-off cleanup of the current 10 dangling objects.
-
-### P2 — `reps_course_evidence.course_id` reassignment not RLS-guarded
-**Where:** Policy `"Providers manage own evidence"` in `20260710111040_*.sql` — only checks `provider_id = auth.uid()`, doesn't verify the target `course_id` belongs to the same provider.
-
-**Root cause:** Application code (`submitRepsCourse`) enforces this correctly, but a provider calling the Supabase client directly could `UPDATE reps_course_evidence SET course_id = <competitor's course id>` and pollute another provider's evidence set as seen by the admin review UI.
-
-**Fix:** `BEFORE UPDATE` trigger that rejects `course_id` changes unless the target course's `provider_id` matches `NEW.provider_id`.
-
-### P2 — Dead table `course_accreditation_files` with broken RLS
-**Where:** Its policy `"Org members can view their course files"` references `public.courses`, which was dropped in `20260715062059_*.sql`. Table has zero server-fn references (fully dead from the pre-TP-pivot org model).
-
-**Fix:** `DROP TABLE public.course_accreditation_files` (and its policy) as schema hygiene.
-
-### P3 — No admin visibility into stuck/abandoned submissions
-No queue, no metrics for `course_id IS NULL` staged rows or `reps_courses` stuck in intermediate status. Once real submissions exist, ops will be flying blind.
-
-**Fix:** Add a small "Abandoned staging" widget on the admin verification dashboard (count + newest 5) so ops can spot patterns.
-
-## Implementation order (when you switch to build mode)
-
-1. **Migration** — cleanup cron table + trigger to guard `course_id` reassignment + drop `course_accreditation_files`.
-2. **`listMyUnattachedEvidence` server fn** + wire into `AddCpdDialog` on open.
-3. **Cleanup job** — public webhook route `/api/public/cron/reps-evidence-cleanup` (secret-verified) that deletes 48h+ orphans and their storage objects; register pg_cron.
-4. **One-off reconciliation** — script/query to delete the 10 known dangling storage objects for provider `859e3aa1-…`.
-5. **Fix `removeRepsCourseEvidence` order** — storage first, then DB.
-6. **Admin widget** — orphan count on the verification dashboard.
-
-## Technical notes
-- All fixes are backend/server-fn/migration. No visual changes to any locked page.
-- No user-facing "BD migration" or "legacy" language introduced.
-- Cleanup cron follows the `/api/public/*` webhook pattern with HMAC verification.
-- Trigger uses `SECURITY DEFINER` with pinned `search_path = public` to look up `reps_courses.provider_id` under RLS-bypass (safe: only reads a single indexed column).
-
-Approve to proceed with build, or tell me which items to drop/reorder.
+### Technical notes
+- All changes are in `src/components/admin/verification/AdminProviderQualificationsTab.tsx` plus a small tweak to the exported surface in `src/lib/qualifications/qualifications.functions.ts` if the auto-recovery redraft needs a dedicated `redraftIfIncomplete` server function (preferred over calling the existing `redraft` mutation directly, so the UI can distinguish "auto" vs "user-clicked").
+- No DB migration.
+- No changes to the provider-side submission flow.

@@ -885,32 +885,65 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
   const saveSpec = useServerFn(adminSaveRepsCourseSpec);
   const redraft = useServerFn(adminRedraftRepsCourse);
 
-  // Editable spec state — seeded from row, reset when a different row is selected.
-  const [officialTitle, setOfficialTitle] = React.useState(row.official_title ?? row.proposed_title);
-  const [officialLevel, setOfficialLevel] = React.useState<number | null>(row.official_level);
-  const [whoFor, setWhoFor] = React.useState(row.spec_who_for ?? "");
-  const [outcomes, setOutcomes] = React.useState((row.spec_learning_outcomes ?? []).join("\n"));
-  const [howStudy, setHowStudy] = React.useState(row.spec_how_youll_study ?? "");
-  const [howAssessed, setHowAssessed] = React.useState(row.spec_how_youre_assessed ?? "");
-  const [prereq, setPrereq] = React.useState(row.spec_prerequisites ?? "");
-  const [glh, setGlh] = React.useState<number | null>(row.spec_guided_learning_hours);
-  const [tqt, setTqt] = React.useState<number | null>(row.spec_total_qualification_time);
-  const [delivery, setDelivery] = React.useState<DeliveryMode | null>(row.spec_delivery_mode);
+  // Fallback: if the spec_* columns are empty but the AI produced content
+  // into the raw ai_draft JSON (partial-run legacy rows), hydrate the form
+  // from that JSON so admins never see empty boxes when the AI has drafted.
+  const hydrateFromDraft = React.useCallback((r: CourseRow) => {
+    const j = (r.ai_draft ?? {}) as Record<string, unknown>;
+    const gs = (k: string): string => (typeof j[k] === "string" ? (j[k] as string) : "");
+    const gn = (k: string): number | null =>
+      typeof j[k] === "number" && Number.isFinite(j[k] as number) ? (j[k] as number) : null;
+    const ga = (k: string): string[] =>
+      Array.isArray(j[k]) ? (j[k] as unknown[]).filter((x): x is string => typeof x === "string") : [];
+    const gd = (): DeliveryMode | null => {
+      const v = j.spec_delivery_mode;
+      return v === "in_person" || v === "online_live" || v === "online_self_paced" || v === "blended" || v === "online"
+        ? (v as DeliveryMode)
+        : null;
+    };
+    return {
+      officialTitle: r.official_title ?? (gs("official_title") || r.proposed_title),
+      officialLevel: r.official_level ?? gn("official_level"),
+      whoFor: r.spec_who_for ?? gs("spec_who_for"),
+      outcomes: (r.spec_learning_outcomes ?? ga("spec_learning_outcomes")).join("\n"),
+      howStudy: r.spec_how_youll_study ?? gs("spec_how_youll_study"),
+      howAssessed: r.spec_how_youre_assessed ?? gs("spec_how_youre_assessed"),
+      prereq: r.spec_prerequisites ?? gs("spec_prerequisites"),
+      glh: r.spec_guided_learning_hours ?? gn("spec_guided_learning_hours"),
+      tqt: r.spec_total_qualification_time ?? gn("spec_total_qualification_time"),
+      delivery: r.spec_delivery_mode ?? gd(),
+    };
+  }, []);
+
+  const initial = hydrateFromDraft(row);
+
+  // Editable spec state — seeded from row (with ai_draft fallback), reset when a different row is selected.
+  const [officialTitle, setOfficialTitle] = React.useState(initial.officialTitle);
+  const [officialLevel, setOfficialLevel] = React.useState<number | null>(initial.officialLevel);
+  const [whoFor, setWhoFor] = React.useState(initial.whoFor);
+  const [outcomes, setOutcomes] = React.useState(initial.outcomes);
+  const [howStudy, setHowStudy] = React.useState(initial.howStudy);
+  const [howAssessed, setHowAssessed] = React.useState(initial.howAssessed);
+  const [prereq, setPrereq] = React.useState(initial.prereq);
+  const [glh, setGlh] = React.useState<number | null>(initial.glh);
+  const [tqt, setTqt] = React.useState<number | null>(initial.tqt);
+  const [delivery, setDelivery] = React.useState<DeliveryMode | null>(initial.delivery);
   const [note, setNote] = React.useState("");
 
   React.useEffect(() => {
-    setOfficialTitle(row.official_title ?? row.proposed_title);
-    setOfficialLevel(row.official_level);
-    setWhoFor(row.spec_who_for ?? "");
-    setOutcomes((row.spec_learning_outcomes ?? []).join("\n"));
-    setHowStudy(row.spec_how_youll_study ?? "");
-    setHowAssessed(row.spec_how_youre_assessed ?? "");
-    setPrereq(row.spec_prerequisites ?? "");
-    setGlh(row.spec_guided_learning_hours);
-    setTqt(row.spec_total_qualification_time);
-    setDelivery(row.spec_delivery_mode);
+    const v = hydrateFromDraft(row);
+    setOfficialTitle(v.officialTitle);
+    setOfficialLevel(v.officialLevel);
+    setWhoFor(v.whoFor);
+    setOutcomes(v.outcomes);
+    setHowStudy(v.howStudy);
+    setHowAssessed(v.howAssessed);
+    setPrereq(v.prereq);
+    setGlh(v.glh);
+    setTqt(v.tqt);
+    setDelivery(v.delivery);
     setNote("");
-  }, [row.id]);
+  }, [row.id, hydrateFromDraft, row]);
 
   const buildSpecPayload = () => ({
     id: row.id,
@@ -963,6 +996,34 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Redraft failed"),
   });
+
+  // Auto-recover legacy rows: if the AI already ran but the spec_* columns
+  // are still empty (partial-run pre-fix rows), trigger a redraft once when
+  // the admin opens the row so the form self-fills without a manual click.
+  const autoRedraftedRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (autoRedraftedRef.current === row.id) return;
+    const isPartialDraft =
+      row.ai_drafted_at != null &&
+      (row.status === "ai_drafted" || row.status === "submitted") &&
+      !row.spec_who_for &&
+      (row.spec_learning_outcomes?.length ?? 0) === 0 &&
+      !row.spec_how_youll_study &&
+      !row.spec_how_youre_assessed;
+    if (isPartialDraft && !redraftMut.isPending) {
+      autoRedraftedRef.current = row.id;
+      redraftMut.mutate();
+    }
+    // We only want this to fire on row change or state settle; redraftMut is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [row.id, row.ai_drafted_at, row.status, row.spec_who_for, row.spec_learning_outcomes, row.spec_how_youll_study, row.spec_how_youre_assessed]);
+
+  const aiHasDrafted =
+    row.ai_drafted_at != null &&
+    (Boolean(row.spec_who_for) ||
+      (row.spec_learning_outcomes?.length ?? 0) > 0 ||
+      Boolean(row.spec_how_youll_study) ||
+      Boolean(row.spec_how_youre_assessed));
 
   const providerName = row.provider?.full_name || "Unnamed provider";
 
@@ -1116,6 +1177,19 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
             <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-wide text-white/45">
               Official endorsement spec
             </div>
+
+            {redraftMut.isPending || (autoRedraftedRef.current === row.id && !aiHasDrafted) ? (
+              <div className="rounded-[10px] border border-blue-400/25 bg-blue-500/10 p-2.5 text-[11.5px] text-blue-100">
+                <Loader2 className="mr-1.5 inline h-3.5 w-3.5 animate-spin" />
+                AI is drafting these fields from the provider's answers. This usually takes 15–30 seconds — refresh in a moment.
+              </div>
+            ) : aiHasDrafted ? (
+              <div className="rounded-[10px] border border-emerald-400/25 bg-emerald-500/10 p-2.5 text-[11.5px] text-emerald-100">
+                <Sparkles className="mr-1.5 inline h-3.5 w-3.5" />
+                AI has drafted the fields below. Review, edit anything that needs changing, then Approve &amp; publish.
+              </div>
+            ) : null}
+
 
             <SpecField label="Official title">
               <input
