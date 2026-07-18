@@ -1639,11 +1639,13 @@ async function runRepsCourseAiDraft(
       .update({
         ai_verdict: "inconclusive",
         ai_red_flags: ["AI drafting failed — retry from admin"],
+        ai_drafted_at: new Date().toISOString(),
         status: r.status === "submitted" ? "ai_drafted" : r.status,
       } as never)
       .eq("id", id);
     return;
   }
+
 
   const raw = result.raw as Record<string, unknown>;
   const verdictRaw = typeof raw.verdict === "string" ? raw.verdict : "inconclusive";
