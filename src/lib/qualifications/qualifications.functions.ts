@@ -623,8 +623,18 @@ export const submitRepsCourse = createServerFn({ method: "POST" })
       .eq("provider_id", userId);
     if (attachErr) throw new Error(attachErr.message);
 
+    // Kick off the AI draft synchronously so the admin queue never shows a
+    // permanently-spinning "AI is drafting…" row. Failures are captured
+    // inside runRepsCourseAiDraft (verdict=inconclusive + red flag).
+    try {
+      await runRepsCourseAiDraft(newCourseId);
+    } catch (err) {
+      console.error("[submitRepsCourse] AI draft failed", err);
+    }
+
     return row;
   });
+
 
 const REPS_COURSE_SELECT =
   "id, provider_id, proposed_title, proposed_level, proposed_credential_type, proposed_who_for, proposed_what_covered, proposed_learner_outcomes, proposed_delivery_mode, proposed_total_hours, proposed_how_assessed, proposed_prerequisites, proposed_tutor_credentials, proposed_extra_notes, spec_modules, ai_verdict, ai_red_flags, ai_drafted_at, official_title, official_level, official_level_rationale, official_level_confidence, reviewer_notes, ai_deterministic_flags, reps_qual_number, spec_who_for, spec_learning_outcomes, spec_how_youll_study, spec_how_youre_assessed, spec_prerequisites, spec_guided_learning_hours, spec_total_qualification_time, spec_delivery_mode, spec_published_at, status, accredited_at, admin_note, created_at, endorsement_statement_url, endorsement_statement_agreed, endorsement_statement_last_checked_at, endorsement_statement_found, endorsement_statement_check_error";
@@ -1629,11 +1639,13 @@ async function runRepsCourseAiDraft(
       .update({
         ai_verdict: "inconclusive",
         ai_red_flags: ["AI drafting failed — retry from admin"],
+        ai_drafted_at: new Date().toISOString(),
         status: r.status === "submitted" ? "ai_drafted" : r.status,
       } as never)
       .eq("id", id);
     return;
   }
+
 
   const raw = result.raw as Record<string, unknown>;
   const verdictRaw = typeof raw.verdict === "string" ? raw.verdict : "inconclusive";
