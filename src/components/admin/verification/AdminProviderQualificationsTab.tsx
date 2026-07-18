@@ -1178,6 +1178,19 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
               Official endorsement spec
             </div>
 
+            {redraftMut.isPending || (autoRedraftedRef.current === row.id && !aiHasDrafted) ? (
+              <div className="rounded-[10px] border border-blue-400/25 bg-blue-500/10 p-2.5 text-[11.5px] text-blue-100">
+                <Loader2 className="mr-1.5 inline h-3.5 w-3.5 animate-spin" />
+                AI is drafting these fields from the provider's answers. This usually takes 15–30 seconds — refresh in a moment.
+              </div>
+            ) : aiHasDrafted ? (
+              <div className="rounded-[10px] border border-emerald-400/25 bg-emerald-500/10 p-2.5 text-[11.5px] text-emerald-100">
+                <Sparkles className="mr-1.5 inline h-3.5 w-3.5" />
+                AI has drafted the fields below. Review, edit anything that needs changing, then Approve &amp; publish.
+              </div>
+            ) : null}
+
+
             <SpecField label="Official title">
               <input
                 value={officialTitle}
