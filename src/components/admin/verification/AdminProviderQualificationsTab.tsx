@@ -902,7 +902,7 @@ function CourseDetail({ row, onDecided }: { row: CourseRow; onDecided: () => voi
         : null;
     };
     return {
-      officialTitle: r.official_title ?? gs("official_title") || r.proposed_title,
+      officialTitle: r.official_title ?? (gs("official_title") || r.proposed_title),
       officialLevel: r.official_level ?? gn("official_level"),
       whoFor: r.spec_who_for ?? gs("spec_who_for"),
       outcomes: (r.spec_learning_outcomes ?? ga("spec_learning_outcomes")).join("\n"),
